@@ -389,7 +389,9 @@ public class LoginPanel extends PFWizardPanel {
                         .getValue(getController()))));
        } else if (client.isConnected()) {
             usernameField.setText(client.getUsername());
-            passwordField.setText(client.getPasswordClearText());
+            if (!client.isPasswordEmpty()) {
+                passwordField.setText(client.getPasswordClearText());                
+            }
         }
 
         // loginButton = new JButton("Login");
