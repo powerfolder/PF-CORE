@@ -77,10 +77,9 @@ public class Token {
     private MemberInfo nodeInfo;
 
     @Embedded
-  //  @Index(name = "IDX_ACCOUNT_OID", columnNames="accountInfo.oid")
     @Fetch(FetchMode.JOIN)
     private AccountInfo accountInfo;
-    
+
     @Column(length = 1024)
     private String notes;
 
