@@ -230,7 +230,7 @@ public class ReconnectManager extends PFComponent {
                     + " were in queue before");
             }
 
-            if (reconnectionQueue.size() > 100) {
+            if (reconnectionQueue.size() > 200 && !getMySelf().isServer()) {
                 logWarning("Reconnection queue contains more than 200 nodes");
             }
 
