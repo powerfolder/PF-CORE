@@ -3287,9 +3287,9 @@ public class Folder extends PFComponent {
                     by = aInfo.getDisplayName();
                 }
             }
-            logInfo("File " + localFile + " was deleted by " + by + ": "
-                + remoteFile.toDetailString() + " , deleting local at "
-                + localCopy.toAbsolutePath());
+            logInfo("File " + localFile.toDetailString() + " was deleted by "
+                + by + ": " + remoteFile.toDetailString()
+                + " , deleting local at " + localCopy.toAbsolutePath());
         }
 
         // Abort transfers on file.
@@ -3300,8 +3300,8 @@ public class Folder extends PFComponent {
         if (Files.exists(localCopy)) {
             synchronized (scanLock) {
                 if (localFile.isDiretory()) {
-                    if (isInfo()) {
-                        logInfo("Deleting directory from remote: "
+                    if (isFine()) {
+                        logFine("Deleting directory from remote: "
                             + localFile.toDetailString());
                     }
                     watcher.addIgnoreFile(localFile);
