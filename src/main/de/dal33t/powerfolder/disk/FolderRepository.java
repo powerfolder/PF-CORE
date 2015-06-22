@@ -1779,6 +1779,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderInfo fi = null;
         boolean renamed = false;
         boolean stillPresent = false;
+        boolean createdNew;
         Controller controller = getController();
         ServerClient client = controller.getOSClient();
 
@@ -1802,10 +1803,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logInfo("Could not rename Folder " + fre, fre);
                 return;
             }
+        } else if (getMySelf().isServer()) {
+            fi = checkSystemSubdirForFolder(file);
+            stillPresent = folderStillExists(fi);
         }
         if (fi == null || stillPresent) {
             fi = new FolderInfo(file.getFileName().toString(),
                 IdGenerator.makeFolderId());
+            createdNew= true;
+        } else {
+            createdNew = false;
         }
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION,
@@ -1823,7 +1830,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        logInfo("Auto-created new folder: " + folder + " @ "
+        logInfo("Auto-setup " + (createdNew ? "new" : "existing") + " folder: "
+            + folder.getName() + "/" + folder.getId() + " @ "
             + folder.getLocalBase());
 
         if (!renamed) {
