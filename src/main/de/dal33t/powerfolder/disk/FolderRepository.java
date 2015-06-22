@@ -1633,9 +1633,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             for (Path dir : directories) {
                 boolean known = false;
                 for (Folder folder : getFolders()) {
-                    if (folder.getName().equals(dir.getFileName().toString())) {
-                        known = true;
-                        break;
+                    if (!getMySelf().isServer()) {
+                        if (folder.getName().equals(
+                            dir.getFileName().toString()))
+                        {
+                            known = true;
+                            break;
+                        }
                     }
                     Path localBase = folder.getLocalBase();
                     if (localBase.equals(dir)
@@ -1651,7 +1655,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         } catch (IOException ioe) {
-            logWarning(ioe.getMessage());
+            logWarning(ioe.toString());
         }
 
         if (!getController().getMySelf().isServer() && getController().isUIEnabled()) {
