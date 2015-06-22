@@ -214,10 +214,18 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
-                    .countActiveUploads() > 0 && bartModel.getRowCount() >= 1;
+                    .countActiveUploads() > 0
+                    && bartModel.getRowCount() >= 1
+                    && bartModelListener.events.size() >= 2;
+            }
+
+            @Override
+            public String message() {
+                return "Bart rowcount: " + bartModel.getRowCount()
+                    + ". Bart events: " + bartModelListener.events.size();
             }
         });
 
