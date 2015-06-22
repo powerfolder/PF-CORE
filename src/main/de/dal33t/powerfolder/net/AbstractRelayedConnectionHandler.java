@@ -481,16 +481,22 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             }
             logWarning(msg);
         }
-        // PFC-2591: Start
+        // PFC-2591/PFC-2742: Start
         if (messagesToSendQueue.size() > 5000) {
             String msg = "Disconnecting " + getIdentity()
                 + ": Too many messages in send queue: "
                 + messagesToSendQueue.size();
             logWarning(msg);
-            shutdownWithMember();
+            Runnable shutdownWithMember = new Runnable() {
+                @Override
+                public void run() {
+                    shutdownWithMember();
+                }
+            };
+            getController().getIOProvider().startIO(shutdownWithMember);
             return;
         }
-        // PFC-2591: End
+        // PFC-2591/PFC-2742: End
         if (sender == null) {
             sender = new Sender();
             getController().getIOProvider().startIO(sender);
