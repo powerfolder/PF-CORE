@@ -152,7 +152,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 164;
+    private static final int REVISION_VERSION = 165;
 
     /**
      * Program version.
@@ -388,6 +388,14 @@ public class Controller extends PFComponent {
         if (started) {
             throw new IllegalStateException(
                 "Configuration already started, shutdown controller first");
+        }
+
+        if (JavaVersion.systemVersion().getMinor() < 8) {
+            logSevere("You are using Java Version "
+                + JavaVersion.systemVersion().getMinor()
+                + ". Minimal Java Version is Version 8. Please update the JRE you are using.");
+            this.shutdown();
+            System.exit(-1);
         }
 
         additionalConnectionListeners = Collections
