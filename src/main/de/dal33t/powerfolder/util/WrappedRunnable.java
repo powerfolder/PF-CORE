@@ -30,7 +30,7 @@ import org.hibernate.HibernateException;
  * @author sprajc
  */
 public class WrappedRunnable implements Runnable {
-    private static final Logger log = Logger.getLogger(WrappedRunnable.class
+    private static final Logger LOG = Logger.getLogger(WrappedRunnable.class
         .getName());
 
     private Runnable deligate;
@@ -38,7 +38,7 @@ public class WrappedRunnable implements Runnable {
     public WrappedRunnable(Runnable deligate) {
         super();
         if (deligate instanceof WrappedRunnable) {
-            log.log(Level.WARNING, "unnecessary wrapped runnable chain!",
+            LOG.log(Level.WARNING, "unnecessary wrapped runnable chain!",
                 new RuntimeException("here"));
         }
         Reject.ifNull(deligate, "Deligate is null");
@@ -50,23 +50,33 @@ public class WrappedRunnable implements Runnable {
             deligate.run();
         } catch (OutOfMemoryError oom) {
             oom.printStackTrace();
-            log.log(Level.SEVERE,
+            LOG.log(Level.SEVERE,
                 "Out of memory in " + deligate + ": " + oom.toString(), oom);
-            log.log(Level.SEVERE,
+            LOG.log(Level.SEVERE,
                 "Shutting down java virtual machine. Exit code: 107");
+
+            // PFS-1722
+            if (oom.getMessage() != null
+                && oom.getMessage().contains(
+                    "unable to create new native Thread"))
+            {
+                LOG.log(Level.WARNING, "Current threads: ");
+                LOG.log(Level.WARNING, Debug.dumpCurrentStacktraces(false));
+            }
+
             System.exit(107);
             throw oom;
         } catch (Error t) {
             t.printStackTrace();
-            log.log(Level.SEVERE, "Error in " + deligate + ": " + t.toString(),
+            LOG.log(Level.SEVERE, "Error in " + deligate + ": " + t.toString(),
                 t);
             throw t;
         } catch (HibernateException he) {
-            log.log(Level.SEVERE,
+            LOG.log(Level.SEVERE,
                 "Database connection problem: " + he.getMessage());
         } catch (RuntimeException t) {
             t.printStackTrace();
-            log.log(Level.SEVERE,
+            LOG.log(Level.SEVERE,
                 "RuntimeException in " + deligate + ": " + t.toString(), t);
             throw t;
         }
