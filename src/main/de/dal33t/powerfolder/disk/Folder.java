@@ -4428,7 +4428,7 @@ public class Folder extends PFComponent {
         FileInfo fileInfo = getFile(newFileInfo);
         if (isInfo()) {
             logInfo("Deleting file "
-                + fileInfo.toDetailString()
+                + (fileInfo != null ? fileInfo.toDetailString() : newFileInfo)
                 + ((archiver.getVersionsPerFile() > 0)
                     ? " moving to archive"
                     : ""));
