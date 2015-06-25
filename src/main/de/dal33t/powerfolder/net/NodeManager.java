@@ -1574,9 +1574,7 @@ public class NodeManager extends PFComponent {
             filename += ".backup";
             logFine("Failed to load nodes, trying backup nodefile '" + filename
                 + "'");
-            if (!loadNodesFrom(filename)) {
-                return;
-            }
+            loadNodesFrom(filename);
         }
         if (ConfigurationEntry.SERVER_LOAD_NODES
             .getValueBoolean(getController()))
