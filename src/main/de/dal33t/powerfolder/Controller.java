@@ -390,14 +390,6 @@ public class Controller extends PFComponent {
                 "Configuration already started, shutdown controller first");
         }
 
-        if (JavaVersion.systemVersion().getMinor() < 8) {
-            logSevere("You are using Java Version "
-                + JavaVersion.systemVersion().getMinor()
-                + ". Minimal Java Version is Version 8. Please update the JRE you are using.");
-            this.shutdown();
-            System.exit(-1);
-        }
-
         additionalConnectionListeners = Collections
             .synchronizedList(new ArrayList<ConnectionListener>());
         started = false;
