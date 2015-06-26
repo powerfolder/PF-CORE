@@ -1935,6 +1935,7 @@ public class Controller extends PFComponent {
     public void shutdownAndRequestRestart() {
         restartRequested = true;
         shutdown();
+        INSTANCE = null;
     }
 
     /**
