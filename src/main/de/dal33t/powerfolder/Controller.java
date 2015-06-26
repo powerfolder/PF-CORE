@@ -152,7 +152,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 167;
+    private static final int REVISION_VERSION = 168;
 
     /**
      * Program version.
@@ -307,6 +307,8 @@ public class Controller extends PFComponent {
 
     private ScheduledFuture<?> pauseResumeFuture;
 
+    private static Controller INSTANCE;
+
     private Controller() {
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
@@ -342,7 +344,19 @@ public class Controller extends PFComponent {
      * @return the controller
      */
     public static Controller createController() {
+        if (INSTANCE == null) {
+            INSTANCE = new Controller();
+            return INSTANCE;
+        }
         return new Controller();
+    }
+
+    public static Controller getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new Controller();
+        }
+
+        return INSTANCE;
     }
 
     /**
