@@ -130,6 +130,22 @@ public class Group implements Serializable {
             FolderPermission.readWrite(foInfo), FolderPermission.admin(foInfo));
     }
 
+    public void revokeAllGroupAdminPermissions() {
+        for (Permission p : permissions) {
+            if (p instanceof GroupAdminPermission) {
+                permissions.remove(p);
+            }
+        }
+    }
+
+    public void revokeAllOrgAdminPermissions() {
+        for (Permission p : permissions) {
+            if (p instanceof OrganizationAdminPermission) {
+                permissions.remove(p);
+            }
+        }
+    }
+
     public boolean hasPermission(Permission permission) {
         Reject.ifNull(permission, "Permission is null");
         if (permissions == null) {
