@@ -307,8 +307,6 @@ public class Controller extends PFComponent {
 
     private ScheduledFuture<?> pauseResumeFuture;
 
-    private static Controller INSTANCE;
-
     private Controller() {
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
@@ -344,19 +342,7 @@ public class Controller extends PFComponent {
      * @return the controller
      */
     public static Controller createController() {
-        if (INSTANCE == null) {
-            INSTANCE = new Controller();
-            return INSTANCE;
-        }
         return new Controller();
-    }
-
-    public static Controller getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new Controller();
-        }
-
-        return INSTANCE;
     }
 
     /**
@@ -1935,7 +1921,6 @@ public class Controller extends PFComponent {
     public void shutdownAndRequestRestart() {
         restartRequested = true;
         shutdown();
-        INSTANCE = null;
     }
 
     /**
