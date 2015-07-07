@@ -180,23 +180,23 @@ public class NodeSearcherTest extends TwoControllerTestCase {
     public void testMixedSearch() {
         final List<Member> searchResultModel = new ArrayList<Member>();
 
-        // Search for "r"
-        NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "r",
+        // Search for "ar"
+        NodeSearcher searcher = new NodeSearcher(getContollerLisa(), "ar",
             searchResultModel, true, false);
         searcher.start();
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             public boolean reached() {
-                return searchResultModel.size() == 5;
+                return searchResultModel.size() == 2;
             }
 
             public String message() {
-                return searchResultModel.toString();
+                return "Expected: 2. Found: " + searchResultModel.size() + ": " + searchResultModel.toString();
             }
         });
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
-        // baRt, homeR and maRge, ned flendeRs, Online StoRage
-        assertEquals(searchResultModel.toString(), 5, searchResultModel.size());
+        // bARt, homer and mARge, ned flenders, PowerFolder Cloud
+        assertEquals(searchResultModel.toString(), 2, searchResultModel.size());
 
         // Search for "127.0.0.1"
         searcher = new NodeSearcher(getContollerLisa(), "127.0.0.1",
