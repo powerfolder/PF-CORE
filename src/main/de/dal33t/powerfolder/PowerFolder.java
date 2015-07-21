@@ -208,7 +208,9 @@ public class PowerFolder {
                 commandLine.getOptionValue("g"));
         }
 
-        if (JavaVersion.systemVersion().isOpenJDK()) {
+        JavaVersion jv = JavaVersion.systemVersion();
+
+        if (jv.isOpenJDK()) {
             Object[] options = {"Open Oracle home page and exit", "Exit"};
 
             int n = JOptionPane.showOptionDialog(null,
@@ -229,6 +231,14 @@ public class PowerFolder {
 
             return;
         }
+
+        // Start: PFS-1721
+        if (jv.getMinor() <= 7) {
+            log.severe("You are trying to start using a JRE version lesser or equal to Java 7."
+                + " Please update your JRE to version 8 or above to run.");
+            return;
+        }
+        // End: PFS-1721
 
         // The controller.
         Controller controller = Controller.createController();
