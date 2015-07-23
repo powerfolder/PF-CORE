@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -251,7 +252,7 @@ public class Icons {
     private static final Map<String, Icon> EXTENSION_ICON_MAP = new HashMap<String, Icon>();
 
     /** Map of Username - Icon */
-    private static final Map<String, Icon> USERNAME_ICON_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Icon> USERNAME_ICON_MAP = new WeakHashMap<>();
 
     // BlueGlobe is our default.
     private static final String DEFAULT_PROPERTIES_FILENAME = Origin.ICON_PROPERTIES_FILENAME;
@@ -499,7 +500,6 @@ public class Icons {
         if (username == null) {
             return getIconById(NODE_DISCONNECTED);
         } else if (USERNAME_ICON_MAP.containsKey(username)) {
-            new IconBackgroundLoader(member, controller).execute();
             return USERNAME_ICON_MAP.get(username);
         } else {
             new IconBackgroundLoader(member, controller).execute();
@@ -510,6 +510,7 @@ public class Icons {
     private static class IconBackgroundLoader extends SwingWorker<Void, Void> {
         private final AccountInfo member;
         private final Controller controller;
+        private ImageIcon image;
 
         IconBackgroundLoader(AccountInfo member, Controller controller) {
             this.member = member;
@@ -534,11 +535,7 @@ public class Icons {
                     ImageIcon tempIcon = new ImageIcon(url);
                     Image img = tempIcon.getImage().getScaledInstance(25, 25,
                         Image.SCALE_SMOOTH);
-
-                    USERNAME_ICON_MAP.put(member.getUsername(), new ImageIcon(
-                        img));
-
-                    controller.getUIController().getActiveFrame().repaint();
+                    image = new ImageIcon(img);
                 }
             } catch (MalformedURLException e) {
                 log.warning("Avatar URL was malformed: " + urlString);
@@ -547,6 +544,12 @@ public class Icons {
             }
 
             return null;
+        }
+
+        @Override
+        protected void done() {
+            USERNAME_ICON_MAP.put(member.getUsername(), image);
+            controller.getUIController().getActiveFrame().repaint();
         }
     }
 
