@@ -49,16 +49,16 @@ public class WrappedRunnable implements Runnable {
         try {
             deligate.run();
         } catch (OutOfMemoryError oom) {
+            // PFS-1722
             oom.printStackTrace();
             LOG.log(Level.SEVERE,
                 "Out of memory in " + deligate + ": " + oom.toString(), oom);
             LOG.log(Level.SEVERE,
                 "Shutting down java virtual machine. Exit code: 107");
 
-            // PFS-1722
             if (oom.getMessage() != null
-                && oom.getMessage().contains(
-                    "unable to create new native Thread"))
+                && oom.getMessage().toLowerCase().contains(
+                    "unable to create new native thread"))
             {
                 LOG.log(Level.WARNING, "Current threads: ");
                 LOG.log(Level.WARNING, Debug.dumpCurrentStacktraces(false));
