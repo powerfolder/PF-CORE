@@ -69,6 +69,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
         getFolderAtLisa().getFolderWatcher().setIngoreAll(true);
+        
+        // Let startup settle down.
+        TestHelper.waitMilliSeconds(500);
     }
 
     public void xtestNonExtractZIPJAR() throws IOException {
