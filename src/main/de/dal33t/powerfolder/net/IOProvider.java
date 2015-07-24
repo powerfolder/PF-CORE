@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.message.Ping;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.NamedThreadFactory;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
@@ -156,7 +157,25 @@ public class IOProvider extends PFComponent {
         if (isFiner()) {
             logFiner("Starting IO for " + ioWorker);
         }
-        ioThreadPool.submit(ioWorker);
+        try {
+            ioThreadPool.submit(ioWorker);
+        } catch (OutOfMemoryError oom) {
+            oom.printStackTrace();
+            logSevere("Out of memory while starting " + ioWorker + ": "
+                + oom.toString(), oom);
+            logSevere("Shutting down java virtual machine. Exit code: 107");
+
+            // PFS-1722
+            if (oom.getMessage() != null && oom.getMessage().toLowerCase()
+                .contains("unable to create new native thread"))
+            {
+                logWarning("Current threads: ");
+                logWarning(Debug.dumpCurrentStacktraces(false));
+            }
+
+            getController().exit(107);
+            throw oom;
+        }
     }
 
     /**

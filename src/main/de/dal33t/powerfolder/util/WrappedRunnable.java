@@ -57,8 +57,8 @@ public class WrappedRunnable implements Runnable {
 
             // PFS-1722
             if (oom.getMessage() != null
-                && oom.getMessage().contains(
-                    "unable to create new native Thread"))
+                && oom.getMessage().toLowerCase().contains(
+                    "unable to create new native thread"))
             {
                 LOG.log(Level.WARNING, "Current threads: ");
                 LOG.log(Level.WARNING, Debug.dumpCurrentStacktraces(false));
