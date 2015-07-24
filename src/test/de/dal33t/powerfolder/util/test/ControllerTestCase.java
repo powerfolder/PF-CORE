@@ -82,6 +82,9 @@ public abstract class ControllerTestCase extends TestCase {
         waitForStart(controller);
 
         System.out.println("Controller started");
+        
+        // Let the start settle down.
+        TestHelper.waitMilliSeconds(250);
     }
 
     @Override
