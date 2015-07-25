@@ -151,4 +151,10 @@ public class HTTPProxySettings {
                 + proxyPort + " " + auth);
         }
     }
+
+    public static final boolean useProxy() {
+        return StringUtils.isNotBlank(System.getProperty("http.proxyHost"))
+            || "true".equalsIgnoreCase(
+                System.getProperty("java.net.useSystemProxies"));
+    }
 }
