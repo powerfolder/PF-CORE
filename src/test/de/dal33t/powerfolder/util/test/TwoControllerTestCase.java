@@ -132,6 +132,8 @@ public abstract class TwoControllerTestCase extends TestCase {
         System.out.println("Starting controllers...");
         startControllerBart();
         startControllerLisa();
+        
+        TestHelper.waitMilliSeconds(250);
 
         System.out
             .println("-------------- Controllers started -----------------");
