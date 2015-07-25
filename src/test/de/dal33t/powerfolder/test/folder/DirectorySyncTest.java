@@ -143,7 +143,8 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertTrue(dirInfoBart.isDeleted());
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
-                return Files.notExists(dirLisa);
+                return Files.notExists(dirLisa) && getFolderAtLisa()
+                    .getKnownDirectories().iterator().next().isDeleted();
             }
         });
         DirectoryInfo dirInfoLisa = getFolderAtLisa().getKnownDirectories()
