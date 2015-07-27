@@ -2763,7 +2763,7 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Checks the queued or active downloads and breaks them if nesseary. Also
+     * Checks the queued or active downloads and breaks them if necessary. Also
      * searches for additional sources of download.
      */
     private void checkDownloads() {
