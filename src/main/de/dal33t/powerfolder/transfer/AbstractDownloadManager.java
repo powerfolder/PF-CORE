@@ -513,8 +513,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     logInfo("Auto-recover from MD5_ERROR: Re-download of "
                         + getFileInfo() + " started.");
                     if (folder.erase(getFileInfo())) {
-                        getController().getTransferManager()
-                            .downloadNewestVersion(getFileInfo(), true);
+                        // PFC-2752: Move into separate thread to avoid deadlock.
+                        tm.doWork(new Runnable() {
+                            @Override
+                            public void run() {
+                                tm.downloadNewestVersion(getFileInfo(), true);
+                            }
+                        });
                     }
                 }
             }
