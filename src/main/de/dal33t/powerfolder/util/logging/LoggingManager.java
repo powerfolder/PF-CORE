@@ -210,11 +210,7 @@ public class LoggingManager {
         fileRotate = rotate;
 
         if (fileHandler == null) {
-            createFileHandler();
-        }
-
-        if (fileHandler != null) {
-            fileHandler.setLevel(fileLoggingLevel);
+            createFileHandler(fileLoggingLevel);
         }
 
         setMinimumBaseLoggingLevel();
@@ -268,10 +264,11 @@ public class LoggingManager {
 
     /**
      * Physically create the file handler.
+     * @param logLevel 
      * 
      * @param level
      */
-    private static void createFileHandler() {
+    private static void createFileHandler(Level logLevel) {
         // Make sure nothing else tries to create the file handler concurrently.
         synchronized (fileHandlerLock) {
             try {
@@ -289,6 +286,7 @@ public class LoggingManager {
                 fileHandler.setFormatter(new LoggingFormatter(!fileRotate));
                 getRootLogger().addHandler(fileHandler);
                 fileHandler.setFilter(DEFAULT_FILTER);
+                fileHandler.setLevel(logLevel);
             } catch (IOException e) {
                 // Duh. No file logger.
                 e.printStackTrace();
@@ -474,7 +472,7 @@ public class LoggingManager {
             fileHandler.flush();
             fileHandler.close();
 
-            createFileHandler();
+            createFileHandler(fileLoggingLevel);
         }
     }
 
