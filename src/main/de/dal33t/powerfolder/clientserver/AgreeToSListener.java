@@ -61,7 +61,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         }
 
         try {
-            ServerClient client = event.getClient();
+            final ServerClient client = event.getClient();
 
             if (event.getAccountDetails().needsToAgreeToS()) {
                 wasPaused = getController().isPaused();
@@ -139,7 +139,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
     }
 
     private class ToSNotice extends WarningNotice {
-        private ServerClient client;
+        private final ServerClient client;
 
         public ToSNotice(String title, String summary, String message, ServerClient client) {
             super(title, summary, message);
