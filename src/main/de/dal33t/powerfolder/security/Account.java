@@ -860,6 +860,13 @@ public class Account implements Serializable {
         return Collections.unmodifiableList(emails);
     }
 
+    /**
+     * Start PFS-1568
+     */
+    public void clearEmails() {
+        emails.clear();
+    }
+
     public int getAutoRenewDevices() {
         return autoRenewDevices;
     }
