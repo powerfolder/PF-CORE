@@ -408,4 +408,52 @@ public class FileUpdateTest extends TwoControllerTestCase {
             }
         });
     }
+
+    // PFC-2758
+    public void testIdenticalDateAndSizeHandling() throws IOException {
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        disconnectBartAndLisa();
+
+        // 1) Create v=2 testfile at bart
+        Path fileBart = TestHelper.createTestFile(
+            getFolderAtBart().getLocalBase(), "Subdirectory/test.txt",
+            new byte[0]);
+        scanFolder(getFolderAtBart());
+
+        TestHelper.waitMilliSeconds(2500);
+        TestHelper.changeFile(fileBart);
+        scanFolder(getFolderAtBart());
+
+        TestHelper.waitMilliSeconds(2500);
+        TestHelper.changeFile(fileBart);
+        scanFolder(getFolderAtBart());
+
+        assertEquals(2,
+            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
+
+        // 2) Create v=1 testfile at lisa (different name case)
+        Path fileLisa = TestHelper.createTestFile(
+            getFolderAtLisa().getLocalBase(), "subdirectory/test.txt",
+            new byte[0]);
+        scanFolder(getFolderAtLisa());
+
+        TestHelper.waitMilliSeconds(2500);
+        TestHelper.changeFile(fileLisa, Files.size(fileBart));
+        Files.setLastModifiedTime(fileLisa,
+            Files.getLastModifiedTime(fileBart));
+        scanFolder(getFolderAtLisa());
+
+        assertEquals(1,
+            getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
+
+        // 3) Connect Lisa and Bart and sync
+        connectBartAndLisa();
+        TestHelper.waitMilliSeconds(5000);
+        
+        assertEquals(2,
+            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
+        assertEquals(2,
+            getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
+    }
 }

@@ -3981,8 +3981,9 @@ public class Folder extends PFComponent {
                 // fileChanged(localFileInfo);
                 // }
             } else if (!fileCaseSame && dateSame && fileSizeSame) {
-                if (localFileInfo.getRelativeName().compareTo(
-                    remoteFileInfo.getRelativeName()) <= 0)
+                if (remoteFileInfo.getVersion() >= localFileInfo.getVersion()
+                    && localFileInfo.getRelativeName()
+                        .compareTo(remoteFileInfo.getRelativeName()) <= 0)
                 {
                     if (hasWrite == null) {
                         hasWrite = hasWritePermission(member);
