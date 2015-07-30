@@ -1057,7 +1057,7 @@ public enum ConfigurationEntry {
     FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED("remove.folder.basedir.when_disappeared", true),
 
     /** The number of file versions to use when creating a new folder. */
-    DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 5),
+    DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 25),
 
     /**
      * How many days before an archive file is cleaned up. Values 1, 7, 31, 365,
