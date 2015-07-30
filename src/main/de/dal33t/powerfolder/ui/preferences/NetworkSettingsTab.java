@@ -164,7 +164,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 .getValueBoolean(getController()));
 
         udtConnectionCB = SimpleComponentFactory.createCheckBox(Translation
-            .get("exp.preferences.network.use_relayed_connections"));
+            .get("exp.preferences.network.use_udt_connection"));
         udtConnectionCB.setSelected(ConfigurationEntry.UDT_CONNECTIONS_ENABLED
             .getValueBoolean(getController()));
 
