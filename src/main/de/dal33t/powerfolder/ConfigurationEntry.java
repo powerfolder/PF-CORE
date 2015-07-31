@@ -1168,8 +1168,8 @@ public enum ConfigurationEntry {
      *         string.
      */
     public boolean hasNonBlankValue(Controller controller) {
-        return !hasValue(controller)
-            || StringUtils.isBlank(getValue(controller));
+        return hasValue(controller)
+            && StringUtils.isNotBlank(getValue(controller));
     }
 
     /**
