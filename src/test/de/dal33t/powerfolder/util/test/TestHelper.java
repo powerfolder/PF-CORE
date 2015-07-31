@@ -48,14 +48,14 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
+import junit.framework.Assert;
+import junit.framework.TestCase;
 
 /**
  * Offers several helping methods for junit tests.
@@ -592,9 +592,13 @@ public class TestHelper {
 
         // Scan // Ignore mass deletion
         if (!folder.scanLocalFiles(ignoreMassDeletion)) {
-            throw new RuntimeException("Unable to scan " + folder
-                + ". Last scan result: " + folder.getLastScanResultState()
-                + ". Device disconnected? " + folder.isDeviceDisconnected());
+            TestHelper.waitMilliSeconds(50);
+            if (!folder.scanLocalFiles(ignoreMassDeletion)) {
+                throw new RuntimeException("Unable to scan " + folder
+                    + ". Last scan result: " + folder.getLastScanResultState()
+                    + ". Device disconnected? "
+                    + folder.isDeviceDisconnected());
+            }
         }
         folder.getController().setPaused(pausedBefore);
     }
