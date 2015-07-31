@@ -433,6 +433,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             getFolderAtBart().getKnownFiles().iterator().next().getVersion());
 
         // 2) Create v=1 testfile at lisa (different name case)
+        TestHelper.waitMilliSeconds(2500);
         Path fileLisa = TestHelper.createTestFile(
             getFolderAtLisa().getLocalBase(), "subdirectory/test.txt",
             new byte[0]);
@@ -450,10 +451,10 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // 3) Connect Lisa and Bart and sync
         connectBartAndLisa();
         TestHelper.waitMilliSeconds(5000);
-        
-        assertEquals(2,
+
+        assertEquals("Version at bart wrong", 2,
             getFolderAtBart().getKnownFiles().iterator().next().getVersion());
-        assertEquals(2,
+        assertEquals("Version at lisa wrong", 2,
             getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
     }
 }
