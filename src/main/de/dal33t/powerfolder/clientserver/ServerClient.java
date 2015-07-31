@@ -1209,7 +1209,7 @@ public class ServerClient extends PFComponent {
     
     private boolean isShibbolethLogin() {
         return ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-            .hasValue(getController());
+            .hasNonBlankValue(getController());
     }
 
     private byte[] prepareKerberosLogin() {
