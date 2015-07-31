@@ -1206,7 +1206,7 @@ public enum ConfigurationEntry {
      */
     public Integer getValueInt(Controller controller) {
         String value = getValue(controller);
-        if (value == null) {
+        if (value == null || StringUtils.isBlank(value)) {
             value = getDefaultValue();
         }
         try {
@@ -1228,7 +1228,7 @@ public enum ConfigurationEntry {
      */
     public Boolean getValueBoolean(Controller controller) {
         String value = getValue(controller);
-        if (value == null) {
+        if (value == null || StringUtils.isBlank(value)) {
             value = getDefaultValue();
         }
         try {
