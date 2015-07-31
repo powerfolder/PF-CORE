@@ -297,7 +297,7 @@ public class FolderSettings {
             .getValue(c);
         String folderDirStr = c.getConfig().getProperty(
             PREFIX_V4 + entryId + DIR);
-        if (ConfigurationEntry.UNC_TRANSFER_MODE.hasValue(c)
+        if (ConfigurationEntry.UNC_TRANSFER_MODE.hasNonBlankValue(c)
             && folderDirStr != null && folderDirStr.startsWith("\\\\"))
         {
             defSyncProfile = ConfigurationEntry.UNC_TRANSFER_MODE.getValue(c);

@@ -908,8 +908,7 @@ public class Controller extends PFComponent {
                 logInfo("No logging to file");
             }
 
-            str = ConfigurationEntry.LOG_SYSLOG_HOST.getValue(this);
-            if (str != null) {
+            if (ConfigurationEntry.LOG_SYSLOG_HOST.hasNonBlankValue(this)) {
                 str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
                 Level syslogLevel = LoggingManager.levelForName(str);
                 LoggingManager.setSyslogLogging(syslogLevel != null
@@ -2801,7 +2800,7 @@ public class Controller extends PFComponent {
 
     private void initDistribution() {
         try {
-            if (ConfigurationEntry.DIST_CLASSNAME.hasValue(getController())) {
+            if (ConfigurationEntry.DIST_CLASSNAME.hasNonBlankValue(getController())) {
                 Class<?> distClass = Class
                     .forName(ConfigurationEntry.DIST_CLASSNAME
                         .getValue(getController()));

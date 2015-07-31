@@ -1164,6 +1164,17 @@ public enum ConfigurationEntry {
     /**
      * @param controller
      *            the controller to read the config from
+     * @return If a value was set for this entry and contains a non-blank
+     *         string.
+     */
+    public boolean hasNonBlankValue(Controller controller) {
+        return !hasValue(controller)
+            || StringUtils.isBlank(getValue(controller));
+    }
+
+    /**
+     * @param controller
+     *            the controller to read the config from
      * @return The current value from the configuration for this entry. or
      */
     public String getValue(Controller controller) {

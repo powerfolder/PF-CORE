@@ -1500,8 +1500,8 @@ public class PathUtils {
             return false;
         }
 
-        if (ConfigurationEntry.ARCHIVE_DIRECTORY_NAME.hasValue(folder
-            .getController()))
+        if (ConfigurationEntry.ARCHIVE_DIRECTORY_NAME
+            .hasNonBlankValue(folder.getController()))
         {
             String archiveDirText = ConfigurationEntry.ARCHIVE_DIRECTORY_NAME
                 .getValue(folder.getController());
