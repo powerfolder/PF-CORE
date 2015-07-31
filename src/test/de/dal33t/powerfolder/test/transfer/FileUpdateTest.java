@@ -417,7 +417,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         // 1) Create v=2 testfile at bart
         Path fileBart = TestHelper.createTestFile(
-            getFolderAtBart().getLocalBase(), "Subdirectory/test.txt",
+            getFolderAtBart().getLocalBase(), "Test.txt",
             new byte[0]);
         scanFolder(getFolderAtBart());
 
@@ -435,7 +435,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         // 2) Create v=1 testfile at lisa (different name case)
         TestHelper.waitMilliSeconds(2500);
         Path fileLisa = TestHelper.createTestFile(
-            getFolderAtLisa().getLocalBase(), "subdirectory/test.txt",
+            getFolderAtLisa().getLocalBase(), "test.txt",
             new byte[0]);
         scanFolder(getFolderAtLisa());
 
