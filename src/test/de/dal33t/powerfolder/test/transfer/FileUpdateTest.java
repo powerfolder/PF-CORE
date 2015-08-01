@@ -452,9 +452,15 @@ public class FileUpdateTest extends TwoControllerTestCase {
         connectBartAndLisa();
         TestHelper.waitMilliSeconds(5000);
 
-        assertEquals("Version at bart wrong", 2,
+        assertEquals(
+            "Version at bart wrong: " + getFolderAtBart().getKnownFiles()
+                .iterator().next().toDetailString(),
+            2,
             getFolderAtBart().getKnownFiles().iterator().next().getVersion());
-        assertEquals("Version at lisa wrong", 2,
+        assertEquals(
+            "Version at lisa wrong: " + getFolderAtLisa().getKnownFiles()
+                .iterator().next().toDetailString(),
+            2,
             getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
     }
 }
