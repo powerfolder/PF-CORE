@@ -210,8 +210,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getContollerBart().getTransferManager().setUploadCPSForLAN(40000);
         getContollerLisa().getTransferManager().setUploadCPSForWAN(40000);
 
-        // Create a 30 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);
+        // Create a 300 megs file
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 300000000);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
