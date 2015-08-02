@@ -1365,6 +1365,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
 
+        int wait = 4000;
         Path fServer = Paths.get("src/test-resources/Deltafile_Server.pdf");
         Path fPatricia = Paths.get("src/test-resources/Deltafile_Patricia.pdf");
         Path fAna = Paths.get("src/test-resources/Deltafile_Ana.pdf");
@@ -1399,7 +1400,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fLisa = getFolderAtLisa().getKnownFiles().iterator().next();
         assertEquals(2, fLisa.getVersion());
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(wait);
         PathUtils.copyFile(fAna,
             fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
         TestHelper.scanFolder(getFolderAtLisa());
@@ -1425,7 +1426,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(wait);
         PathUtils.copyFile(fPatricia,
             fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
         TestHelper.scanFolder(getFolderAtLisa());
@@ -1451,7 +1452,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(wait);
         PathUtils.copyFile(fServer,
             fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
         TestHelper.scanFolder(getFolderAtLisa());
@@ -1477,7 +1478,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(wait);
         PathUtils.copyFile(fPatricia,
             fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
         TestHelper.scanFolder(getFolderAtLisa());
@@ -1503,7 +1504,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(wait);
         PathUtils.copyFile(fAna,
             fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
         TestHelper.scanFolder(getFolderAtLisa());
@@ -1529,8 +1530,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        LoggingManager.setConsoleLogging(Level.FINER);
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(wait);
         PathUtils.copyFile(fServer,
             fLisa.getDiskFile(getContollerLisa().getFolderRepository()));
         TestHelper.scanFolder(getFolderAtLisa());
@@ -2068,15 +2068,14 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
             @Override
             public boolean reached() {
+                FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
+                FileInfo binfo = getFolderAtBart().getKnownFiles().iterator().next();
                 return lisaListener.downloadCompleted >= 2
                     && lisaListener.downloadRequested >= 2
-                    && lisaListener.downloadAborted == 0
-                    && lisaListener.downloadBroken == 0
                     && bartListener.uploadRequested >= 2
-                    && bartListener.uploadAborted == 0
-                    && bartListener.uploadBroken == 0
                     && bartListener.uploadStarted >= 2
-                    && bartListener.uploadCompleted >= 2;
+                    && bartListener.uploadCompleted >= 2
+                    && linfo.getVersion() == binfo.getVersion();
             }
 
             @Override
