@@ -409,6 +409,11 @@ public enum ConfigurationEntry {
     CONFIG_LDAP_GROUP("config.ldap.group"),
 
     /**
+     * PFS-1593 associate a config with a organizations
+     */
+    CONFIG_ORGANIZATION("config.organization"),
+
+    /**
      * PFC-2184 Specify server URL as installer command line parameter
      */
     INSTALLER_FILENAME("installer.file"),
