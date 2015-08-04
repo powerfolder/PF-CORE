@@ -15,7 +15,6 @@ import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -193,11 +192,48 @@ public class PathUtils {
         return false;
     }
 
+    /**
+     * Check if {@code path} is on a network mount.<br />
+     * <br />
+     * Done by calling {@code df} and parsing the output.<br />
+     * Samba (SMB)/CIFS Mounts do appear with a leading double slash ("//") or a
+     * double backslash ("\\") on the "Filesystem" column.<br />
+     * NFS Mounts' "Filesystem" entry contains a colon (":").<br />
+     * <br />
+     * The last column of the output of {@code df}, "Mounted on" specifies the
+     * mount point. If the passed {@code path} starts with this mount point, it
+     * is located on a network share.
+     * 
+     * @param path
+     *            Path to be checked
+     * @return {@code True} if {@code path} is on a network mount, {@code false}
+     *         otherwise.
+     */
     private static boolean isNetworkPathUnix(Path path) {
         try {
-            FileStore fs = Files.getFileStore(path);
-            return "smbfs".equalsIgnoreCase(fs.type())
-                || "nfs".equalsIgnoreCase(fs.type());
+            Process p = Runtime.getRuntime().exec("df");
+            InputStream stdout = p.getInputStream();
+
+            String line;
+
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                stdout))) {
+                while ((line = in.readLine()) != null) {
+                    if (line.contains("//") || line.contains("\\\\")
+                        || line.contains(":"))
+                    {
+                        int lastBlank = line.lastIndexOf(" ");
+                        String mountPointString = line.substring(lastBlank + 1);
+                        Path mountPoint = Paths.get(mountPointString);
+
+                        if (path.startsWith(mountPoint)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         } catch (IOException ioe) {
             log.warning("Unable to check, if path " + path.toString()
                 + " is a network drive. " + ioe);
