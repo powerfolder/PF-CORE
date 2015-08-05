@@ -372,7 +372,9 @@ public class UploadsTableModel extends PFComponent implements TableModel,
      * fire change on whole model
      */
     private void rowsUpdatedAll() {
-        rowsUpdated(0, uploads.size());
+        if (!uploads.isEmpty()) {
+            rowsUpdated(0, uploads.size());            
+        }
     }
 
     /**
