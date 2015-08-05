@@ -110,6 +110,12 @@ public class LoginUtil {
                 ca = Arrays.copyOf(ca, len);
             }
             return ca;
+        } catch (IllegalArgumentException e) {
+            Logger.getLogger(LoginUtil.class.getName()).log(
+                Level.FINER,
+                "Unable to decode obfuscated password: " + passwordOBF + ". "
+                    + e, e);
+            return null;
         } catch (Exception e) {
             Logger.getLogger(LoginUtil.class.getName()).log(
                 Level.SEVERE,
@@ -117,7 +123,6 @@ public class LoginUtil {
                     + e, e);
             return null;
         }
-
     }
 
     /**
