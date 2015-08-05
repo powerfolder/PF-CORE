@@ -53,6 +53,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -595,8 +596,19 @@ public class TransferManager extends PFComponent {
     void downloadBroken(Download download, TransferProblem problem,
         String problemInfo)
     {
-        logWarning("Download broken: " + download + ' '
-            + (problem == null ? "" : problem) + ": " + problemInfo);
+        Level l = Level.WARNING;
+        if (problem == TransferProblem.NODE_DISCONNECTED
+            || problem == TransferProblem.PAUSED
+            || problem == TransferProblem.OLD_UPLOAD)
+        {
+            l = Level.FINE;
+        }
+        if (isLog(l)) {
+            logIt(l,
+                "Download broken: " + download + ' '
+                    + (problem == null ? "" : problem) + ": " + problemInfo,
+                null);
+        }
 
         download.setTransferProblem(problem);
         download.setProblemInformation(problemInfo);
