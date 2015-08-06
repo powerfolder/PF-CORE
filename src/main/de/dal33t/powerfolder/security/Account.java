@@ -740,7 +740,12 @@ public class Account implements Serializable {
         if (StringUtils.isBlank(notes)) {
             setNotes(infoLine);
         } else {
-            setNotes(notes + "\n" + infoLine);
+            String newNotes = notes + "\n" + infoLine;
+            if (newNotes.length() >= 1024) {
+                int cutoff = newNotes.length() - 1024 + 2;
+                newNotes = newNotes.substring(cutoff);
+            }
+            setNotes(newNotes);
         }
     }
 
