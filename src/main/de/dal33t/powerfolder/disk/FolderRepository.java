@@ -1700,8 +1700,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 for (Path file : files) {
                     WarningNotice notice = new FileInBasePathWarning(Translation
                         .get("notice.file_in_base_path.title"), Translation
-                        .get("notice.file_in_base_path.summary", file.getFileName().toString()), Translation
-                        .get("notice.file_in_base_path.summary", file.getFileName().toString()));
+                        .get("notice.file_in_base_path.message"), Translation
+                        .get("notice.file_in_base_path.summary", file.getFileName().toString(), getController().getDistribution().getName(), file.toString()));
 
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
