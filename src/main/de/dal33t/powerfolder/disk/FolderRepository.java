@@ -1783,7 +1783,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderInfo fi = null;
         boolean renamed = false;
         boolean stillPresent = false;
-        boolean createdNew;
+        boolean createdNew = false;
         Controller controller = getController();
         ServerClient client = controller.getOSClient();
 
@@ -1816,7 +1816,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                 IdGenerator.makeFolderId());
             createdNew= true;
         } else {
-            createdNew = false;
+            if (!client.getSecurityService().hasPermission(
+                client.getAccountInfo(), FolderPermission.read(fi)))
+            {
+                cleanupMetaFolder(fi);
+                fi = new FolderInfo(file.getFileName().toString(),
+                    IdGenerator.makeFolderId()).intern();
+                createdNew = true;
+            } else {
+                createdNew = false;
+            }
         }
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.AUTOMATIC_SYNCHRONIZATION,
@@ -1841,6 +1850,21 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!renamed) {
             folderAutoCreateListener
                 .folderAutoCreated(new FolderAutoCreateEvent(fi));
+        }
+    }
+
+    private void cleanupMetaFolder(FolderInfo fi) {
+        if (fi == null) {
+            return;
+        }
+        try {
+            Path members = fi.getFolder(getController()).getSystemSubDir()
+                .resolve(Folder.METAFOLDER_MEMBERS);
+            Files.deleteIfExists(members);
+            PathUtils.recursiveDelete(fi.getFolder(getController()).getSystemSubDir()
+                .resolve(Folder.METAFOLDER_LOCKS_DIR));
+        } catch (IOException e) {
+            logInfo("Could not delete members list and/or lock files in case of possible hijack. " + e);
         }
     }
 
