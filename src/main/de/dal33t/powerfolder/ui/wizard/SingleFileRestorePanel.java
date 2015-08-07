@@ -451,7 +451,7 @@ public class SingleFileRestorePanel extends PFWizardPanel {
             }
 
             Path file = files.get(0);
-            alternateLocationTF.setText(file.getParent().toString());
+            alternateLocationTF.setText(file.toString());
             updateLocations();
         }
     }
