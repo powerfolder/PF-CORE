@@ -297,8 +297,10 @@ public class PluginManager extends PFComponent {
         for (Plugin plug : plugins) {
             // Only take the name of the Class
             pluginName = plug.getClass().getName();
-            int lastDot = pluginName.lastIndexOf('.');
-            pluginName = pluginName.substring(lastDot + 1);
+            if (pluginName.startsWith(PLUGIN_PACKAGE_PREFIX)) {
+                int lastDot = pluginName.lastIndexOf('.');
+                pluginName = pluginName.substring(lastDot + 1);
+            }
             // --
             enabledPluginsPropertyValue += seperator + pluginName;
             seperator = ",";
@@ -311,8 +313,10 @@ public class PluginManager extends PFComponent {
         for (Plugin plug : disabledPlugins) {
             // Only take the name of the Class
             pluginName = plug.getClass().getName();
-            int lastDot = pluginName.lastIndexOf('.');
-            pluginName = pluginName.substring(lastDot + 1);
+            if (pluginName.startsWith(PLUGIN_PACKAGE_PREFIX)) {
+                int lastDot = pluginName.lastIndexOf('.');
+                pluginName = pluginName.substring(lastDot + 1);
+            }
             // --
             disabledPluginsPropertyValue += seperator + pluginName;
             seperator = ",";
