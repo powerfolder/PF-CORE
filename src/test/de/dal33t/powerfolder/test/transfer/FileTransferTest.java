@@ -57,6 +57,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
  * @version $Revision: 1.2 $
  */
 public class FileTransferTest extends TwoControllerTestCase {
+    private static final int LONG_WAIT_TIME_SECONDS = 120;
 
     @Override
     protected void setUp() throws Exception {
@@ -315,7 +316,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public String message() {
                 return "Icoming files at lisa: "
@@ -329,7 +330,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         });
         // Give them time to copy
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 try {
@@ -415,7 +416,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return lisasListener.downloadCompleted >= 2;
@@ -469,7 +470,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             getFolderAtLisa().getLocalBase().toFile().list().length);
 
         // No active downloads?
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
@@ -597,7 +598,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             getFolderAtLisa().getLocalBase().toFile().list().length);
 
         // No active downloads?
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
@@ -699,7 +700,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             nFiles + 1, getFolderAtLisa().getLocalBase().toFile().list().length);
 
         // No active downloads?
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
@@ -741,7 +742,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
         }
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() == 35;
@@ -944,7 +945,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(100);
 
         // No active downloads?
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
@@ -1213,7 +1214,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         Files.setLastModifiedTime(testFile,
             FileTime.fromMillis(System.currentTimeMillis() - 6000));
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getFolderAtLisa().getKnownItemCount() == 1;
@@ -1230,7 +1231,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
@@ -1275,7 +1276,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
         disconnectBartAndLisa();
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
@@ -1328,7 +1329,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         getContollerLisa().getFolderRepository().getFileRequestor()
             .triggerFileRequesting();
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 getContollerLisa().getFolderRepository().getFileRequestor()
@@ -1584,7 +1585,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
 
             @Override
             public boolean reached() {
@@ -1948,7 +1949,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(binfo.inSyncWithDisk(fbart));
         connectBartAndLisa();
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return lisaListener.downloadCompleted >= 2
@@ -2065,7 +2066,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         connectBartAndLisa();
         scanFolder(getFolderAtLisa());
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
@@ -2120,7 +2121,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         getContollerLisa().getTransferManager().downloadNewestVersion(fInfo);
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public String message() {
                 return "Lisa active downloads: "
@@ -2138,7 +2139,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Break connection
         disconnectBartAndLisa();
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
@@ -2161,7 +2162,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             .getPendingDownloads().size());
         connectBartAndLisa();
 
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public String message() {
                 return "Lisa active downloads: "
@@ -2177,7 +2178,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         // No pending download no more
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public String message() {
                 return "Lisa pending downloads: "
@@ -2219,14 +2220,14 @@ public class FileTransferTest extends TwoControllerTestCase {
             4 * 1024 * 1024);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(70, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .countActiveDownloads() == 1;
             }
         });
-        TestHelper.waitForCondition(70, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
             @Override
             public boolean reached() {
                 return getContollerBart().getTransferManager()
@@ -2238,7 +2239,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         // Download should break
-        TestHelper.waitForCondition(70, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
             @Override
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
@@ -2249,7 +2250,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // list of pending downloads.
         assertEquals(0, getContollerLisa().getTransferManager()
             .getPendingDownloads().size());
-        TestHelper.waitForCondition(70, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
             @Override
             public boolean reached() {
                 return getContollerBart().getTransferManager()
@@ -2277,7 +2278,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                         .countCompletedDownloads();
             }
         });
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
 
             @Override
             public boolean reached() {
