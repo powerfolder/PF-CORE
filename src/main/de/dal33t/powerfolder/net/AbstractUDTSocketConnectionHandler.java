@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -554,7 +555,10 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         senderSpawnLock.lock();
         try {
             messagesToSendQueue.offer(message);
-            if (messagesToSendQueue.size() > 100 && isWarning()) {
+            if (messagesToSendQueue
+                .size() > Constants.WARN_MESSAGES_IN_SEND_QUEUE
+                && isWarning())
+            {
                 String msg = "Many messages in send queue: "
                     + messagesToSendQueue.size() + ": " + messagesToSendQueue;
                 if (msg.length() > 300) {
@@ -564,7 +568,9 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                 logWarning(msg);
             }
             // PFC-2591/PFC-2742: Start
-            if (messagesToSendQueue.size() > 5000) {
+            if (messagesToSendQueue
+                .size() > Constants.MAX_MESSAGES_IN_SEND_QUEUE)
+            {
                 String msg = "Disconnecting " + getIdentity()
                     + ": Too many messages in send queue: "
                     + messagesToSendQueue.size();

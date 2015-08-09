@@ -206,6 +206,13 @@ public class Constants {
     public static final int MAX_NUMBER_RECONNECTORS = 5;
 
     /**
+     * PFC-2742: Maximum numbers of message in send queue. Will disconnect node
+     * if maximum is reached.
+     */
+    public static final int WARN_MESSAGES_IN_SEND_QUEUE = 4500;
+    public static final int MAX_MESSAGES_IN_SEND_QUEUE = 5000;
+
+    /**
      * the number of seconds (aprox) of delay till the connection is tested and
      * a warning may be displayed.
      */
