@@ -1060,6 +1060,11 @@ public enum ConfigurationEntry {
      * Remove folder from setup if disappeared/deleted from basedir.
      */
     FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED("remove.folder.basedir.when_disappeared", true),
+    
+    /**
+     * PFC-2709: Enable/Disabled client sync with special directories, e.g. Documents‚ (User directories)
+     */
+    FOLDER_MAP_USER_DIRECTORIES("create.folder.map.user.directories", true),
 
     /** The number of file versions to use when creating a new folder. */
     DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 25),

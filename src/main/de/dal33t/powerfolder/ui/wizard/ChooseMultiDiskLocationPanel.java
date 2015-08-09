@@ -336,7 +336,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         initialDirectory = getController().getFolderRepository()
             .getFoldersBasedirString();
 
-        userDirectories = UserDirectories.getUserDirectories();
+        userDirectories = UserDirectories.getUserDirectories(getController());
 
         folderSizeLabel = new JLabel();
         warningLabel = new LinkLabel(getController(),

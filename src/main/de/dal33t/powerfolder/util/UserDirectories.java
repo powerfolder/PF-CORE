@@ -24,11 +24,13 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
@@ -178,13 +180,37 @@ public class UserDirectories {
     }
 
     /**
+     * @return all user directories name -> target location on disk. PFC-2709: Or empty map if disabled.
+     */
+    public static Map<String, UserDirectory> getUserDirectories(
+        Controller controller)
+    {
+        if (!ConfigurationEntry.FOLDER_MAP_USER_DIRECTORIES
+            .getValueBoolean(controller))
+        {
+            return Collections.emptyMap();
+        }
+        if (userDirectories.isEmpty()) {
+            synchronized (userDirectories) {
+                findUserDirectories();
+            }
+        }
+        return userDirectories;
+    }
+
+    /**
      * @param controller
-     * @return @return user directories that are not setup as folder yet. name
-     *         -> target location on disk.
+     * @return user directories that are not setup as folder yet. name
+     *         -> target location on disk. PFC-2709: Or empty map if disabled.
      */
     public static Map<String, UserDirectory> getUserDirectoriesFiltered(
         Controller controller, boolean includeAppData)
     {
+        if (!ConfigurationEntry.FOLDER_MAP_USER_DIRECTORIES
+            .getValueBoolean(controller))
+        {
+            return Collections.emptyMap();
+        }
         Map<String, UserDirectory> filteredDirs = new TreeMap<String, UserDirectory>(
             getUserDirectories());
         for (Iterator<UserDirectory> it = filteredDirs.values().iterator(); it

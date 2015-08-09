@@ -371,8 +371,8 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 .toAbsolutePath().toString();
 
             if (WinUtils.isSupported()
-                && !UserDirectories.getUserDirectories().containsKey(
-                    folderInfo.getName()))
+                && !UserDirectories.getUserDirectories(getController())
+                    .containsKey(folderInfo.getName()))
             {
                 WinUtils winUtils = WinUtils.getInstance();
                 ShellLink shellLink = new ShellLink(null, null, filePath, null);

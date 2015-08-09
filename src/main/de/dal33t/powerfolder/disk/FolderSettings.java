@@ -304,19 +304,21 @@ public class FolderSettings {
             LOG.info("Took UNC transfer mode for path " + folderDirStr + ": "
                 + defSyncProfile);
         }
+        boolean mapUserDirs = ConfigurationEntry.FOLDER_MAP_USER_DIRECTORIES
+            .getValueBoolean(c);
         return load(c.getConfig(), entryId, defaultVersions, defSyncProfile,
-            true);
+            mapUserDirs, true);
     }
 
     public static FolderSettings load(Properties properties, String entryId,
-        int fallbackDefaultVersions, String fallbackDefaultProfile,
+        int fallbackDefaultVersions, String fallbackDefaultProfile, boolean mapUserDirs,
         boolean verifyPaths)
     {
         Reject.ifNull(properties, "Config");
         Reject.ifBlank(entryId, "Entry Id");
         String folderDirStr = properties.getProperty(PREFIX_V4 + entryId + DIR);
 
-        Path folderDir = translateFolderDir(folderDirStr, verifyPaths);
+        Path folderDir = translateFolderDir(folderDirStr, mapUserDirs, verifyPaths);
         if (folderDir == null) {
             return null;
         }
@@ -325,7 +327,7 @@ public class FolderSettings {
         String commitDirStr = properties.getProperty(PREFIX_V4 + entryId
             + COMMIT_DIR);
         if (StringUtils.isNotBlank(commitDirStr)) {
-            commitDir = translateFolderDir(commitDirStr, verifyPaths);
+            commitDir = translateFolderDir(commitDirStr, mapUserDirs, verifyPaths);
         }
 
         String syncProfConfig = properties.getProperty(PREFIX_V4 + entryId
@@ -454,7 +456,7 @@ public class FolderSettings {
         }
     }
 
-    private static Path translateFolderDir(String str, boolean verify) {
+    private static Path translateFolderDir(String str, boolean mapUserDirs, boolean verify) {
         if (str == null) {
             return null;
         }
@@ -467,23 +469,26 @@ public class FolderSettings {
             }
         }
         String res = str;
-        try {
-            Map<String, UserDirectory> dirs = UserDirectories
-                .getUserDirectories();
-            LOG.fine("Local placeholder directories: " + dirs);
-            for (UserDirectory dir : dirs.values()) {
-                if (StringUtils.isBlank(dir.getPlaceholder())) {
-                    continue;
+        if (mapUserDirs) {
+            try {
+                Map<String, UserDirectory> dirs = UserDirectories
+                    .getUserDirectories();
+                LOG.fine("Local placeholder directories: " + dirs);
+                for (UserDirectory dir : dirs.values()) {
+                    if (StringUtils.isBlank(dir.getPlaceholder())) {
+                        continue;
+                    }
+                    if (res.contains(dir.getPlaceholder())
+                        && !res.contains(dir.getPlaceholder() + "."))
+                    {
+                        res = res.replace(dir.getPlaceholder(),
+                            dir.getDirectory().toAbsolutePath().toString());
+                    }
                 }
-                if (res.contains(dir.getPlaceholder())
-                    && !res.contains(dir.getPlaceholder() + "."))
-                {
-                    res = res.replace(dir.getPlaceholder(), dir.getDirectory()
-                        .toAbsolutePath().toString());
-                }
+            } catch (Exception e) {
+                LOG.warning(
+                    "Unable to translate directory path: " + str + ". " + e);
             }
-        } catch (Exception e) {
-            LOG.warning("Unable to translate directory path: " + str + ". " + e);
         }
         if (res != null) {
             res = res.replace(Constants.FOLDER_PERSONAL_FILES.trim(),

@@ -2471,8 +2471,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
 
-                UserDirectory userDir = UserDirectories.getUserDirectories()
-                    .get(folderName);
+                UserDirectory userDir = UserDirectories
+                    .getUserDirectories(getController()).get(folderName);
 
                 if (userDir != null) {
                     if (containedInRemovedFolders(userDir
