@@ -367,6 +367,40 @@ public class Account implements Serializable {
         return false;
     }
 
+    public boolean hasAnyFolderAdmin() {
+        for (Permission p : permissions) {
+            if (p == null) {
+                continue;
+            }
+            if (p instanceof FolderPermission) {
+                AccessMode mode = ((FolderPermission) p).getMode();
+                if (mode.equals(AccessMode.ADMIN)
+                    || mode.equals(AccessMode.OWNER))
+                {
+                    return true;
+                }
+            }
+        }
+
+        for (Group g : groups) {
+            for (Permission p : g.getPermissions()) {
+                if (p == null) {
+                    continue;
+                }
+                if (p instanceof FolderPermission) {
+                    AccessMode mode = ((FolderPermission) p).getMode();
+                    if (mode.equals(AccessMode.ADMIN)
+                        || mode.equals(AccessMode.OWNER))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public Collection<Permission> getPermissions() {
         return Collections.unmodifiableCollection(permissions);
     }
@@ -882,6 +916,16 @@ public class Account implements Serializable {
 
     public boolean isProUser() {
         return proUser;
+    }
+
+    public boolean isLimitedUser() {
+        if (!authByDatabase()) {
+            return false;
+        }
+        if (osSubscription.getStorageSize() > 0) {
+            return false;
+        }
+        return true;
     }
 
     public void setAutoRenew(int autoRenewDevices, Date autoRenewTill,
