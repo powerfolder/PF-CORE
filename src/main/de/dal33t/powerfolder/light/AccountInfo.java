@@ -50,20 +50,23 @@ public class AccountInfo implements Serializable {
     private String username;
     @Transient
     private String displayName;
+    @Transient
+    private boolean isLimited;
 
     private AccountInfo() {
         // For hibernate.
     }
 
-    public AccountInfo(String oid, String username, String displayName) {
+    public AccountInfo(String oid, String username, String displayName, boolean isLimited) {
         super();
         this.oid = oid;
         this.username = username;
         this.displayName = displayName;
+        this.isLimited = isLimited;
     }
 
     public AccountInfo(String oid, String username) {
-        this(oid, username, null);
+        this(oid, username, null, false);
     }
 
     public String getOID() {
@@ -75,6 +78,10 @@ public class AccountInfo implements Serializable {
             return displayName;
         }
         return username;
+    }
+
+    public boolean isLimitedUser() {
+        return isLimited;
     }
 
     public String getScrabledDisplayName() {

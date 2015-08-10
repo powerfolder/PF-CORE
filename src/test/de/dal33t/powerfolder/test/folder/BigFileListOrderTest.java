@@ -117,7 +117,7 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
 
     private static FileInfo createRandomFileInfo(FolderInfo foInfo) {
         MemberInfo m = new MemberInfo("test", "ID", null);
-        AccountInfo a = new AccountInfo("test", "ID", null);
+        AccountInfo a = new AccountInfo("test", "ID", null, false);
         return FileInfoFactory.unmarshallExistingFile(foInfo, UUID.randomUUID()
             .toString().intern(), IdGenerator.makeFileId(), 0, m, a,
             new Date(), 0, null, false, null);

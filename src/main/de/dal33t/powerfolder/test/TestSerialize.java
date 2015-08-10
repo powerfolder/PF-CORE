@@ -104,7 +104,7 @@ generateFolderInfo(),
     }
 
     private static AccountInfo generateAccountInfo() {
-        return new AccountInfo("noob", IdGenerator.makeId(), null);
+        return new AccountInfo("noob", IdGenerator.makeId(), null, false);
     }
 
     private static FolderInfo generateFolderInfo() {

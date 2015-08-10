@@ -273,7 +273,7 @@ public class Account implements Serializable {
      * @return a leightweight/reference object to this account.
      */
     public AccountInfo createInfo() {
-        return new AccountInfo(oid, username, getDisplayName());
+        return new AccountInfo(oid, username, getDisplayName(), isLimitedUser());
     }
 
     // Basic permission stuff *************************************************

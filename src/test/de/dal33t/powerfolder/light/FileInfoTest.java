@@ -66,7 +66,7 @@ public class FileInfoTest extends TestCase {
         MemberInfo mInfo = new MemberInfo("Nickname", IdGenerator.makeId(),
             IdGenerator.makeId());
         AccountInfo aInfo = new AccountInfo("Nickname", IdGenerator.makeId(),
-            "Nick name hans");
+            "Nick name hans", false);
         FileInfo fInfo = FileInfoFactory.unmarshallExistingFile(foInfo,
             "subdir/Xyz/Filename.xlsx", IdGenerator.makeFileId(), 6300404,
             mInfo, aInfo, new Date(), 4711, "MD5:XYZ", false, "sync,share,xx");
