@@ -275,11 +275,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             builder.add(lanSpeed.getUiComponent(), cc.xyw(3, row, 2));
 
             row += 2;
-            builder.addLabel(Translation.get("exp.preferences.network.adv_port"),
-                    cc.xy(1, row)).setToolTipText(Translation.get("exp.preferences.network.adv_port_tooltip"));
-            builder.add(advPortTF, cc.xy(3, row));
-
-            row += 2;
             builder.add(randomPortCB, cc.xy(3, row));
 
             row += 2;
