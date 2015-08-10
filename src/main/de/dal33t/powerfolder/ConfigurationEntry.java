@@ -566,12 +566,6 @@ public enum ConfigurationEntry {
     NET_BIND_PORT("port"),
 
     /**
-     * If true, powerfolder tries to open it's ports on the firewall. (It also
-     * will try to close them when exiting)
-     */
-    NET_FIREWALL_OPENPORT("net.openport", true),
-
-    /**
      * If relayed or tunnel connections should be tried for LAN based computers.
      * Usually this does not make sense. Only for special scenarios. e.g.
      * ILY-570834

@@ -58,7 +58,6 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
-import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -146,15 +145,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
                 advPortTF.setEnabled(!randomPortCB.isSelected());
             }
         });
-
-        if (FirewallUtil.isFirewallAccessible()) {
-            openPortCB = SimpleComponentFactory.createCheckBox(Translation
-                .get("exp.preferences.network.open_port"));
-            openPortCB.setToolTipText(Translation
-                .get("exp.preferences.network.open_port_tooltip"));
-            openPortCB.setSelected(ConfigurationEntry.NET_FIREWALL_OPENPORT
-                .getValueBoolean(getController()));
-        }
 
         relayedConnectionCB = SimpleComponentFactory
             .createCheckBox(Translation
@@ -292,11 +282,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             row += 2;
             builder.add(randomPortCB, cc.xy(3, row));
 
-            if (FirewallUtil.isFirewallAccessible()) {
-                row += 2;
-                builder.add(openPortCB, cc.xy(3, row));
-            }
-
             row += 2;
             builder.addLabel(
                 Translation.get("exp.preferences.network.bind"),
@@ -364,15 +349,6 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
         } catch (NumberFormatException e) {
             logWarning("Unparsable port number");
-        }
-
-        if (FirewallUtil.isFirewallAccessible()) {
-            boolean current = ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(getController());
-            if (current != openPortCB.isSelected()) {
-                ConfigurationEntry.NET_FIREWALL_OPENPORT.setValue(getController(),
-                        String.valueOf(openPortCB.isSelected()));
-                needsRestart = true;
-            }
         }
 
         boolean current = ConfigurationEntry.NET_BIND_RANDOM_PORT

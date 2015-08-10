@@ -41,7 +41,6 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 
 public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -196,9 +195,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         if (panel == null) {
             String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
-            if (FirewallUtil.isFirewallAccessible()) {
-                rows = "pref, 3dlu, " + rows;
-            }
 
             FormLayout layout = new FormLayout(
                 "right:pref, 3dlu, 140dlu, pref:grow", rows);

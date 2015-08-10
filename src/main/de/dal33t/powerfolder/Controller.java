@@ -133,7 +133,6 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
-import de.dal33t.powerfolder.util.os.Win32.FirewallUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
@@ -1426,33 +1425,6 @@ public class Controller extends PFComponent {
                 }
             }
         }
-
-        if (ConfigurationEntry.NET_FIREWALL_OPENPORT.getValueBoolean(this)) {
-            if (FirewallUtil.isFirewallAccessible()
-                && connectionListener != null)
-            {
-                Thread opener = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            logFine("Opening port on Firewall.");
-                            FirewallUtil.openport(connectionListener.getPort());
-                            portWasOpened = true;
-                        } catch (IOException e) {
-                            logInfo("Unable to open port "
-                                + connectionListener.getPort()
-                                + "/TCP in Windows Firewall. " + e);
-                        }
-                    }
-                }, "Portopener");
-                opener.start();
-                try {
-                    opener.join(12000);
-                } catch (InterruptedException e) {
-                    logSevere("Opening of ports failed: " + e);
-                }
-            }
-        }
         return true;
     }
 
@@ -1977,31 +1949,6 @@ public class Controller extends PFComponent {
         if (isUIOpen()) {
             logFine("Shutting down UI");
             uiController.shutdown();
-        }
-
-        if ((portWasOpened || ConfigurationEntry.NET_FIREWALL_OPENPORT
-            .getValueBoolean(this)) && connectionListener != null)
-        {
-            if (FirewallUtil.isFirewallAccessible()) {
-                Thread closer = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            logFine("Closing port on Firewall.");
-                            FirewallUtil.closeport(connectionListener.getPort());
-                        } catch (IOException e) {
-                            logFine("Unable to remove firewall rule in Windows Firewall. "
-                                + e);
-                        }
-                    }
-                }, "Firewallcloser");
-                closer.start();
-                try {
-                    closer.join(12000);
-                } catch (InterruptedException e) {
-                    logFine("Closing of listener port failed: " + e);
-                }
-            }
         }
 
         if (rconManager != null) {
