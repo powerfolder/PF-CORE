@@ -991,7 +991,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (folder.getCommitOrLocalDir().equals(
                     folderSettings.getLocalBaseDir()))
                 {
-                    logSevere("Tried to create duplicate folder "
+                    logWarning("Tried to create duplicate folder "
                         + folder.getName() + ". at "
                         + folder.getCommitOrLocalDir()
                         + ". Existing folder ID: " + folder.getId()
