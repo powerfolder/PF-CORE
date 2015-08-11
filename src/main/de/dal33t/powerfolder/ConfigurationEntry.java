@@ -1162,7 +1162,17 @@ public enum ConfigurationEntry {
      */
     public boolean hasValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
-        return controller.getConfig().getProperty(configKey) != null;
+        return hasValue(controller.getConfig());
+    }
+    
+    /**
+     * @param config
+     *            the config
+     * @return If a value was set for this entry.
+     */
+    public boolean hasValue(Properties config) {
+        Reject.ifNull(config, "Config is null");
+        return config.getProperty(configKey) != null;
     }
 
     /**
@@ -1172,8 +1182,19 @@ public enum ConfigurationEntry {
      *         string.
      */
     public boolean hasNonBlankValue(Controller controller) {
-        return hasValue(controller)
-            && StringUtils.isNotBlank(getValue(controller));
+        Reject.ifNull(controller, "Controller is null");
+        return hasNonBlankValue(controller.getConfig());
+    }
+    
+    /**
+     * @param config
+     *            the config
+     * @return If a value was set for this entry and contains a non-blank
+     *         string.
+     */
+    public boolean hasNonBlankValue(Properties config) {
+        return hasValue(config)
+            && StringUtils.isNotBlank(getValue(config));
     }
 
     /**
