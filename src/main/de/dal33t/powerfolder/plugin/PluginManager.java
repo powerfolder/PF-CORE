@@ -203,6 +203,9 @@ public class PluginManager extends PFComponent {
                 }
             }
             return plugin;
+        } catch (ClassNotFoundException e) {
+            log.log(Level.SEVERE, "Unable to initializing plugin. Class not found: '"
+                + pluginClassName + '\'');
         } catch (Exception e) {
             log.log(Level.SEVERE, "Exception while initializing plugin '"
                 + pluginClassName + '\'', e);
