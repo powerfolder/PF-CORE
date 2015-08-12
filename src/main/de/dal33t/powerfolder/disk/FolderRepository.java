@@ -1018,12 +1018,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                 boolean inBaseDir = localBaseDirParent
                     .equals(getFoldersBasedir());
                 if (!inBaseDir) {
-                    logSevere("Not allowed to create " + folderInfo.getName()
-                        + " at " + folderSettings.getLocalBaseDirString()
+                    logWarning("Not allowed to create " + folderInfo.getName()
+                        + " at " + folderSettings.getLocalBaseDir()
                         + ". Must be in base directory: " + getFoldersBasedir());
                     throw new IllegalStateException("Not allowed to create "
                         + folderInfo.getName() + " at "
-                        + folderSettings.getLocalBaseDirString()
+                        + folderSettings.getLocalBaseDir()
                         + ". Must be in base directory: " + getFoldersBasedir());
                 }
             }
@@ -1038,12 +1038,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (saveConfig) {
                     getController().saveConfig();                    
                 }
-                logSevere("Not allowed to create " + folderInfo.getName()
-                    + " at " + folderSettings.getLocalBaseDirString()
+                logWarning("Not allowed to create " + folderInfo.getName()
+                    + " at " + folderSettings.getLocalBaseDir()
                     + ". Network shares not allowed");
                 throw new IllegalStateException("Not allowed to create "
                     + folderInfo.getName() + " at "
-                    + folderSettings.getLocalBaseDirString()
+                    + folderSettings.getLocalBaseDir()
                     + ". Network shares not allowed");
             }
         }
