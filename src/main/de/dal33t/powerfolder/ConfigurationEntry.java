@@ -248,7 +248,7 @@ public enum ConfigurationEntry {
     // Server settings ********************************************************
 
     /**
-     * PFC-2580: No connection to powerfolder.com / Licensing and Cloud Replication options
+     * PFC-2580: No connection to powerfolder.com / Cloud Replication options
      */
     SERVER_CONNECT("server.connect.enabled", true),
     
