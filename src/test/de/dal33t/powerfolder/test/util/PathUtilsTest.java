@@ -107,7 +107,9 @@ public class PathUtilsTest extends TestCase {
 
     public void testIsSameName() {
         assertTrue(PathUtils.isSameName("abc123", "abc123"));
+        assertTrue(PathUtils.isSameName("+abc123", "+abc123"));
         assertTrue(PathUtils.isSameName("abc123", "abc123 ()"));
+        assertTrue(PathUtils.isSameName("abc123←", "abc123← ()"));
         assertTrue(PathUtils.isSameName("abc123 ()", "abc123"));
         assertTrue(PathUtils.isSameName("abc123", "abc123 (2098324)"));
         assertTrue(PathUtils.isSameName("abc123 (lksjdflknsef)", "abc123"));

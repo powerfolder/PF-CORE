@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -164,10 +165,10 @@ public class PathUtils {
         Reject.ifBlank(name2, "Name 2");
 
         boolean reallySameName = name1.equals(name2);
-        boolean matchingWithOwner1 = name1.matches(name2.replaceAll("\\(",
+        boolean matchingWithOwner1 = name1.matches(Pattern.quote(name2).replaceAll("\\(",
             "\\\\(").replaceAll("\\)", "\\\\)")
             + " \\(.*\\)");
-        boolean matchingWithOwner2 = name2.matches(name1.replaceAll("\\(",
+        boolean matchingWithOwner2 = name2.matches(Pattern.quote(name1).replaceAll("\\(",
             "\\\\(").replaceAll("\\)", "\\\\)")
             + " \\(.*\\)");
 
