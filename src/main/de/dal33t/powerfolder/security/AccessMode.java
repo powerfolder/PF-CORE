@@ -30,7 +30,21 @@ import de.dal33t.powerfolder.util.StringUtils;
  * @author sprajc
  */
 public enum AccessMode {
-    NO_ACCESS, READ, READ_WRITE, ADMIN, OWNER;
+    NO_ACCESS("permissions.no_access"),
+    READ("permissions.read"),
+    READ_WRITE("permissions.read_write"),
+    ADMIN("permissions.admin"),
+    OWNER("permissions.owner");
+
+    final String translationKey;
+
+    AccessMode(String translationKey) {
+        this.translationKey = translationKey;
+    }
+
+    public String getTranslationKey() {
+        return translationKey;
+    }
 
     public static AccessMode fromString(String value, String defValue) {
         // PFS-1336
