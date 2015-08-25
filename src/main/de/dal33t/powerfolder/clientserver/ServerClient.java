@@ -230,7 +230,7 @@ public class ServerClient extends PFComponent {
     {
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
-        supportsQuickLogin = true;
+        this.supportsQuickLogin = true;
 
         // Custom server
         String theName = StringUtils.isBlank(name) ? Translation
@@ -1266,6 +1266,9 @@ public class ServerClient extends PFComponent {
             && !getAccount().hasPermission(FolderCreatePermission.INSTANCE))
         {
             return false;
+        }
+        if (accountDetails != null) {
+            return !accountDetails.needsToAgreeToS();
         }
         return true;
     }

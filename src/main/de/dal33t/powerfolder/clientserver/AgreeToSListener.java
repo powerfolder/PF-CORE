@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -104,6 +105,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                 .getNoticesModel().clearNotice(tosn);
             agreedOnToS = true;
         }
+        logInfo(new StackDump());
     }
 
     public boolean hasAgreedOnToS() {
@@ -122,11 +124,12 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
 
     @Override
     public void nodeServerStatusChanged(ServerClientEvent event) {
+        logInfo(new StackDump());
         getController().getIOProvider().startIO(new Runnable() {
             @Override
             public void run() {
-                AccountDetails ad = getController().getOSClient().getSecurityService()
-                    .getAccountDetails();
+                AccountDetails ad = getController().getOSClient()
+                    .refreshAccountDetails();
                 if (ad.needsToAgreeToS()) {
                     wasPaused = getController().isPaused();
                     agreedOnToS = false;
@@ -139,6 +142,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
     }
 
     private class ToSNotice extends WarningNotice {
+        private static final long serialVersionUID = 100L;
         private final ServerClient client;
 
         public ToSNotice(String title, String summary, String message, ServerClient client) {

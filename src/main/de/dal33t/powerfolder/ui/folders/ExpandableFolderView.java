@@ -53,6 +53,8 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
@@ -69,6 +71,7 @@ import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.security.Permission;
@@ -105,7 +108,6 @@ import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.WebDAV;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Class to render expandable view of a folder.
@@ -157,6 +159,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     private MyTransferManagerListener myTransferManagerListener;
     private MyFolderRepositoryListener myFolderRepositoryListener;
     private MyNodeManagerListener myNodeManagerListener;
+    private ToSListener myToSListener;
 
     private ExpansionListener listenerSupport;
 
@@ -320,7 +323,7 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void retrieveAdditionalInfosFromServer() {
-        SwingWorker worker = new SwingWorker() {
+        SwingWorker<Object, Void> worker = new SwingWorker<Object, Void>() {
             protected Object doInBackground() throws Exception {
                 createWebDAVURL();
                 retrieveOwnerDisplayname();
@@ -763,6 +766,9 @@ public class ExpandableFolderView extends PFUIComponent implements
         myFolderRepositoryListener = new MyFolderRepositoryListener();
         getController().getFolderRepository().addFolderRepositoryListener(
             myFolderRepositoryListener);
+
+        myToSListener = new ToSListener();
+        getController().getOSClient().addListener(myToSListener);
     }
 
     /**
@@ -1624,6 +1630,54 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     }
 
+    private class ToSListener implements ServerClientListener {
+        @Override
+        public boolean fireInEventDispatchThread() {
+            return false;
+        }
+
+        @Override
+        public void login(ServerClientEvent event) {
+            updateSynableItems();
+        }
+
+        @Override
+        public void accountUpdated(ServerClientEvent event) {
+            updateSynableItems();
+        }
+
+        @Override
+        public void serverConnected(ServerClientEvent event) {
+            updateSynableItems();
+        }
+
+        @Override
+        public void serverDisconnected(ServerClientEvent event) {
+            updateSynableItems();
+        }
+
+        @Override
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            updateSynableItems();
+        }
+
+        private void updateSynableItems() {
+            AccountDetails ad = getController().getOSClient()
+                .getAccountDetails();
+            if (ad != null && ad.needsToAgreeToS()) {
+                upperSyncFolderButton.setEnabled(false);
+                lowerSyncFolderButton.setEnabled(false);
+                syncFolderAction.setEnabled(false);
+                primaryButton.setEnabled(false);
+            } else {
+                upperSyncFolderButton.setEnabled(true);
+                lowerSyncFolderButton.setEnabled(true);
+                syncFolderAction.setEnabled(true);
+                primaryButton.setEnabled(true);
+            }
+        }
+    }
+
     /** Hover over any component in the upper panel should expand / collapse. */
     private class MyMouseOverAdapter extends MouseAdapter {
 
@@ -1821,6 +1875,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    @SuppressWarnings("serial")
     private class MoveFolderAction extends BaseAction {
         private MoveFolderAction(Controller controller) {
             super("action_move_folder", controller);
@@ -2028,5 +2083,4 @@ public class ExpandableFolderView extends PFUIComponent implements
         stopOnlineStorageAction.dispose();
         inviteAction.dispose();
     }
-
 }
