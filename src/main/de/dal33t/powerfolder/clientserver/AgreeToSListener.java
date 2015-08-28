@@ -105,7 +105,6 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                 .getNoticesModel().clearNotice(tosn);
             agreedOnToS = true;
         }
-        logInfo(new StackDump());
     }
 
     public boolean hasAgreedOnToS() {
