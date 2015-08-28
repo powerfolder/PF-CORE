@@ -123,7 +123,6 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
 
     @Override
     public void nodeServerStatusChanged(ServerClientEvent event) {
-        logInfo(new StackDump());
         getController().getIOProvider().startIO(new Runnable() {
             @Override
             public void run() {
