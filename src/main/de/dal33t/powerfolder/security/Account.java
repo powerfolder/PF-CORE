@@ -55,6 +55,8 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -151,6 +153,10 @@ public class Account implements Serializable {
     private String custom1;
     private String custom2;
     private String custom3;
+    
+    // PFS-1656
+    @Column(length = 4096)
+    private String jsonData;
 
     @Column(length = 1024)
     private String notes;
@@ -724,6 +730,27 @@ public class Account implements Serializable {
 
     public void setCustom3(String custom3) {
         this.custom3 = custom3;
+    }
+
+    public JSONObject getJSONData() {
+        if (StringUtils.isBlank(jsonData)) {
+            return new JSONObject();
+        }
+        try {
+            return new JSONObject(jsonData);
+        } catch (JSONException e) {
+            LOG.severe("Illegal JSON data for " + username + ": " + jsonData
+                + ". " + e);
+            return new JSONObject();
+        }
+    }
+
+    public void setJSONData(JSONObject jsonObject) {
+        if (jsonObject == null) {
+            this.jsonData = null;
+            return;
+        }
+        this.jsonData = jsonObject.toString();
     }
 
     public boolean authByShibboleth() {
