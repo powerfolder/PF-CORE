@@ -753,6 +753,30 @@ public class Account implements Serializable {
         this.jsonData = jsonObject.toString();
     }
 
+    public void put(String key, String value) {
+        JSONObject o = getJSONData();
+        try {
+            o.put(key, value);
+        } catch (JSONException e) {
+            LOG.severe("Unable to set extra information in JSON format to "
+                + username + ": " + key + "=" + value + ". " + e);
+            return;
+        }
+        setJSONData(o);
+    }
+    
+    public void put(String key, long value) {
+        JSONObject o = getJSONData();
+        try {
+            o.put(key, value);
+        } catch (JSONException e) {
+            LOG.severe("Unable to set extra information in JSON format to "
+                + username + ": " + key + "=" + value + ". " + e);
+            return;
+        }
+        setJSONData(o);
+    }
+
     public boolean authByShibboleth() {
         return StringUtils.isNotBlank(shibbolethPersistentID);
     }

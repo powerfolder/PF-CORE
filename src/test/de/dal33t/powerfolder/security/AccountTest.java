@@ -30,11 +30,16 @@ public class AccountTest extends TestCase {
         JSONObject o = a.getJSONData();
         o.put("cmpEnabled", true);
         o.put("avangateSubscriptionID", "3DEC58");
-        System.out.println(o.toString());
         a.setJSONData(o);
 
         JSONObject r = a.getJSONData();
         assertTrue(r.getBoolean("cmpEnabled"));
         assertEquals("3DEC58", r.get("avangateSubscriptionID"));
+
+        a.put("avangateSubscriptionID", "XASA");
+
+        r = a.getJSONData();
+        assertTrue(r.getBoolean("cmpEnabled"));
+        assertEquals("XASA", r.get("avangateSubscriptionID"));
     }
 }
