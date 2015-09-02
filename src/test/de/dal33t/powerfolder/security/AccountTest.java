@@ -27,18 +27,18 @@ import junit.framework.TestCase;
 public class AccountTest extends TestCase {
     public void testJSONData() throws JSONException {
         Account a = new Account();
-        JSONObject o = a.getJSONData();
+        JSONObject o = a.getJSONObject();
         o.put("cmpEnabled", true);
         o.put("avangateSubscriptionID", "3DEC58");
-        a.setJSONData(o);
+        a.setJSONObject(o);
 
-        JSONObject r = a.getJSONData();
+        JSONObject r = a.getJSONObject();
         assertTrue(r.getBoolean("cmpEnabled"));
         assertEquals("3DEC58", r.get("avangateSubscriptionID"));
 
         a.put("avangateSubscriptionID", "XASA");
 
-        r = a.getJSONData();
+        r = a.getJSONObject();
         assertTrue(r.getBoolean("cmpEnabled"));
         assertEquals("XASA", r.get("avangateSubscriptionID"));
     }

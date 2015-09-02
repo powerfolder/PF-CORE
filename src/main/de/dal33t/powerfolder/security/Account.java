@@ -731,8 +731,16 @@ public class Account implements Serializable {
     public void setCustom3(String custom3) {
         this.custom3 = custom3;
     }
+    
+    public String getJSONData() {
+        return jsonData;
+    }
+    
+    public void setJSONData(String jsonData) {
+        this.jsonData = jsonData;
+    }
 
-    public JSONObject getJSONData() {
+    public JSONObject getJSONObject() {
         if (StringUtils.isBlank(jsonData)) {
             return new JSONObject();
         }
@@ -745,7 +753,7 @@ public class Account implements Serializable {
         }
     }
 
-    public void setJSONData(JSONObject jsonObject) {
+    public void setJSONObject(JSONObject jsonObject) {
         if (jsonObject == null) {
             this.jsonData = null;
             return;
@@ -754,7 +762,7 @@ public class Account implements Serializable {
     }
 
     public void put(String key, String value) {
-        JSONObject o = getJSONData();
+        JSONObject o = getJSONObject();
         try {
             o.put(key, value);
         } catch (JSONException e) {
@@ -762,11 +770,11 @@ public class Account implements Serializable {
                 + username + ": " + key + "=" + value + ". " + e);
             return;
         }
-        setJSONData(o);
+        setJSONObject(o);
     }
     
     public void put(String key, long value) {
-        JSONObject o = getJSONData();
+        JSONObject o = getJSONObject();
         try {
             o.put(key, value);
         } catch (JSONException e) {
@@ -774,7 +782,7 @@ public class Account implements Serializable {
                 + username + ": " + key + "=" + value + ". " + e);
             return;
         }
-        setJSONData(o);
+        setJSONObject(o);
     }
 
     public boolean authByShibboleth() {
