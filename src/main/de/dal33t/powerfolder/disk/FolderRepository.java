@@ -2620,6 +2620,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             for (Folder folder : getController().getFolderRepository()
                 .getFolders())
             {
+                // PFS-1800: Start
+                if (folder.getStatistic().getTotalFilesCount() == 0) {
+                    folder.getStatistic().scheduleCalculate();
+                }
+                // PFS-1800: End
                 if (folder.isPreviewOnly()) {
                     continue;
                 }
