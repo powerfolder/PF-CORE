@@ -80,31 +80,25 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      */
     public BroadcastMananger(Controller controller) throws ConnectionException {
         super(controller);
-        try {
-            subnetIP = InetAddress.getLocalHost();
 
-            localNICList = new ArrayList<NetworkInterface>();
-            localAddresses = new ArrayList<InetAddress>();
-            receivedBroadcastsFrom = new ArrayList<InetAddress>();
+        init(controller, false);
+    }
 
-            waitTime = Controller.getWaitTime() * 3;
-            group = InetAddress.getByName("224.0.0.1");
+    /** BroadcastManager
+     * Builds a new broadcast listener
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  controller  Controller for this manager
+     * @param  useD2D      Whether to use D2D connections
+     * @throws ConnectionException Exception when something is wrong
+     **/
 
-            if (controller.hasConnectionListener()) {
-                String id = controller.getMySelf().getId();
-                if (id.indexOf('[') >= 0 || id.indexOf(']') >= 0) {
-                    throw new IllegalArgumentException(
-                        "Node id contains illegal characters: " + id);
-                }
+    public
+    BroadcastMananger(Controller controller,
+      boolean useD2D) throws ConnectionException
+    {
+      super(controller);
 
-                // build broadcast string
-                broadCastString = "PowerFolder node: ["
-                    + controller.getConnectionListener().getAddress().getPort()
-                    + "]-[" + id + "]";
-            }
-        } catch (IOException e) {
-            throw new ConnectionException("Unable to open broadcast socket", e);
-        }
+      init(controller, useD2D);
     }
 
     /**
@@ -181,6 +175,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         logFine("Stopped");
     }
 
+    @Override
     public void run() {
         // check subnet ip
         if (subnetIP == null) {
@@ -196,7 +191,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 // received new packet
                 socket.receive(inPacket);
 
-                if (isPowerFolderBroadcast(inPacket)
+                if ((isPowerFolderBroadcast(inPacket)
+                    || isPowerFolderD2DBroadcast(inPacket))
                     && getController().getNodeManager().isStarted())
                 {
                     if (getController().getNetworkingMode().equals(
@@ -237,6 +233,52 @@ public class BroadcastMananger extends PFComponent implements Runnable {
     public boolean receivedBroadcast(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
         return receivedBroadcastsFrom.contains(addr);
+    }
+
+    /** init
+     * Init manager
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  controller  Controller for this manager
+     * @param  useD2D      Whether to use D2D connections
+     * @throws ConnectionException Exception when something is wrong
+     */
+
+    private void
+    init(Controller controller,
+      boolean useD2D) throws ConnectionException
+    {
+      try
+        {
+          subnetIP = InetAddress.getLocalHost();
+
+          localNICList = new ArrayList<NetworkInterface>();
+          localAddresses = new ArrayList<InetAddress>();
+          receivedBroadcastsFrom = new ArrayList<InetAddress>();
+
+          waitTime = Controller.getWaitTime() * 3;
+          group = InetAddress.getByName("224.0.0.1");
+
+          if(controller.hasConnectionListener())
+            {
+              String id = controller.getMySelf().getId();
+
+              if(id.indexOf('[') >= 0 || id.indexOf(']') >= 0)
+                {
+                  throw new IllegalArgumentException(
+                    "Node id contains illegal characters: " + id);
+                }
+
+              // build broadcast string
+              broadCastString = String.format("PowerFolder %s: [%d]-[%s]",
+                (useD2D ? "D2D-node" : "node"),
+                controller.getConnectionListener().getAddress().getPort(),
+                id);
+          }
+        }
+      catch(IOException e)
+        {
+          throw new ConnectionException("Unable to open broadcast socket", e);
+        }
     }
 
     /**
@@ -283,8 +325,29 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         return message.startsWith("PowerFolder node");
     }
 
+    /** isPowerFolderD2DBroadcast
+     * Whether this packet is a D2D powerfolder broadcast message
+     * @author Christoph Kappel<kappel@powerfolder.com>
+     * @param  packet  Package to inspect
+     * @return Either true when it is a D2D package; otherwise false
+     **/
+
+    private boolean
+    isPowerFolderD2DBroadcast(DatagramPacket packet)
+    {
+      if(packet == null)
+        throw new NullPointerException("Packet is null");
+
+      if(packet.getData() == null)
+        throw new NullPointerException("Packet data is null");
+
+      String message = new String(packet.getData());
+
+      return message.startsWith("PowerFolder D2D-node");
+    }
+
     /**
-     * Triies to connect to a node, parsed from a broadcast message
+     * Tries to connect to a node, parsed from a broadcast message
      *
      * @param packet
      * @return
@@ -512,6 +575,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
     }
 
     private class BroadcastSender implements Runnable {
+        @Override
         public void run() {
             DatagramPacket broadcast = null;
             byte[] msg = broadCastString.getBytes();
