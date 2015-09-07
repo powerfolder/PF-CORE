@@ -56,7 +56,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     // Main connect methods ***************************************************
 
     /**
-     * Tries establish a physical connection to that node.
+     * Tries to establish a connection to that node.
      * <p>
      * Connection strategy when using this method:
      * </p>
@@ -114,7 +114,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     }
 
     /**
-     * Tries establish a physical connection to that node.
+     * Tries to establish a connection to that node.
      * <p>
      * Connection strategy when using this method:
      * </p>
@@ -163,6 +163,36 @@ public class ConnectionHandlerFactory extends PFComponent {
     }
 
     /**
+     * Creates a initialized connection handler for a D2D socket based TCP/IP
+     * connection.
+     *
+     * @param  socket  the tcp/ip socket
+     * @return the connection handler for basic IO connection.
+     * @throws ConnectionException
+     */
+
+    public ConnectionHandler
+    createAndInitD2DSocketConnectionHandler(Socket socket)
+      throws ConnectionException
+    {
+      ConnectionHandler conHan = new D2DPlainSocketConnectionHandler(
+        getController(), socket);
+
+      try
+        {
+          conHan.init();
+        }
+      catch(ConnectionException e)
+        {
+          conHan.shutdown();
+
+          throw e;
+        }
+
+      return conHan;
+    }
+
+    /**
      * Constructs a new relayed connection handler with the given configuration.
      * ConnectionHandler must not been initialized - That is done later.
      *
@@ -207,7 +237,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     // Connection layer specific connect methods ******************************
 
     /**
-     * Tries establish a physical socket connection to that node.
+     * Tries to establish a socket connection to that node.
      *
      * @param remoteAddress
      *            the address to connect to.
@@ -227,6 +257,7 @@ public class ConnectionHandlerFactory extends PFComponent {
             }
             socket.connect(remoteAddress, Constants.SOCKET_CONNECT_TIMEOUT);
             NetworkUtil.setupSocket(socket, getController());
+
             return createAndInitSocketConnectionHandler(socket);
         } catch (IOException e) {
             throw new ConnectionException("Unable to connect to "
