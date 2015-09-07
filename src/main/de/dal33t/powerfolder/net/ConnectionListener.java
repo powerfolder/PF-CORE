@@ -69,7 +69,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private ServerSocket serverSocket;
     private InetSocketAddress myDyndns;
     private int port;
-    private String interfaceAddress;
+    private final String interfaceAddress;
     private boolean hasIncomingConnection;
 
     public ConnectionListener(Controller controller, int port,
@@ -399,6 +399,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
         return serverSocket != null ? serverSocket.getLocalPort() : port;
     }
 
+    @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
@@ -459,10 +460,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
         }
     }
 
-    private class SocketAcceptor extends AbstractAcceptor {
-        private Socket socket;
+    protected class SocketAcceptor extends AbstractAcceptor {
+        protected Socket socket;
 
-        private SocketAcceptor(Socket socket) {
+        protected SocketAcceptor(Socket socket) {
             super(ConnectionListener.this.getController());
             Reject.ifNull(socket, "Socket is null");
             this.socket = socket;
