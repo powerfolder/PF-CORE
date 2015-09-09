@@ -308,6 +308,7 @@ public class MemberInfo implements Serializable {
         return id != null ? id.hashCode() : 0;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -319,6 +320,7 @@ public class MemberInfo implements Serializable {
         return false;
     }
 
+    @Override
     public String toString() {
         return "Member '" + nick + "' (con. at " + connectAddress + ")";
     }
