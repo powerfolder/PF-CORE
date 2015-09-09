@@ -137,7 +137,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     /** The total number of reconnection tries at this moment */
     private final AtomicInteger currentConnectTries = new AtomicInteger(0);
 
-    /** his member information */
+    /** This member information */
     private final MemberInfo info;
 
     /** The last time, the node was seen on the network */
@@ -196,13 +196,13 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Constructs a member using parameters from another member. nick, id ,
      * connect address.
      * <p>
-     * Attention:Does not takes friend status from memberinfo !! you have to
-     * manually
+     * Attention:Does not take friend status from memberinfo !! you have to
+     * do it manually
      *
      * @param controller
      *            Reference to the Controller
      * @param mInfo
-     *            memberInfo to clone
+     *            memberInfo to use
      */
     public Member(Controller controller, MemberInfo mInfo) {
         super(controller);
@@ -358,8 +358,8 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Answers if this node is interesting for us, that is defined as friends
-     * users on LAN and has joined one of our folders. Or if its a supernode of
-     * we are a supernode and there are still open connections slots.
+     * users on LAN and has joined one of our folders. Or if it's a supernode or
+     * we are a supernode and there are still open connection slots.
      *
      * @return true if this node is interesting for us
      */
@@ -1267,7 +1267,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         lastTransferStatus = null;
         expectedListMessages.clear();
         messageListenerSupport = null;
-        
+
         // Remove filelist to save memory.
         for (Folder folder : getFoldersActuallyJoined()) {
             folder.getDAO().deleteDomain(getId(), -1);
@@ -1624,7 +1624,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (getController().isDebugReports()) {
                     // send him our node information, if allowed/set
                     sendMessageAsynchron(new NodeInformation(getController()));
-                    expectedTime = 50;                    
+                    expectedTime = 50;
                 }
 
             } else if (message instanceof TransferStatus) {
