@@ -79,17 +79,15 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      * @throws ConnectionException
      */
     public BroadcastMananger(Controller controller) throws ConnectionException {
-        super(controller);
-
-        init(controller, false);
+        this(controller, false);
     }
 
     /** BroadcastManager
      * Builds a new broadcast listener
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  controller  Controller for this manager
-     * @param  useD2D      Whether to use D2D connections
-     * @throws ConnectionException Exception when something is wrong
+     * @param  useD2D      Whether to use D2D proto
+     * @throws ConnectionException Raised when something is wrong
      **/
 
     public
@@ -98,7 +96,38 @@ public class BroadcastMananger extends PFComponent implements Runnable {
     {
       super(controller);
 
-      init(controller, useD2D);
+      try
+        {
+          subnetIP = InetAddress.getLocalHost();
+
+          localNICList = new ArrayList<NetworkInterface>();
+          localAddresses = new ArrayList<InetAddress>();
+          receivedBroadcastsFrom = new ArrayList<InetAddress>();
+
+          waitTime = Controller.getWaitTime() * 3;
+          group = InetAddress.getByName("224.0.0.1");
+
+          if(controller.hasConnectionListener())
+            {
+              String id = controller.getMySelf().getId();
+
+              if(id.indexOf('[') >= 0 || id.indexOf(']') >= 0)
+                {
+                  throw new IllegalArgumentException(
+                    "Node id contains illegal characters: " + id);
+                }
+
+              // build broadcast string
+              broadCastString = String.format("PowerFolder %s: [%d]-[%s]",
+                (useD2D ? "D2D-node" : "node"),
+                controller.getConnectionListener().getAddress().getPort(),
+                id);
+          }
+        }
+      catch(IOException e)
+        {
+          throw new ConnectionException("Unable to open broadcast socket", e);
+        }
     }
 
     /**
@@ -235,52 +264,6 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         return receivedBroadcastsFrom.contains(addr);
     }
 
-    /** init
-     * Init manager
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  controller  Controller for this manager
-     * @param  useD2D      Whether to use D2D connections
-     * @throws ConnectionException Exception when something is wrong
-     */
-
-    private void
-    init(Controller controller,
-      boolean useD2D) throws ConnectionException
-    {
-      try
-        {
-          subnetIP = InetAddress.getLocalHost();
-
-          localNICList = new ArrayList<NetworkInterface>();
-          localAddresses = new ArrayList<InetAddress>();
-          receivedBroadcastsFrom = new ArrayList<InetAddress>();
-
-          waitTime = Controller.getWaitTime() * 3;
-          group = InetAddress.getByName("224.0.0.1");
-
-          if(controller.hasConnectionListener())
-            {
-              String id = controller.getMySelf().getId();
-
-              if(id.indexOf('[') >= 0 || id.indexOf(']') >= 0)
-                {
-                  throw new IllegalArgumentException(
-                    "Node id contains illegal characters: " + id);
-                }
-
-              // build broadcast string
-              broadCastString = String.format("PowerFolder %s: [%d]-[%s]",
-                (useD2D ? "D2D-node" : "node"),
-                controller.getConnectionListener().getAddress().getPort(),
-                id);
-          }
-        }
-      catch(IOException e)
-        {
-          throw new ConnectionException("Unable to open broadcast socket", e);
-        }
-    }
-
     /**
      * Sends a broadcast throu the broadcast sockets
      *
@@ -405,7 +388,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             logFine("Found user on local network: " + address
                 + ((node != null) ? ", " + node : ""));
             try {
-                // Dont connect outbound to clients as server.
+                // Don't connect outbound to clients as server.
                 if (getController().isStarted()
                     && !getController().getMySelf().isServer())
                 {
@@ -413,7 +396,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                         || Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isDisabled())
                     {
                         // found another new node!!!
-                        node = getController().connect(address);
+                        node = getController().connect(address,
+                          isPowerFolderD2DBroadcast(packet));
                         node.setOnLAN(true);
                         return true;
                     }
