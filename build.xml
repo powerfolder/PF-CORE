@@ -173,7 +173,7 @@ For creation of the installer:
 			<include name="json-20090306.jar" />
 
 			<!-- ContextMenu and IconOverlay -->
-			<include name="liferay-nativity-1.0.2.jar" />
+			<include name="liferay-nativity-1.0.4.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
