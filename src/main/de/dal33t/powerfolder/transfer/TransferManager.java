@@ -635,9 +635,20 @@ public class TransferManager extends PFComponent {
     {
         // Ensure shutdown
         upload.shutdown();
-        logWarning("Upload broken: " + upload + ' '
-            + (transferProblem == null ? "" : transferProblem) + ": "
-            + problemInformation);
+        
+        Level l = Level.WARNING;
+        if (transferProblem == TransferProblem.NODE_DISCONNECTED
+            || transferProblem == TransferProblem.PAUSED
+            || transferProblem == TransferProblem.OLD_UPLOAD)
+        {
+            l = Level.FINE;
+        }
+        if (isLog(l)) {
+            logIt(l, "Upload broken: " + upload + ' '
+                + (transferProblem == null ? "" : transferProblem) + ": "
+                + problemInformation, null);
+        }
+        
         uploadsLock.lock();
         boolean transferFound = false;
         try {
