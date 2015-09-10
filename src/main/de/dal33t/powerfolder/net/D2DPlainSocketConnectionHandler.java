@@ -71,7 +71,7 @@ public class D2DPlainSocketConnectionHandler extends
   {
     try
       {
-        return ByteSerializer.deserializeStatic(data, false); ///< FIXME: Probably make no sense to compress binary?
+        return ByteSerializer.deserializeStatic(data, false); ///< FIXME: Probably makes no sense to compress binary?
       }
     catch(IOException e)
       {
