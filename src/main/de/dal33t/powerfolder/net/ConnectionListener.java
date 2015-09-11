@@ -58,7 +58,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     // constants
     //
     public static final int DEFAULT_PORT     = 1337;
-    public static final int DEFAULT_D2D_PORT = 1338;
+    public static final int DEFAULT_D2D_PORT = 7331;
 
     // return constants from dyndns validation
     public static final int OK = 0; // validation succeeded
