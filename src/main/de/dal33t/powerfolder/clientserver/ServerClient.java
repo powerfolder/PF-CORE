@@ -795,7 +795,7 @@ public class ServerClient extends PFComponent {
         url.append("/avatars/user/");
         url.append(aInfo.getOID());
         if (thumbnail) {
-            url.append("_tn");
+            url.append("?thumbnail=true");
         }
         return getWebURL(url.toString(), false);
     }
