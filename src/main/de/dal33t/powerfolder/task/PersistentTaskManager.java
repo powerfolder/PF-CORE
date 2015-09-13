@@ -296,7 +296,8 @@ public class PersistentTaskManager extends PFComponent {
             try {
                 wait();
             } catch (InterruptedException e) {
-                logSevere("InterruptedException", e);
+                logFine("Interrupted");
+                return;
             }
         }
         if (!pendingTasks.isEmpty()) {
