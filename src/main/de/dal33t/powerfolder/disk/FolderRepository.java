@@ -347,7 +347,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                     for (Folder folder : getFolders()) {
                         if ((folder.getName() + Constants.LINK_EXTENSION)
-                            .equals(link.getFileName()))
+                            .equals(link.getFileName().toString()))
                         {
                             haveFolder = true;
                             break;
