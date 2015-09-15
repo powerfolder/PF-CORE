@@ -59,8 +59,11 @@ public class IconOverlayHandler extends PFComponent implements
 
             Path basepath = fr.getFoldersBasedir();
             Path path = Paths.get(pathName);
+            boolean isLnkFile = path.getFileName().toString()
+                .endsWith(Constants.LINK_EXTENSION);
 
-            if (basepath.equals(path.getParent()) && Files.isRegularFile(path))
+            if (basepath.equals(path.getParent()) && Files.isRegularFile(path)
+                && !isLnkFile)
             {
                 if (Constants.GETTING_STARTED_GUIDE_FILENAME.equals(path
                     .getFileName().toString())
@@ -72,7 +75,17 @@ public class IconOverlayHandler extends PFComponent implements
                 return IconOverlayIndex.WARNING_OVERLAY.getIndex();
             }
 
-            Folder folder = fr.findContainingFolder(pathName);
+            Folder folder;
+            if (isLnkFile) {
+                String name = path.getFileName().toString();
+                String fName = name.split("\\.")[0];
+                folder = fr.findExistingFolder(fName);
+                if (folder != null) {
+                    path = folder.getLocalBase();
+                }
+            } else {
+                folder = fr.findContainingFolder(pathName);
+            }
             if (folder == null) {
                 return IconOverlayIndex.NO_OVERLAY.getIndex();
             }
