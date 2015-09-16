@@ -18,14 +18,19 @@
  * @author Christoph Kappel <kappel@powerfolder.com>
  * @version $Id$
  */
+
 package de.dal33t.powerfolder.net;
 
-import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.Socket;
 
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.util.ByteSerializer;
+import de.dal33t.powerfolder.message.D2DMessage;
+import de.dal33t.powerfolder.protocol.AnyProto;
 
 /**
  * Handler for relayed connections to other clients. NO encrypted transfer.
@@ -62,7 +67,7 @@ public class D2DPlainSocketConnectionHandler extends
    * @param  len   Length of data
    * @return Returns the serialized object
    * @throws {@link ConnectionException} when an error occurred
-   */
+   **/
 
   @Override
   protected Object
@@ -71,9 +76,33 @@ public class D2DPlainSocketConnectionHandler extends
   {
     try
       {
-        return ByteSerializer.deserializeStatic(data, false); ///< FIXME: Probably makes no sense to compress binary?
+        AnyProto.Any any = AnyProto.Any.parseFrom(data);
+
+        /* Assemble name and package */
+        String className = any.getClassName();
+        String classPkg  = String.format(
+          "de.dal33t.powerfolder.protocol.%sProto.%s",
+          className, className);
+
+        /* Try to create D2D message */
+        Class<?>   klass     = Class.forName(classPkg);
+        Method     meth      = klass.getMethod("parseFrom");
+        AbstractMessage mesg = (AbstractMessage)meth.invoke(data); ///< Call parseForm()
+
+        /* Try to create message */
+        classPkg = String.format("de.dal33t.powerfolder.message.%s", className);
+        klass    = Class.forName(classPkg);
+        meth     = klass.getMethod("initFromD2DMessage");
+
+        Object d2dmesg = klass.newInstance();
+
+        meth.invoke(d2dmesg, mesg); ///< Call initFromD2DMessage
+
+        return d2dmesg;
       }
-    catch(IOException e)
+    catch(NoSuchMethodException|SecurityException|IllegalArgumentException|
+        InvocationTargetException|InstantiationException|
+        IllegalAccessException|InvalidProtocolBufferException e)
       {
         throw new ConnectionException(
           "Unable to send message to peer, connection closed", e)
@@ -83,31 +112,13 @@ public class D2DPlainSocketConnectionHandler extends
 
   /** serialize
    * Serialize message data
-   * @param  message  {@link Message} to serialize
+   * @param  message  {@link D2DMessage} to serialize
    * @return Serialized byte data
-   * @throws {@link ConnectionException} when an error occurred
-   */
+   **/
 
-  @Override
   protected byte[]
-  serialize(Message message) throws ConnectionException
+  serialize(D2DMessage mesg)
   {
-    try
-      {
-        ByteSerializer serializer = getSerializer();
-
-        if(null == serializer)
-          {
-            throw new IOException("Connection already closed");
-          }
-
-        return serializer.serialize(message, false, -1);
-      }
-    catch(IOException e)
-      {
-        throw new ConnectionException(
-          "Unable to send message to peer, connection closed", e)
-          .with(this);
-      }
+    return mesg.toD2DMessage().toByteArray();
   }
 }
