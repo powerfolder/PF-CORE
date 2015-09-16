@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.protocol.PingProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 
@@ -32,7 +35,9 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
-public class Ping extends Message {
+public class Ping extends Message
+    implements D2DMessage
+{
     // #462: implements Externalizable {
     private static final long serialVersionUID = 100L;
     private static final int MESSAGE_VERSION = 100;
@@ -76,6 +81,7 @@ public class Ping extends Message {
      * General
      */
 
+    @Override
     public String toString() {
         return "Ping"
             + ((payload != null) ? " " + Format.formatBytes(payload.length)
@@ -132,5 +138,44 @@ public class Ping extends Message {
 
         out.writeLong(sendTime);
         out.close();
+    }
+
+    /** initFromD2DMessage
+     * Init message from D2D message
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof PingProto.Ping)
+        {
+          PingProto.Ping ping = (PingProto.Ping)mesg;
+
+          this.sendTime = ping.getSendTime();
+          this.payload  = ping.getPayload().getBytes();
+          this.id       = ping.getId();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert message to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      PingProto.Ping.Builder builder = PingProto.Ping.newBuilder();
+
+      builder.setClassName("Ping");
+      builder.setSendTime(sendTime);
+      builder.setPayload(String.valueOf(payload));
+      builder.setId(id);
+
+      return builder.build();
     }
 }

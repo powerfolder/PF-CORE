@@ -19,7 +19,11 @@
 */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.protocol.AbortDownloadProto;
+import de.dal33t.powerfolder.protocol.PingProto;
 
 /**
  * Message to indicate that the download was aborted. The remote side should stop the upload.
@@ -27,16 +31,56 @@ import de.dal33t.powerfolder.light.FileInfo;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.2 $
  */
-public class AbortDownload extends Message {
+public class AbortDownload extends Message
+    implements D2DMessage
+{
     private static final long serialVersionUID = 100L;
 
     public FileInfo file;
+
+    public AbortDownload() {
+      /* Empty constructor for D2D */
+    }
 
     public AbortDownload(FileInfo file) {
         this.file = file;
     }
 
+    @Override
     public String toString() {
         return "Abort download of: " + file;
+    }
+
+    /** initFromD2DMessage
+     * Init message from D2D message
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof AbortDownloadProto.AbortDownload)
+        {
+          AbortDownloadProto.AbortDownload abort = (AbortDownloadProto.AbortDownload)mesg;
+        }
+    }
+
+    /** toD2DMessage
+     * Convert message to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      AbortDownloadProto.AbortDownload.Builder builder = AbortDownloadProto.AbortDownload.newBuilder();
+
+      builder.setClassName("AbortDownload");
+      builder.setTransferId(value)
+
+      return builder.build();
     }
 }
