@@ -27,9 +27,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
@@ -1749,6 +1751,45 @@ public class TransferManager extends PFComponent {
                 // }
                 return null;
             }
+
+            // PFC-2553 Start: Check for free disk space
+
+            /*
+             * Might be that no FileStore could be accessed. To differentiate
+             * between this and a full file store, set to null on purpose.
+             */
+            BigDecimal totalSpace = null;
+            for (FileStore store : folder.getLocalBase().getFileSystem()
+                .getFileStores())
+            {
+                try {
+                    BigDecimal usableSpace = BigDecimal
+                        .valueOf(store.getUsableSpace());
+
+                    if (totalSpace == null) {
+                        totalSpace = BigDecimal.ZERO;
+                    }
+
+                    totalSpace = totalSpace.add(usableSpace);
+                } catch (IOException e) {
+                    logInfo(
+                        "Could not get the usable space for " + store.name());
+                }
+            }
+
+            // If no FileStore could be accessed, don't check the file sizes.
+            if (totalSpace != null) {
+                BigDecimal fileSize = BigDecimal.valueOf(fileToDl.getSize());
+
+                if (localFile == null) {
+                    if (fileSize.compareTo(totalSpace) != 1) {
+                        
+                    }
+                } else {
+
+                }
+            }
+            // PFC-2553 End
 
             List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
 
