@@ -26,10 +26,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -39,7 +44,9 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.2 $
  */
-public class FolderFilesChanged extends FolderRelatedMessage {
+public class FolderFilesChanged extends FolderRelatedMessage
+  implements D2DMessage
+{
 
     private static final Logger log = Logger.getLogger(FolderFilesChanged.class
         .getName());
@@ -237,6 +244,7 @@ public class FolderFilesChanged extends FolderRelatedMessage {
         return added;
     }
 
+    @Override
     public String toString() {
         if (removed != null) {
             return "FolderFilesChanged '" + folder.getLocalizedName() + "': "
@@ -247,4 +255,58 @@ public class FolderFilesChanged extends FolderRelatedMessage {
             + (added != null ? added.length : 0) + " files";
     }
 
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof FolderFilesChangedProto.FolderFilesChanged)
+        {
+          FolderFilesChangedProto.FolderFilesChanged proto =
+            (FolderFilesChangedProto.FolderFilesChanged)mesg;
+
+          /* Convert list back to array */
+          int i = 0;
+
+          this.added = new FileInfo[proto.getAddedCount()];
+
+          for(FileInfoProto.FileInfo finfo : proto.getAddedList())
+            {
+              this.added[i++] = new FileInfo(finfo);
+            }
+
+          this.folder = new FolderInfo(proto.getFolder());
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      FolderFilesChangedProto.FolderFilesChanged.Builder builder =
+        FolderFilesChangedProto.FolderFilesChanged.newBuilder();
+
+      builder.setClassName("FolderFilesChanged");
+
+      /* Convert array to list */
+      for(FileInfo finfo : this.added)
+        {
+          builder.addAdded((FileInfoProto.FileInfo)finfo.toD2DMessage());
+        }
+
+      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2DMessage());
+
+      return builder.build();
+    }
 }

@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.protocol.ConfigurationLoadRequestProto;
 import de.dal33t.powerfolder.util.StringUtils;
 
 /**
@@ -28,7 +31,9 @@ import de.dal33t.powerfolder.util.StringUtils;
  *
  * @author sprajc
  */
-public class ConfigurationLoadRequest extends Message {
+public class ConfigurationLoadRequest extends Message
+  implements D2DMessage
+{
     private static final long serialVersionUID = 2L;
 
     private String configURL;
@@ -88,6 +93,52 @@ public class ConfigurationLoadRequest extends Message {
         }
         return "ReloadConfig from " + configURL + ", replace existing? "
             + replaceExisting + ", restart? " + restartRequired;
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof ConfigurationLoadRequestProto.ConfigurationLoadRequest)
+        {
+          ConfigurationLoadRequestProto.ConfigurationLoadRequest proto =
+            (ConfigurationLoadRequestProto.ConfigurationLoadRequest)mesg;
+
+          this.configURL       = proto.getConfigURL();
+          this.key             = proto.getKey();
+          this.value           = proto.getValue();
+          this.replaceExisting = proto.getReplaceExisting();
+          this.restartRequired = proto.getRestartRequired();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      ConfigurationLoadRequestProto.ConfigurationLoadRequest.Builder builder =
+        ConfigurationLoadRequestProto.ConfigurationLoadRequest.newBuilder();
+
+      builder.setClassName("ConfigurationLoadRequest");
+      builder.setConfigURL(this.configURL);
+      builder.setKey(this.key);
+      builder.setValue(this.value);
+      builder.setReplaceExisting(this.replaceExisting);
+      builder.setRestartRequired(this.restartRequired);
+
+      return builder.build();
     }
 
 }

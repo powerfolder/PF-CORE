@@ -19,7 +19,10 @@
 */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.protocol.AddFriendNotificationProto;
 
 /**
  * This message represents a notification of addition as a friend.
@@ -27,7 +30,9 @@ import de.dal33t.powerfolder.light.MemberInfo;
  * @author Dennis "Bytekeeper" Waldherr </a>
  * @version $Revision:$
  */
-public class AddFriendNotification extends Message {
+public class AddFriendNotification extends Message
+  implements D2DMessage
+{
 	private static final long serialVersionUID = 100L;
 
     private MemberInfo memberInfo;
@@ -46,8 +51,50 @@ public class AddFriendNotification extends Message {
         return personalMessage;
     }
 
+    @Override
     public String toString() {
         return "AddFriendNotification: '"
                 + personalMessage + '\'';
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof AddFriendNotificationProto.AddFriendNotification)
+        {
+          AddFriendNotificationProto.AddFriendNotification proto =
+            (AddFriendNotificationProto.AddFriendNotification)mesg;
+
+          this.memberInfo      = new MemberInfo(proto.getMemberInfo());
+          this.personalMessage = proto.getPersonalMessage();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      AddFriendNotificationProto.AddFriendNotification.Builder builder =
+        AddFriendNotificationProto.AddFriendNotification.newBuilder();
+
+      builder.setClassName("AddFriendNotification");
+      builder.setMemberInfo((de.dal33t.powerfolder.protocol.MemberInfoProto.MemberInfo)
+        this.memberInfo.toD2DMessage());
+      builder.setPersonalMessage(this.personalMessage);
+
+      return builder.build();
     }
 }

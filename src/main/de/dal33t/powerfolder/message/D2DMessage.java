@@ -27,14 +27,14 @@ public interface
 D2DMessage
 {
   /** initFromD2DMessage
-   * Init message from D2D message
+   * Init from D2D message
    * @param  mesg  Message to use data from
    **/
 
   public void initFromD2DMessage(AbstractMessage mesg);
 
   /** toD2DMessage
-   * Convert message to D2D message
+   * Convert to D2D message
    * @return Converted D2D message
    **/
 

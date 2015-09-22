@@ -28,6 +28,10 @@ import java.io.Serializable;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.message.D2DMessage;
+import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.intern.AccountInfoInternalizer;
@@ -39,13 +43,13 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
  * @author sprajc
  */
 @Embeddable
-public class AccountInfo implements Serializable {
+public class AccountInfo implements Serializable, D2DMessage {
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
 
     private static final long serialVersionUID = 100L;
     private static final Internalizer<AccountInfo> INTERNALIZER = new AccountInfoInternalizer();
-    
+
     private String oid;
     private String username;
     @Transient
@@ -56,7 +60,6 @@ public class AccountInfo implements Serializable {
     }
 
     public AccountInfo(String oid, String username, String displayName) {
-        super();
         this.oid = oid;
         this.username = username;
         this.displayName = displayName;
@@ -64,6 +67,18 @@ public class AccountInfo implements Serializable {
 
     public AccountInfo(String oid, String username) {
         this(oid, username, null);
+    }
+
+    /** AccountInfo
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    public
+    AccountInfo(AbstractMessage mesg)
+    {
+      initFromD2DMessage(mesg);
     }
 
     public String getOID() {
@@ -110,7 +125,7 @@ public class AccountInfo implements Serializable {
     public String getUsername() {
         return username;
     }
-    
+
     public AccountInfo intern(boolean force) {
         if (force) {
             return INTERNALIZER.rename(this);
@@ -152,9 +167,9 @@ public class AccountInfo implements Serializable {
     public String toString() {
         return "AccountInfo '" + getScrabledDisplayName() + "' (" + oid + ')';
     }
-    
+
     // Serializing ************************************************************
-    
+
     private static final long extVersionUID = 100L;
 
     public static AccountInfo readExt(ObjectInput in) throws IOException,
@@ -191,5 +206,45 @@ public class AccountInfo implements Serializable {
         } else {
             out.writeBoolean(false);
         }
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof AccountInfoProto.AccountInfo)
+        {
+          AccountInfoProto.AccountInfo ainfo = (AccountInfoProto.AccountInfo)mesg;
+
+          this.oid         = ainfo.getOid();
+          this.username    = ainfo.getUsername();
+          this.displayName = ainfo.getDisplayName();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      AccountInfoProto.AccountInfo.Builder builder = AccountInfoProto.AccountInfo.newBuilder();
+
+      builder.setClassName("AccountInfo");
+      builder.setOid(this.oid);
+      builder.setUsername(this.username);
+      builder.setDisplayName(this.displayName);
+
+      return builder.build();
     }
 }

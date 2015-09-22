@@ -23,7 +23,7 @@ import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.AbortDownloadProto;
-import de.dal33t.powerfolder.protocol.PingProto;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
 
 /**
  * Message to indicate that the download was aborted. The remote side should stop the upload.
@@ -38,10 +38,6 @@ public class AbortDownload extends Message
 
     public FileInfo file;
 
-    public AbortDownload() {
-      /* Empty constructor for D2D */
-    }
-
     public AbortDownload(FileInfo file) {
         this.file = file;
     }
@@ -52,7 +48,8 @@ public class AbortDownload extends Message
     }
 
     /** initFromD2DMessage
-     * Init message from D2D message
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  mesg  Message to use data from
      **/
 
@@ -62,12 +59,14 @@ public class AbortDownload extends Message
     {
       if(mesg instanceof AbortDownloadProto.AbortDownload)
         {
-          AbortDownloadProto.AbortDownload abort = (AbortDownloadProto.AbortDownload)mesg;
+          AbortDownloadProto.AbortDownload proto = (AbortDownloadProto.AbortDownload)mesg;
+
+          this.file = new FileInfo(proto.getFile());
         }
     }
 
     /** toD2DMessage
-     * Convert message to D2D message
+     * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
      **/
@@ -79,7 +78,7 @@ public class AbortDownload extends Message
       AbortDownloadProto.AbortDownload.Builder builder = AbortDownloadProto.AbortDownload.newBuilder();
 
       builder.setClassName("AbortDownload");
-      builder.setTransferId(value)
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
 
       return builder.build();
     }

@@ -35,9 +35,13 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Index;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.message.D2DMessage;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
@@ -51,7 +55,7 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class FolderInfo implements Serializable, Cloneable {
+public class FolderInfo implements Serializable, Cloneable, D2DMessage {
     private static final long serialVersionUID = 102L;
     private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
 
@@ -92,6 +96,18 @@ public class FolderInfo implements Serializable, Cloneable {
      */
     public FolderInfo(String name, AccountInfo aInfo) {
         this(name, "PB-" + aInfo.getOID() + "-" + name);
+    }
+
+    /** FolderInfo
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    public
+    FolderInfo(AbstractMessage mesg)
+    {
+      initFromD2DMessage(mesg);
     }
 
     public boolean isMetaFolder() {
@@ -202,6 +218,7 @@ public class FolderInfo implements Serializable, Cloneable {
         return (id == null) ? 0 : id.hashCode();
     }
 
+    @Override
     public boolean equals(Object other) {
         if (this == other) {
             return true;
@@ -232,6 +249,7 @@ public class FolderInfo implements Serializable, Cloneable {
         return name.compareToIgnoreCase(otherFolderInfo.name);
     }
 
+    @Override
     public String toString() {
         return "Folder '" + name + '\'';
     }
@@ -280,6 +298,45 @@ public class FolderInfo implements Serializable, Cloneable {
             .replace(Constants.FOLDER_PERSONAL_FILES,
                 Translation.get("general.personal_files"))
             .replace(Constants.MAIL_ATTACHMENT_FOLDER,
-                Translation.get("mail_attachment_folder_name"));            
+                Translation.get("mail_attachment_folder_name"));
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof FolderInfoProto.FolderInfo)
+        {
+          FolderInfoProto.FolderInfo finfo = (FolderInfoProto.FolderInfo)mesg;
+
+          this.name = finfo.getName();
+          this.id   = finfo.getId();
+          this.hash = hashCode0();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      FolderInfoProto.FolderInfo.Builder builder = FolderInfoProto.FolderInfo.newBuilder();
+
+      builder.setClassName("FolderInfo");
+      builder.setName(this.name);
+      builder.setId(this.id);
+
+      return builder.build();
     }
 }

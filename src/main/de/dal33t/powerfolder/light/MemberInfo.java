@@ -36,10 +36,14 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.message.D2DMessage;
+import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -56,7 +60,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 @TypeDef(name = "socketAddressType", typeClass = InetSocketAddressUserType.class)
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class MemberInfo implements Serializable {
+public class MemberInfo implements Serializable, D2DMessage {
     private static final long serialVersionUID = 100L;
     public static Internalizer<MemberInfo> INTERNALIZER;
 
@@ -111,6 +115,18 @@ public class MemberInfo implements Serializable {
         } else {
             this.networkId = ConfigurationEntry.NETWORK_ID.getDefaultValue();
         }
+    }
+
+    /** MemberInfo
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    public
+    MemberInfo(AbstractMessage mesg)
+    {
+      initFromD2DMessage(mesg);
     }
 
     // Setter/Getter **********************************************************
@@ -380,5 +396,64 @@ public class MemberInfo implements Serializable {
         ExternalizableUtil.writeDate(out, lastConnectTime);
         out.writeBoolean(isConnected);
         out.writeBoolean(isSupernode);
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof MemberInfoProto.MemberInfo)
+        {
+          MemberInfoProto.MemberInfo minfo = (MemberInfoProto.MemberInfo)mesg;
+
+          this.nick            = minfo.getNick();
+          this.id              = minfo.getId();
+          this.networkId       = minfo.getNetworkId();
+
+          /* Disassemble host:port string */
+          String[] split = minfo.getConnectAddress().split(":");
+
+          if(2 <= split.length)
+            {
+              this.connectAddress  = new InetSocketAddress(split[0],
+                Integer.valueOf(split[1]));
+            }
+
+          this.lastConnectTime = new Date(minfo.getLastConnectTime());
+          this.isConnected     = minfo.getIsConnected();
+          this.isSupernode     = minfo.getIsSuperNode();
+          this.hasNullIP       = minfo.getHasNullIP();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      MemberInfoProto.MemberInfo.Builder builder = MemberInfoProto.MemberInfo.newBuilder();
+
+      builder.setClassName("MemberInfo");
+      builder.setNick(this.nick);
+      builder.setId(this.id);
+      builder.setNetworkId(this.networkId);
+      builder.setConnectAddress(this.connectAddress.toString()); ///< Assemble to host:port
+      builder.setLastConnectTime(this.lastConnectTime.getTime());
+      builder.setIsConnected(this.isConnected);
+      builder.setIsSuperNode(this.isSupernode);
+      builder.setHasNullIP(this.hasNullIP);
+
+      return builder.build();
     }
 }

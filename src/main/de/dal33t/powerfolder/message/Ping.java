@@ -141,7 +141,7 @@ public class Ping extends Message
     }
 
     /** initFromD2DMessage
-     * Init message from D2D message
+     * Init from D2D message
      * @param  mesg  Message to use data from
      **/
 
@@ -160,7 +160,7 @@ public class Ping extends Message
     }
 
     /** toD2DMessage
-     * Convert message to D2D message
+     * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
      **/

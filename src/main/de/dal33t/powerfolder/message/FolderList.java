@@ -32,10 +32,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.protocol.FolderListProto;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -50,7 +54,9 @@ import de.dal33t.powerfolder.util.Util;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
-public class FolderList extends Message {
+public class FolderList extends Message
+  implements D2DMessage
+{
     private static final long serialVersionUID = 101L;
     private static Logger LOG = Logger.getLogger(FolderList.class.getName());
 
@@ -130,6 +136,7 @@ public class FolderList extends Message {
      * @see #load(Member)
      * @deprecated #2569
      */
+    @Deprecated
     public synchronized boolean store(Member member) {
         return store(getMemberFile(member));
     }
@@ -141,6 +148,7 @@ public class FolderList extends Message {
      * @see #load(File)
      * @deprecated #2569
      */
+    @Deprecated
     public synchronized boolean store(Path file) {
         Reject.ifNull(file, "File");
         try {
@@ -163,6 +171,7 @@ public class FolderList extends Message {
      * @return the loaded {@link FolderList} or null if failed or not existing.
      * @deprecated #2569
      */
+    @Deprecated
     public static FolderList load(Member member) {
         return load(getMemberFile(member));
     }
@@ -174,6 +183,7 @@ public class FolderList extends Message {
      * @return the loaded {@link FolderList} or null if failed or not existing.
      * @deprecated #2569
      */
+    @Deprecated
     public static FolderList load(Path file) {
         Reject.ifNull(file, "File");
         if (Files.notExists(file)) {
@@ -233,7 +243,62 @@ public class FolderList extends Message {
         return true;
     }
 
+    @Override
     public String toString() {
         return "FolderList: " + secretFolders.length + " folders";
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof FolderListProto.FolderList)
+        {
+          FolderListProto.FolderList proto = (FolderListProto.FolderList)mesg;
+
+          /* Convert list back to array */
+          int i = 0;
+
+          this.secretFolders = new FolderInfo[proto.getSecretFoldersCount()];
+
+          for(FolderInfoProto.FolderInfo finfo : proto.getSecretFoldersList())
+            {
+              this.secretFolders[i++] = new FolderInfo(finfo);
+            }
+
+          this.joinedMetaFolders = proto.getJoinedMetaFolders();
+
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      FolderListProto.FolderList.Builder builder = FolderListProto.FolderList.newBuilder();
+
+      builder.setClassName("FolderList");
+
+      /* Convert array to list */
+      for(FolderInfo finfo : this.secretFolders)
+        {
+          builder.addSecretFolders((FolderInfoProto.FolderInfo)finfo.toD2DMessage());
+        }
+
+      builder.setJoinedMetaFolders(this.joinedMetaFolders);
+
+      return builder.build();
     }
 }
