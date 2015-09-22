@@ -17,14 +17,23 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * 
+ * Raised when there is not enough space on the file store of a folder to store
+ * file(s).
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-public class NoSpaceOnFileStoreProblem extends Problem {
+public class NoSpaceOnFileStoreProblem extends ResolvableProblem {
+
+    private final FolderInfo foInfo;
+
+    public NoSpaceOnFileStoreProblem(FolderInfo foInfo) {
+        this.foInfo = foInfo;
+    }
 
     @Override
     public String getDescription() {
@@ -38,8 +47,7 @@ public class NoSpaceOnFileStoreProblem extends Problem {
 
     @Override
     public int hashCode() {
-        // TODO Auto-generated method stub
-        return super.hashCode();
+        return foInfo.hashCode();
     }
 
     @Override
@@ -54,5 +62,22 @@ public class NoSpaceOnFileStoreProblem extends Problem {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Runnable resolution(Controller controller) {
+        return new Runnable() {
+
+            @Override
+            public void run() {
+                foInfo.getFolder(controller)
+                    .removeProblem(NoSpaceOnFileStoreProblem.this);
+            }
+        };
+    }
+
+    @Override
+    public String getResolutionDescription() {
+        return null;
     }
 }
