@@ -65,6 +65,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.problem.NoSpaceOnFileStoreProblem;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
@@ -1755,34 +1756,25 @@ public class TransferManager extends PFComponent {
             // PFC-2553 Start: Check for free disk space
 
             /*
-             * Set to null to know if no FileStore could be accessed.
+             * Set to -1 to know if no FileStore could be accessed.
              */
-            BigInteger totalSpace = null;
-            for (FileStore store : folder.getLocalBase().getFileSystem()
-                .getFileStores())
-            {
-                try {
-                    BigInteger usableSpace = BigInteger
-                        .valueOf(store.getUsableSpace());
+            long spaceOnFileStore = -1;
 
-                    if (totalSpace == null) {
-                        totalSpace = BigInteger.ZERO;
-                    }
-
-                    totalSpace = totalSpace.add(usableSpace);
-                } catch (IOException e) {
-                    logInfo(
-                        "Could not get the usable space for " + store.name());
-                }
+            try {
+                FileStore store = Files.getFileStore(folder.getLocalBase());
+                spaceOnFileStore = store.getUsableSpace();
+            } catch (IOException e) {
+                logInfo(
+                    "Could not get the usable space for " + folder.toString()
+                        + " located at " + folder.getLocalBase().toString());
             }
 
             // If no FileStore could be accessed, don't check the file sizes.
-            if (totalSpace != null) {
-                BigInteger fileSize = BigInteger.valueOf(fileToDl.getSize());
-
-                if (fileSize.compareTo(totalSpace) != 1) {
-                    
-                    // -> Raise problem
+            if (spaceOnFileStore > 0) {
+                if (fileToDl.getSize() > spaceOnFileStore) {
+                    folder.addProblem(
+                        new NoSpaceOnFileStoreProblem(folder.getInfo()));
+                    return null;
                 }
             }
             // PFC-2553 End
