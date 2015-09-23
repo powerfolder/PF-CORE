@@ -65,7 +65,7 @@ public class NoSpaceOnFileStoreProblem extends ResolvableProblem {
     }
 
     @Override
-    public Runnable resolution(Controller controller) {
+    public Runnable resolution(final Controller controller) {
         return new Runnable() {
 
             @Override
