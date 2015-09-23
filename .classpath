@@ -41,7 +41,9 @@
 	<classpathentry exported="true" kind="lib" path="lib/fluent-hc-4.3.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpmime-4.3.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/liferay-nativity-1.0.2.jar" sourcepath="/liferay-nativity"/>
-	<classpathentry exported="true" kind="lib" path="lib/bcprov-jdk15on-151.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/bcpkix-jdk15on-151.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/bcmail-jdk15on-152.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/bcpg-jdk15on-152.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/bcpkix-jdk15on-152.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/bcprov-ext-jdk15on-152.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
