@@ -1819,8 +1819,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             createdNew = false;
         }
         FolderSettings fs = new FolderSettings(file,
-            SyncProfile.AUTOMATIC_SYNCHRONIZATION,
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS.getValueInt(controller));
+            SyncProfile.getDefault(getController()),
+            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
+                .getValueInt(controller));
         Folder folder = createFolder0(fi, fs, true);
         folder.addDefaultExcludes();
 

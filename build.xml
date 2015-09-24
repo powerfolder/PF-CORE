@@ -160,8 +160,10 @@ For creation of the installer:
 			<include name="synthetica/synthetica.jar" />
 			<include name="synthetica/syntheticaAddons.jar" />
 
-			<include name="bcprov-jdk15on-151.jar" />
-			<include name="bcpkix-jdk15on-151.jar" />
+			<include name="bcprov-ext-jdk15on-152.jar" />
+			<include name="bcpkix-jdk15on-152.jar" />
+			<include name="bcpg-jdk15on-152.jar" />
+			<include name="bcmail-jdk15on-152.jar" />
 
 			<!-- Shibboleth/ECP -->
             <include name="httpclient-4.3.5.jar" />
