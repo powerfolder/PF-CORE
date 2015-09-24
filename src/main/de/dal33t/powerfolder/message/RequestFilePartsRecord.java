@@ -19,14 +19,21 @@
 */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.RequestFilePartsRecordProto;
 
 /**
  * Requests a FilePartsRecord for a given file.
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
-public class RequestFilePartsRecord extends Message {
+public class RequestFilePartsRecord extends Message
+  implements D2DMessage
+{
 	private static final long serialVersionUID = 100L;
 
 	private FileInfo file;
@@ -42,4 +49,42 @@ public class RequestFilePartsRecord extends Message {
 	public FileInfo getFile() {
 		return file;
 	}
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof RequestFilePartsRecordProto.RequestFilePartsRecord)
+        {
+          RequestFilePartsRecordProto.RequestFilePartsRecord proto =
+            (RequestFilePartsRecordProto.RequestFilePartsRecord)mesg;
+
+          this.file = new FileInfo(proto.getFile());
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder =
+        RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
+
+      builder.setClassName("RequestFilePartsRecord");
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
+
+      return builder.build();
+    }
 }

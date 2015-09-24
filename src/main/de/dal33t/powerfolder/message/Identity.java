@@ -26,9 +26,9 @@ import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.IdentityProto;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -319,7 +319,7 @@ public class Identity extends Message
 
       builder.setMagicID(this.magicId);
       builder.setProtocolVersion(this.protocolVersion);
-      builder.setRequestFullFolderlist((this.requestFullFolderlist);
+      builder.setRequestFullFolderlist(this.requestFullFolderlist);
       builder.setConfigurationURL(this.configurationURL);
 
       return builder.build();

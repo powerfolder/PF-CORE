@@ -24,8 +24,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.protocol.KnownNodesProto;
+import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -37,8 +42,9 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.11 $
  */
-public class KnownNodes extends Message {
-
+public class KnownNodes extends Message
+  implements D2DMessage
+{
     private static final Logger log = Logger.getLogger(KnownNodes.class
         .getName());
     private static final long serialVersionUID = 101L;
@@ -165,7 +171,57 @@ public class KnownNodes extends Message {
 
     // General **************************************************************
 
+    @Override
     public String toString() {
         return "NodeList, " + (nodes != null ? nodes.length : 0) + " nodes(s)";
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof KnownNodesProto.KnownNodes)
+        {
+          KnownNodesProto.KnownNodes proto = (KnownNodesProto.KnownNodes)mesg;
+
+          /* Convert list back to array */
+          int i = 0;
+
+          this.nodes = new MemberInfo[proto.getNodesCount()];
+
+          for(MemberInfoProto.MemberInfo minfo : proto.getNodesList())
+            {
+              this.nodes[i++] = new MemberInfo(minfo);
+            }
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      KnownNodesProto.KnownNodes.Builder builder = KnownNodesProto.KnownNodes.newBuilder();
+
+      builder.setClassName("KnownNodes");
+
+      /* Convert array to list */
+      for(MemberInfo minfo : this.nodes)
+        {
+          builder.addNodes((MemberInfoProto.MemberInfo)minfo.toD2DMessage());
+        }
+
+      return builder.build();
     }
 }

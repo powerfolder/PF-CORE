@@ -24,6 +24,7 @@ import java.io.IOException;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileChunkProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;

@@ -24,9 +24,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.protocol.NodesCriteriaProto;
+import de.dal33t.powerfolder.protocol.RequestNodeListProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -40,7 +45,9 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.1 $
  */
-public class RequestNodeList extends Message {
+public class RequestNodeList extends Message
+  implements D2DMessage
+{
     private static final long serialVersionUID = 101L;
 
     /**
@@ -65,7 +72,7 @@ public class RequestNodeList extends Message {
      * The list of node ids for which we want to request fresh connection
      * information. May be null. Usually the ids of the friends.
      */
-    private Collection<String> nodeIds;
+    private final Collection<String> nodeIds;
 
     /**
      * Constructs a new request.
@@ -176,10 +183,78 @@ public class RequestNodeList extends Message {
 
     // General ****************************************************************
 
+    @Override
     public String toString() {
         return "Request for NodeList (supernodes: " + supernodesCriteria
             + ", normal-nodes: " + nodesCriteria + ", "
             + (nodeIds == null ? "all" : Integer.valueOf(nodeIds.size()))
             + " nodes)";
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof RequestNodeListProto.RequestNodeList)
+        {
+          RequestNodeListProto.RequestNodeList proto =
+            (RequestNodeListProto.RequestNodeList)mesg;
+
+          /* Fill in enum values */
+          for(NodesCriteria crit : NodesCriteria.values())
+            {
+              if(crit.ordinal() == proto.getSupernodesCriteria().getValueValue())
+                this.supernodesCriteria = crit;
+              if(crit.ordinal() == proto.getNodesCriteria().getValueValue())
+                this.nodesCriteria = crit;
+            }
+
+          /* Convert list back to collection */
+          this.nodeIds.clear();
+
+          for(String str : proto.getNodeIDsList())
+            {
+              this.nodeIds.add(str);
+            }
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      RequestNodeListProto.RequestNodeList.Builder builder =
+        RequestNodeListProto.RequestNodeList.newBuilder();
+
+      builder.setClassName("RequestNodeList");
+
+      /* Handle enum stuff */
+      NodesCriteriaProto.NodesCriteria.Builder nodeBuilder =
+        NodesCriteriaProto.NodesCriteria.newBuilder();
+
+      nodeBuilder.setValueValue(this.supernodesCriteria.ordinal());
+
+      builder.setSupernodesCriteria(nodeBuilder.build());
+
+      nodeBuilder.setValueValue(this.nodesCriteria.ordinal());
+
+      builder.setNodesCriteria(nodeBuilder.build());
+
+      /* Just append collection here */
+      builder.addAllNodeIDs(this.nodeIds);
+
+      return builder.build();
     }
 }

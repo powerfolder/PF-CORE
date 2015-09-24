@@ -21,11 +21,19 @@ package de.dal33t.powerfolder.message;
 
 import java.io.IOException;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.RangeProto;
+import de.dal33t.powerfolder.protocol.RequestPartProto;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 
-public class RequestPart extends Message {
+public class RequestPart extends Message
+  implements D2DMessage
+{
     private static final long serialVersionUID = 100L;
 
     protected FileInfo file;
@@ -48,6 +56,7 @@ public class RequestPart extends Message {
         validate();
     }
 
+    @Override
     public String toString() {
         return "Request to download part of : " + file + ", range " + range;
     }
@@ -123,5 +132,47 @@ public class RequestPart extends Message {
             Reject.ifTrue(progress < 0 || progress > 1, "Invalid progress: "
                 + progress);
         }
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof RequestPartProto.RequestPart)
+        {
+          RequestPartProto.RequestPart proto =
+            (RequestPartProto.RequestPart)mesg;
+
+          this.file     = new FileInfo(proto.getFile());
+          this.range    = new Range(proto.getRange());
+          this.progress = proto.getProgress();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      RequestPartProto.RequestPart.Builder builder =
+        RequestPartProto.RequestPart.newBuilder();
+
+      builder.setClassName("RequestPart");
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
+      builder.setRange((RangeProto.Range)this.range.toD2DMessage());
+      builder.setProgress(this.progress);
+
+      return builder.build();
     }
 }

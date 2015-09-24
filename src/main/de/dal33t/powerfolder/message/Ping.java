@@ -25,6 +25,7 @@ import java.io.ObjectOutput;
 
 import com.google.protobuf.AbstractMessage;
 
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.protocol.PingProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;

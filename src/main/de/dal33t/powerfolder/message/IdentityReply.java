@@ -19,13 +19,20 @@
 */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.protocol.IdentityReplyProto;
+
 /**
  * Indicated the accept of the identity, which was sent
  *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public class IdentityReply extends Message {
+public class IdentityReply extends Message
+  implements D2DMessage
+{
     private static final long serialVersionUID = 100L;
 
     public boolean accepted;
@@ -64,8 +71,47 @@ public class IdentityReply extends Message {
         return new IdentityReply(true, null);
     }
 
+    @Override
     public String toString() {
         String reply = accepted ? "accepted" : "rejected";
         return "Identity " + reply + (message == null ? "" : ": " + message);
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof IdentityReplyProto.IdentityReply)
+        {
+          IdentityReplyProto.IdentityReply proto = (IdentityReplyProto.IdentityReply)mesg;
+
+          this.accepted = proto.getAccepted();
+          this.message  = proto.getMessage();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      IdentityReplyProto.IdentityReply.Builder builder = IdentityReplyProto.IdentityReply.newBuilder();
+
+      builder.setClassName("IdentityReply");
+      builder.setAccepted(this.accepted);
+      builder.setMessage(this.message);
+
+      return builder.build();
     }
 }
