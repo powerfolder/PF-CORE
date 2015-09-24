@@ -19,7 +19,7 @@
  * @version $Id$
  */
 
-package de.dal33t.powerfolder.net;
+package de.dal33t.powerfolder.d2d;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,7 +29,9 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.message.D2DMessage;
+import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
+import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.protocol.AnyProto;
 
 /**
@@ -54,7 +56,7 @@ public class D2DPlainSocketConnectionHandler extends
    * @throws ConnectionException
    **/
 
-  protected
+  public
   D2DPlainSocketConnectionHandler(Controller controller,
     Socket socket)
   {
