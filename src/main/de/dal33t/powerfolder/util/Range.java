@@ -21,15 +21,23 @@ package de.dal33t.powerfolder.util;
 
 import java.io.Serializable;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.protocol.RangeProto;
+
 /**
  * This class represents an interval.
  *
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $
  */
-public final class Range implements Serializable {
+public final class Range
+  implements Serializable, D2DMessage
+{
 	private static final long serialVersionUID = 100L;
-    private final long start, length;
+    private long start;
+    private long length;
 
 
 	/**
@@ -60,6 +68,18 @@ public final class Range implements Serializable {
 		this.start = start;
 		this.length = length;
 	}
+
+    /** Range
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    public
+    Range(AbstractMessage mesg)
+    {
+      initFromD2DMessage(mesg);
+    }
 
 	/**
 	 * @param range
@@ -141,4 +161,42 @@ public final class Range implements Serializable {
 	public String toString() {
 		return "[" + getStart() + " - " + getEnd() + "]";
 	}
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof RangeProto.Range)
+        {
+          RangeProto.Range proto = (RangeProto.Range)mesg;
+
+          this.start  = proto.getStart();
+          this.length = proto.getLength();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      RangeProto.Range.Builder builder = RangeProto.Range.newBuilder();
+
+      builder.setClassName("Range");
+      builder.setStart(this.start);
+      builder.setLength(this.length);
+
+      return builder.build();
+    }
 }

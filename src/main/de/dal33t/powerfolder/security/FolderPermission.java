@@ -19,7 +19,12 @@
  */
 package de.dal33t.powerfolder.security;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.FolderPermissionProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -28,7 +33,9 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public abstract class FolderPermission implements Permission {
+public abstract class FolderPermission
+  implements Permission, D2DMessage
+{
     private static final long serialVersionUID = 100L;
 
     public static final String ID_SEPARATOR = "_FP_";
@@ -49,6 +56,7 @@ public abstract class FolderPermission implements Permission {
         return folder;
     }
 
+    @Override
     public String getId() {
         return folder.id + ID_SEPARATOR + getClass().getSimpleName();
     }
@@ -109,7 +117,50 @@ public abstract class FolderPermission implements Permission {
         return new FolderOwnerPermission(foInfo);
     }
 
+    @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + folder;
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2DMessage(AbstractMessage mesg)
+    {
+      if(mesg instanceof FolderPermissionProto.FolderPermission)
+        {
+          FolderPermissionProto.FolderPermission proto = (FolderPermissionProto.FolderPermission)mesg;
+
+          this.folder = new FolderInfo(proto.getFolder());
+
+          for(AccessMode mode : AccessMode.values())
+            {
+              if(mode.ordinal() == proto.getMode().getModeValue())
+                this.mode = mode;
+            }
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2DMessage()
+    {
+      FolderPermissionProto.FolderPermission.Builder builder = FolderPermissionProto.FolderPermission.newBuilder();
+
+      builder.setClassName("FolderPermission");
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
+
+      return builder.build();
     }
 }
