@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.message.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;

@@ -39,8 +39,8 @@ import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.message.D2DMessage;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;

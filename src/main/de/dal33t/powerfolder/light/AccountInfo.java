@@ -30,7 +30,7 @@ import javax.persistence.Transient;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.message.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DMessage;
 import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StringUtils;
