@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.net;
 
 import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -29,6 +30,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,6 +81,8 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Filter;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
+import de.dal33t.powerfolder.util.Pair;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
@@ -96,6 +100,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public class NodeManager extends PFComponent {
 
     public static final String SERVER_NODES_URI = "/client_deployment/server.nodes";
+    public static final String SERVER_PUBLIC_KEYS_URI = "/client_deployment/server.public_keys";
 
     private static final Logger log = Logger.getLogger(NodeManager.class
         .getName());
@@ -1428,16 +1433,23 @@ public class NodeManager extends PFComponent {
     }
 
     /**
-     * Also cleansweeps all servers except primary server.
-     *
-     * @return the number of total servers know now.
+     * Load all known (cluster) server nodes and their public keys.
      */
     public void loadServerNodes(ServerClient client) {
         String serverNodesURL = client.getWebURL(SERVER_NODES_URI, false);
+        String serverPublicKeysURL = client.getWebURL(SERVER_PUBLIC_KEYS_URI,
+            false);
         if (StringUtils.isNotBlank(serverNodesURL)) {
             try {
                 loadNodesFrom(new URL(serverNodesURL));
             } catch (MalformedURLException e) {
+                logWarning(e.toString());
+            }
+        }
+        if (StringUtils.isNotBlank(serverPublicKeysURL)) {
+            try {
+                loadPublicKeysFrom(new URL(serverPublicKeysURL));
+            } catch (Exception e) {
                 logWarning(e.toString());
             }
         }
@@ -1563,6 +1575,36 @@ public class NodeManager extends PFComponent {
             logFine("Loaded server: " + node);
         }
         return !nodeList.getNodeList().isEmpty();
+    }
+
+    /**
+     * Load all public keys from all known Nodes from {@code url} and add them
+     * to the local key store.
+     * 
+     * @param url
+     * @return 
+     */
+    @SuppressWarnings("unchecked")
+    private boolean loadPublicKeysFrom(URL url) {
+        try {
+            ObjectInputStream in = new ObjectInputStream(url.openStream());
+            List<Pair<MemberInfo, PublicKey>> pkList = new ArrayList<>(
+                (ArrayList<Pair<MemberInfo, PublicKey>>) in.readObject());
+
+            logFine("Received " + pkList.size()
+                + " server keys from cluster @ " + url);
+
+            for (Pair<MemberInfo, PublicKey> key : pkList) {
+                ProUtil.addNodeToKeyStore(getController(), key.getFirst(),
+                    key.getSecond());
+            }
+
+            return true;
+        } catch (IOException | ClassCastException | ClassNotFoundException e) {
+            logWarning("Unable to load public keys from " + url.toString(), e);
+        }
+
+        return false;
     }
 
     /**
