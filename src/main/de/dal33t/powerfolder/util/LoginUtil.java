@@ -419,13 +419,13 @@ public class LoginUtil {
             return false;
         }
         // /^(?=\S*?[A-Z])(?=\S*?[a-z])(?=\S*?[0-9])(?=\S*?[^\w\*])\S{8,}$/
-        String pattern = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S*?[^\\w\\*])(?=\\S+$).{8,}";
+        String pattern = "(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S*?[^a-zA-Z0-9])(?=\\S+$).{8,}";
 
         // Explanations
         // (?=.*[0-9]) a digit must occur at least once
         // (?=.*[a-z]) a lower case letter must occur at least once
         // (?=.*[A-Z]) an upper case letter must occur at least once
-        // (?=\S*?[^\w\*]) a special character must occur at least once (more)
+        // (?=\S*?[^a-zA-Z0-9]) a special character must occur at least once (more) (every non-whitespace character except a-z or A-Z or 0-9)
         // (?=.*[@#$%^&+=]) a special character must occur at least once
         // (?=\\S+$) no whitespace allowed in the entire string
         // .{8,} at least 8 characters
