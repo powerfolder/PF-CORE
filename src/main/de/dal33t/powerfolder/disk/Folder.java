@@ -265,14 +265,7 @@ public class Folder extends PFComponent {
      */
     private boolean deviceDisconnected;
 
-    private boolean encrypted;
-
     private boolean schemaZyncro;
-
-    /**
-     * Encryption key when a client with valid credentials is connected.
-     */
-    private char[] encryptionKeyOBF;
 
     /**
      * #1538: Script that gets executed after a download has been completed
@@ -325,29 +318,8 @@ public class Folder extends PFComponent {
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
-        encrypted = folderSettings.getLocalBaseDir().toString().endsWith(".pfzip");
         problems = new CopyOnWriteArrayList<Problem>();
-        if (encrypted) {
-            localBase = folderSettings.getLocalBaseDir();
-            try {
-                Files.createDirectories(localBase);
-            }
-            catch (IOException ioe) {
-                // Ignore.
-            }
-//            try {
-//                new TFile(localBase, "dummy.txt").createNewFile();
-//                new TFile(localBase, "dummy.txt").rm();
-//            } catch (IOException e) {
-//                logWarning("Unable to initialize encrypted storage at "
-//                    + localBase);
-//            }
-//            if (!localBase.isArchive()) {
-//                throw new IllegalStateException(
-//                    "Unable to open encrypted container for folder "
-//                        + getName() + " at " + localBase);
-//            }
-        } else if (folderSettings.getLocalBaseDir().isAbsolute()) {
+        if (folderSettings.getLocalBaseDir().isAbsolute()) {
             localBase = folderSettings.getLocalBaseDir();
         } else {
             localBase = getController().getFolderRepository()
@@ -366,13 +338,6 @@ public class Folder extends PFComponent {
 
         schemaZyncro = PathUtils.isZyncroPath(localBase);
 
-        // Support for meta folder.
-        if (fInfo.isMetaFolder()
-            && folderSettings.getLocalBaseDir().toAbsolutePath().toString()
-                .contains(".pfzip"))
-        {
-            encrypted = true;
-        }
         Reject.ifTrue(localBase.equals(getController().getFolderRepository()
             .getFoldersBasedir()),
             "Folder cannot be located at base directory for all folders");
@@ -406,7 +371,7 @@ public class Folder extends PFComponent {
             } else {
                 logWarning("Unable to open " + toString() + " at '"
                     + localBase.toAbsolutePath()
-                    + "'. Local base directory is inaccessable. " + e);                
+                    + "'. Local base directory is inaccessable. " + e);
             }
             deviceDisconnected = true;
         }
@@ -2027,13 +1992,6 @@ public class Folder extends PFComponent {
         ListenerSupportFactory
             .removeAllListeners(folderMembershipListenerSupport);
         diskItemFilter.removeAllListener();
-        if (encrypted && !currentInfo.isMetaFolder()) {
-//            try {
-//                TFile.umount(localBase);
-//            } catch (Throwable e) {
-//                logWarning("Problem unmounting " + localBase + ". " + e);
-//            }
-        }
     }
 
     /**
@@ -2425,11 +2383,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-<<<<<<< HEAD
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
      *
-=======
      * PFS-1361
      */
     private Path createTimestampedCopy(Path file) throws IOException {
@@ -2448,7 +2404,6 @@ public class Folder extends PFComponent {
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
      * 
->>>>>>> development
      * @param desktopIni
      */
     private void makeFolderIcon(Path desktopIni) {
@@ -5450,26 +5405,6 @@ public class Folder extends PFComponent {
      */
     public void cleanupOldArchiveFiles(Date cleanupDate) {
         archiver.cleanupOldArchiveFiles(cleanupDate);
-    }
-
-    // Encryption logic *******************************************************
-
-    public boolean isEncrypted() {
-        return encrypted;
-    }
-
-    public char[] getEncryptionKeyOBF() {
-        return encryptionKeyOBF;
-    }
-
-    public void setEncryptionKey(char[] encryptionKeyPlain) {
-        char[] newKeyOBF = Util.toCharArray(LoginUtil
-            .obfuscate(encryptionKeyPlain));
-        if (encryptionKeyOBF == null
-            || Arrays.equals(newKeyOBF, encryptionKeyOBF))
-        {
-            this.encryptionKeyOBF = newKeyOBF;
-        }
     }
 
     // Inner classes **********************************************************

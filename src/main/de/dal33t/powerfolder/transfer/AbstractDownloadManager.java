@@ -26,7 +26,6 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -855,17 +854,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return metaDataBaseDir;
         }
 
-        // FIXME: Implement
-        boolean workAroundTrueZIP = getFileInfo().getFolder(
-            getController().getFolderRepository()).isEncrypted();
-        if (workAroundTrueZIP) {
-            metaDataBaseDir = Paths.get(System.getProperty("tmp.dir"),
-                "transfers").toAbsolutePath();
-        } else {
-            metaDataBaseDir = getFileInfo()
-                .getFolder(getController().getFolderRepository())
-                .getSystemSubDir().resolve("transfers").toAbsolutePath();
-        }
+        metaDataBaseDir = getFileInfo()
+            .getFolder(getController().getFolderRepository())
+            .getSystemSubDir().resolve("transfers").toAbsolutePath();
         if (Files.notExists(metaDataBaseDir)) {
             try {
                 Files.createDirectories(metaDataBaseDir);

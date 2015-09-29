@@ -244,15 +244,6 @@ public class FolderRepository extends PFComponent implements Runnable {
      * for each folder name.
      */
     public void init() {
-
-        // Not necessary after switching to Path
-        // #1697
-        // Init required. To avoid extracting ZIP/JAR files
-        // TFile.setDefaultArchiveDetector(new TArchiveDetector(
-        // TArchiveDetector.NULL, "pfzip", new JarDriver(
-        // IOPoolLocator.SINGLETON)));
-        // TFile.setLenient(false);
-
         initFoldersBasedir();
 
         processV4Format();
@@ -1143,9 +1134,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         fireFolderCreated(folder);
 
         if (isFine()) {
-            String message = "Setup "
-                + (folder.isEncrypted() ? "encrypted " : "") + "folder "
-                + folderInfo.getLocalizedName() + " at " + folder.getLocalBase();
+            String message = "Setup folder " + folderInfo.getLocalizedName()
+                + " at " + folder.getLocalBase();
             logFine(message);
         }
 
