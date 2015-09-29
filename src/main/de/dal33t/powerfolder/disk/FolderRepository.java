@@ -1600,8 +1600,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFine("Searching for new folders...");
         }
         // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
-        String baseDirName = getFoldersBasedirString();
-        Path baseDir = Paths.get(baseDirName);
+        Path baseDir = getFoldersBasedir();
         if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
             return;
         }
@@ -1655,7 +1654,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         } catch (IOException ioe) {
-            logWarning(ioe.toString());
+            logWarning("Could not access base dir while looking for new folders @ " + baseDir.toString() + ". " + ioe.toString());
         }
 
         if (!getController().getMySelf().isServer() && getController().isUIEnabled()) {
@@ -1780,26 +1779,26 @@ public class FolderRepository extends PFComponent implements Runnable {
     // Found a new directory in the folder base. Create a new folder.
     // Only doing this if logged in.
     private void handleNewFolder(Path file) {
-        FolderInfo fi = null;
+        FolderInfo foInfo = null;
         boolean renamed = false;
         boolean stillPresent = false;
-        boolean createdNew;
+        boolean createdNew = false;
         Controller controller = getController();
         ServerClient client = controller.getOSClient();
 
         if (client.isConnected() && client.isLoggedIn()) {
-            fi = checkSystemSubdirForFolder(file);
-            stillPresent = folderStillExists(fi);
+            foInfo = checkSystemSubdirForFolder(file);
+            stillPresent = folderStillExists(foInfo);
 
             try {
-                if (fi != null && fi.getFolder(controller) != null) {
+                if (foInfo != null && foInfo.getFolder(controller) != null) {
                     // FIXME: Don't send rename request, if not Admin Permission
-                    FolderInfo renamedFI = tryRenaming(client, file, fi, stillPresent);
+                    FolderInfo renamedFI = tryRenaming(client, file, foInfo, stillPresent);
 
-                    if (renamedFI != null && fi != null && renamedFI.equals(fi)
-                        && !renamedFI.getName().equals(fi.getName()))
+                    if (renamedFI != null && foInfo != null && renamedFI.equals(foInfo)
+                        && !renamedFI.getName().equals(foInfo.getName()))
                     {
-                        fi = renamedFI;
+                        foInfo = renamedFI;
                         renamed = true;
                     }
                 }
@@ -1808,28 +1807,39 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return;
             }
         } else if (getMySelf().isServer()) {
-            fi = checkSystemSubdirForFolder(file);
-            stillPresent = folderStillExists(fi);
+            foInfo = checkSystemSubdirForFolder(file);
+            stillPresent = folderStillExists(foInfo);
         }
-        if (fi == null || stillPresent) {
-            fi = new FolderInfo(file.getFileName().toString(),
+
+        if (foInfo == null || stillPresent) {
+            foInfo = new FolderInfo(file.getFileName().toString(),
                 IdGenerator.makeFolderId());
             createdNew= true;
         } else {
-            createdNew = false;
+            if (client.isLoggedIn()
+                && !client.getSecurityService().hasPermission(
+                    client.getAccountInfo(), FolderPermission.read(foInfo)))
+            {
+                cleanupMetaInformation(file);
+                foInfo = new FolderInfo(file.getFileName().toString(),
+                    IdGenerator.makeFolderId()).intern();
+                createdNew = true;
+            } else {
+                createdNew = false;
+            }
         }
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.getDefault(getController()),
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(controller));
-        Folder folder = createFolder0(fi, fs, true);
+        Folder folder = createFolder0(foInfo, fs, true);
         folder.addDefaultExcludes();
 
         if (client.isBackupByDefault()) {
             if (client.isConnected() && client.isLoggedIn()) {
                 boolean joined = client.joinedByCloud(folder);
                 if (!joined) {
-                    new CreateFolderOnServerTask(client.getAccountInfo(), fi,
+                    new CreateFolderOnServerTask(client.getAccountInfo(), foInfo,
                         null).scheduleTask(getController());
                 }
             }
@@ -1841,7 +1851,43 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (!renamed) {
             folderAutoCreateListener
-                .folderAutoCreated(new FolderAutoCreateEvent(fi));
+                .folderAutoCreated(new FolderAutoCreateEvent(foInfo));
+        }
+    }
+
+    /**
+     * Remove information about other members of a folder at {@code basedir}.
+     * <ol>
+     * <li>(meta)Members</li>
+     * <li>(meta)Locks</li>
+     * <li>(systemSubdir)FolderStatistic</li>
+     * <li>(systemSubdir).PowerFolder.db(.bak)</li>
+     * </ol>
+     * 
+     * @param basedir
+     */
+    private void cleanupMetaInformation(Path basedir) {
+        Reject.ifNull(basedir, "Base dir is null");
+        try {
+            Path systemSubdir = basedir
+                .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+            Path metaSubfolder = systemSubdir
+                .resolve(Constants.METAFOLDER_SUBDIR);
+
+            // remove members
+            Files.deleteIfExists(
+                metaSubfolder.resolve(Folder.METAFOLDER_MEMBERS));
+            // remove folder statistic
+            Files.deleteIfExists(systemSubdir.resolve(Folder.FOLDER_STATISTIC));
+            // remove database
+            Files.deleteIfExists(systemSubdir.resolve(Constants.DB_FILENAME));
+            Files.deleteIfExists(
+                systemSubdir.resolve(Constants.DB_BACKUP_FILENAME));
+            // remove locks
+            PathUtils.recursiveDelete(
+                metaSubfolder.resolve(Folder.METAFOLDER_LOCKS_DIR));
+        } catch (IOException e) {
+            logInfo("Could not delete members list and/or lock files in case of possible hijack. " + e);
         }
     }
 
@@ -2038,8 +2084,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFine("Searching for folders to be removed...");
         }
         // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
-        String baseDirName = getFoldersBasedirString();
-        Path baseDir = Paths.get(baseDirName);
+        Path baseDir = getFoldersBasedir();
         if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
             return;
         }
