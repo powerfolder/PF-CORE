@@ -43,10 +43,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -640,6 +642,18 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().scheduleAndRepeat(new CheckSyncTask(),
             1000L * Constants.FOLDER_UNSYNCED_CHECK_DELAY,
             Constants.MILLIS_PER_MINUTE);
+
+        // ============
+        // Monitor the default directory for possible new folders.
+        // ============
+
+        getController().getThreadPool().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                scanBasedir();
+            }
+        }, 10L, 10L, TimeUnit.SECONDS);
+
 
         started = true;
     }
@@ -1540,14 +1554,27 @@ public class FolderRepository extends PFComponent implements Runnable {
             + suspendNewFolderSearch.get());
     }
 
+    public void scanBasedir() {
+        if (suspendNewFolderSearch.get() > 0) {
+            return;
+        }
+        if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
+            .getValueBoolean(getController()))
+        {
+            lookForNewFolders();
+        }
+        if (ConfigurationEntry.LOOK_FOR_FOLDERS_TO_BE_REMOVED
+            .getValueBoolean(getController()))
+        {
+            lookForFoldersToBeRemoved();
+        }
+    }
+
     /**
      * Scan the PowerFolder base directory for new directories that might be new
      * folders.
      */
-    public void lookForNewFolders() {
-        if (suspendNewFolderSearch.get() > 0) {
-            return;
-        }
+    private void lookForNewFolders() {
         if (!getController().getMySelf().isServer()) {
             if (!getController().getOSClient().isLoggedIn()) {
                 if (isFine()) {
@@ -2050,10 +2077,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Scan the PowerFolder base directory for directories that should be
      * deleted.
      */
-    public void lookForFoldersToBeRemoved() {
-        if (suspendNewFolderSearch.get() > 0) {
-            return;
-        }
+    private void lookForFoldersToBeRemoved() {
         if (!getController().getMySelf().isServer()) {
             if (!getController().getOSClient().isLoggedIn()) {
                 if (isFine()) {
