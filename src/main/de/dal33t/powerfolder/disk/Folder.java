@@ -420,7 +420,6 @@ public class Folder extends PFComponent {
         // PFS-457: End
 
         // put myself in membership
-        // join0(controller.getMySelf());
         members.put(controller.getMySelf(), controller.getMySelf());
 
         // Now calc.
@@ -434,8 +433,6 @@ public class Folder extends PFComponent {
         // Force the next time scan.
         recommendScanOnNextMaintenance();
 
-        // // maintain desktop shortcut if wanted
-        // setDesktopShortcut();
         if (isFine()) {
             if (hasOwnDatabase) {
                 logFiner("Has own database (" + getName() + ")? "
@@ -615,21 +612,15 @@ public class Folder extends PFComponent {
         hasOwnDatabase = true;
 
         if (isInfo() || isFine()) {
+            String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
+                + scanResult.getChangedFiles().size() + " changed, "
+                + scanResult.getNewFiles().size() + " new, "
+                + scanResult.getRestoredFiles().size() + " restored, "
+                + scanResult.getDeletedFiles().size() + " removed, "
+                + scanResult.getProblemFiles().size() + " problems";
             if (scanResult.isChangeDetected()) {
-                String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
-                    + scanResult.getChangedFiles().size() + " changed, "
-                    + scanResult.getNewFiles().size() + " new, "
-                    + scanResult.getRestoredFiles().size() + " restored, "
-                    + scanResult.getDeletedFiles().size() + " removed, "
-                    + scanResult.getProblemFiles().size() + " problems";
                 logInfo(msg);
             } else {
-                String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
-                    + scanResult.getChangedFiles().size() + " changed, "
-                    + scanResult.getNewFiles().size() + " new, "
-                    + scanResult.getRestoredFiles().size() + " restored, "
-                    + scanResult.getDeletedFiles().size() + " removed, "
-                    + scanResult.getProblemFiles().size() + " problems";
                 logFine(msg);
             }
         }

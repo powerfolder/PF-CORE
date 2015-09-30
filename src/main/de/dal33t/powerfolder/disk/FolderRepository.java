@@ -675,8 +675,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         synchronized (scanTrigger) {
             scanTrigger.notifyAll();
         }
-        // Stop processor
-        // netListProcessor.shutdown();
 
         // Stop file requestor
         fileRequestor.shutdown();
@@ -1041,7 +1039,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (PathUtils.isNetworkPath(folderSettings.getLocalBaseDir())) {
                 addToRemovedFolderDirectories(folderSettings.getLocalBaseDir());
                 if (saveConfig) {
-                    getController().saveConfig();                    
+                    getController().saveConfig();
                 }
                 logWarning("Not allowed to create " + folderInfo.getName()
                     + " at " + folderSettings.getLocalBaseDir()
@@ -1451,15 +1449,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return;
             }
         }
-        // try {
-        // // initial wait before first scan
-        // synchronized (scanTrigger) {
-        // scanTrigger.wait(Controller.getWaitTime() * 4);
-        // }
-        // } catch (InterruptedException e) {
-        // logFiner(e);
-        // return;
-        // }
 
         List<Folder> scanningFolders = new ArrayList<Folder>();
         Controller controller = getController();
@@ -2164,21 +2153,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } else {
                     PathUtils.recursiveDelete(dir);
                 }
-                // Start: PFS-1361
-/*                if (getController().isUIEnabled()) {
-                    WarningNotice notice = new WarningNotice(
-                        Translation
-                            .getTranslation("notice.folder_removed.title"),
-                        Translation.getTranslation(
-                            "notice.folder_removed.summary", dir.getFileName()
-                                .toString()), Translation.getTranslation(
-                            "notice.folder_removed.message", dir.getFileName()
-                                .toString()));
-                    getController().getUIController().getApplicationModel()
-                        .getNoticesModel().handleNotice(notice);
-                }*/
-                // End: PFS-1361
-
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -2751,8 +2725,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
             if (syncMemberShips) {
-                // getController().getOSClient().getServer()
-                // .synchronizeFolderMemberships();
                 for (Member node : getController().getNodeManager()
                     .getNodesAsCollection())
                 {
