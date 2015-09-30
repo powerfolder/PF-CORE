@@ -110,7 +110,6 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -739,19 +738,6 @@ public class Folder extends PFComponent {
             // #2329
             throw new FolderException(currentInfo,
                 "Local base dir not available " + localBase.toAbsolutePath());
-
-            // Old code:
-            // if (!localBase.mkdirs()) {
-            // if (!quite) {
-            // logSevere(" not able to create folder(" + getName()
-            // + "), (sub) dir (" + localBase + ") creation failed");
-            // }
-            // throw new FolderException(currentInfo,
-            // "Unable to create folder at " + localBase.getAbsolutePath());
-            // } else {
-            // // logWarning("Created base dir at " + localBase, new
-            // RuntimeException("here"));
-            // }
         } else if (!Files.isDirectory(localBase)) {
             if (!quite) {
                 logSevere(" not able to create folder(" + getName()
@@ -955,7 +941,6 @@ public class Folder extends PFComponent {
                         Files.copy(tempFile, targetFile);
                     }
                 } catch (IOException e) {
-                    // TODO give a diskfull warning?
                     logWarning("Unable to store completed download "
                         + targetFile.toAbsolutePath() + ". " + e.getMessage()
                         + ". " + fInfo.toDetailString() + ". " + e);
@@ -1783,16 +1768,6 @@ public class Folder extends PFComponent {
         }
         dao = new FileInfoDAOHashMapImpl(getMySelf().getId(),
             diskItemFilter);
-
-        // File daoDir = new File(getSystemSubDir(), "db/h2");
-        // try {
-        // FileUtils.recursiveDelete(daoDir.getParentFile());
-        // } catch (IOException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-        // dao = new FileInfoDAOSQLImpl(getController(), "jdbc:h2:" + daoDir,
-        // "sa", "", null);
     }
 
     /**
@@ -3405,42 +3380,6 @@ public class Folder extends PFComponent {
         store(getMySelf(), remoteFile);
     }
 
-    private boolean removeEmptyDirectoryStructure(Path dir) {
-        if (Files.isRegularFile(dir)) {
-            return false;
-        } else if (Files.isDirectory(dir)) {
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                if (!stream.iterator().hasNext()) {
-                    for (Path p : stream) {
-                        if (!removeEmptyDirectoryStructure(p)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-                else {
-                    FileInfo fileInfo = FileInfoFactory.lookupInstance(this, dir);
-                    fileInfo = fileInfo.getNewestVersion(getController().getFolderRepository());
-                    if (fileInfo != null && !fileInfo.isDeleted()) {
-                        // Meta info not matching. Directory not deleted.
-                        return false;
-                    }
-                    // Remove empty directory
-                    try {
-                        Files.delete(dir);
-                        return true;
-                    } catch (IOException ioe) {
-                        return false;
-                    }
-                }
-            } catch (IOException ioe) {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
     /**
      * Broadcasts a message through the folder
      *
@@ -3916,25 +3855,8 @@ public class Folder extends PFComponent {
                             + ". Taking over modification infos");
                     }
 
-                    // localFileInfo.copyFrom(remoteFileInfo);
                     found.add(remoteFileInfo);
                 }
-                // Disabled because of TRAC #999. Causes strange behavior.
-                // if (localFileNewer) {
-                // if (isWarning()) {
-                // logWarning(
-                // "Found file remotely, but local is newer: local "
-                // + localFileInfo.toDetailString() + " remote: "
-                // + remoteFileInfo.toDetailString()
-                // + ". Increasing local version to "
-                // + (remoteFileInfo.getVersion() + 1));
-                // }
-                // localFileInfo.setVersion(remoteFileInfo.getVersion() + 1);
-                // // FIXME That might produce a LOT of traffic! Single update
-                // // message per file! This also might intefere with FileList
-                // // exchange at beginning of communication
-                // fileChanged(localFileInfo);
-                // }
             } else if (!fileCaseSame && dateSame && fileSizeSame) {
                 if (remoteFileInfo.getVersion() >= localFileInfo.getVersion()
                     && localFileInfo.getRelativeName()
@@ -4163,8 +4085,6 @@ public class Folder extends PFComponent {
             if (!checkIfDeviceDisconnected()) {
                 try {
                     Files.createDirectories(systemSubDir);
-                    // logWarning("Create local directory at: " + systemSubDir,
-                    // new RuntimeException("here"));
                     PathUtils.setAttributesOnWindows(systemSubDir, true, true);
                 } catch (IOException e) {
                     logWarning(e.getMessage());
@@ -4466,8 +4386,6 @@ public class Folder extends PFComponent {
         int maxPerMember)
     {
         // build a temp list
-        // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo,
-        // FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
             new FileInfoComparator(FileInfoComparator.BY_RELATIVE_NAME));
         // add0 expeced files
@@ -5095,13 +5013,6 @@ public class Folder extends PFComponent {
     public String toString() {
         return currentInfo.toString();
     }
-
-    // Logger methods *********************************************************
-
-    // @Override
-    // public String getLoggerName() {
-    // return super.getLoggerName() + " '" + getName() + '\'';
-    // }
 
     // *************** Event support
     public void addMembershipListener(FolderMembershipListener listener) {
