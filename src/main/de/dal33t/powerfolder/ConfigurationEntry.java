@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
+import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -124,7 +125,7 @@ public enum ConfigurationEntry {
      */
     SECURITY_FOLDER_ARCHIVE_PERMISSION("security.folder.archive.permission",
         AccessMode.READ_WRITE.name()),
-        
+
     /**
      * PFC-2670: Trust self-signed/any SSL certificate
      */
@@ -251,7 +252,7 @@ public enum ConfigurationEntry {
      * PFC-2580: No connection to powerfolder.com / Cloud Replication options
      */
     SERVER_CONNECT("server.connect.enabled", true),
-    
+
     /**
      * The optional name of the sever to connect to.
      */
@@ -283,7 +284,7 @@ public enum ConfigurationEntry {
 
     /**
      * #1687: How this computer should behave when the server is not connected.
-     * 
+     *
      * @deprecated for testing use {@link Feature#P2P_REQUIRES_LOGIN_AT_SERVER}
      */
     SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
@@ -491,7 +492,7 @@ public enum ConfigurationEntry {
      * PFC-2548: The token to use for authentication.
      */
     SERVER_CONNECT_TOKEN("server.connect.token"),
-    
+
     /**
      * Password for connection (clear text)
      */
@@ -1054,7 +1055,7 @@ public enum ConfigurationEntry {
      * Remove folder from setup if disappeared/deleted from basedir.
      */
     FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED("remove.folder.basedir.when_disappeared", true),
-    
+
     /**
      * PFC-2709: Enable/Disabled client sync with special directories, e.g. Documents‚ (User directories)
      */
@@ -1107,18 +1108,31 @@ public enum ConfigurationEntry {
     SHOW_TINY_WIZARDS("show.tiny.wizards", false),
 
     SHOW_CREATE_FOLDER("show.create.folder", true),
-    
+
     /**
      * PFC-2638: Desktop sync option
      */
     SHOW_DESKTOP_SYNC_OPTION("show.desktop.sync", false),
-    
+
     /**
      * PFC-2638: Desktop sync option
      */
     SHOW_WALLPAPER_OPTION("show.wallpaper", false),
-    
-    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
+
+    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false),
+
+    /* D2D */
+
+    /**
+     * The TCP port for the {@link ConnectionListener} and D2D
+     */
+    D2D_PORT("d2d.port", ConnectionListener.DEFAULT_D2D_PORT),
+
+    /**
+     * Whether D2D is enabled
+     */
+
+    D2D_ENABLED("d2d.enabled", false);
 
     // Methods/Constructors ***************************************************
 
@@ -1126,7 +1140,7 @@ public enum ConfigurationEntry {
         .getName());
 
     private final String configKey;
-    protected final String defaultValue;
+    protected String defaultValue;
 
     ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
@@ -1164,7 +1178,7 @@ public enum ConfigurationEntry {
         Reject.ifNull(controller, "Controller is null");
         return hasValue(controller.getConfig());
     }
-    
+
     /**
      * @param config
      *            the config
@@ -1185,7 +1199,7 @@ public enum ConfigurationEntry {
         Reject.ifNull(controller, "Controller is null");
         return hasNonBlankValue(controller.getConfig());
     }
-    
+
     /**
      * @param config
      *            the config
@@ -1223,7 +1237,7 @@ public enum ConfigurationEntry {
 
     /**
      * Parses the configuration entry into a Integer.
-     * 
+     *
      * @param controller
      *            the controller to read the config from
      * @return The current value from the configuration for this entry. or the
@@ -1324,6 +1338,15 @@ public enum ConfigurationEntry {
      */
     public void setValue(Controller controller, int value) {
         setValue(controller, String.valueOf(value));
+    }
+
+    /**
+     * Set default value
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return the default value for this config entry.
+     */
+    public void setDefaultValue(String value) {
+        this.defaultValue = value;
     }
 
     /**
