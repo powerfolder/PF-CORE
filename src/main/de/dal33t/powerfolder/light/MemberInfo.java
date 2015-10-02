@@ -42,7 +42,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -60,7 +60,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 @TypeDef(name = "socketAddressType", typeClass = InetSocketAddressUserType.class)
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class MemberInfo implements Serializable, D2DMessage {
+public class MemberInfo implements Serializable, D2DObject {
     private static final long serialVersionUID = 100L;
     public static Internalizer<MemberInfo> INTERNALIZER;
 
@@ -126,7 +126,7 @@ public class MemberInfo implements Serializable, D2DMessage {
     public
     MemberInfo(AbstractMessage mesg)
     {
-      initFromD2DMessage(mesg);
+      initFromD2D(mesg);
     }
 
     // Setter/Getter **********************************************************
@@ -406,7 +406,7 @@ public class MemberInfo implements Serializable, D2DMessage {
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof MemberInfoProto.MemberInfo)
         {
@@ -440,7 +440,7 @@ public class MemberInfo implements Serializable, D2DMessage {
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       MemberInfoProto.MemberInfo.Builder builder = MemberInfoProto.MemberInfo.newBuilder();
 

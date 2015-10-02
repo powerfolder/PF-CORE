@@ -39,7 +39,7 @@ import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Translation;
@@ -55,7 +55,7 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class FolderInfo implements Serializable, Cloneable, D2DMessage {
+public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private static final long serialVersionUID = 102L;
     private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
 
@@ -107,7 +107,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DMessage {
     public
     FolderInfo(AbstractMessage mesg)
     {
-      initFromD2DMessage(mesg);
+      initFromD2D(mesg);
     }
 
     public boolean isMetaFolder() {
@@ -309,7 +309,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DMessage {
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof FolderInfoProto.FolderInfo)
         {
@@ -329,7 +329,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DMessage {
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       FolderInfoProto.FolderInfo.Builder builder = FolderInfoProto.FolderInfo.newBuilder();
 

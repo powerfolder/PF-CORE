@@ -30,7 +30,7 @@ import javax.persistence.Transient;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
  * @author sprajc
  */
 @Embeddable
-public class AccountInfo implements Serializable, D2DMessage {
+public class AccountInfo implements Serializable, D2DObject {
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
 
@@ -78,7 +78,7 @@ public class AccountInfo implements Serializable, D2DMessage {
     public
     AccountInfo(AbstractMessage mesg)
     {
-      initFromD2DMessage(mesg);
+      initFromD2D(mesg);
     }
 
     public String getOID() {
@@ -216,7 +216,7 @@ public class AccountInfo implements Serializable, D2DMessage {
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof AccountInfoProto.AccountInfo)
         {
@@ -236,7 +236,7 @@ public class AccountInfo implements Serializable, D2DMessage {
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       AccountInfoProto.AccountInfo.Builder builder = AccountInfoProto.AccountInfo.newBuilder();
 

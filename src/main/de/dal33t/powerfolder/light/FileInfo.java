@@ -40,7 +40,7 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.Lock;
@@ -62,7 +62,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo implements Serializable, DiskItem, Cloneable, D2DMessage {
+public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     public static final String UNIX_SEPARATOR = "/";
     private static final Logger log = Logger
@@ -219,7 +219,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DMessage {
     public
     FileInfo(AbstractMessage mesg)
     {
-      initFromD2DMessage(mesg);
+      initFromD2D(mesg);
     }
 
     /**
@@ -1097,7 +1097,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DMessage {
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof FileInfoProto.FileInfo)
         {
@@ -1127,7 +1127,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DMessage {
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       FileInfoProto.FileInfo.Builder builder = FileInfoProto.FileInfo.newBuilder();
 
@@ -1139,16 +1139,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DMessage {
       builder.setSize(this.size);
 
       builder.setModifiedby(
-        (MemberInfoProto.MemberInfo)this.modifiedBy.toD2DMessage());
+        (MemberInfoProto.MemberInfo)this.modifiedBy.toD2D());
       builder.setModifiedByAccount(
-        (AccountInfoProto.AccountInfo)this.modifiedByAccount.toD2DMessage());
+        (AccountInfoProto.AccountInfo)this.modifiedByAccount.toD2D());
 
       builder.setLastModifiedDate(this.lastModifiedDate.getTime());
       builder.setVersion(this.version);
       builder.setDeleted(this.deleted);
 
       builder.setFolderInfo(
-        (FolderInfoProto.FolderInfo)this.folderInfo.toD2DMessage());
+        (FolderInfoProto.FolderInfo)this.folderInfo.toD2D());
 
 
       return builder.build();
