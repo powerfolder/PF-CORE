@@ -1396,7 +1396,7 @@ public class Controller extends PFComponent {
                     String portStr = nizer.nextToken();
                     try {
                         int port = Integer.parseInt(portStr);
-                        boolean listenerOpened = openListener(port);
+                        boolean listenerOpened = openListener(port, false);
                         if (listenerOpened && connectionListener != null) {
                             // set reconnect on first successfull listener
                             nodeManager
@@ -1425,6 +1425,21 @@ public class Controller extends PFComponent {
                 }
             }
         }
+
+        /* Check whether to start D2D, too */
+        boolean useD2D = ConfigurationEntry.D2D_ENABLED.getValueBoolean(this);
+        int     port   = ConfigurationEntry.D2D_PORT.getValueInt(this);
+
+        if(useD2D) {
+            logInfo("D2D is enabled");
+
+            boolean listenerOpened = openListener(port, useD2D);
+
+            if(!listenerOpened) {
+                logSevere("Couldn't bind to port " + port);
+            } else logInfo("Listening on D2D port " + port);
+        }
+
         return true;
     }
 
@@ -1471,7 +1486,8 @@ public class Controller extends PFComponent {
      * Tries to bind a random port
      */
     private void bindRandomPort() {
-        if ((openListener(ConnectionListener.DEFAULT_PORT) || openListener(0))
+        if ((openListener(ConnectionListener.DEFAULT_PORT, false)
+            || openListener(0, false))
             && connectionListener != null)
         {
             nodeManager.getMySelf().getInfo()
@@ -1483,7 +1499,7 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Starts all configures connection listener
+     * Starts all configured connection listener
      */
     private void startConfiguredListener() {
         // Start the connection listener
@@ -2424,16 +2440,21 @@ public class Controller extends PFComponent {
      * "connectionListener". All others are added the the list of
      * additionalConnectionListeners.
      *
+     * @param  port    Port to open listener to
+     * @param  useD2D  Whether to use D2D proto (FIXME: Might be a bit
+     *                 pointless this way but allows to use this proto
+     *                 on any port later <kappel@powerfolder.com>)
+     *
      * @return if succeeded
      */
-    private boolean openListener(int port) {
+    private boolean openListener(int port, boolean useD2D) {
         String bind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(this);
         logFine("Opening incoming connection listener on port " + port
             + " on interface " + (bind != null ? bind : "(all)"));
         while (true) {
             try {
                 ConnectionListener newListener = new ConnectionListener(this,
-                    port, bind);
+                    port, bind, useD2D);
                 if (connectionListener == null) {
                     // its our primary listener
                     connectionListener = newListener;

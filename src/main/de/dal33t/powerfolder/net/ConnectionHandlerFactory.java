@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.d2d.D2DPlainSocketConnectionHandler;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -193,7 +193,7 @@ public class ConnectionHandlerFactory extends PFComponent {
       /* Check which type we need here */
       if(useD2D)
         {
-          conHan = new D2DPlainSocketConnectionHandler(
+          conHan = new D2DSocketConnectionHandler(
             getController(), socket);
         }
       else conHan = new PlainSocketConnectionHandler(
