@@ -23,7 +23,7 @@ import java.io.Serializable;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.RangeProto;
 
 /**
@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.protocol.RangeProto;
  * @version $Revision: $
  */
 public final class Range
-  implements Serializable, D2DMessage
+  implements Serializable, D2DObject
 {
 	private static final long serialVersionUID = 100L;
     private long start;
@@ -78,7 +78,7 @@ public final class Range
     public
     Range(AbstractMessage mesg)
     {
-      initFromD2DMessage(mesg);
+      initFromD2D(mesg);
     }
 
 	/**
@@ -170,7 +170,7 @@ public final class Range
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof RangeProto.Range)
         {
@@ -189,7 +189,7 @@ public final class Range
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       RangeProto.Range.Builder builder = RangeProto.Range.newBuilder();
 
