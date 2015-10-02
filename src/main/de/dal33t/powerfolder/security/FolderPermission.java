@@ -21,9 +21,10 @@ package de.dal33t.powerfolder.security;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.AccessModeProto;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.FolderPermissionProto;
 import de.dal33t.powerfolder.util.Reject;
 
@@ -34,7 +35,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public abstract class FolderPermission
-  implements Permission, D2DMessage
+  implements Permission, D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -126,25 +127,13 @@ public abstract class FolderPermission
      * Init from D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  mesg  Message to use data from
+     *
+     * NOTE: We let the subclasses implement this interface method, because we'd
+     *       need another factory here due to the weird class hierarchy.
      **/
 
     @Override
-    public void
-    initFromD2DMessage(AbstractMessage mesg)
-    {
-      if(mesg instanceof FolderPermissionProto.FolderPermission)
-        {
-          FolderPermissionProto.FolderPermission proto = (FolderPermissionProto.FolderPermission)mesg;
-
-          this.folder = new FolderInfo(proto.getFolder());
-
-          for(AccessMode mode : AccessMode.values())
-            {
-              if(mode.ordinal() == proto.getMode().getModeValue())
-                this.mode = mode;
-            }
-        }
-    }
+    public abstract void initFromD2D(AbstractMessage mesg);
 
     /** toD2DMessage
      * Convert to D2D message
@@ -154,12 +143,22 @@ public abstract class FolderPermission
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
-      FolderPermissionProto.FolderPermission.Builder builder = FolderPermissionProto.FolderPermission.newBuilder();
+      FolderPermissionProto.FolderPermission.Builder builder =
+        FolderPermissionProto.FolderPermission.newBuilder();
+
+      /* Convert mode enum to proto enum */
+      AccessModeProto.AccessMode.Builder mbuilder =
+        AccessModeProto.AccessMode.newBuilder();
+
+      AccessMode mode = getMode();
+
+      mbuilder.setModeValue(mode.ordinal());
 
       builder.setClassName("FolderPermission");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
+      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
+      builder.setMode(mbuilder.build());
 
       return builder.build();
     }

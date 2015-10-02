@@ -23,7 +23,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.protocol.FolderPermissionProto;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -51,6 +54,7 @@ public class FolderAdminPermission extends FolderPermission {
         folder = foInfo;
     }
 
+    @Override
     public String getName() {
         return Translation.get("permissions.folder.admin");
     }
@@ -69,6 +73,7 @@ public class FolderAdminPermission extends FolderPermission {
         return false;
     }
 
+    @Override
     public boolean implies(Permission impliedPermision) {
         if (impliedPermision instanceof FolderReadPermission) {
             FolderReadPermission rp = (FolderReadPermission) impliedPermision;
@@ -122,5 +127,24 @@ public class FolderAdminPermission extends FolderPermission {
             folder = super.folder;
         }
         out.defaultWriteObject();
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2D(AbstractMessage mesg)
+    {
+      if(mesg instanceof FolderPermissionProto.FolderPermission)
+        {
+          FolderPermissionProto.FolderPermission proto =
+            (FolderPermissionProto.FolderPermission)mesg;
+
+          this.folder = new FolderInfo(proto.getFolder());
+        }
     }
 }
