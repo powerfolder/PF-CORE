@@ -29,9 +29,12 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.net.AbstractSocketConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
-import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
 import de.dal33t.powerfolder.protocol.AnyProto;
 
 /**
@@ -42,8 +45,8 @@ import de.dal33t.powerfolder.protocol.AnyProto;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.72 $
  */
-public class D2DPlainSocketConnectionHandler extends
-  PlainSocketConnectionHandler
+public class D2DSocketConnectionHandler extends
+  AbstractSocketConnectionHandler implements ConnectionHandler
 {
   /**
    * Builds a new D2D connection manager for the socket.
@@ -57,7 +60,7 @@ public class D2DPlainSocketConnectionHandler extends
    **/
 
   public
-  D2DPlainSocketConnectionHandler(Controller controller,
+  D2DSocketConnectionHandler(Controller controller,
     Socket socket)
   {
     super(controller, socket);
@@ -87,40 +90,61 @@ public class D2DPlainSocketConnectionHandler extends
           className, className);
 
         /* Try to create D2D message */
-        Class<?>   klass     = Class.forName(classPkg);
-        Method     meth      = klass.getMethod("parseFrom");
-        AbstractMessage mesg = (AbstractMessage)meth.invoke(data); ///< Call parseForm()
+        Class<?>        klass = Class.forName(classPkg);
+        Method          meth  = klass.getMethod("parseFrom");
+        AbstractMessage amesg = (AbstractMessage)meth.invoke(data); ///< Call parseForm()
 
         /* Try to create message */
         classPkg = String.format("de.dal33t.powerfolder.message.%s", className);
         klass    = Class.forName(classPkg);
         meth     = klass.getMethod("initFromD2DMessage");
 
-        Object d2dmesg = klass.newInstance();
+        Object mesg = klass.newInstance();
 
-        meth.invoke(d2dmesg, mesg); ///< Call initFromD2DMessage
+        meth.invoke(mesg, amesg); ///< Call initFromD2DMessage
 
-        return d2dmesg;
+        return mesg;
       }
     catch(NoSuchMethodException|SecurityException|IllegalArgumentException|
         InvocationTargetException|InstantiationException|
         IllegalAccessException|InvalidProtocolBufferException e)
       {
         throw new ConnectionException(
-          "Unable to send message to peer, connection closed", e)
+          "Unable to read message to peer, connection closed", e)
           .with(this);
       }
   }
 
   /** serialize
    * Serialize message data
-   * @param  message  {@link D2DMessage} to serialize
+   * @param  message  {@link Message} to serialize
    * @return Serialized byte data
    **/
 
+  @Override
   protected byte[]
-  serialize(D2DMessage mesg)
+  serialize(Message mesg)
   {
-    return mesg.toD2DMessage().toByteArray();
+    byte[] data = null;
+
+    if(mesg instanceof D2DObject)
+      {
+        data = ((D2DObject)mesg).toD2D().toByteArray();
+      }
+
+    return data;
+  }
+
+  /** createOwnIdentity
+   * Create identity
+   * @return Own {@link Identity}
+   **/
+
+  @Override
+  protected Identity
+  createOwnIdentity()
+  {
+    return new Identity(getController(), getController().getMySelf()
+      .getInfo(), getMyMagicId(), false, false, this);
   }
 }

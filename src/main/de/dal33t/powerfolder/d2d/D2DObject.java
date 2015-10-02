@@ -24,19 +24,19 @@ package de.dal33t.powerfolder.d2d;
 import com.google.protobuf.AbstractMessage;
 
 public interface
-D2DMessage
+D2DObject
 {
-  /** initFromD2DMessage
+  /** initFromD2D
    * Init from D2D message
-   * @param  mesg  Message to use data from
+   * @param  mesg  {@link Message} to use data from
    **/
 
-  public void initFromD2DMessage(AbstractMessage mesg);
+  public void initFromD2D(AbstractMessage mesg);
 
   /** toD2DMessage
    * Convert to D2D message
-   * @return Converted D2D message
+   * @return Converted {@link AbstractMessage D2D message}
    **/
 
-  public AbstractMessage toD2DMessage();
+  public AbstractMessage toD2D();
 }
