@@ -708,12 +708,22 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Checks the basedir is valid
+     * Checks if the basedir is valid.<br/>
+     * That is:<br />
+     * <ul>
+     * <li>Does the base directory exist</li>
+     * <li>Is it a directory</li>
+     * <li>(On OS X and Linux) Is the base directory a subdir of "/Volumes"</li>
+     * <li>Is the base directory different from the folders base dir</li>
+     * </ul>
      *
+     * @param quiet
+     *            If {@code true} is passed log a severe message, if the
+     *            folder's base dir is not a directory.
      * @throws FolderException
      *             if base dir is not ok
      */
-    private void checkBaseDir(boolean quite) throws FolderException {
+    private void checkBaseDir(boolean quiet) throws FolderException {
         // Basic checks
         if (Files.notExists(localBase)) {
             // TRAC #1249
@@ -730,7 +740,7 @@ public class Folder extends PFComponent {
             throw new FolderException(currentInfo,
                 "Local base dir not available " + localBase.toAbsolutePath());
         } else if (!Files.isDirectory(localBase)) {
-            if (!quite) {
+            if (!quiet) {
                 logSevere(" not able to create folder(" + getName()
                     + "), (sub) dir (" + localBase + ") is no dir");
             }
@@ -2624,7 +2634,7 @@ public class Folder extends PFComponent {
         if (!memberRead || !mySelfRead) {
             if (memberRead) {
                 if (isFine()) {
-                    String msg = "Not joining " + member + " / "
+                    String msg = getName() + ": Not joining " + member + " / "
                         + member.getAccountInfo()
                         + ". Myself got no read permission";
                     if (getController().isStarted()
@@ -2639,7 +2649,7 @@ public class Folder extends PFComponent {
                 }
             } else {
                 if (isFine()) {
-                    String msg = "Not joining " + member + " / "
+                    String msg = getName() + ": Not joining " + member + " / "
                         + member.getAccountInfo() + " no read permission";
                     if (getController().isStarted()
                         && member.isCompletelyConnected()
@@ -4175,28 +4185,9 @@ public class Folder extends PFComponent {
                 logInfo(toString() + " disconnected storage/device "
                     + getLocalBase() + ". Reconnecting...");
             }
-            boolean remove = ConfigurationEntry.FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED
-                .getValueBoolean(getController());
-            String bd = getController().getFolderRepository()
-                .getFoldersBasedirString();
-            boolean inBaseDir = false;
-            if (bd != null) {
-                inBaseDir = getLocalBase().toAbsolutePath().startsWith(bd);
-            }
-            if (inBaseDir && !currentInfo.isMetaFolder() && remove) {
-                // Schedule for removal
-                getController().schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getController().getFolderRepository()
-                            .hasJoinedFolder(currentInfo))
-                        {
-                            getController().getFolderRepository().removeFolder(
-                                Folder.this, false);
-                        }
-                    }
-                }, 5000L);
-            } else {
+            if (!getController().getFolderRepository()
+                .handleDeviceDisconnected(this))
+            {
                 // Otherwise raise problem.
                 addProblem(new DeviceDisconnectedProblem(currentInfo));
             }

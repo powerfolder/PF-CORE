@@ -159,6 +159,17 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Set<Path> removedFolderDirectories = new CopyOnWriteArraySet<Path>();
 
     /**
+     * Mutex for the periodical looking for new folders / removing folders not
+     * present on the server any more and the spontanious event of a
+     * "disconnected device".
+     * 
+     * @see #scanBasedir()
+     * @see #handleDeviceDisconnected(Folder)
+     * @author krickl@powerfolder.com
+     */
+    private final ReentrantLock addAndRemoveFolderLock = new ReentrantLock();
+
+    /**
      * Constructor
      * 
      * @param controller
@@ -1543,19 +1554,32 @@ public class FolderRepository extends PFComponent implements Runnable {
             + suspendNewFolderSearch.get());
     }
 
+    /**
+     * First, scan the base dir for new folders. Second, scan the base dir for
+     * folders that can be removed.<br />
+     * <br />
+     * This method is synchronized with
+     * {@link #handleDeviceDisconnected(Folder)}.
+     */
     public void scanBasedir() {
         if (suspendNewFolderSearch.get() > 0) {
             return;
         }
-        if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
-            .getValueBoolean(getController()))
-        {
-            lookForNewFolders();
-        }
-        if (ConfigurationEntry.LOOK_FOR_FOLDERS_TO_BE_REMOVED
-            .getValueBoolean(getController()))
-        {
-            lookForFoldersToBeRemoved();
+        // sync with #handleDeviceDisconnected(Folder)
+        addAndRemoveFolderLock.lock();
+        try {
+            if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
+                .getValueBoolean(getController()))
+            {
+                lookForNewFolders();
+            }
+            if (ConfigurationEntry.LOOK_FOR_FOLDERS_TO_BE_REMOVED
+                .getValueBoolean(getController()))
+            {
+                lookForFoldersToBeRemoved();
+            }
+        } finally {
+            addAndRemoveFolderLock.unlock();
         }
     }
 
@@ -1822,9 +1846,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 IdGenerator.makeFolderId());
             createdNew= true;
         } else {
-            if (client.isLoggedIn()
-                && !client.getSecurityService().hasPermission(
-                    client.getAccountInfo(), FolderPermission.read(foInfo)))
+            if (!getController().getSecurityManager().hasPermission(
+                getMySelf().getInfo(), FolderPermission.read(foInfo)))
             {
                 cleanupMetaInformation(file);
                 foInfo = new FolderInfo(file.getFileName().toString(),
@@ -2774,5 +2797,63 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         }
+    }
+
+    /**
+     * Set the {@link Folder} {@code folder} to be disconnected from storage.
+     * That is remove it locally from the {@link FolderRepository}.<br />
+     * <br />
+     * This method is synchronized with {@link FolderRepository#scanBasedir()}.
+     * 
+     * @param folder
+     *            The {@link Folder} to be reomved from the
+     *            {@link FolderRepository}.
+     * @return {@code True} if the folder was removed locally, {@code false}
+     *         otherwise.
+     */
+    public boolean handleDeviceDisconnected(final Folder folder) {
+        Reject.ifNull(folder, "Folder");
+
+        if (folder.getInfo().isMetaFolder()) {
+            return false;
+        }
+
+        if (!ConfigurationEntry.FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED
+            .getValueBoolean(getController()))
+        {
+            return false;
+        }
+
+        Path bd = getFoldersBasedir().toAbsolutePath();
+        boolean inBaseDir = false;
+        if (bd != null) {
+            inBaseDir = folder.getLocalBase().toAbsolutePath().startsWith(bd);
+        }
+
+        if (!inBaseDir) {
+            return false;
+        }
+
+        logFine("Removing " + folder.toString());
+
+        // Schedule for removal
+        getController().schedule(new Runnable() {
+            @Override
+            public void run() {
+                if (hasJoinedFolder(folder.getInfo())) {
+                    // sync with #scanBasedir()
+                    setSuspendNewFolderSearch(true);
+                    addAndRemoveFolderLock.lock();
+                    try {
+                        removeFolder(folder, false);
+                    } finally {
+                        addAndRemoveFolderLock.unlock();
+                        setSuspendNewFolderSearch(false);
+                    }
+                }
+            }
+        }, 5000L);
+
+        return true;
     }
 }
