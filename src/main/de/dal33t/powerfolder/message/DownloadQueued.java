@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.DownloadQueuedProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.protocol.FileInfoProto;
  * @version $Revision: 1.3 $
  */
 public class DownloadQueued extends Message
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -64,7 +64,7 @@ public class DownloadQueued extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof DownloadQueuedProto.DownloadQueued)
         {
@@ -83,13 +83,13 @@ public class DownloadQueued extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       DownloadQueuedProto.DownloadQueued.Builder builder =
         DownloadQueuedProto.DownloadQueued.newBuilder();
 
       builder.setClassName("DownloadQueued");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
     }

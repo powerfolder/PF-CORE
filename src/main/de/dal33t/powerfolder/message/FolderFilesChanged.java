@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.2 $
  */
 public class FolderFilesChanged extends FolderRelatedMessage
-  implements D2DMessage
+  implements D2DObject
 {
 
     private static final Logger log = Logger.getLogger(FolderFilesChanged.class
@@ -264,7 +264,7 @@ public class FolderFilesChanged extends FolderRelatedMessage
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof FolderFilesChangedProto.FolderFilesChanged)
         {
@@ -293,7 +293,7 @@ public class FolderFilesChanged extends FolderRelatedMessage
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       FolderFilesChangedProto.FolderFilesChanged.Builder builder =
         FolderFilesChangedProto.FolderFilesChanged.newBuilder();
@@ -303,10 +303,10 @@ public class FolderFilesChanged extends FolderRelatedMessage
       /* Convert array to list */
       for(FileInfo finfo : this.added)
         {
-          builder.addAdded((FileInfoProto.FileInfo)finfo.toD2DMessage());
+          builder.addAdded((FileInfoProto.FileInfo)finfo.toD2D());
         }
 
-      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2DMessage());
+      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
     }

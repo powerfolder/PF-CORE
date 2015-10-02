@@ -36,7 +36,7 @@ import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
@@ -56,7 +56,7 @@ import de.dal33t.powerfolder.util.Util;
  * @version $Revision: 1.9 $
  */
 public class FolderList extends Message
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 101L;
     private static Logger LOG = Logger.getLogger(FolderList.class.getName());
@@ -257,7 +257,7 @@ public class FolderList extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof FolderListProto.FolderList)
         {
@@ -286,7 +286,7 @@ public class FolderList extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       FolderListProto.FolderList.Builder builder = FolderListProto.FolderList.newBuilder();
 
@@ -295,7 +295,7 @@ public class FolderList extends Message
       /* Convert array to list */
       for(FolderInfo finfo : this.secretFolders)
         {
-          builder.addSecretFolders((FolderInfoProto.FolderInfo)finfo.toD2DMessage());
+          builder.addSecretFolders((FolderInfoProto.FolderInfo)finfo.toD2D());
         }
 
       builder.setJoinedMetaFolders(this.joinedMetaFolders);

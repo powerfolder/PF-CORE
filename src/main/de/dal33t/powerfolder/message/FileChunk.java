@@ -24,7 +24,7 @@ import java.io.IOException;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileChunkProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
@@ -39,7 +39,7 @@ import de.dal33t.powerfolder.util.Validate;
  * @version $Revision: 1.6 $
  */
 public class FileChunk extends Message
-  implements LimitBandwidth, D2DMessage
+  implements LimitBandwidth, D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -90,7 +90,7 @@ public class FileChunk extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof FileChunkProto.FileChunk)
         {
@@ -110,12 +110,12 @@ public class FileChunk extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       FileChunkProto.FileChunk.Builder builder = FileChunkProto.FileChunk.newBuilder();
 
       builder.setClassName("FileChunk");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setOffset(this.offset);
       builder.setData(ByteString.copyFrom(this.data));
 

@@ -2,7 +2,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FileListRequestProto;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
@@ -14,7 +14,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @author Sprajc
  */
 public class FileListRequest extends FolderRelatedMessage
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -36,7 +36,7 @@ public class FileListRequest extends FolderRelatedMessage
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof FileListRequestProto.FileListRequest)
         {
@@ -55,13 +55,13 @@ public class FileListRequest extends FolderRelatedMessage
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       FileListRequestProto.FileListRequest.Builder builder =
         FileListRequestProto.FileListRequest.newBuilder();
 
       builder.setClassName("FileListRequest");
-      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2DMessage());
+      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
     }

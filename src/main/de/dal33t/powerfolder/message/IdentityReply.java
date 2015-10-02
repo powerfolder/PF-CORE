@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.IdentityReplyProto;
 
 /**
@@ -31,7 +31,7 @@ import de.dal33t.powerfolder.protocol.IdentityReplyProto;
  * @version $Revision: 1.2 $
  */
 public class IdentityReply extends Message
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -85,7 +85,7 @@ public class IdentityReply extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof IdentityReplyProto.IdentityReply)
         {
@@ -104,7 +104,7 @@ public class IdentityReply extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       IdentityReplyProto.IdentityReply.Builder builder = IdentityReplyProto.IdentityReply.newBuilder();
 

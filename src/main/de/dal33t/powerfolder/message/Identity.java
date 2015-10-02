@@ -26,7 +26,7 @@ import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.IdentityProto;
@@ -40,7 +40,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.6 $
  */
 public class Identity extends Message
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 101L;
 
@@ -290,7 +290,7 @@ public class Identity extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof IdentityProto.Identity)
         {
@@ -311,7 +311,7 @@ public class Identity extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
 

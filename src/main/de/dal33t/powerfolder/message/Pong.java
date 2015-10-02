@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.PongProto;
 import de.dal33t.powerfolder.util.Format;
 
@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Format;
  * @version $Revision: 1.5 $
  */
 public class Pong extends Message
-    implements D2DMessage
+    implements D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -87,7 +87,7 @@ public class Pong extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof PongProto.Pong)
         {
@@ -107,7 +107,7 @@ public class Pong extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       PongProto.Pong.Builder builder = PongProto.Pong.newBuilder();
 

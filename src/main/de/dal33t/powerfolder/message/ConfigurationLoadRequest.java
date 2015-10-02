@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.ConfigurationLoadRequestProto;
 import de.dal33t.powerfolder.util.StringUtils;
 
@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.util.StringUtils;
  * @author sprajc
  */
 public class ConfigurationLoadRequest extends Message
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 2L;
 
@@ -104,7 +104,7 @@ public class ConfigurationLoadRequest extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof ConfigurationLoadRequestProto.ConfigurationLoadRequest)
         {
@@ -127,7 +127,7 @@ public class ConfigurationLoadRequest extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       ConfigurationLoadRequestProto.ConfigurationLoadRequest.Builder builder =
         ConfigurationLoadRequestProto.ConfigurationLoadRequest.newBuilder();

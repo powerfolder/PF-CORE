@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.AbortDownloadProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
@@ -33,7 +33,7 @@ import de.dal33t.powerfolder.protocol.FileInfoProto;
  * @version $Revision: 1.2 $
  */
 public class AbortDownload extends Message
-    implements D2DMessage
+    implements D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -56,7 +56,7 @@ public class AbortDownload extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof AbortDownloadProto.AbortDownload)
         {
@@ -74,12 +74,12 @@ public class AbortDownload extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       AbortDownloadProto.AbortDownload.Builder builder = AbortDownloadProto.AbortDownload.newBuilder();
 
       builder.setClassName("AbortDownload");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
     }

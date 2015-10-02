@@ -28,7 +28,7 @@ import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.protocol.NodesCriteriaProto;
 import de.dal33t.powerfolder.protocol.RequestNodeListProto;
@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.1 $
  */
 public class RequestNodeList extends Message
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 101L;
 
@@ -199,7 +199,7 @@ public class RequestNodeList extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof RequestNodeListProto.RequestNodeList)
         {
@@ -233,7 +233,7 @@ public class RequestNodeList extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       RequestNodeListProto.RequestNodeList.Builder builder =
         RequestNodeListProto.RequestNodeList.newBuilder();

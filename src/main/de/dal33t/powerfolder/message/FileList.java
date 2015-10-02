@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
@@ -51,7 +51,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.5 $
  */
 public class FileList extends FolderRelatedMessage
-  implements D2DMessage
+  implements D2DObject
 {
 
     private static final Logger log = Logger
@@ -311,7 +311,7 @@ public class FileList extends FolderRelatedMessage
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof FileListProto.FileList)
         {
@@ -340,7 +340,7 @@ public class FileList extends FolderRelatedMessage
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       FileListProto.FileList.Builder builder = FileListProto.FileList.newBuilder();
 
@@ -349,11 +349,11 @@ public class FileList extends FolderRelatedMessage
       /* Convert array to list */
       for(FileInfo finfo : this.files)
         {
-          builder.addFiles((FileInfoProto.FileInfo)finfo.toD2DMessage());
+          builder.addFiles((FileInfoProto.FileInfo)finfo.toD2D());
         }
 
       builder.setNFollowingDeltas(this.nFollowingDeltas);
-      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2DMessage());
+      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
     }

@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.protocol.KnownNodesProto;
 import de.dal33t.powerfolder.protocol.MemberInfoProto;
@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.11 $
  */
 public class KnownNodes extends Message
-  implements D2DMessage
+  implements D2DObject
 {
     private static final Logger log = Logger.getLogger(KnownNodes.class
         .getName());
@@ -184,7 +184,7 @@ public class KnownNodes extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof KnownNodesProto.KnownNodes)
         {
@@ -210,7 +210,7 @@ public class KnownNodes extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       KnownNodesProto.KnownNodes.Builder builder = KnownNodesProto.KnownNodes.newBuilder();
 
@@ -219,7 +219,7 @@ public class KnownNodes extends Message
       /* Convert array to list */
       for(MemberInfo minfo : this.nodes)
         {
-          builder.addNodes((MemberInfoProto.MemberInfo)minfo.toD2DMessage());
+          builder.addNodes((MemberInfoProto.MemberInfo)minfo.toD2D());
         }
 
       return builder.build();

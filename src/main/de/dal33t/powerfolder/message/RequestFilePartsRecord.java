@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.RequestFilePartsRecordProto;
@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.protocol.RequestFilePartsRecordProto;
  * @version $Revision$
  */
 public class RequestFilePartsRecord extends Message
-  implements D2DMessage
+  implements D2DObject
 {
 	private static final long serialVersionUID = 100L;
 
@@ -58,7 +58,7 @@ public class RequestFilePartsRecord extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof RequestFilePartsRecordProto.RequestFilePartsRecord)
         {
@@ -77,13 +77,13 @@ public class RequestFilePartsRecord extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder =
         RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
 
       builder.setClassName("RequestFilePartsRecord");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
     }

@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.protocol.AddFriendNotificationProto;
 
@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.protocol.AddFriendNotificationProto;
  * @version $Revision:$
  */
 public class AddFriendNotification extends Message
-  implements D2DMessage
+  implements D2DObject
 {
 	private static final long serialVersionUID = 100L;
 
@@ -66,7 +66,7 @@ public class AddFriendNotification extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof AddFriendNotificationProto.AddFriendNotification)
         {
@@ -86,14 +86,14 @@ public class AddFriendNotification extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       AddFriendNotificationProto.AddFriendNotification.Builder builder =
         AddFriendNotificationProto.AddFriendNotification.newBuilder();
 
       builder.setClassName("AddFriendNotification");
       builder.setMemberInfo((de.dal33t.powerfolder.protocol.MemberInfoProto.MemberInfo)
-        this.memberInfo.toD2DMessage());
+        this.memberInfo.toD2D());
       builder.setPersonalMessage(this.personalMessage);
 
       return builder.build();

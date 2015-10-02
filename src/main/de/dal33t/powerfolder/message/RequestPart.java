@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.RangeProto;
@@ -32,7 +32,7 @@ import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 
 public class RequestPart extends Message
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -142,7 +142,7 @@ public class RequestPart extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof RequestPartProto.RequestPart)
         {
@@ -163,14 +163,14 @@ public class RequestPart extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       RequestPartProto.RequestPart.Builder builder =
         RequestPartProto.RequestPart.newBuilder();
 
       builder.setClassName("RequestPart");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2DMessage());
-      builder.setRange((RangeProto.Range)this.range.toD2DMessage());
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setRange((RangeProto.Range)this.range.toD2D());
       builder.setProgress(this.progress);
 
       return builder.build();

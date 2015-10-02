@@ -25,7 +25,7 @@ import java.io.ObjectOutput;
 
 import com.google.protobuf.AbstractMessage;
 
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.PingProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -37,7 +37,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @version $Revision: 1.4 $
  */
 public class Ping extends Message
-    implements D2DMessage
+    implements D2DObject
 {
     // #462: implements Externalizable {
     private static final long serialVersionUID = 100L;
@@ -148,7 +148,7 @@ public class Ping extends Message
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof PingProto.Ping)
         {
@@ -168,7 +168,7 @@ public class Ping extends Message
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       PingProto.Ping.Builder builder = PingProto.Ping.newBuilder();
 

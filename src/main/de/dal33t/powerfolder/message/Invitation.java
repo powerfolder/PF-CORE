@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.d2d.D2DMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -51,7 +51,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * @version $Revision: 1.5 $
  */
 public class Invitation extends FolderRelatedMessage
-  implements D2DMessage
+  implements D2DObject
 {
     private static final long serialVersionUID = 101L;
 
@@ -430,7 +430,7 @@ public class Invitation extends FolderRelatedMessage
 
     @Override
     public void
-    initFromD2DMessage(AbstractMessage mesg)
+    initFromD2D(AbstractMessage mesg)
     {
       if(mesg instanceof InvitationProto.Invitation)
         {
@@ -454,21 +454,21 @@ public class Invitation extends FolderRelatedMessage
 
     @Override
     public AbstractMessage
-    toD2DMessage()
+    toD2D()
     {
       InvitationProto.Invitation.Builder builder =
         InvitationProto.Invitation.newBuilder();
 
       builder.setClassName("Invitation");
       builder.setInvitor(
-        (MemberInfoProto.MemberInfo)this.invitor.toD2DMessage());
+        (MemberInfoProto.MemberInfo)this.invitor.toD2D());
       builder.setInvitationText(this.invitationText);
       builder.setSize(this.size);
       builder.setUsername(this.username);
       builder.setOid(this.oid);
       builder.setInviteeUsername(this.inviteeUsername);
       builder.setFolder(
-        (FolderInfoProto.FolderInfo)this.folder.toD2DMessage());
+        (FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
     }
