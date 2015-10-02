@@ -21,11 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import java.util.logging.Logger;
 
-import com.google.protobuf.AbstractMessage;
-
-import de.dal33t.powerfolder.d2d.D2DMessageEnum;
 import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.protocol.AccessModeProto;
 import de.dal33t.powerfolder.util.StringUtils;
 
 /**
@@ -34,7 +30,6 @@ import de.dal33t.powerfolder.util.StringUtils;
  * @author sprajc
  */
 public enum AccessMode
-  implements D2DMessageEnum<AccessMode>
 {
     NO_ACCESS("permissions.no_access"),
     READ("permissions.read"),
@@ -69,47 +64,5 @@ public enum AccessMode
         }
         return mode;
         // PFS-1336: End
-    }
-
-    /** initFromD2DMessage
-     * Init from D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
-     **/
-
-    @Override
-    public AccessMode
-    createFromD2DMessage(AbstractMessage mesg)
-    {
-      if(mesg instanceof AccessModeProto.AccessMode)
-        {
-          AccessModeProto.AccessMode proto = (AccessModeProto.AccessMode)mesg;
-
-          for(AccessMode mode : AccessMode.values())
-            {
-              if(mode.ordinal() == proto.getModeValue())
-                return mode;
-            }
-        }
-
-      return null;
-    }
-
-    /** toD2DMessage
-     * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @return Converted D2D message
-     **/
-
-    @Override
-    public AbstractMessage
-    toD2DMessage()
-    {
-      AccessModeProto.AccessMode.Builder builder = AccessModeProto.AccessMode.newBuilder();
-
-      builder.setClassName("AccessMode");
-      builder.setModeValue(this.ordinal());
-
-      return builder.build();
     }
 }
