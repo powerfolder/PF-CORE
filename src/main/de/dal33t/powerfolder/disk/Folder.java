@@ -3265,7 +3265,12 @@ public class Folder extends PFComponent {
                                 String name = path.toString().toLowerCase();
                                 if (name.endsWith("thumbs.db")
                                     || name.endsWith(".ds_store")
-                                    || name.endsWith("desktop.ini")) {
+                                    || name.endsWith("desktop.ini")
+                                    || name.startsWith(
+                                        Constants.MS_OFFICE_FILENAME_PREFIX)
+                                    || name.startsWith(
+                                        Constants.LIBRE_OFFICE_FILENAME_PREFIX))
+                                {
 
                                     if (owner != null) {
                                         Files.setOwner(path, owner);
