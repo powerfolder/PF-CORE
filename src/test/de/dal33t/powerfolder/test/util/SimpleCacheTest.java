@@ -22,9 +22,11 @@ package de.dal33t.powerfolder.test.util;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.SimpleCache;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
 
@@ -33,7 +35,7 @@ public class SimpleCacheTest extends TestCase {
     public void testValidCache() {
         Collection<String> expected = new LinkedList<>();
         SimpleCache<String, String> cache = new SimpleCache<>(
-            new WeakHashMap<>(), 100);
+            Util.createConcurrentHashMap(), 100, TimeUnit.MILLISECONDS);
 
         for (int i = 0; i < 1000; i++) {
             String id = IdGenerator.makeId();
