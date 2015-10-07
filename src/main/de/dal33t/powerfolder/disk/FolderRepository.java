@@ -1977,7 +1977,7 @@ public class FolderRepository extends PFComponent implements Runnable {
              * Renaming the folder first prevents that the client which
              * renamed the folder changes it via the server's update.
              */
-            logWarning("Renaming Folder '" + oldName + "' to '" + newName + "'");
+            logInfo("Renaming Folder '" + oldName + "' to '" + newName + "'");
 
             FolderService foServ = client.getFolderService();
             try {
