@@ -1989,6 +1989,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     final String copyOldName = oldName;
 
                     if (getController().getUIController().isStarted()) {
+                        // FIXME: Use Notifications instead of in-your-face dialog:
                         UIUtil.invokeLaterInEDT(new Runnable() {
                             @Override
                             public void run() {
@@ -2305,29 +2306,36 @@ public class FolderRepository extends PFComponent implements Runnable {
         accountSyncLock.lock();
         for (FolderInfo foInfo : a.getFolders()) {
             FolderInfo localFolder = foInfo.intern();
+            if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
+                // Same name, not renamed.
+                continue;
+            }
+            Folder folder = folders.get(foInfo);
+            if (folder == null) {
+                // Not synced locally
+                continue;
+            }
+            Path currentDirectory = folder.getLocalBase();
+            String currentDirectoryName = currentDirectory.getFileName().toString();
+            if (!PathUtils.isSameName(currentDirectoryName, localFolder.getLocalizedName())) {
+                logWarning("Not renaming Folder " + localFolder.getName()
+                    + " to " + foInfo.getName()
+                    + ". Current local directory name (" + currentDirectoryName
+                    + ") does not match folder name ("
+                    + localFolder.getLocalizedName() + ")");
+                continue;
+            }
 
-            if (!PathUtils.isSameName(localFolder.getName(), foInfo.getName())) {
-                logInfo("Renaming Folder " + localFolder.getName() + " to "
-                    + foInfo.getName());
-                foInfo = foInfo.intern(true);
-
-                try {
-                    Folder folder = folders.get(foInfo);
-                    if (folder == null) {
-                        continue;
-                    }
-
-                    Path newDirectory = folder
-                        .getLocalBase()
-                        .getParent()
-                        .resolve(
-                            PathUtils.removeInvalidFilenameChars(foInfo
-                                .getLocalizedName()));
-
-                    moveLocalFolder(folder, newDirectory);
-                } catch (IOException ioe) {
-                    logWarning("Could not move Folder " + foInfo);
-                }
+            logInfo("Renaming Folder " + localFolder.getName() + " to "
+                + foInfo.getName());
+            foInfo = foInfo.intern(true);
+            try {
+                Path newDirectory = folder.getLocalBase().getParent()
+                    .resolve(PathUtils
+                        .removeInvalidFilenameChars(foInfo.getLocalizedName()));
+                moveLocalFolder(folder, newDirectory);
+            } catch (IOException ioe) {
+                logWarning("Could not move Folder " + foInfo);
             }
         }
 
@@ -2811,7 +2819,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return {@code True} if the folder was removed locally, {@code false}
      *         otherwise.
      */
-    public boolean handleDeviceDisconnected(final Folder folder) {
+    boolean handleDeviceDisconnected(final Folder folder) {
         Reject.ifNull(folder, "Folder");
 
         if (folder.getInfo().isMetaFolder()) {
@@ -2834,13 +2842,21 @@ public class FolderRepository extends PFComponent implements Runnable {
             return false;
         }
 
-        logFine("Removing " + folder.toString());
-
         // Schedule for removal
         getController().schedule(new Runnable() {
             @Override
             public void run() {
                 if (hasJoinedFolder(folder.getInfo())) {
+                    // Handle possible renames
+                    scanBasedir();
+                    Folder currentFolder = getFolder(folder.getInfo());
+                    if (currentFolder != null
+                        && !currentFolder.checkIfDeviceDisconnected())
+                    {
+                        return;
+                    }
+
+                    logFine("Removing " + folder.toString());
                     // sync with #scanBasedir()
                     setSuspendNewFolderSearch(true);
                     addAndRemoveFolderLock.lock();
