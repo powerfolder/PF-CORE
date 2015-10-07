@@ -74,6 +74,12 @@ public class NodeList {
         }
     }
 
+    public boolean isEmpty() {
+        return (nodeList == null || nodeList.isEmpty())
+            && (friendsSet == null || friendsSet.isEmpty())
+            && (serversSet == null || serversSet.isEmpty());
+    }
+
     /**
      * Returns the Set containing the friends.
      *
