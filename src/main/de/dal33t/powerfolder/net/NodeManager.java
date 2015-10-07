@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.net;
 
 import java.io.Externalizable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Inet4Address;
@@ -47,6 +48,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,6 +86,7 @@ import de.dal33t.powerfolder.util.MessageListenerSupport;
 import de.dal33t.powerfolder.util.Pair;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.SimpleCache;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.MemberInfoInternalizer;
@@ -1432,6 +1435,9 @@ public class NodeManager extends PFComponent {
         return nNodes;
     }
 
+    private SimpleCache<MemberInfo, Boolean> cachedServerPublicKey = new SimpleCache<>(
+        Util.createConcurrentHashMap(), 1, TimeUnit.MINUTES);
+
     /**
      * Load all known (cluster) server nodes and their public keys.
      */
@@ -1439,18 +1445,32 @@ public class NodeManager extends PFComponent {
         String serverNodesURL = client.getWebURL(SERVER_NODES_URI, false);
         String serverPublicKeysURL = client.getWebURL(SERVER_PUBLIC_KEYS_URI,
             false);
+        NodeList list = null;
         if (StringUtils.isNotBlank(serverNodesURL)) {
             try {
-                loadNodesFrom(new URL(serverNodesURL));
+                list = loadNodesFrom(new URL(serverNodesURL));
             } catch (MalformedURLException e) {
                 logWarning(e.toString());
             }
         }
         if (StringUtils.isNotBlank(serverPublicKeysURL)) {
-            try {
-                loadPublicKeysFrom(new URL(serverPublicKeysURL));
-            } catch (Exception e) {
-                logWarning(e.toString());
+            // Check cache:
+            boolean useCache;
+            if (list != null) {
+                useCache = true;
+                for (MemberInfo snInfo : list.getServersSet()) {
+                    Boolean hasKey = cachedServerPublicKey.getValidEntry(snInfo);
+                    useCache &= hasKey != null && hasKey.booleanValue();
+                }
+            } else {
+                useCache = false;
+            }
+            if (!useCache) {
+                try {
+                    loadPublicKeysFrom(new URL(serverPublicKeysURL));
+                } catch (Exception e) {
+                    logWarning(e.toString(), e);
+                }
             }
         }
     }
@@ -1461,7 +1481,7 @@ public class NodeManager extends PFComponent {
      *
      * @param url
      */
-    private boolean loadNodesFrom(URL url) {
+    private NodeList loadNodesFrom(URL url) {
         try {
             NodeList nodeList = new NodeList();
             nodeList.load(url);
@@ -1470,7 +1490,9 @@ public class NodeManager extends PFComponent {
                 + " servers from cluster @ " + url + " : "
                 + nodeList.getServersSet());
 
-            return processNodeList(nodeList);
+            if (processNodeList(nodeList)) {
+                return nodeList;
+            }
         } catch (IOException e) {
             logWarning("Unable to load servers from url '" + url + "'. "
                 + e.getMessage());
@@ -1482,7 +1504,7 @@ public class NodeManager extends PFComponent {
             logWarning("Illegal format of servers files '" + url);
             logFiner("ClassNotFoundException", e);
         }
-        return false;
+        return null;
     }
 
     /**
@@ -1574,7 +1596,7 @@ public class NodeManager extends PFComponent {
             node.setServer(true);
             logFine("Loaded server: " + node);
         }
-        return !nodeList.getNodeList().isEmpty();
+        return !nodeList.isEmpty();
     }
 
     /**
@@ -1582,7 +1604,7 @@ public class NodeManager extends PFComponent {
      * to the local key store.
      * 
      * @param url
-     * @return 
+     * @return
      */
     @SuppressWarnings("unchecked")
     private boolean loadPublicKeysFrom(URL url) {
@@ -1591,19 +1613,32 @@ public class NodeManager extends PFComponent {
             List<Pair<MemberInfo, PublicKey>> pkList = new ArrayList<>(
                 (ArrayList<Pair<MemberInfo, PublicKey>>) in.readObject());
 
-            logFine("Received " + pkList.size()
-                + " server keys from cluster @ " + url);
-
-            for (Pair<MemberInfo, PublicKey> key : pkList) {
-                ProUtil.addNodeToKeyStore(getController(), key.getFirst(),
-                    key.getSecond());
+            if (isFine()) {
+                logFine("Received " + pkList.size()
+                    + " server keys from cluster @ " + url);
             }
 
-            return true;
+            boolean success = true;
+            for (Pair<MemberInfo, PublicKey> key : pkList) {
+                MemberInfo nodeInfo = key.getFirst();
+                PublicKey publicKey = key.getSecond();
+                if (ProUtil.addNodeToKeyStore(getController(), nodeInfo,
+                    publicKey))
+                {
+                    cachedServerPublicKey.put(nodeInfo, Boolean.TRUE);
+                } else {
+                    cachedServerPublicKey.put(nodeInfo, Boolean.FALSE);
+                    success = false;
+                }
+            }
+            return success;
+        } catch (FileNotFoundException e) {
+            logInfo("Unable to load public keys from " + url.toString()
+                + ". Server does not support sending public keys.");
         } catch (IOException | ClassCastException | ClassNotFoundException e) {
-            logWarning("Unable to load public keys from " + url.toString(), e);
+            logWarning(
+                "Unable to load public keys from " + url.toString() + ". " + e);
         }
-
         return false;
     }
 
