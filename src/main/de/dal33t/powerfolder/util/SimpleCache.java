@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.util;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -40,12 +41,14 @@ public class SimpleCache<K, E> extends Loggable {
     private AtomicInteger cacheHits = new AtomicInteger();
     private AtomicInteger cacheMisses = new AtomicInteger();
 
-    public SimpleCache(Map<K, Pair<Date, E>> backingMap, long entryTimeoutMS) {
+    public SimpleCache(Map<K, Pair<Date, E>> backingMap, long duration,
+        TimeUnit unit)
+    {
         super();
         Reject.ifNull(backingMap, "Backing map");
         Reject.ifFalse(entryTimeout <= 0, "Illegal timeout value");
         this.cache = backingMap;
-        this.entryTimeout = entryTimeoutMS;
+        this.entryTimeout = unit.toMillis(duration);
     }
 
     /**
@@ -90,5 +93,20 @@ public class SimpleCache<K, E> extends Loggable {
 
     public int getCacheMisses() {
         return cacheMisses.get();
+    }
+
+    @Override
+    public String toString() {
+        int accesses = cacheHits.get() + cacheMisses.get();
+        String effiStr = "n/a";
+        
+        if (accesses > 0) {
+            double effi = ((double) cacheHits.get()) / accesses;
+            effiStr = Format.formatPercent(effi * 100);
+        }
+
+        return "SimpleCache [efficiency=" + effiStr + ", entries="
+            + cache.size() + ", timeoutMS=" + entryTimeout + ", cacheHits="
+            + cacheHits + ", cacheMisses=" + cacheMisses + "]";
     }
 }
