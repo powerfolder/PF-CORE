@@ -86,6 +86,10 @@ public class SimpleCache<K, E> extends Loggable {
         cacheHits.incrementAndGet();
         return p.getSecond();
     }
+    
+    public void invalidate(K key) {
+        cache.remove(key);
+    }
 
     public int getCacheHits() {
         return cacheHits.get();
