@@ -29,7 +29,6 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -47,6 +46,7 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import junit.framework.TestCase;
 
 /**
  * Provides basic testcase-setup with two controllers. Bart and Lisa
@@ -71,8 +71,8 @@ public abstract class TwoControllerTestCase extends TestCase {
     public static final Path TESTFOLDER_BASEDIR_LISA = TestHelper.getTestDir()
         .resolve("ControllerLisa/testFolder").toAbsolutePath();
 
-    private Controller controllerBart;
-    private Controller controllerLisa;
+    protected Controller controllerBart;
+    protected Controller controllerLisa;
 
     // The optional test folder
     private FolderInfo testFolder;
@@ -101,6 +101,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         Thread
             .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
             {
+                @Override
                 public void uncaughtException(Thread t, Throwable e) {
                     System.err.println("Exception in " + t + ": "
                         + e.toString());
@@ -132,7 +133,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         System.out.println("Starting controllers...");
         startControllerBart();
         startControllerLisa();
-        
+
         TestHelper.waitMilliSeconds(250);
 
         System.out
@@ -261,6 +262,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      */
     protected static void waitForStart(final Controller controller) {
         TestHelper.waitForCondition(30, new Condition() {
+            @Override
             public boolean reached() {
                 return controller.isStarted();
             }
@@ -343,6 +345,7 @@ public abstract class TwoControllerTestCase extends TestCase {
             getContollerBart().getMySelf().getId());
         bartAtLisa.shutdown();
         TestHelper.waitForCondition(10, new Condition() {
+            @Override
             public boolean reached() {
                 return !bartAtLisa.isConnected() && !lisaAtBart.isConnected();
             }
@@ -415,6 +418,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         }
         try {
             TestHelper.waitForCondition(10, new Condition() {
+                @Override
                 public boolean reached() {
                     Member member2atCon1 = cont1.getNodeManager().getNode(
                         cont2.getMySelf().getId());
@@ -525,6 +529,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         try {
             // Give them time to join
             TestHelper.waitForCondition(30, new Condition() {
+                @Override
                 public boolean reached() {
                     return folder1.getMembersCount() >= 2
                         && folder2.getMembersCount() >= 2
