@@ -70,7 +70,7 @@ public class PlainSocketConnectionHandler extends
             return ByteSerializer.deserializeStatic(data, expectCompressed);
         } catch (IOException e) {
             throw new ConnectionException(
-                "Unable to send message to peer, connection closed", e)
+                "Unable to read message from peer, connection closed", e)
                 .with(this);
         }
     }
