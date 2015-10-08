@@ -1140,7 +1140,7 @@ public enum ConfigurationEntry {
         .getName());
 
     private final String configKey;
-    protected String defaultValue;
+    protected final String defaultValue;
 
     ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
@@ -1338,15 +1338,6 @@ public enum ConfigurationEntry {
      */
     public void setValue(Controller controller, int value) {
         setValue(controller, String.valueOf(value));
-    }
-
-    /**
-     * Set default value
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @return the default value for this config entry.
-     */
-    public void setDefaultValue(String value) {
-        this.defaultValue = value;
     }
 
     /**
