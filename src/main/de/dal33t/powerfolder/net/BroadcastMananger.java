@@ -122,6 +122,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 (useD2D ? "D2D-node" : "node"),
                 controller.getConnectionListener().getAddress().getPort(),
                 id);
+
+              if(useD2D) logFiner("D2D is enabled");
           }
         }
       catch(IOException e)
