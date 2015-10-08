@@ -410,14 +410,14 @@ public class MemberInfo implements Serializable, D2DObject {
     {
       if(mesg instanceof MemberInfoProto.MemberInfo)
         {
-          MemberInfoProto.MemberInfo minfo = (MemberInfoProto.MemberInfo)mesg;
+          MemberInfoProto.MemberInfo proto = (MemberInfoProto.MemberInfo)mesg;
 
-          this.nick            = minfo.getNick();
-          this.id              = minfo.getId();
-          this.networkId       = minfo.getNetworkId();
+          this.nick            = proto.getNick();
+          this.id              = proto.getId();
+          this.networkId       = proto.getNetworkId();
 
           /* Disassemble host:port string */
-          String[] split = minfo.getConnectAddress().split(":");
+          String[] split = proto.getConnectAddress().split(":");
 
           if(2 <= split.length)
             {
@@ -425,10 +425,11 @@ public class MemberInfo implements Serializable, D2DObject {
                 Integer.valueOf(split[1]));
             }
 
-          this.lastConnectTime = new Date(minfo.getLastConnectTime());
-          this.isConnected     = minfo.getIsConnected();
-          this.isSupernode     = minfo.getIsSuperNode();
-          this.hasNullIP       = minfo.getHasNullIP();
+          this.lastConnectTime = (-1 == proto.getLastConnectTime()
+              ? null
+              : new Date(proto.getLastConnectTime()));
+          this.isConnected     = proto.getIsConnected();
+          this.isSupernode     = proto.getIsSuperNode();
         }
     }
 
@@ -449,10 +450,9 @@ public class MemberInfo implements Serializable, D2DObject {
       builder.setId(this.id);
       builder.setNetworkId(this.networkId);
       builder.setConnectAddress(this.connectAddress.toString()); ///< Assemble to host:port
-      builder.setLastConnectTime(this.lastConnectTime.getTime());
+      builder.setLastConnectTime(null == this.lastConnectTime ? -1 : this.lastConnectTime.getTime());
       builder.setIsConnected(this.isConnected);
       builder.setIsSuperNode(this.isSupernode);
-      builder.setHasNullIP(this.hasNullIP);
 
       return builder.build();
     }
