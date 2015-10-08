@@ -79,25 +79,31 @@ public class D2DSocketConnectionHandler extends
   deserialize(byte[] data,
     int len) throws ClassNotFoundException, ConnectionException
   {
+    String className = "unknown";
+
+    logFiner("Got message; parsing it..");
+
     try
       {
         AnyProto.Any any = AnyProto.Any.parseFrom(data);
 
         /* Assemble name and package */
-        String className = any.getClassName();
+        className        = any.getClassName();
         String classPkg  = String.format(
-          "de.dal33t.powerfolder.protocol.%sProto.%s",
+          "de.dal33t.powerfolder.protocol.%sProto$%s",
           className, className);
+
+        logFiner("Got " + classPkg);
 
         /* Try to create D2D message */
         Class<?>        klass = Class.forName(classPkg);
-        Method          meth  = klass.getMethod("parseFrom");
-        AbstractMessage amesg = (AbstractMessage)meth.invoke(data); ///< Call parseForm()
+        Method          meth  = klass.getMethod("parseFrom", byte[].class);
+        AbstractMessage amesg = (AbstractMessage)meth.invoke(null, data); ///< Call parseForm()
 
         /* Try to create message */
         classPkg = String.format("de.dal33t.powerfolder.message.%s", className);
         klass    = Class.forName(classPkg);
-        meth     = klass.getMethod("initFromD2DMessage");
+        meth     = klass.getMethod("initFromD2D", AbstractMessage.class);
 
         Object mesg = klass.newInstance();
 
@@ -109,8 +115,10 @@ public class D2DSocketConnectionHandler extends
         InvocationTargetException|InstantiationException|
         IllegalAccessException|InvalidProtocolBufferException e)
       {
+        logFiner("Cannot read message(" + className + "): " + e.toString());
+
         throw new ConnectionException(
-          "Unable to read message to peer, connection closed", e)
+          "Unable to read message from peer, connection closed", e)
           .with(this);
       }
   }
@@ -119,18 +127,28 @@ public class D2DSocketConnectionHandler extends
    * Serialize message data
    * @param  message  {@link Message} to serialize
    * @return Serialized byte data
+   * @throws ConnectionException
    **/
 
   @Override
   protected byte[]
-  serialize(Message mesg)
+  serialize(Message mesg) throws ConnectionException
   {
     byte[] data = null;
 
     if(mesg instanceof D2DObject)
       {
-        data = ((D2DObject)mesg).toD2D().toByteArray();
+        AbstractMessage amesg = ((D2DObject)mesg).toD2D();
+
+        logFiner("Sent " + amesg.getClass().getCanonicalName());
+
+        data = amesg.toByteArray();
       }
+    else {
+        throw new ConnectionException("Message "
+            + mesg.getClass().getSimpleName()
+            + " does not implement D2Object").with(this);
+    }
 
     return data;
   }
