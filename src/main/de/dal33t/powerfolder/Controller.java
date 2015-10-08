@@ -375,43 +375,12 @@ public class Controller extends PFComponent {
         startConfig(configName);
     }
 
-    /**
-     * Starts controller with a special config file, and creates and starts all
-     * components of PowerFolder.
-     *
-     * @param filename
-     *            The filename to uses as config file (located in the
-     *            "getConfigLocationBase()")
-     */
-    public void startConfig(String filename) {
-        if (started) {
-            throw new IllegalStateException(
-                "Configuration already started, shutdown controller first");
-        }
+    /** initTranslation
+     * Init translation bundles
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     **/
 
-        additionalConnectionListeners = Collections
-            .synchronizedList(new ArrayList<ConnectionListener>());
-        started = false;
-        shuttingDown = false;
-        threadPool = new WrappedScheduledThreadPoolExecutor(
-            Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
-                "Controller-Thread-"));
-
-        // PFI-312
-        PathUtils.setIOExceptionListener(new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                if (e instanceof FileSystemException
-                    && e.toString().toLowerCase()
-                        .contains("too many open files"))
-                {
-                    logSevere("Detected I/O Exception: " + e.getMessage());
-                    logSevere("Please adjust limits for open file handles on this server");
-                    exit(1);
-                }
-            }
-        });
-
+    public void initTranslation() {
         // Initialize resource bundle eager
         // check forced language file from commandline
         if (commandLine != null && commandLine.hasOption("f")) {
@@ -435,12 +404,38 @@ public class Controller extends PFComponent {
             Translation.resetResourceBundle();
         }
         Translation.getResourceBundle();
+    }
+
+    /**
+     * Starts controller with a special config file, and creates and starts all
+     * components of PowerFolder.
+     *
+     * @param filename
+     *            The filename to uses as config file (located in the
+     *            "getConfigLocationBase()")
+     */
+    public void startConfig(String filename) {
+        if (started) {
+            throw new IllegalStateException(
+                "Configuration already started, shutdown controller first");
+        }
+
+        initTranslation();
 
         // loadConfigFile
         if (!loadConfigFile(filename)) {
             return;
         }
 
+        start();
+    }
+
+     /** start
+     * Starts controller and all other components of PowerFolder
+     * @author Christoph <kappel@powerfolder.com>
+     **/
+
+    public void start() {
         boolean isDefaultConfig = Constants.DEFAULT_CONFIG_FILE
             .startsWith(getConfigName());
         if (isDefaultConfig) {
@@ -941,7 +936,32 @@ public class Controller extends PFComponent {
      * @param theFilename
      * @return false if unsuccessful, true if file found and reading succeeded.
      */
-    private boolean loadConfigFile(String theFilename) {
+    public boolean loadConfigFile(String theFilename) {
+
+        /* Init stuff (moved here from {@link startConfig} */
+        additionalConnectionListeners = Collections
+            .synchronizedList(new ArrayList<ConnectionListener>());
+        started = false;
+        shuttingDown = false;
+        threadPool = new WrappedScheduledThreadPoolExecutor(
+            Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
+                "Controller-Thread-"));
+
+        // PFI-312
+        PathUtils.setIOExceptionListener(new ExceptionListener() {
+            @Override
+            public void exceptionThrown(Exception e) {
+                if (e instanceof FileSystemException
+                    && e.toString().toLowerCase()
+                        .contains("too many open files"))
+                {
+                    logSevere("Detected I/O Exception: " + e.getMessage());
+                    logSevere("Please adjust limits for open file handles on this server");
+                    exit(1);
+                }
+            }
+        });
+
         String filename = theFilename;
         if (filename == null) {
             filename = Constants.DEFAULT_CONFIG_FILE;
@@ -1262,7 +1282,8 @@ public class Controller extends PFComponent {
     private void openBroadcastManager() {
         if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(this)) {
             try {
-                broadcastManager = new BroadcastMananger(this);
+                broadcastManager = new BroadcastMananger(this,
+                  ConfigurationEntry.D2D_ENABLED.getValueBoolean(this));
                 broadcastManager.start();
             } catch (ConnectionException e) {
                 logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
@@ -2326,7 +2347,7 @@ public class Controller extends PFComponent {
           logWarning("Unable to connect, port illegal " + address.getPort());
         }
 
-      logFine("Connecting to " + address + "...");
+      logFine("Connecting to " + address + (useD2D ? "via D2D" : "") + "...");
 
       ConnectionHandler conHan = ioProvider.getConnectionHandlerFactory()
         .tryToConnect(address, useD2D);
@@ -2486,12 +2507,22 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers the connection listener
+     * Gets the connection listener
      *
      * @return the connection listener
      */
     public ConnectionListener getConnectionListener() {
         return connectionListener;
+    }
+
+    /** getAdditionalConnectionListeners
+     * Gets a list of registered connection listeners
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return List of {@link ConnectionListener}
+     **/
+
+    public List<ConnectionListener> getAdditionalConnectionListeners() {
+        return this.additionalConnectionListeners;
     }
 
     /**
