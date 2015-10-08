@@ -110,7 +110,7 @@ public class IdentityReply extends Message
 
       builder.setClassName("IdentityReply");
       builder.setAccepted(this.accepted);
-      builder.setMessage(this.message);
+      builder.setMessage(null == this.message ? "" : this.message);
 
       return builder.build();
     }

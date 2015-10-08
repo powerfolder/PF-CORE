@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.IdentityProto;
+import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -289,13 +290,11 @@ public class Identity extends Message
      **/
 
     @Override
-    public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof IdentityProto.Identity)
-        {
+    public void initFromD2D(AbstractMessage mesg) {
+      if(mesg instanceof IdentityProto.Identity) {
           IdentityProto.Identity proto = (IdentityProto.Identity)mesg;
 
+          this.member                = new MemberInfo(proto.getMember());
           this.magicId               = proto.getMagicID();
           this.protocolVersion       = proto.getProtocolVersion();
           this.requestFullFolderlist = proto.getRequestFullFolderlist();
@@ -310,17 +309,15 @@ public class Identity extends Message
      **/
 
     @Override
-    public AbstractMessage
-    toD2D()
-    {
+    public AbstractMessage toD2D() {
       IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
 
-      builder.setClassName("Identity");
-
+      builder.setClassName(this.getClass().getSimpleName());
+      builder.setMember((MemberInfoProto.MemberInfo)this.member.toD2D());
       builder.setMagicID(this.magicId);
       builder.setProtocolVersion(this.protocolVersion);
       builder.setRequestFullFolderlist(this.requestFullFolderlist);
-      builder.setConfigurationURL(this.configurationURL);
+      builder.setConfigurationURL("this.configurationURL");
 
       return builder.build();
     }

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -72,7 +73,16 @@ public class RequestNodeList extends Message
      * The list of node ids for which we want to request fresh connection
      * information. May be null. Usually the ids of the friends.
      */
-    private final Collection<String> nodeIds;
+    private Collection<String> nodeIds;
+
+    /** RequestNodeList
+     * Init class
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     **/
+
+    public RequestNodeList() {
+        /* Empty constructor for D2D */
+    }
 
     /**
      * Constructs a new request.
@@ -216,7 +226,8 @@ public class RequestNodeList extends Message
             }
 
           /* Convert list back to collection */
-          this.nodeIds.clear();
+          if(null != this.nodeIds)
+              this.nodeIds.clear();
 
           for(String str : proto.getNodeIDsList())
             {
@@ -253,7 +264,9 @@ public class RequestNodeList extends Message
       builder.setNodesCriteria(nodeBuilder.build());
 
       /* Just append collection here */
-      builder.addAllNodeIDs(this.nodeIds);
+      if(null != this.nodeIds) {
+          builder.addAllNodeIDs(this.nodeIds);
+      } else builder.addAllNodeIDs(Collections.emptyList());
 
       return builder.build();
     }

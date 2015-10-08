@@ -51,7 +51,7 @@ public class KnownNodes extends Message
 
     public MemberInfo[] nodes;
 
-    protected KnownNodes() {
+    public KnownNodes() {
         // Serialisation constructor
     }
 
