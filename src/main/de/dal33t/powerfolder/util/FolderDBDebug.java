@@ -76,7 +76,7 @@ public class FolderDBDebug {
             ? files[0].getFolderInfo()
             : null;
         String fName = folderInfo != null ? folderInfo.getLocalizedName() : "-unknown-";
-
+        String fId = folderInfo != null ? folderInfo.getId() : "-unknown-";
         long totalSize = 0;
         for (FileInfo fileInfo : files) {
             if (fileInfo.isDeleted()) {
@@ -87,7 +87,7 @@ public class FolderDBDebug {
         Path f = Paths.get(fn + ".csv");
         // Write filelist to disk
         Path outFile = Debug.writeFileListCSV(f, Arrays.asList(files),
-            "FileList of folder " + fName);
+            "FileList of folder " + fName + "/" + fId);
 
         System.out.println("Read " + files.length + " files ("
             + Format.formatBytesShort(totalSize) + ") from " + fn
@@ -104,11 +104,11 @@ public class FolderDBDebug {
                 .containsKey(file.getRelativeName().toLowerCase()))
             {
                 dupe = true;
-                System.err.println("Detected dupe: "
-                    + file.toDetailString()
-                    + " of "
-                    + lowerCasenames.get(file.getRelativeName().toLowerCase())
-                        .toDetailString());
+                System.err
+                    .println("Detected dupe: " + file.toDetailString() + " of "
+                        + lowerCasenames
+                            .get(file.getRelativeName().toLowerCase())
+                            .toDetailString());
             }
             lowerCasenames.put(file.getRelativeName().toLowerCase(), file);
         }
