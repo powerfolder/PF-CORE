@@ -45,4 +45,8 @@ public class SecurityException extends RuntimeException {
     public SecurityException(Throwable cause) {
         super(cause);
     }
+    
+    public static SecurityException loginFailed(String username) {
+        return new SecurityException("Login failed for " + username);
+    }
 }
