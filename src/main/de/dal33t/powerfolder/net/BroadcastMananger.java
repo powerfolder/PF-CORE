@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.net;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
@@ -128,6 +129,25 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 bindAddr = InetAddress.getLocalHost();
             }
 
+            // PFC-2715
+            if (bindAddr == null && OSUtil.isMacOS()) {
+                Enumeration<NetworkInterface> nicEnum = NetworkInterface
+                    .getNetworkInterfaces();
+                while (nicEnum.hasMoreElements()) {
+                    NetworkInterface nic = nicEnum.nextElement();
+                    Enumeration<InetAddress> addresses = nic.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress addr = addresses.nextElement();
+                        if (addr instanceof Inet4Address) {
+                            if (!addr.isLoopbackAddress()) {
+                                logFine("Selected interface: " +nic + " (" + addr + ")");
+                                bindAddr = addr;
+                            }
+                        }
+                    }
+                }
+            }
+            
             if (bindAddr != null) {
                 logFiner("Binding multicast on address: " + bindAddr);
                 socket.setInterface(bindAddr);
