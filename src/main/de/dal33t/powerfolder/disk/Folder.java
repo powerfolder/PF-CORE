@@ -3257,8 +3257,24 @@ public class Folder extends PFComponent {
 
                     try {
                         Files.delete(localCopy);
-                    }
-                    catch (IOException ioe) {
+                    } catch (IOException ioe) {
+                        // PFS-1821
+                        if (localFile instanceof DirectoryInfo) {
+                            FileInfoCriteria c = new FileInfoCriteria();
+                            c.addMySelf(this);
+                            c.setPath((DirectoryInfo) localFile);
+                            Collection<FileInfo> filesInDir = getDAO()
+                                .findFiles(c);
+                            for (FileInfo fileInfo : filesInDir) {
+                                if (!fileInfo.isDeleted()) {
+                                    logWarning(
+                                        "Found non-deleted file in deleted directory: "
+                                            + fileInfo.toDetailString()
+                                            + ". Directory: "
+                                            + localFile.toDetailString());
+                                }
+                            }
+                        }
                         // #1977
                         try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
                             for (Path path : remaining) {
@@ -3271,7 +3287,6 @@ public class Folder extends PFComponent {
                                     || name.startsWith(
                                         Constants.LIBRE_OFFICE_FILENAME_PREFIX))
                                 {
-
                                     if (owner != null) {
                                         Files.setOwner(path, owner);
                                     }
