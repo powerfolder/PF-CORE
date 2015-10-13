@@ -106,7 +106,7 @@ public class Updater extends Thread {
      * Checks for new application release at the remote location
      */
     private void checkForNewRelease() {
-        LOG.info("Checking for newer version");
+        LOG.fine("Checking for newer version");
         if (!handler.shouldCheckForNewVersion()) {
             return;
         }
