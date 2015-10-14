@@ -1594,7 +1594,9 @@ public class NodeManager extends PFComponent {
             Member node = server.getNode(getController(), true);
             node.updateInfo(server);
             node.setServer(true);
-            logFine("Loaded server: " + node);
+            if (isFine()) {
+                logFine("Loaded server: " + node);
+            }
         }
         return !nodeList.isEmpty();
     }
