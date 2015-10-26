@@ -17,8 +17,8 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.liferay.nativity.control.NativityControl;
 import com.liferay.nativity.control.NativityControlUtil;
@@ -35,9 +35,10 @@ import de.dal33t.powerfolder.disk.Locking;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.contextmenu.ContextMenuHandler;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayHandler;
+import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayIndex;
 import de.dal33t.powerfolder.ui.iconoverlay.IconOverlayUpdateListener;
-import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 /**
  * Enable Overlay Icons and context menu entries on the different platforms
@@ -125,29 +126,24 @@ public class FileBrowserIntegration extends PFComponent {
                         new ContextMenuHandler(getController()));
                 }
 
-                Path configDir = getController().getConfigFile().getParent();
-
                 logFine("Preparing icons");
-                Path okIcon = configDir.resolve("ok.icns");
-                Path syncingIcon = configDir.resolve("syncing.icns");
-                Path warningIcon = configDir.resolve("warning.icns");
-                Path ignoredIcon = configDir.resolve("ignored.icns");
-                Path lockedIcon = configDir.resolve("locked.icns");
-                if (Files.notExists(okIcon)) {
-                    Util.copyResourceTo("ok.icns", "mac", okIcon, true, true);
-                }
-                if (Files.notExists(syncingIcon)) {
-                    Util.copyResourceTo("syncing.icns", "mac", syncingIcon, true, true);
-                }
-                if (Files.notExists(warningIcon)) {
-                    Util.copyResourceTo("warning.icns", "mac", warningIcon, true, true);
-                }
-                if (Files.notExists(ignoredIcon)) {
-                    Util.copyResourceTo("ignored.icns", "mac", ignoredIcon, true, true);
-                }
-                if (Files.notExists(lockedIcon)) {
-                    Util.copyResourceTo("locked.icns", "mac", lockedIcon, true, true);
-                }
+                Path resourcesPath = Paths
+                    .get(MacUtils.getInstance().getRecourcesLocation());
+                Path okIcon = resourcesPath
+                    .resolve(IconOverlayIndex.OK_OVERLAY.getFilename())
+                    .toAbsolutePath();
+                Path syncingIcon = resourcesPath
+                    .resolve(IconOverlayIndex.SYNCING_OVERLAY.getFilename())
+                    .toAbsolutePath();
+                Path warningIcon = resourcesPath
+                    .resolve(IconOverlayIndex.WARNING_OVERLAY.getFilename())
+                    .toAbsolutePath();
+                Path ignoredIcon = resourcesPath
+                    .resolve(IconOverlayIndex.IGNORED_OVERLAY.getFilename())
+                    .toAbsolutePath();
+                Path lockedIcon = resourcesPath
+                    .resolve(IconOverlayIndex.LOCKED_OVERLAY.getFilename())
+                    .toAbsolutePath();
 
                 iconOverlayHandler = new IconOverlayHandler(getController());
                 FileIconControl iconControl = FileIconControlUtil
@@ -155,15 +151,21 @@ public class FileBrowserIntegration extends PFComponent {
                 iconControl.enableFileIcons();
 
                 logFine("Registering icons");
-                iconControl.registerIcon(okIcon.toAbsolutePath().toString());
-                iconControl.registerIcon(syncingIcon.toAbsolutePath()
-                    .toString());
-                iconControl.registerIcon(warningIcon.toAbsolutePath()
-                    .toString());
-                iconControl.registerIcon(ignoredIcon.toAbsolutePath()
-                    .toString());
-                iconControl
-                    .registerIcon(lockedIcon.toAbsolutePath().toString());
+                iconControl.registerIconWithId(okIcon.toString(),
+                    IconOverlayIndex.OK_OVERLAY.getLabel(),
+                    String.valueOf(IconOverlayIndex.OK_OVERLAY.getIndex()));
+                iconControl.registerIconWithId(syncingIcon.toString(),
+                    IconOverlayIndex.SYNCING_OVERLAY.getLabel(), String
+                        .valueOf(IconOverlayIndex.SYNCING_OVERLAY.getIndex()));
+                iconControl.registerIconWithId(warningIcon.toString(),
+                    IconOverlayIndex.WARNING_OVERLAY.getLabel(), String
+                        .valueOf(IconOverlayIndex.WARNING_OVERLAY.getIndex()));
+                iconControl.registerIconWithId(ignoredIcon.toString(),
+                    IconOverlayIndex.IGNORED_OVERLAY.getLabel(), String
+                        .valueOf(IconOverlayIndex.IGNORED_OVERLAY.getIndex()));
+                iconControl.registerIconWithId(lockedIcon.toString(),
+                    IconOverlayIndex.LOCKED_OVERLAY.getLabel(),
+                    String.valueOf(IconOverlayIndex.LOCKED_OVERLAY.getIndex()));
 
                 iconOverlayApplier = new IconOverlayApplier(getController(),
                     iconControl);
