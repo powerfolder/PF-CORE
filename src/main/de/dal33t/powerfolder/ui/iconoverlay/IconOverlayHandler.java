@@ -98,7 +98,7 @@ public class IconOverlayHandler extends PFComponent implements
             // We know, it is a file in a Folder, so create a lookup instance
             // ...
             FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
-            SyncStatus status = SyncStatus.of(getController(), lookup);
+            SyncStatus status = SyncStatus.of(getController(), lookup, folder);
 
             // Pick the apropriate icon overlay
             switch (status) {
