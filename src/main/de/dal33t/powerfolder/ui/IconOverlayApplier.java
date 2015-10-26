@@ -45,6 +45,10 @@ class IconOverlayApplier extends PFComponent implements FolderScannerListener {
 
     @Override
     public void notify(FileInfo fInfo) {
+        if (fInfo.getFolderInfo().isMetaFolder()) {
+            return;
+        }
+
         Path file = fInfo.getDiskFile(getController().getFolderRepository());
 
         if (file == null) {
