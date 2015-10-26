@@ -1441,7 +1441,20 @@ public class NodeManager extends PFComponent {
     /**
      * Load all known (cluster) server nodes and their public keys.
      */
+    public void loadServerNodes() {
+        loadServerNodes(getController().getOSClient());
+    }
+
+    /**
+     * Load all known (cluster) server nodes and their public keys.
+     * @param client
+     */
     public void loadServerNodes(ServerClient client) {
+        if (!ConfigurationEntry.SERVER_LOAD_NODES
+            .getValueBoolean(getController()))
+        {
+            return;
+        }
         String serverNodesURL = client.getWebURL(SERVER_NODES_URI, false);
         String serverPublicKeysURL = client.getWebURL(SERVER_PUBLIC_KEYS_URI,
             false);
@@ -1655,15 +1668,11 @@ public class NodeManager extends PFComponent {
                 + "'");
             loadNodesFrom(filename);
         }
-        if (ConfigurationEntry.SERVER_LOAD_NODES
-            .getValueBoolean(getController()))
-        {
-            getController().getIOProvider().startIO(new Runnable() {
-                public void run() {
-                    loadServerNodes(getController().getOSClient());
-                }
-            });
-        }
+        getController().getIOProvider().startIO(new Runnable() {
+            public void run() {
+                loadServerNodes();
+            }
+        });
     }
 
     /**

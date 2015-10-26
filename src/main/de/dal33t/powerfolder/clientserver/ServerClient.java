@@ -1799,11 +1799,7 @@ public class ServerClient extends PFComponent {
 
     private void retrieveAndConnectoClusterServers() {
         try {
-            if (ConfigurationEntry.SERVER_LOAD_NODES
-                .getValueBoolean(getController()))
-            {
-                getController().getNodeManager().loadServerNodes(this);
-            }
+            getController().getNodeManager().loadServerNodes(this);
 
             if (!isConnected() || !isLoggedIn()) {
                 return;
