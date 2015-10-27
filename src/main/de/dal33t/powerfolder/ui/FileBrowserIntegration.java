@@ -128,22 +128,22 @@ public class FileBrowserIntegration extends PFComponent {
 
                 logFine("Preparing icons");
                 Path resourcesPath = Paths
-                    .get(MacUtils.getInstance().getRecourcesLocation());
+                    .get(MacUtils.getInstance().getRecourcesLocation())
+                    .toAbsolutePath();
                 Path okIcon = resourcesPath
-                    .resolve(IconOverlayIndex.OK_OVERLAY.getFilename())
-                    .toAbsolutePath();
+                    .resolve(IconOverlayIndex.OK_OVERLAY.getFilename());
                 Path syncingIcon = resourcesPath
-                    .resolve(IconOverlayIndex.SYNCING_OVERLAY.getFilename())
-                    .toAbsolutePath();
+                    .resolve(IconOverlayIndex.SYNCING_OVERLAY.getFilename());
                 Path warningIcon = resourcesPath
-                    .resolve(IconOverlayIndex.WARNING_OVERLAY.getFilename())
-                    .toAbsolutePath();
+                    .resolve(IconOverlayIndex.WARNING_OVERLAY.getFilename());
                 Path ignoredIcon = resourcesPath
-                    .resolve(IconOverlayIndex.IGNORED_OVERLAY.getFilename())
-                    .toAbsolutePath();
+                    .resolve(IconOverlayIndex.IGNORED_OVERLAY.getFilename());
                 Path lockedIcon = resourcesPath
-                    .resolve(IconOverlayIndex.LOCKED_OVERLAY.getFilename())
-                    .toAbsolutePath();
+                    .resolve(IconOverlayIndex.LOCKED_OVERLAY.getFilename());
+
+                logFine("Bundle path: " + MacUtils.getInstance().getBundleLocation());
+                logFine("Icon path: " + resourcesPath.toString());
+                logFine("Icon @ " + okIcon.toString());
 
                 iconOverlayHandler = new IconOverlayHandler(getController());
                 FileIconControl iconControl = FileIconControlUtil
