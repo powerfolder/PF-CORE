@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -151,7 +152,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 277;
+    private static final int REVISION_VERSION = 278;
 
     /**
      * Program version.
@@ -1292,8 +1293,9 @@ public class Controller extends PFComponent {
      * #2526
      */
     private void backupConfigAssets() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
         Path backupDir = getMiscFilesLocation().resolve(
-            "backups/" + Format.formatDateCanonical(new Date()));
+            "backups/" + dateFormat.format(new Date()));
         if (Files.notExists(backupDir)) {
             try {
                 Files.createDirectories(backupDir);
