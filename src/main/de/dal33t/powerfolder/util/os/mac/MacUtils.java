@@ -194,28 +194,14 @@ public class MacUtils extends Loggable {
      *             @{@link #getBundleLocation()}
      */
     public String getRecourcesLocation() {
-        String appLocation = getBundleLocationWithAppName();
-        return appLocation + "/Contents/Resources";
-    }
-
-    /**
-     * Example: {@code "/Applications/PowerFolder.app"}
-     * 
-     * @return A string containing the path to and name of the bundle.
-     * @throws UnsupportedOperationException @{@link #getBundleLocation()}
-     */
-    public String getBundleLocationWithAppName()
-        throws UnsupportedOperationException
-    {
-        String bundlePath = getBundleLocation();
-        return bundlePath + ".app";
+        return getBundleLocation() + "/Contents/Resources";
     }
 
     /**
      * Tries to retriev the location of the app bundle via
      * {@link com.apple.eio.FileManager#getPathToApplicationBundle()}. This
      * method is called using reflection.
-     * Example: {@code "/Applications/PowerFolder"}
+     * Example: {@code "/Applications/PowerFolder.app"}
      * 
      * @return The string representation of the path to the bundle
      * @throws UnsupportedOperationException
