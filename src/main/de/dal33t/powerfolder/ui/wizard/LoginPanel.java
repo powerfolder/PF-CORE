@@ -196,14 +196,7 @@ public class LoginPanel extends PFWizardPanel {
         builder.add(usernameLabel, cc.xy(1, row));
         builder.add(usernameField, cc.xy(3, row));
         builder.add(connectingLabel, cc.xyw(1, row, 4));
-        if (client.supportsWebRegistration()) {
-            LinkLabel signupLabel = new LinkLabel(getController(),
-                Translation
-                    .get("wizard.activation.register_now"),
-                client.getRegisterURL());
-            signupLabel.convertToBigLabel();
-            builder.add(signupLabel.getUIComponent(), cc.xy(5, row));
-        }
+
         row += 2;
 
         // passwordField and workingBar have the same slot.
