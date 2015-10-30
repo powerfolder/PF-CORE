@@ -103,6 +103,7 @@ public class FileBrowserIntegration extends PFComponent {
      * @return {@code True} if connection was set up correctly, {@code false}
      *         otherwise.
      */
+    @SuppressWarnings("deprecation")
     private boolean fbApple(NativityControl nc) {
         try {
             if (!nc.loaded()) {
@@ -141,16 +142,20 @@ public class FileBrowserIntegration extends PFComponent {
                 Path lockedIcon = resourcesPath
                     .resolve(IconOverlayIndex.LOCKED_OVERLAY.getFilename());
 
-                logFine("Bundle path: " + MacUtils.getInstance().getBundleLocation());
-                logFine("Icon path: " + resourcesPath.toString());
-                logFine("Icon @ " + okIcon.toString());
-
                 iconOverlayHandler = new IconOverlayHandler(getController());
                 FileIconControl iconControl = FileIconControlUtil
                     .getFileIconControl(nc, iconOverlayHandler);
                 iconControl.enableFileIcons();
 
                 logFine("Registering icons");
+                // leave in for legacy support on OS X 10.9
+                iconControl.registerIcon(okIcon.toString());
+                iconControl.registerIcon(syncingIcon.toString());
+                iconControl.registerIcon(warningIcon.toString());
+                iconControl.registerIcon(ignoredIcon.toString());
+                iconControl.registerIcon(lockedIcon.toString());
+
+                // should be used from OS X 10.10 on
                 iconControl.registerIconWithId(okIcon.toString(),
                     IconOverlayIndex.OK_OVERLAY.getLabel(),
                     String.valueOf(IconOverlayIndex.OK_OVERLAY.getIndex()));
