@@ -472,7 +472,7 @@ public class Controller extends PFComponent {
         }
 
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
-        logFine("OS: " + System.getProperty("os.name") + " (" + arch + ')');
+        logFine("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + arch + ")");
         logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());

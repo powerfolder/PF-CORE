@@ -18,23 +18,40 @@
 package de.dal33t.powerfolder.ui.iconoverlay;
 
 /**
+ * Representation of the index of the file overlay icon for LiferayNativity library.<br />
+ * For the Mac OS X icons, there is additional data "Label" and "Filename".<br />
+ * "Label" is a name that gets shown if icons are unavailable.<br />
+ * "Filename" is the name of the icon file within the App Bundle's Resources folder.
+ * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-enum IconOverlayIndex {
-    NO_OVERLAY(0),
-    OK_OVERLAY(1),
-    SYNCING_OVERLAY(2),
-    WARNING_OVERLAY(3),
-    IGNORED_OVERLAY(4),
-    LOCKED_OVERLAY(5);
+public enum IconOverlayIndex {
+    NO_OVERLAY     (0, "None",    ""),
+    OK_OVERLAY     (1, "OK",      "ok.icns"),
+    SYNCING_OVERLAY(2, "Syncing", "syncing.icns"),
+    WARNING_OVERLAY(3, "Warning", "warning.icns"),
+    IGNORED_OVERLAY(4, "Ignored", "ignored.icns"),
+    LOCKED_OVERLAY (5, "Locked",  "locked.icns");
 
     private int index;
+    private String label;
+    private String filename;
 
-    private IconOverlayIndex(int index) {
+    private IconOverlayIndex(int index, String label, String filename) {
         this.index = index;
+        this.label = label;
+        this.filename = filename;
     }
 
-    int getIndex() {
+    public int getIndex() {
         return index;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getFilename() {
+        return filename;
     }
 }

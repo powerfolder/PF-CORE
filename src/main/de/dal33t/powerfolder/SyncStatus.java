@@ -30,21 +30,31 @@ import de.dal33t.powerfolder.util.Reject;
 public enum SyncStatus {
     SYNC_OK, SYNCING, IGNORED, WARNING, LOCKED, NONE;
 
+    
+    public static SyncStatus of(Controller controller, FileInfo fInfo) {
+        return SyncStatus.of(controller, fInfo, null);
+    }
+
     /**
+     * 
+     * 
      * @param controller
      * @param fInfo
+     * @param folder
      * @return the sync status of the file
      */
-    public static SyncStatus of(Controller controller, FileInfo fInfo) {
+    public static SyncStatus of(Controller controller, FileInfo fInfo, Folder folder) {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(fInfo, "FileInfo");
 
         if (!controller.isStarted() || controller.isShuttingDown()) {
             return NONE;
         }
-        Folder folder = fInfo.getFolder(controller.getFolderRepository());
         if (folder == null) {
-            return NONE;
+            folder = fInfo.getFolder(controller.getFolderRepository());
+            if (folder == null) {
+                return NONE;
+            }
         }
         if (fInfo.equals(folder.getBaseDirectoryInfo())) {
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
