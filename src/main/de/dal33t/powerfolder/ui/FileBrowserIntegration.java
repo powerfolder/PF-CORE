@@ -172,10 +172,10 @@ public class FileBrowserIntegration extends PFComponent {
                     IconOverlayIndex.LOCKED_OVERLAY.getLabel(),
                     String.valueOf(IconOverlayIndex.LOCKED_OVERLAY.getIndex()));
 
-                iconOverlayApplier = new IconOverlayApplier(getController(),
-                    iconControl);
-                getController().getFolderRepository().getFolderScanner()
-                    .addListener(iconOverlayApplier);
+//                iconOverlayApplier = new IconOverlayApplier(getController(),
+//                    iconControl);
+//                getController().getFolderRepository().getFolderScanner()
+//                    .addListener(iconOverlayApplier);
 
                 return true;
             }

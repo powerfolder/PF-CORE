@@ -58,7 +58,7 @@ public enum SyncStatus {
         }
         if (fInfo.equals(folder.getBaseDirectoryInfo())) {
             double sync = folder.getStatistic().getHarmonizedSyncPercentage();
-            if (folder.isSyncing()) {
+            if (folder.isTransferring()) {
                 return SYNCING;
             } else if (folder.isDeviceDisconnected()) {
                 return WARNING;

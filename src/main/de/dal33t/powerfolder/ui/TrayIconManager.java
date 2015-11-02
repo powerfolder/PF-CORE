@@ -213,7 +213,7 @@ public class TrayIconManager extends PFComponent {
             tooltip.append(Translation
                 .get("systray.tooltip.syncing"));
             double overallSyncPercentage = getController().getUIController()
-                .getApplicationModel().getFolderRepositoryModel()
+                .getApplicationModel().getSyncingModel()
                 .getOverallSyncPercentage();
             if (overallSyncPercentage >= 0) {
                 tooltip.append(' ');
@@ -268,7 +268,7 @@ public class TrayIconManager extends PFComponent {
                     .get("systray.tooltip.syncing"));
                 double overallSyncPercentage = getController()
                     .getUIController().getApplicationModel()
-                    .getFolderRepositoryModel().getOverallSyncPercentage();
+                    .getSyncingModel().getOverallSyncPercentage();
                 if (overallSyncPercentage >= 0) {
                     tooltip.append(' ');
                     tooltip

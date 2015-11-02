@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 
-public class FolderRepositoryModel extends PFUIComponent {
+public class SyncingModel extends PFUIComponent {
 
     private final MyFolderListener folderListener;
     private final OverallFolderStatListener overallFolderStatListenerSupport;
@@ -39,7 +39,7 @@ public class FolderRepositoryModel extends PFUIComponent {
      */
     private final List<FolderInfo> interestedFolders = new ArrayList<FolderInfo>();
 
-    FolderRepositoryModel(Controller controller) {
+    SyncingModel(Controller controller) {
         super(controller);
         folderListener = new MyFolderListener();
         overallFolderStatListenerSupport = ListenerSupportFactory
@@ -105,10 +105,10 @@ public class FolderRepositoryModel extends PFUIComponent {
         Date localEstimatedSyncDate = null;
         double localOverallSyncPercentage = 0;
         long totalSize = 0;
-        for (Folder folder : getController().getFolderRepository().getFolders(
-            true))
+        for (Folder folder : getController().getFolderRepository()
+            .getFolders())
         {
-            if (folder.isSyncing()) {
+            if (folder.isTransferring()) {
                 localSyncing = true;
             }
             Date tmpLastSync = folder.getLastSyncDate();
@@ -184,6 +184,7 @@ public class FolderRepositoryModel extends PFUIComponent {
             e.getFolder().removeFolderListener(folderListener);
         }
 
+        // START FIXME: Maybe remove those two methods? Left in because of uncertenty if the spinning icon may not get changed back -> PFC-2796
         public void maintenanceFinished(FolderRepositoryEvent e) {
             calculateOverallStats();
         }
@@ -191,6 +192,7 @@ public class FolderRepositoryModel extends PFUIComponent {
         public void maintenanceStarted(FolderRepositoryEvent e) {
             calculateOverallStats();
         }
+        // END
 
         public boolean fireInEventDispatchThread() {
             return false;

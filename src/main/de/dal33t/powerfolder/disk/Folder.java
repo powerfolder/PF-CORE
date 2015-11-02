@@ -2909,28 +2909,15 @@ public class Folder extends PFComponent {
 
     /**
      * In sync = Folders is 100% synced and all syncing actions (
-     * {@link #isSyncing()}) have stopped.
+     * {@link #isTransferring()}) have stopped.
      *
      * @return true if this folder is 100% in sync
      */
     public boolean isInSync() {
-        if (isSyncing()) {
+        if (isTransferring()) {
             return false;
         }
         return statistic.getHarmonizedSyncPercentage() >= 100.0d;
-    }
-
-    /**
-     * Checks if the folder is syncing. Means: local file scan running or active
-     * transfers.
-     *
-     * @return if this folder is currently synchronizing.
-     */
-    public boolean isSyncing() {
-        return isScanning()
-            || isTransferring()
-            || getController().getFolderRepository()
-                .getCurrentlyMaintainingFolder() == this;
     }
 
     /**
@@ -5193,7 +5180,7 @@ public class Folder extends PFComponent {
 
         Date myLastSyncDate = lastSyncDate;
         if (myLastSyncDate != null && myLastSyncDate.before(warningDate)) {
-            if (!(othersInSync && isSyncing())) {
+            if (!(othersInSync && isTransferring())) {
                 // Only need one of these.
                 UnsynchronizedFolderProblem ufp = null;
                 for (Problem problem : problems) {

@@ -738,7 +738,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 if (folder == null) {
                     return;
                 }
-                if (folder.isSyncing()) {
+                if (folder.isTransferring()) {
                     primaryButton.setVisible(false);
                     upperSyncFolderButton.setVisible(true);
                     upperSyncFolderButton.spin(true);

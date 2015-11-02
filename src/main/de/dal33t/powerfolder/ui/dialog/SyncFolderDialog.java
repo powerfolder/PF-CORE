@@ -122,7 +122,7 @@ public class SyncFolderDialog extends BaseDialog {
             public void actionPerformed(ActionEvent e) {
                 // Don't want to be notified when the scan completes.
                 getController().getUIController().getApplicationModel()
-                    .getFolderRepositoryModel()
+                    .getSyncingModel()
                     .removeInterestedFolderInfo(folder.getInfo());
                 close();
             }

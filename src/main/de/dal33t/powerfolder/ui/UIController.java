@@ -1624,8 +1624,8 @@ public class UIController extends PFComponent {
                 String title = Translation
                     .get("uicontroller.warn_on_close.title");
                 String text;
-                if (applicationModel.getFolderRepositoryModel().isSyncing()) {
-                    Date syncDate = applicationModel.getFolderRepositoryModel()
+                if (applicationModel.getSyncingModel().isSyncing()) {
+                    Date syncDate = applicationModel.getSyncingModel()
                         .getEstimatedSyncDate();
                     text = Translation.get(
                         "uicontroller.warn_on_close_eta.text",
