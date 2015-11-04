@@ -2623,6 +2623,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             .cleanupStarted(new FolderRepositoryEvent(this));
     }
 
+    private void fireCleanupFinished() {
+        folderRepositoryListenerSupport
+            .cleanupFinished(new FolderRepositoryEvent(this));
+    }
+    
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {
         ListenerSupportFactory.addListener(folderRepositoryListenerSupport,
             listener);
@@ -2655,6 +2660,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         for (Folder folder : getFolders()) {
             folder.cleanupOldArchiveFiles(cleanupDate);
         }
+        fireCleanupFinished();
     }
 
     /**

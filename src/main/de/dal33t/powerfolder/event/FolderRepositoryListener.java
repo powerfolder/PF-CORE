@@ -47,4 +47,9 @@ public interface FolderRepositoryListener extends CoreListener {
      * Fired by the FolderRepository when starting the cleanup process for a single Folder
      */
     public void cleanupStarted(FolderRepositoryEvent e);
+
+    /**
+     * Fired by the FolderRepository when starting the cleanup process for a single Folder
+     */
+    public void cleanupFinished(FolderRepositoryEvent e);
 }

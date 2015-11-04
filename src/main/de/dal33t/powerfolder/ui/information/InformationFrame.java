@@ -340,6 +340,11 @@ public class InformationFrame extends PFUIComponent {
         public void cleanupStarted(FolderRepositoryEvent e) {
         }
 
+        @Override
+        public void cleanupFinished(FolderRepositoryEvent e) {
+            // ignore
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

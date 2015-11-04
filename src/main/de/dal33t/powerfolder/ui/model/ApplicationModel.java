@@ -722,6 +722,11 @@ public class ApplicationModel extends PFUIComponent {
         public void cleanupStarted(FolderRepositoryEvent e) {
             // ignore
         }
+
+        @Override
+        public void cleanupFinished(FolderRepositoryEvent e) {
+            // ignore
+        }
     }
 
     private class MyLockingListener implements LockingListener {
