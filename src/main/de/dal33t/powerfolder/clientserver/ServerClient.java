@@ -2267,6 +2267,10 @@ public class ServerClient extends PFComponent {
         @Override
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
+
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
     }
 
     private class ServerConnectTask extends TimerTask {

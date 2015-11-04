@@ -1408,6 +1408,10 @@ public class UIController extends PFComponent {
         }
 
         @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
+
+        @Override
         public boolean fireInEventDispatchThread() {
             return false;
         }

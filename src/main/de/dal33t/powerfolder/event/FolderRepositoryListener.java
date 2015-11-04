@@ -42,4 +42,9 @@ public interface FolderRepositoryListener extends CoreListener {
      * Fired by the FolderRepository when the scans are finished
      */
     public void maintenanceFinished(FolderRepositoryEvent e);
+
+    /**
+     * Fired by the FolderRepository when starting the cleanup process for a single Folder
+     */
+    public void cleanupStarted(FolderRepositoryEvent e);
 }

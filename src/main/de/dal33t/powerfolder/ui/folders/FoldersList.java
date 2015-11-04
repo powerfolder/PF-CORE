@@ -432,6 +432,10 @@ public class FoldersList extends PFUIComponent {
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
 
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

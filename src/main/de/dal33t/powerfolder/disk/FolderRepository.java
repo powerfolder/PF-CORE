@@ -2618,6 +2618,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             .maintenanceFinished(new FolderRepositoryEvent(this, folder));
     }
 
+    private void fireCleanupStarted() {
+        folderRepositoryListenerSupport
+            .cleanupStarted(new FolderRepositoryEvent(this));
+    }
+
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {
         ListenerSupportFactory.addListener(folderRepositoryListenerSupport,
             listener);
@@ -2638,6 +2643,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Delete any file archives over a specified age.
      */
     public void cleanupOldArchiveFiles() {
+        fireCleanupStarted();
         int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
             .getValueInt(getController());
         if (period == Integer.MAX_VALUE || period <= 0) { // cleanup := never

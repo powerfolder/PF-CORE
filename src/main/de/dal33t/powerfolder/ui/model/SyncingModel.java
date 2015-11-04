@@ -192,6 +192,11 @@ public class SyncingModel extends PFUIComponent {
         public void maintenanceStarted(FolderRepositoryEvent e) {
             calculateOverallStats();
         }
+
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+            calculateOverallStats();
+        }
         // END
 
         public boolean fireInEventDispatchThread() {

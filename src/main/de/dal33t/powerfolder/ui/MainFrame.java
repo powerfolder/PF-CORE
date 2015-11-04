@@ -1156,6 +1156,10 @@ public class MainFrame extends PFUIComponent {
             // Don't care.
         }
 
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

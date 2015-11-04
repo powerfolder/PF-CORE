@@ -394,5 +394,9 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         @Override
         public void maintenanceFinished(FolderRepositoryEvent e) {
         }
+
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
     }
 }

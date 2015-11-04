@@ -1551,6 +1551,10 @@ public class ExpandableFolderView extends PFUIComponent implements
             updateIfRequired(e);
         }
 
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }
