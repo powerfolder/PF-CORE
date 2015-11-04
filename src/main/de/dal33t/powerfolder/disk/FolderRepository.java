@@ -785,9 +785,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * All real-folders WITHOUT Meta-folders (#1548). Returns the indirect
-     * reference to the internal {@link ConcurrentMap}. Contents may changed
-     * after get.
+     * All real-folders WITHOUT Meta-folders (#1548) and WITHOUT unmounted
+     * {@link Folder Folders}. Returns the indirect reference to the internal
+     * {@link ConcurrentMap}. Contents may change after get.
      * 
      * @return the folders as unmodifiable collection
      */
