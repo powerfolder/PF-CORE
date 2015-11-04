@@ -412,6 +412,27 @@ public class Account implements Serializable {
     }
 
     /**
+     * Returns the {@link FolderPermission} this {@link Account} has for a
+     * certain {@code Folder}.
+     * 
+     * @param foInfo
+     * @return A FolderPermission with the correct {@code AccessMode}.
+     */
+    public FolderPermission getPermissionFor(FolderInfo foInfo) {
+        for (Permission perm : permissions) {
+            if (perm instanceof FolderPermission) {
+                FolderPermission foPerm = (FolderPermission) perm;
+                if (foPerm.getFolder().equals(foInfo)) {
+                    return foPerm;
+                }
+            }
+        }
+
+        return FolderPermission.get(foInfo, AccessMode.NO_ACCESS);
+    }
+
+    /**
+     * 
      * @param folder
      * @return the permission on the given folder. AccessMode.NO_ACCESS for no
      *         access.
