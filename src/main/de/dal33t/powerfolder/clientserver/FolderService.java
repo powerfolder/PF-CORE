@@ -118,15 +118,6 @@ public interface FolderService {
     void sendInvitationEmail(SendInvitationEmail request, boolean wait);
 
     /**
-     * 
-     * 
-     * @param request
-     * @param token CSRFToken if needed. If not pass {@code null} here
-     * @param wait block until send process is finished
-     */
-    void sendInvitationEmail(SendInvitationEmail request, String token, boolean wait);
-
-    /**
      * Changes the sync profile on the remote server for this folder.
      *
      * @param foInfo
