@@ -62,7 +62,7 @@ public class FileBrowserIntegration extends PFComponent {
 
     /**
      * Start up the shell extensions according to the OS we are running on. Adds
-     * different listeners and visitors to {@link Folder}s,
+     * different listeners and visitors to {@link Folder Folders},
      * {@link FolderRepository}, {@link Locking} and the {@link TransferManager}
      * 
      * @return {@code True} if the shell extensions could be loaded/started,

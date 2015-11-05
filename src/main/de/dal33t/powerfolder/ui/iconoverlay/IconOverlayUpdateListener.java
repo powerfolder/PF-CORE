@@ -223,6 +223,15 @@ public class IconOverlayUpdateListener extends PFComponent implements
     }
 
     @Override
+    public void cleanupStarted(FolderRepositoryEvent e) {
+    }
+
+    @Override
+    public void cleanupFinished(FolderRepositoryEvent e) {
+        // ignore
+    }
+
+    @Override
     public void statisticsCalculated(FolderEvent folderEvent) {
         updateFolder(folderEvent.getFolder());
     }

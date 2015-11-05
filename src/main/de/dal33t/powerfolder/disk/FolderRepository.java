@@ -785,9 +785,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * All real-folders WITHOUT Meta-folders (#1548). Returns the indirect
-     * reference to the internal {@link ConcurrentMap}. Contents may changed
-     * after get.
+     * All real-folders WITHOUT Meta-folders (#1548) and WITHOUT unmounted
+     * {@link Folder Folders}. Returns the indirect reference to the internal
+     * {@link ConcurrentMap}. Contents may change after get.
      * 
      * @return the folders as unmodifiable collection
      */
@@ -2618,6 +2618,16 @@ public class FolderRepository extends PFComponent implements Runnable {
             .maintenanceFinished(new FolderRepositoryEvent(this, folder));
     }
 
+    private void fireCleanupStarted() {
+        folderRepositoryListenerSupport
+            .cleanupStarted(new FolderRepositoryEvent(this));
+    }
+
+    private void fireCleanupFinished() {
+        folderRepositoryListenerSupport
+            .cleanupFinished(new FolderRepositoryEvent(this));
+    }
+    
     public void addFolderRepositoryListener(FolderRepositoryListener listener) {
         ListenerSupportFactory.addListener(folderRepositoryListenerSupport,
             listener);
@@ -2638,6 +2648,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Delete any file archives over a specified age.
      */
     public void cleanupOldArchiveFiles() {
+        fireCleanupStarted();
         int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
             .getValueInt(getController());
         if (period == Integer.MAX_VALUE || period <= 0) { // cleanup := never
@@ -2649,6 +2660,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         for (Folder folder : getFolders()) {
             folder.cleanupOldArchiveFiles(cleanupDate);
         }
+        fireCleanupFinished();
     }
 
     /**
