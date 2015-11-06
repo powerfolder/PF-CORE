@@ -2071,7 +2071,13 @@ public class TransferManager extends PFComponent {
     }
 
     void downloadManagerAborted(DownloadManager manager) {
-        logWarning("Aborted download: " + manager);
+        if (manager.isRequestedAutomatic()) {
+            if (isFine()) {
+                logFine("Aborted download: " + manager);                
+            }
+        } else {
+            logWarning("Aborted download: " + manager);
+        }
         removeDownloadManager(manager);
     }
 
