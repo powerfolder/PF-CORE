@@ -39,7 +39,7 @@ public class FindSameFilesTest extends TwoControllerTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
-        joinTestFolder(SyncProfile.HOST_FILES);
+        joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
     }
 
     /**
@@ -51,27 +51,39 @@ public class FindSameFilesTest extends TwoControllerTestCase {
     public void testFilelistAdapt() throws IOException {
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
 
-        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), "TestFile.txt");
+        Path testFile = TestHelper
+            .createRandomFile(getFolderAtBart().getLocalBase(), "TestFile.txt");
         scanFolder(getFolderAtBart());
         // File should be found. version: 0
-        assertEquals(0, getFolderAtBart().getKnownFiles().iterator().next()
-            .getVersion());
+        assertEquals(
+            "Expected version at bart: 0. Got: " + getFolderAtBart()
+                .getKnownFiles().iterator().next().toDetailString(),
+            0,
+            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
         TestHelper.changeFile(testFile);
         scanFolder(getFolderAtBart());
         // File changed. version: 1
-        assertEquals(1, getFolderAtBart().getKnownFiles().iterator().next()
-            .getVersion());
+        assertEquals(
+            "Expected version at bart: 1. Got: " + getFolderAtBart()
+                .getKnownFiles().iterator().next().toDetailString(),
+            1,
+            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
         TestHelper.changeFile(testFile);
         scanFolder(getFolderAtBart());
         // File changed. version: 2
-        assertEquals(2, getFolderAtBart().getKnownFiles().iterator().next()
-            .getVersion());
+        assertEquals(
+            "Expected version at bart: 2. Got: " + getFolderAtBart()
+                .getKnownFiles().iterator().next().toDetailString(),
+            2,
+            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
         TestHelper.changeFile(testFile);
         scanFolder(getFolderAtBart());
         // File changed. version: 3
-        assertEquals(3, getFolderAtBart().getKnownFiles().iterator().next()
-            .getVersion());
+        assertEquals(
+            "Expected version at bart: 3. Got: " + getFolderAtBart()
+                .getKnownFiles().iterator().next().toDetailString(),
+            3,
+            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
 
         // File gets copied to lisa.
         Path testFileCopy = getFolderAtLisa().getLocalBase().resolve(
@@ -89,12 +101,18 @@ public class FindSameFilesTest extends TwoControllerTestCase {
         assertEquals(0, getFolderAtLisa().getIncomingFiles().size());
 
         // File modifications should be adapted from Bart, because same file!
-        assertEquals(3, getFolderAtBart().getKnownFiles().iterator().next()
-            .getVersion());
-        assertEquals(3, getFolderAtLisa().getKnownFiles().iterator().next()
-            .getVersion());
-        assertEquals(getContollerBart().getMySelf().getInfo(),
-            getFolderAtLisa().getKnownFiles().iterator().next().getModifiedBy());
+        assertEquals(
+            "Expected version at bart: 3. Got: " + getFolderAtBart()
+                .getKnownFiles().iterator().next().toDetailString(),
+            3,
+            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
+        assertEquals(
+            "Expected version at lisa: 3. Got: " + getFolderAtLisa()
+                .getKnownFiles().iterator().next().toDetailString(),
+            3,
+            getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
+        assertEquals(getContollerBart().getMySelf().getInfo(), getFolderAtLisa()
+            .getKnownFiles().iterator().next().getModifiedBy());
     }
 
 }
