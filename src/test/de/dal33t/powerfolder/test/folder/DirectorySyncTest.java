@@ -480,7 +480,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         // Check remote syncs
         final Path dirLisa = getFolderAtLisa().getLocalBase().resolve(
             dirBart.getFileName());
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public String message() {
                 return "Dir at lisa not existing: " + dirLisa;
             }
@@ -515,7 +515,7 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         // Restore at Homer
         final Path dirHomer = getFolderAtHomer().getLocalBase().resolve(
             "testDir");
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public String message() {
                 return "Dir at homer existing: " + dirLisa;
             }
