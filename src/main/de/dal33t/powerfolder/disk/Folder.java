@@ -3258,7 +3258,8 @@ public class Folder extends PFComponent {
                                         "Found non-deleted file in deleted directory: "
                                             + fileInfo.toDetailString()
                                             + ". Directory: "
-                                            + localFile.toDetailString());
+                                            + fileInfo.toDetailString()
+                                            + ". Message: " + ioe.toString());
                                 }
                             }
                         }
@@ -3281,9 +3282,10 @@ public class Folder extends PFComponent {
                                     Files.delete(path);
                                 }
                             }
-                        }
-                        catch (IOException e) {
-                            logInfo(ioe.getMessage());
+                        } catch (IOException e) {
+                            logFine(
+                                "Unable to delete files in deleted directory "
+                                    + localCopy + ": " + e.getMessage());
                             return;
                         }
 
@@ -3310,7 +3312,7 @@ public class Folder extends PFComponent {
                                 String contentStr = count > 0
                                     ? sb.toString()
                                         : "(unable to access)";
-                                    logFine("Unable to delete directory locally: "
+                                    logWarning("Unable to delete directory locally: "
                                         + localCopy
                                         + ". Info: "
                                         + localFile.toDetailString()
