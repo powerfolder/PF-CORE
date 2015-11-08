@@ -943,8 +943,7 @@ public class Folder extends PFComponent {
                     // PFS-1794: Replace existing target file atomically.
                     Files.move(tempFile, targetFile,
                         StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING,
-                        StandardCopyOption.COPY_ATTRIBUTES);
+                        StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException ioe) {
                     // PFS-1794: Does happen 530x
                     logWarning("Was not able to rename tempfile, copying "
@@ -961,8 +960,7 @@ public class Folder extends PFComponent {
                         // PFS-1794: Replace existing target file atomically.
                         Files.copy(tempFile, targetFile,
                             StandardCopyOption.ATOMIC_MOVE,
-                            StandardCopyOption.REPLACE_EXISTING,
-                            StandardCopyOption.COPY_ATTRIBUTES);
+                            StandardCopyOption.REPLACE_EXISTING);
                     }
                 } catch (IOException e) {
                     // PFS-1794: Does happen 525x

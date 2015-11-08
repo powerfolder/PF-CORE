@@ -168,8 +168,7 @@ public class FileArchiver {
                 try {
                     // // PFS-1794: Replace existing target file atomically.
                     Files.move(source, target, StandardCopyOption.ATOMIC_MOVE,
-                        StandardCopyOption.REPLACE_EXISTING,
-                        StandardCopyOption.COPY_ATTRIBUTES);
+                        StandardCopyOption.REPLACE_EXISTING);
                     if (size != null && Files.exists(target)) {
                         size += Files.size(target);
                     }
