@@ -34,6 +34,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
@@ -864,8 +865,17 @@ public class Folder extends PFComponent {
                 Files.setLastModifiedTime(tempFile,
                     FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
             } catch (IOException ioe) {
-                logWarning("Failed to set modified date on " + tempFile
-                    + " for " + fInfo.getModifiedDate().getTime() + ": " + ioe);
+                // PFS-1794: Happens (3173x): Tempfile/Download already
+                // handled and moved by a different server.
+                if (isWarning() && !fInfo.inSyncWithDisk(targetFile)) {
+                    logWarning(
+                        "Failed to set modified date on tempfile " + tempFile
+                            + " to " + fInfo.getModifiedDate() + ": " + ioe);
+                } else if (isFine()) {
+                    logFine(
+                        "Failed to set modified date on tempfile " + tempFile
+                            + " to " + fInfo.getModifiedDate() + ": " + ioe);
+                }
                 return false;
             }
 
@@ -899,49 +909,63 @@ public class Folder extends PFComponent {
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
                         // TODO Maybe raise folder-problem....
-                        logWarning("Unable to archive old file!", e);
+                        // PFS-1794: Does happen 5x
+                        if (isWarning() && !fInfo.inSyncWithDisk(targetFile)) {
+                            logWarning("Unable to archive old file "
+                                + targetFile + ". " + e);
+                        } else if (isFine()) {
+                            logFine("Unable to archive old file " + targetFile
+                                + ". " + e);
+                        }
                         return false;
                     }
                 }
-                try {
-                    Files.deleteIfExists(targetFile);
-                } catch (IOException ioe) {
-                    logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                        + targetFile.toAbsolutePath()
-                        + ". "
-                        + fInfo.toDetailString());
-                    return false;
-                }
+                // PFS-1794: Don't delete, let move/copy replace target file
+                // try {
+                // Files.deleteIfExists(targetFile);
+                // } catch (IOException ioe) {
+                // PFS-1794: DOES NOT HAPPEN
+                // logWarning("Unable to scan downloaded file. Was not able to
+                // move old file to file archive "
+                // + targetFile.toAbsolutePath()
+                // + ". "
+                // + fInfo.toDetailString());
+                // return false;
+                // }
             }
 
             boolean copyAfterTransfer = schemaZyncro
                 || ConfigurationEntry.FOLDER_COPY_AFTER_TRANSFER
                     .getValueBoolean(getController());
 
-            try {
-                if (copyAfterTransfer)
-                {
-                    throw new IOException();
-                }
-
-                Files.move(tempFile, targetFile);
-            }
-            catch (IOException ioe) {
-                if (!copyAfterTransfer)
-                {
+            if (!copyAfterTransfer) {
+                try {
+                    // PFS-1794: Replace existing target file atomically.
+                    Files.move(tempFile, targetFile,
+                        StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.COPY_ATTRIBUTES);
+                } catch (IOException ioe) {
+                    // PFS-1794: Does happen 530x
                     logWarning("Was not able to rename tempfile, copying "
                         + tempFile.toAbsolutePath() + " to "
                         + targetFile.toAbsolutePath() + ". "
-                        + fInfo.toDetailString());
+                        + fInfo.toDetailString() + ". " + ioe);
+                    return false;
                 }
-
+            } else {
                 try {
                     if (schemaZyncro) {
                         PathUtils.rawCopy(tempFile, targetFile);
                     } else {
-                        Files.copy(tempFile, targetFile);
+                        // PFS-1794: Replace existing target file atomically.
+                        Files.copy(tempFile, targetFile,
+                            StandardCopyOption.ATOMIC_MOVE,
+                            StandardCopyOption.REPLACE_EXISTING,
+                            StandardCopyOption.COPY_ATTRIBUTES);
                     }
                 } catch (IOException e) {
+                    // PFS-1794: Does happen 525x
                     logWarning("Unable to store completed download "
                         + targetFile.toAbsolutePath() + ". " + e.getMessage()
                         + ". " + fInfo.toDetailString() + ". " + e);
@@ -950,21 +974,23 @@ public class Folder extends PFComponent {
                 }
 
                 // Set modified date of remote
-                // TODO: Set last modified only if required
                 try {
                     Files.setLastModifiedTime(targetFile,
                         FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
                 } catch (IOException e) {
-                    logWarning("Failed to set modified date on " + targetFile
-                        + " to " + fInfo.getModifiedDate().getTime() + ". " + e);
+                    // PFS-1794: DOES NOT happen
+                    logWarning("Failed to set modified date on targetfile "
+                        + targetFile + " to " + fInfo.getModifiedDate() + ". "
+                        + e);
                     return false;
                 }
 
                 try {
                     Files.deleteIfExists(tempFile);
-                }
-                catch (IOException e) {
-                    logSevere("Unable to remove temp file: " + tempFile);
+                } catch (IOException e) {
+                    // PFS-1794: DOES NOT happen
+                    logWarning(
+                        "Unable to remove temp file: " + tempFile + ". " + e);
                 }
             }
 
@@ -3258,8 +3284,7 @@ public class Folder extends PFComponent {
                                         "Found non-deleted file in deleted directory: "
                                             + fileInfo.toDetailString()
                                             + ". Directory: "
-                                            + fileInfo.toDetailString()
-                                            + ". Message: " + ioe.toString());
+                                            + localFile.toDetailString());
                                 }
                             }
                         }
@@ -3282,10 +3307,9 @@ public class Folder extends PFComponent {
                                     Files.delete(path);
                                 }
                             }
-                        } catch (IOException e) {
-                            logFine(
-                                "Unable to delete files in deleted directory "
-                                    + localCopy + ": " + e.getMessage());
+                        }
+                        catch (IOException e) {
+                            logInfo(ioe.getMessage());
                             return;
                         }
 
@@ -3312,7 +3336,7 @@ public class Folder extends PFComponent {
                                 String contentStr = count > 0
                                     ? sb.toString()
                                         : "(unable to access)";
-                                    logWarning("Unable to delete directory locally: "
+                                    logFine("Unable to delete directory locally: "
                                         + localCopy
                                         + ". Info: "
                                         + localFile.toDetailString()
