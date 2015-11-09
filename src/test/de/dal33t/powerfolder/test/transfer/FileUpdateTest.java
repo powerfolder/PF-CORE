@@ -225,13 +225,17 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .next();
         FileInfo fInfoAtLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next();
-        assertEquals(1, fInfoAtBart.getVersion());
-        assertEquals(1, fInfoAtLisa.getVersion());
+        assertEquals(
+            "Expected version at bart 1. Got: " + fInfoAtBart.toDetailString(),
+            1, fInfoAtBart.getVersion());
+        assertEquals(
+            "Expected version at lisa 1. Got: " + fInfoAtLisa.toDetailString(),
+            1, fInfoAtLisa.getVersion());
         assertFalse("Date of conflicting file same", fInfoAtBart
             .getModifiedDate().equals(fInfoAtLisa.getModifiedDate()));
-        assertTrue("Date of conflicting file problem", fInfoAtBart
-            .getModifiedDate().getTime() < fInfoAtLisa.getModifiedDate()
-            .getTime());
+        assertTrue("Date of conflicting file problem",
+            fInfoAtBart.getModifiedDate().getTime() < fInfoAtLisa
+                .getModifiedDate().getTime());
         assertTrue(
             "File @ lisa is not newer than on bart. Lisa: "
                 + fInfoAtLisa.toDetailString() + ". Bart: "
@@ -265,8 +269,14 @@ public class FileUpdateTest extends TwoControllerTestCase {
             }
         });
         // Now Bart should have detected an conflict.
-        assertEquals(1, getFolderAtBart().getProblems().size());
-        assertEquals(0, getFolderAtLisa().getProblems().size());
+        assertEquals(
+            "Expected problems at bart: 1. Got: "
+                + getFolderAtBart().getProblems(),
+            1, getFolderAtBart().getProblems().size());
+        assertEquals(
+            "Expected problems at lisa: 0. Got: "
+                + getFolderAtLisa().getProblems(),
+            0, getFolderAtLisa().getProblems().size());
         Problem p = getFolderAtBart().getProblems().iterator().next();
         assertTrue("No conflicts detected: " + getFolderAtBart().getProblems(),
             p instanceof FileConflictProblem);
@@ -313,16 +323,20 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(3500);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
-        fInfoAtBart = fInfoAtBart.getLocalFileInfo(getContollerBart()
-            .getFolderRepository());
-        assertEquals(4, fInfoAtBart.getVersion());
+        fInfoAtBart = fInfoAtBart
+            .getLocalFileInfo(getContollerBart().getFolderRepository());
+        assertEquals(
+            "Expected version at bart 4. Got: " + fInfoAtBart.toDetailString(),
+            4, fInfoAtBart.getVersion());
 
         TestHelper.waitMilliSeconds(3500);
         TestHelper.changeFile(fileAtLisa);
         scanFolder(getFolderAtLisa());
-        fInfoAtLisa = fInfoAtLisa.getLocalFileInfo(getContollerLisa()
-            .getFolderRepository());
-        assertEquals(2, fInfoAtLisa.getVersion());
+        fInfoAtLisa = fInfoAtLisa
+            .getLocalFileInfo(getContollerLisa().getFolderRepository());
+        assertEquals(
+            "Expected version at lisa 2. Got: " + fInfoAtLisa.toDetailString(),
+            2, fInfoAtLisa.getVersion());
 
         boolean conflict = fInfoAtLisa.getVersion() == fInfoAtBart.getVersion()
             && fInfoAtBart.isNewerThan(fInfoAtLisa);
