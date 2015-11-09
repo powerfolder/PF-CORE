@@ -29,6 +29,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,8 +101,7 @@ public class InvitationUtil {
             throw new NullPointerException("File is null");
         }
         log.fine("Loading invitation from " + in);
-        try {
-            ObjectInputStream oIn = new ObjectInputStream(in);
+        try (ObjectInputStream oIn = new ObjectInputStream(in)) {
             Invitation invitation = (Invitation) oIn.readObject();
 
             if (invitation.getInvitor() == null) {
@@ -117,8 +117,6 @@ public class InvitationUtil {
                     // Ingnore
                 }
             }
-
-            in.close();
 
             return invitation;
         } catch (ClassCastException e) {
@@ -215,60 +213,6 @@ public class InvitationUtil {
     }
 
     /**
-     * Handles the invitation to disk option.
-     *
-     * @param controller
-     *            the controller
-     * @param invitation
-     *            the invitation
-     * @param file
-     *            the file to write to, if null the users is asked for.
-     * @return if the file was written.
-     */
-//    public static boolean invitationToDisk(Controller controller,
-//        Invitation invitation, File file)
-//    {
-//        Reject.ifNull(controller, "Controller is null");
-//        Reject.ifNull(invitation, "Invitation is null");
-//
-//        // Select file
-//        if (file == null) {
-//            JFileChooser fc = DialogFactory.createFileChooser();
-//            fc.setDialogTitle(Translation
-//                .getTranslation("send_invitation.placetostore"));
-//            // Recommended file
-//            fc.setSelectedFile(new File(invitation.folder.name + ".invitation"));
-//            fc.setFileFilter(createInvitationsFilefilter());
-//            int result = fc.showSaveDialog(controller.getUIController()
-//                .getMainFrame().getUIComponent());
-//            if (result != JFileChooser.APPROVE_OPTION) {
-//                return false;
-//            }
-//
-//            // Store invitation to disk
-//            file = fc.getSelectedFile();
-//            if (file == null) {
-//                return false;
-//            }
-//            if (file.exists()) {
-//                // TODO: Add confirm dialog
-//            }
-//        }
-//
-//        log.info("Writing invitation to " + file);
-//        if (!save(invitation, file)) {
-//            DialogFactory.genericDialog(controller, Translation
-//                .getTranslation("exp.invitation.utils.unable.write.title"),
-//                Translation
-//                    .getTranslation("exp.invitation.utils.unable.write.text"),
-//                GenericDialogType.ERROR);
-//            return false;
-//        }
-//
-//        return true;
-//    }
-
-    /**
      * Sends an invitation to a connected node.
      *
      * @param controller
@@ -294,16 +238,35 @@ public class InvitationUtil {
         return true;
     }
 
-    // Internal helper *********************************************************
+    public static void main(String[] args) {
+        if (args == null || args.length <= 0) {
+            System.err.println(
+                "Usage: java de.dal33t.powerfolder.util.InvitationUtil <Invitation File>");
+            System.exit(-1);
+        }
 
-//    /** true if none acsii chars are found in string */
-//    private static final boolean containsNoneAscii(String str) {
-//        for (int i = 0; i < str.length(); i++) {
-//            int c = str.charAt(i);
-//            if (c == 63 || c > 255) { // 63 = ?
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+        Path invitationFile = Paths.get(args[0]).toAbsolutePath();
+        if (invitationFile == null || Files.notExists(invitationFile)
+            || Files.isDirectory(invitationFile)
+            || !Files.isReadable(invitationFile))
+        {
+            System.err.format("{} does not exist!", invitationFile.toString());
+            System.exit(-2);
+        }
+
+        Invitation inv = InvitationUtil.load(invitationFile);
+        if (inv == null) {
+            System.err.println("Could not load invitation!");
+            System.exit(-3);
+        }
+
+        System.out.format("-> %s\n", inv.getOID());
+        System.out.format("Invitation from '%s' to '%s'\n", inv.getInvitorUsername(),
+            inv.getInviteeUsername());
+        System.out.format("Permission '%s' for Folder '%s' - localized '%s' - ID '%s'\n",
+            inv.getPermission().getMode().toString(),
+            inv.getPermission().getFolder().getName(),
+            inv.getPermission().getFolder().getLocalizedName(),
+            inv.getPermission().getFolder().getId());
+    }
 }
