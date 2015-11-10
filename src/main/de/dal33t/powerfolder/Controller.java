@@ -111,6 +111,7 @@ import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.AntiSerializationVulerability;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
@@ -322,7 +323,7 @@ public class Controller extends PFComponent {
             .createListenerSupport(NetworkingModeListener.class);
         limitedConnectivityListenerSupport = ListenerSupportFactory
             .createListenerSupport(LimitedConnectivityListener.class);
-
+        AntiSerializationVulerability.check();
     }
 
     /**
