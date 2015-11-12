@@ -1226,13 +1226,17 @@ public enum ConfigurationEntry {
      * 
      * @param controller
      *            the controller to read the config from
-     * @return The current value from the configuration for this entry. or the
-     *         default value if value not set/unparseable.
+     * @return The current value from the configuration for this entry or the
+     *         default value if value not set/unparseable or {@code null} if no
+     *         default value was set.
      */
     public Integer getValueInt(Controller controller) {
         String value = getValue(controller);
         if (value == null || StringUtils.isBlank(value)) {
             value = getDefaultValue();
+        }
+        if (value == null) {
+            return null;
         }
         try {
             return new Integer(value.trim());
@@ -1248,13 +1252,17 @@ public enum ConfigurationEntry {
      *
      * @param controller
      *            the controller to read the config from
-     * @return The current value from the configuration for this entry. or the
-     *         default value if value not set/unparseable.
+     * @return The current value from the configuration for this entry or the
+     *         default value if value not set/unparseable or {@code null} if no
+     *         default value was set.
      */
     public Boolean getValueBoolean(Controller controller) {
         String value = getValue(controller);
         if (value == null || StringUtils.isBlank(value)) {
             value = getDefaultValue();
+        }
+        if (value == null) {
+            return null;
         }
         try {
             return value.trim().equalsIgnoreCase("true");
