@@ -46,8 +46,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -58,6 +56,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -70,6 +69,7 @@ import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
+import jwf.WizardPanel;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -88,7 +88,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private JList<String> inviteesList;
     private JScrollPane inviteesListScrollPane;
     private DefaultListModel<String> inviteesListModel;
-    private Invitation invitation;
     private JPanel removeButtonPanel;
     private DefaultComboBoxModel<String> permissionsComboModel;
     private JComboBox<String> permissionsCombo;
@@ -104,28 +103,25 @@ public class SendInvitationsPanel extends PFWizardPanel {
      */
     private boolean sendInvitation() {
         invalidEmail.setVisible(false);
-        if (invitation == null) {
-            return false;
-        }
+        boolean theResult = false;
+        Set<Member> candidates = getCandidates();
+
         String permissionText = (String) permissionsComboModel.getSelectedItem();
-        FolderPermission folderPermission = FolderPermission.readWrite(invitation.folder);
+        FolderPermission folderPermission = FolderPermission.readWrite(folderInfo);
         if (permissionText != null) {
-            FolderPermission readPermission = FolderPermission.read(invitation.folder);
+            FolderPermission readPermission = FolderPermission.read(folderInfo);
             if (readPermission.getName().equals(permissionText)) {
                 folderPermission = readPermission;
             }
-            FolderPermission readWritePermission = FolderPermission.readWrite(invitation.folder);
+            FolderPermission readWritePermission = FolderPermission.readWrite(folderInfo);
             if (readWritePermission.getName().equals(permissionText)) {
                 folderPermission = readWritePermission;
             }
-            FolderPermission adminPermission = FolderPermission.admin(invitation.folder);
+            FolderPermission adminPermission = FolderPermission.admin(folderInfo);
             if (adminPermission.getName().equals(permissionText)) {
                 folderPermission = adminPermission;
             }
         }
-        invitation.setPermission(folderPermission);
-        boolean theResult = false;
-        Set<Member> candidates = getCandidates();
 
         // Send invite from text or list.
         if (viaPowerFolderText.getText().length() > 0) {
@@ -134,7 +130,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
                 text = text.substring(text.indexOf("<") + 1, text.indexOf(">")).trim();
             }
             if(LoginUtil.isValidUsername(getController(), text)) {
-                sendInvite(candidates, text);
+                Invitation invitation = folderInfo.getFolder(getController()).createInvitation();
+                invitation.setPermission(folderPermission);
+                sendInvite(candidates, text, invitation);
             } else {
                 invalidEmail.setVisible(true);
                 return false;
@@ -142,8 +140,11 @@ public class SendInvitationsPanel extends PFWizardPanel {
             theResult = true;
         }
         for (Object o : inviteesListModel.toArray()) {
+            Invitation invitation = folderInfo.getFolder(getController()).createInvitation();
+            invitation.setPermission(folderPermission);
+
             String invitee = (String) o;
-            sendInvite(candidates, invitee);
+            sendInvite(candidates, invitee, invitation);
             theResult = true;
         }
 
@@ -157,7 +158,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * @param candidates
      * @param invitee
      */
-    private void sendInvite(Collection<Member> candidates, String invitee) {
+    private void sendInvite(Collection<Member> candidates, String invitee, Invitation invitation) {
         RuntimeException rte = null;
         // Invitation by email
         try {
@@ -291,8 +292,6 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         // Clear folder attribute
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, null);
-
-        invitation = folderInfo.getFolder(getController()).createInvitation();
 
         addButton = new JButtonMini(new MyAddAction(getController()));
         removeButton = new JButtonMini(new MyRemoveAction(getController()));
