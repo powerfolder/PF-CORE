@@ -7,3 +7,5 @@
 /transfers
 /test-reports
 /junit*.properties
+/.idea/
+/.DS_Store
