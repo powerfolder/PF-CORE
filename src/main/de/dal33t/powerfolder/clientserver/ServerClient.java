@@ -995,7 +995,13 @@ public class ServerClient extends PFComponent {
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
-                    if (isShibbolethLogin()) {
+                    if (isKerberosLogin()) {
+                        byte[] serviceTicket = prepareKerberosLogin();
+                        loginOk = securityService
+                            .login(username, serviceTicket);
+                    } else if (isTokenLogin()) {
+                        loginOk = securityService.login(tokenSecret);
+                    } else if (isShibbolethLogin()) {
                         // PFC-2534: Start
                         try {
                             String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
@@ -1042,12 +1048,6 @@ public class ServerClient extends PFComponent {
                         } else {
                             logWarning("Neither Shibboleth nor external login possible!");
                         }
-                    } else if (isKerberosLogin()) {
-                        byte[] serviceTicket = prepareKerberosLogin();
-                        loginOk = securityService
-                            .login(username, serviceTicket);
-                    } else if (isTokenLogin()) {
-                        loginOk = securityService.login(tokenSecret);
                     } else {
                         loginOk = securityService.login(username, pw);
                     }
