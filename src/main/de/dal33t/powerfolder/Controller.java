@@ -153,7 +153,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 308;
+    private static final int REVISION_VERSION = 309;
 
     /**
      * Program version.
@@ -1279,15 +1279,11 @@ public class Controller extends PFComponent {
             logFine("Reconfigured logs for new day: " + now);
 
             backupConfigAssets();
+            folderRepository.cleanupOldArchiveFiles();            
         }
-
+        
         // Prune stats.
         transferManager.pruneStats();
-
-        // Cleanup old archives.
-        if (midnightRun) {
-            folderRepository.cleanupOldArchiveFiles();
-        }
     }
 
     /**
