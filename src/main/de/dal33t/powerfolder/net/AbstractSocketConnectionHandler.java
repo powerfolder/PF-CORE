@@ -669,7 +669,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
         long took = (System.currentTimeMillis() - start) / 1000;
         if (identityReply != null && !identityReply.accepted) {
-            logWarning("Remote peer rejected our connection: "
+            logWarning("Remote peer '" + node + "' rejected our connection: "
                 + identityReply.message);
             member = null;
             return false;
