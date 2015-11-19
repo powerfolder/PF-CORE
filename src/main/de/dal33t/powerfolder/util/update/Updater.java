@@ -217,7 +217,7 @@ public class Updater extends Thread {
             LOG.info("Latest version is newer than this one");
             return latestVersion;
         }
-        LOG.info("This version is up-to-date");
+        LOG.info("This version is up-to-date (" + Controller.PROGRAM_VERSION + ")");
         return null;
     }
 
