@@ -2577,9 +2577,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .getFoldersBasedir().resolve(folderName);
                 }
 
-                logInfo("Auto setting up folder " + folderInfo
-                    + " for account " + a.getUsername() + " @ "
-                    + suggestedLocalBase);
+                logInfo("Auto setting up folder " + folderInfo.getName() + "/"
+                    + folderInfo.getId() + " @ " + suggestedLocalBase);
 
                 // Correct local path if in UserDirectories.
                 FolderSettings settings = new FolderSettings(
