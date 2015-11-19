@@ -47,8 +47,10 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -168,6 +170,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @author krickl@powerfolder.com
      */
     private final ReentrantLock addAndRemoveFolderLock = new ReentrantLock();
+    private ScheduledFuture<?> scanBaseDirFuture;
 
     /**
      * Constructor
@@ -658,7 +661,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Monitor the default directory for possible new folders.
         // ============
 
-        getController().getThreadPool().scheduleAtFixedRate(new TimerTask() {
+        scanBaseDirFuture = getController().getThreadPool().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 scanBasedir();
@@ -673,9 +676,19 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Shuts down folder repo
      */
     public void shutdown() {
+        if (scanBaseDirFuture != null) {
+            // Stop any further scan
+            getController().removeScheduled(scanBaseDirFuture);
+            // Wait for a running task to finish
+            // PFC-2798 -> commented may block when #createFolder is saving the
+            // configuration
+//            addAndRemoveFolderLock.lock();
+//            addAndRemoveFolderLock.unlock();
+        }
+
         synchronized (folderMembershipSynchronizerLock) {
             if (folderMembershipSynchronizer != null) {
-                folderMembershipSynchronizer.canceled = true;
+                folderMembershipSynchronizer.canceled.set(true);
             }
         }
         folderScanner.shutdown();
@@ -1395,7 +1408,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         synchronized (folderMembershipSynchronizerLock) {
             if (folderMembershipSynchronizer != null) {
                 // Cancel the syncer
-                folderMembershipSynchronizer.canceled = true;
+                folderMembershipSynchronizer.canceled.set(true);
             }
             folderMembershipSynchronizer = new AllFolderMembershipSynchronizer();
             getController().getIOProvider().startIO(
@@ -1565,7 +1578,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (suspendNewFolderSearch.get() > 0) {
             return;
         }
-        // sync with #handleDeviceDisconnected(Folder)
+        // sync with #handleDeviceDisconnectd(Folder)
         addAndRemoveFolderLock.lock();
         try {
             if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
@@ -1809,19 +1822,21 @@ public class FolderRepository extends PFComponent implements Runnable {
     // Found a new directory in the folder base. Create a new folder.
     // Only doing this if logged in.
     private void handleNewFolder(Path file) {
+        if (getController().isShuttingDown() || !getController().isStarted()) {
+            return;
+        }
         FolderInfo foInfo = null;
         boolean renamed = false;
         boolean stillPresent = false;
         boolean createdNew = false;
-        Controller controller = getController();
-        ServerClient client = controller.getOSClient();
+        ServerClient client = getController().getOSClient();
 
         if (client.isConnected() && client.isLoggedIn()) {
             foInfo = checkSystemSubdirForFolder(file);
             stillPresent = folderStillExists(foInfo);
 
             try {
-                if (foInfo != null && foInfo.getFolder(controller) != null) {
+                if (foInfo != null && foInfo.getFolder(getController()) != null) {
                     // FIXME: Don't send rename request, if not Admin Permission
                     FolderInfo renamedFI = tryRenaming(client, file, foInfo, stillPresent);
 
@@ -1860,7 +1875,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings fs = new FolderSettings(file,
             SyncProfile.getDefault(getController()),
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
-                .getValueInt(controller));
+                .getValueInt(getController()));
         Folder folder = createFolder0(foInfo, fs, true);
         folder.addDefaultExcludes();
 
@@ -2780,13 +2795,13 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private class AllFolderMembershipSynchronizer implements Runnable {
-        private volatile boolean canceled;
+        private AtomicBoolean canceled = new AtomicBoolean(false);
 
         public void run() {
             ProfilingEntry pe = Profiling
                 .start("synchronizeAllFolderMemberships");
             try {
-                if (canceled) {
+                if (canceled.get()) {
                     logFine("Not synchronizing Foldermemberships, "
                         + "operation already canceled yet");
                     return;
@@ -2798,8 +2813,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 Collection<Member> connectedNodes = getController()
                     .getNodeManager().getConnectedNodes();
                 for (Member node : connectedNodes) {
-                    node.synchronizeFolderMemberships();
-                    if (canceled) {
+                    node.synchronizeFolderMemberships(canceled);
+                    if (canceled.get()) {
                         logFiner("Foldermemberships synchroniziation cancelled");
                         return;
                     }

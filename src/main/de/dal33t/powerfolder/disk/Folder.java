@@ -361,15 +361,15 @@ public class Folder extends PFComponent {
         // Check base dir
         try {
             checkBaseDir(false);
-            logFine("Opened " + toString() + " at '"
+            logFine("Opened " + toString() + "/" + getId() + " at '"
                 + localBase.toAbsolutePath() + '\'');
         } catch (FolderException e) {
             if (currentInfo.isMetaFolder()) {
-                logFine("Unable to open " + toString() + " at '"
+                logFine("Unable to open " + toString() + "/" + getId() + " at '"
                     + localBase.toAbsolutePath()
                     + "'. Local base directory is inaccessable. " + e);
             } else {
-                logWarning("Unable to open " + toString() + " at '"
+                logWarning("Unable to open " + toString() + "/" + getId() + " at '"
                     + localBase.toAbsolutePath()
                     + "'. Local base directory is inaccessable. " + e);
             }

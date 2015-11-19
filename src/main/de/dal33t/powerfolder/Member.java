@@ -32,6 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -2056,10 +2058,14 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Remote group joins
      */
 
+    public void synchronizeFolderMemberships() {
+        synchronizeFolderMemberships(null);
+    }
+    
     /**
      * Synchronizes the folder memberships on both sides
      */
-    public void synchronizeFolderMemberships() {
+    public void synchronizeFolderMemberships(AtomicBoolean canceled) {
         if (isMySelf()) {
             return;
         }
@@ -2074,7 +2080,16 @@ public class Member extends PFComponent implements Comparable<Member> {
             return;
         }
         try {
-            folderJoinLock.lock();
+            while (!folderJoinLock.tryLock(50, TimeUnit.MILLISECONDS)) {
+                if (canceled != null && canceled.get()) {
+                    logWarning("SFM canceled");
+                    return;
+                }
+            }
+        } catch (InterruptedException e) {
+            return;
+        }
+        try {
             FolderList folderList = getLastFolderList();
             if (folderList != null) {
                 // Rejoin to local folders
