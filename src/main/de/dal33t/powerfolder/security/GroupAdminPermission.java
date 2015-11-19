@@ -29,11 +29,16 @@ public class GroupAdminPermission implements Permission {
 
     private static final long serialVersionUID = 100L;
     public static final String ID_SEPARATOR = "_GP_";
-    private Group group;
+    private String groupOID;
 
     public GroupAdminPermission(Group group) {
-        Reject.ifNull(group, "Group is null");
-        this.group = group;
+        Reject.ifNull(group, "group is null");
+        this.groupOID = group.getOID();
+    }
+
+    public GroupAdminPermission(String groupOID) {
+        Reject.ifBlank(groupOID, "GroupID is blank");
+        this.groupOID = groupOID;
     }
 
     public boolean implies(Permission impliedPermision) {
@@ -41,18 +46,18 @@ public class GroupAdminPermission implements Permission {
     }
 
     public String getId() {
-        return group.getOID() + ID_SEPARATOR + getClass().getSimpleName();
+        return groupOID + ID_SEPARATOR + getClass().getSimpleName();
     }
 
-    public Group getGroup() {
-        return group;
+    public String getGroupOID() {
+        return groupOID;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((group == null) ? 0 : group.hashCode());
+        result = prime * result + ((groupOID == null) ? 0 : groupOID.hashCode());
         return result;
     }
 
