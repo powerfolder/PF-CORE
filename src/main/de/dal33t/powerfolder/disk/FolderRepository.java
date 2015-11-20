@@ -163,10 +163,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Mutex for the periodical looking for new folders / removing folders not
      * present on the server any more and the spontanious event of a
-     * "disconnected device".
+     * "disconnected device". Also mutex all folder creation processes.
      * 
      * @see #scanBasedir()
      * @see #handleDeviceDisconnected(Folder)
+     * @see #createLocalFolders(Account)
      * @author krickl@powerfolder.com
      */
     private final ReentrantLock addAndRemoveFolderLock = new ReentrantLock();
