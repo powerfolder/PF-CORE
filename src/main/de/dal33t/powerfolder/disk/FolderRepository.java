@@ -2310,7 +2310,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!a.isValid()) {
             return;
         }
-        if (accountSyncLock.isLocked()) {
+        if (!accountSyncLock.tryLock()) {
             // Skip if currently setting up folders.
             // Especially not to remove recently created local folders.
             // Usecase: Client Backup / Personal folders.
@@ -2318,7 +2318,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 + a.getFolders().size() + "): " + a.getUsername());
             return;
         }
-        accountSyncLock.lock();
         for (FolderInfo foInfo : a.getFolders()) {
             FolderInfo localFolder = foInfo.intern();
             if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
@@ -2490,6 +2489,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Actually create the directory
             try {
+                addAndRemoveFolderLock.lock();
                 try {
                     Files.createDirectories(settings.getLocalBaseDir());
                 } catch (IOException ioe) {
@@ -2531,6 +2531,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             } catch (Exception e) {
                 logWarning("Unable to create folder " + folderName + " at "
                     + settings.getLocalBaseDir() + ". " + e);
+            } finally {
+                addAndRemoveFolderLock.unlock();
             }
         }
 
@@ -2586,23 +2588,24 @@ public class FolderRepository extends PFComponent implements Runnable {
                     ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                         .getValueInt(getController()));
 
-                // Actually create the directory
                 try {
+                    // Actually create the directory
+                    addAndRemoveFolderLock.lock();
                     Files.createDirectories(settings.getLocalBaseDir());
+
+                    Folder folder = createFolder0(folderInfo, settings, true);
+                    folder.addDefaultExcludes();
+                    folderInfos.put(folderInfo, settings);
                 } catch (IOException ioe) {
                     if (isFine()) {
                         logFine(ioe.getMessage());
                     }
-                }
-
-                try {
-                    Folder folder = createFolder0(folderInfo, settings, true);
-                    folder.addDefaultExcludes();
-                    folderInfos.put(folderInfo, settings);
                 } catch (Exception e) {
                     logWarning("Unable to create folder "
                         + folderInfo.getName() + " at "
                         + settings.getLocalBaseDir() + ". " + e);
+                } finally {
+                    addAndRemoveFolderLock.unlock();
                 }
             }
         }
