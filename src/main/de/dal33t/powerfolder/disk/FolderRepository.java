@@ -2311,50 +2311,50 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!a.isValid()) {
             return;
         }
-        if (!accountSyncLock.tryLock()) {
-            // Skip if currently setting up folders.
-            // Especially not to remove recently created local folders.
-            // Usecase: Client Backup / Personal folders.
-            logFine("Skip syncing folder setup with account permissions("
-                + a.getFolders().size() + "): " + a.getUsername());
-            return;
-        }
-        for (FolderInfo foInfo : a.getFolders()) {
-            FolderInfo localFolder = foInfo.intern();
-            if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
-                // Same name, not renamed.
-                continue;
-            }
-            Folder folder = folders.get(foInfo);
-            if (folder == null) {
-                // Not synced locally
-                continue;
-            }
-            Path currentDirectory = folder.getLocalBase();
-            String currentDirectoryName = currentDirectory.getFileName().toString();
-            if (!PathUtils.isSameName(currentDirectoryName, localFolder.getLocalizedName())) {
-                logWarning("Not renaming Folder " + localFolder.getName()
-                    + " to " + foInfo.getName()
-                    + ". Current local directory name (" + currentDirectoryName
-                    + ") does not match folder name ("
-                    + localFolder.getLocalizedName() + ")");
-                continue;
-            }
-
-            logInfo("Renaming Folder " + localFolder.getName() + " to "
-                + foInfo.getName());
-            foInfo = foInfo.intern(true);
-            try {
-                Path newDirectory = folder.getLocalBase().getParent()
-                    .resolve(PathUtils
-                        .removeInvalidFilenameChars(foInfo.getLocalizedName()));
-                moveLocalFolder(folder, newDirectory);
-            } catch (IOException ioe) {
-                logWarning("Could not move Folder " + foInfo);
-            }
-        }
-
         try {
+            if (!accountSyncLock.tryLock()) {
+                // Skip if currently setting up folders.
+                // Especially not to remove recently created local folders.
+                // Usecase: Client Backup / Personal folders.
+                logFine("Skip syncing folder setup with account permissions("
+                    + a.getFolders().size() + "): " + a.getUsername());
+                return;
+            }
+            for (FolderInfo foInfo : a.getFolders()) {
+                FolderInfo localFolder = foInfo.intern();
+                if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
+                    // Same name, not renamed.
+                    continue;
+                }
+                Folder folder = folders.get(foInfo);
+                if (folder == null) {
+                    // Not synced locally
+                    continue;
+                }
+                Path currentDirectory = folder.getLocalBase();
+                String currentDirectoryName = currentDirectory.getFileName().toString();
+                if (!PathUtils.isSameName(currentDirectoryName, localFolder.getLocalizedName())) {
+                    logWarning("Not renaming Folder " + localFolder.getName()
+                        + " to " + foInfo.getName()
+                        + ". Current local directory name (" + currentDirectoryName
+                        + ") does not match folder name ("
+                        + localFolder.getLocalizedName() + ")");
+                    continue;
+                }
+    
+                logInfo("Renaming Folder " + localFolder.getName() + " to "
+                    + foInfo.getName());
+                foInfo = foInfo.intern(true);
+                try {
+                    Path newDirectory = folder.getLocalBase().getParent()
+                        .resolve(PathUtils
+                            .removeInvalidFilenameChars(foInfo.getLocalizedName()));
+                    moveLocalFolder(folder, newDirectory);
+                } catch (IOException ioe) {
+                    logWarning("Could not move Folder " + foInfo);
+                }
+            }
+
             logInfo("Syncing folder setup with account permissions("
                 + a.getFolders().size() + "): " + a.getUsername());
             Collection<FolderInfo> created = createLocalFolders(a);
