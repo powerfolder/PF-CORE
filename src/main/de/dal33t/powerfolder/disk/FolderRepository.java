@@ -2666,19 +2666,22 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Delete any file archives over a specified age.
      */
     public void cleanupOldArchiveFiles() {
-        fireCleanupStarted();
         int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
             .getValueInt(getController());
         if (period == Integer.MAX_VALUE || period <= 0) { // cleanup := never
             return;
         }
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -period);
-        Date cleanupDate = cal.getTime();
-        for (Folder folder : getFolders()) {
-            folder.cleanupOldArchiveFiles(cleanupDate);
+        try {
+            fireCleanupStarted();
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DATE, -period);
+            Date cleanupDate = cal.getTime();
+            for (Folder folder : getFolders()) {
+                folder.cleanupOldArchiveFiles(cleanupDate);
+            }
+        } finally {
+            fireCleanupFinished();
         }
-        fireCleanupFinished();
     }
 
     /**
