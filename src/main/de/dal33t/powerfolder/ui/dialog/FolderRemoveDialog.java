@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.dialog;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -44,6 +45,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -68,6 +70,7 @@ public class FolderRemoveDialog extends BaseDialog {
     private JCheckBox removeFromLocalBox;
     private JCheckBox removeFromServerBox;
     private JCheckBox deleteSystemSubFolderBox;
+    private JCheckBox deleteFolderCompletelyBox;
 
     /**
      * Contructor when used on choosen folder
@@ -156,13 +159,34 @@ public class FolderRemoveDialog extends BaseDialog {
         removeFromServerBox.setEnabled(allowRemove);
         removeFromServerBox.setVisible(allowRemove);
 
+        deleteFolderCompletelyBox = SimpleComponentFactory.createCheckBox(
+            Translation.get("folder_remove.dialog.remove_completely"));
+        deleteFolderCompletelyBox.setEnabled(allowRemove);
+        deleteFolderCompletelyBox.setVisible(allowRemove);
+        deleteFolderCompletelyBox.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                removeFromLocalBox
+                    .setEnabled(!deleteFolderCompletelyBox.isSelected());
+                removeFromLocalBox
+                    .setSelected(deleteFolderCompletelyBox.isSelected());
+                deleteSystemSubFolderBox
+                    .setEnabled(!deleteFolderCompletelyBox.isSelected());
+                deleteSystemSubFolderBox
+                    .setSelected(deleteFolderCompletelyBox.isSelected());
+                configureComponents();
+            }
+        });
+
         // Buttons
         createRemoveButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 removeButton.setEnabled(false);
                 confirmedFolderLeave(removeFromLocalBox.isSelected(),
                     deleteSystemSubFolderBox.isSelected(),
-                    removeFromServerBox.isSelected());
+                    removeFromServerBox.isSelected(),
+                    deleteFolderCompletelyBox.isSelected());
             }
         });
 
@@ -232,11 +256,11 @@ public class FolderRemoveDialog extends BaseDialog {
             if (onlineFolder) {
                 // Local and online cbs
                 layout = new FormLayout("pref:grow, 3dlu, pref:grow",
-                    "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
+                    "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             } else {
                 // Local two cbs only
                 layout = new FormLayout("pref:grow, 3dlu, pref:grow",
-                    "pref, 3dlu, pref, 3dlu, pref");
+                    "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref");
             }
         } else {
          // Just online. Don't need the online cb; obvious.
@@ -277,6 +301,9 @@ public class FolderRemoveDialog extends BaseDialog {
 
             builder.add(deleteSystemSubFolderBox, cc.xyw(1, row, 3));
             row += 2;
+
+            builder.add(deleteFolderCompletelyBox, cc.xyw(1, row, 3));
+            row += 2;
         }
 
         // Don't need to show this if just online.
@@ -315,7 +342,7 @@ public class FolderRemoveDialog extends BaseDialog {
     }
 
     private void confirmedFolderLeave(final boolean removeLocal,
-        boolean deleteSystemSubFolder, boolean removeFromOS)
+        boolean deleteSystemSubFolder, boolean removeFromOS, boolean removeCompletely)
     {
 
         // Dispose before closing parent frame (when folder is deleted),
@@ -326,8 +353,8 @@ public class FolderRemoveDialog extends BaseDialog {
         FolderRepository folderRepository = getController()
             .getFolderRepository();
 
+        Folder f = foInfo.getFolder(getController());
         if (removeLocal) {
-            Folder f = foInfo.getFolder(getController());
             if (f != null) {
                 folderRepository.removeFolder(f, deleteSystemSubFolder);
             }
@@ -352,6 +379,23 @@ public class FolderRemoveDialog extends BaseDialog {
                 FolderSettings folderSettings = FolderSettings.load(
                     getController(), folder.getConfigEntryId());
                 folderRepository.saveFolderConfig(foInfo, folderSettings, true);
+            }
+        }
+
+        if (removeCompletely) {
+            if (f != null) {
+                SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                    @Override
+                    protected Void doInBackground() {
+                        try {
+                            PathUtils.recursiveDelete(f.getLocalBase());
+                        } catch (IOException e) {
+                            logFine("Could not remove folder content. " + e);
+                        }
+                        return null;
+                    }
+                };
+                worker.execute();
             }
         }
     }
