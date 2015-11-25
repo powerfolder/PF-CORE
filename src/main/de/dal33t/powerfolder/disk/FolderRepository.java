@@ -170,7 +170,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @see #createLocalFolders(Account)
      * @author krickl@powerfolder.com
      */
-    private final ReentrantLock addAndRemoveFolderLock = new ReentrantLock();
+    private final ReentrantLock scanBasedirLock = new ReentrantLock();
     private ScheduledFuture<?> scanBaseDirFuture;
 
     /**
@@ -1580,7 +1580,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         // sync with #handleDeviceDisconnectd(Folder)
-        addAndRemoveFolderLock.lock();
+        scanBasedirLock.lock();
         try {
             if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
                 .getValueBoolean(getController()))
@@ -1593,7 +1593,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 lookForFoldersToBeRemoved();
             }
         } finally {
-            addAndRemoveFolderLock.unlock();
+            scanBasedirLock.unlock();
         }
     }
 
@@ -2490,7 +2490,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Actually create the directory
             try {
-                addAndRemoveFolderLock.lock();
+                scanBasedirLock.lock();
                 try {
                     Files.createDirectories(settings.getLocalBaseDir());
                 } catch (IOException ioe) {
@@ -2533,7 +2533,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logWarning("Unable to create folder " + folderName + " at "
                     + settings.getLocalBaseDir() + ". " + e);
             } finally {
-                addAndRemoveFolderLock.unlock();
+                scanBasedirLock.unlock();
             }
         }
 
@@ -2591,7 +2591,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 try {
                     // Actually create the directory
-                    addAndRemoveFolderLock.lock();
+                    scanBasedirLock.lock();
                     Files.createDirectories(settings.getLocalBaseDir());
 
                     Folder folder = createFolder0(folderInfo, settings, true);
@@ -2606,7 +2606,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         + folderInfo.getName() + " at "
                         + settings.getLocalBaseDir() + ". " + e);
                 } finally {
-                    addAndRemoveFolderLock.unlock();
+                    scanBasedirLock.unlock();
                 }
             }
         }
@@ -2891,13 +2891,11 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                     logFine("Removing " + folder.toString());
                     // sync with #scanBasedir()
-                    setSuspendNewFolderSearch(true);
-                    addAndRemoveFolderLock.lock();
+                    scanBasedirLock.lock();
                     try {
                         removeFolder(folder, false);
                     } finally {
-                        addAndRemoveFolderLock.unlock();
-                        setSuspendNewFolderSearch(false);
+                        scanBasedirLock.unlock();
                     }
                 }
             }
