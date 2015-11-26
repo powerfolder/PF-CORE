@@ -870,18 +870,21 @@ public class FolderRepository extends PFComponent implements Runnable {
             logInfo("Original path: " + targetDir
                 + ". Choosen relative path: " + targetDir);
         }
-        for (Folder folder : getController().getFolderRepository().getFolders())
+        for (Folder folder : getController().getFolderRepository()
+            .getFolders())
         {
+            if (folder.getLocalBase().equals(targetDir)) {
+                return folder;
+            }
             try {
-                if (folder.getLocalBase().equals(targetDir)
-                    || folder.getCommitOrLocalDir().toRealPath()
-                        .equals(targetDir.toRealPath()))
+                if (folder.getCommitOrLocalDir().toRealPath()
+                    .equals(targetDir.toRealPath()))
                 {
                     return folder;
                 }
             } catch (IOException e) {
-                logWarning("Unable to access: " + folder.getLocalBase() + ". "
-                    + e);
+                logFine(
+                    "Unable to access: " + folder.getLocalBase() + ". " + e);
             }
         }
         return null;
