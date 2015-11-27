@@ -2314,15 +2314,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!a.isValid()) {
             return;
         }
+        if (!accountSyncLock.tryLock()) {
+            // Skip if currently setting up folders.
+            // Especially not to remove recently created local folders.
+            // Usecase: Client Backup / Personal folders.
+            logFine("Skip syncing folder setup with account permissions("
+                + a.getFolders().size() + "): " + a.getUsername());
+            return;
+        }
         try {
-            if (!accountSyncLock.tryLock()) {
-                // Skip if currently setting up folders.
-                // Especially not to remove recently created local folders.
-                // Usecase: Client Backup / Personal folders.
-                logFine("Skip syncing folder setup with account permissions("
-                    + a.getFolders().size() + "): " + a.getUsername());
-                return;
-            }
             for (FolderInfo foInfo : a.getFolders()) {
                 FolderInfo localFolder = foInfo.intern();
                 if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
