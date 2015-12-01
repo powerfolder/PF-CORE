@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 
@@ -30,10 +34,13 @@ public class GroupAdminPermission implements Permission {
     private static final long serialVersionUID = 100L;
     public static final String ID_SEPARATOR = "_GP_";
     private String groupOID;
+    // PFS-1888: For Backward compatibility. Remove after major distribution of 10.4:
+    private Group group;
 
     public GroupAdminPermission(Group group) {
         Reject.ifNull(group, "group is null");
         this.groupOID = group.getOID();
+        this.group = group;
     }
 
     public GroupAdminPermission(String groupOID) {
@@ -71,5 +78,23 @@ public class GroupAdminPermission implements Permission {
             return false;
         Permission other = (Permission) obj;
         return Util.equals(getId(), other.getId());
+    }
+  
+    // Serialization compatibility ********************************************
+
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException
+    {
+        in.defaultReadObject();
+        if (groupOID == null && group != null) {
+            groupOID = group.getOID();
+        }
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        if (group == null && groupOID != null) {
+            group = new Group(groupOID, "-unknown-");
+        }
+        out.defaultWriteObject();
     }
 }
