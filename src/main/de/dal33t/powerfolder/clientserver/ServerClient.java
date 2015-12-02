@@ -628,6 +628,17 @@ public class ServerClient extends PFComponent {
      * @param foInfo
      * @return the direct URL to the folder
      */
+    public String getMembersURL(FolderInfo foInfo) {
+        if (!hasWebURL()) {
+            return null;
+        }
+        return getWebURL("/members/" + Base64.encode4URL(foInfo.id), false);
+    }
+
+    /**
+     * @param foInfo
+     * @return the direct URL to the folder
+     */
     public String getFolderURL(FolderInfo foInfo) {
         if (!hasWebURL()) {
             return null;
