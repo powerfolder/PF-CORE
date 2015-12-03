@@ -140,7 +140,7 @@ public class FileBrowserIntegration extends PFComponent {
             Path resourcesPath = Paths
                 .get(MacUtils.getInstance().getRecourcesLocation())
                 .toAbsolutePath();
-            resourcesPath = Paths.get("/Users/krickl/git/PF-CORE/src/resources/");
+//            resourcesPath = Paths.get("/Users/krickl/git/PF-CORE/src/resources/");
             Path okIcon = resourcesPath
                 .resolve(IconOverlayIndex.OK_OVERLAY.getFilename());
             Path syncingIcon = resourcesPath
