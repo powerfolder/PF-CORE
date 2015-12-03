@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 
 import com.liferay.nativity.control.NativityControl;
 import com.liferay.nativity.control.NativityControlUtil;
+import com.liferay.nativity.listeners.SocketOpenListener;
 import com.liferay.nativity.modules.contextmenu.ContextMenuControlUtil;
 import com.liferay.nativity.modules.fileicon.FileIconControl;
 import com.liferay.nativity.modules.fileicon.FileIconControlUtil;
@@ -51,13 +52,12 @@ public class FileBrowserIntegration extends PFComponent {
     private NativityControl nc;
     private IconOverlayHandler iconOverlayHandler;
     private IconOverlayUpdateListener updateListener;
-    private IconOverlayApplier iconOverlayApplier;
+    private FileIconControl iconControl;
 
     private boolean connected;
-    
+
     public FileBrowserIntegration(Controller controller) {
         super(controller);
-        updateListener = new IconOverlayUpdateListener(controller);
     }
 
     /**
@@ -76,6 +76,30 @@ public class FileBrowserIntegration extends PFComponent {
             return false;
         }
 
+        nc.setFilterFolder("/");
+
+        // Initializing icon overlays
+        iconOverlayHandler = new IconOverlayHandler(getController());
+        iconControl = FileIconControlUtil
+            .getFileIconControl(nc, iconOverlayHandler);
+
+        // Initializing updates to icon overlays
+        if (updateListener == null) {
+            updateListener = new IconOverlayUpdateListener(getController(),
+                iconControl, iconOverlayHandler);
+        }
+
+
+        // Initializing context menu
+        if (PreferencesEntry.ENABLE_CONTEXT_MENU
+            .getValueBoolean(getController()))
+        {
+            logFine("Initializing context menu");
+            ContextMenuControlUtil.getContextMenuControl(nc,
+                new ContextMenuHandler(getController()));
+        }
+
+        // Setting some listeners
         FolderRepository repo = getController().getFolderRepository();
         for (Folder folder : repo.getFolders()) {
             folder.addFolderListener(updateListener);
@@ -84,12 +108,13 @@ public class FileBrowserIntegration extends PFComponent {
         repo.getLocking().addListener(updateListener);
         getController().getTransferManager().addListener(updateListener);
 
+        // Actually set up and connect to the native shell extension
         if (OSUtil.isWindowsSystem()) {
             logFine("Connect file browser integration to Windows");
-            return fbWindows(nc);
+            return fbWindows();
         } else if (OSUtil.isMacOS()) {
             logFine("Connect file browser integration to OS X");
-            return fbApple(nc);
+            return fbApple();
         }
 
         return false;
@@ -99,12 +124,10 @@ public class FileBrowserIntegration extends PFComponent {
      * Prepare the local socket for communication with the OS X AppleScript
      * Finder integration.
      * 
-     * @param nc
      * @return {@code True} if connection was set up correctly, {@code false}
      *         otherwise.
      */
-    @SuppressWarnings("deprecation")
-    private boolean fbApple(NativityControl nc) {
+    private boolean fbApple() {
         try {
             if (!nc.loaded()) {
                 if (!nc.load()) {
@@ -113,70 +136,50 @@ public class FileBrowserIntegration extends PFComponent {
                 }
             }
 
+            logFine("Preparing icons");
+            Path resourcesPath = Paths
+                .get(MacUtils.getInstance().getRecourcesLocation())
+                .toAbsolutePath();
+            resourcesPath = Paths.get("/Users/krickl/git/PF-CORE/src/resources/");
+            Path okIcon = resourcesPath
+                .resolve(IconOverlayIndex.OK_OVERLAY.getFilename());
+            Path syncingIcon = resourcesPath
+                .resolve(IconOverlayIndex.SYNCING_OVERLAY.getFilename());
+            Path warningIcon = resourcesPath
+                .resolve(IconOverlayIndex.WARNING_OVERLAY.getFilename());
+            Path ignoredIcon = resourcesPath
+                .resolve(IconOverlayIndex.IGNORED_OVERLAY.getFilename());
+            Path lockedIcon = resourcesPath
+                .resolve(IconOverlayIndex.LOCKED_OVERLAY.getFilename());
+
+            logFine("Registering icons");
+            nc.addSocketOpenListener(new SocketOpenListener() {
+
+                @Override
+                public void onSocketOpen() {
+                    iconControl.registerIconWithId(okIcon.toString(),
+                        IconOverlayIndex.OK_OVERLAY.getLabel(),
+                        String.valueOf(IconOverlayIndex.OK_OVERLAY.getIndex()));
+                    iconControl.registerIconWithId(syncingIcon.toString(),
+                        IconOverlayIndex.SYNCING_OVERLAY.getLabel(), String
+                            .valueOf(IconOverlayIndex.SYNCING_OVERLAY.getIndex()));
+                    iconControl.registerIconWithId(warningIcon.toString(),
+                        IconOverlayIndex.WARNING_OVERLAY.getLabel(), String
+                            .valueOf(IconOverlayIndex.WARNING_OVERLAY.getIndex()));
+                    iconControl.registerIconWithId(ignoredIcon.toString(),
+                        IconOverlayIndex.IGNORED_OVERLAY.getLabel(), String
+                            .valueOf(IconOverlayIndex.IGNORED_OVERLAY.getIndex()));
+                    iconControl.registerIconWithId(lockedIcon.toString(),
+                        IconOverlayIndex.LOCKED_OVERLAY.getLabel(),
+                        String.valueOf(IconOverlayIndex.LOCKED_OVERLAY.getIndex()));
+                }
+            });
+
             if (!nc.connect()) {
                 logWarning("Could not connect to finder integration.");
                 return false;
             } else {
                 connected = true;
-
-                if (PreferencesEntry.ENABLE_CONTEXT_MENU
-                    .getValueBoolean(getController()))
-                {
-                    logFine("Initializing context menu");
-                    ContextMenuControlUtil.getContextMenuControl(nc,
-                        new ContextMenuHandler(getController()));
-                }
-
-                logFine("Preparing icons");
-                Path resourcesPath = Paths
-                    .get(MacUtils.getInstance().getRecourcesLocation())
-                    .toAbsolutePath();
-                Path okIcon = resourcesPath
-                    .resolve(IconOverlayIndex.OK_OVERLAY.getFilename());
-                Path syncingIcon = resourcesPath
-                    .resolve(IconOverlayIndex.SYNCING_OVERLAY.getFilename());
-                Path warningIcon = resourcesPath
-                    .resolve(IconOverlayIndex.WARNING_OVERLAY.getFilename());
-                Path ignoredIcon = resourcesPath
-                    .resolve(IconOverlayIndex.IGNORED_OVERLAY.getFilename());
-                Path lockedIcon = resourcesPath
-                    .resolve(IconOverlayIndex.LOCKED_OVERLAY.getFilename());
-
-                iconOverlayHandler = new IconOverlayHandler(getController());
-                FileIconControl iconControl = FileIconControlUtil
-                    .getFileIconControl(nc, iconOverlayHandler);
-                iconControl.enableFileIcons();
-
-                logFine("Registering icons");
-                // leave in for legacy support on OS X 10.9
-                iconControl.registerIcon(okIcon.toString());
-                iconControl.registerIcon(syncingIcon.toString());
-                iconControl.registerIcon(warningIcon.toString());
-                iconControl.registerIcon(ignoredIcon.toString());
-                iconControl.registerIcon(lockedIcon.toString());
-
-                // should be used from OS X 10.10 on
-                iconControl.registerIconWithId(okIcon.toString(),
-                    IconOverlayIndex.OK_OVERLAY.getLabel(),
-                    String.valueOf(IconOverlayIndex.OK_OVERLAY.getIndex()));
-                iconControl.registerIconWithId(syncingIcon.toString(),
-                    IconOverlayIndex.SYNCING_OVERLAY.getLabel(), String
-                        .valueOf(IconOverlayIndex.SYNCING_OVERLAY.getIndex()));
-                iconControl.registerIconWithId(warningIcon.toString(),
-                    IconOverlayIndex.WARNING_OVERLAY.getLabel(), String
-                        .valueOf(IconOverlayIndex.WARNING_OVERLAY.getIndex()));
-                iconControl.registerIconWithId(ignoredIcon.toString(),
-                    IconOverlayIndex.IGNORED_OVERLAY.getLabel(), String
-                        .valueOf(IconOverlayIndex.IGNORED_OVERLAY.getIndex()));
-                iconControl.registerIconWithId(lockedIcon.toString(),
-                    IconOverlayIndex.LOCKED_OVERLAY.getLabel(),
-                    String.valueOf(IconOverlayIndex.LOCKED_OVERLAY.getIndex()));
-
-//                iconOverlayApplier = new IconOverlayApplier(getController(),
-//                    iconControl);
-//                getController().getFolderRepository().getFolderScanner()
-//                    .addListener(iconOverlayApplier);
-
                 return true;
             }
         } catch (Exception re) {
@@ -188,11 +191,10 @@ public class FileBrowserIntegration extends PFComponent {
     /**
      * Prepare the local socket for communictaion with the windows dlls.
      * 
-     * @param nc
      * @return {@code True} if connection was set up correctly, {@code false}
      *         otherwise.
      */
-    private boolean fbWindows(NativityControl nc) {
+    private boolean fbWindows() {
         try {
             if (!nc.connect()) {
                 logWarning("Could not connect to shell extensions!");
@@ -201,19 +203,6 @@ public class FileBrowserIntegration extends PFComponent {
                 return false;
             } else {
                 connected = true;
-
-                if (PreferencesEntry.ENABLE_CONTEXT_MENU
-                    .getValueBoolean(getController()))
-                {
-                    logFine("Initializing context menu");
-                    ContextMenuControlUtil.getContextMenuControl(nc,
-                        new ContextMenuHandler(getController()));
-                }
-
-                logFine("Initializing icon overlays");
-                iconOverlayHandler = new IconOverlayHandler(getController());
-                FileIconControlUtil.getFileIconControl(nc, iconOverlayHandler)
-                    .enableFileIcons();
             }
 
             return true;
@@ -248,8 +237,6 @@ public class FileBrowserIntegration extends PFComponent {
             .removeListener(updateListener);
         getController().getFolderRepository().removeFolderRepositoryListener(
             updateListener);
-        getController().getFolderRepository().getFolderScanner()
-            .removeListener(iconOverlayApplier);
         getController().getTransferManager().removeListener(updateListener);
         FolderRepository repo = getController().getFolderRepository();
         for (Folder folder : repo.getFolders()) {

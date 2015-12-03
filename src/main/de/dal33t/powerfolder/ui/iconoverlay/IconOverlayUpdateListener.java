@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.liferay.nativity.control.win.WindowsNativityUtil;
+import com.liferay.nativity.modules.fileicon.FileIconControl;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -48,9 +49,15 @@ public class IconOverlayUpdateListener extends PFComponent implements
     FolderRepositoryListener
 {
     private AtomicInteger callCount = new AtomicInteger(0);
+    private final FileIconControl iconControl;
+    private final IconOverlayHandler overlayHandler;
 
-    public IconOverlayUpdateListener(Controller controller) {
+    public IconOverlayUpdateListener(Controller controller,
+        FileIconControl iconControl, IconOverlayHandler overlayHandler)
+    {
         super(controller);
+        this.iconControl = iconControl;
+        this.overlayHandler = overlayHandler;
     }
 
     @Override
@@ -144,36 +151,39 @@ public class IconOverlayUpdateListener extends PFComponent implements
     }
 
     private void update(final FileInfo fInfo) {
-        if (OSUtil.isWindowsSystem()) {
-            final Path file = fInfo.getDiskFile(getController()
-                .getFolderRepository());
+        final Path file = fInfo.getDiskFile(getController()
+            .getFolderRepository());
 
-            int current = callCount.get();
-            if (current >= 100) {
-                logWarning("Creating very many threads to update the Windows Explorer. At the moment there are "
-                    + current + " threads running.");
-            }
+        int current = callCount.get();
+        if (current >= 100) {
+            logWarning("Creating very many threads to update the Windows Explorer. At the moment there are "
+                + current + " threads running.");
+        }
 
-            if (file != null) {
-                callCount.incrementAndGet();
-                getController().getIOProvider().startIO(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (Files.exists(file)) {
-                                WindowsNativityUtil.updateExplorer(file
-                                    .toString());
+        if (file != null) {
+            callCount.incrementAndGet();
+            getController().getIOProvider().startIO(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (Files.exists(file)) {
+                            String fileName = file.toString();
+                            if (OSUtil.isWindowsSystem()) {
+                                WindowsNativityUtil.updateExplorer(fileName);
+                            } else if (OSUtil.isMacOS()) {
+                                iconControl.setFileIcon(fileName,
+                                    overlayHandler.getIconForFile(fileName));
                             }
-                        } catch (RuntimeException re) {
-                            logFine(
-                                "Caught exception while updating single file "
-                                    + fInfo + ". " + re, re);
-                        } finally {
-                            callCount.decrementAndGet();
                         }
+                    } catch (RuntimeException re) {
+                        logFine(
+                            "Caught exception while updating single file "
+                                + fInfo + ". " + re, re);
+                    } finally {
+                        callCount.decrementAndGet();
                     }
-                });
-            }
+                }
+            });
         }
     }
 

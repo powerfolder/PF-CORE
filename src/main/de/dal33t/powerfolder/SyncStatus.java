@@ -30,17 +30,23 @@ import de.dal33t.powerfolder.util.Reject;
 public enum SyncStatus {
     SYNC_OK, SYNCING, IGNORED, WARNING, LOCKED, NONE;
 
-    
+    /**
+     * @param controller
+     * @param fInfo
+     *            The file to get the {@link SyncStatus} for.
+     * @return the sync status of the file
+     */
     public static SyncStatus of(Controller controller, FileInfo fInfo) {
         return SyncStatus.of(controller, fInfo, null);
     }
 
     /**
-     * 
-     * 
      * @param controller
      * @param fInfo
+     *            The file to get the {@link SyncStatus} for.
      * @param folder
+     *            If the {@code Folder} is already known, just pass it here.
+     *            Otherwise use {@link #of(Controller, FileInfo)}.
      * @return the sync status of the file
      */
     public static SyncStatus of(Controller controller, FileInfo fInfo, Folder folder) {
