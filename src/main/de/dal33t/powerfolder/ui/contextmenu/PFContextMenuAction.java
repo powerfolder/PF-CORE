@@ -104,7 +104,7 @@ abstract class PFContextMenuAction extends ContextMenuAction {
         for (String pathName : paths) {
             Folder folder = null;
             if ((folder = controller.getFolderRepository()
-                .findContainingFolder(pathName)) != null)
+                .findContainingFolder(Paths.get(pathName))) != null)
             {
                 folders.add(folder);
             }

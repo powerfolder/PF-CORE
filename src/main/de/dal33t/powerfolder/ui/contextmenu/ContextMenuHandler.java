@@ -144,13 +144,13 @@ public class ContextMenuHandler extends PFComponent implements
                     continue;
                 }
 
-                Folder folder = fr.findContainingFolder(pathName);
+                Path path = Paths.get(pathName);
+                Folder folder = fr.findContainingFolder(path);
 
                 if (folder == null) {
                     continue;
                 }
 
-                Path path = Paths.get(pathName);
                 if (!containsFolderPath && folder.getLocalBase().equals(path)) {
                     containsFolderPath = true;
                     continue;

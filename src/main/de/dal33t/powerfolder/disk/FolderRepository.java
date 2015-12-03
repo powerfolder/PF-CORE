@@ -909,11 +909,10 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Find the folder that contains the file sprecified by {@code pathName}.
      * 
-     * @param pathName
+     * @param path
      * @return The folder containing the file
      */
-    public Folder findContainingFolder(String pathName) {
-        Path path = Paths.get(pathName);
+    public Folder findContainingFolder(Path path) {
         for (Folder folder : folders.values()) {
             if (path.startsWith(folder.getLocalBase().toAbsolutePath())) {
                 return folder;
