@@ -54,7 +54,7 @@ public class EndMatchPattern extends AbstractPattern {
             // Impossible
             return false;
         }
-        for (int i = matchLower.length - 1; i > 0; i--) {
+        for (int i = matchLower.length - 1; i >= 0; i--) {
             char cms = matchString.charAt(matchIndex);
             if (!equalChar(cms, matchLower[i], matchUpper[i])) {
                 return false;
