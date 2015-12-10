@@ -1107,18 +1107,29 @@ public enum ConfigurationEntry {
     SHOW_TINY_WIZARDS("show.tiny.wizards", false),
 
     SHOW_CREATE_FOLDER("show.create.folder", true),
-    
+
     /**
      * PFC-2638: Desktop sync option
      */
     SHOW_DESKTOP_SYNC_OPTION("show.desktop.sync", false),
-    
-    /**
-     * PFC-2638: Desktop sync option
-     */
+
     SHOW_WALLPAPER_OPTION("show.wallpaper", false),
-    
-    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
+
+    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false),
+
+    /**
+     * PFS-1889: Central policies for FileLinks
+     */
+    FILE_LINK_VALIDITY_DEFAULT("file_link.validity.default"),
+
+    FILE_LINK_VALIDITY_MAXIMUM("file_link.validity.maximum"),
+
+    FILE_LINK_MAX_DOWNLOADS_DEFAULT("file_link.max_downloads.default"),
+
+    FILE_LINK_MAX_DOWNLOADS_MAXIMUM("file_link.max_downloads.maximum"),
+
+    FILE_LINK_PASSWORD_POLICY("file_link.password_policy",
+        FileLinkPasswordPolicy.OPTIONAL.name());
 
     // Methods/Constructors ***************************************************
 
