@@ -102,6 +102,24 @@ public class DateUtil {
     }
 
     /**
+     * Is {@code t1} more than {@code n} days after {@code t0}?
+     * 
+     * @param t0 the earlier date
+     * @param t1 the later date
+     * @param n the days between them
+     * @return
+     */
+    public static boolean isMoreThanNDaysAfter(Date t0, Date t1, int n) {
+        Reject.ifNull(t0, "No Date t0");
+        Reject.ifNull(t1, "No Date t1");
+
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(t0);
+        cal.add(Calendar.DATE, n);
+        return t1.after(cal.getTime());
+    }
+
+    /**
      * Returns true is a date is more than n minutes in the future.
      *
      * @param date
