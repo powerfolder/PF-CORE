@@ -1118,16 +1118,34 @@ public enum ConfigurationEntry {
     COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false),
 
     /**
-     * PFS-1889: Central policies for FileLinks
+     * PFS-1889: Default value for the validity period.
      */
     FILE_LINK_VALIDITY_DEFAULT("file_link.validity.default"),
 
+    /**
+     * PFS-1889: Maximum value for the validity period.
+     */
     FILE_LINK_VALIDITY_MAXIMUM("file_link.validity.maximum"),
 
+    /**
+     * PFS-1889: Default value for the number of maximum downloads.
+     */
     FILE_LINK_MAX_DOWNLOADS_DEFAULT("file_link.max_downloads.default"),
 
+    /**
+     * PFS-1889: Maximum value for the number of maximum downloads.
+     */
     FILE_LINK_MAX_DOWNLOADS_MAXIMUM("file_link.max_downloads.maximum"),
 
+    /**
+     * PFS-1889: Password policy for file links:
+     *
+     * <ul>
+     * <li>OPTIONAL -- No password needed, no hint to set a password.</li>
+     * <li>RECOMMENDED -- No password needed, hint the user to set a password.</li>
+     * <li>REQUIRED -- Password required, hint the user to set a password.</li>
+     * <ul>
+     */
     FILE_LINK_PASSWORD_POLICY("file_link.password_policy",
         FileLinkPasswordPolicy.OPTIONAL.name());
 
