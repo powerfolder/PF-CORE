@@ -1107,17 +1107,14 @@ public enum ConfigurationEntry {
     SHOW_TINY_WIZARDS("show.tiny.wizards", false),
 
     SHOW_CREATE_FOLDER("show.create.folder", true),
-    
+
     /**
      * PFC-2638: Desktop sync option
      */
     SHOW_DESKTOP_SYNC_OPTION("show.desktop.sync", false),
-    
-    /**
-     * PFC-2638: Desktop sync option
-     */
+
     SHOW_WALLPAPER_OPTION("show.wallpaper", false),
-    
+
     COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
 
     // Methods/Constructors ***************************************************
