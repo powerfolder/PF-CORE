@@ -70,18 +70,23 @@ public class FileBrowserIntegration extends PFComponent {
      */
     public boolean start() {
         logFine("Starting file browser integration");
-        nc = NativityControlUtil.getNativityControl();
         if (nc == null) {
-            logFine("Could not start file browser integration");
-            return false;
+            nc = NativityControlUtil.getNativityControl();
+
+            if (nc == null) {
+                logFine("Could not start file browser integration");
+                return false;
+            }
+
+            nc.setFilterFolder("/");
         }
 
-        nc.setFilterFolder("/");
-
         // Initializing icon overlays
-        iconOverlayHandler = new IconOverlayHandler(getController());
-        iconControl = FileIconControlUtil
-            .getFileIconControl(nc, iconOverlayHandler);
+        if (iconOverlayHandler == null) {
+            iconOverlayHandler = new IconOverlayHandler(getController());
+            iconControl = FileIconControlUtil
+                .getFileIconControl(nc, iconOverlayHandler);
+        }
 
         // Initializing updates to icon overlays
         if (updateListener == null) {
