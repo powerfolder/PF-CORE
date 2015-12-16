@@ -54,8 +54,6 @@ public class FileBrowserIntegration extends PFComponent {
     private IconOverlayUpdateListener updateListener;
     private FileIconControl iconControl;
 
-//    private boolean connected;
-
     public FileBrowserIntegration(Controller controller) {
         super(controller);
     }
@@ -133,13 +131,6 @@ public class FileBrowserIntegration extends PFComponent {
      */
     private boolean fbApple() {
         try {
-            if (!nc.loaded()) {
-                if (!nc.load()) {
-                    logWarning("Could not load the finder integration.");
-                    return false;
-                }
-            }
-
             logFine("Preparing icons");
             Path resourcesPath = Paths
                 .get(MacUtils.getInstance().getRecourcesLocation())
@@ -180,14 +171,14 @@ public class FileBrowserIntegration extends PFComponent {
             });
 
             if (!nc.connect()) {
-                logWarning("Could not connect to finder integration.");
+                logWarning("Could not connect to finder sync.");
                 return false;
-            } else {
-//                connected = true;
-                return true;
             }
+
+            logFine("Connected to finder sync.");
+            return true;
         } catch (Exception re) {
-            logWarning("Could not start finder integration. " + re);
+            logWarning("Could not start finder sync. " + re);
             return false;
         }
     }
@@ -202,13 +193,10 @@ public class FileBrowserIntegration extends PFComponent {
         try {
             if (!nc.connect()) {
                 logWarning("Could not connect to shell extensions!");
-
-                nc.disconnect();
                 return false;
-            } else {
-//                connected = true;
             }
 
+            logFine("Connected to shell extensions.");
             return true;
         } catch (RuntimeException re) {
             logWarning("Could not start shell extensions. " + re);
@@ -223,19 +211,6 @@ public class FileBrowserIntegration extends PFComponent {
     public void shutdown() {
         FileIconControlUtil.getFileIconControl(nc, iconOverlayHandler)
             .disableFileIcons();
-
-        if (OSUtil.isMacOS()) {
-            try {
-                nc.unload();
-            } catch (Exception e) {
-                logWarning("Could not unload FileBrowswerIntegration: " + e);
-            }
-        }
-
-//        if (connected) {
-//            nc.disconnect();
-//            connected = false;
-//        }
 
         getController().getFolderRepository().getLocking()
             .removeListener(updateListener);
