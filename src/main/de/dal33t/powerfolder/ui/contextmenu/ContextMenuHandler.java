@@ -178,8 +178,13 @@ public class ContextMenuHandler extends PFComponent implements
                 }
             }
 
-            if (containsFolderPath && pathNames.length == 1
-                && pathNames[0].contains(Constants.POWERFOLDER_SYSTEM_SUBDIR))
+            if (pathNames.length == 1
+                && (
+                    (containsFolderPath
+                        && pathNames[0].contains(Constants.POWERFOLDER_SYSTEM_SUBDIR))
+                    || pathNames[0].equals(startMenu)
+                    )
+                )
             {
                 return new ArrayList<>(0);
             }
