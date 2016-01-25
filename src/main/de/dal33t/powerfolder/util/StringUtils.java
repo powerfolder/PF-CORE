@@ -250,4 +250,42 @@ public class StringUtils {
 
         return count;
     }
+
+    /**
+     * Checks if a string starts with a substring - ignoring the case.
+     *
+     * @param inputString
+     *              a string that will be checked
+     * @param startString
+     *              a string to check if the inputString starts with this startString
+     * @return a boolean value:
+     *              {@code true} if the inputString starts with the subString
+     *              {@code false} if the inputString does not start with the subString
+     */
+
+    public static boolean startsWithString(String inputString, String startString){
+        Reject.ifNull(inputString, "inputString is blank");
+        Reject.ifNull(startString, "subString is blank");
+
+        return (inputString.toLowerCase().startsWith(startString.toLowerCase()));
+    }
+
+    /**
+     * Checks if a string contains a specific substring - ignoring the case.
+     *
+     * @param inputString
+     *              a string that will be checked
+     * @param subString
+     *              a string to check if the inputString starts with this subString
+     * @return a boolean value:
+     *              {@code true} if the inputString starts with the subString
+     *              {@code false} if the inputString does not start with the subString
+     */
+
+    public static boolean hasSubString(String inputString, String subString){
+        Reject.ifNull(inputString, "inputString is blank");
+        Reject.ifNull(subString, "subString is blank");
+
+        return (inputString.toLowerCase().contains(subString.toLowerCase()));
+    }
 }
