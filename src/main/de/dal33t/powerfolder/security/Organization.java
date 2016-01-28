@@ -111,14 +111,6 @@ public class Organization implements Serializable {
         this.name = name;
     }
 
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
     public int getMaxUsers() {
         return maxUsers;
     }
@@ -163,6 +155,14 @@ public class Organization implements Serializable {
         this.skin = skin;
     }
 
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = StringUtils.cutNotes(notes);
+    }
+    
     /**
      * Adds a line of info with the current date to the notes of that account.
      *
@@ -175,11 +175,13 @@ public class Organization implements Serializable {
         String infoLine = Format.formatDateCanonical(new Date());
         infoLine += ": ";
         infoLine += infoText;
+        String newNotes;
         if (StringUtils.isBlank(notes)) {
-            setNotes(infoLine);
+            newNotes = infoLine;
         } else {
-            setNotes(notes + "\n" + infoLine);
+            newNotes = notes + "\n" + infoLine;
         }
+        setNotes(newNotes);
     }
 
     @Override

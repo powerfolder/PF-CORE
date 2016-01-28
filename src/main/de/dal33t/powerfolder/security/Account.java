@@ -681,14 +681,6 @@ public class Account implements Serializable {
         return osSubscription.getStorageSize() != 0;
     }
 
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-    
     public String getBasePath() {
         return basePath;
     }
@@ -839,6 +831,14 @@ public class Account implements Serializable {
         }
     }
 
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = StringUtils.cutNotes(notes);
+    }
+    
     /**
      * Adds a line of info with the current date to the notes of that account.
      *
@@ -851,16 +851,13 @@ public class Account implements Serializable {
         String infoLine = Format.formatDateCanonical(new Date());
         infoLine += ": ";
         infoLine += infoText;
+        String newNotes;
         if (StringUtils.isBlank(notes)) {
-            setNotes(infoLine);
+            newNotes = infoLine;
         } else {
-            String newNotes = notes + "\n" + infoLine;
-            if (newNotes.length() >= 1024) {
-                int cutoff = newNotes.length() - 1024 + 2;
-                newNotes = newNotes.substring(cutoff);
-            }
-            setNotes(newNotes);
+            newNotes = notes + "\n" + infoLine;
         }
+        setNotes(newNotes);
     }
 
     public ServerInfo getServer() {

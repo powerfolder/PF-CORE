@@ -20,61 +20,39 @@
 package de.dal33t.powerfolder.security;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Test;
 
 import de.dal33t.powerfolder.util.Format;
 
-public class AccountTest {
-
-    @Test
-    public void testJSONData() throws JSONException {
-        Account a = new Account();
-        JSONObject o = a.getJSONObject();
-        o.put("cmpEnabled", true);
-        o.put("avangateSubscriptionID", "3DEC58");
-        a.setJSONObject(o);
-
-        JSONObject r = a.getJSONObject();
-        assertTrue(r.getBoolean("cmpEnabled"));
-        assertEquals("3DEC58", r.get("avangateSubscriptionID"));
-
-        a.put("avangateSubscriptionID", "XASA");
-
-        r = a.getJSONObject();
-        assertTrue(r.getBoolean("cmpEnabled"));
-        assertEquals("XASA", r.get("avangateSubscriptionID"));
-    }
+public class OrganizationTest {
 
     @Test
     public void testAddNotesWithDate() {
         // 1. Arrange
-        Account account = new Account();
-        account.setNotes("");
+        Organization organization = new Organization();
+        organization.setNotes("");
         String notes = "Notes";
         String date = Format.formatDateCanonical(new Date());
         
         // 2. Action
-        account.addNotesWithDate("");
+        organization.addNotesWithDate("");
         
         // 3. Assert
-        assertEquals(account.getNotes(), "");
+        assertEquals(organization.getNotes(), "");
         
         // 2. Action
-        account.addNotesWithDate(notes);
+        organization.addNotesWithDate(notes);
         
         // 3. Assert
-        assertEquals(account.getNotes(), date + ": " + notes);
+        assertEquals(organization.getNotes(), date + ": " + notes);
         
         // 2. Action
-        account.addNotesWithDate(notes);
+        organization.addNotesWithDate(notes);
         
         // 3. Assert
-        assertEquals(account.getNotes(), date + ": " + notes + "\n" + date + ": " + notes);
+        assertEquals(organization.getNotes(), date + ": " + notes + "\n" + date + ": " + notes);
     }
 }
