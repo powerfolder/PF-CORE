@@ -211,6 +211,19 @@ public class Group implements Serializable {
         return ldapDN;
     }
 
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = StringUtils.cutNotes(notes);
+    }
+    
+    /**
+     * Adds a line of info with the current date to the notes of that account.
+     *
+     * @param infoText
+     */
     public void addNotesWithDate(String infoText) {
         if (StringUtils.isBlank(infoText)) {
             return;
@@ -218,19 +231,13 @@ public class Group implements Serializable {
         String infoLine = Format.formatDateCanonical(new Date());
         infoLine += ": ";
         infoLine += infoText;
+        String newNotes;
         if (StringUtils.isBlank(notes)) {
-            setNotes(infoLine);
+            newNotes = infoLine;
         } else {
-            setNotes(notes + "\n" + infoLine);
+            newNotes = notes + "\n" + infoLine;
         }
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String newNotes) {
-        notes = newNotes;
+        setNotes(newNotes);
     }
 
     public String getOrganizationOID() {

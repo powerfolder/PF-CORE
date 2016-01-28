@@ -13,12 +13,12 @@ public class StringUtilsTest {
 
     @Test
     public void testIsBlank() {
-        assertTrue (StringUtils.isBlank(""));
-        assertTrue (StringUtils.isBlank(" "));
-        assertTrue (StringUtils.isBlank("\r\n "));
-        assertTrue (StringUtils.isBlank(" \r"));
-        assertTrue (StringUtils.isBlank("\t"));
-        assertTrue (StringUtils.isBlank("\t"));
+        assertTrue(StringUtils.isBlank(""));
+        assertTrue(StringUtils.isBlank(" "));
+        assertTrue(StringUtils.isBlank("\r\n "));
+        assertTrue(StringUtils.isBlank(" \r"));
+        assertTrue(StringUtils.isBlank("\t"));
+        assertTrue(StringUtils.isBlank("\t"));
         assertFalse(StringUtils.isBlank("x"));
         assertTrue(StringUtils.isBlank(null));
         assertTrue(StringUtils.isBlank(""));
@@ -87,9 +87,10 @@ public class StringUtilsTest {
         List<String> emptyList = Collections.emptyList();
         assertEquals("", StringUtils.join(",", emptyList));
         assertEquals("a,b", StringUtils.join(",", "a", "b"));
-        assertEquals("axbxcxdxe", StringUtils.join("x", "a", "b", "c", "d", "e"));
-        assertEquals("de.dal33t.powerfolder.util.StringUtils",
-            StringUtils.join(".", "de", "dal33t", "powerfolder", "util", "StringUtils"));
+        assertEquals("axbxcxdxe",
+            StringUtils.join("x", "a", "b", "c", "d", "e"));
+        assertEquals("de.dal33t.powerfolder.util.StringUtils", StringUtils
+            .join(".", "de", "dal33t", "powerfolder", "util", "StringUtils"));
         assertEquals("from here -> to there -> and back",
             StringUtils.join(" -> ", "from here", "to there", "and back"));
     }
@@ -103,5 +104,54 @@ public class StringUtilsTest {
         assertEquals(6, StringUtils.countChar(input5c, '1'));
         assertEquals(0, StringUtils.countChar(input0c, ','));
         assertEquals(3, StringUtils.countChar(input0c, 's'));
+    }
+
+    @Test
+    public void testCutNotes() {
+        // 1. Arrange
+        // Create string of length 1024 without line end
+        String a = "";
+        for (int i = 0; i < 1024; i++) {
+            a += "a";
+        }
+        // Create string of length 1024, where last character is a line end
+        String b = "";
+        for (int i = 0; i < 1023; i++) {
+            b += "b";
+        }
+        b += "\n";
+        // Create string of length 1024, with a line end every 127 characters
+        String c = "";
+        for (int i = 0; i < 1024; i++) {
+            if ((i+1) % 128 == 0) {
+                c += "\n";
+            } else {
+                c += "c";
+            }
+        }
+
+        // 2. Assert
+        assertEquals(1024, a.length());
+        assertEquals(1024, b.length());
+        assertEquals(1024, c.length());
+        assertEquals(1024, StringUtils.cutNotes(a).length());
+        assertEquals(1024, StringUtils.cutNotes(b).length());
+        assertEquals(1024, StringUtils.cutNotes(c).length());
+        assertEquals(1024, StringUtils.cutNotes(a + a).length());
+        assertEquals(1024, StringUtils.cutNotes(a + b).length());
+        assertEquals(1024, StringUtils.cutNotes(b + a).length());
+        assertEquals(1024, StringUtils.cutNotes(b + b).length());
+        assertEquals(1024, StringUtils.cutNotes(b + c).length());
+        assertEquals(1024, StringUtils.cutNotes(c + a).length());
+        assertEquals(1024, StringUtils.cutNotes(c + b).length());
+        assertEquals(1024, StringUtils.cutNotes(c + c).length());
+        assertEquals(a, StringUtils.cutNotes(a));
+        assertEquals(b, StringUtils.cutNotes(b));
+        assertEquals(c, StringUtils.cutNotes(c));
+        assertEquals(a, StringUtils.cutNotes(a + a));
+        assertEquals(b, StringUtils.cutNotes(a + b));
+        assertEquals(a, StringUtils.cutNotes(b + a));
+        assertEquals(b, StringUtils.cutNotes(b + b));
+        assertEquals(c, StringUtils.cutNotes(b + c));
     }
 }

@@ -288,4 +288,23 @@ public class StringUtils {
 
         return (inputString.toLowerCase().contains(subString.toLowerCase()));
     }
+    
+    /**
+     * Cuts a string down to the last 1024 characters cutting only at line ends
+     * 
+     * @param notes
+     *              input string
+     * @return cut string
+     */
+    public static String cutNotes(String notes) {
+        if (notes.length() <= 1024) {
+            return notes;
+        }
+        String last1025Characters = notes.substring(notes.length() - 1025);
+        int positionOfLineBreak = last1025Characters.indexOf("\n");
+        if ( positionOfLineBreak <= -1 || positionOfLineBreak >= 1024) {
+            positionOfLineBreak = 0;
+        }
+        return last1025Characters.substring(positionOfLineBreak + 1, 1025);
+    }
 }
