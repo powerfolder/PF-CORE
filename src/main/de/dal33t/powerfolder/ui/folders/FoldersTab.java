@@ -86,10 +86,12 @@ public class FoldersTab extends PFUIComponent {
             getApplicationModel().getActionModel().getFolderWizardAction());
         folderWizardActionLabel.setText(Translation
             .get("folders_tab.folder_wizard"));
+        folderWizardActionLabel.setVisible(false);
         newFolderActionLabel = new ActionLabel(getController(),
             getApplicationModel().getActionModel().getNewFolderAction());
         newFolderActionLabel.setText(Translation
             .get("folders_tab.new_folder"));
+        newFolderActionLabel.setVisible(false);
         client = getApplicationModel().getServerClientModel().getClient();
 
         controller.getThreadPool().scheduleAtFixedRate(new Runnable() {
