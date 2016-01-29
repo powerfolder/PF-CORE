@@ -66,7 +66,7 @@ public class Organization implements Serializable {
     @Column(nullable = false)
     private String name;
 
-    @Column(length = 1024)
+    @Column(length = 2048)
     private String notes;
 
     private int maxUsers;

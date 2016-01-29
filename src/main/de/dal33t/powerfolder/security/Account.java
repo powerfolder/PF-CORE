@@ -158,7 +158,7 @@ public class Account implements Serializable {
     @Column(length = 4096)
     private String jsonData;
 
-    @Column(length = 1024)
+    @Column(length = 2048)
     private String notes;
     
     // PFS-1446     

@@ -77,7 +77,7 @@ public class Group implements Serializable {
     @Column(length = 512)
     private String ldapDN;
 
-    @Column(length = 1024)
+    @Column(length = 2048)
     private String notes;
 
     @Index(name = "IDX_GRP_ORG_ID")

@@ -109,20 +109,20 @@ public class StringUtilsTest {
     @Test
     public void testCutNotes() {
         // 1. Arrange
-        // Create string of length 1024 without line end
+        // Create string of length 2048 without line end
         String a = "";
-        for (int i = 0; i < 1024; i++) {
+        for (int i = 0; i < 2048; i++) {
             a += "a";
         }
-        // Create string of length 1024, where last character is a line end
+        // Create string of length 2048, where last character is a line end
         String b = "";
-        for (int i = 0; i < 1023; i++) {
+        for (int i = 0; i < 2047; i++) {
             b += "b";
         }
         b += "\n";
-        // Create string of length 1024, with a line end every 127 characters
+        // Create string of length 2048, with a line end every 127 characters
         String c = "";
-        for (int i = 0; i < 1024; i++) {
+        for (int i = 0; i < 2048; i++) {
             if ((i+1) % 128 == 0) {
                 c += "\n";
             } else {
@@ -131,20 +131,20 @@ public class StringUtilsTest {
         }
 
         // 2. Assert
-        assertEquals(1024, a.length());
-        assertEquals(1024, b.length());
-        assertEquals(1024, c.length());
-        assertEquals(1024, StringUtils.cutNotes(a).length());
-        assertEquals(1024, StringUtils.cutNotes(b).length());
-        assertEquals(1024, StringUtils.cutNotes(c).length());
-        assertEquals(1024, StringUtils.cutNotes(a + a).length());
-        assertEquals(1024, StringUtils.cutNotes(a + b).length());
-        assertEquals(1024, StringUtils.cutNotes(b + a).length());
-        assertEquals(1024, StringUtils.cutNotes(b + b).length());
-        assertEquals(1024, StringUtils.cutNotes(b + c).length());
-        assertEquals(1024, StringUtils.cutNotes(c + a).length());
-        assertEquals(1024, StringUtils.cutNotes(c + b).length());
-        assertEquals(1024, StringUtils.cutNotes(c + c).length());
+        assertEquals(2048, a.length());
+        assertEquals(2048, b.length());
+        assertEquals(2048, c.length());
+        assertEquals(2048, StringUtils.cutNotes(a).length());
+        assertEquals(2048, StringUtils.cutNotes(b).length());
+        assertEquals(2048, StringUtils.cutNotes(c).length());
+        assertEquals(2048, StringUtils.cutNotes(a + a).length());
+        assertEquals(2048, StringUtils.cutNotes(a + b).length());
+        assertEquals(2048, StringUtils.cutNotes(b + a).length());
+        assertEquals(2048, StringUtils.cutNotes(b + b).length());
+        assertEquals(2048, StringUtils.cutNotes(b + c).length());
+        assertEquals(2048, StringUtils.cutNotes(c + a).length());
+        assertEquals(2048, StringUtils.cutNotes(c + b).length());
+        assertEquals(2048, StringUtils.cutNotes(c + c).length());
         assertEquals(a, StringUtils.cutNotes(a));
         assertEquals(b, StringUtils.cutNotes(b));
         assertEquals(c, StringUtils.cutNotes(c));
