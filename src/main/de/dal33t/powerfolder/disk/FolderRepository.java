@@ -864,6 +864,20 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the folder with the targetDir as local base or null if not found
      */
     public Folder findExistingFolder(Path targetDir) {
+        return findExistingFolder(targetDir, true);
+    }
+
+    /**
+     * Finds an folder on the give target directory.
+     * 
+     * @param targetDir
+     * @param toRealPath
+     *            if paths should be checked against their "real" paths. Costs
+     *            extra I/O
+     * @return the folder with the targetDir as local base or null if not found
+     * @return
+     */
+    public Folder findExistingFolder(Path targetDir, boolean toRealPath) {
         if (!targetDir.isAbsolute()) {
             targetDir = foldersBasedir
                 .resolve(targetDir);
@@ -876,15 +890,17 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (folder.getLocalBase().equals(targetDir)) {
                 return folder;
             }
-            try {
-                if (folder.getCommitOrLocalDir().toRealPath()
-                    .equals(targetDir.toRealPath()))
-                {
-                    return folder;
+            if (toRealPath) {
+                try {
+                    if (folder.getCommitOrLocalDir().toRealPath()
+                        .equals(targetDir.toRealPath()))
+                    {
+                        return folder;
+                    }
+                } catch (IOException e) {
+                    logFine("Unable to access: " + folder.getLocalBase() + ". "
+                        + e);
                 }
-            } catch (IOException e) {
-                logFine(
-                    "Unable to access: " + folder.getLocalBase() + ". " + e);
             }
         }
         return null;
