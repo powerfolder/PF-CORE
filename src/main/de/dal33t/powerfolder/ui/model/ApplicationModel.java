@@ -749,7 +749,9 @@ public class ApplicationModel extends PFUIComponent {
         public void autoLockForbidden(LockingEvent event) {
             FileInfo fInfo = event.getFileInfo();
             Lock lock = fInfo.getLock(getController());
-
+            if (lock == null) {
+                return;
+            }
             final String displayName = lock.getAccountInfo().getDisplayName();
             final String name = fInfo.getFilenameOnly();
             final String date = new SimpleDateFormat("dd MMM yyyy HH:mm")
