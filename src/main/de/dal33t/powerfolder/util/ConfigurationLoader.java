@@ -161,15 +161,12 @@ public class ConfigurationLoader {
                 }
             }
             if (clr.isRestartRequired() && controller.isStarted()) {
-                if (controller.getUptime() < 10000L) {
-                    controller.schedule(new Runnable() {
-                        public void run() {
-                            controller.shutdownAndRequestRestart();
-                        }
-                    }, 10000L);
-                } else {
-                    controller.shutdownAndRequestRestart();
-                }
+                // PFC-2827:
+                controller.schedule(new Runnable() {
+                    public void run() {
+                        controller.shutdownAndRequestRestart();
+                    }
+                }, 10000L);
             }
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Unable to reload configuration: " + clr
