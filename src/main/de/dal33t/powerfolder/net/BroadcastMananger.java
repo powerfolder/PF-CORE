@@ -219,12 +219,6 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 if (isPowerFolderBroadcast(inPacket)
                     && getController().getNodeManager().isStarted())
                 {
-                    if (getController().getNetworkingMode().equals(
-                        NetworkingMode.SERVERONLYMODE))
-                    {
-                        logFiner("Ignoring broadcasts in server only networking mode");
-                        continue;
-                    }
                     processBroadcast(inPacket);
                 }
             } catch (SocketTimeoutException e) {
@@ -356,6 +350,12 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             port);
         receivedBroadcastsFrom.add(packet.getAddress());
         Member node = getController().getNodeManager().getNode(id);
+        if (node != null && !node.isServer() && getController()
+            .getNetworkingMode().equals(NetworkingMode.SERVERONLYMODE))
+        {
+            logFiner("Ignoring broadcasts in server only networking mode");
+            return false;
+        }
         if (node == null
             || (!node.isMySelf() && !node.isConnected() && !node.isConnecting()))
         {
