@@ -982,7 +982,7 @@ public class ServerClient extends PFComponent {
     {
         if (StringUtils.isNotBlank(theUsername)) {
             logInfo("Login with: " + theUsername
-                + (theToken != null ? (". token: " + theToken) : ""));
+                + (theToken != null ? (". token: " + theToken.length()) : ""));
         } else {
             logFine("Login without username");
         }
