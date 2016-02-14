@@ -153,7 +153,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 27;
+    private static final int REVISION_VERSION = 28;
 
     /**
      * Program version.
@@ -1810,6 +1810,10 @@ public class Controller extends PFComponent {
     }
 
     public void setNetworkingMode(NetworkingMode newMode) {
+        setNetworkingMode(newMode, true);
+    }
+    
+    public void setNetworkingMode(NetworkingMode newMode, boolean restartNodeManager) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.
             newMode = NetworkingMode.SERVERONLYMODE;
@@ -1825,8 +1829,11 @@ public class Controller extends PFComponent {
                 .setNetworkingMode(new NetworkingModeEvent(oldMode, newMode));
 
             // Restart nodeManager
-            nodeManager.shutdown();
-            nodeManager.start();
+            // PFS-1922:
+            if (restartNodeManager) {
+                nodeManager.shutdown();
+                nodeManager.start();
+            }
             reconnectManager.buildReconnectionQueue();
         }
     }
