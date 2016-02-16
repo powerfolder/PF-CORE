@@ -26,8 +26,10 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Helper to set/load the general HTTP proxy settings of this VM.
@@ -98,15 +100,22 @@ public class HTTPProxySettings {
         // Username / Password
         String proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME
             .getValue(controller);
-        String proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD
-            .getValue(controller);
-        setCredentials(proxyUsername, proxyPassword);
+        String proxyPassword = Util.toString(LoginUtil.deobfuscate(
+            ConfigurationEntry.HTTP_PROXY_PASSWORD.getValue(controller)));
+        try {
+            setCredentials(proxyUsername, proxyPassword);
+        } catch (IllegalArgumentException iae) {
+            LOG.info("Could not set credentials for http proxy: " + iae.getMessage());
+        }
 
         System.setProperty("java.net.useSystemProxies", "false");
 
         if (LOG.isLoggable(Level.WARNING)) {
-            String auth = StringUtils.isBlank(proxyUsername) ? "" : "("
-                + proxyUsername + "/" + proxyPassword.length() + " chars)";
+            String auth = StringUtils.isBlank(proxyUsername)
+                ? ""
+                : "(" + proxyUsername + "/"
+                    + (proxyPassword != null ? proxyPassword.length() : " n/a")
+                    + " chars)";
             LOG.fine("Loaded HTTP proxy settings: " + proxyHost + ":"
                 + proxyPort + " " + auth);
         }
@@ -122,8 +131,8 @@ public class HTTPProxySettings {
             ConfigurationEntry.HTTP_PROXY_HOST.removeValue(controller);
         }
         if (proxyPort > 0) {
-            ConfigurationEntry.HTTP_PROXY_PORT.setValue(controller, ""
-                + proxyPort);
+            ConfigurationEntry.HTTP_PROXY_PORT.setValue(controller,
+                String.valueOf(proxyPort));
         } else {
             ConfigurationEntry.HTTP_PROXY_PORT.removeValue(controller);
         }
@@ -135,7 +144,7 @@ public class HTTPProxySettings {
         }
         if (!StringUtils.isBlank(proxyPassword)) {
             ConfigurationEntry.HTTP_PROXY_PASSWORD.setValue(controller,
-                proxyPassword);
+                LoginUtil.obfuscate(Util.toCharArray(proxyPassword)));
         } else {
             ConfigurationEntry.HTTP_PROXY_PASSWORD.removeValue(controller);
         }
