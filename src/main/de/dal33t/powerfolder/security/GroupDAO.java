@@ -46,6 +46,15 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return a list of all groups that have permission to {@code folderInfo}.
      */
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
+    
+    /**
+     * PFS-1949
+     * 
+     * @param folderInfo
+     *            The folder
+     * @return the number of groups that have permission to {@code folderInfo}.
+     */
+    int countWithFolderPermission(FolderInfo folderInfo);
 
     /**
      * Return a list of groups, where the account specified by
