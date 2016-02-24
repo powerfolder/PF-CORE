@@ -26,6 +26,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -136,9 +137,16 @@ public class FileArchiver {
         Path target = getArchiveTarget(fileInfo);
 
         if (Files.exists(target)) {
-            log.warning("File " + fileInfo.toDetailString()
-                + " seems to be archived already, doing nothing.");
-            // Maybe throw Exception instead?
+            // PFS-1794: Happens 2136x
+            if (log.isLoggable(Level.WARNING)
+                && !fileInfo.inSyncWithDisk(target))
+            {
+                log.warning("File " + fileInfo.toDetailString()
+                    + " seems to be archived already, doing nothing.");
+            } else if (log.isLoggable(Level.FINE)) {
+                log.fine("File " + fileInfo.toDetailString()
+                    + " seems to be archived already, doing nothing.");
+            }
             return;
         }
 
@@ -158,7 +166,9 @@ public class FileArchiver {
             boolean tryCopy = forceKeepSource;
             if (!tryCopy) {
                 try {
-                    Files.move(source, target);
+                    // // PFS-1794: Replace existing target file atomically.
+                    Files.move(source, target,
+                        StandardCopyOption.REPLACE_EXISTING);
                     if (size != null && Files.exists(target)) {
                         size += Files.size(target);
                     }

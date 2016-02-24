@@ -932,8 +932,9 @@ public class Util {
             }
 
             if (StringUtils.isNotBlank(proxyUsername)) {
-                String proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD
-                    .getValue(controller);
+                String proxyPassword = Util.toString(
+                    LoginUtil.deobfuscate(ConfigurationEntry.HTTP_PROXY_PASSWORD
+                        .getValue(controller)));
                 if (proxyPassword == null) {
                     proxyPassword = "";
                 }

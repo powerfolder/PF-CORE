@@ -31,8 +31,10 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.HTTPProxySettings;
 import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 
 public class HTTPProxySettingsDialog extends PFUIComponent {
     private Window parentFrame;
@@ -150,8 +152,9 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
         tempProxyUsernameModel = new ValueHolder(
             ConfigurationEntry.HTTP_PROXY_USERNAME.getValue(getController()),
             true);
-        tempProxyPasswordModel = new ValueHolder(
-            ConfigurationEntry.HTTP_PROXY_PASSWORD.getValue(getController()),
+        tempProxyPasswordModel = new ValueHolder(Util.toString(
+            LoginUtil.deobfuscate(ConfigurationEntry.HTTP_PROXY_PASSWORD
+                .getValue(getController()))),
             true);
 
         // Proxy select
@@ -246,8 +249,10 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             String proxyUsername = withAuth
                 ? proxyUsernameField.getText()
                 : null;
-            String proxyPassword = withAuth ? new String(proxyPasswordField
-                .getPassword()) : null;
+            String proxyPassword = withAuth
+                ? new String(
+                    LoginUtil.obfuscate(proxyPasswordField.getPassword()))
+                : "";
             HTTPProxySettings.saveToConfig(getController(), proxyHostField
                 .getText(), (Integer) proxyPortField.getValue(), proxyUsername,
                 proxyPassword);

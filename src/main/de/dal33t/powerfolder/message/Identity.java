@@ -180,6 +180,15 @@ public class Identity extends Message
     }
 
     /**
+     * Convenience method.
+     * 
+     * @return the nick/name of the remote node.
+     */
+    public String getNick() {
+        return member != null ? member.nick : null;
+    }
+
+    /**
      * @return the magic id.
      */
     public String getMagicId() {

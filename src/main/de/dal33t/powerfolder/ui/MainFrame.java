@@ -89,7 +89,7 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
-import de.dal33t.powerfolder.ui.model.FolderRepositoryModel;
+import de.dal33t.powerfolder.ui.model.SyncingModel;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
@@ -688,8 +688,8 @@ public class MainFrame extends PFUIComponent {
 
     private void updateMainStatus(SyncStatusEvent event) {
 
-        FolderRepositoryModel folderRepositoryModel = getUIController()
-            .getApplicationModel().getFolderRepositoryModel();
+        SyncingModel folderRepositoryModel = getUIController()
+            .getApplicationModel().getSyncingModel();
         boolean notStartedOrNoFolders = event.equals(SyncStatusEvent.NOT_STARTED)
             || event.equals(SyncStatusEvent.NO_FOLDERS);
         boolean showSetupLabel = getController().getOSClient()
@@ -1154,6 +1154,15 @@ public class MainFrame extends PFUIComponent {
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
             // Don't care.
+        }
+
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void cleanupFinished(FolderRepositoryEvent e) {
+            // ignore
         }
 
         public boolean fireInEventDispatchThread() {

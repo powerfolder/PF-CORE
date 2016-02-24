@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Security;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -110,6 +111,7 @@ import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.util.AntiSerializationVulnerability;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.Debug;
@@ -149,9 +151,9 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class
         .getName());
 
-    private static final int MAJOR_VERSION = 10;
-    private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 244;
+    private static final int MAJOR_VERSION = 11;
+    private static final int MINOR_VERSION = 0;
+    private static final int REVISION_VERSION = 36;
 
     /**
      * Program version.
@@ -321,7 +323,7 @@ public class Controller extends PFComponent {
             .createListenerSupport(NetworkingModeListener.class);
         limitedConnectivityListenerSupport = ListenerSupportFactory
             .createListenerSupport(LimitedConnectivityListener.class);
-
+        AntiSerializationVulnerability.check();
     }
 
     /**
@@ -466,7 +468,7 @@ public class Controller extends PFComponent {
         }
 
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
-        logFine("OS: " + System.getProperty("os.name") + " (" + arch + ')');
+        logFine("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + arch + ")");
         logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
         logFine("Current time: " + new Date());
@@ -1202,26 +1204,6 @@ public class Controller extends PFComponent {
         }
 
         // ============
-        // Monitor the default directory for possible new folders.
-        // ============
-
-        threadPool.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
-                    .getValueBoolean(Controller.this))
-                {
-                    folderRepository.lookForNewFolders();
-                }
-                if (ConfigurationEntry.LOOK_FOR_FOLDERS_TO_BE_REMOVED
-                    .getValueBoolean(Controller.this))
-                {
-                    folderRepository.lookForFoldersToBeRemoved();
-                }
-            }
-        }, 10L, 10L, TimeUnit.SECONDS);
-
-        // ============
         // Hourly tasks
         // ============
         // @todo what's this for? comment?
@@ -1318,23 +1300,20 @@ public class Controller extends PFComponent {
             logFine("Reconfigured logs for new day: " + now);
 
             backupConfigAssets();
+            folderRepository.cleanupOldArchiveFiles();            
         }
-
+        
         // Prune stats.
         transferManager.pruneStats();
-
-        // Cleanup old archives.
-        if (midnightRun) {
-            folderRepository.cleanupOldArchiveFiles();
-        }
     }
 
     /**
      * #2526
      */
     private void backupConfigAssets() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
         Path backupDir = getMiscFilesLocation().resolve(
-            "backups/" + Format.formatDateCanonical(new Date()));
+            "backups/" + dateFormat.format(new Date()));
         if (Files.notExists(backupDir)) {
             try {
                 Files.createDirectories(backupDir);
@@ -1868,6 +1847,10 @@ public class Controller extends PFComponent {
     }
 
     public void setNetworkingMode(NetworkingMode newMode) {
+        setNetworkingMode(newMode, true);
+    }
+    
+    public void setNetworkingMode(NetworkingMode newMode, boolean restartNodeManager) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.
             newMode = NetworkingMode.SERVERONLYMODE;
@@ -1883,8 +1866,11 @@ public class Controller extends PFComponent {
                 .setNetworkingMode(new NetworkingModeEvent(oldMode, newMode));
 
             // Restart nodeManager
-            nodeManager.shutdown();
-            nodeManager.start();
+            // PFS-1922:
+            if (restartNodeManager) {
+                nodeManager.shutdown();
+                nodeManager.start();
+            }
             reconnectManager.buildReconnectionQueue();
         }
     }

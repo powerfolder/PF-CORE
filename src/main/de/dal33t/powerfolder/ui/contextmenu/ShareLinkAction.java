@@ -66,7 +66,7 @@ class ShareLinkAction extends ContextMenuAction {
                     final ServerClient client = controller.getOSClient();
                     final FileInfo fInfo = FileInfoFactory.lookupInstance(
                         folder, path);
-                    if (SyncStatus.of(controller, fInfo) == SyncStatus.IGNORED)
+                    if (SyncStatus.of(controller, fInfo, folder) == SyncStatus.IGNORED)
                     {
                         log.fine("File " + fInfo
                             + " is ignored. Not trying to create link");

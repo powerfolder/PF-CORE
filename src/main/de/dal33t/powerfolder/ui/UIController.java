@@ -349,10 +349,19 @@ public class UIController extends PFComponent {
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    mainFrame.getUIComponent().setVisible(
-                        (!OSUtil.isSystraySupported()
-                            || !getController().isStartMinimized()) && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()));
-                    if (!getController().isStartMinimized() && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+                    boolean isSystraySupported = OSUtil.isSystraySupported();
+                    boolean isLinux = OSUtil.isLinux();
+                    boolean isStartMinimized = getController()
+                        .isStartMinimized();
+                    boolean isExpertMode = PreferencesEntry.EXPERT_MODE
+                        .getValueBoolean(getController());
+
+                    // PFC-2806 never minimize on Linux
+                    mainFrame.getUIComponent()
+                        .setVisible(isLinux
+                            || ((!isSystraySupported || !isStartMinimized)
+                                && isExpertMode));
+                    if (!isStartMinimized && isExpertMode) {
                         mainFrame.toFront();
                     }
                 }
@@ -1408,6 +1417,15 @@ public class UIController extends PFComponent {
         }
 
         @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void cleanupFinished(FolderRepositoryEvent e) {
+            // ignore
+        }
+
+        @Override
         public boolean fireInEventDispatchThread() {
             return false;
         }
@@ -1624,8 +1642,8 @@ public class UIController extends PFComponent {
                 String title = Translation
                     .get("uicontroller.warn_on_close.title");
                 String text;
-                if (applicationModel.getFolderRepositoryModel().isSyncing()) {
-                    Date syncDate = applicationModel.getFolderRepositoryModel()
+                if (applicationModel.getSyncingModel().isSyncing()) {
+                    Date syncDate = applicationModel.getSyncingModel()
                         .getEstimatedSyncDate();
                     text = Translation.get(
                         "uicontroller.warn_on_close_eta.text",

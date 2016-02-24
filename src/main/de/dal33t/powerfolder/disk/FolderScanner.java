@@ -107,8 +107,6 @@ public class FolderScanner extends PFComponent {
      */
     private Semaphore threadOwnership;
 
-    private List<FolderScannerListener> listeners;
-    
     /**
      * Do not use this constructor, this should only be done by the Folder
      * Repositoty, to get the folder scanner call:
@@ -122,7 +120,6 @@ public class FolderScanner extends PFComponent {
         threadOwnership = new Semaphore(1);
         maxCrawlers = ConfigurationEntry.FOLDER_SCANNER_MAX_CRAWLERS
             .getValueInt(getController());
-        listeners = new ArrayList<>();
     }
 
     /**
@@ -157,25 +154,6 @@ public class FolderScanner extends PFComponent {
             }
         }
         // waitForCrawlersToStop();
-    }
-
-    /**
-     * Add a listener which notify method is called after
-     * {@link #scanDiskItem(Path, String, boolean)} is finished.
-     * 
-     * @param listener
-     *            The listener to add.
-     */
-    public void addListener(FolderScannerListener listener) {
-        listeners.add(listener);
-    }
-
-    /**
-     * @param listener
-     *            The listener to remove.
-     */
-    public void removeListener(FolderScannerListener listener) {
-        listeners.remove(listener);
     }
 
     public Folder getCurrentScanningFolder() {
@@ -634,7 +612,6 @@ public class FolderScanner extends PFComponent {
             }
         }
         try {
-            FileInfo callBack = null;
             if (exists != null) {// file was known
                 if (exists.isDeleted()) {
                     // file restored
@@ -648,7 +625,6 @@ public class FolderScanner extends PFComponent {
                                 + Files.getLastModifiedTime(fileToScan));
                         }
                         currentScanResult.restoredFiles.add(restoredFile);
-                        callBack = restoredFile;
                     }
                 } else {
                     FileInfo changedFile = exists.syncFromDiskIfRequired(
@@ -664,8 +640,6 @@ public class FolderScanner extends PFComponent {
                                 + Files.getLastModifiedTime(fileToScan));
                         }
                         currentScanResult.changedFiles.add(changedFile);
-                    } else {
-                        callBack = exists;
                     }
                 }
             } else {
@@ -676,17 +650,11 @@ public class FolderScanner extends PFComponent {
                     getController().getMySelf().getAccountInfo(), null,
                     directory, null);
                 currentScanResult.newFiles.add(info);
-                callBack = info;
                 if (isFiner()) {
                     logFiner("New found: " + info.toDetailString());
                 }
             }
 
-            if (!directory && callBack != null) {
-                for (FolderScannerListener fsl : listeners) {
-                    fsl.notify(callBack);
-                }
-            }
         } catch (Exception e) {
             logWarning("Unable to scan: " + fileToScan + ". " + e);
             unableToScanFiles.add(fileToScan);

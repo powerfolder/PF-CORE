@@ -27,9 +27,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
@@ -63,6 +65,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.problem.NoSpaceOnFileStoreProblem;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
@@ -635,9 +638,20 @@ public class TransferManager extends PFComponent {
     {
         // Ensure shutdown
         upload.shutdown();
-        logWarning("Upload broken: " + upload + ' '
-            + (transferProblem == null ? "" : transferProblem) + ": "
-            + problemInformation);
+        
+        Level l = Level.WARNING;
+        if (transferProblem == TransferProblem.NODE_DISCONNECTED
+            || transferProblem == TransferProblem.PAUSED
+            || transferProblem == TransferProblem.OLD_UPLOAD)
+        {
+            l = Level.FINE;
+        }
+        if (isLog(l)) {
+            logIt(l, "Upload broken: " + upload + ' '
+                + (transferProblem == null ? "" : transferProblem) + ": "
+                + problemInformation, null);
+        }
+        
         uploadsLock.lock();
         boolean transferFound = false;
         try {
@@ -1739,6 +1753,32 @@ public class TransferManager extends PFComponent {
                 return null;
             }
 
+            // PFC-2553 Start: Check for free disk space
+
+            /*
+             * Set to -1 to know if no FileStore could be accessed.
+             */
+            long spaceOnFileStore = -1;
+
+            try {
+                FileStore store = Files.getFileStore(folder.getLocalBase());
+                spaceOnFileStore = store.getUsableSpace();
+            } catch (IOException e) {
+                logInfo(
+                    "Could not get the usable space for " + folder.toString()
+                        + " located at " + folder.getLocalBase().toString());
+            }
+
+            // If no FileStore could be accessed, don't check the file sizes.
+            if (spaceOnFileStore > 0) {
+                if (fileToDl.getSize() > spaceOnFileStore) {
+                    folder.addProblem(
+                        new NoSpaceOnFileStoreProblem(folder.getInfo()));
+                    return null;
+                }
+            }
+            // PFC-2553 End
+
             List<Member> sources = getSourcesWithFreeUploadCapacity(fInfo);
 
             Collection<Member> bestSources = null;
@@ -2031,7 +2071,13 @@ public class TransferManager extends PFComponent {
     }
 
     void downloadManagerAborted(DownloadManager manager) {
-        logWarning("Aborted download: " + manager);
+        if (manager.isRequestedAutomatic()) {
+            if (isFine()) {
+                logFine("Aborted download: " + manager);                
+            }
+        } else {
+            logWarning("Aborted download: " + manager);
+        }
         removeDownloadManager(manager);
     }
 

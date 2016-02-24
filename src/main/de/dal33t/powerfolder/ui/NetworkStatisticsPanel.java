@@ -295,6 +295,16 @@ public class NetworkStatisticsPanel extends PFUIComponent {
             update();
         }
 
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+            update();
+        }
+
+        @Override
+        public void cleanupFinished(FolderRepositoryEvent e) {
+            update();
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

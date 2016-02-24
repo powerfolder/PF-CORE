@@ -573,7 +573,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     /**
      * @param controller
-     * @return The lock for this FileInfo or {@code null} if there is no lock
+     * @return The lock for this FileInfo or {@code null} if there is no lock OR the lock file could not be read
      */
     public Lock getLock(Controller controller) {
         return controller.getFolderRepository().getLocking().getLock(this);

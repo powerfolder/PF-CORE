@@ -738,7 +738,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 if (folder == null) {
                     return;
                 }
-                if (folder.isSyncing()) {
+                if (folder.isTransferring()) {
                     primaryButton.setVisible(false);
                     upperSyncFolderButton.setVisible(true);
                     upperSyncFolderButton.spin(true);
@@ -1549,6 +1549,15 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         public void maintenanceStarted(FolderRepositoryEvent e) {
             updateIfRequired(e);
+        }
+
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void cleanupFinished(FolderRepositoryEvent e) {
+            // ignore
         }
 
         public boolean fireInEventDispatchThread() {

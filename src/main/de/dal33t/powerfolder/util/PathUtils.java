@@ -1537,20 +1537,6 @@ public class PathUtils {
             return false;
         }
 
-        if (ConfigurationEntry.ARCHIVE_DIRECTORY_NAME
-            .hasNonBlankValue(folder.getController()))
-        {
-            String archiveDirText = ConfigurationEntry.ARCHIVE_DIRECTORY_NAME
-                .getValue(folder.getController());
-            archiveDirText = archiveDirText.replace(".", "");
-            archiveDirText = archiveDirText.replace("\\", "");
-            archiveDirText = archiveDirText.replace("/", "");
-
-            if (relOrAbsfilePath.contains(archiveDirText)) {
-                return false;
-            }
-        }
-
         int firstSystemDir = relOrAbsfilePath
             .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (firstSystemDir < 0) {

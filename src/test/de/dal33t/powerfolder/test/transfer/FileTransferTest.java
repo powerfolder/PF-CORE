@@ -75,19 +75,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(500);
     }
 
-    public void xtestNonExtractZIPJAR() throws IOException {
-        assertTrue(getFolderAtBart().isEncrypted());
-        assertEquals(0, getFolderAtBart().getKnownItemCount());
-        Path zip = Paths.get("src/test-resources/testzip.zip");
-        Path tzip = getFolderAtBart().getLocalBase().resolve(zip.getFileName());
-        PathUtils.recursiveCopy(zip, tzip);
-        Path jar = Paths.get("src/test-resources/testjar.jar");
-        Path tjar = getFolderAtBart().getLocalBase().resolve(jar.getFileName());
-        PathUtils.recursiveCopy(jar, tjar);
-        scanFolder(getFolderAtBart());
-        assertEquals(2, getFolderAtBart().getKnownItemCount());
-    }
-
     /**
      * #2480: Filename imcompatibilties between Mac client and Windows server
      *

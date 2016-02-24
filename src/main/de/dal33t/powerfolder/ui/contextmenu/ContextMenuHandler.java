@@ -144,13 +144,13 @@ public class ContextMenuHandler extends PFComponent implements
                     continue;
                 }
 
-                Folder folder = fr.findContainingFolder(pathName);
+                Path path = Paths.get(pathName);
+                Folder folder = fr.findContainingFolder(path);
 
                 if (folder == null) {
                     continue;
                 }
 
-                Path path = Paths.get(pathName);
                 if (!containsFolderPath && folder.getLocalBase().equals(path)) {
                     containsFolderPath = true;
                     continue;
@@ -178,8 +178,13 @@ public class ContextMenuHandler extends PFComponent implements
                 }
             }
 
-            if (containsFolderPath && pathNames.length == 1
-                && pathNames[0].contains(Constants.POWERFOLDER_SYSTEM_SUBDIR))
+            if (pathNames.length == 1
+                && (
+                    (containsFolderPath
+                        && pathNames[0].contains(Constants.POWERFOLDER_SYSTEM_SUBDIR))
+                    || pathNames[0].equals(startMenu)
+                    )
+                )
             {
                 return new ArrayList<>(0);
             }
@@ -193,8 +198,10 @@ public class ContextMenuHandler extends PFComponent implements
             }
 
             if ((containsFolderPath && pathNames.length == 1)
-                || (Files.isDirectory(Paths.get(pathNames[0]))
-                    && getController().getOSClient().isAllowedToCreateFolders() && !containsDirectoryInfoPath))
+                || (pathNames.length == 1
+                    && Files.isDirectory(Paths.get(pathNames[0]))
+                    && getController().getOSClient().isAllowedToCreateFolders()
+                    && !containsDirectoryInfoPath))
             {
                 pfMainItem.addContextMenuItem(shareFolderItem);
             }

@@ -70,6 +70,7 @@ public class ServerInfo implements Serializable {
     }
 
     public void setNode(MemberInfo node) {
+        Reject.ifNull(node, "Node is null");
         this.node = node;
         this.id = node.id;
     }

@@ -628,6 +628,17 @@ public class ServerClient extends PFComponent {
      * @param foInfo
      * @return the direct URL to the folder
      */
+    public String getMembersURL(FolderInfo foInfo) {
+        if (!hasWebURL()) {
+            return null;
+        }
+        return getWebURL("/members/" + Base64.encode4URL(foInfo.id), false);
+    }
+
+    /**
+     * @param foInfo
+     * @return the direct URL to the folder
+     */
     public String getFolderURL(FolderInfo foInfo) {
         if (!hasWebURL()) {
             return null;
@@ -795,7 +806,7 @@ public class ServerClient extends PFComponent {
         url.append("/avatars/user/");
         url.append(aInfo.getOID());
         if (thumbnail) {
-            url.append("_tn");
+            url.append("?thumbnail=true");
         }
         return getWebURL(url.toString(), false);
     }
@@ -971,7 +982,7 @@ public class ServerClient extends PFComponent {
     {
         if (StringUtils.isNotBlank(theUsername)) {
             logInfo("Login with: " + theUsername
-                + (theToken != null ? (". token: " + theToken) : ""));
+                + (theToken != null ? (". token: " + theToken.length()) : ""));
         } else {
             logFine("Login without username");
         }
@@ -995,7 +1006,13 @@ public class ServerClient extends PFComponent {
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
                 try {
-                    if (isShibbolethLogin()) {
+                    if (isKerberosLogin()) {
+                        byte[] serviceTicket = prepareKerberosLogin();
+                        loginOk = securityService
+                            .login(username, serviceTicket);
+                    } else if (isTokenLogin()) {
+                        loginOk = securityService.login(tokenSecret);
+                    } else if (isShibbolethLogin()) {
                         // PFC-2534: Start
                         try {
                             String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
@@ -1042,12 +1059,6 @@ public class ServerClient extends PFComponent {
                         } else {
                             logWarning("Neither Shibboleth nor external login possible!");
                         }
-                    } else if (isKerberosLogin()) {
-                        byte[] serviceTicket = prepareKerberosLogin();
-                        loginOk = securityService
-                            .login(username, serviceTicket);
-                    } else if (isTokenLogin()) {
-                        loginOk = securityService.login(tokenSecret);
                     } else {
                         loginOk = securityService.login(username, pw);
                     }
@@ -1343,8 +1354,9 @@ public class ServerClient extends PFComponent {
                 .createHttpClientBuilder(getController());
             String proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME
                 .getValue(getController());
-            String proxyPassword = ConfigurationEntry.HTTP_PROXY_PASSWORD
-                .getValue(getController());
+            String proxyPassword = Util.toString(
+                LoginUtil.deobfuscate(ConfigurationEntry.HTTP_PROXY_PASSWORD
+                    .getValue(getController())));
             ECPAuthenticator auth = new ECPAuthenticator(builder, username,
                 new String(thePassword), idpURI, spURI, proxyUsername,
                 proxyPassword);
@@ -1799,11 +1811,7 @@ public class ServerClient extends PFComponent {
 
     private void retrieveAndConnectoClusterServers() {
         try {
-            if (ConfigurationEntry.SERVER_LOAD_NODES
-                .getValueBoolean(getController()))
-            {
-                getController().getNodeManager().loadServerNodes(this);
-            }
+            getController().getNodeManager().loadServerNodes(this);
 
             if (!isConnected() || !isLoggedIn()) {
                 return;
@@ -2270,6 +2278,15 @@ public class ServerClient extends PFComponent {
 
         @Override
         public void maintenanceFinished(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+        }
+
+        @Override
+        public void cleanupFinished(FolderRepositoryEvent e) {
+            // ignore
         }
     }
 

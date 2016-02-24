@@ -34,6 +34,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
@@ -110,7 +111,6 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -265,14 +265,7 @@ public class Folder extends PFComponent {
      */
     private boolean deviceDisconnected;
 
-    private boolean encrypted;
-
     private boolean schemaZyncro;
-
-    /**
-     * Encryption key when a client with valid credentials is connected.
-     */
-    private char[] encryptionKeyOBF;
 
     /**
      * #1538: Script that gets executed after a download has been completed
@@ -325,29 +318,8 @@ public class Folder extends PFComponent {
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
-        encrypted = folderSettings.getLocalBaseDir().toString().endsWith(".pfzip");
         problems = new CopyOnWriteArrayList<Problem>();
-        if (encrypted) {
-            localBase = folderSettings.getLocalBaseDir();
-            try {
-                Files.createDirectories(localBase);
-            }
-            catch (IOException ioe) {
-                // Ignore.
-            }
-//            try {
-//                new TFile(localBase, "dummy.txt").createNewFile();
-//                new TFile(localBase, "dummy.txt").rm();
-//            } catch (IOException e) {
-//                logWarning("Unable to initialize encrypted storage at "
-//                    + localBase);
-//            }
-//            if (!localBase.isArchive()) {
-//                throw new IllegalStateException(
-//                    "Unable to open encrypted container for folder "
-//                        + getName() + " at " + localBase);
-//            }
-        } else if (folderSettings.getLocalBaseDir().isAbsolute()) {
+        if (folderSettings.getLocalBaseDir().isAbsolute()) {
             localBase = folderSettings.getLocalBaseDir();
         } else {
             localBase = getController().getFolderRepository()
@@ -366,13 +338,6 @@ public class Folder extends PFComponent {
 
         schemaZyncro = PathUtils.isZyncroPath(localBase);
 
-        // Support for meta folder.
-        if (fInfo.isMetaFolder()
-            && folderSettings.getLocalBaseDir().toAbsolutePath().toString()
-                .contains(".pfzip"))
-        {
-            encrypted = true;
-        }
         Reject.ifTrue(localBase.equals(getController().getFolderRepository()
             .getFoldersBasedir()),
             "Folder cannot be located at base directory for all folders");
@@ -396,17 +361,17 @@ public class Folder extends PFComponent {
         // Check base dir
         try {
             checkBaseDir(false);
-            logFine("Opened " + toString() + " at '"
+            logFine("Opened " + toString() + "/" + getId() + " at '"
                 + localBase.toAbsolutePath() + '\'');
         } catch (FolderException e) {
             if (currentInfo.isMetaFolder()) {
-                logFine("Unable to open " + toString() + " at '"
+                logFine("Unable to open " + toString() + "/" + getId() + " at '"
                     + localBase.toAbsolutePath()
                     + "'. Local base directory is inaccessable. " + e);
             } else {
-                logWarning("Unable to open " + toString() + " at '"
+                logWarning("Unable to open " + toString() + "/" + getId() + " at '"
                     + localBase.toAbsolutePath()
-                    + "'. Local base directory is inaccessable. " + e);                
+                    + "'. Local base directory is inaccessable. " + e);
             }
             deviceDisconnected = true;
         }
@@ -456,7 +421,6 @@ public class Folder extends PFComponent {
         // PFS-457: End
 
         // put myself in membership
-        // join0(controller.getMySelf());
         members.put(controller.getMySelf(), controller.getMySelf());
 
         // Now calc.
@@ -470,8 +434,6 @@ public class Folder extends PFComponent {
         // Force the next time scan.
         recommendScanOnNextMaintenance();
 
-        // // maintain desktop shortcut if wanted
-        // setDesktopShortcut();
         if (isFine()) {
             if (hasOwnDatabase) {
                 logFiner("Has own database (" + getName() + ")? "
@@ -651,21 +613,15 @@ public class Folder extends PFComponent {
         hasOwnDatabase = true;
 
         if (isInfo() || isFine()) {
+            String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
+                + scanResult.getChangedFiles().size() + " changed, "
+                + scanResult.getNewFiles().size() + " new, "
+                + scanResult.getRestoredFiles().size() + " restored, "
+                + scanResult.getDeletedFiles().size() + " removed, "
+                + scanResult.getProblemFiles().size() + " problems";
             if (scanResult.isChangeDetected()) {
-                String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
-                    + scanResult.getChangedFiles().size() + " changed, "
-                    + scanResult.getNewFiles().size() + " new, "
-                    + scanResult.getRestoredFiles().size() + " restored, "
-                    + scanResult.getDeletedFiles().size() + " removed, "
-                    + scanResult.getProblemFiles().size() + " problems";
                 logInfo(msg);
             } else {
-                String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
-                    + scanResult.getChangedFiles().size() + " changed, "
-                    + scanResult.getNewFiles().size() + " new, "
-                    + scanResult.getRestoredFiles().size() + " restored, "
-                    + scanResult.getDeletedFiles().size() + " removed, "
-                    + scanResult.getProblemFiles().size() + " problems";
                 logFine(msg);
             }
         }
@@ -753,12 +709,22 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Checks the basedir is valid
+     * Checks if the basedir is valid.<br/>
+     * That is:<br />
+     * <ul>
+     * <li>Does the base directory exist</li>
+     * <li>Is it a directory</li>
+     * <li>(On OS X and Linux) Is the base directory a subdir of "/Volumes"</li>
+     * <li>Is the base directory different from the folders base dir</li>
+     * </ul>
      *
+     * @param quiet
+     *            If {@code true} is passed log a severe message, if the
+     *            folder's base dir is not a directory.
      * @throws FolderException
      *             if base dir is not ok
      */
-    private void checkBaseDir(boolean quite) throws FolderException {
+    private void checkBaseDir(boolean quiet) throws FolderException {
         // Basic checks
         if (Files.notExists(localBase)) {
             // TRAC #1249
@@ -774,21 +740,8 @@ public class Folder extends PFComponent {
             // #2329
             throw new FolderException(currentInfo,
                 "Local base dir not available " + localBase.toAbsolutePath());
-
-            // Old code:
-            // if (!localBase.mkdirs()) {
-            // if (!quite) {
-            // logSevere(" not able to create folder(" + getName()
-            // + "), (sub) dir (" + localBase + ") creation failed");
-            // }
-            // throw new FolderException(currentInfo,
-            // "Unable to create folder at " + localBase.getAbsolutePath());
-            // } else {
-            // // logWarning("Created base dir at " + localBase, new
-            // RuntimeException("here"));
-            // }
         } else if (!Files.isDirectory(localBase)) {
-            if (!quite) {
+            if (!quiet) {
                 logSevere(" not able to create folder(" + getName()
                     + "), (sub) dir (" + localBase + ") is no dir");
             }
@@ -912,8 +865,17 @@ public class Folder extends PFComponent {
                 Files.setLastModifiedTime(tempFile,
                     FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
             } catch (IOException ioe) {
-                logWarning("Failed to set modified date on " + tempFile
-                    + " for " + fInfo.getModifiedDate().getTime() + ": " + ioe);
+                // PFS-1794: Happens (3173x): Tempfile/Download already
+                // handled and moved by a different server.
+                if (isWarning() && !fInfo.inSyncWithDisk(targetFile)) {
+                    logWarning(
+                        "Failed to set modified date on tempfile " + tempFile
+                            + " to " + fInfo.getModifiedDate() + ": " + ioe);
+                } else if (isFine()) {
+                    logFine(
+                        "Failed to set modified date on tempfile " + tempFile
+                            + " to " + fInfo.getModifiedDate() + ": " + ioe);
+                }
                 return false;
             }
 
@@ -947,50 +909,59 @@ public class Folder extends PFComponent {
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
                         // TODO Maybe raise folder-problem....
-                        logWarning("Unable to archive old file!", e);
+                        // PFS-1794: Does happen 5x
+                        if (isWarning() && !fInfo.inSyncWithDisk(targetFile)) {
+                            logWarning("Unable to archive old file "
+                                + targetFile + ". " + e);
+                        } else if (isFine()) {
+                            logFine("Unable to archive old file " + targetFile
+                                + ". " + e);
+                        }
                         return false;
                     }
                 }
-                try {
-                    Files.deleteIfExists(targetFile);
-                } catch (IOException ioe) {
-                    logWarning("Unable to scan downloaded file. Was not able to move old file to file archive "
-                        + targetFile.toAbsolutePath()
-                        + ". "
-                        + fInfo.toDetailString());
-                    return false;
-                }
+                // PFS-1794: Don't delete, let move/copy replace target file
+                // try {
+                // Files.deleteIfExists(targetFile);
+                // } catch (IOException ioe) {
+                // PFS-1794: DOES NOT HAPPEN
+                // logWarning("Unable to scan downloaded file. Was not able to
+                // move old file to file archive "
+                // + targetFile.toAbsolutePath()
+                // + ". "
+                // + fInfo.toDetailString());
+                // return false;
+                // }
             }
 
             boolean copyAfterTransfer = schemaZyncro
                 || ConfigurationEntry.FOLDER_COPY_AFTER_TRANSFER
                     .getValueBoolean(getController());
 
-            try {
-                if (copyAfterTransfer)
-                {
-                    throw new IOException();
-                }
-
-                Files.move(tempFile, targetFile);
-            }
-            catch (IOException ioe) {
-                if (!copyAfterTransfer)
-                {
-                    logWarning("Was not able to rename tempfile, copying "
+            if (!copyAfterTransfer) {
+                try {
+                    // PFS-1794: Replace existing target file atomically.
+                    Files.move(tempFile, targetFile,
+                        StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException ioe) {
+                    // PFS-1794: Does happen 530x
+                    logWarning("Was not able to move tempfile "
                         + tempFile.toAbsolutePath() + " to "
                         + targetFile.toAbsolutePath() + ". "
-                        + fInfo.toDetailString());
+                        + fInfo.toDetailString() + ". " + ioe);
+                    return false;
                 }
-
+            } else {
                 try {
                     if (schemaZyncro) {
                         PathUtils.rawCopy(tempFile, targetFile);
                     } else {
-                        Files.copy(tempFile, targetFile);
+                        // PFS-1794: Replace existing target file atomically.
+                        Files.copy(tempFile, targetFile,
+                            StandardCopyOption.REPLACE_EXISTING);
                     }
                 } catch (IOException e) {
-                    // TODO give a diskfull warning?
+                    // PFS-1794: Does happen 525x
                     logWarning("Unable to store completed download "
                         + targetFile.toAbsolutePath() + ". " + e.getMessage()
                         + ". " + fInfo.toDetailString() + ". " + e);
@@ -999,21 +970,23 @@ public class Folder extends PFComponent {
                 }
 
                 // Set modified date of remote
-                // TODO: Set last modified only if required
                 try {
                     Files.setLastModifiedTime(targetFile,
                         FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
                 } catch (IOException e) {
-                    logWarning("Failed to set modified date on " + targetFile
-                        + " to " + fInfo.getModifiedDate().getTime() + ". " + e);
+                    // PFS-1794: DOES NOT happen
+                    logWarning("Failed to set modified date on targetfile "
+                        + targetFile + " to " + fInfo.getModifiedDate() + ". "
+                        + e);
                     return false;
                 }
 
                 try {
                     Files.deleteIfExists(tempFile);
-                }
-                catch (IOException e) {
-                    logSevere("Unable to remove temp file: " + tempFile);
+                } catch (IOException e) {
+                    // PFS-1794: DOES NOT happen
+                    logWarning(
+                        "Unable to remove temp file: " + tempFile + ". " + e);
                 }
             }
 
@@ -1818,16 +1791,6 @@ public class Folder extends PFComponent {
         }
         dao = new FileInfoDAOHashMapImpl(getMySelf().getId(),
             diskItemFilter);
-
-        // File daoDir = new File(getSystemSubDir(), "db/h2");
-        // try {
-        // FileUtils.recursiveDelete(daoDir.getParentFile());
-        // } catch (IOException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-        // dao = new FileInfoDAOSQLImpl(getController(), "jdbc:h2:" + daoDir,
-        // "sa", "", null);
     }
 
     /**
@@ -2027,13 +1990,6 @@ public class Folder extends PFComponent {
         ListenerSupportFactory
             .removeAllListeners(folderMembershipListenerSupport);
         diskItemFilter.removeAllListener();
-        if (encrypted && !currentInfo.isMetaFolder()) {
-//            try {
-//                TFile.umount(localBase);
-//            } catch (Throwable e) {
-//                logWarning("Problem unmounting " + localBase + ". " + e);
-//            }
-        }
     }
 
     /**
@@ -2425,11 +2381,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-<<<<<<< HEAD
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
      *
-=======
      * PFS-1361
      */
     private Path createTimestampedCopy(Path file) throws IOException {
@@ -2448,7 +2402,6 @@ public class Folder extends PFComponent {
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
      * 
->>>>>>> development
      * @param desktopIni
      */
     private void makeFolderIcon(Path desktopIni) {
@@ -2703,7 +2656,7 @@ public class Folder extends PFComponent {
         if (!memberRead || !mySelfRead) {
             if (memberRead) {
                 if (isFine()) {
-                    String msg = "Not joining " + member + " / "
+                    String msg = getName() + ": Not joining " + member + " / "
                         + member.getAccountInfo()
                         + ". Myself got no read permission";
                     if (getController().isStarted()
@@ -2718,7 +2671,7 @@ public class Folder extends PFComponent {
                 }
             } else {
                 if (isFine()) {
-                    String msg = "Not joining " + member + " / "
+                    String msg = getName() + ": Not joining " + member + " / "
                         + member.getAccountInfo() + " no read permission";
                     if (getController().isStarted()
                         && member.isCompletelyConnected()
@@ -2978,28 +2931,15 @@ public class Folder extends PFComponent {
 
     /**
      * In sync = Folders is 100% synced and all syncing actions (
-     * {@link #isSyncing()}) have stopped.
+     * {@link #isTransferring()}) have stopped.
      *
      * @return true if this folder is 100% in sync
      */
     public boolean isInSync() {
-        if (isSyncing()) {
+        if (isTransferring()) {
             return false;
         }
         return statistic.getHarmonizedSyncPercentage() >= 100.0d;
-    }
-
-    /**
-     * Checks if the folder is syncing. Means: local file scan running or active
-     * transfers.
-     *
-     * @return if this folder is currently synchronizing.
-     */
-    public boolean isSyncing() {
-        return isScanning()
-            || isTransferring()
-            || getController().getFolderRepository()
-                .getCurrentlyMaintainingFolder() == this;
     }
 
     /**
@@ -3326,16 +3266,37 @@ public class Folder extends PFComponent {
 
                     try {
                         Files.delete(localCopy);
-                    }
-                    catch (IOException ioe) {
+                    } catch (IOException ioe) {
+                        // PFS-1821
+                        if (localFile instanceof DirectoryInfo) {
+                            FileInfoCriteria c = new FileInfoCriteria();
+                            c.addMySelf(this);
+                            c.setPath((DirectoryInfo) localFile);
+                            Collection<FileInfo> filesInDir = getDAO()
+                                .findFiles(c);
+                            for (FileInfo fileInfo : filesInDir) {
+                                if (!fileInfo.isDeleted()) {
+                                    logWarning(
+                                        "Found non-deleted file in deleted directory: "
+                                            + fileInfo.toDetailString()
+                                            + ". Directory: "
+                                            + fileInfo.toDetailString()
+                                            + ". Message: " + ioe.toString());
+                                }
+                            }
+                        }
                         // #1977
                         try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
                             for (Path path : remaining) {
                                 String name = path.toString().toLowerCase();
                                 if (name.endsWith("thumbs.db")
                                     || name.endsWith(".ds_store")
-                                    || name.endsWith("desktop.ini")) {
-
+                                    || name.endsWith("desktop.ini")
+                                    || name.startsWith(
+                                        Constants.MS_OFFICE_FILENAME_PREFIX)
+                                    || name.startsWith(
+                                        Constants.LIBRE_OFFICE_FILENAME_PREFIX))
+                                {
                                     if (owner != null) {
                                         Files.setOwner(path, owner);
                                     }
@@ -3343,9 +3304,10 @@ public class Folder extends PFComponent {
                                     Files.delete(path);
                                 }
                             }
-                        }
-                        catch (IOException e) {
-                            logInfo(ioe.getMessage());
+                        } catch (IOException e) {
+                            logFine(
+                                "Unable to delete files in deleted directory "
+                                    + localCopy + ": " + e.getMessage());
                             return;
                         }
 
@@ -3448,42 +3410,6 @@ public class Folder extends PFComponent {
         // Changed localFile -> remoteFile
         removedFiles.add(remoteFile);
         store(getMySelf(), remoteFile);
-    }
-
-    private boolean removeEmptyDirectoryStructure(Path dir) {
-        if (Files.isRegularFile(dir)) {
-            return false;
-        } else if (Files.isDirectory(dir)) {
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                if (!stream.iterator().hasNext()) {
-                    for (Path p : stream) {
-                        if (!removeEmptyDirectoryStructure(p)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-                else {
-                    FileInfo fileInfo = FileInfoFactory.lookupInstance(this, dir);
-                    fileInfo = fileInfo.getNewestVersion(getController().getFolderRepository());
-                    if (fileInfo != null && !fileInfo.isDeleted()) {
-                        // Meta info not matching. Directory not deleted.
-                        return false;
-                    }
-                    // Remove empty directory
-                    try {
-                        Files.delete(dir);
-                        return true;
-                    } catch (IOException ioe) {
-                        return false;
-                    }
-                }
-            } catch (IOException ioe) {
-                return false;
-            }
-        } else {
-            return false;
-        }
     }
 
     /**
@@ -3961,25 +3887,8 @@ public class Folder extends PFComponent {
                             + ". Taking over modification infos");
                     }
 
-                    // localFileInfo.copyFrom(remoteFileInfo);
                     found.add(remoteFileInfo);
                 }
-                // Disabled because of TRAC #999. Causes strange behavior.
-                // if (localFileNewer) {
-                // if (isWarning()) {
-                // logWarning(
-                // "Found file remotely, but local is newer: local "
-                // + localFileInfo.toDetailString() + " remote: "
-                // + remoteFileInfo.toDetailString()
-                // + ". Increasing local version to "
-                // + (remoteFileInfo.getVersion() + 1));
-                // }
-                // localFileInfo.setVersion(remoteFileInfo.getVersion() + 1);
-                // // FIXME That might produce a LOT of traffic! Single update
-                // // message per file! This also might intefere with FileList
-                // // exchange at beginning of communication
-                // fileChanged(localFileInfo);
-                // }
             } else if (!fileCaseSame && dateSame && fileSizeSame) {
                 if (remoteFileInfo.getVersion() >= localFileInfo.getVersion()
                     && localFileInfo.getRelativeName()
@@ -4208,8 +4117,6 @@ public class Folder extends PFComponent {
             if (!checkIfDeviceDisconnected()) {
                 try {
                     Files.createDirectories(systemSubDir);
-                    // logWarning("Create local directory at: " + systemSubDir,
-                    // new RuntimeException("here"));
                     PathUtils.setAttributesOnWindows(systemSubDir, true, true);
                 } catch (IOException e) {
                     logWarning(e.getMessage());
@@ -4309,28 +4216,9 @@ public class Folder extends PFComponent {
                 logInfo(toString() + " disconnected storage/device "
                     + getLocalBase() + ". Reconnecting...");
             }
-            boolean remove = ConfigurationEntry.FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED
-                .getValueBoolean(getController());
-            String bd = getController().getFolderRepository()
-                .getFoldersBasedirString();
-            boolean inBaseDir = false;
-            if (bd != null) {
-                inBaseDir = getLocalBase().toAbsolutePath().startsWith(bd);
-            }
-            if (inBaseDir && !currentInfo.isMetaFolder() && remove) {
-                // Schedule for removal
-                getController().schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (getController().getFolderRepository()
-                            .hasJoinedFolder(currentInfo))
-                        {
-                            getController().getFolderRepository().removeFolder(
-                                Folder.this, false);
-                        }
-                    }
-                }, 5000L);
-            } else {
+            if (!getController().getFolderRepository()
+                .handleDeviceDisconnected(this))
+            {
                 // Otherwise raise problem.
                 addProblem(new DeviceDisconnectedProblem(currentInfo));
             }
@@ -4511,8 +4399,6 @@ public class Folder extends PFComponent {
         int maxPerMember)
     {
         // build a temp list
-        // Map<FileInfo, FileInfo> incomingFiles = new HashMap<FileInfo,
-        // FileInfo>();
         SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
             new FileInfoComparator(FileInfoComparator.BY_RELATIVE_NAME));
         // add0 expeced files
@@ -5141,13 +5027,6 @@ public class Folder extends PFComponent {
         return currentInfo.toString();
     }
 
-    // Logger methods *********************************************************
-
-    // @Override
-    // public String getLoggerName() {
-    // return super.getLoggerName() + " '" + getName() + '\'';
-    // }
-
     // *************** Event support
     public void addMembershipListener(FolderMembershipListener listener) {
         ListenerSupportFactory.addListener(folderMembershipListenerSupport,
@@ -5325,7 +5204,7 @@ public class Folder extends PFComponent {
 
         Date myLastSyncDate = lastSyncDate;
         if (myLastSyncDate != null && myLastSyncDate.before(warningDate)) {
-            if (!(othersInSync && isSyncing())) {
+            if (!(othersInSync && isTransferring())) {
                 // Only need one of these.
                 UnsynchronizedFolderProblem ufp = null;
                 for (Problem problem : problems) {
@@ -5450,26 +5329,6 @@ public class Folder extends PFComponent {
      */
     public void cleanupOldArchiveFiles(Date cleanupDate) {
         archiver.cleanupOldArchiveFiles(cleanupDate);
-    }
-
-    // Encryption logic *******************************************************
-
-    public boolean isEncrypted() {
-        return encrypted;
-    }
-
-    public char[] getEncryptionKeyOBF() {
-        return encryptionKeyOBF;
-    }
-
-    public void setEncryptionKey(char[] encryptionKeyPlain) {
-        char[] newKeyOBF = Util.toCharArray(LoginUtil
-            .obfuscate(encryptionKeyPlain));
-        if (encryptionKeyOBF == null
-            || Arrays.equals(newKeyOBF, encryptionKeyOBF))
-        {
-            this.encryptionKeyOBF = newKeyOBF;
-        }
     }
 
     // Inner classes **********************************************************

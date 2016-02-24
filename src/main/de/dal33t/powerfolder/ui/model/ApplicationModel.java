@@ -88,7 +88,7 @@ import de.dal33t.powerfolder.util.Translation;
 public class ApplicationModel extends PFUIComponent {
 
     private ActionModel actionModel;
-    private FolderRepositoryModel folderRepositoryModel;
+    private SyncingModel syncingModel;
     private NodeManagerModel nodeManagerModel;
     private TransferManagerModel transferManagerModel;
     private ServerClientModel serverClientModel;
@@ -109,7 +109,7 @@ public class ApplicationModel extends PFUIComponent {
     public ApplicationModel(final Controller controller) {
         super(controller);
         actionModel = new ActionModel(getController());
-        folderRepositoryModel = new FolderRepositoryModel(getController());
+        syncingModel = new SyncingModel(getController());
         nodeManagerModel = new NodeManagerModel(getController());
         transferManagerModel = new TransferManagerModel(getController()
             .getTransferManager());
@@ -144,7 +144,7 @@ public class ApplicationModel extends PFUIComponent {
         getController().getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
         getController().getFolderRepository().getLocking()
             .addListener(new MyLockingListener());
-        getApplicationModel().getFolderRepositoryModel().addOverallFolderStatListener(
+        getApplicationModel().getSyncingModel().addOverallFolderStatListener(
                 new MyOverallFolderStatListener());
         getNoticesModel().getUnreadNoticesCountVM().addValueChangeListener(new MyNoticesModelPropertyChangeListener());
         getNoticesModel().getAllNoticesCountVM().addValueChangeListener(new MyNoticesModelPropertyChangeListener());
@@ -154,7 +154,7 @@ public class ApplicationModel extends PFUIComponent {
 
     public void syncFolder(Folder folder) {
         // Want to be aware when the scan completes.
-        folderRepositoryModel.addInterestedFolderInfo(folder.getInfo());
+        syncingModel.addInterestedFolderInfo(folder.getInfo());
 
         if (SyncProfile.MANUAL_SYNCHRONIZATION.equals(folder.getSyncProfile()))
         {
@@ -515,8 +515,8 @@ public class ApplicationModel extends PFUIComponent {
         return actionModel;
     }
 
-    public FolderRepositoryModel getFolderRepositoryModel() {
-        return folderRepositoryModel;
+    public SyncingModel getSyncingModel() {
+        return syncingModel;
     }
 
     public NodeManagerModel getNodeManagerModel() {
@@ -626,7 +626,7 @@ public class ApplicationModel extends PFUIComponent {
             status = SyncStatusEvent.NOT_LOGGED_IN;
         } else if (repository.getFoldersCount() == 0 && !noticeAvailable) {
             status = SyncStatusEvent.NO_FOLDERS;
-        } else if (folderRepositoryModel.isSyncing()) {
+        } else if (syncingModel.isSyncing()) {
             status = SyncStatusEvent.SYNCING;
         } else if (repository.areAllFoldersInSync() && !noticeAvailable) {
             status = SyncStatusEvent.SYNCHRONIZED;
@@ -717,6 +717,16 @@ public class ApplicationModel extends PFUIComponent {
         public void maintenanceFinished(FolderRepositoryEvent e) {
             // Don't care
         }
+
+        @Override
+        public void cleanupStarted(FolderRepositoryEvent e) {
+            // ignore
+        }
+
+        @Override
+        public void cleanupFinished(FolderRepositoryEvent e) {
+            // ignore
+        }
     }
 
     private class MyLockingListener implements LockingListener {
@@ -739,7 +749,9 @@ public class ApplicationModel extends PFUIComponent {
         public void autoLockForbidden(LockingEvent event) {
             FileInfo fInfo = event.getFileInfo();
             Lock lock = fInfo.getLock(getController());
-
+            if (lock == null) {
+                return;
+            }
             final String displayName = lock.getAccountInfo().getDisplayName();
             final String name = fInfo.getFilenameOnly();
             final String date = new SimpleDateFormat("dd MMM yyyy HH:mm")

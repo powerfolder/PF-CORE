@@ -55,6 +55,8 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -151,8 +153,12 @@ public class Account implements Serializable {
     private String custom1;
     private String custom2;
     private String custom3;
+    
+    // PFS-1656
+    @Column(length = 4096)
+    private String jsonData;
 
-    @Column(length = 1024)
+    @Column(length = 2048)
     private String notes;
     
     // PFS-1446     
@@ -406,6 +412,27 @@ public class Account implements Serializable {
     }
 
     /**
+     * Returns the {@link FolderPermission} this {@link Account} has for a
+     * certain {@code Folder}.
+     * 
+     * @param foInfo
+     * @return A FolderPermission with the correct {@code AccessMode}.
+     */
+    public FolderPermission getPermissionFor(FolderInfo foInfo) {
+        for (Permission perm : permissions) {
+            if (perm instanceof FolderPermission) {
+                FolderPermission foPerm = (FolderPermission) perm;
+                if (foPerm.getFolder().equals(foInfo)) {
+                    return foPerm;
+                }
+            }
+        }
+
+        return FolderPermission.get(foInfo, AccessMode.NO_ACCESS);
+    }
+
+    /**
+     * 
      * @param folder
      * @return the permission on the given folder. AccessMode.NO_ACCESS for no
      *         access.
@@ -654,14 +681,6 @@ public class Account implements Serializable {
         return osSubscription.getStorageSize() != 0;
     }
 
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-    
     public String getBasePath() {
         return basePath;
     }
@@ -725,6 +744,59 @@ public class Account implements Serializable {
     public void setCustom3(String custom3) {
         this.custom3 = custom3;
     }
+    
+    public String getJSONData() {
+        return jsonData;
+    }
+    
+    public void setJSONData(String jsonData) {
+        this.jsonData = jsonData;
+    }
+
+    public JSONObject getJSONObject() {
+        if (StringUtils.isBlank(jsonData)) {
+            return new JSONObject();
+        }
+        try {
+            return new JSONObject(jsonData);
+        } catch (JSONException e) {
+            LOG.severe("Illegal JSON data for " + username + ": " + jsonData
+                + ". " + e);
+            return new JSONObject();
+        }
+    }
+
+    public void setJSONObject(JSONObject jsonObject) {
+        if (jsonObject == null) {
+            this.jsonData = null;
+            return;
+        }
+        this.jsonData = jsonObject.toString();
+    }
+
+    public void put(String key, String value) {
+        JSONObject o = getJSONObject();
+        try {
+            o.put(key, value);
+        } catch (JSONException e) {
+            LOG.severe("Unable to set extra information in JSON format to "
+                + username + ": " + key + "=" + value + ". " + e);
+            return;
+        }
+        setJSONObject(o);
+    }
+    
+    public void put(String key, long value) {
+        JSONObject o = getJSONObject();
+        try {
+            o.put(key, value);
+        } catch (JSONException e) {
+            LOG.severe("Unable to set extra information in JSON format to "
+                + username + ": " + key + "=" + value + ". " + e);
+            return;
+        }
+        setJSONObject(o);
+    }
 
     public boolean authByShibboleth() {
         return StringUtils.isNotBlank(shibbolethPersistentID);
@@ -759,6 +831,14 @@ public class Account implements Serializable {
         }
     }
 
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = StringUtils.cutNotes(notes);
+    }
+    
     /**
      * Adds a line of info with the current date to the notes of that account.
      *
@@ -771,16 +851,13 @@ public class Account implements Serializable {
         String infoLine = Format.formatDateCanonical(new Date());
         infoLine += ": ";
         infoLine += infoText;
+        String newNotes;
         if (StringUtils.isBlank(notes)) {
-            setNotes(infoLine);
+            newNotes = infoLine;
         } else {
-            String newNotes = notes + "\n" + infoLine;
-            if (newNotes.length() >= 1024) {
-                int cutoff = newNotes.length() - 1024 + 2;
-                newNotes = newNotes.substring(cutoff);
-            }
-            setNotes(newNotes);
+            newNotes = notes + "\n" + infoLine;
         }
+        setNotes(newNotes);
     }
 
     public ServerInfo getServer() {

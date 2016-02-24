@@ -165,7 +165,7 @@ public class Locking extends PFComponent {
      * Reads detailed lock information about a file.
      * 
      * @param fInfo
-     * @return the Lock object or null if not locked
+     * @return the Lock object or null if not locked OR the lock file could not be read
      */
     public Lock getLock(FileInfo fInfo) {
         Path lockPath = getLockFile(fInfo);

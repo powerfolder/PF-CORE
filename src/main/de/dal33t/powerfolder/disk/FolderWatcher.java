@@ -152,9 +152,6 @@ public class FolderWatcher extends PFComponent {
     }
 
     synchronized void reconfigure(SyncProfile syncProfile) {
-        if (folder.isEncrypted()) {
-            return;
-        }
         if (!isSupported()) {
             return;
         }
@@ -225,7 +222,6 @@ public class FolderWatcher extends PFComponent {
             }
             FileInfo dirtyFile = null;
             try {
-
                 List<FileInfo> fileInfos = new LinkedList<FileInfo>();
                 if (folder.checkIfDeviceDisconnected()) {
                     logFine("Device disconnected while scanning " + folder
@@ -233,18 +229,22 @@ public class FolderWatcher extends PFComponent {
                     dirtyFiles.clear();
                     return;
                 }
-                for (Entry<String, FileInfo> entry : dirtyFiles.entrySet()) {
-                    dirtyFile = entry.getValue();
-                    if (ignoreAll) {
-                        return;
+                synchronized (dirtyFiles) {
+                    for (Entry<String, FileInfo> entry : dirtyFiles
+                        .entrySet())
+                    {
+                        dirtyFile = entry.getValue();
+                        if (ignoreAll) {
+                            return;
+                        }
+                        if (ignoreFiles.containsKey(dirtyFile)) {
+                            // Ignore.
+                            continue;
+                        }
+                        fileInfos.add(dirtyFile);
                     }
-                    if (ignoreFiles.containsKey(dirtyFile)) {
-                        // Ignore.
-                        continue;
-                    }
-                    fileInfos.add(dirtyFile);
+                    dirtyFiles.clear();
                 }
-                dirtyFiles.clear();
                 if (!fileInfos.isEmpty()) {
                     folder.scanChangedFiles(fileInfos);
                     for (FileInfo fileInfo : fileInfos) {
@@ -259,10 +259,23 @@ public class FolderWatcher extends PFComponent {
                     logFine("Scanned " + fileInfos.size() + " changed files");
                 }
             } catch (Exception e) {
-                logSevere("Unable to scan changed file: " + dirtyFile + ". "
-                    + e, e);
+                logSevere(
+                    "Unable to scan changed file: " + dirtyFile + ". " + e, e);
             } finally {
                 scannerLock.unlock();
+
+                // Queue scan of dirty files, added during this scan
+                if (!dirtyFiles.isEmpty() && !scannerLock.isLocked()) {
+                    if (scheduled.compareAndSet(false, true)) {
+                        getController().schedule(new Runnable() {
+                            public void run() {
+                                getController().getIOProvider()
+                                    .startIO(new DirtyFilesScanner());
+                                scheduled.set(false);
+                            }
+                        }, delay);
+                    }
+                }
             }
         }
 
@@ -328,7 +341,9 @@ public class FolderWatcher extends PFComponent {
                     // Skipping ignored file
                     return;
                 }
-                dirtyFiles.put(name, lookup);
+                synchronized (dirtyFiles) {
+                    dirtyFiles.put(name, lookup);                    
+                }
                 if (!scannerLock.isLocked()) {
                     if (scheduled.compareAndSet(false, true)) {
                         getController().schedule(new Runnable() {

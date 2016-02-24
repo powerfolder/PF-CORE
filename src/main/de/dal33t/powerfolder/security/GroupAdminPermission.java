@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 
@@ -29,11 +33,19 @@ public class GroupAdminPermission implements Permission {
 
     private static final long serialVersionUID = 100L;
     public static final String ID_SEPARATOR = "_GP_";
+    private String groupOID;
+    // PFS-1888: For Backward compatibility. Remove after major distribution of 10.4:
     private Group group;
 
     public GroupAdminPermission(Group group) {
-        Reject.ifNull(group, "Group is null");
+        Reject.ifNull(group, "group is null");
+        this.groupOID = group.getOID();
         this.group = group;
+    }
+
+    public GroupAdminPermission(String groupOID) {
+        Reject.ifBlank(groupOID, "GroupID is blank");
+        this.groupOID = groupOID;
     }
 
     public boolean implies(Permission impliedPermision) {
@@ -41,18 +53,18 @@ public class GroupAdminPermission implements Permission {
     }
 
     public String getId() {
-        return group.getOID() + ID_SEPARATOR + getClass().getSimpleName();
+        return groupOID + ID_SEPARATOR + getClass().getSimpleName();
     }
 
-    public Group getGroup() {
-        return group;
+    public String getGroupOID() {
+        return groupOID;
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((group == null) ? 0 : group.hashCode());
+        result = prime * result + ((groupOID == null) ? 0 : groupOID.hashCode());
         return result;
     }
 
@@ -66,5 +78,23 @@ public class GroupAdminPermission implements Permission {
             return false;
         Permission other = (Permission) obj;
         return Util.equals(getId(), other.getId());
+    }
+  
+    // Serialization compatibility ********************************************
+
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException
+    {
+        in.defaultReadObject();
+        if (groupOID == null && group != null) {
+            groupOID = group.getOID();
+        }
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        if (group == null && groupOID != null) {
+            group = new Group(groupOID, "-unknown-");
+        }
+        out.defaultWriteObject();
     }
 }

@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 
 /**
- * Decide which Overlay to add to which Icon on Windows Explorer.
+ * Determine the correct overlay to be displayed for a file.
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
@@ -48,19 +48,33 @@ public class IconOverlayHandler extends PFComponent implements
 
     @Override
     public int getIconForFile(String pathName) {
-        try {
-            if (StringUtils.isBlank(pathName)) {
-                logFine("No path name passed");
-                return IconOverlayIndex.NO_OVERLAY.getIndex();
-            }
+        if (StringUtils.isBlank(pathName)) {
+            logFine("No path name passed");
+            return IconOverlayIndex.NO_OVERLAY.getIndex();
+        }
+        return getIconForFile(Paths.get(pathName));
+    }
 
+
+    public int getIconForFile(Path path) {
+        if (path == null) {
+            logFine("No path name passed");
+            return IconOverlayIndex.NO_OVERLAY.getIndex();
+        }
+        
+        try {
             // First check, if the path is associated with any folder ...
             FolderRepository fr = getController().getFolderRepository();
 
             Path basepath = fr.getFoldersBasedir();
-            Path path = Paths.get(pathName);
+            boolean isLnkFile = false;
+            if (path.getFileName() != null) {
+                isLnkFile = path.getFileName().toString()
+                    .endsWith(Constants.LINK_EXTENSION);
+            }
 
-            if (basepath.equals(path.getParent()) && Files.isRegularFile(path))
+            if (basepath.equals(path.getParent()) && Files.isRegularFile(path)
+                && !isLnkFile)
             {
                 if (Constants.GETTING_STARTED_GUIDE_FILENAME.equals(path
                     .getFileName().toString())
@@ -72,20 +86,30 @@ public class IconOverlayHandler extends PFComponent implements
                 return IconOverlayIndex.WARNING_OVERLAY.getIndex();
             }
 
-            Folder folder = fr.findContainingFolder(pathName);
+            Folder folder;
+            if (isLnkFile) {
+                String name = path.getFileName().toString();
+                String fName = name.split("\\.")[0];
+                folder = fr.findExistingFolder(fName);
+                if (folder != null) {
+                    path = folder.getLocalBase();
+                }
+            } else {
+                folder = fr.findContainingFolder(path);
+            }
             if (folder == null) {
                 return IconOverlayIndex.NO_OVERLAY.getIndex();
             }
 
             // ... then see, if it is part of a meta-folder.
-            if (pathName.contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+            if (path.toString().contains(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
                 return IconOverlayIndex.NO_OVERLAY.getIndex();
             }
 
             // We know, it is a file in a Folder, so create a lookup instance
             // ...
             FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
-            SyncStatus status = SyncStatus.of(getController(), lookup);
+            SyncStatus status = SyncStatus.of(getController(), lookup, folder);
 
             // Pick the apropriate icon overlay
             switch (status) {
@@ -105,7 +129,7 @@ public class IconOverlayHandler extends PFComponent implements
             }
         } catch (RuntimeException re) {
             logSevere("An error occured while determining the icon overlay for file '"
-                + pathName + "'. " + re);
+                + path.toString() + "'. " + re);
             re.printStackTrace();
             return IconOverlayIndex.NO_OVERLAY.getIndex();
         }

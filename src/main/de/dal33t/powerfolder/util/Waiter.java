@@ -45,6 +45,10 @@ public class Waiter {
     public long getTimoutTimeMS() {
         return waitTime;
     }
+    
+    public long getWaitTimeMS() {
+        return System.currentTimeMillis() - timeoutTime + waitTime;
+    }
 
     /**
      * Answers if this waiter is timed-out

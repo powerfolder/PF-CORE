@@ -20,7 +20,9 @@
 package de.dal33t.powerfolder.net;
 
 import java.io.Externalizable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -29,6 +31,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +48,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,7 +83,10 @@ import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.Filter;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.MessageListenerSupport;
+import de.dal33t.powerfolder.util.Pair;
+import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.SimpleCache;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.MemberInfoInternalizer;
@@ -96,6 +103,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 public class NodeManager extends PFComponent {
 
     public static final String SERVER_NODES_URI = "/client_deployment/server.nodes";
+    public static final String SERVER_PUBLIC_KEYS_URI = "/client_deployment/server.public_keys";
 
     private static final Logger log = Logger.getLogger(NodeManager.class
         .getName());
@@ -1427,18 +1435,55 @@ public class NodeManager extends PFComponent {
         return nNodes;
     }
 
+    private SimpleCache<MemberInfo, Boolean> cachedServerPublicKey = new SimpleCache<>(
+        Util.createConcurrentHashMap(), 1, TimeUnit.MINUTES);
+
     /**
-     * Also cleansweeps all servers except primary server.
-     *
-     * @return the number of total servers know now.
+     * Load all known (cluster) server nodes and their public keys.
+     */
+    public void loadServerNodes() {
+        loadServerNodes(getController().getOSClient());
+    }
+
+    /**
+     * Load all known (cluster) server nodes and their public keys.
+     * @param client
      */
     public void loadServerNodes(ServerClient client) {
+        if (!ConfigurationEntry.SERVER_LOAD_NODES
+            .getValueBoolean(getController()))
+        {
+            return;
+        }
         String serverNodesURL = client.getWebURL(SERVER_NODES_URI, false);
+        String serverPublicKeysURL = client.getWebURL(SERVER_PUBLIC_KEYS_URI,
+            false);
+        NodeList list = null;
         if (StringUtils.isNotBlank(serverNodesURL)) {
             try {
-                loadNodesFrom(new URL(serverNodesURL));
+                list = loadNodesFrom(new URL(serverNodesURL));
             } catch (MalformedURLException e) {
                 logWarning(e.toString());
+            }
+        }
+        if (StringUtils.isNotBlank(serverPublicKeysURL)) {
+            // Check cache:
+            boolean useCache;
+            if (list != null) {
+                useCache = true;
+                for (MemberInfo snInfo : list.getServersSet()) {
+                    Boolean hasKey = cachedServerPublicKey.getValidEntry(snInfo);
+                    useCache &= hasKey != null && hasKey.booleanValue();
+                }
+            } else {
+                useCache = false;
+            }
+            if (!useCache) {
+                try {
+                    loadPublicKeysFrom(new URL(serverPublicKeysURL));
+                } catch (Exception e) {
+                    logWarning(e.toString(), e);
+                }
             }
         }
     }
@@ -1449,7 +1494,7 @@ public class NodeManager extends PFComponent {
      *
      * @param url
      */
-    private boolean loadNodesFrom(URL url) {
+    private NodeList loadNodesFrom(URL url) {
         try {
             NodeList nodeList = new NodeList();
             nodeList.load(url);
@@ -1458,7 +1503,9 @@ public class NodeManager extends PFComponent {
                 + " servers from cluster @ " + url + " : "
                 + nodeList.getServersSet());
 
-            return processNodeList(nodeList);
+            if (processNodeList(nodeList)) {
+                return nodeList;
+            }
         } catch (IOException e) {
             logWarning("Unable to load servers from url '" + url + "'. "
                 + e.getMessage());
@@ -1470,7 +1517,7 @@ public class NodeManager extends PFComponent {
             logWarning("Illegal format of servers files '" + url);
             logFiner("ClassNotFoundException", e);
         }
-        return false;
+        return null;
     }
 
     /**
@@ -1560,9 +1607,54 @@ public class NodeManager extends PFComponent {
             Member node = server.getNode(getController(), true);
             node.updateInfo(server);
             node.setServer(true);
-            logFine("Loaded server: " + node);
+            if (isFine()) {
+                logFine("Loaded server: " + node);
+            }
         }
-        return !nodeList.getNodeList().isEmpty();
+        return !nodeList.isEmpty();
+    }
+
+    /**
+     * Load all public keys from all known Nodes from {@code url} and add them
+     * to the local key store.
+     * 
+     * @param url
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private boolean loadPublicKeysFrom(URL url) {
+        try {
+            ObjectInputStream in = new ObjectInputStream(url.openStream());
+            List<Pair<MemberInfo, PublicKey>> pkList = new ArrayList<>(
+                (ArrayList<Pair<MemberInfo, PublicKey>>) in.readObject());
+
+            if (isFine()) {
+                logFine("Received " + pkList.size()
+                    + " server keys from cluster @ " + url);
+            }
+
+            boolean success = true;
+            for (Pair<MemberInfo, PublicKey> key : pkList) {
+                MemberInfo nodeInfo = key.getFirst();
+                PublicKey publicKey = key.getSecond();
+                if (ProUtil.addNodeToKeyStore(getController(), nodeInfo,
+                    publicKey))
+                {
+                    cachedServerPublicKey.put(nodeInfo, Boolean.TRUE);
+                } else {
+                    cachedServerPublicKey.put(nodeInfo, Boolean.FALSE);
+                    success = false;
+                }
+            }
+            return success;
+        } catch (FileNotFoundException e) {
+            logInfo("Unable to load public keys from " + url.toString()
+                + ". Server does not support sending public keys.");
+        } catch (IOException | ClassCastException | ClassNotFoundException e) {
+            logWarning(
+                "Unable to load public keys from " + url.toString() + ". " + e);
+        }
+        return false;
     }
 
     /**
@@ -1576,15 +1668,11 @@ public class NodeManager extends PFComponent {
                 + "'");
             loadNodesFrom(filename);
         }
-        if (ConfigurationEntry.SERVER_LOAD_NODES
-            .getValueBoolean(getController()))
-        {
-            getController().getIOProvider().startIO(new Runnable() {
-                public void run() {
-                    loadServerNodes(getController().getOSClient());
-                }
-            });
-        }
+        getController().getIOProvider().startIO(new Runnable() {
+            public void run() {
+                loadServerNodes();
+            }
+        });
     }
 
     /**

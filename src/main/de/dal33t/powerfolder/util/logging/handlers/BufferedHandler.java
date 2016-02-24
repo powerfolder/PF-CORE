@@ -135,7 +135,9 @@ public class BufferedHandler extends Handler {
                     sx = formattedMessage.length() + 1;
                 }
                 if (x > 0 && sx > x) {
-                    sx = sx - 1;
+                    if (formattedMessage.charAt(sx - 1) == '/') {
+                        sx = sx - 1;
+                    }
                     String url = formattedMessage.substring(x, sx);
                     int len = formattedMessage.length();
                     formattedMessage = formattedMessage.substring(0, x)

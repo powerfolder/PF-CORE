@@ -26,6 +26,13 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 public class DiskItemFilterTest extends TestCase {
 
+    public void testPFC2794() {
+        DiskItemFilter blacklist = new DiskItemFilter();
+        blacklist.addPattern("*.part");
+       assertTrue(blacklist.isExcluded("subdir/download.part"));
+       assertFalse(blacklist.isExcluded("subdir2/eng.CATpart"));
+    }
+    
     public void testBlackList() {
         DiskItemFilter blacklist = new DiskItemFilter();
         FolderInfo folderInfo = new FolderInfo("foldername", "id");

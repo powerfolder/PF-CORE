@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 
 /**
  * Leaving a folder
@@ -45,8 +46,9 @@ class StopSyncAction extends PFContextMenuAction {
 
             for (Folder folder : folders) {
                 log.fine("Stopping sync of local folder " + folder);
-                getController().getFolderRepository()
-                    .removeFolder(folder, true);
+                FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
+                    folder.getInfo());
+                panel.open();
             }
         } catch (RuntimeException re) {
             log.log(Level.WARNING, "Problem while trying to stop sync. " + re,

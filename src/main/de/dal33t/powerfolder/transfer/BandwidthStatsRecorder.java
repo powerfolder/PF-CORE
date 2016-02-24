@@ -78,7 +78,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
                 coalescedStats.putAll(stats);
                 logFine("Loaded " + stats.size() + " stats.");
             } catch (IOException e) {
-                logWarning("IOException", e);
+                logFine("IOException while loading " + filename + ". " + e);
             } catch (ClassNotFoundException e) {
                 logWarning("ClassNotFoundException", e);
             } catch (ClassCastException e) {

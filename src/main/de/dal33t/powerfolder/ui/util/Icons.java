@@ -495,7 +495,7 @@ public class Icons {
     public static Icon getIconByAccount(AccountInfo member,
         Controller controller)
     {
-        String username = member.getUsername();
+        String username = member != null ? member.getUsername() : null;
 
         if (username == null) {
             return getIconById(NODE_DISCONNECTED);

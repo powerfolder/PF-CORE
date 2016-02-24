@@ -125,7 +125,7 @@ public enum ConfigurationEntry {
      */
     SECURITY_FOLDER_ARCHIVE_PERMISSION("security.folder.archive.permission",
         AccessMode.READ_WRITE.name()),
-
+        
     /**
      * PFC-2670: Trust self-signed/any SSL certificate
      */
@@ -252,7 +252,7 @@ public enum ConfigurationEntry {
      * PFC-2580: No connection to powerfolder.com / Cloud Replication options
      */
     SERVER_CONNECT("server.connect.enabled", true),
-
+    
     /**
      * The optional name of the sever to connect to.
      */
@@ -284,7 +284,7 @@ public enum ConfigurationEntry {
 
     /**
      * #1687: How this computer should behave when the server is not connected.
-     *
+     * 
      * @deprecated for testing use {@link Feature#P2P_REQUIRES_LOGIN_AT_SERVER}
      */
     SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
@@ -492,7 +492,7 @@ public enum ConfigurationEntry {
      * PFC-2548: The token to use for authentication.
      */
     SERVER_CONNECT_TOKEN("server.connect.token"),
-
+    
     /**
      * Password for connection (clear text)
      */
@@ -1237,16 +1237,20 @@ public enum ConfigurationEntry {
 
     /**
      * Parses the configuration entry into a Integer.
-     *
+     * 
      * @param controller
      *            the controller to read the config from
-     * @return The current value from the configuration for this entry. or the
-     *         default value if value not set/unparseable.
+     * @return The current value from the configuration for this entry or the
+     *         default value if value not set/unparseable or {@code null} if no
+     *         default value was set.
      */
     public Integer getValueInt(Controller controller) {
         String value = getValue(controller);
         if (value == null || StringUtils.isBlank(value)) {
             value = getDefaultValue();
+        }
+        if (value == null) {
+            return null;
         }
         try {
             return new Integer(value.trim());
@@ -1262,13 +1266,17 @@ public enum ConfigurationEntry {
      *
      * @param controller
      *            the controller to read the config from
-     * @return The current value from the configuration for this entry. or the
-     *         default value if value not set/unparseable.
+     * @return The current value from the configuration for this entry or the
+     *         default value if value not set/unparseable or {@code null} if no
+     *         default value was set.
      */
     public Boolean getValueBoolean(Controller controller) {
         String value = getValue(controller);
         if (value == null || StringUtils.isBlank(value)) {
             value = getDefaultValue();
+        }
+        if (value == null) {
+            return null;
         }
         try {
             return value.trim().equalsIgnoreCase("true");

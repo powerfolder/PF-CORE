@@ -250,4 +250,61 @@ public class StringUtils {
 
         return count;
     }
+
+    /**
+     * Checks if a string starts with a substring - ignoring the case.
+     *
+     * @param inputString
+     *              a string that will be checked
+     * @param startString
+     *              a string to check if the inputString starts with this startString
+     * @return a boolean value:
+     *              {@code true} if the inputString starts with the subString
+     *              {@code false} if the inputString does not start with the subString
+     */
+
+    public static boolean startsWithString(String inputString, String startString){
+        Reject.ifNull(inputString, "inputString is blank");
+        Reject.ifNull(startString, "subString is blank");
+
+        return (inputString.toLowerCase().startsWith(startString.toLowerCase()));
+    }
+
+    /**
+     * Checks if a string contains a specific substring - ignoring the case.
+     *
+     * @param inputString
+     *              a string that will be checked
+     * @param subString
+     *              a string to check if the inputString starts with this subString
+     * @return a boolean value:
+     *              {@code true} if the inputString starts with the subString
+     *              {@code false} if the inputString does not start with the subString
+     */
+
+    public static boolean hasSubString(String inputString, String subString){
+        Reject.ifNull(inputString, "inputString is blank");
+        Reject.ifNull(subString, "subString is blank");
+
+        return (inputString.toLowerCase().contains(subString.toLowerCase()));
+    }
+    
+    /**
+     * Cuts a string down to the last 1024 characters cutting only at line ends
+     * 
+     * @param notes
+     *              input string
+     * @return cut string
+     */
+    public static String cutNotes(String notes) {
+        if (notes.length() <= 2048) {
+            return notes;
+        }
+        String last2049Characters = notes.substring(notes.length() - 2049);
+        int positionOfLineBreak = last2049Characters.indexOf("\n");
+        if ( positionOfLineBreak <= -1 || positionOfLineBreak >= 2048) {
+            positionOfLineBreak = 0;
+        }
+        return last2049Characters.substring(positionOfLineBreak + 1, 2049);
+    }
 }

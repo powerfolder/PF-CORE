@@ -380,6 +380,58 @@ public class LockingTest extends TwoControllerTestCase {
             testLockUnlockRemote();
         }
     }
+    
+    /**
+     * PFS-1922/FYK-543-88331
+     */
+    public void testBrokenLockfile() {
+        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
+            .getLocalBase(), 1);
+        scanFolder(getFolderAtBart());
+
+        // Prepare and check
+        FileInfo testFInfo = FileInfoFactory.lookupInstance(getFolderAtBart(),
+            testFile);
+        assertFalse(lockingBart.isLocked(testFInfo));
+        assertNull(lockingBart.getLock(testFInfo));
+        assertTrue(lockingBart.unlock(testFInfo));
+        assertEquals(0, lockingListenerBart.locked.size());
+        assertEquals(0, lockingListenerBart.unlocked.size());
+
+        // Lock
+        assertTrue(lockingBart.lock(testFInfo));
+        
+        Path lockFile = getLockFile(testFInfo);
+        TestHelper.changeFile(lockFile, 0);
+
+        // Test
+        assertTrue(lockingBart.isLocked(testFInfo));
+        Lock lock = lockingBart.getLock(testFInfo);
+        assertNull(lock);
+
+        // Unlock
+        assertTrue(lockingBart.unlock(testFInfo));
+
+        // Test
+        assertFalse(lockingBart.isLocked(testFInfo));
+        assertNull(lockingBart.getLock(testFInfo));
+        assertTrue(lockingBart.unlock(testFInfo));
+
+        assertEquals(1, lockingListenerBart.locked.size());
+        assertEquals(1, lockingListenerBart.unlocked.size());
+    }
+    
+    private Path getLockFile(FileInfo fInfo) {
+        Folder metaFolder = getContollerBart().getFolderRepository()
+            .getMetaFolderForParent(fInfo.getFolderInfo());
+        if (metaFolder == null) {
+            return null;
+        }
+        Path baseDir = metaFolder.getLocalBase().resolve(
+            Folder.METAFOLDER_LOCKS_DIR);
+        return baseDir.resolve(FileInfoFactory.encodeIllegalChars(fInfo
+            .getRelativeName() + ".lck"));
+    }
 
     private class LoggingLockingListener implements LockingListener {
         List<LockingEvent> locked = new LinkedList<>();
