@@ -2082,7 +2082,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         try {
             while (!folderJoinLock.tryLock(50, TimeUnit.MILLISECONDS)) {
                 if (canceled != null && canceled.get()) {
-                    logWarning("SFM canceled");
+                    logFine("SFM canceled");
                     return;
                 }
             }
