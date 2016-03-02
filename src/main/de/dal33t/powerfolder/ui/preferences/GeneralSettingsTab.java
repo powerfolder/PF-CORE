@@ -597,12 +597,25 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         }
 
         public void actionPerformed(ActionEvent e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    getController().getFolderRepository()
-                        .cleanupOldArchiveFiles();
-                }
-            });
+            int result = DialogFactory.genericDialog(
+                getController(),
+                Translation.get("settings_tab.purge_archive_title"),
+                Translation
+                    .get("settings_tab.purge_archive_message"),
+                new String[]{
+                    Translation
+                        .get("settings_tab.purge_archive_purge"),
+                    Translation.get("general.cancel")}, 0,
+                GenericDialogType.WARN);
+
+            if (result == 0) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        getController().getFolderRepository()
+                            .cleanupOldArchiveFiles(true);
+                    }
+                });
+            }
         }
     }
 
