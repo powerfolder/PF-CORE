@@ -2681,12 +2681,24 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Delete any file archives over a specified age.
+     * Delete any file archives over a specified age, if history is not set to
+     * "forever".
      */
     public void cleanupOldArchiveFiles() {
+        cleanupOldArchiveFiles(false);
+    }
+
+    /**
+     * @see #cleanupOldArchiveFiles()
+     * @param force
+     *            If {@code true} ignore the
+     *            {@link ConfigurationEntry#DEFAULT_ARCHIVE_CLEANUP_DAYS} else
+     *            take that setting into account.
+     */
+    public void cleanupOldArchiveFiles(boolean force) {
         int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
             .getValueInt(getController());
-        if (period == Integer.MAX_VALUE || period <= 0) { // cleanup := never
+        if (!force && (period == Integer.MAX_VALUE || period <= 0)) { // cleanup := never
             return;
         }
         try {
