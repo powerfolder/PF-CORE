@@ -2077,8 +2077,13 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (client.supportsWebLogin()) {
                 BrowserLauncher.open(getController(), new URLProducer() {
                     public String url() {
-                        return client.getFolderURLWithCredentials(folder
-                            .getInfo());
+                        FolderInfo info;
+                        if (folder != null) {
+                            info = folder.getInfo();
+                        } else {
+                            info = folderInfo;
+                        }
+                        return client.getFolderURLWithCredentials(info);
                     }
                 });
             }
