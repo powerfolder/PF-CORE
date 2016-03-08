@@ -130,10 +130,6 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             // Preview folder
             Object attribute = getWizardContext().getAttribute(
                 PREVIEW_FOLDER_ATTIRBUTE);
-            boolean previewFolder = false;
-            if (attribute != null && attribute instanceof Boolean) {
-                previewFolder = (Boolean) attribute;
-            }
 
             // Online storage
             attribute = getWizardContext().getAttribute(BACKUP_ONLINE_STOARGE);
