@@ -1062,7 +1062,9 @@ public class Account implements Serializable {
         Reject.ifNull(account, "Account is null");
 
         // Add Username and Emails
-        if (Util.isValidEmail(account.getUsername())) {
+        if (Util.isValidEmail(account.getUsername())
+            && !account.authByShibboleth())
+        {
             this.addEmail(account.getUsername());
         }
 
