@@ -103,6 +103,11 @@ public class SecurityManagerClient extends PFComponent implements
 //        return a;
     }
 
+    @Override
+    public void processAfterShibbolethLogin(Account shibbolethAccount) {
+        throw new UnsupportedOperationException("Cannot process shibboleth account on the client side.");
+    }
+
     public void logout() {
         client.logout();
     }
