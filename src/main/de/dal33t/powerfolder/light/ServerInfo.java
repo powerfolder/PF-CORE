@@ -56,13 +56,69 @@ public class ServerInfo implements Serializable {
         // NOP - only for Hibernate
     }
 
-    public ServerInfo(MemberInfo node, String webUrl, String httpTunnelUrl) {
+    private ServerInfo(MemberInfo node, String webUrl, String httpTunnelUrl) {
         super();
-        Reject.ifNull(node, "NodeInfo");
         this.node = node;
         this.webUrl = webUrl;
         this.httpTunnelUrl = httpTunnelUrl;
-        this.id = node.id;
+        if (node != null) {
+            // Cluster server
+            this.id = node.id;
+        } else {
+            // Federated service
+            this.id = webUrl;
+        }
+        Reject.ifBlank(this.id, "Unable to set ID of ServerInfo");
+    }
+
+    /**
+     * PFC-2455: Creates a {@link ServerInfo} instance representing a server of
+     * the local cluster.
+     * 
+     * @see #isClusterServer()
+     * @param node
+     *            the node information to connect to.
+     * @param webUrl
+     * @param httpTunnelUrl
+     * @return an {@link ServerInfo} object that represents a local server.
+     */
+    public static ServerInfo newClusterServer(MemberInfo node, String webUrl,
+        String httpTunnelUrl)
+    {
+        return new ServerInfo(node, webUrl, httpTunnelUrl);
+    }
+
+    /**
+     * PFC-2455: Creates a {@link ServerInfo} instance representing a federated
+     * service
+     * 
+     * @param webUrl
+     * @param httpTunnelUrl
+     * @return an {@link ServerInfo} object that represents the federated
+     *         service.
+     */
+    public static ServerInfo newFederatedService(String webUrl,
+        String httpTunnelUrl)
+    {
+        return new ServerInfo(null, webUrl, httpTunnelUrl);
+    }
+
+    /**
+     * PFC-2455
+     * 
+     * @return true if this represents a server of the local cluster serving.
+     */
+    public boolean isClusterServer() {
+        return node != null;
+    }
+
+    /**
+     * PFC-2455
+     * 
+     * @return true if this represents a federated remote service.
+     */
+    public boolean isFederatedService() {
+        return node == null;
     }
 
     public MemberInfo getNode() {
@@ -96,6 +152,9 @@ public class ServerInfo implements Serializable {
     }
 
     public String getName() {
+        if (isFederatedService()) {
+            return webUrl;
+        }
         return node.getNick();
     }
 
@@ -129,7 +188,10 @@ public class ServerInfo implements Serializable {
     }
 
     public String toString() {
+        if (isFederatedService()) {
+            return "Federated service: " + webUrl;
+        }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
-        + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
+            + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
     }
 }

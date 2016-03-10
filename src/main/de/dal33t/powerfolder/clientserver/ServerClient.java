@@ -2001,6 +2001,14 @@ public class ServerClient extends PFComponent {
     }
 
     private void changeToServer(ServerInfo newServerInfo) {
+        // PFC-2455
+        if (!newServerInfo.isClusterServer()) {
+            logWarning(
+                "Not allowed to change primary server to federated service: "
+                    + newServerInfo.getName() + ". Keeping server "
+                    + server.getNick());
+            return;
+        }
         logFine("Changing server to " + newServerInfo.getNode());
 
         // Add key of new server to keystore.
