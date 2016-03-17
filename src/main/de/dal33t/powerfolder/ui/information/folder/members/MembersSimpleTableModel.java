@@ -103,6 +103,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
     private SelectionInList<FolderPermission> permissionsListModel;
 
     private boolean permissionsRetrieved;
+    private boolean editPermissionsAllowed;
     private boolean updatingDefaultPermissionModel;
     private ValueModel defaultPermissionModel;
     private SelectionInList<FolderPermission> defaultPermissionsListModel;
@@ -311,7 +312,9 @@ public class MembersSimpleTableModel extends PFUIComponent implements
         if (columnIndex != COL_PERMISSION) {
             return false;
         }
+
         return permissionsRetrieved
+            && editPermissionsAllowed
             && getFolderMemberAt(rowIndex).getAccountInfo() != null
             && !(getFolderMemberAt(rowIndex).getPermission() instanceof FolderOwnerPermission);
     }
@@ -702,6 +705,13 @@ public class MembersSimpleTableModel extends PFUIComponent implements
             refreshFor = folder;
             defaultPermission = getController().getOSClient()
                 .getSecurityService().getDefaultPermission(folder.getInfo());
+
+            AccountInfo aInfo = getController().getMySelf().getAccountInfo();
+            editPermissionsAllowed = false;
+            if (aInfo != null) {
+                editPermissionsAllowed = getController().getSecurityManager().hasPermission(aInfo,
+                    FolderPermission.admin(folder.getInfo()));
+            }
 
             try {
                 return getController().getOSClient().getSecurityService()
