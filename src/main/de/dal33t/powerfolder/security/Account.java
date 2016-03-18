@@ -1058,11 +1058,34 @@ public class Account implements Serializable {
 
     // Convenience/Applogic ***************************************************
 
+    /**
+     * Transfer the information of {@code account} into {@code this}.<br />
+     * <br />
+     * Information that is transferred:
+     * <ul>
+     * <li>Username as e-mail (if username is a formally valid e-mail address
+     * and the account is not authenticated by Shibboleth).</li>
+     * <li>All e-mails</li>
+     * <li>Quota (if bigger)</li>
+     * <li>License files</li>
+     * <li>Organization OID (if this is blank)</li>
+     * <li>LDAP Distinguished Name (if this is blank)</li>
+     * <li>Shibboleth persisten ID (if this is blank)</li>
+     * <li>All folder permissions</li>
+     * <li>All groups</li>
+     * <li>All computers/devices</li>
+     * <li>Notes are appended</li>
+     * </ul>
+     * 
+     * @param account
+     */
     public void mergeAccounts(Account account) {
         Reject.ifNull(account, "Account is null");
 
         // Add Username and Emails
-        if (Util.isValidEmail(account.getUsername())) {
+        if (Util.isValidEmail(account.getUsername())
+            && !account.authByShibboleth())
+        {
             this.addEmail(account.getUsername());
         }
 
@@ -1083,11 +1106,11 @@ public class Account implements Serializable {
             this.organizationOID = account.organizationOID;
         }
 
-        if (StringUtils.isBlank(ldapDN)) {
+        if (StringUtils.isBlank(this.ldapDN)) {
             this.ldapDN = account.ldapDN;
         }
 
-        if (StringUtils.isBlank(shibbolethPersistentID)) {
+        if (StringUtils.isBlank(this.shibbolethPersistentID)) {
             this.shibbolethPersistentID = account.shibbolethPersistentID;
         }
 
