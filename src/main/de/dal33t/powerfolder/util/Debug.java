@@ -450,7 +450,7 @@ public class Debug {
         Reject.ifNull(m, "Member is null");
         StringBuilder b = new StringBuilder();
         if (m.isMySelf()) {
-            b.append("(mee) ");
+            b.append("(me) ");
         } else if (m.isConnected()) {
             if (m.isOnLAN()) {
                 b.append("(LAN) ");
