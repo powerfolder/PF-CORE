@@ -1115,7 +1115,9 @@ public enum ConfigurationEntry {
 
     SHOW_WALLPAPER_OPTION("show.wallpaper", false),
 
-    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
+    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false),
+
+    RECOVER_0BYTE_FILES("recover.zero_byte.files", true);
 
     // Methods/Constructors ***************************************************
 
