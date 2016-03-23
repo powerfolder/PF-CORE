@@ -1117,8 +1117,10 @@ public enum ConfigurationEntry {
      * PFC-2638: Desktop sync option
      */
     SHOW_WALLPAPER_OPTION("show.wallpaper", false),
-    
-    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
+
+    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false),
+
+    RECOVER_0BYTE_FILES("recover.zero_byte.files", false);
 
     // Methods/Constructors ***************************************************
 
