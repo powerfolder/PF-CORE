@@ -314,8 +314,23 @@ public class LoginPanel extends PFWizardPanel {
                     List<String> idPList = new ArrayList<>(resp.length());
 
                     idPSelectBox.removeAllItems();
-                    idPSelectBox.addItem("Keine - Externer Benutzer");
-                    idPList.add("ext");
+                    if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
+                        .hasNonBlankValue(getController()))
+                    {
+                        String[] extNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
+                            .getValue(getController()).split(",");
+
+                        for (String name : extNames) {
+                            if (StringUtils.isNotBlank(name)) {
+                                idPSelectBox.addItem(name.trim());
+                                idPList.add("ext");
+                            }
+                        }
+                    } else {
+                        idPSelectBox.addItem(
+                            Translation.get("wizard.login.external_users"));
+                        idPList.add("ext");
+                    }
 
                     String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
                         .getValue(getController());
