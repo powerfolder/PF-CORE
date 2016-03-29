@@ -328,6 +328,11 @@ public enum ConfigurationEntry {
     SERVER_IDP_LAST_CONNECTED_ECP("server.idp.last_connected.ecp"),
 
     /**
+     * PFC-2838
+     */
+    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names"),
+
+    /**
      * PFC-2534: Skip auto login for the specified number. Defaults to retrying
      * every 5 minutes.
      */
