@@ -54,8 +54,6 @@ public class FileBrowserIntegration extends PFComponent {
     private IconOverlayUpdateListener updateListener;
     private FileIconControl iconControl;
 
-    private boolean connected;
-
     public FileBrowserIntegration(Controller controller) {
         super(controller);
     }
@@ -70,25 +68,27 @@ public class FileBrowserIntegration extends PFComponent {
      */
     public boolean start() {
         logFine("Starting file browser integration");
-        nc = NativityControlUtil.getNativityControl();
         if (nc == null) {
-            logFine("Could not start file browser integration");
-            return false;
+            nc = NativityControlUtil.getNativityControl();
+
+            if (nc == null) {
+                logFine("Could not start file browser integration");
+                return false;
+            }
         }
 
-        nc.setFilterFolder("/");
-
         // Initializing icon overlays
-        iconOverlayHandler = new IconOverlayHandler(getController());
-        iconControl = FileIconControlUtil
-            .getFileIconControl(nc, iconOverlayHandler);
+        if (iconOverlayHandler == null) {
+            iconOverlayHandler = new IconOverlayHandler(getController());
+            iconControl = FileIconControlUtil
+                .getFileIconControl(nc, iconOverlayHandler);
+        }
 
         // Initializing updates to icon overlays
         if (updateListener == null) {
             updateListener = new IconOverlayUpdateListener(getController(),
                 iconControl, iconOverlayHandler);
         }
-
 
         // Initializing context menu
         if (PreferencesEntry.ENABLE_CONTEXT_MENU
@@ -129,13 +129,6 @@ public class FileBrowserIntegration extends PFComponent {
      */
     private boolean fbApple() {
         try {
-            if (!nc.loaded()) {
-                if (!nc.load()) {
-                    logWarning("Could not load the finder integration.");
-                    return false;
-                }
-            }
-
             logFine("Preparing icons");
             Path resourcesPath = Paths
                 .get(MacUtils.getInstance().getRecourcesLocation())
@@ -172,18 +165,20 @@ public class FileBrowserIntegration extends PFComponent {
                     iconControl.registerIconWithId(lockedIcon.toString(),
                         IconOverlayIndex.LOCKED_OVERLAY.getLabel(),
                         String.valueOf(IconOverlayIndex.LOCKED_OVERLAY.getIndex()));
+                    iconControl.enableFileIcons();
+                    nc.setFilterFolder("/");
                 }
             });
 
             if (!nc.connect()) {
-                logWarning("Could not connect to finder integration.");
+                logWarning("Could not connect to finder sync.");
                 return false;
-            } else {
-                connected = true;
-                return true;
             }
+            
+            logFine("Connected to finder sync.");
+            return true;
         } catch (Exception re) {
-            logWarning("Could not start finder integration. " + re);
+            logWarning("Could not start finder sync. " + re);
             return false;
         }
     }
@@ -198,13 +193,10 @@ public class FileBrowserIntegration extends PFComponent {
         try {
             if (!nc.connect()) {
                 logWarning("Could not connect to shell extensions!");
-
-                nc.disconnect();
                 return false;
-            } else {
-                connected = true;
             }
-
+            nc.setFilterFolder("/");
+            logFine("Connected to shell extensions.");
             return true;
         } catch (RuntimeException re) {
             logWarning("Could not start shell extensions. " + re);
@@ -219,19 +211,6 @@ public class FileBrowserIntegration extends PFComponent {
     public void shutdown() {
         FileIconControlUtil.getFileIconControl(nc, iconOverlayHandler)
             .disableFileIcons();
-
-        if (OSUtil.isMacOS()) {
-            try {
-                nc.unload();
-            } catch (Exception e) {
-                logWarning("Could not unload FileBrowswerIntegration: " + e);
-            }
-        }
-
-        if (connected) {
-            nc.disconnect();
-            connected = false;
-        }
 
         getController().getFolderRepository().getLocking()
             .removeListener(updateListener);
