@@ -44,6 +44,7 @@ import javax.swing.table.TableModel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -360,9 +361,12 @@ public class FilesTable extends JTable {
                     case 3 : // member nick
                         if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(controller)) {
                             MemberInfo member = fileInfo.getModifiedBy();
-                            myValue = member.nick;
-                            // setIcon(Icons.getSimpleIconFor(member.getNode(controller,
-                            // false)));
+                            AccountInfo aInfo = fileInfo.getModifiedByAccount();
+                            String displayName = "Web";
+                            if (aInfo != null) {
+                                displayName = aInfo.getDisplayName();
+                            }
+                            myValue = displayName + " @ " + member.nick;
                             setHorizontalAlignment(LEFT);
                         }
                         break;

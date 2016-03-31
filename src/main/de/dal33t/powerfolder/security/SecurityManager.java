@@ -58,6 +58,16 @@ public interface SecurityManager {
     Account authenticate(String tokenSecret);
 
     /**
+     * PFS-1965: Post process setting for the passed account e.g. last login date.<br />
+     * <br />
+     * This method is meant for accounts already authenticated via Shibboleth.
+     * 
+     * @param shibbolethAccount
+     *            The account already authenticated via Shibboleth.
+     */
+    void processAfterShibbolethLogin(Account shibbolethAccount);
+
+    /**
      * Logs out and clears the current session.
      */
     void logout();

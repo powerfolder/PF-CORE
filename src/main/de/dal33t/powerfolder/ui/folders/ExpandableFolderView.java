@@ -752,9 +752,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void registerListeners() {
-        // myServerClientListener = new MyServerClientListener();
-        // getController().getOSClient().addListener(myServerClientListener);
-        //
         myNodeManagerListener = new MyNodeManagerListener();
         getController().getNodeManager().addNodeManagerListener(
             myNodeManagerListener);
@@ -776,6 +773,9 @@ public class ExpandableFolderView extends PFUIComponent implements
      * orphaned.
      */
     public void unregisterListeners() {
+        if (myToSListener != null) {
+            getController().getOSClient().removeListener(myToSListener);
+        }
         if (myNodeManagerListener != null) {
             getController().getNodeManager().removeNodeManagerListener(
                 myNodeManagerListener);
@@ -2077,8 +2077,13 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (client.supportsWebLogin()) {
                 BrowserLauncher.open(getController(), new URLProducer() {
                     public String url() {
-                        return client.getFolderURLWithCredentials(folder
-                            .getInfo());
+                        FolderInfo info;
+                        if (folder != null) {
+                            info = folder.getInfo();
+                        } else {
+                            info = folderInfo;
+                        }
+                        return client.getFolderURLWithCredentials(info);
                     }
                 });
             }

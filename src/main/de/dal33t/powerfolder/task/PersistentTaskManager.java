@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.util.Waiter;
 
 /**
  * Loads, stores and initializes persistent Tasks. While RuntimeExceptions on
@@ -50,6 +51,10 @@ public class PersistentTaskManager extends PFComponent {
 
     private static final Logger log = Logger
         .getLogger(PersistentTaskManager.class.getName());
+    
+    // PFC-2832
+    private static final int WAIT_PENDING_TASKS_TIMEOUT_SECONDS = 30;
+    
     private List<PersistentTask> tasks;
     /**
      * Pending tasks that await initialization.
@@ -191,10 +196,13 @@ public class PersistentTaskManager extends PFComponent {
             tasks.add(task);
             Runnable adder = new Runnable() {
                 public void run() {
-                    task.init(PersistentTaskManager.this);
-                    pendingTasks.remove(task);
-                    synchronized (PersistentTaskManager.this) {
-                        PersistentTaskManager.this.notify();
+                    try {
+                        task.init(PersistentTaskManager.this);
+                    } finally {
+                        pendingTasks.remove(task);
+                        synchronized (PersistentTaskManager.this) {
+                            PersistentTaskManager.this.notify();
+                        }
                     }
                 }
             };
@@ -292,21 +300,17 @@ public class PersistentTaskManager extends PFComponent {
 
     /** Assumes the caller to have locked the manager. */
     private void waitForPendingTasks() {
-        while (!pendingTasks.isEmpty()) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                logFine("Interrupted");
-                return;
-            }
+        Waiter w = new Waiter(WAIT_PENDING_TASKS_TIMEOUT_SECONDS * 1000L);
+        while (!pendingTasks.isEmpty() && !w.isTimeout()) {
+            w.waitABit();
         }
         if (!pendingTasks.isEmpty()) {
             StringBuilder b = new StringBuilder();
             b.append("The following tasks are blocking:");
             for (PersistentTask t : pendingTasks)
                 b.append(' ').append(t);
-            b.append(" and will be removed!");
-            logSevere(b.toString());
+            b.append(" and will be removed.");
+            logWarning(b.toString());
             // Note: This will also remove tasks which "might" still finish
             // initialization
             tasks.removeAll(pendingTasks);

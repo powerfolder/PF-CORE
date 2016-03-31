@@ -75,8 +75,6 @@ public class FileBrowserIntegration extends PFComponent {
                 logFine("Could not start file browser integration");
                 return false;
             }
-
-            nc.setFilterFolder("/");
         }
 
         // Initializing icon overlays
@@ -167,6 +165,8 @@ public class FileBrowserIntegration extends PFComponent {
                     iconControl.registerIconWithId(lockedIcon.toString(),
                         IconOverlayIndex.LOCKED_OVERLAY.getLabel(),
                         String.valueOf(IconOverlayIndex.LOCKED_OVERLAY.getIndex()));
+                    iconControl.enableFileIcons();
+                    nc.setFilterFolder("/");
                 }
             });
 
@@ -174,7 +174,7 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not connect to finder sync.");
                 return false;
             }
-
+            
             logFine("Connected to finder sync.");
             return true;
         } catch (Exception re) {
@@ -195,7 +195,7 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not connect to shell extensions!");
                 return false;
             }
-
+            nc.setFilterFolder("/");
             logFine("Connected to shell extensions.");
             return true;
         } catch (RuntimeException re) {
