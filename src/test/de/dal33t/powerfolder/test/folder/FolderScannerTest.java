@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -120,6 +121,34 @@ public class FolderScannerTest extends ControllerTestCase {
         if (Feature.CORRECT_MOVEMENT_DETECTION.isEnabled()) {
             assertEquals(2, result.getMovedFiles().size());
         }
+    }
+    
+    /**
+     * PFC-2849
+     * @throws IOException
+     */
+    public void testScanManyFiles() throws IOException {
+        final FolderScanner folderScanner = getController()
+            .getFolderRepository().getFolderScanner();
+        
+        long totalSize = 0;
+        final int nFiles = 10000;
+        for (int i = 0; i < nFiles; i++) {
+            Path f = TestHelper.createRandomFile(getFolder()
+                .getLocalBase(), (long) (Math.random() * 40) + 1);
+            totalSize += Files.size(f);
+        }
+
+        // Let him scan the new content
+        ScanResult result = scanFolderWaitIfBusy(folderScanner);
+        assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
+        Collection<FileInfo> newFiles = result.getNewFiles();
+        assertEquals(result.toString(), nFiles, newFiles.size());
+        long scannedSize = 0;
+        for (FileInfo fileInfo : newFiles) {
+            scannedSize += fileInfo.getSize();
+        }
+        assertEquals("Scanned size mismatch", totalSize, scannedSize);
     }
 
     private ScanResult scanFolderWaitIfBusy(final FolderScanner folderScanner) {
