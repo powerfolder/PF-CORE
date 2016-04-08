@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInput;
@@ -28,6 +29,7 @@ import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
@@ -301,7 +303,27 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     {
         Reject.ifNull(diskFile, "Diskfile is null");
 
-        boolean diskFileDeleted = Files.notExists(diskFile);
+        // PFC-2849:
+        boolean diskFileDeleted;
+        Map<String, Object> attrs;
+        try {
+            attrs = Files.readAttributes(diskFile,
+                "size,lastModifiedTime,isDirectory");
+            diskFileDeleted = false;
+        } catch (FileNotFoundException | NoSuchFileException e) {
+            diskFileDeleted = true;
+            attrs = null;
+        } catch (IOException e) {
+            diskFileDeleted = Files.notExists(diskFile);
+            if (!diskFileDeleted) {
+                log.warning("Could not access file attributes of file "
+                    + diskFile.toAbsolutePath().toString() + "\n"
+                    + toDetailString() + "\n" + e.toString());
+                return false;
+            }
+            attrs = null;
+        }
+
         boolean existanceSync = diskFileDeleted && deleted || !diskFileDeleted
             && !deleted;
 
@@ -315,8 +337,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
         if (!diskFileDeleted) {
             try {
-                Map<String, Object> attrs = Files.readAttributes(diskFile,
-                    "size,lastModifiedTime,isDirectory");
                 diskSize = ((Long) attrs.get("size")).longValue();
                 diskLastMod = ((FileTime) attrs.get("lastModifiedTime"))
                     .toMillis();

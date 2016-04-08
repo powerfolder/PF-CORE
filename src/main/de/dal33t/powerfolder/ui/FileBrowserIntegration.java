@@ -17,8 +17,13 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.liferay.nativity.control.NativityControl;
 import com.liferay.nativity.control.NativityControlUtil;
@@ -166,7 +171,34 @@ public class FileBrowserIntegration extends PFComponent {
                         IconOverlayIndex.LOCKED_OVERLAY.getLabel(),
                         String.valueOf(IconOverlayIndex.LOCKED_OVERLAY.getIndex()));
                     iconControl.enableFileIcons();
-                    nc.setFilterFolder("/");
+
+                    List<String> volumes = new ArrayList<>();
+                    volumes.add("/");
+
+                    // Get all volumes to add to the 
+                    try (DirectoryStream<Path> volumePaths = Files
+                        .newDirectoryStream(Paths.get("/Volumes")))
+                    {
+                        for (Path volumePath : volumePaths) {
+                            if (Files.isDirectory(volumePath)) {
+                                volumes.add(volumePath.toString() + "/");
+                            } else {
+                                logFine("Ignoring " + volumePath.toString());
+                            }
+                        }
+
+                        for (String vol : volumes) {
+                            logInfo("Base directory for Finder Sync: " + vol);
+                        }
+                    } catch (RuntimeException | IOException e) {
+                        logWarning(
+                            "Error while determening the base volume paths to register for Finder Sync. "
+                                + e,
+                            e);
+                    }
+
+                    // Register the volumes
+                    nc.setFilterFolders(volumes.toArray(new String[0]));
                 }
             });
 
