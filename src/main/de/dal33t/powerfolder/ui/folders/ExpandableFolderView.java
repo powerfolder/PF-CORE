@@ -322,18 +322,27 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    // PFC-2850
+    private final AtomicBoolean retrieving = new AtomicBoolean(false);
+    
     private void retrieveAdditionalInfosFromServer() {
         SwingWorker<Object, Void> worker = new SwingWorker<Object, Void>() {
             protected Object doInBackground() throws Exception {
-                createWebDAVURL();
-                retrieveOwnerDisplayname();
+                if (retrieving.compareAndSet(false, true)) {
+                    try {
+                        retrieveWebDAVURL();
+                        retrieveOwnerDisplayname();
+                    } finally {
+                        retrieving.set(false);
+                    }
+                }
                 return null;
             }
         };
         worker.execute();
     }
 
-    private synchronized String createWebDAVURL() {
+    private synchronized String retrieveWebDAVURL() {
         if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
             return null;
         }
@@ -1181,7 +1190,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         JPopupMenu contextMenu = new JPopupMenu();
         if (type == Type.CloudOnly) {
             // Cloud-only folder popup
-            createWebDAVURL();
+            retrieveWebDAVURL();
             if (StringUtils.isNotBlank(webDAVURL)) {
                 if (serverClient.supportsWebDAV()) {
                     contextMenu.add(webdavAction).setIcon(null);
@@ -1335,7 +1344,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             public Object construct() throws Throwable {
                 try {
-                    createWebDAVURL();
+                    retrieveWebDAVURL();
                     return WebDAV.createConnection(serverClient, webDAVURL);
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
