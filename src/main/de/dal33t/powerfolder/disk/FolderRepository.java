@@ -28,6 +28,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
@@ -1407,7 +1408,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     // Remove the folder if totally empty.
                     try {
                         Files.delete(folder.getLocalBase());
-                    } catch (DirectoryNotEmptyException dnee) {
+                    } catch (DirectoryNotEmptyException | NoSuchFileException e) {
                         // this can happen, and is just fine
                     } catch (IOException ioe) {
                         logSevere("Failed to delete local base: "
@@ -1609,7 +1610,19 @@ public class FolderRepository extends PFComponent implements Runnable {
                     currentlyMaintainingFolder = folder;
                     // Fire event
                     fireMaintanceStarted(currentlyMaintainingFolder);
-                    currentlyMaintainingFolder.maintain();
+                    try {
+                        currentlyMaintainingFolder.maintain();
+                    } catch (RuntimeException e) {
+                        // PFS-2000:
+                        logWarning("Unable to maintain folder "
+                            + currentlyMaintainingFolder.getName() + "/"
+                            + currentlyMaintainingFolder.getId() + ": " + e);
+                        logFine(
+                            "Unable to maintain folder "
+                                + currentlyMaintainingFolder.getName() + "/"
+                                + currentlyMaintainingFolder.getId() + ": " + e,
+                            e);
+                    }
                     Folder maintainedFolder = currentlyMaintainingFolder;
                     currentlyMaintainingFolder = null;
                     // Fire event
