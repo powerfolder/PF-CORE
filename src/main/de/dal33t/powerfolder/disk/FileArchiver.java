@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
@@ -475,10 +476,19 @@ public class FileArchiver {
      */
     public boolean hasArchivedFileInfo(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
-        // Find archive subdirectory.
-        Path subdirectory = archiveDirectory.resolve(
-            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
-            .getParent();
+        Path subdirectory;
+        try {
+            // Find archive subdirectory.
+            subdirectory = archiveDirectory
+                .resolve(FileInfoFactory
+                    .encodeIllegalChars(fileInfo.getRelativeName()))
+                .getParent();
+        } catch (InvalidPathException e) {
+            // PFS-2000:
+            log.warning("Unable to resolve versions for file: "
+                + fileInfo.toDetailString() + ". " + e);
+            return false;
+        }
         if (Files.notExists(subdirectory)) {
             return false;
         }
@@ -589,9 +599,18 @@ public class FileArchiver {
      */
     public Path getArchivedFile(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
-        Path subdirectory = archiveDirectory.resolve(
-            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
-            .getParent();
+        Path subdirectory;
+        try {
+            subdirectory = archiveDirectory
+                .resolve(FileInfoFactory
+                    .encodeIllegalChars(fileInfo.getRelativeName()))
+                .getParent();
+        } catch (InvalidPathException e) {
+            // PFS-2000:
+            log.warning("Unable to resolve versions for file: "
+                + fileInfo.toDetailString() + ". " + e);
+            return null;
+        }
         if (Files.notExists(subdirectory)) {
             return null;
         }

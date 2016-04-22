@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -237,5 +239,44 @@ public class DateUtil {
         long diff1601Till1970 = 11644473600000l;
 
         return (ldapTimestamp / nsToSec) - diff1601Till1970;
+    }
+
+    /**
+     * Try parsing the String {@code expiration} as date as one of the following formats:
+     * <ol>
+     * <li>ISO-8601 as yyyy-MM-ddTHH:mm:ss.fffZ</li>
+     * <li>LDAP encoded Unix Timestamp</li>
+     * <li>ISO-8601 as yyyyMMddHHmmss</li>
+     * </ol>
+     * 
+     * @param stringDate 
+     * @return The parsed date
+     * @throws ParseException
+     */
+    public static Date parseDate(String stringDate) throws ParseException {
+        Date newDate = null;
+        try {
+            // ISO-8601 timeformat: 2015-09-22T13:32:32.084Z
+            Calendar cal = javax.xml.bind.DatatypeConverter
+                .parseDateTime(stringDate);
+            newDate = cal.getTime();
+        } catch (RuntimeException rte) {
+            try {
+                long expDate = Long.parseLong(stringDate);
+                if (expDate != 0 && expDate != 9223372036854775807l) {
+                    expDate = DateUtil.convertLdapToUnix(expDate);
+                    newDate = new Date(expDate);
+                }
+            } catch (NumberFormatException nfe) {
+                if (!stringDate.startsWith("9999")
+                    && !stringDate.equals("0"))
+                {
+                    SimpleDateFormat sdf = new SimpleDateFormat(
+                        "yyyyMMddHHmmss");
+                    newDate = sdf.parse(stringDate);
+                }
+            }
+        }
+        return newDate;
     }
 }
