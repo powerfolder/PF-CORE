@@ -297,29 +297,22 @@ public class PathUtils {
 
     /**
      * Searches and takes care that this directory is new and not yet existing.
-     * If dir already exists with the same raw name it appends (1), (2), and so
-     * on until it finds an non-existing sub directory. DOES NOT try to remove
-     * ILLEGAL characters from
+     * If dir already exists it appends (1), (2), and so on until it finds an
+     * non-existing sub directory. DOES NOT try to remove ILLEGAL characters
+     * from
      * <p>
      *
      * @param baseDir
-     * @param rawName
-     *            the raw name of the directory. is it NOT guranteed that it
-     *            will/can be named like this. if illegal characters should be
-     *            removed
      * @return the directory that is guranteed to be NEW and EMPTY.
      */
-    public static Path createEmptyDirectory(Path baseDir, String rawName) {
+    public static Path createEmptyDirectory(Path baseDir) {
         Reject.ifNull(baseDir, "Base dir is null");
-        Reject.ifBlank(rawName, "Raw name is null");
 
-        String canName = removeInvalidFilenameChars(rawName);
-        Path candidate = baseDir.resolve(canName);
+        Path candidate = baseDir;
         int suffix = 2;
 
         while (Files.exists(candidate)) {
-            candidate = candidate.getParent().resolve(
-                canName + " (" + suffix + ")");
+            candidate = baseDir.getParent().resolve(baseDir.getFileName() + " (" + suffix + ")");
             suffix++;
             if (suffix > 1000) {
                 throw new IllegalStateException(
@@ -339,6 +332,26 @@ public class PathUtils {
         }
 
         return candidate;
+    }
+    
+    /**
+     * Searches and takes care that this directory is new and not yet existing.
+     * If dir already exists with the same raw name it appends (1), (2), and so
+     * on until it finds an non-existing sub directory. DOES NOT try to remove
+     * ILLEGAL characters from
+     * <p>
+     *
+     * @param baseDir
+     * @param rawName
+     *            the raw name of the directory. is it NOT guranteed that it
+     *            will/can be named like this. if illegal characters should be
+     *            removed
+     * @return the directory that is guranteed to be NEW and EMPTY.
+     */
+    public static Path createEmptyDirectory(Path baseDir, String rawName) {
+        Reject.ifNull(baseDir, "Base dir is null");
+        Reject.ifBlank(rawName, "Raw name is null");
+        return PathUtils.createEmptyDirectory(baseDir.resolve(PathUtils.removeInvalidFilenameChars(rawName)));
     }
 
     public static int getNumberOfSiblings(Path base) {

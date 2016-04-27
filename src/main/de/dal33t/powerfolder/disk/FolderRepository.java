@@ -2304,6 +2304,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
 
+                // If directory is not mapped to a folder, delete it
                 String deletedBaseDir = ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
                     .getValue(getController());
                 if (StringUtils.isNotBlank(deletedBaseDir)) {
