@@ -125,8 +125,9 @@ public class Identity extends Message
     public static final int PROTOCOL_VERSION_108 = 108;
     public static final int PROTOCOL_VERSION_109 = 109;
     public static final int PROTOCOL_VERSION_110 = 110;
+    public static final int PROTOCOL_VERSION_111 = 111;
 
-    private int protocolVersion = PROTOCOL_VERSION_110;
+    private int protocolVersion = PROTOCOL_VERSION_111;
 
     private boolean requestFullFolderlist;
 
@@ -304,10 +305,10 @@ public class Identity extends Message
           IdentityProto.Identity proto = (IdentityProto.Identity)mesg;
 
           this.member                = new MemberInfo(proto.getMember());
-          this.magicId               = proto.getMagicID();
+          this.magicId               = proto.getMagicId();
           this.protocolVersion       = proto.getProtocolVersion();
           this.requestFullFolderlist = proto.getRequestFullFolderlist();
-          this.configurationURL      = proto.getConfigurationURL();
+          this.configurationURL      = proto.getConfigurationUrl();
         }
     }
 
@@ -321,12 +322,12 @@ public class Identity extends Message
     public AbstractMessage toD2D() {
       IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
 
-      builder.setClassName(this.getClass().getSimpleName());
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setMember((MemberInfoProto.MemberInfo)this.member.toD2D());
-      builder.setMagicID(this.magicId);
+      builder.setMagicId(this.magicId);
       builder.setProtocolVersion(this.protocolVersion);
       builder.setRequestFullFolderlist(this.requestFullFolderlist);
-      builder.setConfigurationURL("this.configurationURL");
+      builder.setConfigurationUrl("this.configurationURL");
 
       return builder.build();
     }

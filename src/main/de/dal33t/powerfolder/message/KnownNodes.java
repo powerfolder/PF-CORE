@@ -214,7 +214,7 @@ public class KnownNodes extends Message
     {
       KnownNodesProto.KnownNodes.Builder builder = KnownNodesProto.KnownNodes.newBuilder();
 
-      builder.setClassName("KnownNodes");
+      builder.setClazzName("KnownNodes");
 
       /* Convert array to list */
       for(MemberInfo minfo : this.nodes)

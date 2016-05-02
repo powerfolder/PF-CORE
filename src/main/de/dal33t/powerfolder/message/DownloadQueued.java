@@ -88,7 +88,7 @@ public class DownloadQueued extends Message
       DownloadQueuedProto.DownloadQueued.Builder builder =
         DownloadQueuedProto.DownloadQueued.newBuilder();
 
-      builder.setClassName("DownloadQueued");
+      builder.setClazzName("DownloadQueued");
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();

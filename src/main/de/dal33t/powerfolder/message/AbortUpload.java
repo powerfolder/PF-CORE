@@ -81,7 +81,7 @@ public class AbortUpload extends Message
     {
       AbortUploadProto.AbortUpload.Builder builder = AbortUploadProto.AbortUpload.newBuilder();
 
-      builder.setClassName("AbortUpload");
+      builder.setClazzName("AbortUpload");
       builder.setFile((FileInfoProto.FileInfo) this.file.toD2D());
 
       return builder.build();

@@ -46,6 +46,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/bcpkix-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-ext-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/powerfolder-protobuf-0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.0.0-beta-1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.0.0-beta-2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -298,7 +298,7 @@ public class FolderFilesChanged extends FolderRelatedMessage
       FolderFilesChangedProto.FolderFilesChanged.Builder builder =
         FolderFilesChangedProto.FolderFilesChanged.newBuilder();
 
-      builder.setClassName("FolderFilesChanged");
+      builder.setClazzName("FolderFilesChanged");
 
       /* Convert array to list */
       for(FileInfo finfo : this.added)

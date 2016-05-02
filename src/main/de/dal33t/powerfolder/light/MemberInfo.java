@@ -445,7 +445,7 @@ public class MemberInfo implements Serializable, D2DObject {
     {
       MemberInfoProto.MemberInfo.Builder builder = MemberInfoProto.MemberInfo.newBuilder();
 
-      builder.setClassName("MemberInfo");
+      builder.setClazzName("MemberInfo");
       builder.setNick(this.nick);
       builder.setId(this.id);
       builder.setNetworkId(this.networkId);

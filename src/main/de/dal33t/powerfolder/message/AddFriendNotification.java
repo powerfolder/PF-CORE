@@ -91,7 +91,7 @@ public class AddFriendNotification extends Message
       AddFriendNotificationProto.AddFriendNotification.Builder builder =
         AddFriendNotificationProto.AddFriendNotification.newBuilder();
 
-      builder.setClassName("AddFriendNotification");
+      builder.setClazzName("AddFriendNotification");
       builder.setMemberInfo((de.dal33t.powerfolder.protocol.MemberInfoProto.MemberInfo)
         this.memberInfo.toD2D());
       builder.setPersonalMessage(this.personalMessage);

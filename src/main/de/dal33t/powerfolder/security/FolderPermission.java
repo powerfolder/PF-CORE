@@ -156,7 +156,7 @@ public abstract class FolderPermission
 
       mbuilder.setModeValue(mode.ordinal());
 
-      builder.setClassName("FolderPermission");
+      builder.setClazzName("FolderPermission");
       builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
       builder.setMode(mbuilder.build());
 

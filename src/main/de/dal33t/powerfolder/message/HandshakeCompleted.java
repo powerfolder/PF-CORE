@@ -65,7 +65,7 @@ public class HandshakeCompleted extends Message
       HandshakeCompletedProto.HandshakeCompleted.Builder builder =
         HandshakeCompletedProto.HandshakeCompleted.newBuilder();
 
-      builder.setClassName("HandshakeCompleted");
+      builder.setClazzName("HandshakeCompleted");
 
       return builder.build();
     }

@@ -108,7 +108,7 @@ public class IdentityReply extends Message
     {
       IdentityReplyProto.IdentityReply.Builder builder = IdentityReplyProto.IdentityReply.newBuilder();
 
-      builder.setClassName("IdentityReply");
+      builder.setClazzName("IdentityReply");
       builder.setAccepted(this.accepted);
       builder.setMessage(null == this.message ? "" : this.message);
 

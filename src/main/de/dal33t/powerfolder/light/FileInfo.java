@@ -1151,7 +1151,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     {
       FileInfoProto.FileInfo.Builder builder = FileInfoProto.FileInfo.newBuilder();
 
-      builder.setClassName("FileInfo");
+      builder.setClazzName("FileInfo");
       builder.setFileName(this.fileName);
       builder.setOid(this.oid);
       builder.setHashes(this.hashes);

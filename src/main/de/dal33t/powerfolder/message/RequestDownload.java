@@ -104,7 +104,7 @@ public class RequestDownload extends Message
       RequestDownloadProto.RequestDownload.Builder builder =
         RequestDownloadProto.RequestDownload.newBuilder();
 
-      builder.setClassName("RequestDownload");
+      builder.setClazzName("RequestDownload");
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();

@@ -333,7 +333,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     {
       FolderInfoProto.FolderInfo.Builder builder = FolderInfoProto.FolderInfo.newBuilder();
 
-      builder.setClassName("FolderInfo");
+      builder.setClazzName("FolderInfo");
       builder.setName(this.name);
       builder.setId(this.id);
 

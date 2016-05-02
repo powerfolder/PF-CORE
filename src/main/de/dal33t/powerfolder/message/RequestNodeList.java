@@ -249,7 +249,7 @@ public class RequestNodeList extends Message
       RequestNodeListProto.RequestNodeList.Builder builder =
         RequestNodeListProto.RequestNodeList.newBuilder();
 
-      builder.setClassName("RequestNodeList");
+      builder.setClazzName("RequestNodeList");
 
       /* Handle enum stuff */
       NodesCriteriaProto.NodesCriteria.Builder nodeBuilder =

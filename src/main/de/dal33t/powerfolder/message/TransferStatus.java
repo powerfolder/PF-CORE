@@ -113,7 +113,7 @@ public class TransferStatus extends Message implements D2DObject {
       TransferStatusProto.TransferStatus.Builder builder =
           TransferStatusProto.TransferStatus.newBuilder();
 
-      builder.setClassName(this.getClass().getSimpleName());
+      builder.setClazzName(this.getClass().getSimpleName());
 
       builder.setTime(null == this.time ? -1 : this.time.getTime());
       builder.setActiveUploads(this.activeUploads);

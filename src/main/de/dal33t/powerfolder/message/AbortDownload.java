@@ -78,7 +78,7 @@ public class AbortDownload extends Message
     {
       AbortDownloadProto.AbortDownload.Builder builder = AbortDownloadProto.AbortDownload.newBuilder();
 
-      builder.setClassName("AbortDownload");
+      builder.setClazzName("AbortDownload");
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();

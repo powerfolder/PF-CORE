@@ -82,7 +82,7 @@ public class RequestFilePartsRecord extends Message
       RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder =
         RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
 
-      builder.setClassName("RequestFilePartsRecord");
+      builder.setClazzName("RequestFilePartsRecord");
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();

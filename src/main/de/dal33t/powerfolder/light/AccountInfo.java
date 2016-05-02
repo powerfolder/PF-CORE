@@ -240,7 +240,7 @@ public class AccountInfo implements Serializable, D2DObject {
     {
       AccountInfoProto.AccountInfo.Builder builder = AccountInfoProto.AccountInfo.newBuilder();
 
-      builder.setClassName("AccountInfo");
+      builder.setClazzName("AccountInfo");
       builder.setOid(this.oid);
       builder.setUsername(this.username);
       builder.setDisplayName(this.displayName);

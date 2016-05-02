@@ -111,7 +111,7 @@ public class Pong extends Message
     {
       PongProto.Pong.Builder builder = PongProto.Pong.newBuilder();
 
-      builder.setClassName("Pong");
+      builder.setClazzName("Pong");
       builder.setReceiveTime(receiveTime);
       builder.setPayload(String.valueOf(payload));
       builder.setId(id);

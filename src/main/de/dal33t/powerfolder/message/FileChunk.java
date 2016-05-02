@@ -114,7 +114,7 @@ public class FileChunk extends Message
     {
       FileChunkProto.FileChunk.Builder builder = FileChunkProto.FileChunk.newBuilder();
 
-      builder.setClassName("FileChunk");
+      builder.setClazzName("FileChunk");
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setOffset(this.offset);
       builder.setData(ByteString.copyFrom(this.data));

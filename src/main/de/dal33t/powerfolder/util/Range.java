@@ -193,7 +193,7 @@ public final class Range
     {
       RangeProto.Range.Builder builder = RangeProto.Range.newBuilder();
 
-      builder.setClassName("Range");
+      builder.setClazzName("Range");
       builder.setStart(this.start);
       builder.setLength(this.length);
 

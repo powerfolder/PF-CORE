@@ -60,7 +60,7 @@ public class FileListRequest extends FolderRelatedMessage
       FileListRequestProto.FileListRequest.Builder builder =
         FileListRequestProto.FileListRequest.newBuilder();
 
-      builder.setClassName("FileListRequest");
+      builder.setClazzName("FileListRequest");
       builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();

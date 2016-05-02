@@ -132,7 +132,7 @@ public class ConfigurationLoadRequest extends Message
       ConfigurationLoadRequestProto.ConfigurationLoadRequest.Builder builder =
         ConfigurationLoadRequestProto.ConfigurationLoadRequest.newBuilder();
 
-      builder.setClassName("ConfigurationLoadRequest");
+      builder.setClazzName("ConfigurationLoadRequest");
       builder.setConfigURL(this.configURL);
       builder.setKey(this.key);
       builder.setValue(this.value);

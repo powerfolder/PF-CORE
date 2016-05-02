@@ -172,7 +172,7 @@ public class Ping extends Message
     {
       PingProto.Ping.Builder builder = PingProto.Ping.newBuilder();
 
-      builder.setClassName("Ping");
+      builder.setClazzName("Ping");
       builder.setSendTime(sendTime);
       builder.setPayload(String.valueOf(payload));
       if (this.id != null) {

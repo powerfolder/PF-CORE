@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.net.AbstractSocketConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
-import de.dal33t.powerfolder.protocol.AnyProto;
+import de.dal33t.powerfolder.protocol.AnyMessageProto;
 
 /**
  * Handler for relayed connections to other clients. NO encrypted transfer.
@@ -85,10 +85,10 @@ public class D2DSocketConnectionHandler extends
 
     try
       {
-        AnyProto.Any any = AnyProto.Any.parseFrom(data);
+        AnyMessageProto.AnyMessage anyMessage = AnyMessageProto.AnyMessage.parseFrom(data);
 
         /* Assemble name and package */
-        className        = any.getClassName();
+        className        = anyMessage.getClazzName();
         String classPkg  = String.format(
           "de.dal33t.powerfolder.protocol.%sProto$%s",
           className, className);
