@@ -175,7 +175,9 @@ public class Ping extends Message
       builder.setClassName("Ping");
       builder.setSendTime(sendTime);
       builder.setPayload(String.valueOf(payload));
-      builder.setId(id);
+      if (this.id != null) {
+          builder.setId(id);
+      }
 
       return builder.build();
     }

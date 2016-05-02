@@ -449,7 +449,9 @@ public class MemberInfo implements Serializable, D2DObject {
       builder.setNick(this.nick);
       builder.setId(this.id);
       builder.setNetworkId(this.networkId);
-      builder.setConnectAddress(this.connectAddress.toString()); ///< Assemble to host:port
+      if (this.connectAddress != null) {
+          builder.setConnectAddress(this.connectAddress.toString()); ///< Assemble to host:port
+      }
       builder.setLastConnectTime(null == this.lastConnectTime ? -1 : this.lastConnectTime.getTime());
       builder.setIsConnected(this.isConnected);
       builder.setIsSuperNode(this.isSupernode);
