@@ -72,7 +72,7 @@ public class PreferencesDialog extends BaseDialog {
     private PluginSettingsTab pluginSettingsTab;
 
     public PreferencesDialog(Controller controller) {
-        super(Senior.MAIN_FRAME, controller, true);
+        super(Senior.NONE, controller, true);
         preferenceTabs = new ArrayList<PreferenceTab>();
     }
 

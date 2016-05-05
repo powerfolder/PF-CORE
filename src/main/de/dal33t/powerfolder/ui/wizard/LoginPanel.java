@@ -313,13 +313,35 @@ public class LoginPanel extends PFWizardPanel {
                     JSONArray resp = new JSONArray(body.toString());
                     List<String> idPList = new ArrayList<>(resp.length());
 
-                    idPSelectBox.removeAllItems();
-                    idPSelectBox.addItem("Keine - Externer Benutzer");
-                    idPList.add("ext");
-
                     String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
                         .getValue(getController());
                     boolean lastIdPSet = false;
+                    short namesOffset = 0;
+
+                    idPSelectBox.removeAllItems();
+                    if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
+                        .hasNonBlankValue(getController()))
+                    {
+                        String[] extNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
+                            .getValue(getController()).split(",");
+
+                        for (String name : extNames) {
+                            if (StringUtils.isNotBlank(name)) {
+                                idPSelectBox.addItem(name.trim());
+                                idPList.add(name.trim());
+                                namesOffset++;
+                                if (!lastIdPSet && name.equals(lastIdP)) {
+                                    idPSelectBox.setSelectedIndex(namesOffset - 1);
+                                    lastIdPSet = true;
+                                }
+                            }
+                        }
+                    } else {
+                        idPSelectBox.addItem(
+                            Translation.get("wizard.login.external_users"));
+                        idPList.add("ext");
+                        namesOffset = 1;
+                    }
 
                     for (int i = 0; i < resp.length(); i++) {
                         JSONObject obj = resp.getJSONObject(i);
@@ -331,8 +353,8 @@ public class LoginPanel extends PFWizardPanel {
                         idPSelectBox.addItem(name);
                         idPList.add(entity);
 
-                        if (entity.equals(lastIdP)) {
-                            idPSelectBox.setSelectedIndex(i + 1);
+                        if (!lastIdPSet && entity.equals(lastIdP)) {
+                            idPSelectBox.setSelectedIndex(i + namesOffset);
                             lastIdPSet = true;
                         }
                     }

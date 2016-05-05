@@ -28,6 +28,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
@@ -72,6 +73,7 @@ import de.dal33t.powerfolder.event.FolderAutoCreateListener;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -669,8 +671,97 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }, 10L, 10L, TimeUnit.SECONDS);
 
+        // PFS-1956 -- TODO: remove after release of v12
+        boolean is0byteRecoveryRun = getController().getPreferences()
+            .getBoolean("is0byteRecoveryRun", false);
+        if (!is0byteRecoveryRun && ConfigurationEntry.RECOVER_0BYTE_FILES
+            .getValueBoolean(getController())
+            && !getController().getMySelf().isServer())
+        {
+            getController().getIOProvider().startIO(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                    restoreZeroByteFiles();
+                    getController().getPreferences()
+                        .putBoolean("is0byteRecoveryRun", true);
+                    } catch (RuntimeException re) {
+                        logSevere("An error occured while trying to recover zero byte files: " + re, re);
+                    }
+                }
+            });
+        }
 
         started = true;
+    }
+
+    /**
+     * Restore files that are zero bytes big and changed by the server.
+     * This was an issue with a previous version of the clustering protocol.
+     * PFS-1956 -- TODO: remove after release of v12
+     */
+    private void restoreZeroByteFiles() {
+        logFine("Start recovering 0-byte files.");
+        for (Folder folder : getFolders()) {
+            FileArchiver fa = folder.getFileArchiver();
+
+            for (FileInfo file : folder.getKnownFiles()) {
+                if (file.getSize() > 0) {
+                    continue;
+                }
+                // Only if there is a version in the history and the last
+                // modifier is a server
+                Member lastModifier = file.getModifiedBy()
+                    .getNode(getController(), false);
+                if (lastModifier == null || !lastModifier.isServer()) {
+                    continue;
+                }
+                if (!fa.hasArchivedFileInfo(file)) {
+                    logWarning(
+                        "Found 0 byte file, but no old version available to restore for "
+                            + file.toDetailString());
+                    continue;
+                }
+                Path fileOnDisk = file.getDiskFile(this);
+                try {
+                    // Check the file size to be 0 bytes
+                    if (Files.size(fileOnDisk) > 0) {
+                        continue;
+                    }
+                    List<FileInfo> history = fa
+                        .getSortedArchivedFilesInfos(file);
+                    if (history.isEmpty()) {
+                        logWarning(
+                            "Found 0 byte file, but no old version available to restore for "
+                                + file.toDetailString());
+                        continue;
+                    }
+                    FileInfo toRestore = history.get(history.size() - 1);
+                    logFine(file.toDetailString()
+                        + " was lastly changed by a server "
+                        + file.getModifiedBy()
+                        + " and has a size of 0 bytes. Restoring old version: "
+                        + toRestore.toDetailString());
+
+                    // Now, only restore when the version of the file in
+                    // the history is lesser than the version of the
+                    // file itself.
+                    if (toRestore.getVersion() < file.getVersion()) {
+                        logInfo("Restoring previous version of "
+                            + file.toDetailString() + ": "
+                            + toRestore.toDetailString() + " to " + fileOnDisk);
+                        fa.restore(toRestore, fileOnDisk);
+                    } else {
+                        logWarning("Not restoring previous version of "
+                            + file.toDetailString() + ": "
+                            + toRestore.toDetailString() + " to " + fileOnDisk);
+                    }
+                } catch (IOException e) {
+                    logWarning("Unable to restore old file version of "
+                        + file.toDetailString() + ". " + e);
+                }
+            }
+        }
     }
 
     /**
@@ -1317,7 +1408,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     // Remove the folder if totally empty.
                     try {
                         Files.delete(folder.getLocalBase());
-                    } catch (DirectoryNotEmptyException dnee) {
+                    } catch (DirectoryNotEmptyException | NoSuchFileException e) {
                         // this can happen, and is just fine
                     } catch (IOException ioe) {
                         logSevere("Failed to delete local base: "
@@ -1519,7 +1610,19 @@ public class FolderRepository extends PFComponent implements Runnable {
                     currentlyMaintainingFolder = folder;
                     // Fire event
                     fireMaintanceStarted(currentlyMaintainingFolder);
-                    currentlyMaintainingFolder.maintain();
+                    try {
+                        currentlyMaintainingFolder.maintain();
+                    } catch (RuntimeException e) {
+                        // PFS-2000:
+                        logWarning("Unable to maintain folder "
+                            + currentlyMaintainingFolder.getName() + "/"
+                            + currentlyMaintainingFolder.getId() + ": " + e);
+                        logFine(
+                            "Unable to maintain folder "
+                                + currentlyMaintainingFolder.getName() + "/"
+                                + currentlyMaintainingFolder.getId() + ": " + e,
+                            e);
+                    }
                     Folder maintainedFolder = currentlyMaintainingFolder;
                     currentlyMaintainingFolder = null;
                     // Fire event
@@ -2201,6 +2304,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
 
+                // If directory is not mapped to a folder, delete it
                 String deletedBaseDir = ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
                     .getValue(getController());
                 if (StringUtils.isNotBlank(deletedBaseDir)) {

@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
@@ -445,6 +446,18 @@ public class FileArchiver {
         return ret;
     }
 
+    /**
+     * Use the {@link FileArchiver#BASE_NAME_PATTERN} to match the name and
+     * extension of the {@code baseName} to match the file's name and extension
+     * of {@code name}.
+     * 
+     * @param name
+     *            Name of a file in the history
+     * @param baseName
+     *            Name of the actual file in the folder
+     * @return {@code True} if {@code name} has the same filename and extension
+     *         as {@code baseName}
+     */
     private static boolean belongsTo(String name, String baseName) {
         Matcher m = BASE_NAME_PATTERN.matcher(name);
         if (m.matches()) {
@@ -453,12 +466,29 @@ public class FileArchiver {
         return false;
     }
 
+    /**
+     * Search the history for an archived file of {@code fileInfo}
+     * 
+     * @param fileInfo
+     *            The file to check for in the history.
+     * @return {@code True} if there is a file in the history, {@code false}
+     *         otherwise.
+     */
     public boolean hasArchivedFileInfo(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
-        // Find archive subdirectory.
-        Path subdirectory = archiveDirectory.resolve(
-            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
-            .getParent();
+        Path subdirectory;
+        try {
+            // Find archive subdirectory.
+            subdirectory = archiveDirectory
+                .resolve(FileInfoFactory
+                    .encodeIllegalChars(fileInfo.getRelativeName()))
+                .getParent();
+        } catch (InvalidPathException e) {
+            // PFS-2000:
+            log.warning("Unable to resolve versions for file: "
+                + fileInfo.toDetailString() + ". " + e);
+            return false;
+        }
         if (Files.notExists(subdirectory)) {
             return false;
         }
@@ -486,6 +516,20 @@ public class FileArchiver {
         return false;
     }
 
+    /**
+     * Inspect the file in the file history (in meta folder). Files in the
+     * history are named like this:
+     * <code>&lt;filename&gt;_K_&lt;number&gt;.&lt;extension&gt;</code>.<br />
+     * Take those into account that are in the same relative directory and start
+     * with the same <code>filename</code>.<br />
+     * <br />
+     * <b>Attention:</b> The returned list may not be orderd!
+     * 
+     * @param fileInfo
+     *            Get all files in the history that are older versions of
+     *            {@code fileInfo}.
+     * @return A list of all older versions of the passed file in the history.
+     */
     public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
@@ -529,11 +573,44 @@ public class FileArchiver {
         return Collections.unmodifiableList(list);
     }
 
+    /**
+     * Calls {@link #getArchivedFilesInfos(FileInfo)} and sorts the returned
+     * list according to the version number.
+     * 
+     * @param fileInfo
+     *            The file to get the archived versions of.
+     * @return A alpha-numerically ascending sorted list of all versions of
+     *         {@code fileInfo} in the history.
+     */
+    public List<FileInfo> getSortedArchivedFilesInfos(FileInfo fileInfo) {
+        List<FileInfo> history = new ArrayList<>();
+        history.addAll(getArchivedFilesInfos(fileInfo));
+        history.sort(new Comparator<FileInfo>() {
+            public int compare(FileInfo lhs, FileInfo rhs) {
+                return lhs.getVersion() - rhs.getVersion();
+            }
+        });
+        return history;
+    }
+
+    /**
+     * @param fileInfo The file to get the archived version of.
+     * @return The path to the file in the history.
+     */
     public Path getArchivedFile(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
-        Path subdirectory = archiveDirectory.resolve(
-            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
-            .getParent();
+        Path subdirectory;
+        try {
+            subdirectory = archiveDirectory
+                .resolve(FileInfoFactory
+                    .encodeIllegalChars(fileInfo.getRelativeName()))
+                .getParent();
+        } catch (InvalidPathException e) {
+            // PFS-2000:
+            log.warning("Unable to resolve versions for file: "
+                + fileInfo.toDetailString() + ". " + e);
+            return null;
+        }
         if (Files.notExists(subdirectory)) {
             return null;
         }

@@ -51,6 +51,13 @@
       <src_folder value="file://$MODULE_DIR$/src/shib" expected_position="6" />
     </src_description>
   </component>
+  <component name="FacetManager">
+    <facet type="web" name="Web">
+      <configuration>
+        <webroots />
+      </configuration>
+    </facet>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/bin" />
     <exclude-output />

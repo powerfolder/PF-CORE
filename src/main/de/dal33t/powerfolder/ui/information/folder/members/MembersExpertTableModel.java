@@ -120,6 +120,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     // TODO Move into model. FolderModel?
     private boolean permissionsRetrieved;
+    private boolean editPermissionsAllowed;
     private boolean updatingDefaultPermissionModel;
     private ValueModel defaultPermissionModel;
     private SelectionInList<FolderPermission> defaultPermissionsListModel;
@@ -359,6 +360,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 //            && getFolderMemberAt(rowIndex).getAccountInfo() != null
 //            && !(getFolderMemberAt(rowIndex).getPermission() instanceof FolderOwnerPermission);
         return permissionsRetrieved
+            && editPermissionsAllowed
             && getFolderMemberAt(rowIndex).isPermissionChangeable();
     }
 
@@ -869,6 +871,13 @@ public class MembersExpertTableModel extends PFUIComponent implements
                         + folder.getStatistic().getSyncPercentage(member)
                         + " for " + member);
                 }
+            }
+
+            AccountInfo aInfo = getController().getMySelf().getAccountInfo();
+            editPermissionsAllowed = false;
+            if (aInfo != null) {
+                editPermissionsAllowed = getController().getSecurityManager().hasPermission(aInfo,
+                    FolderPermission.admin(folder.getInfo()));
             }
 
             try {

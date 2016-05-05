@@ -328,6 +328,11 @@ public enum ConfigurationEntry {
     SERVER_IDP_LAST_CONNECTED_ECP("server.idp.last_connected.ecp"),
 
     /**
+     * PFC-2838
+     */
+    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names"),
+
+    /**
      * PFC-2534: Skip auto login for the specified number. Defaults to retrying
      * every 5 minutes.
      */
@@ -720,8 +725,8 @@ public enum ConfigurationEntry {
                     }
                 }
             }
-            return rootDir + Paths.get("").getFileSystem().getSeparator()
-                + Constants.FOLDERS_BASE_DIR_SUBDIR_NAME;
+            return Paths.get(rootDir).resolve(
+                Constants.FOLDERS_BASE_DIR_SUBDIR_NAME).toString();
         }
     },
 
@@ -1115,7 +1120,9 @@ public enum ConfigurationEntry {
 
     SHOW_WALLPAPER_OPTION("show.wallpaper", false),
 
-    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false);
+    COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false),
+
+    RECOVER_0BYTE_FILES("recover.zero_byte.files", true);
 
     // Methods/Constructors ***************************************************
 

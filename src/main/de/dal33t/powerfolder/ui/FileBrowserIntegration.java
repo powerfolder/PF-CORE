@@ -17,8 +17,13 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.liferay.nativity.control.NativityControl;
 import com.liferay.nativity.control.NativityControlUtil;
@@ -75,8 +80,6 @@ public class FileBrowserIntegration extends PFComponent {
                 logFine("Could not start file browser integration");
                 return false;
             }
-
-            nc.setFilterFolder("/");
         }
 
         // Initializing icon overlays
@@ -167,6 +170,35 @@ public class FileBrowserIntegration extends PFComponent {
                     iconControl.registerIconWithId(lockedIcon.toString(),
                         IconOverlayIndex.LOCKED_OVERLAY.getLabel(),
                         String.valueOf(IconOverlayIndex.LOCKED_OVERLAY.getIndex()));
+                    iconControl.enableFileIcons();
+
+                    List<String> volumes = new ArrayList<>();
+                    volumes.add("/");
+
+                    // Get all volumes to add to the 
+                    try (DirectoryStream<Path> volumePaths = Files
+                        .newDirectoryStream(Paths.get("/Volumes")))
+                    {
+                        for (Path volumePath : volumePaths) {
+                            if (Files.isDirectory(volumePath)) {
+                                volumes.add(volumePath.toString() + "/");
+                            } else {
+                                logFine("Ignoring " + volumePath.toString());
+                            }
+                        }
+
+                        for (String vol : volumes) {
+                            logInfo("Base directory for Finder Sync: " + vol);
+                        }
+                    } catch (RuntimeException | IOException e) {
+                        logWarning(
+                            "Error while determening the base volume paths to register for Finder Sync. "
+                                + e,
+                            e);
+                    }
+
+                    // Register the volumes
+                    nc.setFilterFolders(volumes.toArray(new String[0]));
                 }
             });
 
@@ -174,7 +206,7 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not connect to finder sync.");
                 return false;
             }
-
+            
             logFine("Connected to finder sync.");
             return true;
         } catch (Exception re) {
@@ -195,7 +227,7 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not connect to shell extensions!");
                 return false;
             }
-
+            nc.setFilterFolder("/");
             logFine("Connected to shell extensions.");
             return true;
         } catch (RuntimeException re) {
