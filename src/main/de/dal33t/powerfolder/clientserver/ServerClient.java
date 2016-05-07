@@ -1655,7 +1655,11 @@ public class ServerClient extends PFComponent {
 
             Waiter w = new Waiter(HAMMER_DELAY);
             while (!w.isTimeout()) {
-                w.waitABit();
+                try {
+                    w.waitABit();
+                } catch (Exception e) {
+                    return; // Interrupted
+                }
                 if (!currentlyHammeringServers()
                     && targetServerNode.isConnected())
                 {
