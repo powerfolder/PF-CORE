@@ -159,7 +159,9 @@ public class ServerInfo implements Serializable {
     }
 
     public void migrateId() {
-        this.id = node.id;
+        if (node != null) {
+            this.id = node.id;            
+        }
     }
 
     @Override
