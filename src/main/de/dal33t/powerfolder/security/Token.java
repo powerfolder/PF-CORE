@@ -37,6 +37,7 @@ import org.hibernate.annotations.Index;
 
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.util.Base58;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -63,6 +64,12 @@ public class Token {
     public static final String PROPERTYNAME_VALID_TO = "validTo";
     public static final String PROPERTYNAME_NODE_INFO = "nodeInfo";
     public static final String PROPERTYNAME_ACCOUNT_INFO = "accountInfo";
+    public static final String PROPERTYNAME_SERVICE_INFO = "serviceInfo";
+    
+    // PFC-2455:
+    private static final long REQUEST_TOKEN_TIMEOUT = 60 * 1000L;
+    // 1337 Years valid if not removed/revoked
+    private static final long SERVICE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
 
     @Id
     private String id;
@@ -79,13 +86,50 @@ public class Token {
     @Embedded
     @Fetch(FetchMode.JOIN)
     private AccountInfo accountInfo;
+    
+    @ManyToOne
+    @JoinColumn(name = "serviceInfo_id")
+    private ServerInfo serviceInfo;
 
     @Column(length = 1024)
     private String notes;
 
-    @SuppressWarnings("unused")
     private Token() {
         // For hibernate
+    }
+
+    public static Token newRequestToken(ServerInfo fedService) {
+        Reject.ifNull(fedService, "Service null");
+        Reject.ifFalse(fedService.isFederatedService(),
+            "Not a federated service");
+        Date validTo = new Date(System.currentTimeMillis() + REQUEST_TOKEN_TIMEOUT);
+        return new Token(validTo, fedService, null, null);
+    }
+    
+    public static Token newAccessToken(long validMS, AccountInfo aInfo)
+    {
+        return newAccessToken(validMS, aInfo, (MemberInfo) null);
+    }
+
+    public static Token newAccessToken(long validMS, AccountInfo aInfo,
+        MemberInfo mInfo)
+    {
+        Reject.ifFalse(validMS > 0, "Invalid time");
+        Reject.ifNull(aInfo, "Account info null");
+        Date validTo = new Date(System.currentTimeMillis() + validMS);
+        return new Token(validTo, null, aInfo, mInfo);
+    }
+
+    public static Token newAccessToken(AccountInfo aInfo,
+        ServerInfo fedService)
+    {
+        Reject.ifNull(aInfo, "Account info null");
+        Reject.ifNull(fedService, "Service null");
+        Reject.ifFalse(fedService.isFederatedService(),
+            "Not a federated service");
+        Date validTo = new Date(
+            System.currentTimeMillis() + SERVICE_TOKEN_TIMEOUT);
+        return new Token(validTo, fedService, aInfo, null);
     }
 
     /**
@@ -93,13 +137,16 @@ public class Token {
      * 
      * @param validTo
      *            mandatory expiration date.
+     * @param sInfo
+     *            optional federated service information
      * @param aInfo
      *            optional account information
      * @param mInfo
      *            optional device information
      */
-    public Token(Date validTo, AccountInfo aInfo, MemberInfo mInfo) {
+    private Token(Date validTo, ServerInfo sInfo, AccountInfo aInfo, MemberInfo mInfo) {
         Reject.ifNull(validTo, "Validto is null");
+        this.serviceInfo = sInfo;
         this.accountInfo = aInfo;
         this.nodeInfo = mInfo;
         this.id = TOKEN_VERSION + IdGenerator.makeId();
@@ -193,6 +240,10 @@ public class Token {
 
     public AccountInfo getAccountInfo() {
         return accountInfo;
+    }
+    
+    public ServerInfo getServiceInfo() {
+        return serviceInfo;
     }
     
     public String getNotes() {
