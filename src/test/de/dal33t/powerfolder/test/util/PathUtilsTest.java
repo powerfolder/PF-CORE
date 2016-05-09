@@ -127,6 +127,34 @@ public class PathUtilsTest extends TestCase {
         Path baseDir = Paths.get("build/test").toAbsolutePath();
         PathUtils.recursiveDelete(baseDir);
 
+        Path actual = PathUtils.createEmptyDirectory(baseDir.resolve("test"));
+        assertTrue(Files.exists(actual));
+        assertTrue(Files.isDirectory(actual));
+        assertEquals(0, PathUtils.getNumberOfSiblings(actual));
+        assertEquals("test", actual.getFileName().toString());
+
+        Path actual2 = PathUtils.createEmptyDirectory(baseDir.resolve("test"));
+        assertTrue(Files.exists(actual2));
+        assertTrue(Files.isDirectory(actual2));
+        assertEquals(0, PathUtils.getNumberOfSiblings(actual2));
+        assertEquals("test (2)", actual2.getFileName().toString());
+
+        Path actual3 = PathUtils
+            .createEmptyDirectory(
+                baseDir.resolve(PathUtils.removeInvalidFilenameChars("hümmers / rüttenscheiß: Wichtige Doxx|.....")));
+        assertTrue(Files.exists(actual3));
+        assertTrue(Files.isDirectory(actual3));
+        assertEquals(0, PathUtils.getNumberOfSiblings(actual3));
+        assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3
+            .getFileName().toString());
+
+        assertEquals("", PathUtils.removeInvalidFilenameChars("....."));
+    }
+
+    public void testGetValidEmptyDirectoryWithRawName() throws IOException {
+        Path baseDir = Paths.get("build/test").toAbsolutePath();
+        PathUtils.recursiveDelete(baseDir);
+
         Path actual = PathUtils.createEmptyDirectory(baseDir, "test");
         assertTrue(Files.exists(actual));
         assertTrue(Files.isDirectory(actual));

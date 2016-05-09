@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -576,9 +577,9 @@ public class Account implements Serializable {
         } else if (StringUtils.isNotBlank(username) && authByShibboleth()
             && !emails.isEmpty())
         {
-            return emails.get(0);
+            return this.getEmails().get(0);
         } else if (!emails.isEmpty() && StringUtils.isNotBlank(emails.get(0))) {
-            return emails.get(0);
+            return this.getEmails().get(0);
         }
 
         return username;
@@ -966,13 +967,87 @@ public class Account implements Serializable {
         emails.add(email);
         return true;
     }
+    
+    /**
+     * Adds an email address to the account, combined with its corresponding LDAP identifier
+     * 
+     * @param email
+     *              The email address
+     * @param ldap
+     *              The LDAP search context of the email address
+     * @return true if the email address was added
+     */
+    public boolean addEmail(String email, String ldapSearchBase) {
+        Reject.ifBlank(email, "Email");
+        Reject.ifBlank(ldapSearchBase, "LDAP");
+        email = email.trim().toLowerCase();
+        ldapSearchBase = ldapSearchBase.trim().toLowerCase();
+        // If email address with LDAP search context is already in email list, return
+        if (emails.contains(email + ":" + ldapSearchBase)) {
+            boolean store = false;
+            // Remove possible duplicates without LDAP search context
+            while (emails.contains(email)) {
+                emails.remove(email);
+                store = true;
+            }
+            return store;
+        }
+        // If email address without LDAP search context is already in emails list, replace the email address
+        // (This way the same email address with ANOTHER LDAP context stays unaffected)
+        if (emails.contains(email)) {
+            int index = emails.indexOf(email);
+            emails.remove(index);
+            emails.add(index, email + ":" + ldapSearchBase);
+            return true;
+        }
+        // Add email address
+        emails.add(email + ":" + ldapSearchBase);
+        return true;
+    }
 
     public boolean removeEmail(String email) {
         Reject.ifBlank(email, "Email");
-        return emails.remove(email.toLowerCase().trim());
+        email = email.toLowerCase().trim();
+        // Do only a partial match of the email address because it may also contain LDAP information separated by ":"
+        for (String element : this.emails) {
+            if (element.startsWith(email)) {
+                return emails.remove(element);
+            }
+        }
+        return emails.remove(email);
+    }
+
+    public boolean removeNonExistingLdapEmails(ArrayList<String> ldapEmails,
+        String ldapSearchBase) {
+        // Append LDAP context to emails
+        for (final ListIterator<String> i = ldapEmails.listIterator(); i
+            .hasNext();) {
+            final String email = i.next();
+            i.set(email + ":" + ldapSearchBase);
+        }
+        boolean store = false;
+        for (String email : this.emails) {
+            // Only check email addresses belonging to the LDAP context
+            if ((email.indexOf(":") > 0) && (email.split(":")[1].equals(ldapSearchBase))) {
+                // If email is no longer existing in LDAP, remove it
+                if (!ldapEmails.contains(email)) {
+                    this.emails.remove(email);
+                    store = true;
+                }
+            }
+        }
+        return store;
     }
 
     public List<String> getEmails() {
+        // Create list of emails without LDAP search context information
+        ArrayList<String> emails = new ArrayList<String>(this.emails);
+        for (final ListIterator<String> i = emails.listIterator(); i.hasNext();) {
+            final String element = i.next();
+            if (element.indexOf(":") > 0) { 
+                i.set(element.split(":")[0]);
+            }
+        }
         return Collections.unmodifiableList(emails);
     }
 

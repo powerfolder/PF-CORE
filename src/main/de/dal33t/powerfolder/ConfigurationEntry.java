@@ -725,8 +725,8 @@ public enum ConfigurationEntry {
                     }
                 }
             }
-            return rootDir + Paths.get("").getFileSystem().getSeparator()
-                + Constants.FOLDERS_BASE_DIR_SUBDIR_NAME;
+            return Paths.get(rootDir).resolve(
+                Constants.FOLDERS_BASE_DIR_SUBDIR_NAME).toString();
         }
     },
 
