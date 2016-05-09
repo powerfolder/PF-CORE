@@ -19,21 +19,19 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
-import javax.persistence.*;
-import javax.persistence.Entity;
-
-import org.hibernate.annotations.*;
-
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
-import org.hibernate.annotations.CascadeType;
-import org.hibernate.cfg.IndexColumn;
+import org.hibernate.annotations.*;
+
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * PFS-779: Domain object for PFS-779: Organization wide admin role to manage
@@ -82,7 +80,7 @@ public class Organization implements Serializable {
 
     // PFS-2005
     @CollectionOfElements
-    @org.hibernate.annotations.IndexColumn(name = "IDX_DOMAINS", base = 0, nullable = false)
+    @IndexColumn(name = "IDX_DOMAINS", base = 0, nullable = false)
     @Cascade(value = {CascadeType.ALL})
     @Column(name = "domain", length = 512)
     @BatchSize(size = 1337)
