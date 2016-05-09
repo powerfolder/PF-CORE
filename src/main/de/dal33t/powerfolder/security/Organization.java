@@ -80,8 +80,9 @@ public class Organization implements Serializable {
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
 
+    // PFS-2005
     @CollectionOfElements
-    @Index(name = "IDX_DOMAINS")
+    @org.hibernate.annotations.IndexColumn(name = "IDX_DOMAINS", base = 0, nullable = false)
     @Cascade(value = {CascadeType.ALL})
     @Column(name = "domain", length = 512)
     @BatchSize(size = 1337)
@@ -171,7 +172,7 @@ public class Organization implements Serializable {
 
     public List<String> getDomains() { return domains; };
 
-    public void setDomains (List domains){
+    public void setDomains (List<String> domains){
         this.domains = domains;
     }
     
