@@ -64,13 +64,6 @@ public class Identity extends Message
     private boolean tunneled;
 
     /**
-     * If to wait for handshake ack from remote side.
-     *
-     * @see HandshakeCompleted
-     */
-    private boolean acknowledgesHandshakeCompletion;
-
-    /**
      * Supports Request/Response pattern with serialized arguments. To avoid
      * problems when class model differs between client and server.
      */
@@ -155,8 +148,6 @@ public class Identity extends Message
         this.supportsEncryption = supportsEncryption;
         this.tunneled = tunneled;
 
-        // Always true for newer versions #559
-        this.acknowledgesHandshakeCompletion = true;
         // #1124: HACK ALERT. This should only be true, if we have messages for
         // the remote side! Currently true if we have ANY pending messages to be
         // sent. Problem: The remote side cannot be known at the time the
@@ -248,14 +239,6 @@ public class Identity extends Message
      */
     public boolean isTunneled() {
         return tunneled;
-    }
-
-    /**
-     * @return true if the remote side sends a <code>HandshakeCompleted</code>
-     *         message after successfull handshake.
-     */
-    public boolean isAcknowledgesHandshakeCompletion() {
-        return acknowledgesHandshakeCompletion;
     }
 
     public boolean isSupportsSerializedRequest() {

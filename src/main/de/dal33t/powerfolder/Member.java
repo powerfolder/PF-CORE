@@ -993,36 +993,28 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         // Wait for acknowledgement from remote side
-        if (identity.isAcknowledgesHandshakeCompletion()) {
-            sendMessageAsynchron(new HandshakeCompleted());
-            long start = System.currentTimeMillis();
-            if (!waitForHandshakeCompletion()) {
-                long took = System.currentTimeMillis() - start;
-                String message = null;
-                if (peer == null || !peer.isConnected()) {
-                    if (lastProblem == null) {
-                        message = "Peer disconnected while waiting for handshake acknownledge (or problem)";
-                    }
-                } else {
-                    if (lastProblem == null) {
-                        message = "Did not receive a handshake not acknownledged (or problem) by remote side after "
-                            + (int) (took / 1000) + 's';
-                    }
+        sendMessageAsynchron(new HandshakeCompleted());
+        long start = System.currentTimeMillis();
+        if (!waitForHandshakeCompletion()) {
+            long took = System.currentTimeMillis() - start;
+            String message = null;
+            if (peer == null || !peer.isConnected()) {
+                if (lastProblem == null) {
+                    message = "Peer disconnected while waiting for handshake acknownledge (or problem)";
                 }
-                shutdown();
-                if (message != null && isWarning()) {
-                    logWarning(message);
+            } else {
+                if (lastProblem == null) {
+                    message = "Did not receive a handshake not acknownledged (or problem) by remote side after "
+                        + (int) (took / 1000) + 's';
                 }
-                return ConnectResult.failure(message);
-            } else if (isFiner()) {
-                logFiner("Got handshake completion!!");
             }
-        } else if (peer != null && peer.isConnected()) {
-            // Handshaked
-            handshaked = true;
-        } else {
             shutdown();
-            return ConnectResult.failure("Unknown reason");
+            if (message != null && isWarning()) {
+                logWarning(message);
+            }
+            return ConnectResult.failure(message);
+        } else if (isFiner()) {
+            logFiner("Got handshake completion!!");
         }
 
         // Reset things
