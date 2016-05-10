@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.jgoodies.binding.beans.Model;
 
 import de.dal33t.powerfolder.security.Organization;
@@ -40,7 +43,8 @@ public class AccountFilterModel extends Model {
     private boolean activeTrial;
     private String username;
     private String queryname;
-    private String organizationOID = Organization.FILTER_MATCH_ALL;
+    private String memberOfOrganizationOID = Organization.FILTER_MATCH_ALL;
+    private List<String> adminOfOrganizationOID;
     private String sortingProperty;
     private String sortingOrder;
     private int pageNumber;
@@ -109,16 +113,31 @@ public class AccountFilterModel extends Model {
         firePropertyChange(PROPERTY_QUERYNAME, oldValue, this.queryname);
     }
 
-    public String getOrganizationOID() {
-        return organizationOID;
+    public String getMemberOfOrganizationOID() {
+        return memberOfOrganizationOID;
     }
 
-    public void setOrganizationOID(String organizationOID) {
-        this.organizationOID = organizationOID;
+    public void setMemberOfOrganizationOID(String organizationOID) {
+        this.memberOfOrganizationOID = organizationOID;
     }
 
-    public boolean isAnyOrganization() {
-        return Organization.FILTER_MATCH_ALL.equals(organizationOID);
+    public boolean isMemberOfAnyOrganization() {
+        return Organization.FILTER_MATCH_ALL.equals(memberOfOrganizationOID);
+    }
+
+    public List<String> getAdminOfOrganizationOIDs() {
+        return adminOfOrganizationOID;
+    }
+
+    public void setAdminOfOrganizationOIDs(List<String> orgOIDs) {
+        adminOfOrganizationOID = orgOIDs;
+    }
+
+    public void addAdminOfOrganizationOIDs(String orgOID) {
+        if (adminOfOrganizationOID == null) {
+            adminOfOrganizationOID = new ArrayList<>();
+        }
+        adminOfOrganizationOID.add(orgOID);
     }
 
     public String getSortingProperty() {
@@ -152,7 +171,7 @@ public class AccountFilterModel extends Model {
         disabledOnly = false;
         proUsersOnly = false;
         username = null;
-        organizationOID = Organization.FILTER_MATCH_ALL;
+        memberOfOrganizationOID = Organization.FILTER_MATCH_ALL;
         maxResults = 0;
     }
 }

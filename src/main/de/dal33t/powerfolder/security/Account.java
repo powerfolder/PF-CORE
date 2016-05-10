@@ -452,11 +452,21 @@ public class Account implements Serializable {
     }
 
     public boolean isOrganizationAdmin() {
-        if (StringUtils.isBlank(organizationOID)) {
-            return false;
+        if (StringUtils.isNotBlank(organizationOID)) {
+            if (hasPermission(new OrganizationAdminPermission(organizationOID))) {
+                return true;
+            }
         }
 
-        return hasPermission(new OrganizationAdminPermission(organizationOID));
+        for (Permission p : permissions) {
+            if (p instanceof OrganizationAdminPermission) {
+                return true;
+            } else if (p instanceof OrganizationCreatePermission) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isInSameOrganization(Account other) {
