@@ -451,6 +451,21 @@ public class Account implements Serializable {
         return AccessMode.NO_ACCESS;
     }
 
+    /**
+     * @return {@code True} if user is member of an {@link Organization} and has
+     *         {@link OrganizationAdminPermission} for this organization, {@code false} otherwise.
+     */
+    public boolean isMemberOfOrganizationAndAdmin() {
+        if (StringUtils.isBlank(organizationOID)) {
+            return false;
+        }
+        return hasPermission(new OrganizationAdminPermission(organizationOID));
+    }
+
+    /**
+     * @return {@code True} if user has any {@link OrganizationAdminPermission}
+     *         or {@link OrganizationCreatePermission}, {@code false} otherwise.
+     */
     public boolean isOrganizationAdmin() {
         if (StringUtils.isNotBlank(organizationOID)) {
             if (hasPermission(new OrganizationAdminPermission(organizationOID))) {
