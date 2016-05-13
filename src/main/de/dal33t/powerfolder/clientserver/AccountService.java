@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
@@ -114,5 +115,14 @@ public interface AccountService {
      * @param accounts
      */
     void checkAccounts(Collection<Account> accounts);
+    
+    
+    /**
+     * Returns the current skin of an account
+     * 
+     * @param accounts The account
+     * @return The current skin of the account
+     */
+    String getClientSkinName(Account accounts);
 
 }

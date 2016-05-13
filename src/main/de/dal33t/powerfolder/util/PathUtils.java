@@ -488,7 +488,8 @@ public class PathUtils {
     }
 
     /**
-     * Copies a file to disk from a stream. Overwrites the target file if exists
+     * Copies a file to disk from a stream. Overwrites the target file if exists.
+     * Input stream is automatically closed.
      *
      * @see #copyFromStreamToFile(InputStream, Path, StreamCallback, int)
      * @param in
@@ -505,7 +506,8 @@ public class PathUtils {
 
     /**
      * Copies a file to disk from a stream. Overwrites the target file if
-     * exists. The processe may be observed with a stream callback
+     * exists. The processe may be observed with a stream callback.
+     * Input stream is automatically closed.
      *
      * @param in
      *            the input stream
