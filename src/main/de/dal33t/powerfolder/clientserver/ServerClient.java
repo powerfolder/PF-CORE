@@ -1716,7 +1716,18 @@ public class ServerClient extends PFComponent {
      * @return True if the skin was downloaded correctly
      */
     private boolean downloadClientSkin(String skin) {
-        Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+        Path skinPath = Controller.getMiscFilesLocation().resolve("skin/client");
+        // Delete old skin
+        try {
+            FileUtils.deleteDirectory(skinPath.toFile());
+        } catch (IOException e) {
+            logWarning("Cannot delete old skin: " + e, e);
+            return false;
+        }
+        // Stop if no skin is given
+        if (skin == null) {
+            return false;
+        }
         String baseUrl = this.getWebURL() + "/skin/client/";
         String skinQuery = "?skin=" + skin;
         ArrayList<String> files = new ArrayList<String>();
@@ -1724,9 +1735,7 @@ public class ServerClient extends PFComponent {
         files.add("synth.xml");
         files.add("icons");
         String file = "";
-        // Delete old skin
         try {
-            FileUtils.deleteDirectory(skinPath.toFile());
             // Download skin from server
             for (int i = 0; i < files.size(); i++) {
                 file = files.get(i);

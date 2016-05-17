@@ -43,6 +43,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -348,13 +349,25 @@ public class Icons {
             return null;
         }
 
-        URL iconURL = Thread.currentThread().getContextClassLoader()
-            .getResource(iconId);
-        if (iconURL == null) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Icon not found '" + id + '\'');
+        // If image file exists in skin folder, load it. If it does not exist, load the image file from the jar.
+        URL iconURL;
+        if (Files.exists(Paths.get(iconId))) {
+            try {
+                iconURL = new URL("file://" + iconId);
+            } catch (MalformedURLException e) {
+                log.severe("Invalid icon URL");
+                return null;
             }
+        }
+        else {
+            iconURL = Thread.currentThread().getContextClassLoader()
+                .getResource(iconId);
+            if (iconURL == null) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Icon not found '" + id + '\'');
+                }
             return null;
+            }
         }
 
         icon = new ImageIcon(iconURL);
@@ -385,11 +398,24 @@ public class Icons {
             return null;
         }
 
-        URL imageURL = Thread.currentThread().getContextClassLoader()
-            .getResource(iconId);
-        if (imageURL == null) {
-            return null;
+        // If image file exists in skin folder, load it. If it does not exist, load the image file from the jar.
+        URL imageURL;
+        if (Files.exists(Paths.get(iconId))) {
+            try {
+                imageURL = new URL("file://" + iconId);
+            } catch (MalformedURLException e) {
+                log.severe("Invalid icon URL");
+                return null;
+            }
         }
+        else {
+            imageURL = Thread.currentThread().getContextClassLoader()
+                .getResource(iconId);
+            if (imageURL == null) {
+            return null;
+            }
+        }
+
         image = Toolkit.getDefaultToolkit().getImage(imageURL);
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached image " + id);
@@ -1024,4 +1050,33 @@ public class Icons {
             }
         }
     }
+
+    /**
+     * Loads properties file from file
+     * 
+     * @param filePath
+     *          The path of the properties file
+     * @return The properties that have been loaded. Or <code>null</code> if not found.
+     */
+    public static Properties loadPropertiesFromFile(Path filePath) {
+        Reject.ifNull(filePath, "Properties blank");
+        try {
+            Properties properties = new Properties();
+            // Read properties from file
+            try (InputStream inputStream = Files.newInputStream(filePath)) {
+                properties.load(inputStream);
+                // For each icon change from relative to absolute path
+                Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+                for(String key: properties.stringPropertyNames()) {
+                    String value = properties.getProperty(key);
+                    properties.setProperty(key, skinPath.resolve(value).toString());
+                }
+                return properties;
+            }
+        } catch (IOException e) {
+            log.log(Level.INFO, "Cannot read properties file: " + filePath, e);
+            return null;
+        }
+    }
+
 }
