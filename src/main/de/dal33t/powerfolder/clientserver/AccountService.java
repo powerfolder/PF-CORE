@@ -123,6 +123,6 @@ public interface AccountService {
      * @param accounts The account
      * @return The current skin of the account
      */
-    String getClientSkinName(Account accounts);
+    String getClientSkinName(Account account);
 
 }
