@@ -280,21 +280,21 @@ public class MainFrame extends PFUIComponent {
             .getValueBoolean(getController()))
         {
             builder.add(openWebInterfaceActionLabel.getUIComponent(),
-                cc.xy(1, 1));
+                cc.xy(1, 1, "right, top"));
         }
         if (PreferencesEntry.SHOW_BROWSE.getValueBoolean(getController())) {
             builder.add(openFoldersBaseActionLabel.getUIComponent(),
-                cc.xy(1, 2));
+                cc.xy(1, 2, "right, top"));
         }
-        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3));
-        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4));
+        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3, "right, top"));
+        builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4, "right, top"));
         if (getController().isVerbose()) {
-            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5));
+            builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5, "right, top"));
         }
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6));
+            builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6, "right, top"));
         }
-        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 7));
+        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 7, "right, top"));
 
         return builder.getPanel();
     }
@@ -311,7 +311,6 @@ public class MainFrame extends PFUIComponent {
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        builder.add(logoLabel, cc.xyw(1, 1, 3));
 
         ButtonBarBuilder b = new ButtonBarBuilder();
         b.addFixed(minusButton);
@@ -319,6 +318,7 @@ public class MainFrame extends PFUIComponent {
         b.addFixed(closeButton);
         builder.add(b.getPanel(), cc.xywh(4, 1, 1, 1, "right, top"));
 
+        builder.add(logoLabel, cc.xyw(1, 1, 4));
         builder.add(inlineInfoLabel,
             cc.xy(2, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
         builder.add(inlineInfoCloseButton,
