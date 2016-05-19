@@ -1118,11 +1118,6 @@ public class ServerClient extends PFComponent {
                             getController().saveConfig();
                         }
                     }
-
-                    // Retrieve skin from server
-                    String skin = this.userService.getClientSkinName(this.accountDetails.getAccount());
-                    this.downloadClientSkin(skin);
-                    
                     // PFC-2548
                     if (isKeepLoggedIn()) {
                         if (StringUtils.isBlank(tokenSecret)) {
@@ -1159,7 +1154,11 @@ public class ServerClient extends PFComponent {
                     setAnonAccount();
                     fireLogin(accountDetails, false);
                 }
-
+                // Retrieve skin from server
+                String skin = this.userService.getClientSkinName(this.accountDetails.getAccount());
+                if (this.downloadClientSkin(skin)) {
+                    getController().shutdownAndRequestRestart();
+                }
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
@@ -1710,36 +1709,66 @@ public class ServerClient extends PFComponent {
     
     /**
      * Downloads a client skin from the server and stores it in the misc config directory.
-     * An already existing skin is deleted first.
+     * If the local and the remote skin version are the same, the download is skipped
      * 
      * @param skin The name of the skin
      * @return True if the skin was downloaded correctly
      */
     private boolean downloadClientSkin(String skin) {
-        Path skinPath = Controller.getMiscFilesLocation().resolve("skin/client");
-        // Delete old skin
-        try {
-            FileUtils.deleteDirectory(skinPath.toFile());
-        } catch (IOException e) {
-            logWarning("Cannot delete old skin: " + e, e);
-            return false;
-        }
         // Stop if no skin is given
         if (skin == null) {
             return false;
         }
-        String baseUrl = this.getWebURL() + "/skin/client/";
+        Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+        String baseUrl = this.getWebURL() + "/skin/";;
         String skinQuery = "?skin=" + skin;
-        ArrayList<String> files = new ArrayList<String>();
-        files.add("icons.properties");
-        files.add("synth.xml");
-        files.add("icons");
-        String file = "";
+        URL url;
         try {
+            // First check if a skin with a newer version is available
+            Path versionPath = skinPath.resolve("version");
+            String localSkinVersion = "local";
+            String remoteSkinVersion = "remote";
+            // Load local skin version
+            if (Files.exists(versionPath)) {
+                try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
+                    if ((localSkinVersion = bufferedReader.readLine()) == null) {
+                        logWarning("Cannot read local skin version");
+                    }
+                }
+            }
+            // Download skin version
+            url = new URL(baseUrl + "version" + skinQuery);
+            PathUtils.copyFromStreamToFile(url.openStream(), versionPath);
+            // Load remote skin version
+            try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
+                if ((remoteSkinVersion = bufferedReader.readLine()) == null) {
+                    logWarning("Cannot read remote skin version");
+                    return false;
+                }
+            }
+            // If local and remote skin have the same version, skip the rest
+            if (localSkinVersion.equals(remoteSkinVersion)) {
+                return false;
+            }
+            skinPath = skinPath.resolve("client");
+            baseUrl += "client/";
+            // Delete old skin
+            try {
+                FileUtils.deleteDirectory(skinPath.toFile());
+            } catch (IOException e) {
+                logWarning("Cannot delete old skin: " + e, e);
+                return false;
+            }
+            // TODO: Test if skin exists
             // Download skin from server
+            ArrayList<String> files = new ArrayList<String>();
+            files.add("icons.properties");
+            files.add("synth.xml");
+            files.add("icons");
+            String file = "";
             for (int i = 0; i < files.size(); i++) {
                 file = files.get(i);
-                URL url = new URL(baseUrl + file + skinQuery);
+                url = new URL(baseUrl + file + skinQuery);
                 Path filePath = skinPath.resolve(file);
                 PathUtils.copyFromStreamToFile(url.openStream(), filePath);
                 if (file == "icons") {
@@ -1751,7 +1780,6 @@ public class ServerClient extends PFComponent {
                         }
                     }
                     Files.delete(filePath);
-                    Files.createDirectories(filePath);
                 }
             }
         } catch (MalformedURLException e) {

@@ -279,7 +279,20 @@ public class Icons {
         Reject.ifNull(icoProps, "iconProperties");
         Reject.ifTrue(icoProps.isEmpty(), "iconProperties are empty");
         iconProperties = icoProps;
+        // Flush icon cache
+        for (Map.Entry<String, Icon> entry : ID_ICON_MAP.entrySet()) {
+            Icon icon = entry.getValue();
+            if (icon instanceof ImageIcon) {
+                ImageIcon imageIcon = (ImageIcon)icon;
+                imageIcon.getImage().flush();
+            }
+        }
         ID_ICON_MAP.clear();
+        // Flush image cache
+        for (Map.Entry<String, Image> entry : ID_IMAGE_MAP.entrySet()) {
+            Image image = entry.getValue();
+            image.flush();
+        }
         ID_IMAGE_MAP.clear();
     }
 
