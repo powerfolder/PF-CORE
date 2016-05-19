@@ -1065,13 +1065,13 @@ public class Icons {
     }
 
     /**
-     * Loads properties file from file
+     * Adds properties from a file to existing properties
      * 
-     * @param filePath
-     *          The path of the properties file
+     * @param oldProperties The existing properties
+     * @param filePath The path of the properties file
      * @return The properties that have been loaded. Or <code>null</code> if not found.
      */
-    public static Properties loadPropertiesFromFile(Path filePath) {
+    public static Properties addPropertiesFromFile(Properties oldProperties, Path filePath) {
         Reject.ifNull(filePath, "Properties blank");
         try {
             Properties properties = new Properties();
@@ -1082,9 +1082,9 @@ public class Icons {
                 Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
                 for(String key: properties.stringPropertyNames()) {
                     String value = properties.getProperty(key);
-                    properties.setProperty(key, skinPath.resolve(value).toString());
+                    oldProperties.setProperty(key, skinPath.resolve(value).toString());
                 }
-                return properties;
+                return oldProperties;
             }
         } catch (IOException e) {
             log.log(Level.INFO, "Cannot read properties file: " + filePath, e);

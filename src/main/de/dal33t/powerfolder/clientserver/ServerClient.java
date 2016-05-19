@@ -1719,6 +1719,7 @@ public class ServerClient extends PFComponent {
         if (skin == null) {
             return false;
         }
+        boolean localSkinWasAlreadyInstalled = false;
         Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
         String baseUrl = this.getWebURL() + "/skin/";;
         String skinQuery = "?skin=" + skin;
@@ -1730,6 +1731,7 @@ public class ServerClient extends PFComponent {
             String remoteSkinVersion = "remote";
             // Load local skin version
             if (Files.exists(versionPath)) {
+                localSkinWasAlreadyInstalled = true;
                 try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
                     if ((localSkinVersion = bufferedReader.readLine()) == null) {
                         logWarning("Cannot read local skin version");
@@ -1759,7 +1761,6 @@ public class ServerClient extends PFComponent {
                 logWarning("Cannot delete old skin: " + e, e);
                 return false;
             }
-            // TODO: Test if skin exists
             // Download skin from server
             ArrayList<String> files = new ArrayList<String>();
             files.add("icons.properties");
@@ -1784,10 +1785,10 @@ public class ServerClient extends PFComponent {
             }
         } catch (MalformedURLException e) {
             logWarning("Invalid client skin URL: " + e, e);
-            return false;
+            return localSkinWasAlreadyInstalled;
         } catch (IOException e) {
             logWarning("Cannot download client skin:" + e, e);
-            return false;
+            return localSkinWasAlreadyInstalled;
         }
         return true;
     }

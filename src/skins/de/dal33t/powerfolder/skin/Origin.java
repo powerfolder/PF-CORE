@@ -44,7 +44,7 @@ public class Origin extends AbstractSyntheticaSkin {
     public Properties getIconsProperties() {
         // If properties file exists in skin folder, load it. If it does not exist, load the default properties file from the jar.
         if (Files.exists(Controller.getMiscFilesLocation().resolve("skin/client/icons.properties"))) {
-            return Icons.loadPropertiesFromFile(Controller.getMiscFilesLocation().resolve("skin/client/icons.properties"));
+            return Icons.addPropertiesFromFile(Icons.loadProperties(ICON_PROPERTIES_FILENAME), Controller.getMiscFilesLocation().resolve("skin/client/icons.properties"));
         }
         else {
             return Icons.loadProperties(ICON_PROPERTIES_FILENAME);
