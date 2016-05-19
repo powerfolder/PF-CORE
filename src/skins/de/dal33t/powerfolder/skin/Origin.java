@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.skin;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import de.dal33t.powerfolder.Controller;
@@ -52,13 +54,13 @@ public class Origin extends AbstractSyntheticaSkin {
     }
 
     @Override
-    public String getSynthXMLFileName() {
+    public Path getSynthXMLPath() {
         // If XML file exists in skin folder, return it. If it does not exist, return the default XML file from the jar.
         if (Files.exists(Controller.getMiscFilesLocation().resolve("skin/client/synth.xml"))) {
-            return Controller.getMiscFilesLocation().resolve("skin/client/synth.xml").toString();
+            return Controller.getMiscFilesLocation().resolve("skin/client/synth.xml");
         }
         else {
-            return "de/dal33t/powerfolder/skin/origin/synth.xml";
+            return Paths.get("/de/dal33t/powerfolder/skin/origin/synth.xml");
         }
     }
 

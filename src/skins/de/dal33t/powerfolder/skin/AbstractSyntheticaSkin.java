@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Properties;
@@ -50,15 +51,7 @@ public abstract class AbstractSyntheticaSkin implements Skin {
 
     public abstract String getID();
 
-    public abstract String getSynthXMLFileName();
-
-    protected String getSynthXMLFileName0() {
-        String fn = getSynthXMLFileName();
-        if (!fn.startsWith("/")) {
-            fn = '/' + fn;
-        }
-        return fn;
-    }
+    public abstract Path getSynthXMLPath();
 
     public final LookAndFeel getLookAndFeel() throws ParseException {
         return new LookAndFeel();
@@ -70,9 +63,9 @@ public abstract class AbstractSyntheticaSkin implements Skin {
         public LookAndFeel() throws ParseException {
             super();
             // If XML file exists in skin folder, load it. If it does not exist, load the default XML file from the jar.
-            if (Files.exists(Paths.get(AbstractSyntheticaSkin.this.getSynthXMLFileName0()))) {
+            if (Files.exists(AbstractSyntheticaSkin.this.getSynthXMLPath())) {
                 try {
-                    URL xmlURL = new URL("file://" + AbstractSyntheticaSkin.this.getSynthXMLFileName0());
+                    URL xmlURL = new URL("file://" + AbstractSyntheticaSkin.this.getSynthXMLPath());
                     super.load(xmlURL);
                 } catch (MalformedURLException e) {
                     log.severe("Cannot load XML file");
@@ -82,7 +75,7 @@ public abstract class AbstractSyntheticaSkin implements Skin {
                 }
             }
             else {
-                super.loadXMLConfig(AbstractSyntheticaSkin.this.getSynthXMLFileName0());
+                super.loadXMLConfig(AbstractSyntheticaSkin.this.getSynthXMLPath().toString());
             }
         }
 
