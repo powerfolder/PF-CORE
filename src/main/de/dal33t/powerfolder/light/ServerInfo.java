@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.util.Reject;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ServerInfo implements Serializable {
     private static final long serialVersionUID = 100L;
+    public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NODE = "node";
 
     @Id
