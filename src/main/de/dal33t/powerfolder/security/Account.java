@@ -133,7 +133,7 @@ public class Account implements Serializable {
     
     // PFC-2455: Tokens for federated services
     @CollectionOfElements(targetElement = String.class)
-    @MapKeyManyToMany(targetEntity = ServerInfo.class, joinColumns=@JoinColumn(name="serverInfo_id"))
+    @MapKeyManyToMany(targetEntity = ServerInfo.class, joinColumns=@JoinColumn(name="serviceInfo_id"))
     @JoinTable(name = "Account_tokens", joinColumns = @JoinColumn(name = "oid"))
     @Column(name = "tokenSecret")
     @BatchSize(size = 1337)
