@@ -19,24 +19,19 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.io.Serializable;
-import java.util.Date;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import org.hibernate.annotations.*;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Index;
-
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * PFS-779: Domain object for PFS-779: Organization wide admin role to manage
@@ -82,6 +77,16 @@ public class Organization implements Serializable {
     @Embedded
     @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
+
+    // PFS-2005
+    @CollectionOfElements
+    @IndexColumn(name = "IDX_DOMAINS", base = 0, nullable = false)
+    @Cascade(value = {CascadeType.ALL})
+    @Column(name = "domain", length = 512)
+    @BatchSize(size = 1337)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<String> domains;
 
     /**
      * PFS-1411
@@ -161,6 +166,12 @@ public class Organization implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = StringUtils.cutNotes(notes);
+    }
+
+    public List<String> getDomains() { return domains; };
+
+    public void setDomains (List<String> domains){
+        this.domains = domains;
     }
     
     /**

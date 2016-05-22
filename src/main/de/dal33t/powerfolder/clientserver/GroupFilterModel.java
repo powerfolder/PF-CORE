@@ -1,5 +1,8 @@
 package de.dal33t.powerfolder.clientserver;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.jgoodies.binding.beans.Model;
 
 import de.dal33t.powerfolder.security.Organization;
@@ -11,6 +14,7 @@ public class GroupFilterModel extends Model {
 
     private String groupname;
     private String organizationOID = Organization.FILTER_MATCH_ALL;
+    private List<String> adminOfOrganizationOIDs;
 
     private int maxResults;
 
@@ -42,16 +46,31 @@ public class GroupFilterModel extends Model {
         firePropertyChange(PROPERTY_GROUPNAME, oldValue, this.groupname);
     }
 
-    public String getOrganizationOID() {
+    public String getMemberOfOrganizationOID() {
         return organizationOID;
     }
 
-    public void setOrganizationOID(String organizationOID) {
+    public void setMemberOfOrganizationOID(String organizationOID) {
         this.organizationOID = organizationOID;
     }
 
-    public boolean isAnyOrganization() {
+    public boolean isMemberOfAnyOrganization() {
         return Organization.FILTER_MATCH_ALL.equals(organizationOID);
+    }
+
+    public List<String> getAdminOfOrganizationOIDs() {
+        return adminOfOrganizationOIDs;
+    }
+
+    public void setAdminOfOrganizationOIDs(List<String> orgOIDs) {
+        adminOfOrganizationOIDs = orgOIDs;
+    }
+
+    public void addAdminOfOrganizationOIDs(String orgOID) {
+        if (adminOfOrganizationOIDs == null) {
+            adminOfOrganizationOIDs = new ArrayList<>();
+        }
+        adminOfOrganizationOIDs.add(orgOID);
     }
 
     // Logic

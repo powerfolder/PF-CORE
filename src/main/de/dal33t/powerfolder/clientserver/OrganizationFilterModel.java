@@ -1,5 +1,8 @@
 package de.dal33t.powerfolder.clientserver;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * Copyright 2004 - 2013 Christian Sprajc. All rights reserved.
  *
@@ -28,6 +31,7 @@ public class OrganizationFilterModel extends Model {
 
     private String name;
     private int maxResults;
+    private List<String> orgOIDs;
 
     // Getter and Setter
 
@@ -47,5 +51,20 @@ public class OrganizationFilterModel extends Model {
 
     public void setMaxResults(int maxResults) {
         this.maxResults = maxResults;
+    }
+
+    public List<String> getOrgOIDs() {
+        return orgOIDs;
+    }
+
+    public void setOrgOIDs(List<String> orgOIDs) {
+        this.orgOIDs = orgOIDs;
+    }
+
+    public void addOrgOID(String orgOID) {
+        if (orgOIDs == null) {
+            orgOIDs = new ArrayList<>();
+        }
+        orgOIDs.add(orgOID);
     }
 }
