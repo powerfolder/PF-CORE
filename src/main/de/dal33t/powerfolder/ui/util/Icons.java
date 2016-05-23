@@ -70,6 +70,7 @@ import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.TrayIconManager;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Contains all icons for the powerfolder application. Icons should be got by
@@ -366,7 +367,12 @@ public class Icons {
         URL iconURL;
         if (Files.exists(Paths.get(iconId))) {
             try {
-                iconURL = new URL("file://" + iconId);
+                if (OSUtil.isWindowsSystem()) {
+                    iconURL = new URL("file:///" + iconId);
+                }
+                else {
+                    iconURL = new URL("file://" + iconId);
+                }
             } catch (MalformedURLException e) {
                 log.severe("Invalid icon URL");
                 return null;
@@ -415,7 +421,12 @@ public class Icons {
         URL imageURL;
         if (Files.exists(Paths.get(iconId))) {
             try {
-                imageURL = new URL("file://" + iconId);
+                if (OSUtil.isWindowsSystem()) {
+                    imageURL = new URL("file:///" + iconId);
+                }
+                else {
+                    imageURL = new URL("file://" + iconId);
+                }
             } catch (MalformedURLException e) {
                 log.severe("Invalid icon URL");
                 return null;

@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -32,7 +31,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
-import de.dal33t.powerfolder.ui.util.Icons;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 import de.javasoft.util.IVersion;
 
@@ -65,7 +64,12 @@ public abstract class AbstractSyntheticaSkin implements Skin {
             // If XML file exists in skin folder, load it. If it does not exist, load the default XML file from the jar.
             if (Files.exists(AbstractSyntheticaSkin.this.getSynthXMLPath())) {
                 try {
-                    URL xmlURL = new URL("file://" + AbstractSyntheticaSkin.this.getSynthXMLPath());
+                    URL xmlURL;
+                    if (OSUtil.isWindowsSystem()) {
+                        xmlURL = new URL("file:///" + AbstractSyntheticaSkin.this.getSynthXMLPath());
+                    } else {
+                        xmlURL = new URL("file://" + AbstractSyntheticaSkin.this.getSynthXMLPath());
+                    }
                     super.load(xmlURL);
                 } catch (MalformedURLException e) {
                     log.severe("Cannot load XML file");
@@ -75,7 +79,7 @@ public abstract class AbstractSyntheticaSkin implements Skin {
                 }
             }
             else {
-                super.loadXMLConfig(AbstractSyntheticaSkin.this.getSynthXMLPath().toString());
+                super.loadXMLConfig(AbstractSyntheticaSkin.this.getSynthXMLPath().toString().replace("\\", "/"));
             }
         }
 

@@ -68,6 +68,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -1157,6 +1158,22 @@ public class ServerClient extends PFComponent {
                 // Retrieve skin from server
                 String skin = this.userService.getClientSkinName(this.accountDetails.getAccount());
                 if (this.downloadClientSkin(skin)) {
+                    // Update folder skin
+                    PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
+                    for (Folder folder: getController().getFolderRepository().getFolders()) {
+                        PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
+                    }
+                    // Update shortcut skin
+                    FolderRepository repo = getController().getFolderRepository();
+                    Path oldBase = repo.getFoldersBasedir();
+                    String oldBaseDirName;
+                    if (oldBase.getFileName() != null) {
+                        oldBaseDirName = oldBase.getFileName().toString();
+                    } else {
+                        oldBaseDirName = oldBase.toString();
+                    }
+                        repo.updateShortcuts(oldBaseDirName);
+                    // Update client skin
                     getController().shutdownAndRequestRestart();
                 }
                 return accountDetails.getAccount();
@@ -1764,6 +1781,7 @@ public class ServerClient extends PFComponent {
             // Download skin from server
             ArrayList<String> files = new ArrayList<String>();
             files.add("icons.properties");
+            files.add("Folder.ico");
             files.add("synth.xml");
             files.add("icons");
             String file = "";
