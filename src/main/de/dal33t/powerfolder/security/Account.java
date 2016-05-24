@@ -433,6 +433,22 @@ public class Account implements Serializable {
     }
 
     /**
+     * @return An unmodifiable collection of all
+     *         {@link OrganizationAdminPermission OrganizationAdminPermissions}.
+     *         If the user does not have any OrganizationAdminPermission, an
+     *         empty collection will be returned.
+     */
+    public Collection<OrganizationAdminPermission> getOrgAdminPermissions() {
+        Collection<OrganizationAdminPermission> orgAdmins = new ArrayList<>();
+        for (Permission perm : permissions) {
+            if (perm instanceof OrganizationAdminPermission) {
+                orgAdmins.add((OrganizationAdminPermission) perm);
+            }
+        }
+        return Collections.unmodifiableCollection(orgAdmins);
+    }
+
+    /**
      * 
      * @param folder
      * @return the permission on the given folder. AccessMode.NO_ACCESS for no
