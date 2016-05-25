@@ -488,7 +488,8 @@ public class PathUtils {
     }
 
     /**
-     * Copies a file to disk from a stream. Overwrites the target file if exists
+     * Copies a file to disk from a stream. Overwrites the target file if exists.
+     * Input stream is automatically closed.
      *
      * @see #copyFromStreamToFile(InputStream, Path, StreamCallback, int)
      * @param in
@@ -505,7 +506,8 @@ public class PathUtils {
 
     /**
      * Copies a file to disk from a stream. Overwrites the target file if
-     * exists. The processe may be observed with a stream callback
+     * exists. The processe may be observed with a stream callback.
+     * Input stream is automatically closed.
      *
      * @param in
      *            the input stream
@@ -1138,18 +1140,58 @@ public class PathUtils {
             }
         }
     }
+    
+    /**
+     * Updated desktop ini in managed folders.
+     *
+     * @param controller
+     * @param directory
+     */
+    public static void updateDesktopIni(Controller controller, Path directory) {
+        // Only works on Windows
+        // Vista you must log off and on again to see change
+        if (!OSUtil.isWindowsSystem() || OSUtil.isWebStart()) {
+            return;
+        }
+
+        // Safty checks.
+        if (directory == null || Files.notExists(directory)
+            || !Files.isDirectory(directory))
+        {
+            return;
+        }
+
+        // Look for a desktop ini in the folder.
+        Path desktopIniFile = directory.resolve(DESKTOP_INI_FILENAME);
+        boolean iniExists = Files.exists(desktopIniFile);
+        // Remove desktop ini.
+        if (iniExists) {
+            try {
+                Files.delete(desktopIniFile);
+                setAttributesOnWindows(directory, null, false);
+            } catch (IOException ioe) {
+                log.info("Could not delete ini file. " + ioe);
+                IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
+            }
+        }
+        // Create new desktop ini
+        maintainDesktopIni(controller, directory);
+    }
 
     private static Path findDistributionFile(String filename) {
-        Path distroFile = Paths.get(".").toAbsolutePath().resolve(filename);
+        // Try to find file in skin directory
+        Path distroFile = Controller.getMiscFilesLocation().resolve("skin/client/" + filename);
         if (Files.notExists(distroFile)) {
-            // Try harder
-            distroFile = WinUtils.getProgramInstallationPath()
-                .resolve(filename);
-
+            distroFile = Paths.get(".").toAbsolutePath().resolve(filename);
             if (Files.notExists(distroFile)) {
-                log.fine("Could not find " + distroFile.getFileName() + " at "
-                    + distroFile.getParent().toAbsolutePath());
-                return null;
+                // Try harder
+                distroFile = WinUtils.getProgramInstallationPath().resolve(filename);
+
+                if (Files.notExists(distroFile)) {
+                    log.fine("Could not find " + distroFile.getFileName()
+                        + " at " + distroFile.getParent().toAbsolutePath());
+                    return null;
+                }
             }
         }
         return distroFile;

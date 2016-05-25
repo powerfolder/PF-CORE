@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 public class StringUtils {
 	/**
@@ -307,4 +308,20 @@ public class StringUtils {
         }
         return last2049Characters.substring(positionOfLineBreak + 1, 2049);
     }
+
+    /**
+     * Seperated a given string by it's line endings
+     *
+     * /r is for line ednings on mac os
+     *
+     * @param string input string
+     * @return seperated string array
+     */
+
+    public static List cutOnLineBreaks(String string) {
+
+        List seperated = Arrays.asList(string.replaceAll("\\r", "").split("\\n"));
+        return seperated;
+    }
+
 }

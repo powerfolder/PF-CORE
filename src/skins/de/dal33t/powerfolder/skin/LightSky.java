@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import de.dal33t.powerfolder.ui.util.Icons;
@@ -47,8 +49,8 @@ public class LightSky extends AbstractSyntheticaSkin {
     }
 
     @Override
-    public String getSynthXMLFileName() {
-        return "de/dal33t/powerfolder/skin/lightsky/synth.xml";
+    public Path getSynthXMLPath() {
+        return Paths.get("/de/dal33t/powerfolder/skin/lightsky/synth.xml");
     }
 
 }
