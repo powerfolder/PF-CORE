@@ -312,7 +312,7 @@ public class StringUtils {
     /**
      * Seperated a given string by it's line endings
      *
-     * /r is for line ednings on mac os
+     * /r is for line endings on mac os
      *
      * @param string input string
      * @return seperated string array
@@ -320,7 +320,7 @@ public class StringUtils {
 
     public static List cutOnLineBreaks(String string) {
 
-        List seperated = Arrays.asList(string.replaceAll("\\r", "").split("\\n"));
+        List<String> seperated = Arrays.asList(string.replaceAll("\\r", "").split("\\n"));
         return seperated;
     }
 
