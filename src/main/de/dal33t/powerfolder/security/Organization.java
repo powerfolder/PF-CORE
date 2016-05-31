@@ -139,7 +139,7 @@ public class Organization implements Serializable {
     public String getLdapDN() {
         return ldapDN;
     }
-    
+
     public String getBasePath() {
         return basePath;
     }
@@ -168,12 +168,14 @@ public class Organization implements Serializable {
         this.notes = StringUtils.cutNotes(notes);
     }
 
-    public List<String> getDomains() { return domains; };
+    public List<String> getDomains() {
+        return domains;
+    }
 
     public void setDomains (List<String> domains){
         this.domains = domains;
     }
-    
+
     /**
      * Adds a line of info with the current date to the notes of that account.
      *
