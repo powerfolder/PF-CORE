@@ -43,6 +43,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +70,7 @@ import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.ui.TrayIconManager;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Contains all icons for the powerfolder application. Icons should be got by
@@ -278,7 +280,20 @@ public class Icons {
         Reject.ifNull(icoProps, "iconProperties");
         Reject.ifTrue(icoProps.isEmpty(), "iconProperties are empty");
         iconProperties = icoProps;
+        // Flush icon cache
+        for (Map.Entry<String, Icon> entry : ID_ICON_MAP.entrySet()) {
+            Icon icon = entry.getValue();
+            if (icon instanceof ImageIcon) {
+                ImageIcon imageIcon = (ImageIcon)icon;
+                imageIcon.getImage().flush();
+            }
+        }
         ID_ICON_MAP.clear();
+        // Flush image cache
+        for (Map.Entry<String, Image> entry : ID_IMAGE_MAP.entrySet()) {
+            Image image = entry.getValue();
+            image.flush();
+        }
         ID_IMAGE_MAP.clear();
     }
 
@@ -348,13 +363,30 @@ public class Icons {
             return null;
         }
 
-        URL iconURL = Thread.currentThread().getContextClassLoader()
-            .getResource(iconId);
-        if (iconURL == null) {
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Icon not found '" + id + '\'');
+        // If image file exists in skin folder, load it. If it does not exist, load the image file from the jar.
+        URL iconURL;
+        if (Files.exists(Paths.get(iconId))) {
+            try {
+                if (OSUtil.isWindowsSystem()) {
+                    iconURL = new URL("file:///" + iconId);
+                }
+                else {
+                    iconURL = new URL("file://" + iconId);
+                }
+            } catch (MalformedURLException e) {
+                log.severe("Invalid icon URL");
+                return null;
             }
+        }
+        else {
+            iconURL = Thread.currentThread().getContextClassLoader()
+                .getResource(iconId);
+            if (iconURL == null) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Icon not found '" + id + '\'');
+                }
             return null;
+            }
         }
 
         icon = new ImageIcon(iconURL);
@@ -385,11 +417,29 @@ public class Icons {
             return null;
         }
 
-        URL imageURL = Thread.currentThread().getContextClassLoader()
-            .getResource(iconId);
-        if (imageURL == null) {
-            return null;
+        // If image file exists in skin folder, load it. If it does not exist, load the image file from the jar.
+        URL imageURL;
+        if (Files.exists(Paths.get(iconId))) {
+            try {
+                if (OSUtil.isWindowsSystem()) {
+                    imageURL = new URL("file:///" + iconId);
+                }
+                else {
+                    imageURL = new URL("file://" + iconId);
+                }
+            } catch (MalformedURLException e) {
+                log.severe("Invalid icon URL");
+                return null;
+            }
         }
+        else {
+            imageURL = Thread.currentThread().getContextClassLoader()
+                .getResource(iconId);
+            if (imageURL == null) {
+            return null;
+            }
+        }
+
         image = Toolkit.getDefaultToolkit().getImage(imageURL);
         if (log.isLoggable(Level.FINER)) {
             log.finer("Cached image " + id);
@@ -1024,4 +1074,33 @@ public class Icons {
             }
         }
     }
+
+    /**
+     * Adds properties from a file to existing properties
+     * 
+     * @param oldProperties The existing properties
+     * @param filePath The path of the properties file
+     * @return The properties that have been loaded. Or <code>null</code> if not found.
+     */
+    public static Properties addPropertiesFromFile(Properties oldProperties, Path filePath) {
+        Reject.ifNull(filePath, "Properties blank");
+        try {
+            Properties properties = new Properties();
+            // Read properties from file
+            try (InputStream inputStream = Files.newInputStream(filePath)) {
+                properties.load(inputStream);
+                // For each icon change from relative to absolute path
+                Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+                for(String key: properties.stringPropertyNames()) {
+                    String value = properties.getProperty(key);
+                    oldProperties.setProperty(key, skinPath.resolve(value).toString());
+                }
+                return oldProperties;
+            }
+        } catch (IOException e) {
+            log.log(Level.INFO, "Cannot read properties file: " + filePath, e);
+            return null;
+        }
+    }
+
 }

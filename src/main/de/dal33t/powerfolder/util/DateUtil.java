@@ -242,18 +242,25 @@ public class DateUtil {
     }
 
     /**
-     * Try parsing the String {@code expiration} as date as one of the following formats:
+     * First checks the {@code stringDate} to be {@code "9223372036854775807"}.
+     * This is Microsoft's Active Directory Code for "account does not expire".
+     * Try parsing the String {@code expiration} as date as one of the following
+     * formats:
      * <ol>
      * <li>ISO-8601 as yyyy-MM-ddTHH:mm:ss.fffZ</li>
      * <li>LDAP encoded Unix Timestamp</li>
      * <li>ISO-8601 as yyyyMMddHHmmss</li>
      * </ol>
      * 
-     * @param stringDate 
+     * @param stringDate
      * @return The parsed date
      * @throws ParseException
      */
     public static Date parseDate(String stringDate) throws ParseException {
+        if ("9223372036854775807".equals(stringDate)) {
+            return null;
+        }
+
         Date newDate = null;
         try {
             // ISO-8601 timeformat: 2015-09-22T13:32:32.084Z

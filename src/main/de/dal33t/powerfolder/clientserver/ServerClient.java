@@ -19,16 +19,23 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.PrivilegedExceptionAction;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -44,6 +51,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
@@ -60,6 +68,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
@@ -1110,7 +1119,6 @@ public class ServerClient extends PFComponent {
                             getController().saveConfig();
                         }
                     }
-
                     // PFC-2548
                     if (isKeepLoggedIn()) {
                         if (StringUtils.isBlank(tokenSecret)) {
@@ -1147,7 +1155,27 @@ public class ServerClient extends PFComponent {
                     setAnonAccount();
                     fireLogin(accountDetails, false);
                 }
-
+                // Retrieve skin from server
+                String skin = this.userService.getClientSkinName(this.accountDetails.getAccount());
+                if (this.downloadClientSkin(skin)) {
+                    // Update folder skin
+                    PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
+                    for (Folder folder: getController().getFolderRepository().getFolders()) {
+                        PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
+                    }
+                    // Update shortcut skin
+                    FolderRepository repo = getController().getFolderRepository();
+                    Path oldBase = repo.getFoldersBasedir();
+                    String oldBaseDirName;
+                    if (oldBase.getFileName() != null) {
+                        oldBaseDirName = oldBase.getFileName().toString();
+                    } else {
+                        oldBaseDirName = oldBase.toString();
+                    }
+                        repo.updateShortcuts(oldBaseDirName);
+                    // Update client skin
+                    getController().shutdownAndRequestRestart();
+                }
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
@@ -1698,6 +1726,93 @@ public class ServerClient extends PFComponent {
                 node.setFriend(true, null);
             }
         }
+    }
+    
+    /**
+     * Downloads a client skin from the server and stores it in the misc config directory.
+     * If the local and the remote skin version are the same, the download is skipped
+     * 
+     * @param skin The name of the skin
+     * @return True if the skin was downloaded correctly
+     */
+    private boolean downloadClientSkin(String skin) {
+        // Stop if no skin is given
+        if (skin == null) {
+            return false;
+        }
+        boolean localSkinWasAlreadyInstalled = false;
+        Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+        String baseUrl = this.getWebURL() + "/skin/";;
+        String skinQuery = "?skin=" + skin;
+        URL url;
+        try {
+            // First check if a skin with a newer version is available
+            Path versionPath = skinPath.resolve("version");
+            String localSkinVersion = "local";
+            String remoteSkinVersion = "remote";
+            // Load local skin version
+            if (Files.exists(versionPath)) {
+                localSkinWasAlreadyInstalled = true;
+                try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
+                    if ((localSkinVersion = bufferedReader.readLine()) == null) {
+                        logWarning("Cannot read local skin version");
+                    }
+                }
+            }
+            // Download skin version
+            url = new URL(baseUrl + "version" + skinQuery);
+            PathUtils.copyFromStreamToFile(url.openStream(), versionPath);
+            // Load remote skin version
+            try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
+                if ((remoteSkinVersion = bufferedReader.readLine()) == null) {
+                    logWarning("Cannot read remote skin version");
+                    return false;
+                }
+            }
+            // If local and remote skin have the same version, skip the rest
+            if (localSkinVersion.equals(remoteSkinVersion)) {
+                return false;
+            }
+            skinPath = skinPath.resolve("client");
+            baseUrl += "client/";
+            // Delete old skin
+            try {
+                FileUtils.deleteDirectory(skinPath.toFile());
+            } catch (IOException e) {
+                logWarning("Cannot delete old skin: " + e, e);
+                return false;
+            }
+            // Download skin from server
+            ArrayList<String> files = new ArrayList<String>();
+            files.add("icons.properties");
+            files.add("Folder.ico");
+            files.add("synth.xml");
+            files.add("icons");
+            String file = "";
+            for (int i = 0; i < files.size(); i++) {
+                file = files.get(i);
+                url = new URL(baseUrl + file + skinQuery);
+                Path filePath = skinPath.resolve(file);
+                PathUtils.copyFromStreamToFile(url.openStream(), filePath);
+                if (file == "icons") {
+                    // Parse the icons file list and add the files to the files list
+                    try (BufferedReader bufferedReader = Files.newBufferedReader(filePath)) {
+                        String line;
+                        while ((line = bufferedReader.readLine()) != null) {
+                            files.add(file + "/" + line);
+                        }
+                    }
+                    Files.delete(filePath);
+                }
+            }
+        } catch (MalformedURLException e) {
+            logWarning("Invalid client skin URL: " + e, e);
+            return localSkinWasAlreadyInstalled;
+        } catch (IOException e) {
+            logWarning("Cannot download client skin:" + e, e);
+            return localSkinWasAlreadyInstalled;
+        }
+        return true;
     }
 
     // Services ***************************************************************

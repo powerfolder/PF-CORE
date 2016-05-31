@@ -448,6 +448,22 @@ public class Account implements Serializable {
     }
 
     /**
+     * @return An unmodifiable collection of all
+     *         {@link OrganizationAdminPermission OrganizationAdminPermissions}.
+     *         If the user does not have any OrganizationAdminPermission, an
+     *         empty collection will be returned.
+     */
+    public Collection<OrganizationAdminPermission> getOrgAdminPermissions() {
+        Collection<OrganizationAdminPermission> orgAdmins = new ArrayList<>();
+        for (Permission perm : permissions) {
+            if (perm instanceof OrganizationAdminPermission) {
+                orgAdmins.add((OrganizationAdminPermission) perm);
+            }
+        }
+        return Collections.unmodifiableCollection(orgAdmins);
+    }
+
+    /**
      * 
      * @param folder
      * @return the permission on the given folder. AccessMode.NO_ACCESS for no
@@ -1094,7 +1110,7 @@ public class Account implements Serializable {
         Reject.ifBlank(email, "Email");
         email = email.toLowerCase().trim();
         // Do only a partial match of the email address because it may also contain LDAP information separated by ":"
-        for (String element : this.emails) {
+        for (String element : emails) {
             if (element.startsWith(email)) {
                 return emails.remove(element);
             }
@@ -1102,7 +1118,15 @@ public class Account implements Serializable {
         return emails.remove(email);
     }
 
-    public boolean removeNonExistingLdapEmails(ArrayList<String> ldapEmails,
+    /**
+     * Remove the email addresses stored for the account, that are not in the
+     * list {@code ldapEmails} but contain the {@code ldapSearchBase} as suffix.
+     * 
+     * @param ldapEmails
+     * @param ldapSearchBase
+     * @return
+     */
+    public boolean removeNonExistingLdapEmails(List<String> ldapEmails,
         String ldapSearchBase) {
         // Append LDAP context to emails
         for (final ListIterator<String> i = ldapEmails.listIterator(); i
@@ -1111,12 +1135,12 @@ public class Account implements Serializable {
             i.set(email + ":" + ldapSearchBase);
         }
         boolean store = false;
-        for (String email : this.emails) {
+        for (String email : emails) {
             // Only check email addresses belonging to the LDAP context
-            if ((email.indexOf(":") > 0) && (email.split(":")[1].equals(ldapSearchBase))) {
+            if ((email.indexOf(":") > 0) && (email.split(":")[1].equalsIgnoreCase(ldapSearchBase))) {
                 // If email is no longer existing in LDAP, remove it
                 if (!ldapEmails.contains(email)) {
-                    this.emails.remove(email);
+                    emails.remove(email);
                     store = true;
                 }
             }
@@ -1126,14 +1150,16 @@ public class Account implements Serializable {
 
     public List<String> getEmails() {
         // Create list of emails without LDAP search context information
-        ArrayList<String> emails = new ArrayList<String>(this.emails);
-        for (final ListIterator<String> i = emails.listIterator(); i.hasNext();) {
-            final String element = i.next();
-            if (element.indexOf(":") > 0) { 
-                i.set(element.split(":")[0]);
+        List<String> result = new ArrayList<>();
+        for (String email : emails) {
+            int index = email.indexOf(':');
+            if (index > 0) {
+                result.add(email.substring(0, index));
+            } else {
+                result.add(email);
             }
         }
-        return Collections.unmodifiableList(emails);
+        return Collections.unmodifiableList(result);
     }
 
     /**

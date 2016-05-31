@@ -45,6 +45,7 @@ public class AccountFilterModel extends Model {
     private String queryname;
     private String memberOfOrganizationOID = Organization.FILTER_MATCH_ALL;
     private List<String> adminOfOrganizationOID;
+    private String permissionName;
     private String sortingProperty;
     private String sortingOrder;
     private int pageNumber;
@@ -162,6 +163,14 @@ public class AccountFilterModel extends Model {
 
     public int getPageNumber() {
         return pageNumber;
+    }
+
+    public String getFilterByPermission() {
+        return permissionName;
+    }
+
+    public void setFilterByPermission(String permissionName) {
+        this.permissionName = permissionName;
     }
 
     // Logic ******************************************************************

@@ -19,12 +19,19 @@
  */
 package de.dal33t.powerfolder.skin;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 import de.javasoft.util.IVersion;
 
@@ -34,6 +41,8 @@ import de.javasoft.util.IVersion;
  * @author sprajc
  */
 public abstract class AbstractSyntheticaSkin implements Skin {
+    
+    private static final Logger log = Logger.getLogger(LookAndFeel.class.getName());
 
     public abstract Properties getIconsProperties();
 
@@ -41,15 +50,7 @@ public abstract class AbstractSyntheticaSkin implements Skin {
 
     public abstract String getID();
 
-    public abstract String getSynthXMLFileName();
-
-    protected String getSynthXMLFileName0() {
-        String fn = getSynthXMLFileName();
-        if (!fn.startsWith("/")) {
-            fn = '/' + fn;
-        }
-        return fn;
-    }
+    public abstract Path getSynthXMLPath();
 
     public final LookAndFeel getLookAndFeel() throws ParseException {
         return new LookAndFeel();
@@ -57,9 +58,29 @@ public abstract class AbstractSyntheticaSkin implements Skin {
 
     public class LookAndFeel extends SyntheticaLookAndFeel {
         private static final long serialVersionUID = 1L;
-
+        
         public LookAndFeel() throws ParseException {
-            super(AbstractSyntheticaSkin.this.getSynthXMLFileName0());
+            super();
+            // If XML file exists in skin folder, load it. If it does not exist, load the default XML file from the jar.
+            if (Files.exists(AbstractSyntheticaSkin.this.getSynthXMLPath())) {
+                try {
+                    URL xmlURL;
+                    if (OSUtil.isWindowsSystem()) {
+                        xmlURL = new URL("file:///" + AbstractSyntheticaSkin.this.getSynthXMLPath());
+                    } else {
+                        xmlURL = new URL("file://" + AbstractSyntheticaSkin.this.getSynthXMLPath());
+                    }
+                    super.load(xmlURL);
+                } catch (MalformedURLException e) {
+                    log.severe("Cannot load XML file");
+                }
+                catch (IOException e) {
+                    log.severe("Cannot load XML file");
+                }
+            }
+            else {
+                super.loadXMLConfig(AbstractSyntheticaSkin.this.getSynthXMLPath().toString().replace("\\", "/"));
+            }
         }
 
         @Override
