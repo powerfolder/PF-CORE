@@ -32,6 +32,8 @@ public class OrganizationFilterModel extends Model {
     private String name;
     private int maxResults;
     private List<String> orgOIDs;
+    private String adminAccountOID;
+    private String adminAccountUsername;
 
     // Getter and Setter
 
@@ -66,5 +68,21 @@ public class OrganizationFilterModel extends Model {
             orgOIDs = new ArrayList<>();
         }
         orgOIDs.add(orgOID);
+    }
+
+    public String getAdminAccountOID() {
+        return adminAccountOID;
+    }
+
+    public void setAdminAccountOID(String adminAccountOID) {
+        this.adminAccountOID = adminAccountOID;
+    }
+
+    public String getAdminAccountUsername() {
+        return adminAccountUsername;
+    }
+
+    public void setAdminAccountUsername(String adminAccountUsername) {
+        this.adminAccountUsername = adminAccountUsername;
     }
 }
