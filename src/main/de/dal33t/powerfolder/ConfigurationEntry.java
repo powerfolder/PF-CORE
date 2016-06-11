@@ -1224,7 +1224,7 @@ public enum ConfigurationEntry {
         }
         return value;
     }
-
+    
     /**
      * Parses the configuration entry into a Integer.
      * 
@@ -1235,7 +1235,20 @@ public enum ConfigurationEntry {
      *         default value was set.
      */
     public Integer getValueInt(Controller controller) {
-        String value = getValue(controller);
+        return getValueInt(controller.getConfig());
+    }
+    
+    /**
+     * Parses the configuration entry into a Integer.
+     * 
+     * @param config
+     *            the config to read from
+     * @return The current value from the configuration for this entry or the
+     *         default value if value not set/unparseable or {@code null} if no
+     *         default value was set.
+     */
+    public Integer getValueInt(Properties config) {
+        String value = getValue(config);
         if (value == null || StringUtils.isBlank(value)) {
             value = getDefaultValue();
         }
@@ -1261,7 +1274,20 @@ public enum ConfigurationEntry {
      *         default value was set.
      */
     public Boolean getValueBoolean(Controller controller) {
-        String value = getValue(controller);
+        return getValueBoolean(controller.getConfig());
+    }
+    
+    /**
+     * Parses the configuration entry into a Boolen.
+     *
+     * @param config
+     *            the config to read from
+     * @return The current value from the configuration for this entry or the
+     *         default value if value not set/unparseable or {@code null} if no
+     *         default value was set.
+     */
+    public Boolean getValueBoolean(Properties config) {
+        String value = getValue(config);
         if (value == null || StringUtils.isBlank(value)) {
             value = getDefaultValue();
         }
@@ -1310,8 +1336,20 @@ public enum ConfigurationEntry {
      *            the value to set
      */
     public void setValue(Controller controller, String value) {
-        Reject.ifNull(controller, "Controller is null");
-        controller.getConfig().setProperty(configKey, value);
+        setValue(controller.getConfig(), value);
+    }
+        
+    /**
+     * Sets the value of this config entry.
+     *
+     * @param controller
+     *            the controller of the config
+     * @param value
+     *            the value to set
+     */
+    public void setValue(Properties config, String value) {
+        Reject.ifNull(config, "config is null");
+        config.setProperty(configKey, value);
     }
 
     /**
@@ -1345,8 +1383,17 @@ public enum ConfigurationEntry {
      *            the controller to use
      */
     public void removeValue(Controller controller) {
-        Reject.ifNull(controller, "Controller is null");
-        controller.getConfig().remove(configKey);
+        removeValue(controller.getConfig());
+    }
+    /**
+     * Removes the entry from the configuration.
+     *
+     * @param controller
+     *            the controller to use
+     */
+    public void removeValue(Properties config) {
+        Reject.ifNull(config, "config is null");
+        config.remove(configKey);
     }
 
     /**
