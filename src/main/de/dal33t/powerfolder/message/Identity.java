@@ -112,6 +112,8 @@ public class Identity extends Message
      * {@link StopUploadExt} {@link StartUploadExt} {@link RequestPartExt}
      * {@link RequestDownloadExt} {@link FileChunkExt} {@link FileListExt}
      * {@link FolderFilesChanged}
+     * <p>
+     * 111: PFC-2455: Include federated folders when returning Account to node.
      */
     public static final int PROTOCOL_VERSION_106 = 106;
     public static final int PROTOCOL_VERSION_107 = 107;

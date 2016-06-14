@@ -20,9 +20,6 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -35,7 +32,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.PrivilegedExceptionAction;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -44,6 +40,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -129,6 +126,13 @@ public class ServerClient extends PFComponent {
             return Boolean.FALSE;
         }
     };
+    
+    /**
+     * PFC-2455 / PFC-2745: Config and children of this client.
+     */
+    private Properties config;
+    private Map<ServerInfo, ServerClient> childClients = Util
+        .createConcurrentHashMap();
 
     // The last used username and password.
     // Tries to re-login with these if re-connection happens
@@ -198,13 +202,25 @@ public class ServerClient extends PFComponent {
      * @param controller
      */
     public ServerClient(Controller controller) {
+        this(controller, controller.getConfig());
+    }
+        
+    /**
+     * Constructs a server client with the defaults from the config. allows
+     * server change.
+     *
+     * @param controller
+     */
+    public ServerClient(Controller controller, Properties config) {
         super(controller);
-        String name = ConfigurationEntry.SERVER_NAME.getValue(controller);
-        String host = ConfigurationEntry.SERVER_HOST.getValue(controller);
-        String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(controller);
+        
+        config = controller.getConfig();
+        String name = ConfigurationEntry.SERVER_NAME.getValue(config);
+        String host = ConfigurationEntry.SERVER_HOST.getValue(config);
+        String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(config);
 
-        if (!ConfigurationEntry.SERVER_NODEID.hasValue(controller)) {
-            if (ConfigurationEntry.SERVER_HOST.hasValue(controller)) {
+        if (!ConfigurationEntry.SERVER_NODEID.hasValue(config)) {
+            if (ConfigurationEntry.SERVER_HOST.hasValue(config)) {
                 // Hostname set, but no node id?
                 nodeId = null;
             }
@@ -212,20 +228,20 @@ public class ServerClient extends PFComponent {
 
         boolean allowServerChange = true;
         boolean updateConfig = ConfigurationEntry.SERVER_CONFIG_UPDATE
-            .getValueBoolean(controller);
+            .getValueBoolean(config);
 
-        init(controller, name, host, nodeId, allowServerChange, updateConfig);
+        init(controller, config, name, host, nodeId, allowServerChange, updateConfig);
     }
 
-    public ServerClient(Controller controller, String name, String host,
+    public ServerClient(Controller controller, Properties config, String name, String host,
         String nodeId, boolean allowServerChange, boolean updateConfig)
     {
         super(controller);
-        init(controller, name, host, nodeId, allowServerChange, updateConfig);
+        init(controller, config, name, host, nodeId, allowServerChange, updateConfig);
     }
 
     /**
-     * Constructs a server client with the defaults from the config.
+     * Constructs a server client with the given config.
      *
      * @param controller
      * @param name
@@ -234,9 +250,10 @@ public class ServerClient extends PFComponent {
      * @param allowServerChange
      * @param updateConfig
      */
-    private void init(Controller controller, String name, String host,
+    private void init(Controller controller, Properties config, String name, String host,
         String nodeId, boolean allowServerChange, boolean updateConfig)
     {
+        this.config = config;
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
         this.supportsQuickLogin = true;
@@ -304,7 +321,7 @@ public class ServerClient extends PFComponent {
 
     public void start() {
         boolean allowLAN2Internet = ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
-            .getValueBoolean(getController());
+            .getValueBoolean(config);
         if (!allowLAN2Internet && getController().isLanOnly()
             && !server.isOnLAN())
         {
@@ -502,7 +519,7 @@ public class ServerClient extends PFComponent {
     public String getWebURL() {
         String webURL = Util
             .removeLastSlashFromURI(ConfigurationEntry.SERVER_WEB_URL
-                .getValue(getController()));
+                .getValue(config));
         if (!StringUtils.isBlank(webURL)) {
             return webURL;
         }
@@ -531,7 +548,7 @@ public class ServerClient extends PFComponent {
         }
         if (!withCredentials
             || !ConfigurationEntry.WEB_PASSWORD_ALLOWED
-                .getValueBoolean(getController()))
+                .getValueBoolean(config))
         {
             return webURL + '/' + uri;
         }
@@ -569,7 +586,7 @@ public class ServerClient extends PFComponent {
         return !isTokenLogin()
             && OSUtil.isWindowsSystem()
             && ConfigurationEntry.WEB_DAV_ENABLED
-                .getValueBoolean(getController());
+                .getValueBoolean(config);
     }
 
     /**
@@ -582,7 +599,7 @@ public class ServerClient extends PFComponent {
             return false;
         }
         if (ConfigurationEntry.WEB_LOGIN_ALLOWED
-            .getValueBoolean(getController()))
+            .getValueBoolean(config))
         {
             return true;
         }
@@ -625,7 +642,7 @@ public class ServerClient extends PFComponent {
         // PFS-862: End
 
         if (!ConfigurationEntry.WEB_PASSWORD_ALLOWED
-            .getValueBoolean(getController()))
+            .getValueBoolean(config))
         {
             return getWebURL();
         }
@@ -729,7 +746,7 @@ public class ServerClient extends PFComponent {
             return null;
         }
         if (!ConfigurationEntry.SERVER_RECOVER_PASSWORD_ENABLED
-            .getValueBoolean(getController()))
+            .getValueBoolean(config))
         {
             return null;
         }
@@ -745,7 +762,7 @@ public class ServerClient extends PFComponent {
      */
     public boolean supportsWebRegistration() {
         return ConfigurationEntry.SERVER_REGISTER_ENABLED
-            .getValueBoolean(getController());
+            .getValueBoolean(config);
     }
 
     /**
@@ -850,7 +867,7 @@ public class ServerClient extends PFComponent {
      */
     public boolean isLastLoginKnown() {
         return ConfigurationEntry.SERVER_CONNECT_USERNAME
-            .hasValue(getController());
+            .hasValue(config);
     }
 
     /**
@@ -866,26 +883,26 @@ public class ServerClient extends PFComponent {
         String token = null;
 
         if (ConfigurationEntry.SERVER_CONNECT_USERNAME
-            .hasValue(getController()))
+            .hasValue(config))
         {
             un = ConfigurationEntry.SERVER_CONNECT_USERNAME
-                .getValue(getController());
+                .getValue(config);
             pw = LoginUtil
                 .deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
-                    .getValue(getController()));
+                    .getValue(config));
 
             if (pw == null) {
                 String pws = ConfigurationEntry.SERVER_CONNECT_PASSWORD_CLEAR
-                    .getValue(getController());
+                    .getValue(config);
                 if (StringUtils.isNotBlank(pws)) {
                     pw = Util.toCharArray(pws);
                 }
             }
         }
 
-        if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasValue(getController())) {
+        if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasValue(config)) {
             token = ConfigurationEntry.SERVER_CONNECT_TOKEN
-                .getValue(getController());
+                .getValue(config);
             if (Token.isExpired(token)) {
                 // Don't use expired token
                 token = null;
@@ -900,7 +917,7 @@ public class ServerClient extends PFComponent {
         }
 
         if (ConfigurationEntry.SERVER_CONNECT_NO_PASSWORD_ALLOWED
-            .getValueBoolean(getController()))
+            .getValueBoolean(config))
         {
             if (StringUtils.isBlank(un)) {
                 un = System.getProperty("user.name");
@@ -921,7 +938,7 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isBlank(un)
             && (pw == null || pw.length == 0)
             && ConfigurationEntry.KERBEROS_SSO_ENABLED
-                .getValueBoolean(getController())) {
+                .getValueBoolean(config)) {
             un = systemUserName;
         }
 
@@ -968,7 +985,7 @@ public class ServerClient extends PFComponent {
      *         login failed. NEVER returns <code>null</code>
      */
     public Account login(String theUsername, char[] thePassword) {
-        ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(getController());
+        ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(config);
         return login0(theUsername, LoginUtil.obfuscate(thePassword), null);
     }
 
@@ -1025,7 +1042,7 @@ public class ServerClient extends PFComponent {
                         // PFC-2534: Start
                         try {
                             String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                                .getValue(getController());
+                                .getValue(config);
                             boolean idpEqual = StringUtils.isEqual(lastIdPUsed,
                                 currentIdP);
                             boolean pwEqual = StringUtils.isEqual(
@@ -1128,10 +1145,10 @@ public class ServerClient extends PFComponent {
                             {
                                 passwordObf = null;
                                 ConfigurationEntry.SERVER_CONNECT_TOKEN
-                                    .setValue(getController(), tokenSecret);
+                                    .setValue(config, tokenSecret);
                             } else {
                                 ConfigurationEntry.SERVER_CONNECT_TOKEN
-                                    .removeValue(getController());
+                                    .removeValue(config);
                             }
                         }
 
@@ -1242,13 +1259,13 @@ public class ServerClient extends PFComponent {
 
     private boolean isKerberosLogin() {
         return ConfigurationEntry.KERBEROS_SSO_ENABLED
-            .getValueBoolean(getController())
+            .getValueBoolean(config)
             && StringUtils.isBlank(passwordObf) && !isTokenLogin();
     }
     
     private boolean isShibbolethLogin() {
         return ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-            .hasNonBlankValue(getController());
+            .hasNonBlankValue(config);
     }
 
     private byte[] prepareKerberosLogin() {
@@ -1269,9 +1286,9 @@ public class ServerClient extends PFComponent {
             System
                 .setProperty("java.security.krb5.realm",
                     ConfigurationEntry.KERBEROS_SSO_REALM
-                        .getValue(getController()));
+                        .getValue(config));
             String kdc = ConfigurationEntry.KERBEROS_SSO_KDC
-                .getValue(getController());
+                .getValue(config);
             System.setProperty("java.security.krb5.kdc", kdc);
 
             LoginContext lc = new LoginContext("SignedOnUserLoginContext",
@@ -1292,7 +1309,7 @@ public class ServerClient extends PFComponent {
 
     public boolean isAllowedToRemoveFolders() {
         return !ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
+            .getValueBoolean(config)
             || getAccount().hasPermission(FolderRemovePermission.INSTANCE);
     }
 
@@ -1301,7 +1318,7 @@ public class ServerClient extends PFComponent {
             return false;
         }
         if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
-            .getValueBoolean(getController())
+            .getValueBoolean(config)
             && !getAccount().hasPermission(FolderCreatePermission.INSTANCE))
         {
             return false;
@@ -1323,7 +1340,7 @@ public class ServerClient extends PFComponent {
      */
     private boolean prepareShibbolethLogin(String username, char[] thePassword, boolean userChanged) {
         String idpURLString = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-            .getValue(getController());
+            .getValue(config);
 
         if (StringUtils.isBlank(idpURLString)) {
             shibUsername = null;
@@ -1375,7 +1392,7 @@ public class ServerClient extends PFComponent {
                 throw new RuntimeException(
                     "Unable to resolve identity provider URL: "
                         + ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                            .getValue(getController()) + ". " + e);
+                            .getValue(config) + ". " + e);
             }
 
             HttpClientBuilder builder = Util
@@ -1395,7 +1412,7 @@ public class ServerClient extends PFComponent {
                 shibToken = result[1];
             } catch (ECPUnauthorizedException e) {
                 shibbolethUnauthRetriesSkip = ConfigurationEntry.SERVER_LOGIN_SKIP_RETRY
-                    .getValueInt(getController());
+                    .getValueInt(config);
                 shibUsername = null;
                 shibToken = null;
                 throw new SecurityException(e);
@@ -1497,15 +1514,15 @@ public class ServerClient extends PFComponent {
             }
 
 
-            init(getController(), name, host, nodeId, allowServerChange,
+            init(getController(), config, name, host, nodeId, allowServerChange,
                 updateConfig);
 
             // Store in config
             setServerWebURLInConfig(webURL);
             setServerHTTPTunnelURLInConfig(tunnelURL);
             setServerInConfig(getServer().getInfo());
-            ConfigurationEntry.NETWORK_ID.setValue(getController(), newNetworkID);
-            ConfigurationEntry.CONFIG_URL.setValue(getController(), configURL);
+            ConfigurationEntry.NETWORK_ID.setValue(config, newNetworkID);
+            ConfigurationEntry.CONFIG_URL.setValue(config, configURL);
 
             getController().saveConfig();
 
@@ -1650,6 +1667,43 @@ public class ServerClient extends PFComponent {
         updateFriendsList(a);
         getController().getFolderRepository().updateFolders(a);
         scheduleConnectHostingServers();
+
+        // PFC-2455 / PFC-2745: Spawn additional Clients
+        if (!a.getTokens().isEmpty()) {
+            getController().getNodeManager()
+                .setNetworkId(Constants.NETWORK_ID_ANY);
+            spawnChildClients(a);
+        }
+    }
+
+    private void spawnChildClients(Account a) {
+        for (ServerInfo fedService : a.getTokens().keySet()) {
+            String token = a.getToken(fedService);
+            if (Token.isExpired(token)) {
+                continue;
+            }
+            if (childClients.containsKey(fedService)) {
+                continue;
+            }
+            logWarning("Starting connect to federated service: " + fedService);
+            ServerClient client = createNew(fedService, token);
+            client.start();
+            childClients.put(fedService, client);
+        }
+    }
+
+    private ServerClient createNew(ServerInfo serviceInfo, String token) {
+        String defaultConfigURL = serviceInfo.getWebUrl()
+            + ConfigurationLoader.DEFAULT_PROPERTIES_URI;
+        try {
+            Properties config = ConfigurationLoader
+                .loadPreConfiguration(defaultConfigURL);
+            ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, token);
+            return new ServerClient(getController(), config);
+        } catch (IOException e) {
+            logWarning("Unable to connect to " + serviceInfo + ". " + e);
+            return null;
+        }
     }
 
     private void updateServer(Account a) {
@@ -1683,7 +1737,11 @@ public class ServerClient extends PFComponent {
 
             Waiter w = new Waiter(HAMMER_DELAY);
             while (!w.isTimeout()) {
-                w.waitABit();
+                try {
+                    w.waitABit();
+                } catch (Exception e) {
+                    return; // Interrupted
+                }
                 if (!currentlyHammeringServers()
                     && targetServerNode.isConnected())
                 {
@@ -1971,7 +2029,7 @@ public class ServerClient extends PFComponent {
         Reject.ifNull(newServer, "Server is null");
 
         ConfigurationEntry.SERVER_NAME
-            .setValue(getController(), newServer.nick);
+            .setValue(config, newServer.nick);
         // This probably causes a reverse lookup of the IP.
         String serverHost = newServer.getConnectAddress().getHostName();
         if (newServer.getConnectAddress().getPort() != ConnectionListener.DEFAULT_PORT)
@@ -1979,26 +2037,26 @@ public class ServerClient extends PFComponent {
             serverHost += ':';
             serverHost += newServer.getConnectAddress().getPort();
         }
-        ConfigurationEntry.SERVER_HOST.setValue(getController(), serverHost);
+        ConfigurationEntry.SERVER_HOST.setValue(config, serverHost);
         if (isTempServerNode(newServer)) {
-            ConfigurationEntry.SERVER_NODEID.removeValue(getController());
+            ConfigurationEntry.SERVER_NODEID.removeValue(config);
         } else {
-            ConfigurationEntry.SERVER_NODEID.setValue(getController(),
+            ConfigurationEntry.SERVER_NODEID.setValue(config,
                 newServer.id);
         }
     }
 
     public boolean setServerWebURLInConfig(String newWebUrl) {
         String oldWebUrl = ConfigurationEntry.SERVER_WEB_URL
-            .getValue(getController());
+            .getValue(config);
         if (Util.equals(oldWebUrl, newWebUrl)) {
             return false;
         }
         // Currently not supported from config
         if (StringUtils.isBlank(newWebUrl)) {
-            ConfigurationEntry.SERVER_WEB_URL.removeValue(getController());
+            ConfigurationEntry.SERVER_WEB_URL.removeValue(config);
         } else {
-            ConfigurationEntry.SERVER_WEB_URL.setValue(getController(),
+            ConfigurationEntry.SERVER_WEB_URL.setValue(config,
                 newWebUrl);
         }
         return true;
@@ -2007,7 +2065,7 @@ public class ServerClient extends PFComponent {
     private boolean setServerHTTPTunnelURLInConfig(String newTunnelURL) {
         logFine("New tunnel URL: " + newTunnelURL);
         String oldUrl = ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL
-            .getValue(getController());
+            .getValue(config);
         if (Util.equals(oldUrl, newTunnelURL)) {
             return false;
         }
@@ -2018,10 +2076,10 @@ public class ServerClient extends PFComponent {
         // Currently not supported from config
         if (StringUtils.isBlank(newTunnelURL)) {
             ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL
-                .removeValue(getController());
+                .removeValue(config);
         } else {
             ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL.setValue(
-                getController(), newTunnelURL);
+                config, newTunnelURL);
         }
         return true;
     }
@@ -2097,25 +2155,35 @@ public class ServerClient extends PFComponent {
     private void saveLastKnowLogin(String username, String passwordObf) {
         if (StringUtils.isNotBlank(username)) {
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
-                getController(), username);
+                config, username);
         } else {
             ConfigurationEntry.SERVER_CONNECT_USERNAME
-                .removeValue(getController());
+                .removeValue(config);
         }
 
         if (isKeepLoggedIn() && StringUtils.isNotBlank(passwordObf)) {
             ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
-                getController(), passwordObf);
+                config, passwordObf);
         } else {
             ConfigurationEntry.SERVER_CONNECT_PASSWORD
-                .removeValue(getController());
+                .removeValue(config);
         }
 
-        // Store new username/pw
-        getController().saveConfig();
+        // Store if we are main client.
+        if (config == getController().getConfig()) {
+            getController().saveConfig();            
+        }
     }
 
     private void changeToServer(ServerInfo newServerInfo) {
+        // PFC-2455
+        if (!newServerInfo.isClusterServer()) {
+            logWarning(
+                "Not allowed to change primary server to federated service: "
+                    + newServerInfo.getName() + ". Keeping server "
+                    + server.getNick());
+            return;
+        }
         logFine("Changing server to " + newServerInfo.getNode());
 
         // Add key of new server to keystore.
@@ -2193,7 +2261,7 @@ public class ServerClient extends PFComponent {
         }
         boolean pfCom = isPowerFolderCloud();
         boolean prompt = ConfigurationEntry.CONFIG_PROMPT_SERVER_IF_PF_COM
-            .getValueBoolean(getController());
+            .getValueBoolean(config);
         return prompt || !pfCom;
     }
 
@@ -2416,7 +2484,7 @@ public class ServerClient extends PFComponent {
                 return;
             }
             boolean allowLAN2Internet = ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
-                .getValueBoolean(getController());
+                .getValueBoolean(config);
             if (!allowLAN2Internet && getController().isLanOnly()
                 && !server.isOnLAN())
             {
@@ -2542,10 +2610,10 @@ public class ServerClient extends PFComponent {
                 GSSName.NT_USER_NAME);
             GSSName serviceName = gssManager.createName(
                 ConfigurationEntry.KERBEROS_SSO_SERVICE_NAME
-                    .getValue(getController())
+                    .getValue(config)
                     + "@"
                     + ConfigurationEntry.KERBEROS_SSO_REALM
-                        .getValue(getController()), null);
+                        .getValue(config), null);
 
             GSSCredential clientCredentials = gssManager.createCredential(
                 clientName, 8 * 60 * 60, kerberos5Oid,

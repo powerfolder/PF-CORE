@@ -322,6 +322,20 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * PFC-2455 / PFC-2745: Changes network ID during runtime. Does not store the config.
+     * 
+     * @param networkId
+     */
+    public void setNetworkId(String networkId) {
+        if (getNetworkId().equals(networkId)) {
+            return;
+        }
+        ConfigurationEntry.NETWORK_ID.setValue(getController(), networkId);
+        getMySelf().updateInfo(new MemberInfo(getMySelf().getNick(),
+            getMySelf().getId(), networkId));
+    }
+
+    /**
      * @param node
      *            the node to ask the friend status for
      * @return true if that node is on the friendlist.

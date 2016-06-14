@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +56,7 @@ import org.hibernate.annotations.Index;
 import org.hibernate.annotations.IndexColumn;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.hibernate.annotations.MapKeyManyToMany;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.json.JSONException;
@@ -136,6 +139,17 @@ public class Account implements Serializable, D2DObject {
     // PFS-862: One time token password
     @Index(name = "IDX_AOTP")
     private String otp;
+    
+    // PFC-2455: Tokens for federated services
+    @CollectionOfElements(targetElement = String.class)
+    @MapKeyManyToMany(targetEntity = ServerInfo.class, joinColumns=@JoinColumn(name="serviceInfo_id"))
+    @JoinTable(name = "Account_tokens", joinColumns = @JoinColumn(name = "oid"))
+    @Column(name = "tokenSecret")
+    @BatchSize(size = 1337)
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private Map<ServerInfo, String> tokens;
+    
     private String language;
     @Index(name = "IDX_LDAPDN")
     @Column(length = 512)
@@ -278,11 +292,12 @@ public class Account implements Serializable, D2DObject {
         this.oid = oid;
         this.permissions = new CopyOnWriteArrayList<Permission>();
         this.osSubscription = new OnlineStorageSubscription();
-        this.licenseKeyFiles = new CopyOnWriteArrayList<String>();
-        this.computers = new CopyOnWriteArrayList<MemberInfo>();
-        this.licenseKeyFileList = new CopyOnWriteArrayList<String>();
-        this.groups = new CopyOnWriteArrayList<Group>();
-        this.emails = new CopyOnWriteArrayList<String>();
+        this.licenseKeyFiles = new CopyOnWriteArrayList<>();
+        this.computers = new CopyOnWriteArrayList<>();
+        this.licenseKeyFileList = new CopyOnWriteArrayList<>();
+        this.groups = new CopyOnWriteArrayList<>();
+        this.emails = new CopyOnWriteArrayList<>();
+        this.tokens = new ConcurrentHashMap<>();
     }
 
     /**
@@ -682,6 +697,51 @@ public class Account implements Serializable, D2DObject {
     public void invalidateOTP() {
         this.otp = null;
     }
+
+    // PFS-2455: Start
+    
+    /**
+     * Sets a new token to authenticate at the federated service/server
+     * 
+     * @param fedServiceInfo
+     *            the federated service
+     * @param tokenSecret the token secret, which can be used for authentication.
+     * @return if the token is new.
+     */
+    public void setToken(ServerInfo fedServiceInfo, String tokenSecret) {
+        Reject.ifNull(fedServiceInfo, "fedServiceInfo");
+        Reject.ifFalse(fedServiceInfo.isFederatedService(),
+            "Setting token only possible for federated services");
+        tokens.put(fedServiceInfo, tokenSecret);
+    }
+
+    /**
+     * Removes the token for the federated service.
+     * 
+     * @param fedServiceInfo
+     *            the federated service
+     */
+    public void removeToken(ServerInfo fedServiceInfo) {
+        Reject.ifNull(fedServiceInfo, "fedServiceInfo");
+        Reject.ifFalse(fedServiceInfo.isFederatedService(),
+            "Setting token only possible for federated services");
+        tokens.remove(fedServiceInfo);
+    }
+
+    /**
+     * @param fedServiceInfo
+     *            the federated service
+     * @return the token secret for authentication or null.
+     */
+    public String getToken(ServerInfo fedServiceInfo) {
+        return tokens.get(fedServiceInfo);
+    }
+    
+    public Map<ServerInfo, String> getTokens() {
+        return Collections.unmodifiableMap(tokens);
+    }
+    
+    // PFS-2455: End
 
     /**
      * setLanguage Set account language
@@ -1458,8 +1518,7 @@ public class Account implements Serializable, D2DObject {
         }
 
         if (!(groups instanceof CopyOnWriteArrayList<?>)) {
-            Collection<Group> newGroups = new CopyOnWriteArrayList<Group>(
-                groups);
+            Collection<Group> newGroups = new CopyOnWriteArrayList<>(groups);
             groups = newGroups;
             for (Group group : groups) {
                 group.convertCollections();
@@ -1467,20 +1526,25 @@ public class Account implements Serializable, D2DObject {
         }
 
         if (!(computers instanceof CopyOnWriteArrayList<?>)) {
-            Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<MemberInfo>(
+            Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<>(
                 computers);
             computers = newComputers;
         }
 
         if (!(licenseKeyFileList instanceof CopyOnWriteArrayList<?>)) {
-            List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<String>(
+            List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<>(
                 licenseKeyFileList);
             licenseKeyFileList = newLicenseKeyFileList;
         }
 
         if (!(emails instanceof CopyOnWriteArrayList<?>)) {
-            List<String> newEmails = new CopyOnWriteArrayList<String>(emails);
+            List<String> newEmails = new CopyOnWriteArrayList<>(emails);
             emails = newEmails;
+        }
+
+        if (!(tokens instanceof ConcurrentHashMap<?, ?>)) {
+            Map<ServerInfo, String> newTokens = new ConcurrentHashMap<>(tokens);
+            tokens = newTokens;
         }
     }
 
@@ -1490,6 +1554,9 @@ public class Account implements Serializable, D2DObject {
         }
         if (groups == null) {
             groups = new CopyOnWriteArrayList<Group>();
+        }
+        if (tokens == null) {
+            tokens = new ConcurrentHashMap<>();
         }
         if (server != null) {
             server.migrateId();
@@ -1512,10 +1579,13 @@ public class Account implements Serializable, D2DObject {
             oid = IdGenerator.makeId();
         }
         if (groups == null) {
-            groups = new CopyOnWriteArrayList<Group>();
+            groups = new CopyOnWriteArrayList<>();
         }
         if (emails == null) {
-            emails = new CopyOnWriteArrayList<String>();
+            emails = new CopyOnWriteArrayList<>();
+        }
+        if (tokens == null) {
+            tokens = new ConcurrentHashMap<>();
         }
     }
 

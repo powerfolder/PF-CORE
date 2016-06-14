@@ -53,7 +53,7 @@ public class ConfigurationLoader {
     public static final String LDAP_CONFIG_NAME = "LDAP";
     public static final String RADIUS_CONFIG_NAME = "RADIUS";
     public static final String SHIBBOLETH_CONFIG_NAME = "Shibboleth";
-    private static final String DEFAULT_PROPERTIES_URI = "/client_deployment/"
+    public static final String DEFAULT_PROPERTIES_URI = "/client_deployment/"
         + DEFAULT_CONFIG_FILENAME;
     private static final String PREFERENCES_PREFIX = "pref.";
     private static final int URL_CONNECT_TIMEOUT_SECONDS = 10;

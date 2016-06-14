@@ -19,16 +19,14 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.util.Date;
-
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
 
 public class TokenTest extends TestCase {
 
     public void testGenerateToken() {
-        Date validTo = new Date(System.currentTimeMillis() + 150000L);
-        Token token = new Token(validTo, null, null);
+        Token token = Token.newAccessToken(150000L, testAccount());
         assertFalse(token.hasSecret());
         assertFalse(token.isValid());
         assertFalse(token.isExpired());
@@ -50,8 +48,7 @@ public class TokenTest extends TestCase {
     }
 
     public void testExpireToken() {
-        Date validTo = new Date(System.currentTimeMillis() + 500L);
-        Token token = new Token(validTo, null, null);
+        Token token = Token.newAccessToken(500L, testAccount());
         String secret = token.generateSecret();
 
         assertTrue(token.isValid());
@@ -66,8 +63,7 @@ public class TokenTest extends TestCase {
     }
 
     public void testRevokeToken() {
-        Date validTo = new Date(System.currentTimeMillis() + 150000L);
-        Token token = new Token(validTo, null, null);
+        Token token = Token.newAccessToken(150000L, testAccount());
         String secret = token.generateSecret();
 
         assertTrue(token.isValid());
@@ -81,8 +77,7 @@ public class TokenTest extends TestCase {
     }
 
     public void testInvalidTokens() {
-        Date validTo = new Date(System.currentTimeMillis() + 150000L);
-        Token token = new Token(validTo, null, null);
+        Token token = Token.newAccessToken(150000L, testAccount());
         String secret = token.generateSecret();
         assertTrue(token.isValid());
         assertTrue(token.validate(secret));
@@ -97,7 +92,7 @@ public class TokenTest extends TestCase {
         assertNull(Token.extractId("  "));
         assertNull(Token.extractId("xx..f.df.d45458d9fg8d89f789dsfdsju//"));
 
-        Token anotherToken = new Token(validTo, null, null);
+        Token anotherToken = Token.newAccessToken(150000L, testAccount());
         String anotherSecret = anotherToken.generateSecret();
         assertFalse(token.validate(anotherSecret));
 
@@ -107,11 +102,14 @@ public class TokenTest extends TestCase {
         } catch (Exception e) {
         }
 
-        validTo = new Date(System.currentTimeMillis() - 150000L);
         try {
-            new Token(validTo, null, null);
+            Token.newAccessToken(-150000L, testAccount());
             fail("Expired token must not be generated");
         } catch (Exception e) {
         }
+    }
+
+    private static AccountInfo testAccount() {
+        return new Account().createInfo();
     }
 }

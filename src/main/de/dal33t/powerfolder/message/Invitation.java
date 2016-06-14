@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.message;
 
-
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,6 +31,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.InvitationProto;
 import de.dal33t.powerfolder.protocol.MemberInfoProto;
@@ -68,7 +68,7 @@ public class Invitation extends FolderRelatedMessage
     private static final int RELATIVE_USER_HOME = 3;
 
     private MemberInfo invitor;
-    // For backward compatibilty to pre 3.1.2 versions.
+    // For backward compatibility to pre 3.1.2 versions.
     private File suggestedLocalBase;
     private String invitationText;
     private String suggestedSyncProfileConfig;
@@ -80,12 +80,15 @@ public class Invitation extends FolderRelatedMessage
     private long size;
     private int filesCount;
 
-    // Since 6.0:
+    // Since 6.0: invitorUsername
     private String username;
 
     // Since 9.1
     private String oid;
     private String inviteeUsername;
+
+    // Since 11.0: PFS-2455
+    private ServerInfo server;
 
     /**
      * Constructor
@@ -241,6 +244,14 @@ public class Invitation extends FolderRelatedMessage
 
     public void setInvitorUsername(String username) {
         this.username = username;
+    }
+
+    public ServerInfo getServer() {
+        return server;
+    }
+
+    public void setServer(ServerInfo server) {
+        this.server = server;
     }
 
     public void setInviteeUsername(String username) {
