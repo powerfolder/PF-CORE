@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.security;
 
+import com.google.protobuf.AbstractMessage;
+
 /**
  * Administration permission
  *
@@ -45,6 +47,17 @@ public class AdminPermission extends SingletonPermission {
                 && ADMIN_PERMISSION_FOLDER_IMPLICATION.implies(this, (FolderPermission) impliedPermission);
         }
         return true;
+    }
+
+    public AdminPermission() {
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public AdminPermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     public interface AdminPermissionFolderImplication {

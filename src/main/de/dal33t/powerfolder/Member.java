@@ -66,6 +66,8 @@ import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.IdentityReply;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.KnownNodes;
+import de.dal33t.powerfolder.message.Login;
+import de.dal33t.powerfolder.message.LoginReply;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
 import de.dal33t.powerfolder.message.NodeInformation;
@@ -94,6 +96,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
@@ -1955,11 +1958,21 @@ public class Member extends PFComponent implements Comparable<Member> {
                         logWarning("Ignoring full reload config request for myself being server: "
                             + message);
                     }
-
                 } else {
                     logWarning("Ignoring reload config request from non server: "
                         + message);
                 }
+            } else if (message instanceof Login) {
+                if (getController().getMySelf().isServer()) {
+                    Login login = (Login) message;
+                    Account account = getController().getSecurityManager().authenticate(login.getUsername(), login.getPassword().toCharArray());
+                    sendMessageAsynchron(new LoginReply(true, 1, account));
+                } else {
+                    logWarning("Ignoring login request: "
+                        + message);
+                }
+            } else if (message instanceof LoginReply) {
+                LoginReply loginReply = (LoginReply) message;
             } else {
                 if (isFiner()) {
                     logFiner("Message not known to message handling code, "

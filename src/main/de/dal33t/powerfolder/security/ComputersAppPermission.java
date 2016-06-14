@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.security;
 
+import com.google.protobuf.AbstractMessage;
+
 /**
  * #2185 permission to start the app.
  *
@@ -28,4 +30,15 @@ package de.dal33t.powerfolder.security;
 public class ComputersAppPermission extends SingletonPermission {
     private static final long serialVersionUID = 100L;
     public static final ComputersAppPermission INSTANCE = new ComputersAppPermission();
+
+    public ComputersAppPermission() {
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public ComputersAppPermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
+    }
 }

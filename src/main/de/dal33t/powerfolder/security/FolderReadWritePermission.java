@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.security;
 import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.protocol.FolderPermissionProto;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -41,6 +40,14 @@ public class FolderReadWritePermission extends FolderPermission {
      */
     FolderReadWritePermission(FolderInfo foInfo) {
         super(foInfo);
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public FolderReadWritePermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     @Override
@@ -85,24 +92,5 @@ public class FolderReadWritePermission extends FolderPermission {
         } else if (!folder.equals(other.folder))
             return false;
         return true;
-    }
-
-    /** initFromD2DMessage
-     * Init from D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
-     **/
-
-    @Override
-    public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof FolderPermissionProto.FolderPermission)
-        {
-          FolderPermissionProto.FolderPermission proto =
-            (FolderPermissionProto.FolderPermission)mesg;
-
-          this.folder = new FolderInfo(proto.getFolder());
-        }
     }
 }

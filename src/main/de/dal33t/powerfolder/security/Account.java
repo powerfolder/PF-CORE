@@ -59,13 +59,22 @@ import org.hibernate.annotations.TypeDef;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.protocol.AccountProto;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.protocol.GroupProto;
+import de.dal33t.powerfolder.protocol.MemberInfoProto;
+import de.dal33t.powerfolder.protocol.OnlineStorageSubscriptionProto;
+import de.dal33t.powerfolder.protocol.PermissionProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
@@ -83,7 +92,7 @@ import de.dal33t.powerfolder.util.db.PermissionUserType;
 @TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Account implements Serializable {
+public class Account implements Serializable, D2DObject {
 
     private static final Logger LOG = Logger.getLogger(Account.class.getName());
     private static final long serialVersionUID = 100L;
@@ -276,6 +285,14 @@ public class Account implements Serializable {
         this.emails = new CopyOnWriteArrayList<String>();
     }
 
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public Account(AbstractMessage mesg) {
+        initFromD2D(mesg);
+    }
+    
     /**
      * @return a leightweight/reference object to this account.
      */
@@ -1500,5 +1517,165 @@ public class Account implements Serializable {
         if (emails == null) {
             emails = new CopyOnWriteArrayList<String>();
         }
+    }
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if(mesg instanceof AccountProto.Account) {
+            AccountProto.Account proto = (AccountProto.Account)mesg;
+            this.oid                        = proto.getOid();
+            this.username                   = proto.getUsername();
+            this.password                   = proto.getPassword();
+            this.otp                        = proto.getOtp();
+            this.language                   = proto.getLanguage();
+            this.ldapDN                     = proto.getLdapDn();
+            this.shibbolethPersistentID     = proto.getShibbolethPersistentId();
+            this.registerDate               = new Date(proto.getRegisterDate());
+            this.lastLoginDate              = new Date(proto.getLastLoginDate());
+            this.lastLoginFrom              = new MemberInfo(proto.getLastLoginFrom());
+            this.proUser                    = proto.getProUser();
+            this.firstname                  = proto.getFirstname();
+            this.surname                    = proto.getSurname();
+            this.telephone                  = proto.getTelephone();
+            this.custom1                    = proto.getCustom1();
+            this.custom2                    = proto.getCustom2();
+            this.custom3                    = proto.getCustom3();
+            this.notes                      = proto.getNotes();
+            this.basePath                   = proto.getBasePath();
+            this.organizationOID            = proto.getOrganizationOid();
+            this.computers                  = new CopyOnWriteArrayList<MemberInfo>();
+            for(MemberInfoProto.MemberInfo memberInfoProto: proto.getComputersList()) {
+                this.computers.add(new MemberInfo(memberInfoProto));
+            }
+            this.serverStatic               = proto.getServerStatic();
+            this.licenseKeyFileList         = proto.getLicenseKeyFileListList();
+            this.autoRenewDevices           = proto.getAutoRenewDevices();
+            this.autoRenewTill              = new Date(proto.getAutoRenewTill());
+            this.defaultSynchronizedFolder  = new FolderInfo(proto.getDefaultSynchronizedFolder());
+            this.permissions                = new CopyOnWriteArrayList<Permission>();
+            for (PermissionProto.Permission permissionProto: proto.getPermissionsList()) {
+                switch(permissionProto.getPermissionType()) {
+                    case ADMIN :
+                        this.permissions.add(new AdminPermission(permissionProto));
+                        break;
+                    case CHANGE_PREFERENCES :
+                        this.permissions.add(new ChangePreferencesPermission(permissionProto));
+                        break;
+                    case CHANGE_TRANSFER_MODE :
+                        this.permissions.add(new ChangeTransferModePermission(permissionProto));
+                        break;
+                    case COMPUTERS_APP :
+                        this.permissions.add(new ComputersAppPermission(permissionProto));
+                        break;
+                    case CONFIG_APP :
+                        this.permissions.add(new ConfigAppPermission(permissionProto));
+                        break;
+                    case FOLDER_ADMIN :
+                        this.permissions.add(new FolderAdminPermission(permissionProto));
+                        break;
+                    case FOLDER_CREATE :
+                        this.permissions.add(new FolderCreatePermission(permissionProto));
+                        break;
+                    case FOLDER_OWNER :
+                        this.permissions.add(new FolderOwnerPermission(permissionProto));
+                        break;
+                    case FOLDER_READ :
+                        this.permissions.add(new FolderReadPermission(permissionProto));
+                        break;
+                    case FOLDER_READ_WRITE :
+                        this.permissions.add(new FolderReadWritePermission(permissionProto));
+                        break;
+                    case FOLDER_REMOVE :
+                        this.permissions.add(new FolderRemovePermission(permissionProto));
+                        break;
+                    case GROUP_ADMIN :
+                        this.permissions.add(new GroupAdminPermission(permissionProto));
+                        break;
+                    case ORGANIZATION_ADMIN :
+                        this.permissions.add(new OrganizationAdminPermission(permissionProto));
+                        break;
+                    case ORGANIZATION_CREATE :
+                        this.permissions.add(new OrganizationCreatePermission(permissionProto));
+                        break;
+                    case SYSTEM_SETTINGS :
+                        this.permissions.add(new SystemSettingsPermission(permissionProto));
+                        break;
+                    case UNRECOGNIZED :
+                        break;
+                    default :
+                        break;
+                }
+            }
+            this.groups                     = new CopyOnWriteArrayList<Group>();
+            for(GroupProto.Group groupProto: proto.getGroupsList()) {
+                this.groups.add(new Group(groupProto));
+            }
+            this.emails                     = new CopyOnWriteArrayList<String>();
+            for(String email: proto.getEmailsList()) {
+                this.emails.add(new String(email));
+            }
+            this.osSubscription             = new OnlineStorageSubscription(proto.getOsSubscription());
+            this.agreedToSVersion           = proto.getAgreedToSversion();
+        }
+    }
+
+    @Override
+    public AbstractMessage toD2D() {
+        AccountProto.Account.Builder builder = AccountProto.Account.newBuilder();
+        builder.setClazzName("Account");
+        if (this.oid != null) builder.setOid(this.oid);
+        if (this.username != null) builder.setUsername(this.username);
+        if (this.password != null) builder.setPassword(this.password);
+        if (this.otp != null) builder.setOtp(this.otp);
+        if (this.language != null) builder.setLanguage(this.language);
+        if (this.ldapDN != null) builder.setLdapDn(this.ldapDN);
+        if (this.shibbolethPersistentID != null) builder.setShibbolethPersistentId(this.shibbolethPersistentID);
+        if (this.registerDate != null) builder.setRegisterDate(this.registerDate.getTime());
+        if (this.lastLoginDate != null) builder.setLastLoginDate(this.lastLoginDate.getTime());
+        if (this.lastLoginFrom != null) builder.setLastLoginFrom((MemberInfoProto.MemberInfo)this.lastLoginFrom.toD2D());
+        builder.setProUser(this.proUser);
+        if (this.firstname != null) builder.setFirstname(this.firstname);
+        if (this.surname != null) builder.setSurname(this.surname);
+        if (this.telephone != null) builder.setTelephone(this.telephone);
+        if (this.custom1 != null) builder.setCustom1(this.custom1);
+        if (this.custom2 != null) builder.setCustom2(this.custom2);
+        if (this.custom3 != null) builder.setCustom3(this.custom3);
+        if (this.notes != null) builder.setNotes(this.notes);
+        if (this.basePath != null) builder.setBasePath(this.basePath);
+        if (this.organizationOID != null) builder.setOrganizationOid(this.organizationOID);
+        for (MemberInfo computer: this.computers) {
+            builder.addComputers((MemberInfoProto.MemberInfo) computer.toD2D());
+        }
+        builder.setServerStatic(this.serverStatic);
+        for (String licenseKeyFile: this.licenseKeyFileList) {
+            builder.addLicenseKeyFileList(licenseKeyFile);
+        }
+        builder.setAutoRenewDevices(this.autoRenewDevices);
+        if (this.autoRenewTill != null) builder.setAutoRenewTill(this.autoRenewTill.getTime());
+        if (this.defaultSynchronizedFolder != null) builder.setDefaultSynchronizedFolder((FolderInfoProto.FolderInfo)this.defaultSynchronizedFolder.toD2D());
+        for (Permission permission: this.permissions) {
+            // Since the different permission classes do not have one common superclass we have to decide for each class separately
+            if (permission instanceof FolderPermission) {
+                builder.addPermissions((PermissionProto.Permission)((FolderPermission)permission).toD2D());
+            }
+            else if (permission instanceof GroupAdminPermission) {
+                builder.addPermissions((PermissionProto.Permission)((GroupAdminPermission)permission).toD2D());
+            }
+            else if (permission instanceof OrganizationAdminPermission) {
+                builder.addPermissions((PermissionProto.Permission)((OrganizationAdminPermission)permission).toD2D());
+            }
+            else if (permission instanceof SingletonPermission) {
+                builder.addPermissions((PermissionProto.Permission)((SingletonPermission)permission).toD2D());
+            }
+        }
+        for (Group group: this.groups) {
+            builder.addGroups((GroupProto.Group) group.toD2D());
+        }
+        for (String email: this.emails) {
+            builder.addEmails(email);
+        }
+        if (this.osSubscription != null) builder.setOsSubscription((OnlineStorageSubscriptionProto.OnlineStorageSubscription) this.osSubscription.toD2D());
+        builder.setAgreedToSversion(this.agreedToSVersion);
+        return builder.build();
     }
 }

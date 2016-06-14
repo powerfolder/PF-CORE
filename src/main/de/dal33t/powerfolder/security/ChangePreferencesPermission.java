@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.security;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 
 /**
@@ -32,4 +34,15 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 public class ChangePreferencesPermission extends SingletonPermission {
     private static final long serialVersionUID = 100L;
     public final static Permission INSTANCE = new ChangePreferencesPermission();
+
+    public ChangePreferencesPermission() {
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public ChangePreferencesPermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
+    }
 }

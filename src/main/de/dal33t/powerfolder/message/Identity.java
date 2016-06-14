@@ -118,9 +118,8 @@ public class Identity extends Message
     public static final int PROTOCOL_VERSION_108 = 108;
     public static final int PROTOCOL_VERSION_109 = 109;
     public static final int PROTOCOL_VERSION_110 = 110;
-    public static final int PROTOCOL_VERSION_111 = 111;
 
-    private int protocolVersion = PROTOCOL_VERSION_111;
+    private int protocolVersion = PROTOCOL_VERSION_110;
 
     private boolean requestFullFolderlist;
 

@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.security;
 
+import com.google.protobuf.AbstractMessage;
+
 /**
  * Permission that allows to change low level system settings of the
  * server/cloud.
@@ -33,6 +35,14 @@ public class SystemSettingsPermission extends SingletonPermission {
 
     private SystemSettingsPermission() {
         super();
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public SystemSettingsPermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     public boolean implies(Permission impliedPermision) {

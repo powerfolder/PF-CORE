@@ -19,13 +19,15 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.util.logging.Logger;
+
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.protocol.AccessModeProto;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
-import de.dal33t.powerfolder.protocol.FolderPermissionProto;
+import de.dal33t.powerfolder.protocol.PermissionProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -37,6 +39,7 @@ import de.dal33t.powerfolder.util.Reject;
 public abstract class FolderPermission
   implements Permission, D2DObject
 {
+    private static final Logger LOG = Logger.getLogger(FolderPermission.class.getName());
     private static final long serialVersionUID = 100L;
 
     public static final String ID_SEPARATOR = "_FP_";
@@ -44,6 +47,9 @@ public abstract class FolderPermission
 
     protected FolderInfo folder;
 
+    public FolderPermission() {
+    }
+    
     protected FolderPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folderinfo is null");
         folder = foInfo.intern();
@@ -127,39 +133,45 @@ public abstract class FolderPermission
      * Init from D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  mesg  Message to use data from
-     *
-     * NOTE: We let the subclasses implement this interface method, because we'd
-     *       need another factory here due to the weird class hierarchy.
      **/
-
     @Override
-    public abstract void initFromD2D(AbstractMessage mesg);
+    public void initFromD2D(AbstractMessage mesg) {
+        if(mesg instanceof PermissionProto.Permission) {
+            PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
+            try {
+                // A reference can be any message so it needs to be unpacked from com.google.protobuf.Any
+                FolderInfoProto.FolderInfo folderInfo = proto.getReference().unpack(FolderInfoProto.FolderInfo.class);
+                this.folder = new FolderInfo(folderInfo);
+            } catch (InvalidProtocolBufferException e) {
+                LOG.severe("Cannot unpack message: " + e);
+            }
+        }
+    }
 
     /** toD2DMessage
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
      **/
-
     @Override
-    public AbstractMessage
-    toD2D()
-    {
-      FolderPermissionProto.FolderPermission.Builder builder =
-        FolderPermissionProto.FolderPermission.newBuilder();
-
-      /* Convert mode enum to proto enum */
-      AccessModeProto.AccessMode.Builder mbuilder =
-        AccessModeProto.AccessMode.newBuilder();
-
-      AccessMode mode = getMode();
-
-      mbuilder.setModeValue(mode.ordinal());
-
-      builder.setClazzName("FolderPermission");
-      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
-      builder.setMode(mbuilder.build());
-
-      return builder.build();
+    public AbstractMessage toD2D() {
+        PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();
+        builder.setClazzName("Permission");
+        // A reference can be any message so it needs to be packed as com.google.protobuf.Any
+        builder.setReference(com.google.protobuf.Any.pack((FolderInfoProto.FolderInfo)this.folder.toD2D()));
+        // Set permission enum
+        if (this instanceof FolderAdminPermission) {
+            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_ADMIN);
+        }
+        else if (this instanceof FolderOwnerPermission) {
+            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_OWNER);
+        }
+        else if (this instanceof FolderReadPermission) {
+            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_READ);
+        }
+        else if (this instanceof FolderReadWritePermission) {
+            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_READ_WRITE);
+        }
+        return builder.build();
     }
 }

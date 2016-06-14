@@ -27,6 +27,10 @@ import javax.persistence.Embeddable;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.OnlineStorageSubscriptionProto;
 import de.dal33t.powerfolder.util.Format;
 
 /**
@@ -37,7 +41,7 @@ import de.dal33t.powerfolder.util.Format;
  */
 @Embeddable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class OnlineStorageSubscription implements Serializable {
+public class OnlineStorageSubscription implements Serializable, D2DObject {
     private static final long serialVersionUID = 8695479753037728184L;
     public static final int UNLIMITED_GB = 9999;
 
@@ -59,6 +63,20 @@ public class OnlineStorageSubscription implements Serializable {
     private Date disabledExpirationDate;
 
     // Logic ******************************************************************
+
+    /**
+     * Serialization constructor
+     */
+    public OnlineStorageSubscription() {
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public OnlineStorageSubscription(AbstractMessage mesg) {
+        initFromD2D(mesg);
+    }
 
     /**
      * Use {@link #isExpired()} for checking exactly if a subcription has
@@ -246,5 +264,33 @@ public class OnlineStorageSubscription implements Serializable {
             b.append(" valid forever");
         }
         return b.toString();
+    }
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if(mesg instanceof OnlineStorageSubscriptionProto.OnlineStorageSubscription) {
+            OnlineStorageSubscriptionProto.OnlineStorageSubscription proto = (OnlineStorageSubscriptionProto.OnlineStorageSubscription)mesg;
+            this.storageSize            = proto.getStorageSize();
+            this.validFrom              = new Date(proto.getValidFrom());
+            this.validTill              = new Date(proto.getValidTill());
+            this.warnedUsageDate        = new Date(proto.getWarnedUsageDate());
+            this.disabledUsageDate      = new Date(proto.getDisabledUsageDate());
+            this.warnedExpirationDate   = new Date(proto.getWarnedExpirationDate());
+            this.disabledExpirationDate = new Date(proto.getDisabledExpirationDate());
+        }
+    }
+
+    @Override
+    public AbstractMessage toD2D() {
+        OnlineStorageSubscriptionProto.OnlineStorageSubscription.Builder builder = OnlineStorageSubscriptionProto.OnlineStorageSubscription.newBuilder();
+        builder.setClazzName("OnlineStorageSubscription");
+        builder.setStorageSize(this.storageSize);
+        if (this.validFrom != null) builder.setValidFrom(this.validFrom.getTime());
+        if (this.validTill != null) builder.setValidTill(this.validTill.getTime());
+        if (this.warnedUsageDate != null) builder.setWarnedUsageDate(this.warnedUsageDate.getTime());
+        if (this.disabledUsageDate != null) builder.setDisabledUsageDate(this.disabledUsageDate.getTime());
+        if (this.warnedExpirationDate != null) builder.setWarnedExpirationDate(this.warnedExpirationDate.getTime());
+        if (this.disabledExpirationDate != null) builder.setDisabledExpirationDate(this.disabledExpirationDate.getTime());
+        return builder.build();
     }
 }

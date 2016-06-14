@@ -19,14 +19,23 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.util.logging.Logger;
+
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.PermissionProto;
+import de.dal33t.powerfolder.protocol.StringMessageProto;
 import de.dal33t.powerfolder.util.Util;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.75 $
  */
-public class OrganizationAdminPermission implements Permission {
+public class OrganizationAdminPermission implements Permission, D2DObject {
 
+    private static final Logger LOG = Logger.getLogger(OrganizationAdminPermission.class.getName());
     public static final String ID_SEPARATOR = "_OP_";
     public static OrganizationPermissionHelper ORGANIZATION_PERMISSION_HELPER;
     private static final long serialVersionUID = 100L;
@@ -34,6 +43,14 @@ public class OrganizationAdminPermission implements Permission {
 
     public OrganizationAdminPermission(String organizationOID) {
         this.organizationOID = organizationOID;
+    }
+    
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public OrganizationAdminPermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     public boolean implies(Permission impliedPermision) {
@@ -76,5 +93,33 @@ public class OrganizationAdminPermission implements Permission {
     public static interface OrganizationPermissionHelper {
         boolean implies(OrganizationAdminPermission organizationPermission,
             Permission impliedPermision);
+    }
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if(mesg instanceof PermissionProto.Permission) {
+            PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
+            try {
+                // A reference can be any message so it needs to be unpacked from com.google.protobuf.Any
+                StringMessageProto.StringMessage stringMessage = proto.getReference().unpack(StringMessageProto.StringMessage.class);
+                this.organizationOID = stringMessage.getValue();
+            } catch (InvalidProtocolBufferException e) {
+                LOG.severe("Cannot unpack message: " + e);
+            }
+        }
+    }
+
+    @Override
+    public AbstractMessage toD2D() {
+        PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();
+        builder.setClazzName("Permission");
+        // A reference can be any message so it needs to be packed as com.google.protobuf.Any
+        StringMessageProto.StringMessage.Builder stringMessageBuilder = StringMessageProto.StringMessage.newBuilder();
+        stringMessageBuilder.setClazzName("StringMessage");
+        stringMessageBuilder.setValue(this.organizationOID);
+        builder.setReference(com.google.protobuf.Any.pack(stringMessageBuilder.build()));
+        // Set permission enum
+        builder.setPermissionType(PermissionProto.Permission.PermissionType.ORGANIZATION_ADMIN);
+        return builder.build();
     }
 }
