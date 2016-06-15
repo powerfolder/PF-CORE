@@ -1173,7 +1173,7 @@ public class ServerClient extends PFComponent {
                     fireLogin(accountDetails, false);
                 }
                 // Retrieve skin from server
-                String skin = this.userService.getClientSkinName(this.accountDetails.getAccount());
+                String skin = this.userService.getClientSkinName(this.getAccountInfo());
                 if (this.downloadClientSkin(skin)) {
                     // Update folder skin
                     PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
