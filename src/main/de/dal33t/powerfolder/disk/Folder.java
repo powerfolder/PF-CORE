@@ -4850,6 +4850,12 @@ public class Folder extends PFComponent {
         {
             addPattern("PowerFolder/logs/*");
         }
+        // PFC-2866
+        if (UserDirectories.getDesktopDirectory() != null && localBase
+            .equals(UserDirectories.getDesktopDirectory().getDirectory()))
+        {
+            addPattern("Boxcryptor/*");
+        }
         // #2083
         if (UserDirectories.getDocumentsReported() != null
             && localBase.equals(Paths.get(UserDirectories
