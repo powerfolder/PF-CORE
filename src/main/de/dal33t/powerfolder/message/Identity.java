@@ -116,7 +116,7 @@ public class Identity extends Message {
     public static final int PROTOCOL_VERSION_111 = 111;
     
     // PFC-2455: TODO: Upgrade to 111
-    private int protocolVersion = PROTOCOL_VERSION_110;
+    private int protocolVersion = PROTOCOL_VERSION_111;
 
     private boolean requestFullFolderlist;
 

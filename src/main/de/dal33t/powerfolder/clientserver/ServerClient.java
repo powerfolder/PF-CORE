@@ -225,8 +225,9 @@ public class ServerClient extends PFComponent {
      */
     public ServerClient(Controller controller, Properties config) {
         super(controller);
+        Reject.ifNull(config, "Config is null");
         
-        config = controller.getConfig();
+        this.config = config;
         String name = ConfigurationEntry.SERVER_NAME.getValue(config);
         String host = ConfigurationEntry.SERVER_HOST.getValue(config);
         String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(config);
