@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.light;
 
 import java.io.Serializable;
+import java.net.URLEncoder;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -29,6 +30,7 @@ import javax.persistence.ManyToOne;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -140,6 +142,42 @@ public class ServerInfo implements Serializable {
         this.webUrl = webUrl;
     }
 
+    /**
+     * @param uri
+     * @return the absolute URL for the URI at the server/service.
+     */
+    public String getURL(String uri) {
+        String theBaseURL = webUrl;
+        if (theBaseURL == null) {
+            theBaseURL = "";
+        }
+        if (uri == null) {
+            return theBaseURL;
+        }
+        boolean slashOk = uri.startsWith("/") || theBaseURL.endsWith("/");
+        String slash = slashOk ? "" : "/";
+        return theBaseURL + slash + uri;
+    }
+
+    /**
+     * @param controller
+     * @param folder
+     *            the folder.
+     * @return the URL to the given folder.
+     */
+    public String getURL(FolderInfo folder) {
+        String uri = "/files/";
+        String snippet = Base64.encode4URL(folder.getId());
+        if (snippet.endsWith("=")) {
+            snippet = snippet.substring(0, snippet.length() - 1);
+        }
+        if (snippet.endsWith("=")) {
+            snippet = snippet.substring(0, snippet.length() - 1);
+        }
+        uri += URLEncode(snippet);
+        return getURL(uri);
+    }
+
     public String getHTTPTunnelUrl() {
         return httpTunnelUrl;
     }
@@ -196,5 +234,16 @@ public class ServerInfo implements Serializable {
         }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
             + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
+    }
+    
+    private String URLEncode(String url) {
+        try {
+            String newUrl = URLEncoder.encode(url, "UTF-8");
+            // FIX1: Corrected relative filenames including path separator /
+            // FIX2: To make download servlet work with Apache proxy
+            return newUrl.replace("%2F", "/").replace("+", "%20");
+        } catch (Exception e) {
+            return url;
+        }
     }
 }
