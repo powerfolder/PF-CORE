@@ -372,8 +372,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         boolean isRelay = getController().getIOProvider()
             .getRelayedConnectionManager().isRelay(getInfo());
-        boolean isServer = getController().getOSClient().isClusterServer(this);
-        boolean isRelayOrServer = isServer || isRelay;
+        boolean isRelayOrServer = isServer() || isRelay;
 
         if (getController().getNetworkingMode() == NetworkingMode.SERVERONLYMODE
             && !isRelayOrServer)
@@ -381,7 +380,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             return false;
         }
 
-        boolean ignoreLAN2Internet = isServer
+        boolean ignoreLAN2Internet = isServer()
             && ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
                 .getValueBoolean(getController());
 
@@ -390,7 +389,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         // FIXME Does not work with temporary server nodes.
-        if (isServer || isRelay) {
+        if (isServer() || isRelay) {
             // Always interesting is the server!
             // Always interesting a relay is!
             return true;

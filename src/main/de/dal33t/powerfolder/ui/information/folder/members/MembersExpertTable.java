@@ -160,8 +160,7 @@ public class MembersExpertTable extends JTable {
             setForeground(ColorUtil.getTextForegroundColor());
 
             boolean isServer = folderMember.getMember() != null
-                && (model.getController().getOSClient()
-                    .isClusterServer(folderMember.getMember()));
+                && folderMember.getMember().isServer();
 
             if (actualColumn == MembersExpertTableModel.COL_TYPE) {
                 Icon icon = null;

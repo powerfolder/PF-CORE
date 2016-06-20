@@ -322,8 +322,7 @@ public class NodeManager extends PFComponent {
             logWarning("Changing network ID to ANY");
         }
         ConfigurationEntry.NETWORK_ID.setValue(getController(), networkId);
-        getMySelf().updateInfo(new MemberInfo(getMySelf().getNick(),
-            getMySelf().getId(), networkId));
+        getController().getMySelf().getInfo().networkId = networkId;
     }
 
     /**

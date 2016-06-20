@@ -914,17 +914,13 @@ public class SettingsTab extends PFUIComponent {
     {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
-            if (getController().getOSClient().isClusterServer(
-                folderEvent.getMember()))
-            {
+            if (folderEvent.getMember().isServer()) {
                 enableConfigOSAction();
             }
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            if (getController().getOSClient().isClusterServer(
-                folderEvent.getMember()))
-            {
+            if (folderEvent.getMember().isServer()) {
                 enableConfigOSAction();
             }
         }

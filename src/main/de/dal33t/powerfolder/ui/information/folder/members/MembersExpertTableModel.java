@@ -567,7 +567,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
         public void nodeConnected(NodeManagerEvent e) {
             handleNodeChanged(e.getNode());
-            if (getController().getOSClient().isClusterServer(e.getNode())) {
+            if (e.getNode().isServer()) {
                 refreshModel();
             }
         }

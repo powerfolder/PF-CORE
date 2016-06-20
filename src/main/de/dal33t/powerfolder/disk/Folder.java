@@ -5012,11 +5012,8 @@ public class Folder extends PFComponent {
     private boolean hasFolderPermission(Member member,
         FolderPermission permission)
     {
-        if (getController().getOSClient().isClusterServer(member)) {
-            return true;
-        }
-        return getController().getSecurityManager().hasPermission(
-            member.getInfo(), permission);
+        return getController().getSecurityManager()
+            .hasPermission(member.getInfo(), permission);
     }
 
     private FolderInfo getParentFolderInfo() {

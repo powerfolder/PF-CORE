@@ -477,7 +477,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * @param node
-     * @return true if the node is a part of the server cloud.
+     * @return true if the node is a part of this service cloud.
      */
     public boolean isClusterServer(Member node) {
         return isPrimaryServer(node) || servers.contains(node);
