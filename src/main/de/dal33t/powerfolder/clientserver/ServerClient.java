@@ -2085,6 +2085,20 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * @param foInfo
+     * @return true if the folder is joined/synced with server of federated
+     *         service
+     */
+    public boolean joinedByFederation(FolderInfo foInfo) {
+        for (ServerClient client : childClients.values()) {
+            if (client.joinedByCloud(foInfo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param folder
      *            the folder to check.
      * @return true if the cloud has joined the folder.
