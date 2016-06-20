@@ -1854,10 +1854,11 @@ public class ServerClient extends PFComponent {
             if (childClients.containsKey(fedService)) {
                 continue;
             }
-            logWarning("Starting connect to federated service: " + fedService);
+            logInfo("Starting connect to federated service: " + fedService);
             ServerClient client = createNew(fedService, token);
             client.loadServerNodes();
             client.start();
+            client.loginWithLastKnown();
             childClients.put(fedService, client);
         }
     }
@@ -1868,6 +1869,7 @@ public class ServerClient extends PFComponent {
         try {
             Properties config = ConfigurationLoader
                 .loadPreConfiguration(defaultConfigURL);
+            ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, getUsername());
             ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, token);
             return new ServerClient(getController(), config);
         } catch (IOException e) {
@@ -1879,7 +1881,7 @@ public class ServerClient extends PFComponent {
     private void updateServer(Account a) {
         // Possible switch to new server
         final ServerInfo targetServer = a.getServer();
-        if (targetServer == null || !allowServerChange) {
+        if (targetServer == null || !allowServerChange || targetServer.isFederatedService()) {
             return;
         }
         // Not hosted on the server we just have logged into.
