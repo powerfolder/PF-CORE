@@ -1177,25 +1177,30 @@ public class ServerClient extends PFComponent {
                     fireLogin(accountDetails, false);
                 }
                 // Retrieve skin from server
-                String skin = this.userService.getClientSkinName(this.getAccountInfo());
-                if (this.downloadClientSkin(skin)) {
-                    // Update folder skin
-                    PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
-                    for (Folder folder: getController().getFolderRepository().getFolders()) {
-                        PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
-                    }
-                    // Update shortcut skin
-                    FolderRepository repo = getController().getFolderRepository();
-                    Path oldBase = repo.getFoldersBasedir();
-                    String oldBaseDirName;
-                    if (oldBase.getFileName() != null) {
-                        oldBaseDirName = oldBase.getFileName().toString();
-                    } else {
-                        oldBaseDirName = oldBase.toString();
-                    }
+                try {
+                    String skin = this.userService.getClientSkinName(this.getAccountInfo());
+                    if (this.downloadClientSkin(skin)) {
+                        // Update folder skin
+                        PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
+                        for (Folder folder: getController().getFolderRepository().getFolders()) {
+                            PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
+                        }
+                        // Update shortcut skin
+                        FolderRepository repo = getController().getFolderRepository();
+                        Path oldBase = repo.getFoldersBasedir();
+                        String oldBaseDirName;
+                        if (oldBase.getFileName() != null) {
+                            oldBaseDirName = oldBase.getFileName().toString();
+                        } else {
+                            oldBaseDirName = oldBase.toString();
+                        }
                         repo.updateShortcuts(oldBaseDirName);
-                    // Update client skin
-                    getController().shutdownAndRequestRestart();
+                        // Update client skin
+                        getController().shutdownAndRequestRestart();
+                    }
+                }
+                catch (RemoteCallException e) {
+                    logWarning("Cannot retrieve skin from server: " + e);
                 }
                 return accountDetails.getAccount();
             } catch (Exception e) {
