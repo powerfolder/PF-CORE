@@ -708,7 +708,9 @@ public class Controller extends PFComponent {
             openUI();
         }
 
-        enableFileBrowserIntegration(this);
+        if (!this.getMySelf().isServer()) {
+            enableFileBrowserIntegration(this);
+        }
 
         // Load anything that was not handled last time.
         loadPersistentObjects();
