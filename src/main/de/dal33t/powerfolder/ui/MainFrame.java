@@ -320,9 +320,9 @@ public class MainFrame extends PFUIComponent {
 
         builder.add(logoLabel, cc.xyw(1, 1, 4));
         builder.add(inlineInfoLabel,
-            cc.xy(2, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
+            cc.xy(2, 2, CellConstraints.DEFAULT, CellConstraints.TOP));
         builder.add(inlineInfoCloseButton,
-            cc.xy(4, 1, CellConstraints.DEFAULT, CellConstraints.BOTTOM));
+            cc.xy(4, 2, CellConstraints.DEFAULT, CellConstraints.TOP));
 
         builder.add(centralPanel, cc.xyw(1, 3, 4));
 
