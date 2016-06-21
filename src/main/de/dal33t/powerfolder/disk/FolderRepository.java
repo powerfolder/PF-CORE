@@ -1859,6 +1859,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             };
 
+            // Clear all FileInBasePathWarnings before generating new ones
+            getController().getUIController().getApplicationModel().getNoticesModel().clearAllFileInBasePathWarnings();
+            // Search for files in base path
             try (DirectoryStream<Path> files = Files.newDirectoryStream(
                 baseDir, filter)) {
                 for (Path file : files) {
