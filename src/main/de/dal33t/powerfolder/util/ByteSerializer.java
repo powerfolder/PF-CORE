@@ -146,7 +146,9 @@ public class ByteSerializer extends Loggable {
         byteOut.flush();
         byteOut.close();
 
-        if (byteOut.size() >= 256 * 1024) {
+        if (byteOut.size() >= 256 * 1024
+            && !target.getClass().getName().contains("ClusterCacheUpdate"))
+        {
             logWarning("Send buffer exceeds 256KB! "
                 + Format.formatBytes(byteOut.size()) + ". Message: " + target);
         }
@@ -319,7 +321,7 @@ public class ByteSerializer extends Loggable {
             } else {
                 targetIn = bin;
             }
-            in = new ObjectInputStream(targetIn);
+            in = new LookAheadObjectInputStream(targetIn);
             result = in.readUnshared();
             return result;
         } finally {
