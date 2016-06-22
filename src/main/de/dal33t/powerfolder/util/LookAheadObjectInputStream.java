@@ -22,7 +22,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
         throws IOException, ClassNotFoundException
     {
         for (String excluded : AntiSerializationVulnerability.BLACKLIST) {
-            if (desc.getName().equals(excluded)) {
+            if (desc.getName().startsWith(excluded)) {
                 throw new InvalidClassException(
                     "Unauthorized deserialization attempt", desc.getName());
             }
