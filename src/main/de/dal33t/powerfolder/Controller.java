@@ -153,7 +153,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 6;
-    private static final int REVISION_VERSION = 408;
+    private static final int REVISION_VERSION = 409;
 
     /**
      * Program version.
@@ -323,7 +323,7 @@ public class Controller extends PFComponent {
             .createListenerSupport(NetworkingModeListener.class);
         limitedConnectivityListenerSupport = ListenerSupportFactory
             .createListenerSupport(LimitedConnectivityListener.class);
-        AntiSerializationVulnerability.check();
+        AntiSerializationVulnerability.checkClasspath();
     }
 
     /**
