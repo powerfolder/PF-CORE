@@ -321,7 +321,7 @@ public class ByteSerializer extends Loggable {
             } else {
                 targetIn = bin;
             }
-            in = new ObjectInputStream(targetIn);
+            in = new LookAheadObjectInputStream(targetIn);
             result = in.readUnshared();
             return result;
         } finally {
