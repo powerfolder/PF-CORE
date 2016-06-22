@@ -21,29 +21,17 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
     protected Class<?> resolveClass(ObjectStreamClass desc)
         throws IOException, ClassNotFoundException
     {
-        for (String excluded : AntiSerializationVulnerability.BLACKLIST) {
-            if (desc.getName().startsWith(excluded)) {
-                throw new InvalidClassException(
-                    "Unauthorized deserialization attempt", desc.getName());
-            }
+        if (AntiSerializationVulnerability.isBlacklisted(desc.getName())) {
+            throw new InvalidClassException(
+                "Unauthorized deserialization attempt", desc.getName());
         }
-        if (!isWhitelisted(desc.getName())) {
-            LOG.warning("Class not whitelisted: " + desc.getName());
+        if (!AntiSerializationVulnerability.isWhitelisted(desc.getName())) {
+            LOG.warning("Possible unauthorized deserialization attempt: " + desc.getName());
         }
         return super.resolveClass(desc);
-    }
-
-    private boolean isWhitelisted(String className) {
-        for (String whitelisted : AntiSerializationVulnerability.WHITELIST) {
-            if (className.startsWith(whitelisted)) {
-                return true;
-            }
-        }     
-        return false;
     }
 
     public LookAheadObjectInputStream(InputStream in) throws IOException {
         super(in);
     }
-
 }
