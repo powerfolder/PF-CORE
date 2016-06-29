@@ -186,6 +186,22 @@ public class Group implements Serializable {
 
         return folder;
     }
+    
+    /**
+     * @return An unmodifiable collection of all
+     *         {@link OrganizationAdminPermission OrganizationAdminPermissions}.
+     *         If the user does not have any OrganizationAdminPermission, an
+     *         empty collection will be returned.
+     */
+    public Collection<OrganizationAdminPermission> getOrgAdminPermissions() {
+        Collection<OrganizationAdminPermission> orgAdmins = new ArrayList<>();
+        for (Permission perm : permissions) {
+            if (perm instanceof OrganizationAdminPermission) {
+                orgAdmins.add((OrganizationAdminPermission) perm);
+            }
+        }
+        return Collections.unmodifiableCollection(orgAdmins);
+    }
 
     public String getOID() {
         return oid;
