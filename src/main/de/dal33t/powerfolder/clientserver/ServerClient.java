@@ -1968,7 +1968,7 @@ public class ServerClient extends PFComponent {
         }
         boolean localSkinWasAlreadyInstalled = false;
         Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
-        String baseUrl = this.getWebURL() + "/skin/";;
+        String baseUrl = this.getWebURL() + "/skin/";
         String skinQuery = "?skin=" + skin;
         URL url;
         try {
@@ -1999,36 +1999,42 @@ public class ServerClient extends PFComponent {
             if (localSkinVersion.equals(remoteSkinVersion)) {
                 return false;
             }
-            skinPath = skinPath.resolve("client");
-            baseUrl += "client/";
             // Delete old skin
             try {
-                FileUtils.deleteDirectory(skinPath.toFile());
+                FileUtils.deleteDirectory(skinPath.resolve("client").toFile());
             } catch (IOException e) {
                 logWarning("Cannot delete old skin: " + e, e);
                 return false;
             }
             // Download skin from server
             ArrayList<String> files = new ArrayList<String>();
-            files.add("icons.properties");
-            files.add("Folder.ico");
-            files.add("synth.xml");
-            files.add("icons");
+            files.add("client/icons.properties");
+            files.add("client/Folder.ico");
+            files.add("client/synth.xml");
             String file = "";
             for (int i = 0; i < files.size(); i++) {
                 file = files.get(i);
-                url = new URL(baseUrl + file + skinQuery);
                 Path filePath = skinPath.resolve(file);
-                PathUtils.copyFromStreamToFile(url.openStream(), filePath);
-                if (file == "icons") {
+                // Do not return if download of single files fails because some icons.properties files may contain false entries
+                try {
+                    url = new URL(baseUrl + file + skinQuery);
+                    PathUtils.copyFromStreamToFile(url.openStream(), filePath);
+                } catch (MalformedURLException e) {
+                    logWarning("Invalid client skin URL: " + e, e);
+                } catch (IOException e) {
+                    logWarning("Cannot download client skin:" + e, e);
+                }
+                if (file == "client/icons.properties") {
                     // Parse the icons file list and add the files to the files list
                     try (BufferedReader bufferedReader = Files.newBufferedReader(filePath)) {
                         String line;
                         while ((line = bufferedReader.readLine()) != null) {
-                            files.add(file + "/" + line);
+                            if (line.length() > 2) {
+                                line = line.substring(line.indexOf("=") + 1);
+                                files.add(line);
+                            }
                         }
                     }
-                    Files.delete(filePath);
                 }
             }
         } catch (MalformedURLException e) {
