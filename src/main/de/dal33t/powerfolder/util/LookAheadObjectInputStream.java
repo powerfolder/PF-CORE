@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -26,7 +27,7 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
                 "Unauthorized deserialization attempt", desc.getName());
         }
         if (!AntiSerializationVulnerability.isWhitelisted(desc.getName())) {
-            LOG.warning("Possible unauthorized deserialization attempt: " + desc.getName());
+            LOG.log(Level.WARNING, "Possible unauthorized deserialization attempt: " + desc.getName(), new StackDump());
         }
         return super.resolveClass(desc);
     }
