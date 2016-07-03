@@ -37,8 +37,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -51,9 +49,9 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardPanel;
 
 /**
  * Class to do folder creation for a specified invite.
@@ -74,8 +72,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     private JLabel invitorLabel;
     private JLabel invitationMessageHintLabel;
     private JTextField invitationMessageLabel;
-    private JLabel estimatedSizeHintLabel;
-    private JLabel estimatedSize;
     private JLabel syncProfileHintLabel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
     private JCheckBox previewOnlyCB;
@@ -178,7 +174,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         FormLayout layout = new FormLayout("right:pref, 3dlu, pref, pref:grow",
             "pref, 6dlu, pref, 3dlu, pref, 3dlu, pref, "
-                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
 
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
@@ -199,11 +195,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             builder.add(invitationMessageLabel, cc.xy(3, row));
             row += 2;
         }
-
-        // Est size
-        builder.add(estimatedSizeHintLabel, cc.xy(1, row));
-        builder.add(estimatedSize, cc.xy(3, row));
-        row += 2;
 
         // Sync
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
@@ -244,12 +235,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         invitationMessageHintLabel.setEnabled(false);
         invitationMessageLabel = new JTextField();
         invitationMessageLabel.setEditable(false);
-
-        // Estimated size
-        estimatedSizeHintLabel = new JLabel(
-            Translation.get("general.estimated_size"));
-        estimatedSizeHintLabel.setEnabled(false);
-        estimatedSize = SimpleComponentFactory.createLabel();
 
         // Sync profile
         syncProfileHintLabel = new JLabel(
@@ -297,11 +282,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                     ? ""
                     : invitation.getInvitationText());
 
-            estimatedSizeHintLabel.setEnabled(true);
-            estimatedSize.setText(Format.formatBytes(invitation.getSize())
-                + " (" + invitation.getFilesCount() + ' '
-                + Translation.get("general.files") + ')');
-
             syncProfileHintLabel.setEnabled(true);
             syncProfileSelectorPanel.setEnabled(true);
             SyncProfile suggestedProfile = invitation.getSuggestedSyncProfile();
@@ -315,8 +295,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             invitorLabel.setText("");
             invitationMessageHintLabel.setEnabled(false);
             invitationMessageLabel.setText("");
-            estimatedSizeHintLabel.setEnabled(false);
-            estimatedSize.setText("");
             syncProfileHintLabel.setEnabled(false);
             syncProfileSelectorPanel.setEnabled(false);
             previewOnlyCB.setEnabled(false);
