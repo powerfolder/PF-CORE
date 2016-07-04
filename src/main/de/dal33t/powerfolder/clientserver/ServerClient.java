@@ -2053,7 +2053,10 @@ public class ServerClient extends PFComponent {
             logWarning("Cannot download client skin:" + e, e);
             return localSkinWasAlreadyInstalled;
         }
-        return true;
+        if (Files.exists(skinPath.resolve("client"))) {
+            return true;
+        }
+        return false;
     }
 
     // Services ***************************************************************
