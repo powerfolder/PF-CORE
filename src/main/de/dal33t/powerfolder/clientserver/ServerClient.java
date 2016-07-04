@@ -1995,6 +1995,10 @@ public class ServerClient extends PFComponent {
                     return false;
                 }
             }
+            // Do not load default skin from server
+            if (remoteSkinVersion.equals("Bluberry 0")) {
+                return false;
+            }
             // If local and remote skin have the same version, skip the rest
             if (localSkinVersion.equals(remoteSkinVersion)) {
                 return false;
