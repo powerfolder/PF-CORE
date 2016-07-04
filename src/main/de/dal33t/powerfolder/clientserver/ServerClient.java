@@ -1995,10 +1995,6 @@ public class ServerClient extends PFComponent {
                     return false;
                 }
             }
-            // Do not load default skin from server
-            if (remoteSkinVersion.equals("Bluberry 0")) {
-                return false;
-            }
             // If local and remote skin have the same version, skip the rest
             if (localSkinVersion.equals(remoteSkinVersion)) {
                 return false;
@@ -2010,32 +2006,41 @@ public class ServerClient extends PFComponent {
                 logWarning("Cannot delete old skin: " + e, e);
                 return false;
             }
-            // Download skin from server
-            ArrayList<String> files = new ArrayList<String>();
-            files.add("client/icons.properties");
-            files.add("client/Folder.ico");
-            files.add("client/synth.xml");
-            String file = "";
-            for (int i = 0; i < files.size(); i++) {
-                file = files.get(i);
-                Path filePath = skinPath.resolve(file);
-                // Do not return if download of single files fails because some icons.properties files may contain false entries
-                try {
-                    url = new URL(baseUrl + file + skinQuery);
-                    PathUtils.copyFromStreamToFile(url.openStream(), filePath);
-                } catch (MalformedURLException e) {
-                    logWarning("Invalid client skin URL: " + e, e);
-                } catch (IOException e) {
-                    logWarning("Cannot download client skin:" + e, e);
-                }
-                if (file == "client/icons.properties") {
-                    // Parse the icons file list and add the files to the files list
-                    try (BufferedReader bufferedReader = Files.newBufferedReader(filePath)) {
-                        String line;
-                        while ((line = bufferedReader.readLine()) != null) {
-                            if (line.length() > 2) {
-                                line = line.substring(line.indexOf("=") + 1);
-                                files.add(line);
+            // Do not load default skin from server
+            if (!remoteSkinVersion.equals("Bluberry 0")) {
+                // Download skin from server
+                ArrayList<String> files = new ArrayList<String>();
+                files.add("client/icons.properties");
+                files.add("client/Folder.ico");
+                files.add("client/synth.xml");
+                String file = "";
+                for (int i = 0; i < files.size(); i++) {
+                    file = files.get(i);
+                    Path filePath = skinPath.resolve(file);
+                    // Do not return if download of single files fails because
+                    // some icons.properties files may contain false entries
+                    try {
+                        url = new URL(baseUrl + file + skinQuery);
+                        PathUtils.copyFromStreamToFile(url.openStream(),
+                            filePath);
+                    } catch (MalformedURLException e) {
+                        logWarning("Invalid client skin URL: " + e, e);
+                    } catch (IOException e) {
+                        logWarning("Cannot download client skin:" + e, e);
+                    }
+                    if (file == "client/icons.properties") {
+                        // Parse the icons file list and add the files to the
+                        // files list
+                        try (BufferedReader bufferedReader = Files
+                            .newBufferedReader(filePath))
+                        {
+                            String line;
+                            while ((line = bufferedReader.readLine()) != null) {
+                                if (line.length() > 2) {
+                                    line = line
+                                        .substring(line.indexOf("=") + 1);
+                                    files.add(line);
+                                }
                             }
                         }
                     }
