@@ -329,8 +329,10 @@ public enum ConfigurationEntry {
 
     /**
      * PFC-2838
+     * PFS-2006: Comma-seperated list to add custom LDAP-Organizations to institution
+     * dropdown on Shibboleth login page.
      */
-    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names"),
+    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names", ""),
 
     /**
      * PFC-2534: Skip auto login for the specified number. Defaults to retrying
