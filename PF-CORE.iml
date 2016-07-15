@@ -82,10 +82,10 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library name="liferay-nativity-1.0.4.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
