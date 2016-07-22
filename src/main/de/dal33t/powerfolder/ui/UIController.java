@@ -1053,7 +1053,9 @@ public class UIController extends PFComponent {
                 systemMonitorFrame.getUIComponent().dispose();
             }
 
-            if (wizardDialogReference != null) {
+            if (wizardDialogReference != null
+                && wizardDialogReference.get() != null)
+            {
                 wizardDialogReference.get().setVisible(false);
                 wizardDialogReference.get().dispose();
             }
