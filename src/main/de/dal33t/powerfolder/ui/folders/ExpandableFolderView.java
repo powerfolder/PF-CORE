@@ -251,7 +251,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateStatsDetails();
         updateNumberOfFiles();
         updateTransferMode();
-        updateFolderMembershipDetails();
         updateIconAndOS();
         updateLocalButtons();
         updateNameLabel();
@@ -322,18 +321,27 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
+    // PFC-2850
+    private final AtomicBoolean retrieving = new AtomicBoolean(false);
+    
     private void retrieveAdditionalInfosFromServer() {
         SwingWorker<Object, Void> worker = new SwingWorker<Object, Void>() {
             protected Object doInBackground() throws Exception {
-                createWebDAVURL();
-                retrieveOwnerDisplayname();
+                if (retrieving.compareAndSet(false, true)) {
+                    try {
+                        retrieveWebDAVURL();
+                        retrieveOwnerDisplayname();
+                    } finally {
+                        retrieving.set(false);
+                    }
+                }
                 return null;
             }
         };
         worker.execute();
     }
 
-    private synchronized String createWebDAVURL() {
+    private synchronized String retrieveWebDAVURL() {
         if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
             return null;
         }
@@ -665,7 +673,6 @@ public class ExpandableFolderView extends PFUIComponent implements
             new MyDeletedFilesAction());
         updateNumberOfFiles();
         updateStatsDetails();
-        updateFolderMembershipDetails();
         updateTransferMode();
         updateLocalButtons();
         updateIconAndOS();
@@ -752,9 +759,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void registerListeners() {
-        // myServerClientListener = new MyServerClientListener();
-        // getController().getOSClient().addListener(myServerClientListener);
-        //
         myNodeManagerListener = new MyNodeManagerListener();
         getController().getNodeManager().addNodeManagerListener(
             myNodeManagerListener);
@@ -776,6 +780,9 @@ public class ExpandableFolderView extends PFUIComponent implements
      * orphaned.
      */
     public void unregisterListeners() {
+        if (myToSListener != null) {
+            getController().getOSClient().removeListener(myToSListener);
+        }
         if (myNodeManagerListener != null) {
             getController().getNodeManager().removeNodeManagerListener(
                 myNodeManagerListener);
@@ -1055,36 +1062,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     /**
-     * Updates the folder member details.
-     */
-    private void updateFolderMembershipDetails() {
-        folderDetailsUpdater.schedule(new Runnable() {
-            public void run() {
-                updateFolderMembershipDetails0();
-            }
-        });
-    }
-
-    /**
-     * Updates the folder member details.
-     */
-    private void updateFolderMembershipDetails0() {
-        String countText;
-        String connectedCountText;
-        if (type == Type.Local) {
-            countText = String.valueOf(folder.getMembersCount());
-            // And me!
-            connectedCountText = String.valueOf(folder
-                .getConnectedMembersCount() + 1);
-        } else {
-            countText = "?";
-            connectedCountText = "?";
-        }
-        membersLabel.setText(Translation.get(
-            "exp_folder_view.members", countText, connectedCountText));
-    }
-
-    /**
      * Gets called externally to update the display of problems.
      */
     public void updateIconAndOS() {
@@ -1181,7 +1158,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         JPopupMenu contextMenu = new JPopupMenu();
         if (type == Type.CloudOnly) {
             // Cloud-only folder popup
-            createWebDAVURL();
+            retrieveWebDAVURL();
             if (StringUtils.isNotBlank(webDAVURL)) {
                 if (serverClient.supportsWebDAV()) {
                     contextMenu.add(webdavAction).setIcon(null);
@@ -1335,7 +1312,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
             public Object construct() throws Throwable {
                 try {
-                    createWebDAVURL();
+                    retrieveWebDAVURL();
                     return WebDAV.createConnection(serverClient, webDAVURL);
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
@@ -1412,7 +1389,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private class MyNodeManagerListener extends NodeManagerAdapter {
         private void updateIfRequired(NodeManagerEvent e) {
             if (folder != null && folder.hasMember(e.getNode())) {
-                updateFolderMembershipDetails();
                 doFolderChanges(folder);
             }
         }
@@ -1511,12 +1487,10 @@ public class ExpandableFolderView extends PFUIComponent implements
     {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
-            updateFolderMembershipDetails();
             doFolderChanges(folder);
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            updateFolderMembershipDetails();
             doFolderChanges(folder);
         }
 
@@ -2077,8 +2051,13 @@ public class ExpandableFolderView extends PFUIComponent implements
             if (client.supportsWebLogin()) {
                 BrowserLauncher.open(getController(), new URLProducer() {
                     public String url() {
-                        return client.getFolderURLWithCredentials(folder
-                            .getInfo());
+                        FolderInfo info;
+                        if (folder != null) {
+                            info = folder.getInfo();
+                        } else {
+                            info = folderInfo;
+                        }
+                        return client.getFolderURLWithCredentials(info);
                     }
                 });
             }
