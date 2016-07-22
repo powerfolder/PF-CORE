@@ -59,6 +59,7 @@ import jwf.WizardPanel;
  * @author <a href="mailto:harry@powerfolder.com">Harry Glasgow</a>
  * @version $Revision: 1.11 $
  */
+@SuppressWarnings("serial")
 public class ReceivedInvitationPanel extends PFWizardPanel {
 
     private static final Logger log = Logger
