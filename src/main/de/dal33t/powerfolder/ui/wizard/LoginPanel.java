@@ -140,7 +140,7 @@ public class LoginPanel extends PFWizardPanel {
             && (StringUtils
                 .isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
                     .getValue(getController())) ? listLoaded : true)
-            && (idPSelectBox.getSelectedIndex() != 0);
+            && (idPSelectBox == null || idPSelectBox.getSelectedIndex() != 0);
     }
 
     public WizardPanel next() {
