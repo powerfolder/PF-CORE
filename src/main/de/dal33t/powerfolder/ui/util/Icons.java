@@ -385,7 +385,7 @@ public class Icons {
                 if (log.isLoggable(Level.FINE)) {
                     log.fine("Icon not found '" + id + '\'');
                 }
-            return null;
+                return null;
             }
         }
 
@@ -436,7 +436,10 @@ public class Icons {
             imageURL = Thread.currentThread().getContextClassLoader()
                 .getResource(iconId);
             if (imageURL == null) {
-            return null;
+                if (log.isLoggable(Level.FINE)) {
+                    log.fine("Image not found '" + id + '\'');
+                }
+                return null;
             }
         }
 
