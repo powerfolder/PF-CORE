@@ -67,6 +67,9 @@ public class GroupFilterModel extends Model {
     }
 
     public void addAdminOfOrganizationOIDs(String orgOID) {
+        if (orgOID == null) {
+            return;
+        }
         if (adminOfOrganizationOIDs == null) {
             adminOfOrganizationOIDs = new ArrayList<>();
         }
@@ -78,6 +81,7 @@ public class GroupFilterModel extends Model {
     public void reset() {
         groupname = null;
         maxResults = 0;
+        adminOfOrganizationOIDs = null;
         organizationOID = Organization.FILTER_MATCH_ALL;
     }
 }

@@ -135,6 +135,9 @@ public class AccountFilterModel extends Model {
     }
 
     public void addAdminOfOrganizationOIDs(String orgOID) {
+        if (orgOID == null) {
+            return;
+        }
         if (adminOfOrganizationOID == null) {
             adminOfOrganizationOID = new ArrayList<>();
         }
@@ -180,6 +183,7 @@ public class AccountFilterModel extends Model {
         disabledOnly = false;
         proUsersOnly = false;
         username = null;
+        adminOfOrganizationOID = null;
         memberOfOrganizationOID = Organization.FILTER_MATCH_ALL;
         maxResults = 0;
     }
