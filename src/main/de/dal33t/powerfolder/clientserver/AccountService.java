@@ -19,10 +19,10 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
@@ -123,6 +123,6 @@ public interface AccountService {
      * @param accounts The account
      * @return The current skin of the account
      */
-    String getClientSkinName(Account account);
+    String getClientSkinName(AccountInfo account);
 
 }

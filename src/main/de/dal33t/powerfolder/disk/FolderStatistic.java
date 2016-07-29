@@ -520,7 +520,7 @@ public class FolderStatistic extends PFComponent {
     public double getServerSyncPercentage() {
         double sync = -1;
         for (Member member : folder.getMembersAsCollection()) {
-            if (!getController().getOSClient().isClusterServer(member)) {
+            if (!member.isServer()) {
                 continue;
             }
             if (member.isMySelf()) {
@@ -619,7 +619,7 @@ public class FolderStatistic extends PFComponent {
     public long getServerSize() {
         long size = 0;
         for (Member member : folder.getMembersAsCollection()) {
-            if (!getController().getOSClient().isClusterServer(member)) {
+            if (!member.isServer()) {
                 continue;
             }
             size = Math.max(folder.getStatistic().getSizeInSync(member), size);

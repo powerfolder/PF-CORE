@@ -175,7 +175,7 @@ For creation of the installer:
 			<include name="json-20090306.jar" />
 
 			<!-- ContextMenu and IconOverlay -->
-			<include name="liferay-nativity-1.0.4.jar" />
+			<include name="liferay-nativity-1.0.5.jar" />
 
       <!-- Protobuf -->
 			<include name="protobuf-java-3.0.0-beta-1.jar" />

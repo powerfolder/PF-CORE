@@ -227,7 +227,7 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not connect to shell extensions!");
                 return false;
             }
-            nc.setFilterFolder("/");
+            nc.setFilterFolder("");
             logFine("Connected to shell extensions.");
             return true;
         } catch (RuntimeException re) {

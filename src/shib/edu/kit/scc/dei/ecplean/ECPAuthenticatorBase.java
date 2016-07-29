@@ -29,11 +29,16 @@ import org.apache.http.ParseException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Document;
@@ -77,15 +82,32 @@ public abstract class ECPAuthenticatorBase extends Observable {
                 + authInfo.getIdpEcpEndpoint());
         }
 
-        HttpPost httpPost = new HttpPost(authInfo.getIdpEcpEndpoint()
-            .toString());
+        // PFS-2070
+        BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+                new UsernamePasswordCredentials(authInfo.getUsername(), authInfo.getPassword()));
+        CloseableHttpClient client = HttpClientBuilder.create().setDefaultCredentialsProvider(credentialsProvider).build();
+        HttpPost httpPost = new HttpPost(authInfo.getIdpEcpEndpoint().toString());
         HttpResponse httpResponse;
+        
+        HttpHost targetHost = new HttpHost(authInfo.getIdpEcpEndpoint().getHost(), authInfo.getIdpEcpEndpoint().getPort(), 
+                authInfo.getIdpEcpEndpoint().getScheme());
+        AuthCache authCache = new BasicAuthCache();
+        BasicScheme basicAuth = new BasicScheme();
+        authCache.put(targetHost, basicAuth);
 
+        // Add AuthCache to the execution context
+        HttpClientContext context = HttpClientContext.create();
+        context.setCredentialsProvider(credentialsProvider);
+        context.setAuthCache(authCache);
+        
         try {
-            httpPost.setEntity(new StringEntity(documentToString(idpRequest)));
-            httpResponse = getHttpClient().execute(httpPost);
-
-            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED)
+            String idpRequestString = documentToString(idpRequest);
+            httpPost.setEntity(new StringEntity(idpRequestString));
+            httpResponse = client.execute(targetHost, httpPost, context);
+            
+            if (httpResponse.getStatusLine()
+                .getStatusCode() != HttpStatus.SC_OK)
             {
                 throw new ECPUnauthorizedException("User not authorized");
             }

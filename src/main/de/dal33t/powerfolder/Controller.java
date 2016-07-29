@@ -153,7 +153,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 105;
+    private static final int REVISION_VERSION = 159;
 
     /**
      * Program version.
@@ -323,7 +323,7 @@ public class Controller extends PFComponent {
             .createListenerSupport(NetworkingModeListener.class);
         limitedConnectivityListenerSupport = ListenerSupportFactory
             .createListenerSupport(LimitedConnectivityListener.class);
-        AntiSerializationVulnerability.check();
+        AntiSerializationVulnerability.checkClasspath();
     }
 
     /**
@@ -703,7 +703,9 @@ public class Controller extends PFComponent {
             openUI();
         }
 
-        enableFileBrowserIntegration(this);
+        if (!this.getMySelf().isServer()) {
+            enableFileBrowserIntegration(this);
+        }
 
         // Load anything that was not handled last time.
         loadPersistentObjects();

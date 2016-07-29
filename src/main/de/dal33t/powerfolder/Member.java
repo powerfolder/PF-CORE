@@ -375,8 +375,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         boolean isRelay = getController().getIOProvider()
             .getRelayedConnectionManager().isRelay(getInfo());
-        boolean isServer = getController().getOSClient().isClusterServer(this);
-        boolean isRelayOrServer = isServer || isRelay;
+        boolean isRelayOrServer = isServer() || isRelay;
 
         if (getController().getNetworkingMode() == NetworkingMode.SERVERONLYMODE
             && !isRelayOrServer)
@@ -384,7 +383,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             return false;
         }
 
-        boolean ignoreLAN2Internet = isServer
+        boolean ignoreLAN2Internet = isServer()
             && ConfigurationEntry.SERVER_CONNECT_FROM_LAN_TO_INTERNET
                 .getValueBoolean(getController());
 
@@ -393,7 +392,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         // FIXME Does not work with temporary server nodes.
-        if (isServer || isRelay) {
+        if (isServer() || isRelay) {
             // Always interesting is the server!
             // Always interesting a relay is!
             return true;
@@ -867,7 +866,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         boolean receivedFolderList = false;
         // #2569: Server waits for client list of folders first.
-        if (getController().getMySelf().isServer() && identity != null
+        if (getMySelf().isServer() && identity != null
             && !identity.isRequestFullFolderlist())
         {
             receivedFolderList = waitForFoldersJoin();
@@ -1437,8 +1436,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 .getIdentity() : null;
                             boolean fullList = identity != null
                                 && identity.isRequestFullFolderlist();
-                            if (getController().getMySelf().isServer()
-                                && !fullList && thisPeer != null)
+                            if (getMySelf().isServer() && !fullList
+                                && thisPeer != null)
                             {
                                 String remoteMagicId = thisPeer
                                     .getRemoteMagicId();
@@ -2147,8 +2146,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         ConnectionHandler thisPeer = peer;
 
         // #2569: Send "filtered" folder list if no full list is requested.
-        if (getController().getMySelf().isServer() && !fullList
-            && remoteFolderList != null && thisPeer != null
+        if (getMySelf().isServer() && !fullList && remoteFolderList != null
+            && thisPeer != null
             && StringUtils.isNotBlank(thisPeer.getMyMagicId()))
         {
             String magicId = thisPeer.getMyMagicId();
@@ -2604,7 +2603,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
 
             // #2569: Server 2 server connection. don't wait for folder lists
-            if (getController().getMySelf().isServer() && server) {
+            if (getMySelf().isServer() && server) {
                 synchronized (folderListWaiter) {
                     folderListWaiter.notifyAll();
                 }

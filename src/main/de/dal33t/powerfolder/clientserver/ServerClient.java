@@ -20,8 +20,10 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -38,11 +40,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimerTask;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.security.auth.Subject;
@@ -81,6 +84,7 @@ import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.net.NodeList;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.security.AnonymousAccount;
@@ -93,9 +97,11 @@ import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
+import de.dal33t.powerfolder.util.Pair;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.SimpleCache;
 import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -114,6 +120,9 @@ import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
  * @version $Revision: 1.5 $
  */
 public class ServerClient extends PFComponent {
+    public static final String SERVER_NODES_URI = "/client_deployment/server.nodes";
+    public static final String SERVER_PUBLIC_KEYS_URI = "/client_deployment/server.public_keys";
+
     private static final String MEMBER_ID_TEMP_PREFIX = "TEMP_IDENTITY_";
 
     /**
@@ -131,6 +140,9 @@ public class ServerClient extends PFComponent {
      * PFC-2455 / PFC-2745: Config and children of this client.
      */
     private Properties config;
+    private Collection<Member> servers = new CopyOnWriteArrayList<Member>();
+    private SimpleCache<MemberInfo, Boolean> cachedServerPublicKey = new SimpleCache<>(
+        Util.createConcurrentHashMap(), 1, TimeUnit.MINUTES);
     private Map<ServerInfo, ServerClient> childClients = Util
         .createConcurrentHashMap();
 
@@ -213,8 +225,9 @@ public class ServerClient extends PFComponent {
      */
     public ServerClient(Controller controller, Properties config) {
         super(controller);
+        Reject.ifNull(config, "Config is null");
         
-        config = controller.getConfig();
+        this.config = config;
         String name = ConfigurationEntry.SERVER_NAME.getValue(config);
         String host = ConfigurationEntry.SERVER_HOST.getValue(config);
         String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(config);
@@ -464,26 +477,17 @@ public class ServerClient extends PFComponent {
 
     /**
      * @param node
-     * @return true if the node is a part of the server cloud.
+     * @return true if the node is a part of this service cloud.
      */
     public boolean isClusterServer(Member node) {
-        return node.isServer() || isPrimaryServer(node);
+        return isPrimaryServer(node) || servers.contains(node);
     }
 
     /**
      * @return all KNOWN servers of the cluster
      */
     public Collection<Member> getServersInCluster() {
-        List<Member> servers = new LinkedList<Member>();
-        for (Member node : getController().getNodeManager()
-            .getNodesAsCollection())
-        {
-            if (node.isServer()) {
-                servers.add(node);
-            }
-        }
-        Collections.shuffle(servers);
-        return servers;
+        return Collections.unmodifiableCollection(servers);
     }
 
     /**
@@ -1173,25 +1177,30 @@ public class ServerClient extends PFComponent {
                     fireLogin(accountDetails, false);
                 }
                 // Retrieve skin from server
-                String skin = this.userService.getClientSkinName(this.accountDetails.getAccount());
-                if (this.downloadClientSkin(skin)) {
-                    // Update folder skin
-                    PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
-                    for (Folder folder: getController().getFolderRepository().getFolders()) {
-                        PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
-                    }
-                    // Update shortcut skin
-                    FolderRepository repo = getController().getFolderRepository();
-                    Path oldBase = repo.getFoldersBasedir();
-                    String oldBaseDirName;
-                    if (oldBase.getFileName() != null) {
-                        oldBaseDirName = oldBase.getFileName().toString();
-                    } else {
-                        oldBaseDirName = oldBase.toString();
-                    }
+                try {
+                    String skin = this.userService.getClientSkinName(this.getAccountInfo());
+                    if (this.downloadClientSkin(skin)) {
+                        // Update folder skin
+                        PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
+                        for (Folder folder: getController().getFolderRepository().getFolders()) {
+                            PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
+                        }
+                        // Update shortcut skin
+                        FolderRepository repo = getController().getFolderRepository();
+                        Path oldBase = repo.getFoldersBasedir();
+                        String oldBaseDirName;
+                        if (oldBase.getFileName() != null) {
+                            oldBaseDirName = oldBase.getFileName().toString();
+                        } else {
+                            oldBaseDirName = oldBase.toString();
+                        }
                         repo.updateShortcuts(oldBaseDirName);
-                    // Update client skin
-                    getController().shutdownAndRequestRestart();
+                        // Update client skin
+                        getController().shutdownAndRequestRestart();
+                    }
+                }
+                catch (RemoteCallException e) {
+                    logWarning("Cannot retrieve skin from server: " + e);
                 }
                 return accountDetails.getAccount();
             } catch (Exception e) {
@@ -1430,17 +1439,19 @@ public class ServerClient extends PFComponent {
         if (!allowServerChange) {
             return;
         }
-        if (getController().getMySelf().isServer()) {
+        if (getMySelf().isServer()) {
             // Don't
             return;
         }
         if (getController().isShuttingDown() || !getController().isStarted()) {
             return;
         }
-        if (isFine()) {
-            logFine("findAlternativeServer: " + getServersInCluster());
+        if (isWarning()) {
+            logWarning("findAlternativeServer: " + servers);
         }
-        for (Member server : getServersInCluster()) {
+        List<Member> serversCopy = new ArrayList<>(servers);
+        Collections.shuffle(serversCopy);
+        for (Member server : serversCopy) {
             boolean wasConnected = server.isConnected();
             if (!wasConnected) {
                 server.markForImmediateConnect();
@@ -1536,6 +1547,164 @@ public class ServerClient extends PFComponent {
             logWarning("Could not load connection infos from " + configURL
                 + ": " + e.getMessage());
         }
+    }
+    
+    /**
+     * Load all known (cluster) server nodes and their public keys.
+     * @param client
+     */
+    public void loadServerNodes() {
+        if (!ConfigurationEntry.SERVER_LOAD_NODES
+            .getValueBoolean(getController()))
+        {
+            return;
+        }
+        String serverNodesURL = getWebURL(SERVER_NODES_URI, false);
+        String serverPublicKeysURL = getWebURL(SERVER_PUBLIC_KEYS_URI,
+            false);
+        NodeList list = null;
+        if (StringUtils.isNotBlank(serverNodesURL)) {
+            try {
+                list = loadNodesFrom(new URL(serverNodesURL));
+            } catch (MalformedURLException e) {
+                logWarning(e.toString());
+            }
+        }
+        if (StringUtils.isNotBlank(serverPublicKeysURL)) {
+            // Check cache:
+            boolean useCache;
+            if (list != null) {
+                useCache = true;
+                for (MemberInfo snInfo : list.getServersSet()) {
+                    Boolean hasKey = cachedServerPublicKey.getValidEntry(snInfo);
+                    useCache &= hasKey != null && hasKey.booleanValue();
+                }
+            } else {
+                useCache = false;
+            }
+            if (!useCache) {
+                try {
+                    loadPublicKeysFrom(new URL(serverPublicKeysURL));
+                } catch (Exception e) {
+                    logWarning(e.toString(), e);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Loads members from url and adds them. Also removes unsets all servers,
+     * except primary server.
+     *
+     * @param url
+     */
+    private NodeList loadNodesFrom(URL url) {
+        try {
+            NodeList nodeList = new NodeList();
+            nodeList.load(url);
+
+            logInfo("I know " + nodeList.getServersSet().size()
+                + " servers from cluster @ " + url + " : "
+                + nodeList.getServersSet());
+
+            if (processNodeList(nodeList)) {
+                return nodeList;
+            }
+        } catch (IOException e) {
+            logWarning("Unable to load servers from url '" + url + "'. "
+                + e.getMessage());
+            logFiner("IOException", e);
+        } catch (ClassCastException e) {
+            logWarning("Illegal format of servers url '" + url);
+            logFiner("ClassCastException", e);
+        } catch (ClassNotFoundException e) {
+            logWarning("Illegal format of servers files '" + url);
+            logFiner("ClassNotFoundException", e);
+        }
+        return null;
+    }
+    
+    private boolean processNodeList(NodeList nodeList) {
+        getController().getNodeManager().queueNewNodes(nodeList.getNodeList().toArray(
+            new MemberInfo[nodeList.getNodeList().size()]));
+
+        for (MemberInfo friend : nodeList.getFriendsSet()) {
+            Member node = friend.getNode(getController(), true);
+            node.setFriend(true, null);
+        }
+//        // Cleanup old servers:
+//        for (Member node : knownNodes.values()) {
+//            if (isPrimaryServer(node)) {
+//                continue;
+//            }
+//            if (!nodeList.getServersSet().contains(node.getInfo())) {
+//                node.setServer(false);
+//            }
+//        }
+        
+        Collection<Member> newServers = new CopyOnWriteArrayList<>();
+        for (MemberInfo server : nodeList.getServersSet()) {
+            Member node = server.getNode(getController(), true);
+            node.updateInfo(server);
+            node.setServer(true);
+            newServers.add(node);
+            if (isInfo() && !servers.contains(node)) {
+                logInfo("Added server: " + node);
+            }
+        }
+        for (Member server : servers) {
+            if (!newServers.contains(server) && !isPrimaryServer(server)) {
+                server.setServer(false);
+                logInfo("Removed server: " + server);
+            }
+        }
+        servers = newServers;
+        
+        return !nodeList.isEmpty();
+    }
+
+
+    /**
+     * Load all public keys from all known Nodes from {@code url} and add them
+     * to the local key store.
+     * 
+     * @param url
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private boolean loadPublicKeysFrom(URL url) {
+        try {
+            ObjectInputStream in = new ObjectInputStream(url.openStream());
+            List<Pair<MemberInfo, PublicKey>> pkList = new ArrayList<>(
+                (ArrayList<Pair<MemberInfo, PublicKey>>) in.readObject());
+
+            if (isFine()) {
+                logFine("Received " + pkList.size()
+                    + " server keys from cluster @ " + url);
+            }
+
+            boolean success = true;
+            for (Pair<MemberInfo, PublicKey> key : pkList) {
+                MemberInfo nodeInfo = key.getFirst();
+                PublicKey publicKey = key.getSecond();
+                if (ProUtil.addNodeToKeyStore(getController(), nodeInfo,
+                    publicKey))
+                {
+                    cachedServerPublicKey.put(nodeInfo, Boolean.TRUE);
+                } else {
+                    cachedServerPublicKey.put(nodeInfo, Boolean.FALSE);
+                    success = false;
+                }
+            }
+            return success;
+        } catch (FileNotFoundException e) {
+            logInfo("Unable to load public keys from " + url.toString()
+                + ". Server does not support sending public keys.");
+        } catch (IOException | ClassCastException | ClassNotFoundException e) {
+            logWarning(
+                "Unable to load public keys from " + url.toString() + ". " + e);
+        }
+        return false;
     }
 
     /**
@@ -1685,9 +1854,11 @@ public class ServerClient extends PFComponent {
             if (childClients.containsKey(fedService)) {
                 continue;
             }
-            logWarning("Starting connect to federated service: " + fedService);
+            logInfo("Starting connect to federated service: " + fedService);
             ServerClient client = createNew(fedService, token);
+            client.loadServerNodes();
             client.start();
+            client.loginWithLastKnown();
             childClients.put(fedService, client);
         }
     }
@@ -1698,6 +1869,7 @@ public class ServerClient extends PFComponent {
         try {
             Properties config = ConfigurationLoader
                 .loadPreConfiguration(defaultConfigURL);
+            ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, getUsername());
             ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, token);
             return new ServerClient(getController(), config);
         } catch (IOException e) {
@@ -1709,7 +1881,7 @@ public class ServerClient extends PFComponent {
     private void updateServer(Account a) {
         // Possible switch to new server
         final ServerInfo targetServer = a.getServer();
-        if (targetServer == null || !allowServerChange) {
+        if (targetServer == null || !allowServerChange || targetServer.isFederatedService()) {
             return;
         }
         // Not hosted on the server we just have logged into.
@@ -1796,7 +1968,7 @@ public class ServerClient extends PFComponent {
         }
         boolean localSkinWasAlreadyInstalled = false;
         Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
-        String baseUrl = this.getWebURL() + "/skin/";;
+        String baseUrl = this.getWebURL() + "/skin/";
         String skinQuery = "?skin=" + skin;
         URL url;
         try {
@@ -1827,36 +1999,51 @@ public class ServerClient extends PFComponent {
             if (localSkinVersion.equals(remoteSkinVersion)) {
                 return false;
             }
-            skinPath = skinPath.resolve("client");
-            baseUrl += "client/";
             // Delete old skin
             try {
-                FileUtils.deleteDirectory(skinPath.toFile());
+                FileUtils.deleteDirectory(skinPath.resolve("client").toFile());
             } catch (IOException e) {
                 logWarning("Cannot delete old skin: " + e, e);
                 return false;
             }
-            // Download skin from server
-            ArrayList<String> files = new ArrayList<String>();
-            files.add("icons.properties");
-            files.add("Folder.ico");
-            files.add("synth.xml");
-            files.add("icons");
-            String file = "";
-            for (int i = 0; i < files.size(); i++) {
-                file = files.get(i);
-                url = new URL(baseUrl + file + skinQuery);
-                Path filePath = skinPath.resolve(file);
-                PathUtils.copyFromStreamToFile(url.openStream(), filePath);
-                if (file == "icons") {
-                    // Parse the icons file list and add the files to the files list
-                    try (BufferedReader bufferedReader = Files.newBufferedReader(filePath)) {
-                        String line;
-                        while ((line = bufferedReader.readLine()) != null) {
-                            files.add(file + "/" + line);
+            // Do not load default skin from server
+            if (!remoteSkinVersion.equals("Bluberry 0")) {
+                // Download skin from server
+                ArrayList<String> files = new ArrayList<String>();
+                files.add("client/icons.properties");
+                files.add("client/Folder.ico");
+                files.add("client/synth.xml");
+                String file = "";
+                for (int i = 0; i < files.size(); i++) {
+                    file = files.get(i);
+                    Path filePath = skinPath.resolve(file);
+                    // Do not return if download of single files fails because
+                    // some icons.properties files may contain false entries
+                    try {
+                        url = new URL(baseUrl + file + skinQuery);
+                        PathUtils.copyFromStreamToFile(url.openStream(),
+                            filePath);
+                    } catch (MalformedURLException e) {
+                        logWarning("Invalid client skin URL: " + e, e);
+                    } catch (IOException e) {
+                        logWarning("Cannot download client skin:" + e, e);
+                    }
+                    if (file == "client/icons.properties") {
+                        // Parse the icons file list and add the files to the
+                        // files list
+                        try (BufferedReader bufferedReader = Files
+                            .newBufferedReader(filePath))
+                        {
+                            String line;
+                            while ((line = bufferedReader.readLine()) != null) {
+                                if (line.length() > 2) {
+                                    line = line
+                                        .substring(line.indexOf("=") + 1);
+                                    files.add(line);
+                                }
+                            }
                         }
                     }
-                    Files.delete(filePath);
                 }
             }
         } catch (MalformedURLException e) {
@@ -1913,6 +2100,20 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * @param foInfo
+     * @return true if the folder is joined/synced with server of federated
+     *         service
+     */
+    public boolean joinedByFederation(FolderInfo foInfo) {
+        for (ServerClient client : childClients.values()) {
+            if (client.joinedByCloud(foInfo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param folder
      *            the folder to check.
      * @return true if the cloud has joined the folder.
@@ -1921,8 +2122,8 @@ public class ServerClient extends PFComponent {
         if (folder.hasMember(server)) {
             return true;
         }
-        for (Member member : folder.getMembersAsCollection()) {
-            if (member.isServer() && !member.isMySelf()) {
+        for (Member member : servers) {
+            if (folder.hasMember(member)) {
                 return true;
             }
         }
@@ -1984,7 +2185,7 @@ public class ServerClient extends PFComponent {
 
     private void retrieveAndConnectoClusterServers() {
         try {
-            getController().getNodeManager().loadServerNodes(this);
+            loadServerNodes();
 
             if (!isConnected() || !isLoggedIn()) {
                 return;
@@ -2070,7 +2271,7 @@ public class ServerClient extends PFComponent {
             return false;
         }
         // #2158: Don't override if we are a sever itself.
-        if (getController().getMySelf().isServer()) {
+        if (getMySelf().isServer()) {
             return false;
         }
         // Currently not supported from config
@@ -2377,32 +2578,21 @@ public class ServerClient extends PFComponent {
         @Override
         public void settingsChanged(NodeManagerEvent e) {
             // Transition Member.setServer(true)
-            if (e.getNode().isServer()) {
-                logInfo("Discovered new server of cluster(" + countServers()
+            if (isClusterServer(e.getNode())) {
+                logInfo("Discovered new server of cluster(" + servers.size()
                     + "): " + e.getNode().getNick() + " @ "
                     + e.getNode().getReconnectAddress());
             } else if (getMySelf().isServer()) {
-                logInfo("Not longer member of cluster: "
-                    + e.getNode().getNick() + " @ "
-                    + e.getNode().getReconnectAddress());
+                logInfo("Not longer member of cluster: " + e.getNode().getNick()
+                    + " @ " + e.getNode().getReconnectAddress());
             }
             listenerSupport.nodeServerStatusChanged(new ServerClientEvent(
                 ServerClient.this, e.getNode()));
         }
 
-        private int countServers() {
-            int n = 0;
-            for (Member node : getController().getNodeManager().getNodesAsCollection()) {
-                if (node.isServer()) {
-                    n++;
-                }
-            }
-            return n;
-        }
-
         @Override
         public void nodeConnected(NodeManagerEvent e) {
-            if (e.getNode().isServer() && !isConnected()) {
+            if (isClusterServer(e.getNode()) && !isConnected()) {
                 findAlternativeServer();
             }
             // #2366: Checked from via serverConnected(Member)

@@ -116,7 +116,7 @@ public class SecurityManagerClient extends PFComponent implements
 
     public boolean hasPermission(MemberInfo memberInfo, Permission permission) {
         Member m = memberInfo.getNode(getController(), true);
-        if (client.isClusterServer(m)) {
+        if (m.isServer()) {
             return true;
         }
         if (!client.isConnected()) {

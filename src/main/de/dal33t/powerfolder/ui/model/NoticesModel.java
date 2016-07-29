@@ -29,6 +29,7 @@ import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.FileInBasePathWarning;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.PFUIComponent;
@@ -279,6 +280,17 @@ public class NoticesModel extends PFUIComponent {
                 notices.remove(notice);
                 updateNoticeCounts();
                 return;
+            }
+        }
+    }
+    
+    /**
+     * Clears all FileInBasePathWarnings
+     */
+    public void clearAllFileInBasePathWarnings() {
+        for (Notice notice: this.getAllNotices()) {
+            if (notice instanceof FileInBasePathWarning) {
+                this.clearNotice(notice);
             }
         }
     }

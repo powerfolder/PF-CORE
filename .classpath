@@ -45,7 +45,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/bcpg-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcpkix-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-ext-jdk15on-152.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/powerfolder-protobuf-0.1.jar" sourcepath="/Users/oberdoerfer/Documents/Sources/DDC/protocol/powerfolder-protobuf-source-0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/powerfolder-protobuf-0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.0.0-beta-2.jar"/>
+	<classpathentry kind="lib" path="lib/liferay-nativity-1.0.5.jar" sourcepath="/liferay-nativity"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

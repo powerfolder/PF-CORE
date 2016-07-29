@@ -79,9 +79,8 @@ import de.dal33t.powerfolder.util.Translation;
  *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
- * @deprecated use ChooseMultiDiskLocationPanel
  */
-@Deprecated
+@SuppressWarnings("serial")
 public class ChooseDiskLocationPanel extends PFWizardPanel {
 
     /**
@@ -470,10 +469,13 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
                         folderSizeLabel.setText(Translation.get(
                                 "exp.wizard.choose_disk_location.directory_no_write"));
                         folderSizeLabel.setForeground(Color.red);
-                    } else {
+                    } else if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
                         folderSizeLabel.setText(Translation.get(
                             "exp.wizard.choose_disk_location.directory_size",
                             Format.formatBytes(directorySize)));
+                        folderSizeLabel.setForeground(SystemColor.textText);
+                    } else {
+                        folderSizeLabel.setText("");
                         folderSizeLabel.setForeground(SystemColor.textText);
                     }
                 }

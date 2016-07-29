@@ -251,7 +251,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         updateStatsDetails();
         updateNumberOfFiles();
         updateTransferMode();
-        updateFolderMembershipDetails();
         updateIconAndOS();
         updateLocalButtons();
         updateNameLabel();
@@ -674,7 +673,6 @@ public class ExpandableFolderView extends PFUIComponent implements
             new MyDeletedFilesAction());
         updateNumberOfFiles();
         updateStatsDetails();
-        updateFolderMembershipDetails();
         updateTransferMode();
         updateLocalButtons();
         updateIconAndOS();
@@ -1064,36 +1062,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     /**
-     * Updates the folder member details.
-     */
-    private void updateFolderMembershipDetails() {
-        folderDetailsUpdater.schedule(new Runnable() {
-            public void run() {
-                updateFolderMembershipDetails0();
-            }
-        });
-    }
-
-    /**
-     * Updates the folder member details.
-     */
-    private void updateFolderMembershipDetails0() {
-        String countText;
-        String connectedCountText;
-        if (type == Type.Local) {
-            countText = String.valueOf(folder.getMembersCount());
-            // And me!
-            connectedCountText = String.valueOf(folder
-                .getConnectedMembersCount() + 1);
-        } else {
-            countText = "?";
-            connectedCountText = "?";
-        }
-        membersLabel.setText(Translation.get(
-            "exp_folder_view.members", countText, connectedCountText));
-    }
-
-    /**
      * Gets called externally to update the display of problems.
      */
     public void updateIconAndOS() {
@@ -1421,7 +1389,6 @@ public class ExpandableFolderView extends PFUIComponent implements
     private class MyNodeManagerListener extends NodeManagerAdapter {
         private void updateIfRequired(NodeManagerEvent e) {
             if (folder != null && folder.hasMember(e.getNode())) {
-                updateFolderMembershipDetails();
                 doFolderChanges(folder);
             }
         }
@@ -1520,12 +1487,10 @@ public class ExpandableFolderView extends PFUIComponent implements
     {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
-            updateFolderMembershipDetails();
             doFolderChanges(folder);
         }
 
         public void memberLeft(FolderMembershipEvent folderEvent) {
-            updateFolderMembershipDetails();
             doFolderChanges(folder);
         }
 

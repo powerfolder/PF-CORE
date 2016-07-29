@@ -503,7 +503,7 @@ public class Account implements Serializable, D2DObject {
      * @return {@code True} if user is member of an {@link Organization} and has
      *         {@link OrganizationAdminPermission} for this organization, {@code false} otherwise.
      */
-    public boolean isMemberOfOrganizationAndAdmin() {
+    public boolean isAdminOfOwnOrganization() {
         if (StringUtils.isBlank(organizationOID)) {
             return false;
         }
@@ -514,7 +514,7 @@ public class Account implements Serializable, D2DObject {
      * @return {@code True} if user has any {@link OrganizationAdminPermission}
      *         or {@link OrganizationCreatePermission}, {@code false} otherwise.
      */
-    public boolean isOrganizationAdmin() {
+    public boolean isAdminOfAnyOrganization() {
         if (StringUtils.isNotBlank(organizationOID)) {
             if (hasPermission(new OrganizationAdminPermission(organizationOID))) {
                 return true;

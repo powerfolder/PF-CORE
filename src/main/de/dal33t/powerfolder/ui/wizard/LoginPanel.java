@@ -139,7 +139,8 @@ public class LoginPanel extends PFWizardPanel {
                 .getPassword().length > 0)
             && (StringUtils
                 .isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                    .getValue(getController())) ? listLoaded : true);
+                    .getValue(getController())) ? listLoaded : true)
+            && (idPSelectBox == null || idPSelectBox.getSelectedIndex() != 0);
     }
 
     public WizardPanel next() {
@@ -313,12 +314,18 @@ public class LoginPanel extends PFWizardPanel {
                     JSONArray resp = new JSONArray(body.toString());
                     List<String> idPList = new ArrayList<>(resp.length());
 
+
                     String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
                         .getValue(getController());
                     boolean lastIdPSet = false;
                     short namesOffset = 0;
 
                     idPSelectBox.removeAllItems();
+
+                    // PFS-2006
+                    idPSelectBox.addItem(Translation.get("wizard.login_online_storage.pre_selection_entry"));
+                    idPList.add(0, "");
+
                     if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
                         .hasNonBlankValue(getController()))
                     {

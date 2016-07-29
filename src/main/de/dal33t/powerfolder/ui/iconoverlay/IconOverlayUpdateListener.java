@@ -206,6 +206,9 @@ public class IconOverlayUpdateListener extends PFComponent implements
                     } catch (RuntimeException re) {
                         logFine("Caught exception while updating folder "
                             + folder + ". " + re, re);
+                    } catch (UnsatisfiedLinkError e) {
+                        logFine("Caught exception while updating folder "
+                            + folder + ". " + e, e);
                     } finally {
                         callCount.decrementAndGet();
                     }

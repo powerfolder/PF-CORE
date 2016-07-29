@@ -251,7 +251,7 @@ public class DirectoryChooser extends BaseDialog {
 
         // Panel builder.
         FormLayout layout = new FormLayout("pref, 3dlu, pref:grow, 3dlu, pref",
-            "pref, 3dlu, pref, 3dlu, pref");
+            "pref, 3dlu, pref");
         PanelBuilder builder = new PanelBuilder(layout);
 
         // Set the components.
@@ -259,12 +259,6 @@ public class DirectoryChooser extends BaseDialog {
         int row = 1;
         builder.add(scrollPane, cc.xyw(1, row, 5));
         row += 2;
-        if (multiSelect) {
-            builder.add(new JLabel(Translation.get(
-                    "dialog.directorychooser.hold_control")),
-                    cc.xyw(1, row, 5));
-            row +=2;
-        }
         builder.add(
             new JLabel(Translation.get("general.directory")),
                 cc.xy(1, row));

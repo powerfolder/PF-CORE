@@ -676,7 +676,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getBoolean("is0byteRecoveryRun", false);
         if (!is0byteRecoveryRun && ConfigurationEntry.RECOVER_0BYTE_FILES
             .getValueBoolean(getController())
-            && !getController().getMySelf().isServer())
+            && !getMySelf().isServer())
         {
             getController().getIOProvider().startIO(new Runnable() {
                 @Override
@@ -1723,7 +1723,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * folders.
      */
     private void lookForNewFolders() {
-        if (!getController().getMySelf().isServer()) {
+        if (!getMySelf().isServer()) {
             if (!getController().getOSClient().isLoggedIn()) {
                 if (isFine()) {
                     logFine("Skipping searching for new folders...");
@@ -1822,7 +1822,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning("Could not access base dir while looking for new folders @ " + baseDir.toString() + ". " + ioe.toString());
         }
 
-        if (!getController().getMySelf().isServer() && getController().isUIEnabled()) {
+        if (!getMySelf().isServer() && getController().isUIEnabled()) {
             filter = new Filter<Path>() {
                 @Override
                 public boolean accept(Path entry) {
@@ -1859,6 +1859,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             };
 
+            // Clear all FileInBasePathWarnings before generating new ones
+            getController().getUIController().getApplicationModel().getNoticesModel().clearAllFileInBasePathWarnings();
+            // Search for files in base path
             try (DirectoryStream<Path> files = Files.newDirectoryStream(
                 baseDir, filter)) {
                 for (Path file : files) {
@@ -2228,7 +2231,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * deleted.
      */
     private void lookForFoldersToBeRemoved() {
-        if (!getController().getMySelf().isServer()) {
+        if (!getMySelf().isServer()) {
             if (!getController().getOSClient().isLoggedIn()) {
                 if (isFine()) {
                     logFine("Skipping searching for folders to be removed...");
@@ -2427,7 +2430,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void updateFolders(Account a) {
         // TODO: Called too often
         Reject.ifNull(a, "Account");
-        if (getController().getMySelf().isServer()) {
+        if (getMySelf().isServer()) {
             return;
         }
         if (!a.isValid()) {

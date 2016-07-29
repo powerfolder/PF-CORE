@@ -152,8 +152,7 @@ public class MembersSimpleTable extends JTable {
             setForeground(ColorUtil.getTextForegroundColor());
 
             boolean isServer = folderMember.getMember() != null
-                && (model.getController().getOSClient()
-                    .isClusterServer(folderMember.getMember()));
+                && folderMember.getMember().isServer();
 
             if (actualColumn == MembersSimpleTableModel.COL_TYPE) {
                 if (folderMember.getGroupInfo() != null) {

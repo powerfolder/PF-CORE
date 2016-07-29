@@ -216,6 +216,9 @@ public class Util {
             // Whitespaces not allowed
             return false;
         }
+        if (email.trim().contains(";")){
+            return false;
+        }
         return true;
     }
 
