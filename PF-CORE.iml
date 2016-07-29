@@ -33,10 +33,9 @@
     <libelement value="jar://$MODULE_DIR$/lib/httpclient-cache-4.3.5.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/fluent-hc-4.3.5.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/httpmime-4.3.5.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.2.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcprov-jdk15on-151.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcpkix-jdk15on-151.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.4.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.5.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcmail-jdk15on-152.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcpg-jdk15on-152.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcpkix-jdk15on-152.jar!/" />
@@ -90,7 +89,7 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="liferay-nativity-1.0.4.jar">
+      <library name="liferay-nativity-1.0.5.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.5.jar!/" />
         </CLASSES>
