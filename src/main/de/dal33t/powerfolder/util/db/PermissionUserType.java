@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.security.GroupAdminPermission;
 import de.dal33t.powerfolder.security.OrganizationAdminPermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.security.SingletonPermission;
+import de.dal33t.powerfolder.security.UnknownPermission;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
@@ -180,15 +181,14 @@ public class PermissionUserType extends Loggable implements UserType {
                 }
                 p = (Permission) pObj;
             } catch (Exception e) {
-                logSevere("Unable to resolve permission: " + permissionID, e);
+                logSevere("Unable to resolve permission: " + permissionID + ". " + e);
             }
         }
 
         if (p == null) {
-            // this should never happen
-            logSevere("No permission could be created for ID " + permissionID);
-            throw new IllegalStateException(
-                "No permission could be created for ID " + permissionID);
+            // This may happen on a downgrade.
+            logSevere("Unknown permission with ID: " + permissionID);
+            return new UnknownPermission(permissionID);
         }
 
         return p;
