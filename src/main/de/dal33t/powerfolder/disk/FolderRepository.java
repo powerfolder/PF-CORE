@@ -387,6 +387,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         } else {
             baseDir = ConfigurationEntry.FOLDER_BASEDIR
                 .getValue(getController());
+            // Read folder base path from registry if possible
+            boolean overwriteBaseDir = PreferencesEntry.FOLDER_BASE_PATH_OVERWRITE.getValueBoolean(getController());
+            if (overwriteBaseDir == true && !PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController()).isEmpty()) { 
+                baseDir = PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController());
+                // Set folder base path in config
+                ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), baseDir);
+                // Disable registry entry
+                PreferencesEntry.FOLDER_BASE_PATH_OVERWRITE.setValue(getController(), false);
+            }
         }
 
         // PFC-2544: Start
@@ -523,6 +532,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning("Unable to access base path for folders: "
                 + foldersBasedir);
         }
+        // Save folder base path to registry
+        PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), baseDir);
     }
 
     /**
@@ -838,6 +849,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), path);
+        PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), path);
         initFoldersBasedir();
     }
 

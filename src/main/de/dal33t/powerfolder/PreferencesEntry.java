@@ -153,7 +153,17 @@ public enum PreferencesEntry {
     /**
      * PFC-2395
      */
-    ENABLE_CONTEXT_MENU("context_menu.enabled", true);
+    ENABLE_CONTEXT_MENU("context_menu.enabled", true),
+    
+    /**
+     * Folder base path
+     */
+    FOLDER_BASE_PATH("foldersbase", ""),
+    
+    /**
+     * Flag is set true if FOLDER_BASE_PATH shall overwrite existing configuration
+     */
+    FOLDER_BASE_PATH_OVERWRITE("foldersbase.overwrite", true);
 
     /** String, Boolean, Integer */
     private Class<?> type;
