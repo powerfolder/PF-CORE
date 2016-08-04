@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.security;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -115,6 +116,7 @@ public class Organization implements Serializable {
         Reject.ifBlank(oid, "OID");
         this.oid = oid;
         this.osSubscription = new OnlineStorageSubscription();
+        this.domains = new CopyOnWriteArrayList<>();
     }
 
     public String getOID() {
