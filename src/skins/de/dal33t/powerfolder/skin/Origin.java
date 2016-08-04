@@ -54,14 +54,17 @@ public class Origin extends AbstractSyntheticaSkin {
     }
 
     @Override
+    public Path getDefaultSynthXMLPath() {
+        return Paths.get("/de/dal33t/powerfolder/skin/origin/synth.xml");
+    }
+
+        @Override
     public Path getSynthXMLPath() {
         // If XML file exists in skin folder, return it. If it does not exist, return the default XML file from the jar.
         if (Files.exists(Controller.getMiscFilesLocation().resolve("skin/client/synth.xml"))) {
             return Controller.getMiscFilesLocation().resolve("skin/client/synth.xml");
         }
-        else {
-            return Paths.get("/de/dal33t/powerfolder/skin/origin/synth.xml");
-        }
+        return null;
     }
 
 }

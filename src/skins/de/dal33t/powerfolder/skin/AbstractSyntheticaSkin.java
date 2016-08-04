@@ -50,6 +50,8 @@ public abstract class AbstractSyntheticaSkin implements Skin {
 
     public abstract String getID();
 
+    public abstract Path getDefaultSynthXMLPath();
+
     public abstract Path getSynthXMLPath();
 
     public final LookAndFeel getLookAndFeel() throws ParseException {
@@ -61,8 +63,10 @@ public abstract class AbstractSyntheticaSkin implements Skin {
         
         public LookAndFeel() throws ParseException {
             super();
-            // If XML file exists in skin folder, load it. If it does not exist, load the default XML file from the jar.
-            if (Files.exists(AbstractSyntheticaSkin.this.getSynthXMLPath())) {
+            // Always load the default XML file from the jar
+            super.loadXMLConfig(AbstractSyntheticaSkin.this.getDefaultSynthXMLPath().toString().replace("\\", "/"));
+            // If XML file exists in skin folder, load it
+            if (AbstractSyntheticaSkin.this.getSynthXMLPath() !=null && Files.exists(AbstractSyntheticaSkin.this.getSynthXMLPath())) {
                 try {
                     URL xmlURL;
                     if (OSUtil.isWindowsSystem()) {
@@ -77,9 +81,6 @@ public abstract class AbstractSyntheticaSkin implements Skin {
                 catch (IOException e) {
                     log.severe("Cannot load XML file");
                 }
-            }
-            else {
-                super.loadXMLConfig(AbstractSyntheticaSkin.this.getSynthXMLPath().toString().replace("\\", "/"));
             }
         }
 

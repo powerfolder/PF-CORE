@@ -49,6 +49,11 @@ public class LightSky extends AbstractSyntheticaSkin {
     }
 
     @Override
+    public Path getDefaultSynthXMLPath() {
+        return Paths.get("/de/dal33t/powerfolder/skin/lightsky/synth.xml");
+    }
+
+    @Override
     public Path getSynthXMLPath() {
         return Paths.get("/de/dal33t/powerfolder/skin/lightsky/synth.xml");
     }
