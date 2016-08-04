@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -839,6 +840,76 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 return "The file " + getFolderAtBart().getLocalBase().resolve(testFile.getFileName()) + " still exists? "
                     + Files.notExists(getFolderAtBart().getLocalBase().resolve(
                         testFile.getFileName()));
+            }
+        });
+    }
+    
+    /**
+     * PFS-2002
+     * @throws IOException
+     */
+    public void testDeleteSubdir() throws IOException {
+        String subdir = "subdir";
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        // 1) Create a subdir
+        Path subdirLisa = getFolderAtLisa().getLocalBase().resolve(subdir);
+        Path subdirBart = getFolderAtBart().getLocalBase().resolve(subdir);
+        TestHelper.createRandomFile(subdirLisa);
+        scanFolder(getFolderAtLisa());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return getFolderAtBart().getKnownItemCount() == 2;
+            }
+
+            @Override
+            public String message() {
+                return "There are " + getFolderAtBart().getKnownItemCount()
+                    + " known files. " + " Expected were at least 2.";
+            }
+        });
+
+        assertTrue(Files.exists(subdirBart));
+        
+        // 2) Delete dir
+        PathUtils.recursiveDelete(subdirLisa);
+        scanFolder(getFolderAtLisa());
+        
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return Files.notExists(subdirBart);
+            }
+
+            @Override
+            public String message() {
+                return "Subdir at bart not deleted: " + subdirBart;
+            }
+        });
+        
+        // 3) Re-create. Also put unscanned content into it.
+        TestHelper.createRandomFile(subdirLisa);
+        scanFolder(getFolderAtLisa());
+        TestHelper.createRandomFile(subdirLisa);
+        
+        // 4) Delete by method:
+        FileInfo subdirInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), subdirLisa);
+        getFolderAtLisa().removeFilesLocal(subdirInfo);
+
+        assertTrue("Subdirectory not deleted at lisa: " + subdirLisa,
+            Files.notExists(subdirLisa));
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return Files.notExists(subdirBart);
+            }
+
+            @Override
+            public String message() {
+                return "Subdir at bart not deleted: " + subdirBart;
             }
         });
     }

@@ -1675,12 +1675,25 @@ public class Folder extends PFComponent {
         synchronized (scanLock) {
             if (diskFile != null && Files.exists(diskFile)) {
                 if (!deleteFile(fInfo, diskFile)) {
-                    logWarning("Unable to delete local file. "
-                        + diskFile.toAbsolutePath()
-                        + ". "
-                        + fInfo.toDetailString());
-                    // Failure.
-                    return null;
+                    // PFS-2002:
+                    if (fInfo.isDiretory() || Files.isDirectory(diskFile)) {
+                        try {
+                            watcher.addIgnoreFile(fInfo);
+                            synchronized (scanLock) {
+                                PathUtils.recursiveDelete(diskFile);
+                            }
+                            recommendScanOnNextMaintenance();
+                        } catch (IOException e) {
+                            logWarning("Unable to delete local file. "
+                                + diskFile.toAbsolutePath()
+                                + ". "
+                                + fInfo.toDetailString());
+                            // Failure.
+                            return null;
+                        } finally {
+                            watcher.removeIgnoreFile(fInfo);
+                        }
+                    }
                 }
                 FileInfo localFile = getFile(fInfo);
                 FileInfo synced = localFile.syncFromDiskIfRequired(this,
@@ -4347,7 +4360,7 @@ public class Folder extends PFComponent {
                             + file + ". " + ioe);
                         return false;
                     } else if (Files.exists(file)) {
-                        logSevere("Unable to delete file " + file + ". " + ioe);
+                        logFine("Unable to delete file " + file + ". " + ioe);
                         return false;
                     }
                 }
