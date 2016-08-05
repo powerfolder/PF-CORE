@@ -44,6 +44,8 @@ public class OnlineStorageSubscription implements Serializable {
     public static final String PROPERTY_TYPE = "type";
     public static final String PROPERTY_STORAGE_SIZE = "storageSize";
     public static final String PROPERTY_STORAGE_SIZE_GB = "storageSizeGB";
+    public static final String PROPERTY_VALID_FROM = "validFrom";
+    public static final String PROPERTY_VALID_TILL = "validTill";
     public static final String PROPERTY_WARNED_USAGE_DATE = "warnedUsageDate";
     public static final String PROPERTY_DISABLED_USAGE_DATE = "disabledUsageDate";
     public static final String PROPERTY_WARNED_EXPIRATION_DATE = "warnedExpirationDate";
