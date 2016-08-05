@@ -164,7 +164,7 @@ public class DateUtilTest extends TestCase {
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 20));
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 14));
 
-        d1 = sdf.parse("10 Dec 2010");
+        d1 = sdf.parse("10 Dez 2010");
         d2 = sdf.parse("05 Jan 2011");
 
         assertTrue(DateUtil.isMoreThanNDaysAfter(d1, d2, 10));
