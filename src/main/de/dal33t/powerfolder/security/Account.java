@@ -78,7 +78,7 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
 
 /**
- * A access to the system indentified by username & password.
+ * Domain class of an user account.
  *
  * @author Christian Sprajc
  * @version $Revision: 1.5 $
