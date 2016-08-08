@@ -59,6 +59,9 @@ public class FolderOwnerPermission extends FolderPermission {
         } else if (impliedPermision instanceof FolderAdminPermission) {
             FolderAdminPermission p = (FolderAdminPermission) impliedPermision;
             return p.getFolder().equals(getFolder());
+        } else if (impliedPermision instanceof FolderDeletePermission) {
+            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
+            return p.getFolder().equals(getFolder());
         }
         return false;
     }

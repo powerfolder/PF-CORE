@@ -92,6 +92,10 @@ public abstract class FolderPermission implements Permission {
             return null;
         }
     }
+    
+    public static FolderDeletePermission delete(FolderInfo foInfo) {
+        return new FolderDeletePermission(foInfo);
+    }
 
     public static FolderReadPermission read(FolderInfo foInfo) {
         return new FolderReadPermission(foInfo);

@@ -53,6 +53,9 @@ public class FolderReadWritePermission extends FolderPermission {
         if (impliedPermision instanceof FolderReadPermission) {
             FolderReadPermission rp = (FolderReadPermission) impliedPermision;
             return rp.getFolder().equals(getFolder());
+        } else if (impliedPermision instanceof FolderDeletePermission) {
+            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
+            return p.getFolder().equals(getFolder());
         }
         return false;
     }

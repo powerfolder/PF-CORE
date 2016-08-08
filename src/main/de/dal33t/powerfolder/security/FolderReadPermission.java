@@ -50,6 +50,10 @@ public class FolderReadPermission extends FolderPermission {
     }
 
     public boolean implies(Permission impliedPermision) {
+        if (impliedPermision instanceof FolderDeletePermission) {
+            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
+            return p.getFolder().equals(getFolder());
+        }
         return false;
     }
 
