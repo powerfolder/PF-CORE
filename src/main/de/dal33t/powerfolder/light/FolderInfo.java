@@ -62,6 +62,9 @@ public class FolderInfo implements Serializable, Cloneable {
     private String name;
     @Id
     public String id;
+    
+    // PFS-1866
+    private int version;
 
     /**
      * The cached hash info.
@@ -146,6 +149,10 @@ public class FolderInfo implements Serializable, Cloneable {
 
     public String getName() {
         return name;
+    }
+    
+    public int getVersion() {
+        return version;
     }
 
     /**
@@ -252,19 +259,29 @@ public class FolderInfo implements Serializable, Cloneable {
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != extVersionUID) {
-            throw new InvalidClassException(this.getClass().getName(),
-                "Unable to read. extVersionUID(steam): " + extUID
-                    + ", expected: " + extVersionUID);
+        if (extUID == 100) {
+            id = in.readUTF();
+            name = in.readUTF();
+            return;
         }
-        id = in.readUTF();
-        name = in.readUTF();
+        if (extUID == 101) {
+            id = in.readUTF();
+            name = in.readUTF();
+            version = in.readInt();
+            return;
+        }
+        throw new InvalidClassException(this.getClass().getName(),
+            "Unable to read. extVersionUID(steam): " + extUID + ", expected: "
+                + extVersionUID);
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeLong(extVersionUID);
         out.writeUTF(id);
         out.writeUTF(name);
+        if (extVersionUID > 100) {
+            out.writeInt(version);
+        }
     }
 
     public String getLocalizedName() {
