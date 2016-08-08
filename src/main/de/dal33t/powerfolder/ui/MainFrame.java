@@ -1044,7 +1044,8 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void doCloseOperation() {
-        if (OSUtil.isSystraySupported()) {
+        // Disable minimization for Linux until tray icons can be displayed correctly
+        if (!OSUtil.isLinux() && OSUtil.isSystraySupported()) {
             if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
                 handleExitFirstRequest();
             }
@@ -1282,8 +1283,9 @@ public class MainFrame extends PFUIComponent {
                         Translation.get("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(!OSUtil.isSystraySupported() ||
-                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
+                // Disable minimize button for Linux until tray icons can be displayed correctly
+                minusButton.setVisible(!OSUtil.isLinux() && (!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController())));
                 checkSplitMinWidth();
                 break;
             case NORMAL :
@@ -1301,8 +1303,9 @@ public class MainFrame extends PFUIComponent {
 
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(!OSUtil.isSystraySupported() ||
-                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
+                // Disable minimize button for Linux until tray icons can be displayed correctly
+                minusButton.setVisible(!OSUtil.isLinux() && (!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController())));
                 configureNormalSize();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
@@ -1330,8 +1333,9 @@ public class MainFrame extends PFUIComponent {
                         Translation.get("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(!OSUtil.isSystraySupported() ||
-                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
+                // Disable minimize button for Linux until tray icons can be displayed correctly
+                minusButton.setVisible(!OSUtil.isLinux() && (!OSUtil.isSystraySupported() ||
+                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController())));
                 toFront();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
