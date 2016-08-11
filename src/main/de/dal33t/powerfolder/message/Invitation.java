@@ -24,11 +24,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.protocol.InvitationProto;
+import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -44,8 +50,9 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
-public class Invitation extends FolderRelatedMessage {
-
+public class Invitation extends FolderRelatedMessage
+  implements D2DObject
+{
     private static final long serialVersionUID = 101L;
 
     /** suggestedLocalBase is absolute. */
@@ -77,7 +84,7 @@ public class Invitation extends FolderRelatedMessage {
     private String username;
 
     // Since 9.1
-    private final String oid;
+    private String oid;
     private String inviteeUsername;
 
     // Since 11.0: PFS-2455
@@ -424,5 +431,56 @@ public class Invitation extends FolderRelatedMessage {
             return false;
         }
         return true;
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2D(AbstractMessage mesg)
+    {
+      if(mesg instanceof InvitationProto.Invitation)
+        {
+          InvitationProto.Invitation proto = (InvitationProto.Invitation)mesg;
+
+          this.invitor = new MemberInfo(proto.getInvitor());
+          this.invitationText = proto.getInvitationText();
+          this.size = proto.getSize();
+          this.username = proto.getUsername();
+          this.oid = proto.getOid();
+          this.inviteeUsername = proto.getInviteeUsername();
+          this.folder = new FolderInfo(proto.getFolder());
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2D()
+    {
+      InvitationProto.Invitation.Builder builder =
+        InvitationProto.Invitation.newBuilder();
+
+      builder.setClazzName("Invitation");
+      builder.setInvitor(
+        (MemberInfoProto.MemberInfo)this.invitor.toD2D());
+      builder.setInvitationText(this.invitationText);
+      builder.setSize(this.size);
+      builder.setUsername(this.username);
+      builder.setOid(this.oid);
+      builder.setInviteeUsername(this.inviteeUsername);
+      builder.setFolder(
+        (FolderInfoProto.FolderInfo)this.folder.toD2D());
+
+      return builder.build();
     }
 }

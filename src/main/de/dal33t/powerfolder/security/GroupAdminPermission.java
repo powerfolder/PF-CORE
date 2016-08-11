@@ -22,15 +22,23 @@ package de.dal33t.powerfolder.security;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.logging.Logger;
 
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.PermissionProto;
+import de.dal33t.powerfolder.protocol.StringMessageProto;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 
 /**
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-public class GroupAdminPermission implements Permission {
+public class GroupAdminPermission implements Permission, D2DObject {
 
+    private static final Logger LOG = Logger.getLogger(GroupAdminPermission.class.getName());
     private static final long serialVersionUID = 100L;
     public static final String ID_SEPARATOR = "_GP_";
     private String groupOID;
@@ -46,6 +54,14 @@ public class GroupAdminPermission implements Permission {
     public GroupAdminPermission(String groupOID) {
         Reject.ifBlank(groupOID, "GroupID is blank");
         this.groupOID = groupOID;
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public GroupAdminPermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     public boolean implies(Permission impliedPermision) {
@@ -96,5 +112,33 @@ public class GroupAdminPermission implements Permission {
             group = new Group(groupOID, "-unknown-");
         }
         out.defaultWriteObject();
+    }
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if(mesg instanceof PermissionProto.Permission) {
+            PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
+            try {
+                // A reference can be any message so it needs to be unpacked from com.google.protobuf.Any
+                StringMessageProto.StringMessage stringMessage = proto.getReference().unpack(StringMessageProto.StringMessage.class);
+                this.groupOID = stringMessage.getValue();
+            } catch (InvalidProtocolBufferException e) {
+                LOG.severe("Cannot unpack message: " + e);
+            }
+        }
+    }
+
+    @Override
+    public AbstractMessage toD2D() {
+        PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();
+        builder.setClazzName("Permission");
+        // A reference can be any message so it needs to be packed as com.google.protobuf.Any
+        StringMessageProto.StringMessage.Builder stringMessageBuilder = StringMessageProto.StringMessage.newBuilder();
+        stringMessageBuilder.setClazzName("StringMessage");
+        stringMessageBuilder.setValue(this.groupOID);
+        builder.setReference(com.google.protobuf.Any.pack(stringMessageBuilder.build()));
+        // Set permission enum
+        builder.setPermissionType(PermissionProto.Permission.PermissionType.GROUP_ADMIN);
+        return builder.build();
     }
 }

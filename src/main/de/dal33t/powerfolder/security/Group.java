@@ -39,8 +39,13 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.hibernate.annotations.Type;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.GroupInfo;
+import de.dal33t.powerfolder.protocol.GroupProto;
+import de.dal33t.powerfolder.protocol.PermissionProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
@@ -54,7 +59,7 @@ import de.dal33t.powerfolder.util.StringUtils;
  */
 @Entity(name = "AGroup")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Group implements Serializable {
+public class Group implements Serializable, D2DObject {
 
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_GROUPNAME = "name";
@@ -90,7 +95,10 @@ public class Group implements Serializable {
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
-    protected Group() {
+    /**
+     * Serialization constructor
+     */
+    public Group() {
     }
 
     public Group(String name) {
@@ -102,6 +110,14 @@ public class Group implements Serializable {
         this.oid = oid;
         this.name = name;
         this.permissions = new CopyOnWriteArrayList<Permission>();
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public Group(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     public void grant(Permission... newPermissions) {
@@ -302,4 +318,98 @@ public class Group implements Serializable {
         return "Group [name=" + name + ", organizationOID=" + organizationOID
             + "]";
     }
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if(mesg instanceof GroupProto.Group) {
+            GroupProto.Group proto  = (GroupProto.Group)mesg;
+            this.oid                = proto.getOid();
+            this.name               = proto.getName();
+            this.ldapDN             = proto.getLdapDn();
+            this.notes              = proto.getNotes();
+            this.organizationOID    = proto.getOrganizationOid();
+            this.permissions        = new CopyOnWriteArrayList<Permission>();
+            for (PermissionProto.Permission permissionProto: proto.getPermissionsList()) {
+                switch(permissionProto.getPermissionType()) {
+                    case ADMIN :
+                        this.permissions.add(new AdminPermission(permissionProto));
+                        break;
+                    case CHANGE_PREFERENCES :
+                        this.permissions.add(new ChangePreferencesPermission(permissionProto));
+                        break;
+                    case CHANGE_TRANSFER_MODE :
+                        this.permissions.add(new ChangeTransferModePermission(permissionProto));
+                        break;
+                    case COMPUTERS_APP :
+                        this.permissions.add(new ComputersAppPermission(permissionProto));
+                        break;
+                    case CONFIG_APP :
+                        this.permissions.add(new ConfigAppPermission(permissionProto));
+                        break;
+                    case FOLDER_ADMIN :
+                        this.permissions.add(new FolderAdminPermission(permissionProto));
+                        break;
+                    case FOLDER_CREATE :
+                        this.permissions.add(new FolderCreatePermission(permissionProto));
+                        break;
+                    case FOLDER_OWNER :
+                        this.permissions.add(new FolderOwnerPermission(permissionProto));
+                        break;
+                    case FOLDER_READ :
+                        this.permissions.add(new FolderReadPermission(permissionProto));
+                        break;
+                    case FOLDER_READ_WRITE :
+                        this.permissions.add(new FolderReadWritePermission(permissionProto));
+                        break;
+                    case FOLDER_REMOVE :
+                        this.permissions.add(new FolderRemovePermission(permissionProto));
+                        break;
+                    case GROUP_ADMIN :
+                        this.permissions.add(new GroupAdminPermission(permissionProto));
+                        break;
+                    case ORGANIZATION_ADMIN :
+                        this.permissions.add(new OrganizationAdminPermission(permissionProto));
+                        break;
+                    case ORGANIZATION_CREATE :
+                        this.permissions.add(new OrganizationCreatePermission(permissionProto));
+                        break;
+                    case SYSTEM_SETTINGS :
+                        this.permissions.add(new SystemSettingsPermission(permissionProto));
+                        break;
+                    case UNRECOGNIZED :
+                        break;
+                    default :
+                        break;
+                }
+            }
+        }
+    }
+
+    @Override
+    public AbstractMessage toD2D() {
+        GroupProto.Group.Builder builder = GroupProto.Group.newBuilder();
+        builder.setClazzName("Group");
+        if (this.oid != null) builder.setOid(this.oid);
+        if (this.name != null) builder.setName(this.name);
+        if (this.ldapDN != null) builder.setLdapDn(this.ldapDN);
+        if (this.notes != null) builder.setNotes(this.notes);
+        if (this.organizationOID != null) builder.setOrganizationOid(this.organizationOID);
+        for (Permission permission: this.permissions) {
+            // Since the different permission classes do not have one common superclass we have to decide for each class separately
+            if (permission instanceof FolderPermission) {
+                builder.addPermissions((PermissionProto.Permission)((FolderPermission)permission).toD2D());
+            }
+            else if (permission instanceof GroupAdminPermission) {
+                builder.addPermissions((PermissionProto.Permission)((GroupAdminPermission)permission).toD2D());
+            }
+            else if (permission instanceof OrganizationAdminPermission) {
+                builder.addPermissions((PermissionProto.Permission)((OrganizationAdminPermission)permission).toD2D());
+            }
+            else if (permission instanceof SingletonPermission) {
+                builder.addPermissions((PermissionProto.Permission)((SingletonPermission)permission).toD2D());
+            }
+        }
+        return builder.build();
+    }
+
 }

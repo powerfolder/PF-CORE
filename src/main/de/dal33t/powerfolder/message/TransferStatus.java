@@ -21,6 +21,10 @@ package de.dal33t.powerfolder.message;
 
 import java.util.Date;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.TransferStatusProto;
 import de.dal33t.powerfolder.util.Format;
 
 /**
@@ -29,7 +33,7 @@ import de.dal33t.powerfolder.util.Format;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.7 $
  */
-public class TransferStatus extends Message {
+public class TransferStatus extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
     public Date time;
@@ -60,11 +64,70 @@ public class TransferStatus extends Message {
         return Math.max((long) maxUploadCPS - currentUploadCPS, 0);
     }
 
+    @Override
     public String toString() {
         return "Transfer status: DLs ( " + activeDownloads + " / "
             + queuedDownloads + " ) (" + Format.formatBytes(currentDownloadCPS)
             + "/s), ULs ( " + activeUploads + " / " + queuedUploads + " ) ("
             + Format.formatBytes(currentUploadCPS) + "/s, max: "
             + Format.formatBytes((long) maxUploadCPS) + "/s)";
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+      if(mesg instanceof TransferStatusProto.TransferStatus) {
+          TransferStatusProto.TransferStatus proto =
+              (TransferStatusProto.TransferStatus)mesg;
+
+          this.time = (-1 == proto.getTime()
+              ? null
+              : new Date(proto.getTime()));
+          this.activeUploads        = proto.getActiveUploads();
+          this.queuedUploads        = proto.getQueuedUploads();
+          this.maxUploadCPS         = proto.getMaxUploadCPS();
+          this.currentUploadCPS     = proto.getCurrentUploadCPS();
+          this.uploadedBytesTotal   = proto.getUploadedBytesTotal();
+          this.activeDownloads      = proto.getActiveDownloads();
+          this.queuedDownloads      = proto.getQueuedDownloads();
+          this.maxDownloads         = proto.getMaxDownloads();
+          this.maxDownloadCPS       = proto.getMaxDownloadCPS();
+          this.currentDownloadCPS   = proto.getCurrentDownloadCPS();
+          this.downloadedBytesTotal = proto.getDownloadedBytesTotal();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage toD2D() {
+      TransferStatusProto.TransferStatus.Builder builder =
+          TransferStatusProto.TransferStatus.newBuilder();
+
+      builder.setClazzName(this.getClass().getSimpleName());
+
+      builder.setTime(null == this.time ? -1 : this.time.getTime());
+      builder.setActiveUploads(this.activeUploads);
+      builder.setQueuedUploads(this.queuedUploads);
+      builder.setMaxUploadCPS(this.maxUploadCPS);
+      builder.setCurrentUploadCPS(this.currentUploadCPS);
+      builder.setUploadedBytesTotal(this.uploadedBytesTotal);
+      builder.setActiveDownloads(this.activeDownloads);
+      builder.setQueuedDownloads(this.queuedDownloads);
+      builder.setMaxDownloads(this.maxDownloads);
+      builder.setMaxDownloadCPS(this.maxDownloadCPS);
+      builder.setCurrentUploadCPS(this.currentUploadCPS);
+      builder.setDownloadedBytesTotal(this.downloadedBytesTotal);
+
+      return builder.build();
     }
 }

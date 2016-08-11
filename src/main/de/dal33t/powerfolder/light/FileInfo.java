@@ -37,12 +37,19 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.Lock;
+import de.dal33t.powerfolder.protocol.AccountInfoProto;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -53,11 +60,11 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
  * CLASS. YOU ARE DOING IT WRONG!. Use {@link FileInfoFactory}
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.33 $
  */
-public class FileInfo implements Serializable, DiskItem, Cloneable {
+public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     public static final String UNIX_SEPARATOR = "/";
     private static final Logger log = Logger
@@ -205,11 +212,23 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // this.hash = hashCode0();
     }
 
+    /** FileInfo
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    public
+    FileInfo(AbstractMessage mesg)
+    {
+      initFromD2D(mesg);
+    }
+
     /**
      * Syncs fileinfo with diskfile. If diskfile has other lastmodified date
      * that this. Assume that file has changed on disk and update its modified
      * info.
-     * 
+     *
      * @param folder
      *            the folder to sync with
      * @param diskFile
@@ -354,6 +373,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * @return the name , relative to the folder base.
      */
+    @Override
     public String getRelativeName() {
         return fileName;
     }
@@ -362,6 +382,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * @return The filename (including the path from the base of the folder)
      *         converted to lowercase
      */
+    @Override
     public String getLowerCaseFilenameOnly() {
         // if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
         // return getFilenameOnly0().toLowerCase();
@@ -387,6 +408,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * @return everything after the last point (.) in the fileName in upper case
      */
+    @Override
     public String getExtension() {
         String tmpFileName = getFilenameOnly();
         int index = tmpFileName.lastIndexOf('.');
@@ -399,9 +421,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Gets the filename only, without the directory structure
-     * 
+     *
      * @return the filename only of this file.
      */
+    @Override
     public String getFilenameOnly() {
         // if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
         // return getFilenameOnly0();
@@ -484,6 +507,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * @return the size of the file.
      */
+    @Override
     public long getSize() {
         return size;
     }
@@ -491,6 +515,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * @return the device this file was lasted changed on.
      */
+    @Override
     public MemberInfo getModifiedBy() {
         return modifiedBy;
     }
@@ -505,6 +530,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * @return the modification date.
      */
+    @Override
     public Date getModifiedDate() {
         return lastModifiedDate;
     }
@@ -520,10 +546,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         return size == null;
     }
 
+    @Override
     public boolean isDiretory() {
         return false;
     }
 
+    @Override
     public boolean isFile() {
         return true;
     }
@@ -604,7 +632,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Also considers myself.
-     * 
+     *
      * @param repo
      *            the folder repository
      * @return if there is a newer version available of this file
@@ -616,7 +644,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * Also considers myself
-     * 
+     *
      * @param repo
      * @return the newest available version of this file
      */
@@ -700,7 +728,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * Resolves a file from local disk by folder repository, File MAY NOT Exist!
      * Returns null if folder was not found
-     * 
+     *
      * @param repo
      * @return the file.
      */
@@ -717,7 +745,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * Resolves a FileInfo from local folder db by folder repository, File MAY
      * NOT Exist! Returns null if folder was not found
-     * 
+     *
      * @param repo
      * @return the FileInfo which is is in my own DB/knownfiles.
      */
@@ -733,6 +761,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
     /**
      * @return the folderinfo this file belongs to.
      */
+    @Override
     public FolderInfo getFolderInfo() {
         return folderInfo;
     }
@@ -780,10 +809,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         // All match!
         return true;
     }
-    
+
     /**
      * PFC-2352.
-     * 
+     *
      * @param hash
      * @return true if the hash matches any of the file hashes.
      */
@@ -834,7 +863,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
 
     /**
      * appends to buffer
-     * 
+     *
      * @param str
      *            the stringbuilder to add the detail info to.
      */
@@ -891,7 +920,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * Validates the state of the FileInfo. This should actually not be public -
      * checks should be made while constructing this class (by
      * constructor/deserialization).
-     * 
+     *
      * @throws IllegalArgumentException
      *             if the state is corrupt
      */
@@ -1018,11 +1047,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
         out.writeInt(version);
         out.writeBoolean(deleted);
         ExternalizableUtil.writeFolderInfo(out, folderInfo);
-        
+
         if (extUID == extVersion100UID) {
             return;
         }
-        
+
         // PFC-2352: Start
         if (oid != null) {
             out.writeBoolean(true);
@@ -1058,7 +1087,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
      * Example renameRelativeFileName('directory/subdirectory/myFile.txt',
      * 'newFile.txt') ==> 'directory/subdirectory/newFile.txt' NOTE: This is
      * static, so does not affect a FileInfo.
-     * 
+     *
      * @param relativeName
      * @param newFileName
      * @return
@@ -1078,5 +1107,70 @@ public class FileInfo implements Serializable, DiskItem, Cloneable {
             // No path - just use the relative filename.
             return newFileName;
         }
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2D(AbstractMessage mesg)
+    {
+      if(mesg instanceof FileInfoProto.FileInfo)
+        {
+          FileInfoProto.FileInfo finfo = (FileInfoProto.FileInfo)mesg;
+
+          this.fileName          = finfo.getFileName();
+          this.oid               = finfo.getOid();
+          this.hashes            = finfo.getHashes();
+          this.tags              = finfo.getTags();
+          this.size              = finfo.getSize();
+          this.modifiedBy        = new MemberInfo(finfo.getModifiedby());
+          this.modifiedByAccount = new AccountInfo(finfo.getModifiedByAccount());
+          this.lastModifiedDate  = new Date(finfo.getLastModifiedDate());
+          this.version           = finfo.getVersion();
+          this.deleted           = finfo.getDeleted();
+          this.folderInfo        = new FolderInfo(finfo.getFolderInfo());
+
+          validate();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2D()
+    {
+      FileInfoProto.FileInfo.Builder builder = FileInfoProto.FileInfo.newBuilder();
+
+      builder.setClazzName("FileInfo");
+      builder.setFileName(this.fileName);
+      builder.setOid(this.oid);
+      builder.setHashes(this.hashes);
+      builder.setTags(this.tags);
+      builder.setSize(this.size);
+
+      builder.setModifiedby(
+        (MemberInfoProto.MemberInfo)this.modifiedBy.toD2D());
+      builder.setModifiedByAccount(
+        (AccountInfoProto.AccountInfo)this.modifiedByAccount.toD2D());
+
+      builder.setLastModifiedDate(this.lastModifiedDate.getTime());
+      builder.setVersion(this.version);
+      builder.setDeleted(this.deleted);
+
+      builder.setFolderInfo(
+        (FolderInfoProto.FolderInfo)this.folderInfo.toD2D());
+
+
+      return builder.build();
     }
 }

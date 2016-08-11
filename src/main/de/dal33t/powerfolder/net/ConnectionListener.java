@@ -57,7 +57,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
     //
     // constants
     //
-    public static final int DEFAULT_PORT = 1337;
+    public static final int DEFAULT_PORT     = 1337;
+    public static final int DEFAULT_D2D_PORT = 7331;
 
     // return constants from dyndns validation
     public static final int OK = 0; // validation succeeded
@@ -69,31 +70,64 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private ServerSocket serverSocket;
     private InetSocketAddress myDyndns;
     private int port;
-    private String interfaceAddress;
+    private final String interfaceAddress;
     private boolean hasIncomingConnection;
 
-    public ConnectionListener(Controller controller, int port,
-        String bindToInterface) throws ConnectionException
+    private final boolean useD2D; ///< Whether to use D2D proto
+
+    /** ConnectionListener
+     * Init connection listener
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  controller       The {@link Controller}
+     * @param  port             Port to listen on
+     * @param  bindToInterface  Interface to bind to
+     * @throw {@link ConnectionException} Raised when something is wrong
+     */
+
+    public
+    ConnectionListener(Controller controller,
+      int port,
+      String bindToInterface) throws ConnectionException
     {
-        super(controller);
-        if (port < 0) {
-            this.port = DEFAULT_PORT;
-        } else {
-            this.port = port;
-        }
-        this.hasIncomingConnection = false;
-        this.interfaceAddress = bindToInterface;
+      this(controller, port, bindToInterface, false);
+    }
 
-        // check our own dyndns address
-        String dns = ConfigurationEntry.HOSTNAME.getValue(getController());
+    /** ConnectionListener
+     * Init connection listener
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  controller       The {@link Controller}
+     * @param  port             Port to listen on
+     * @param  bindToInterface  Interface to bind to
+     * @param  useD2D           Whether to use D2D proto
+     * @throw {@link ConnectionException} Raised when something is wrong
+     */
 
-        // set the dyndns without any validations
-        // assuming it has been validated on the pevious time
-        // round when it was set.
-        setMyDynDns(dns, false);
+    public
+    ConnectionListener(Controller controller,
+      int port,
+      String bindToInterface,
+      boolean useD2D) throws ConnectionException
+    {
+      super(controller);
 
-        // Open server socket
-        openServerSocket(); // Port is first valid after this call
+      if(0 > port) {
+          this.port = (useD2D ? ConfigurationEntry.D2D_PORT.getValueInt(getController()) : DEFAULT_PORT);
+      } else this.port = port;
+
+      this.hasIncomingConnection = false;
+      this.interfaceAddress      = bindToInterface;
+      this.useD2D                = useD2D;
+
+      // check our own dyndns address
+      String dns = ConfigurationEntry.HOSTNAME.getValue(getController());
+
+      // set the dyndns without any validations
+      // assuming it has been validated on the pevious time
+      // round when it was set.
+      setMyDynDns(dns, false);
+
+      // Open server socket
+      openServerSocket(); // Port is first valid after this call
     }
 
     /**
@@ -399,6 +433,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
         return serverSocket != null ? serverSocket.getLocalPort() : port;
     }
 
+    @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
@@ -459,10 +494,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
         }
     }
 
-    private class SocketAcceptor extends AbstractAcceptor {
-        private Socket socket;
+    protected class SocketAcceptor extends AbstractAcceptor {
+        protected Socket socket;
 
-        private SocketAcceptor(Socket socket) {
+        protected SocketAcceptor(Socket socket) {
             super(ConnectionListener.this.getController());
             Reject.ifNull(socket, "Socket is null");
             this.socket = socket;
@@ -481,7 +516,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
             }
             ConnectionHandler handler = getController().getIOProvider()
                 .getConnectionHandlerFactory()
-                .createAndInitSocketConnectionHandler(socket);
+                .createAndInitSocketConnectionHandler(socket,
+                  ConnectionListener.this.useD2D);
             // Accept node
             acceptConnection(handler);
         }

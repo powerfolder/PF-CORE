@@ -36,10 +36,14 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
@@ -56,7 +60,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 @TypeDef(name = "socketAddressType", typeClass = InetSocketAddressUserType.class)
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class MemberInfo implements Serializable {
+public class MemberInfo implements Serializable, D2DObject {
     private static final long serialVersionUID = 100L;
     public static Internalizer<MemberInfo> INTERNALIZER;
 
@@ -111,6 +115,18 @@ public class MemberInfo implements Serializable {
         } else {
             this.networkId = ConfigurationEntry.NETWORK_ID.getDefaultValue();
         }
+    }
+
+    /** MemberInfo
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    public
+    MemberInfo(AbstractMessage mesg)
+    {
+      initFromD2D(mesg);
     }
 
     // Setter/Getter **********************************************************
@@ -308,6 +324,7 @@ public class MemberInfo implements Serializable {
         return id != null ? id.hashCode() : 0;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -319,6 +336,7 @@ public class MemberInfo implements Serializable {
         return false;
     }
 
+    @Override
     public String toString() {
         return "Member '" + nick + "' (con. at " + connectAddress + ")";
     }
@@ -378,5 +396,66 @@ public class MemberInfo implements Serializable {
         ExternalizableUtil.writeDate(out, lastConnectTime);
         out.writeBoolean(isConnected);
         out.writeBoolean(isSupernode);
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2D(AbstractMessage mesg)
+    {
+      if(mesg instanceof MemberInfoProto.MemberInfo)
+        {
+          MemberInfoProto.MemberInfo proto = (MemberInfoProto.MemberInfo)mesg;
+
+          this.nick            = proto.getNick();
+          this.id              = proto.getId();
+          this.networkId       = proto.getNetworkId();
+
+          /* Disassemble host:port string */
+          String[] split = proto.getConnectAddress().split(":");
+
+          if(2 <= split.length)
+            {
+              this.connectAddress  = new InetSocketAddress(split[0],
+                Integer.valueOf(split[1]));
+            }
+
+          this.lastConnectTime = (-1 == proto.getLastConnectTime()
+              ? null
+              : new Date(proto.getLastConnectTime()));
+          this.isConnected     = proto.getIsConnected();
+          this.isSupernode     = proto.getIsSuperNode();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2D()
+    {
+      MemberInfoProto.MemberInfo.Builder builder = MemberInfoProto.MemberInfo.newBuilder();
+
+      builder.setClazzName("MemberInfo");
+      builder.setNick(this.nick);
+      builder.setId(this.id);
+      builder.setNetworkId(this.networkId);
+      if (this.connectAddress != null) {
+          builder.setConnectAddress(this.connectAddress.toString()); ///< Assemble to host:port
+      }
+      builder.setLastConnectTime(null == this.lastConnectTime ? -1 : this.lastConnectTime.getTime());
+      builder.setIsConnected(this.isConnected);
+      builder.setIsSuperNode(this.isSupernode);
+
+      return builder.build();
     }
 }

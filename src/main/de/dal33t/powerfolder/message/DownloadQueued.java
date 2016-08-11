@@ -19,7 +19,12 @@
 */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.protocol.DownloadQueuedProto;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
 
 /**
  * Tells the peer, that the download of file was enqueued
@@ -27,7 +32,9 @@ import de.dal33t.powerfolder.light.FileInfo;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.3 $
  */
-public class DownloadQueued extends Message {
+public class DownloadQueued extends Message
+  implements D2DObject
+{
     private static final long serialVersionUID = 100L;
 
     public FileInfo file;
@@ -44,7 +51,46 @@ public class DownloadQueued extends Message {
         this.file = file;
     }
 
+    @Override
     public String toString() {
         return "Download queued: " + file;
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2D(AbstractMessage mesg)
+    {
+      if(mesg instanceof DownloadQueuedProto.DownloadQueued)
+        {
+          DownloadQueuedProto.DownloadQueued proto =
+            (DownloadQueuedProto.DownloadQueued)mesg;
+
+          this.file = new FileInfo(proto.getFile());
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2D()
+    {
+      DownloadQueuedProto.DownloadQueued.Builder builder =
+        DownloadQueuedProto.DownloadQueued.newBuilder();
+
+      builder.setClazzName("DownloadQueued");
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+
+      return builder.build();
     }
 }

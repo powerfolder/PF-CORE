@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
+import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -1124,7 +1125,20 @@ public enum ConfigurationEntry {
 
     COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false),
 
-    RECOVER_0BYTE_FILES("recover.zero_byte.files", true);
+    RECOVER_0BYTE_FILES("recover.zero_byte.files", true),
+
+    /* D2D */
+
+    /**
+     * The TCP port for the {@link ConnectionListener} and D2D
+     */
+    D2D_PORT("d2d.port", ConnectionListener.DEFAULT_D2D_PORT),
+
+    /**
+     * Whether D2D is enabled
+     */
+
+    D2D_ENABLED("d2d.enabled", false);
 
     // Methods/Constructors ***************************************************
 

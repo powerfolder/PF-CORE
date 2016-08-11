@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.security;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -40,6 +42,15 @@ public class FolderReadPermission extends FolderPermission {
         super(foInfo);
     }
 
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public FolderReadPermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
+    }
+
+    @Override
     public String getName() {
         return Translation.get("permissions.folder.read");
     }
@@ -49,6 +60,7 @@ public class FolderReadPermission extends FolderPermission {
         return AccessMode.READ;
     }
 
+    @Override
     public boolean implies(Permission impliedPermision) {
         if (impliedPermision instanceof FolderDeletePermission) {
             FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
@@ -81,5 +93,4 @@ public class FolderReadPermission extends FolderPermission {
             return false;
         return true;
     }
-
 }

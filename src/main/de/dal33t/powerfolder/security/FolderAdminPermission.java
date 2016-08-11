@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
@@ -51,6 +53,15 @@ public class FolderAdminPermission extends FolderPermission {
         folder = foInfo;
     }
 
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public FolderAdminPermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
+    }
+
+    @Override
     public String getName() {
         return Translation.get("permissions.folder.admin");
     }
@@ -69,6 +80,7 @@ public class FolderAdminPermission extends FolderPermission {
         return false;
     }
 
+    @Override
     public boolean implies(Permission impliedPermision) {
         if (impliedPermision instanceof FolderReadPermission) {
             FolderReadPermission rp = (FolderReadPermission) impliedPermision;

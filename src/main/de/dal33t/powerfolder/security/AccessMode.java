@@ -29,7 +29,8 @@ import de.dal33t.powerfolder.util.StringUtils;
  *
  * @author sprajc
  */
-public enum AccessMode {
+public enum AccessMode
+{
     NO_ACCESS("permissions.no_access"),
     READ("permissions.read"),
     READ_WRITE("permissions.read_write"),

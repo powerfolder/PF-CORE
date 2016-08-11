@@ -58,7 +58,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Abstract version of a connection handler acting upon
- * 
+ *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.72 $
  */
@@ -67,7 +67,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 {
 
     /** The basic io socket */
-    private Socket socket;
+    private final Socket socket;
 
     /** The assigned member */
     private Member member;
@@ -122,7 +122,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * Builds a new anonymous connection manager for the socket.
      * <p>
      * Should be called from <code>ConnectionHandlerFactory</code> only.
-     * 
+     *
      * @see ConnectionHandlerFactory
      * @param controller
      *            the controller.
@@ -142,7 +142,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     /**
      * Called before the message gets actally written into the socket.
-     * 
+     *
      * @param message
      *            the message to serialize
      * @return the serialized message
@@ -153,7 +153,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     /**
      * Called when the data got read from the socket. Should re-construct the
      * serialized object from the data.
-     * 
+     *
      * @param data
      *            the serialized data
      * @param len
@@ -165,7 +165,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     /**
      * (Optional) Handles the received object.
-     * 
+     *
      * @param obj
      *            the obj that was received
      * @return true if this object/message was handled.
@@ -197,9 +197,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     /**
      * Initializes the connection handler.
-     * 
+     *
      * @throws ConnectionException
      */
+    @Override
     public void init() throws ConnectionException {
         if (socket == null) {
             throw new NullPointerException("Socket is null");
@@ -289,6 +290,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * associated member is found, the con handler gets directly shut down.
      * <p>
      */
+    @Override
     public void shutdownWithMember() {
         Member thisMember = getMember();
         if (thisMember != null) {
@@ -306,6 +308,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     /**
      * Shuts down the connection handler. The member is shut down optionally
      */
+    @Override
     public void shutdown() {
         if (!started) {
             return;
@@ -376,19 +379,23 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     /**
      * @return true if the connection is active
      */
+    @Override
     public boolean isConnected() {
         return (socket != null && in != null && out != null
             && socket.isConnected() && !socket.isClosed() && serializer != null);
     }
 
+    @Override
     public boolean isEncrypted() {
         return false;
     }
 
+    @Override
     public boolean isOnLAN() {
         return onLAN;
     }
 
+    @Override
     public void setOnLAN(boolean onlan) {
         onLAN = onlan;
         out.setBandwidthLimiter(getController().getTransferManager()
@@ -409,10 +416,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         // }
     }
 
+    @Override
     public Member getMember() {
         return member;
     }
 
+    @Override
     public Date getLastKeepaliveMessageTime() {
         return lastKeepaliveMessage;
     }
@@ -420,7 +429,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     /**
      * Reads a specific amout of data from a stream. Wait util enough data is
      * available
-     * 
+     *
      * @param inStr
      *            the inputstream
      * @param buffer
@@ -440,6 +449,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             .bytesTransferred(size);
     }
 
+    @Override
     public void sendMessage(Message message) throws ConnectionException {
         if (message == null) {
             throw new NullPointerException("Message is null");
@@ -477,6 +487,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 byte[] data = serialize(message);
 
                 // Write paket header / total length
+                if(null == data) {
+                    throw new IllegalStateException("Got null while serializing message: "
+                        + message);
+                }
+
                 out.write(Convert.convert2Bytes(data.length));
                 getController().getTransferManager()
                     .getTotalUploadTrafficCounter()
@@ -532,6 +547,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
     }
 
+    @Override
     public void sendMessagesAsynchron(Message... messages) {
         for (Message message : messages) {
             sendMessageAsynchron(message, null);
@@ -541,7 +557,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     /**
      * A message to be send later. code execution does not wait util message was
      * sent successfully
-     * 
+     *
      * @param message
      *            the message to be sent
      * @param errorMessage
@@ -592,6 +608,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
     }
 
+    @Override
     public long getTimeDeltaMS() {
         if (identity.getTimeGMT() == null)
             return 0;
@@ -599,26 +616,32 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             - identity.getTimeGMT().getTimeInMillis();
     }
 
+    @Override
     public boolean canMeasureTimeDifference() {
         return identity.getTimeGMT() != null;
     }
 
+    @Override
     public Identity getIdentity() {
         return identity;
     }
 
+    @Override
     public Identity getMyIdentity() {
         return myIdentity;
     }
 
+    @Override
     public String getMyMagicId() {
         return myMagicId;
     }
 
+    @Override
     public String getRemoteMagicId() {
         return identity != null ? identity.getMagicId() : null;
     }
 
+    @Override
     public ConnectionQuality getConnectionQuality() {
         // When acting as HTTP tunnel. The other side is a socket connector.
         if (identity != null && identity.isTunneled()) {
@@ -644,6 +667,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
     }
 
+    @Override
     public boolean acceptIdentity(Member node) {
         Reject.ifNull(node, "node is null");
         // Connect member with this node
@@ -703,6 +727,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         return identityReply.accepted;
     }
 
+    @Override
     public boolean waitForEmptySendQueue(long ms) {
         long waited = 0;
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
@@ -771,14 +796,17 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
     }
 
+    @Override
     public boolean acceptHandshake() {
         return true;
     }
 
+    @Override
     public InetSocketAddress getRemoteAddress() {
         return (InetSocketAddress) socket.getRemoteSocketAddress();
     }
 
+    @Override
     public int getRemoteListenerPort() {
         if (identity == null || identity.getMemberInfo() == null
             || identity.getMemberInfo().getConnectAddress() == null)
@@ -795,7 +823,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     /**
      * Logs a connection closed event
-     * 
+     *
      * @param e
      */
     private void logConnectionClose(Exception e) {
@@ -813,6 +841,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     // General ****************************************************************
 
+    @Override
     public String toString() {
         if (socket == null) {
             return "-disconnected-";
@@ -826,11 +855,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     /**
      * The sender class, handles all asynchron messages
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.72 $
      */
     class Sender implements Runnable {
+        @Override
         public void run() {
             if (isFiner()) {
                 logFiner("Asynchron message send triggered, sending "
@@ -893,11 +923,12 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
     /**
      * Receiver, responsible to deserialize messages
-     * 
+     *
      * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
      * @version $Revision: 1.72 $
      */
     class Receiver implements Runnable {
+        @Override
         public void run() {
             byte[] sizeArr = new byte[4];
             while (started) {

@@ -293,7 +293,7 @@ public class Controller extends PFComponent {
     private ScheduledExecutorService threadPool;
 
     /** Remembers if a port on the local firewall was opened */
-    private boolean portWasOpened = false;
+    private final boolean portWasOpened = false;
 
     /**
      * If we have limited connectivity
@@ -329,7 +329,7 @@ public class Controller extends PFComponent {
     /**
      * Overwite the PFComponent.getController() otherwise that one returns null
      * for this Controller itself.
-     * 
+     *
      * @return a reference to this
      */
     @Override
@@ -339,7 +339,7 @@ public class Controller extends PFComponent {
 
     /**
      * Creates a fresh Controller.
-     * 
+     *
      * @return the controller
      */
     public static Controller createController() {
@@ -355,7 +355,7 @@ public class Controller extends PFComponent {
 
     /**
      * Starts a config with the given command line arguments
-     * 
+     *
      * @param aCommandLine
      *            the command line as specified by the user
      */
@@ -377,43 +377,12 @@ public class Controller extends PFComponent {
         startConfig(configName);
     }
 
-    /**
-     * Starts controller with a special config file, and creates and starts all
-     * components of PowerFolder.
-     * 
-     * @param filename
-     *            The filename to uses as config file (located in the
-     *            "getConfigLocationBase()")
-     */
-    public void startConfig(String filename) {
-        if (started) {
-            throw new IllegalStateException(
-                "Configuration already started, shutdown controller first");
-        }
+    /** initTranslation
+     * Init translation bundles
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     **/
 
-        additionalConnectionListeners = Collections
-            .synchronizedList(new ArrayList<ConnectionListener>());
-        started = false;
-        shuttingDown = false;
-        threadPool = new WrappedScheduledThreadPoolExecutor(
-            Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
-                "Controller-Thread-"));
-
-        // PFI-312
-        PathUtils.setIOExceptionListener(new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                if (e instanceof FileSystemException
-                    && e.toString().toLowerCase()
-                        .contains("too many open files"))
-                {
-                    logSevere("Detected I/O Exception: " + e.getMessage());
-                    logSevere("Please adjust limits for open file handles on this server");
-                    exit(1);
-                }
-            }
-        });
-
+    public void initTranslation() {
         // Initialize resource bundle eager
         // check forced language file from commandline
         if (commandLine != null && commandLine.hasOption("f")) {
@@ -437,12 +406,38 @@ public class Controller extends PFComponent {
             Translation.resetResourceBundle();
         }
         Translation.getResourceBundle();
+    }
+
+    /**
+     * Starts controller with a special config file, and creates and starts all
+     * components of PowerFolder.
+     *
+     * @param filename
+     *            The filename to uses as config file (located in the
+     *            "getConfigLocationBase()")
+     */
+    public void startConfig(String filename) {
+        if (started) {
+            throw new IllegalStateException(
+                "Configuration already started, shutdown controller first");
+        }
+
+        initTranslation();
 
         // loadConfigFile
         if (!loadConfigFile(filename)) {
             return;
         }
 
+        start();
+    }
+
+     /** start
+     * Starts controller and all other components of PowerFolder
+     * @author Christoph <kappel@powerfolder.com>
+     **/
+
+    public void start() {
         boolean isDefaultConfig = Constants.DEFAULT_CONFIG_FILE
             .startsWith(getConfigName());
         if (isDefaultConfig) {
@@ -823,7 +818,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add invitation listener.
-     * 
+     *
      * @param l
      */
     public void addInvitationHandler(InvitationHandler l) {
@@ -832,7 +827,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove invitation listener.
-     * 
+     *
      * @param l
      */
     public void removeInvitationHandler(InvitationHandler l) {
@@ -841,7 +836,7 @@ public class Controller extends PFComponent {
 
     /**
      * Add mass delete listener.
-     * 
+     *
      * @param l
      */
     public void addMassDeletionHandler(MassDeletionHandler l) {
@@ -850,7 +845,7 @@ public class Controller extends PFComponent {
 
     /**
      * Remove mass delete listener.
-     * 
+     *
      * @param l
      */
     public void removeMassDeletionHandler(MassDeletionHandler l) {
@@ -941,11 +936,36 @@ public class Controller extends PFComponent {
 
     /**
      * Loads a config file (located in "getConfigLocationBase()")
-     * 
+     *
      * @param theFilename
      * @return false if unsuccessful, true if file found and reading succeeded.
      */
-    private boolean loadConfigFile(String theFilename) {
+    public boolean loadConfigFile(String theFilename) {
+
+        /* Init stuff (moved here from {@link startConfig} */
+        additionalConnectionListeners = Collections
+            .synchronizedList(new ArrayList<ConnectionListener>());
+        started = false;
+        shuttingDown = false;
+        threadPool = new WrappedScheduledThreadPoolExecutor(
+            Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
+                "Controller-Thread-"));
+
+        // PFI-312
+        PathUtils.setIOExceptionListener(new ExceptionListener() {
+            @Override
+            public void exceptionThrown(Exception e) {
+                if (e instanceof FileSystemException
+                    && e.toString().toLowerCase()
+                        .contains("too many open files"))
+                {
+                    logSevere("Detected I/O Exception: " + e.getMessage());
+                    logSevere("Please adjust limits for open file handles on this server");
+                    exit(1);
+                }
+            }
+        });
+
         String filename = theFilename;
         if (filename == null) {
             filename = Constants.DEFAULT_CONFIG_FILE;
@@ -1041,7 +1061,7 @@ public class Controller extends PFComponent {
     /**
      * Use to schedule a lightweight short running task that gets repeated
      * periodically.
-     * 
+     *
      * @param task
      *            the task to schedule
      * @param period
@@ -1058,7 +1078,7 @@ public class Controller extends PFComponent {
     /**
      * Use to schedule a lightweight short running task that gets repeated
      * periodically.
-     * 
+     *
      * @param task
      *            the task to schedule
      * @param initialDelay
@@ -1079,7 +1099,7 @@ public class Controller extends PFComponent {
 
     /**
      * Use to schedule a lightweight short running task.
-     * 
+     *
      * @param task
      *            the task to schedule
      * @param delay
@@ -1094,7 +1114,7 @@ public class Controller extends PFComponent {
 
     /**
      * Removes a schduled task for the threadpool
-     * 
+     *
      * @param task
      */
     public void removeScheduled(Runnable task) {
@@ -1111,7 +1131,7 @@ public class Controller extends PFComponent {
 
     /**
      * Removes a scheduled task for the threadpool
-     * 
+     *
      * @param future
      */
     public boolean removeScheduled(ScheduledFuture<?> future) {
@@ -1246,7 +1266,8 @@ public class Controller extends PFComponent {
     private void openBroadcastManager() {
         if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(this)) {
             try {
-                broadcastManager = new BroadcastMananger(this);
+                broadcastManager = new BroadcastMananger(this,
+                  ConfigurationEntry.D2D_ENABLED.getValueBoolean(this));
                 broadcastManager.start();
             } catch (ConnectionException e) {
                 logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
@@ -1260,7 +1281,7 @@ public class Controller extends PFComponent {
 
     /**
      * General houskeeping task. Runs one minute after start and every midnight.
-     * 
+     *
      * @param midnightRun
      *            true if this is the midnight invokation, false if this is at
      *            start up.
@@ -1377,7 +1398,7 @@ public class Controller extends PFComponent {
                     String portStr = nizer.nextToken();
                     try {
                         int port = Integer.parseInt(portStr);
-                        boolean listenerOpened = openListener(port);
+                        boolean listenerOpened = openListener(port, false);
                         if (listenerOpened && connectionListener != null) {
                             // set reconnect on first successfull listener
                             nodeManager
@@ -1406,13 +1427,28 @@ public class Controller extends PFComponent {
                 }
             }
         }
+
+        /* Check whether to start D2D, too */
+        boolean useD2D = ConfigurationEntry.D2D_ENABLED.getValueBoolean(this);
+        int     port   = ConfigurationEntry.D2D_PORT.getValueInt(this);
+
+        if(useD2D) {
+            logInfo("D2D is enabled");
+
+            boolean listenerOpened = openListener(port, useD2D);
+
+            if(!listenerOpened) {
+                logSevere("Couldn't bind to port " + port);
+            } else logInfo("Listening on D2D port " + port);
+        }
+
         return true;
     }
 
     /**
      * Call to notify the Controller of a problem while binding a required
      * listening socket.
-     * 
+     *
      * @param ports
      */
     private void portBindFailureProblem(String ports) {
@@ -1452,7 +1488,8 @@ public class Controller extends PFComponent {
      * Tries to bind a random port
      */
     private void bindRandomPort() {
-        if ((openListener(ConnectionListener.DEFAULT_PORT) || openListener(0))
+        if ((openListener(ConnectionListener.DEFAULT_PORT, false)
+            || openListener(0, false))
             && connectionListener != null)
         {
             nodeManager.getMySelf().getInfo()
@@ -1464,7 +1501,7 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Starts all configures connection listener
+     * Starts all configured connection listener
      */
     private void startConfiguredListener() {
         // Start the connection listener
@@ -1594,7 +1631,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if controller is started (by config)
-     * 
+     *
      * @return true if controller is started (by config)
      */
     public boolean isStarted() {
@@ -1610,7 +1647,7 @@ public class Controller extends PFComponent {
 
     /**
      * the uptime in milliseconds.
-     * 
+     *
      * @return The uptime time in millis, or -1 if not started yet
      */
     public long getUptime() {
@@ -1646,7 +1683,7 @@ public class Controller extends PFComponent {
 
     /**
      * Sets the paused mode.
-     * 
+     *
      * @param newPausedValue
      */
     public void setPaused(boolean newPausedValue) {
@@ -1655,7 +1692,7 @@ public class Controller extends PFComponent {
 
     /**
      * Sets the paused mode.
-     * 
+     *
      * @param newPausedValue
      */
     private synchronized void setPaused0(boolean newPausedValue,
@@ -1727,7 +1764,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if node is running in LAN only networking mode
-     * 
+     *
      * @return true if in LAN only mode else false
      */
     public boolean isLanOnly() {
@@ -1744,7 +1781,7 @@ public class Controller extends PFComponent {
      * 2) If the client can add friends
      * <p>
      * 3) The client can connect to others except the server.
-     * 
+     *
      * @return true if running as backup only client.
      */
     public boolean isBackupOnly() {
@@ -1753,7 +1790,7 @@ public class Controller extends PFComponent {
 
     /**
      * returns the enum with the current networkin mode.
-     * 
+     *
      * @return The Networking mode either NetworkingMode.PUBLICMODE,
      *         NetworkingMode.PRIVATEMODE or NetworkingMode.LANONLYMODE
      */
@@ -1842,7 +1879,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if this controller has restricted connection to the network
-     * 
+     *
      * @return true if no incoming connections, else false.
      */
     public boolean isLimitedConnectivity() {
@@ -1859,7 +1896,7 @@ public class Controller extends PFComponent {
 
     /**
      * Shuts down controller and exits to system with the given status
-     * 
+     *
      * @param status
      *            the status to exit with.
      */
@@ -2012,7 +2049,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns a debug report
-     * 
+     *
      * @return the Debug report.
      */
     public String getDebugReport() {
@@ -2038,7 +2075,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers the current config name loaded <configname>.properties
-     * 
+     *
      * @return The name of the current config
      */
     public String getConfigName() {
@@ -2063,7 +2100,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the config, read from the configfile.
-     * 
+     *
      * @return the config as properties object
      */
     public Properties getConfig() {
@@ -2072,7 +2109,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the command line of the start
-     * 
+     *
      * @return The command line
      */
     public CommandLine getCommandLine() {
@@ -2090,7 +2127,7 @@ public class Controller extends PFComponent {
     /**
      * Returns local preferences, Preferences are stored till the next start. On
      * windows they are stored in the registry.
-     * 
+     *
      * @return The preferences
      */
     public Preferences getPreferences() {
@@ -2124,7 +2161,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers the own identity, of course with no connection
-     * 
+     *
      * @return a referens to the member object representing myself.
      */
     @Override
@@ -2134,7 +2171,7 @@ public class Controller extends PFComponent {
 
     /**
      * Changes the nick and tells other nodes
-     * 
+     *
      * @param newNick
      *            the new nick
      * @param saveConfig
@@ -2171,7 +2208,7 @@ public class Controller extends PFComponent {
 
     /**
      * Retruns the plugin manager
-     * 
+     *
      * @return the plugin manager
      */
     public PluginManager getPluginManager() {
@@ -2180,7 +2217,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the dyndns manager
-     * 
+     *
      * @return the dyndns manager
      */
     public DynDnsManager getDynDnsManager() {
@@ -2189,7 +2226,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the broadcast manager
-     * 
+     *
      * @return broadcast manager
      */
     public BroadcastMananger getBroadcastManager() {
@@ -2198,7 +2235,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the NodeManager
-     * 
+     *
      * @return the NodeManager
      */
     public NodeManager getNodeManager() {
@@ -2215,7 +2252,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the folder repository
-     * 
+     *
      * @return the folder repository
      */
     public FolderRepository getFolderRepository() {
@@ -2224,7 +2261,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the transfer manager of the controller
-     * 
+     *
      * @return transfer manager
      */
     public TransferManager getTransferManager() {
@@ -2233,7 +2270,7 @@ public class Controller extends PFComponent {
 
     /**
      * ONLY USE THIS METHOD FOR TESTING PURPOSES!
-     * 
+     *
      * @param factory
      */
     public void setTransferManagerFactory(Callable<TransferManager> factory) {
@@ -2250,7 +2287,7 @@ public class Controller extends PFComponent {
 
     /**
      * Injects a security manager.
-     * 
+     *
      * @param securityManager
      *            the security manager to set.
      */
@@ -2261,38 +2298,56 @@ public class Controller extends PFComponent {
 
     /**
      * Connects to a remote peer, with ip and port
-     * 
-     * @param address
-     * @return the node that connected
-     * @throws ConnectionException
-     *             if connection failed
-     * @returns the connected node
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  address  Address to connect to
+     * @throw {@link ConnectionException} Raised when something is wrong
+     * @return The connected {@link Node}
      */
     public Member connect(InetSocketAddress address) throws ConnectionException
     {
-        if (!started) {
-            logInfo("NOT Connecting to " + address + ". Controller not started");
-            throw new ConnectionException("NOT Connecting to " + address
-                + ". Controller not started");
+      return connect(address, false);
+    }
+
+    /** connect
+     * Connects to a remote peer, with ip and port
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  address  Address to connect to
+     * @param  useD2D   Whether to use D2D proto
+     * @throw {@link ConnectionException} Raised when something is wrong
+     * @return The connected {@link Node}
+     **/
+
+    public Member
+    connect(InetSocketAddress address,
+      boolean useD2D) throws ConnectionException
+    {
+      if(!started)
+        {
+          logInfo("NOT Connecting to " + address + ". Controller not started");
+
+          throw new ConnectionException("NOT Connecting to " + address
+             + ". Controller not started");
         }
 
-        if (address.getPort() <= 0) {
-            // connect to defaul port
-            logWarning("Unable to connect, port illegal " + address.getPort());
+      if(0 >= address.getPort())
+        {
+          // connect to defaul port
+          logWarning("Unable to connect, port illegal " + address.getPort());
         }
-        logFine("Connecting to " + address + "...");
 
-        ConnectionHandler conHan = ioProvider.getConnectionHandlerFactory()
-            .tryToConnect(address);
+      logFine("Connecting to " + address + (useD2D ? "via D2D" : "") + "...");
 
-        // Accept new node
-        return nodeManager.acceptConnection(conHan);
+      ConnectionHandler conHan = ioProvider.getConnectionHandlerFactory()
+        .tryToConnect(address, useD2D);
+
+      // Accept new node
+      return nodeManager.acceptConnection(conHan);
     }
 
     /**
      * Connect to a remote node Interprets a string as connection string Format
      * is expeced as ' <connect host>' or ' <connect host>: <port>'
-     * 
+     *
      * @param connectStr
      * @return the member that connected under the given addresse
      * @throws ConnectionException
@@ -2304,7 +2359,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if controller is started in console mode
-     * 
+     *
      * @return true if in console mode
      */
     public boolean isConsoleMode() {
@@ -2328,7 +2383,7 @@ public class Controller extends PFComponent {
      * Whether to display notifications bottom-left instead of the normal
      * bottom-right. Primarily a development switch for running two PFs on one
      * PC.
-     * 
+     *
      * @return true if notifications should be displayed on the left.
      */
     public boolean isNotifyLeft() {
@@ -2344,7 +2399,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if the user interface (ui) is enabled
-     * 
+     *
      * @return true if the user interface is enabled, else false
      */
     public boolean isUIEnabled() {
@@ -2353,7 +2408,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers if we have the ui open
-     * 
+     *
      * @return true if the uiserinterface is actualy started
      */
     public boolean isUIOpen() {
@@ -2362,7 +2417,7 @@ public class Controller extends PFComponent {
 
     /**
      * Exposing UIController, acces to all UserInterface elements
-     * 
+     *
      * @return the UIController
      */
     public UIController getUIController() {
@@ -2393,17 +2448,22 @@ public class Controller extends PFComponent {
      * Opens the listener on local port. The first listener is set to
      * "connectionListener". All others are added the the list of
      * additionalConnectionListeners.
-     * 
+     *
+     * @param  port    Port to open listener to
+     * @param  useD2D  Whether to use D2D proto (FIXME: Might be a bit
+     *                 pointless this way but allows to use this proto
+     *                 on any port later <kappel@powerfolder.com>)
+     *
      * @return if succeeded
      */
-    private boolean openListener(int port) {
+    private boolean openListener(int port, boolean useD2D) {
         String bind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(this);
         logFine("Opening incoming connection listener on port " + port
             + " on interface " + (bind != null ? bind : "(all)"));
         while (true) {
             try {
                 ConnectionListener newListener = new ConnectionListener(this,
-                    port, bind);
+                    port, bind, useD2D);
                 if (connectionListener == null) {
                     // its our primary listener
                     connectionListener = newListener;
@@ -2427,7 +2487,7 @@ public class Controller extends PFComponent {
 
     /**
      * Do we have a connection listener?
-     * 
+     *
      * @return true if we have a connection listener, otherwise false
      */
     public boolean hasConnectionListener() {
@@ -2435,19 +2495,29 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Answers the connection listener
-     * 
+     * Gets the connection listener
+     *
      * @return the connection listener
      */
     public ConnectionListener getConnectionListener() {
         return connectionListener;
     }
 
+    /** getAdditionalConnectionListeners
+     * Gets a list of registered connection listeners
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return List of {@link ConnectionListener}
+     **/
+
+    public List<ConnectionListener> getAdditionalConnectionListeners() {
+        return this.additionalConnectionListeners;
+    }
+
     /**
      * Answers if this controller is runing in verbose mode. Set verbose=true on
      * config file to enable this, this gives access to all kinds of debugging
      * stuff.
-     * 
+     *
      * @return true if we are in verbose mode
      */
     public boolean isVerbose() {
@@ -2458,7 +2528,7 @@ public class Controller extends PFComponent {
      * Answers if debug reports should be requested. Set debugReports=true on
      * config file to enable this, this request node information. Only enabled
      * if in verbose mode.
-     * 
+     *
      * @see RequestNodeInformation
      * @return true if we are in verbose mode
      */
@@ -2468,7 +2538,7 @@ public class Controller extends PFComponent {
 
     /**
      * Returns the buildtime of this jar
-     * 
+     *
      * @return the Date the application jar was build.
      */
     public Date getBuildTime() {
@@ -2486,7 +2556,7 @@ public class Controller extends PFComponent {
     /**
      * Sets the loading completion of this controller. Used in the splash
      * screen.
-     * 
+     *
      * @param percentage
      *            the percentage complete
      */
@@ -2499,7 +2569,7 @@ public class Controller extends PFComponent {
     /**
      * Answers if minimized start is wanted. Use startup option -m to enable
      * this.
-     * 
+     *
      * @return if a minimized startup should be performed.
      */
     public boolean isStartMinimized() {
@@ -2509,7 +2579,7 @@ public class Controller extends PFComponent {
     /**
      * The base directory where to store/load config files. or null if on
      * working path
-     * 
+     *
      * @return The File object representing the absolute location of where the
      *         config files are/should be stored.
      */
@@ -2534,7 +2604,7 @@ public class Controller extends PFComponent {
     /**
      * Answers the path, where to load/store miscellanouse files created by
      * PowerFolder. e.g. .nodes files
-     * 
+     *
      * @return the file base, a directory
      */
     public static Path getMiscFilesLocation() {
@@ -2612,7 +2682,7 @@ public class Controller extends PFComponent {
      * Pre Version 4, the config was in 'user.home'/.PowerFolder.
      * 'APPDATA'/PowerFolder is a more normal Windows location for application
      * data.
-     * 
+     *
      * @param unixBaseDir
      *            the old user.home based config directory.
      * @param windowsBaseDir
@@ -2643,7 +2713,7 @@ public class Controller extends PFComponent {
 
     /**
      * Answers the path, where to load/store temp files created by PowerFolder.
-     * 
+     *
      * @return the file base, a directory
      */
     public static Path getTempFilesLocation() {
@@ -2791,7 +2861,7 @@ public class Controller extends PFComponent {
     /**
      * Answers the waittime for threads time differst a bit to avoid
      * concurrencies
-     * 
+     *
      * @return The time to wait
      */
     public static long getWaitTime() {
@@ -2805,7 +2875,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute ask for friendship events.
-     * 
+     *
      * @param event
      */
     public void makeFriendship(MemberInfo memberInfo) {
@@ -2845,7 +2915,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute invitations.
-     * 
+     *
      * @param invitation
      */
     public void invitationReceived(Invitation invitation) {
@@ -2856,7 +2926,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute local mass deletion notifications.
-     * 
+     *
      * @param event
      */
     public void localMassDeletionDetected(LocalMassDeletionEvent event) {
@@ -2867,7 +2937,7 @@ public class Controller extends PFComponent {
 
     /**
      * Distribute remote mass deletion notifications.
-     * 
+     *
      * @param event
      */
     public void remoteMassDeletionDetected(RemoteMassDeletionEvent event) {
@@ -2946,7 +3016,7 @@ public class Controller extends PFComponent {
     /**
      * Wait for the repo to finish syncing. Then request system shutdown and
      * exit PF.
-     * 
+     *
      * @param password
      *            required only for Linux shutdowns.
      */
@@ -2976,7 +3046,7 @@ public class Controller extends PFComponent {
     /**
      * Waits for the repo to finish syncing. Then request system shutdown and
      * exit PF.
-     * 
+     *
      * @param secWait
      *            number of seconds to wait.
      */

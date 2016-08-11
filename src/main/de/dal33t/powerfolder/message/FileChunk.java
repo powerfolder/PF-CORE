@@ -21,7 +21,13 @@ package de.dal33t.powerfolder.message;
 
 import java.io.IOException;
 
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ByteString;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.protocol.FileChunkProto;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Validate;
@@ -32,7 +38,9 @@ import de.dal33t.powerfolder.util.Validate;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
-public class FileChunk extends Message implements LimitBandwidth {
+public class FileChunk extends Message
+  implements LimitBandwidth, D2DObject
+{
     private static final long serialVersionUID = 100L;
 
     public FileInfo file;
@@ -50,6 +58,7 @@ public class FileChunk extends Message implements LimitBandwidth {
         validate();
     }
 
+    @Override
     public String toString() {
         return "FileChunk: " + file + " ("
             + Format.formatDecimal(file.getSize()) + " total bytes), offset: "
@@ -71,5 +80,45 @@ public class FileChunk extends Message implements LimitBandwidth {
         Reject.noNullElements(file, data);
         Validate.isTrue(offset >= 0);
         Validate.isTrue(offset + data.length <= file.getSize());
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2D(AbstractMessage mesg)
+    {
+      if(mesg instanceof FileChunkProto.FileChunk)
+        {
+          FileChunkProto.FileChunk proto = (FileChunkProto.FileChunk)mesg;
+
+          this.file   = new FileInfo(proto.getFile());
+          this.offset = proto.getOffset();
+          this.data   = proto.getData().toByteArray();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2D()
+    {
+      FileChunkProto.FileChunk.Builder builder = FileChunkProto.FileChunk.newBuilder();
+
+      builder.setClazzName("FileChunk");
+      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setOffset(this.offset);
+      builder.setData(ByteString.copyFrom(this.data));
+
+      return builder.build();
     }
 }

@@ -176,6 +176,10 @@ For creation of the installer:
 
 			<!-- ContextMenu and IconOverlay -->
 			<include name="liferay-nativity-1.0.5.jar" />
+
+      <!-- Protobuf -->
+			<include name="protobuf-java-3.0.0-beta-1.jar" />
+			<include name="powerfolder-protobuf-0.1.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">

@@ -1,5 +1,7 @@
 package de.dal33t.powerfolder.security;
 
+import com.google.protobuf.AbstractMessage;
+
 /**
  * Permission to allow a user to create organizations using the Organizations
  * App.<br />
@@ -17,6 +19,14 @@ public class OrganizationCreatePermission extends SingletonPermission {
     public static final OrganizationCreatePermission INSTANCE = new OrganizationCreatePermission();
 
     private OrganizationCreatePermission() {
+    }
+
+    /**
+     * Init from D2D message
+     * @param mesg Message to use data from
+     **/
+    public OrganizationCreatePermission(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     @Override

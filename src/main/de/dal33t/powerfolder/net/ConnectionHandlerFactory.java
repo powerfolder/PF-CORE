@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -56,7 +57,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     // Main connect methods ***************************************************
 
     /**
-     * Tries establish a physical connection to that node.
+     * Tries to establish a connection to that node.
      * <p>
      * Connection strategy when using this method:
      * </p>
@@ -114,7 +115,7 @@ public class ConnectionHandlerFactory extends PFComponent {
     }
 
     /**
-     * Tries establish a physical connection to that node.
+     * Tries to establish a connection to that node.
      * <p>
      * Connection strategy when using this method:
      * </p>
@@ -127,14 +128,33 @@ public class ConnectionHandlerFactory extends PFComponent {
      * @return a ready initializes connection handler.
      * @throws ConnectionException
      */
-    public ConnectionHandler tryToConnect(InetSocketAddress remoteAddress)
-        throws ConnectionException
+    public ConnectionHandler
+    tryToConnect(InetSocketAddress remoteAddress)
+      throws ConnectionException
     {
-        if (NetworkUtil.isNullIP(remoteAddress.getAddress())) {
+      return tryToConnect(remoteAddress, false);
+    }
+
+    /** tryToConnect
+     * Check address and try to connect via TCP
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  remoteAddress  {@link InetSocketAddress Remote address} to connect to
+     * @param  useD2D         Whether to use D2D proto
+     * @throw {@link ConnectionException} Raised when something is wrong
+     * @return An initialized {@link ConnectionHandler}
+     **/
+
+    public ConnectionHandler
+    tryToConnect(InetSocketAddress remoteAddress,
+      boolean useD2D) throws ConnectionException
+    {
+        if(NetworkUtil.isNullIP(remoteAddress.getAddress()))
+          {
             throw new ConnectionException("Unable to connect to null IP: "
-                + remoteAddress);
-        }
-        return tryToConnectTCP(remoteAddress);
+              + remoteAddress);
+          }
+
+        return tryToConnectTCP(remoteAddress, useD2D);
     }
 
     // Factory methods ********************************************************
@@ -142,24 +162,56 @@ public class ConnectionHandlerFactory extends PFComponent {
     /**
      * Creates a initialized connection handler for a socket based TCP/IP
      * connection.
-     *
-     * @param socket
-     *            the tcp/ip socket
-     * @return the connection handler for basic IO connection.
-     * @throws ConnectionException
-     */
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  socket  The TCP/IP {@link socket}
+     * @throw {@link ConnectionException} Raised when something is wrong
+     * @return {@link ConnectionHandler} for basic IO connection.
+     **/
+
     public ConnectionHandler createAndInitSocketConnectionHandler(Socket socket)
         throws ConnectionException
     {
-        ConnectionHandler conHan = new PlainSocketConnectionHandler(
+      return createAndInitSocketConnectionHandler(socket, false);
+    }
+
+    /** createAndInitSocketConnectionHandler
+     * Creates a initialized connection handler for a socket based TCP/IP
+     * connection.
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  socket  The TCP/IP {@link socket}
+     * @param  useD2D  Whether to use D2D proto
+     * @throw {@link ConnectionException} Raised when something is wrong
+     * @return {@link ConnectionHandler} for basic IO connection.
+     **/
+
+    public ConnectionHandler
+    createAndInitSocketConnectionHandler(Socket socket,
+      boolean useD2D) throws ConnectionException
+    {
+      ConnectionHandler conHan;
+
+      /* Check which type we need here */
+      if(useD2D)
+        {
+          conHan = new D2DSocketConnectionHandler(
             getController(), socket);
-        try {
-            conHan.init();
-        } catch (ConnectionException e) {
-            conHan.shutdown();
-            throw e;
         }
-        return conHan;
+      else conHan = new PlainSocketConnectionHandler(
+        getController(), socket);
+
+      /* Finally init this handler */
+      try
+        {
+          conHan.init();
+        }
+      catch(ConnectionException e)
+        {
+          conHan.shutdown();
+
+          throw e;
+        }
+
+      return conHan;
     }
 
     /**
@@ -207,30 +259,51 @@ public class ConnectionHandlerFactory extends PFComponent {
     // Connection layer specific connect methods ******************************
 
     /**
-     * Tries establish a physical socket connection to that node.
-     *
-     * @param remoteAddress
-     *            the address to connect to.
-     * @return a ready initializes connection handler.
-     * @throws ConnectionException
-     *             if no connection is possible.
-     */
-    protected ConnectionHandler tryToConnectTCP(InetSocketAddress remoteAddress)
-        throws ConnectionException
+     * Tries to establish a socket connection to that node.
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  remoteAddress  {@link InetSocketAddress Remote address} address to connect to
+     * @throw {@link ConnectionException} Raised when something is wrong
+     * @return An initialized {@link ConnectionHandler}
+     **/
+
+    protected ConnectionHandler
+    tryToConnectTCP(InetSocketAddress remoteAddress)
+      throws ConnectionException
     {
-        try {
-            Socket socket = new Socket();
-            String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-                .getValue(getController());
-            if (!StringUtils.isEmpty(cfgBind)) {
-                socket.bind(new InetSocketAddress(cfgBind, 0));
-            }
-            socket.connect(remoteAddress, Constants.SOCKET_CONNECT_TIMEOUT);
-            NetworkUtil.setupSocket(socket, getController());
-            return createAndInitSocketConnectionHandler(socket);
-        } catch (IOException e) {
-            throw new ConnectionException("Unable to connect to "
-                + remoteAddress + ": " + e.getMessage(), e);
+      return tryToConnectTCP(remoteAddress, false);
+    }
+
+    /** tryToConnectTCP
+     * Tries to establish a socket connection to given remote address
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  remoteAddress  {@link InetSocketAddress Remote address} address to connect to
+     * @param  useD2D         Whether to useD2D proto
+     * @throw {@link ConnectionException} Raised when something is wrong
+     * @return An initialized {@link ConnectionHandler}
+     **/
+
+    protected ConnectionHandler
+    tryToConnectTCP(InetSocketAddress remoteAddress,
+      boolean useD2D) throws ConnectionException
+    {
+      try
+        {
+          Socket socket = new Socket();
+          String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
+            .getValue(getController());
+
+          if(!StringUtils.isEmpty(cfgBind))
+            socket.bind(new InetSocketAddress(cfgBind, 0));
+
+          socket.connect(remoteAddress, Constants.SOCKET_CONNECT_TIMEOUT);
+          NetworkUtil.setupSocket(socket, getController());
+
+          return createAndInitSocketConnectionHandler(socket, useD2D);
+        }
+      catch(IOException e)
+        {
+          throw new ConnectionException("Unable to connect to "
+            + remoteAddress + ": " + e.getMessage(), e);
         }
     }
 

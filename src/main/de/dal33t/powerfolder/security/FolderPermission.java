@@ -19,7 +19,15 @@
  */
 package de.dal33t.powerfolder.security;
 
+import java.util.logging.Logger;
+
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.protocol.PermissionProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -28,7 +36,10 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public abstract class FolderPermission implements Permission {
+public abstract class FolderPermission
+  implements Permission, D2DObject
+{
+    private static final Logger LOG = Logger.getLogger(FolderPermission.class.getName());
     private static final long serialVersionUID = 100L;
 
     public static final String ID_SEPARATOR = "_FP_";
@@ -36,6 +47,9 @@ public abstract class FolderPermission implements Permission {
 
     protected FolderInfo folder;
 
+    public FolderPermission() {
+    }
+    
     protected FolderPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folderinfo is null");
         folder = foInfo.intern();
@@ -49,6 +63,7 @@ public abstract class FolderPermission implements Permission {
         return folder;
     }
 
+    @Override
     public String getId() {
         return folder.id + ID_SEPARATOR + getClass().getSimpleName();
     }
@@ -113,7 +128,54 @@ public abstract class FolderPermission implements Permission {
         return new FolderOwnerPermission(foInfo);
     }
 
+    @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + folder;
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if(mesg instanceof PermissionProto.Permission) {
+            PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
+            try {
+                // A reference can be any message so it needs to be unpacked from com.google.protobuf.Any
+                FolderInfoProto.FolderInfo folderInfo = proto.getReference().unpack(FolderInfoProto.FolderInfo.class);
+                this.folder = new FolderInfo(folderInfo);
+            } catch (InvalidProtocolBufferException e) {
+                LOG.severe("Cannot unpack message: " + e);
+            }
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+    @Override
+    public AbstractMessage toD2D() {
+        PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();
+        builder.setClazzName("Permission");
+        // A reference can be any message so it needs to be packed as com.google.protobuf.Any
+        builder.setReference(com.google.protobuf.Any.pack((FolderInfoProto.FolderInfo)this.folder.toD2D()));
+        // Set permission enum
+        if (this instanceof FolderAdminPermission) {
+            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_ADMIN);
+        }
+        else if (this instanceof FolderOwnerPermission) {
+            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_OWNER);
+        }
+        else if (this instanceof FolderReadPermission) {
+            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_READ);
+        }
+        else if (this instanceof FolderReadWritePermission) {
+            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_READ_WRITE);
+        }
+        return builder.build();
     }
 }

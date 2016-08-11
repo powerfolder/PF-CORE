@@ -27,12 +27,18 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.FileListProto;
+import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -44,7 +50,9 @@ import de.dal33t.powerfolder.util.Reject;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FileList extends FolderRelatedMessage {
+public class FileList extends FolderRelatedMessage
+  implements D2DObject
+{
 
     private static final Logger log = Logger
         .getLogger(FileList.class.getName());
@@ -285,6 +293,7 @@ public class FileList extends FolderRelatedMessage {
         return files == null;
     }
 
+    @Override
     public String toString() {
         return "FileList of "
             + folder
@@ -292,5 +301,60 @@ public class FileList extends FolderRelatedMessage {
             + (files != null
                 ? files.length + " file(s)"
                 : "No information about files.");
+   }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2D(AbstractMessage mesg)
+    {
+      if(mesg instanceof FileListProto.FileList)
+        {
+          FileListProto.FileList proto = (FileListProto.FileList)mesg;
+
+          /* Convert list back to array */
+          int i = 0;
+
+          this.files = new FileInfo[proto.getFilesCount()];
+
+          for(FileInfoProto.FileInfo finfo : proto.getFilesList())
+            {
+              this.files[i++] = new FileInfo(finfo);
+            }
+
+          this.nFollowingDeltas = proto.getNFollowingDeltas();
+          this.folder           = new FolderInfo(proto.getFolder());
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2D()
+    {
+      FileListProto.FileList.Builder builder = FileListProto.FileList.newBuilder();
+
+      builder.setClazzName("FileList");
+
+      /* Convert array to list */
+      for(FileInfo finfo : this.files)
+        {
+          builder.addFiles((FileInfoProto.FileInfo)finfo.toD2D());
+        }
+
+      builder.setNFollowingDeltas(this.nFollowingDeltas);
+      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
+
+      return builder.build();
     }
 }

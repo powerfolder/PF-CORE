@@ -19,6 +19,10 @@
 */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.PongProto;
 import de.dal33t.powerfolder.util.Format;
 
 /**
@@ -27,7 +31,9 @@ import de.dal33t.powerfolder.util.Format;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.5 $
  */
-public class Pong extends Message {
+public class Pong extends Message
+    implements D2DObject
+{
     private static final long serialVersionUID = 100L;
 
     public String id;
@@ -66,9 +72,50 @@ public class Pong extends Message {
         return receiveTime - ping.sendTime;
     }
 
+    @Override
     public String toString() {
         return "Pong"
             + ((payload != null) ? " " + Format.formatBytes(payload.length)
                 + " bytes payload" : "");
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void
+    initFromD2D(AbstractMessage mesg)
+    {
+      if(mesg instanceof PongProto.Pong)
+        {
+          PongProto.Pong pong = (PongProto.Pong)mesg;
+
+          this.receiveTime = pong.getReceiveTime();
+          this.payload     = pong.getPayload().getBytes();
+          this.id          = pong.getId();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage
+    toD2D()
+    {
+      PongProto.Pong.Builder builder = PongProto.Pong.newBuilder();
+
+      builder.setClazzName("Pong");
+      builder.setReceiveTime(receiveTime);
+      builder.setPayload(String.valueOf(payload));
+      builder.setId(id);
+
+      return builder.build();
     }
 }

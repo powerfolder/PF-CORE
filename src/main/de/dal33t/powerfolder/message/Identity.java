@@ -22,20 +22,27 @@ package de.dal33t.powerfolder.message;
 import java.io.Externalizable;
 import java.util.Calendar;
 
+import com.google.protobuf.AbstractMessage;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.protocol.IdentityProto;
+import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Message which contains information about me.
- * 
+ *
  * @author Christian Sprajc
- * 
+ *
  * @version $Revision: 1.6 $
  */
-public class Identity extends Message {
+public class Identity extends Message
+  implements D2DObject
+{
     private static final long serialVersionUID = 101L;
 
     private MemberInfo member;
@@ -49,7 +56,7 @@ public class Identity extends Message {
     /**
      * #2366: For server only. Since v3.5.13
      */
-    private boolean supportsQuickLogin = true;
+    private final boolean supportsQuickLogin = true;
 
     /**
      * flag to indicate a tunneled connection.
@@ -60,19 +67,19 @@ public class Identity extends Message {
      * Supports Request/Response pattern with serialized arguments. To avoid
      * problems when class model differs between client and server.
      */
-    private boolean supportsSerializedRequest = true;
+    private final boolean supportsSerializedRequest = true;
 
     // uses program version. ATTENTION: NEVER MARK THESE FINAL!!!!!
-    private String programVersion = Controller.PROGRAM_VERSION;
+    private final String programVersion = Controller.PROGRAM_VERSION;
 
-    private Calendar timeGMT = Calendar.getInstance();
+    private final Calendar timeGMT = Calendar.getInstance();
 
     // Supports requests for single parts and filepartsrecords.
     // Earlier this was based on a user setting, but that's wrong since we
     // shouldn't deny the
     // remote side to decide how it wants to download.
     // Leftover for semi-old clients
-    private boolean supportingPartTransfers = true;
+    private final boolean supportingPartTransfers = true;
 
     private Boolean useCompressedStream;
     /**
@@ -114,7 +121,7 @@ public class Identity extends Message {
     public static final int PROTOCOL_VERSION_109 = 109;
     public static final int PROTOCOL_VERSION_110 = 110;
     public static final int PROTOCOL_VERSION_111 = 111;
-    
+
     // PFC-2455: TODO: Upgrade to 111
     private int protocolVersion = PROTOCOL_VERSION_111;
 
@@ -270,5 +277,44 @@ public class Identity extends Message {
     @Override
     public String toString() {
         return "Identity: " + member;
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+      if(mesg instanceof IdentityProto.Identity) {
+          IdentityProto.Identity proto = (IdentityProto.Identity)mesg;
+
+          this.member                = new MemberInfo(proto.getMember());
+          this.magicId               = proto.getMagicId();
+          this.protocolVersion       = proto.getProtocolVersion();
+          this.requestFullFolderlist = proto.getRequestFullFolderlist();
+          this.configurationURL      = proto.getConfigurationUrl();
+        }
+    }
+
+    /** toD2DMessage
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage toD2D() {
+      IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
+
+      builder.setClazzName(this.getClass().getSimpleName());
+      builder.setMember((MemberInfoProto.MemberInfo)this.member.toD2D());
+      builder.setMagicId(this.magicId);
+      builder.setProtocolVersion(this.protocolVersion);
+      builder.setRequestFullFolderlist(this.requestFullFolderlist);
+      builder.setConfigurationUrl("this.configurationURL");
+
+      return builder.build();
     }
 }
