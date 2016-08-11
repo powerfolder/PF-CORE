@@ -21,7 +21,10 @@ package de.dal33t.powerfolder.clientserver;
 
 import java.io.Serializable;
 
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -69,6 +72,17 @@ public class SendInvitationEmail implements Serializable {
         this.recipient = recipient;
         this.ccMe = ccMe;
         validate();
+    }
+
+    public static SendInvitationEmail create(MemberInfo invitorDevice,
+        FolderPermission foPermission, Account invitor, String inviteeName)
+    {
+        Invitation inv = new Invitation(foPermission.getFolder(),
+            invitorDevice);
+        inv.setPermission(foPermission);
+        inv.setInvitorUsername(invitor.getUsername());
+        inv.setInviteeUsername(inviteeName);
+        return new SendInvitationEmail(inv, inviteeName);
     }
 
     // Serialization and validation
