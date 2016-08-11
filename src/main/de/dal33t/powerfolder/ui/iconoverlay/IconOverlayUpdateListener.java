@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.event.LockingListener;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -201,8 +202,11 @@ public class IconOverlayUpdateListener extends PFComponent implements
                 @Override
                 public void run() {
                     try {
-                        WindowsNativityUtil.updateExplorer(folder
-                            .getLocalBase().toString());
+                        String test = UserDirectories.getDocumentsReported();
+                        // Do not update folder Documents because it would lead to duplicate entries in explorer sidebar (see PFC-2862)
+                        if (!folder.getLocalBase().toString().equals(UserDirectories.getDocumentsReported())) {
+                            WindowsNativityUtil.updateExplorer(folder.getLocalBase().toString());
+                        }
                     } catch (RuntimeException re) {
                         logFine("Caught exception while updating folder "
                             + folder + ". " + re, re);
