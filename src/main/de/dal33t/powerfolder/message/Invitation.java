@@ -59,6 +59,8 @@ public class Invitation extends FolderRelatedMessage {
 
     /** suggestedLocalBase is relative to user home directory. */
     private static final int RELATIVE_USER_HOME = 3;
+    
+    public static final String ACCOUNT_INVITATION_ID_PREFIX = "AI_";
 
     private MemberInfo invitor;
     // For backward compatibilty to pre 3.1.2 versions.
