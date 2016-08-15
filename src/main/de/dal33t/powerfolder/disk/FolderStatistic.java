@@ -168,7 +168,7 @@ public class FolderStatistic extends PFComponent {
      */
     public synchronized void calculate0() {
         if (isFiner()) {
-            logFiner("-------------Recalculation statisitcs on " + folder);
+            logFiner("-------------Recalculation statistics on " + folder);
         }
         if (!folder.isStarted()) {
             return;
