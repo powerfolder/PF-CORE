@@ -285,7 +285,7 @@ public class FolderFilesChanged extends FolderRelatedMessage
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -298,7 +298,7 @@ public class FolderFilesChanged extends FolderRelatedMessage
       FolderFilesChangedProto.FolderFilesChanged.Builder builder =
         FolderFilesChangedProto.FolderFilesChanged.newBuilder();
 
-      builder.setClazzName("FolderFilesChanged");
+      builder.setClazzName(this.getClass().getSimpleName());
 
       /* Convert array to list */
       for(FileInfo finfo : this.added)

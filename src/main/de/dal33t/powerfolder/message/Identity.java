@@ -298,7 +298,7 @@ public class Identity extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -313,7 +313,10 @@ public class Identity extends Message
       builder.setMagicId(this.magicId);
       builder.setProtocolVersion(this.protocolVersion);
       builder.setRequestFullFolderlist(this.requestFullFolderlist);
-      builder.setConfigurationUrl("this.configurationURL");
+      
+      if(null != this.configurationURL) {
+          builder.setConfigurationUrl(this.configurationURL);
+      }
 
       return builder.build();
     }

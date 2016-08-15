@@ -332,7 +332,7 @@ public class FileList extends FolderRelatedMessage
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -344,7 +344,7 @@ public class FileList extends FolderRelatedMessage
     {
       FileListProto.FileList.Builder builder = FileListProto.FileList.newBuilder();
 
-      builder.setClazzName("FileList");
+      builder.setClazzName(this.getClass().getSimpleName());
 
       /* Convert array to list */
       if (this.files != null) {

@@ -119,7 +119,7 @@ public class ConfigurationLoadRequest extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -132,7 +132,7 @@ public class ConfigurationLoadRequest extends Message
       ConfigurationLoadRequestProto.ConfigurationLoadRequest.Builder builder =
         ConfigurationLoadRequestProto.ConfigurationLoadRequest.newBuilder();
 
-      builder.setClazzName("ConfigurationLoadRequest");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setConfigURL(this.configURL);
       builder.setKey(this.key);
       builder.setValue(this.value);

@@ -1139,7 +1139,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -1151,7 +1151,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     {
       FileInfoProto.FileInfo.Builder builder = FileInfoProto.FileInfo.newBuilder();
 
-      builder.setClazzName("FileInfo");
+      builder.setClazzName(this.getClass().getSimpleName());
       if (this.fileName != null) builder.setFileName(this.fileName);
       if (this.oid != null) builder.setOid(this.oid);
       if (this.hashes != null) builder.setHashes(this.hashes);

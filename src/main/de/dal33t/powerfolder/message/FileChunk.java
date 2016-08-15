@@ -102,7 +102,7 @@ public class FileChunk extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -114,7 +114,7 @@ public class FileChunk extends Message
     {
       FileChunkProto.FileChunk.Builder builder = FileChunkProto.FileChunk.newBuilder();
 
-      builder.setClazzName("FileChunk");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setOffset(this.offset);
       builder.setData(ByteString.copyFrom(this.data));

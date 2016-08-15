@@ -236,7 +236,7 @@ public class RequestNodeList extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -249,7 +249,7 @@ public class RequestNodeList extends Message
       RequestNodeListProto.RequestNodeList.Builder builder =
         RequestNodeListProto.RequestNodeList.newBuilder();
 
-      builder.setClazzName("RequestNodeList");
+      builder.setClazzName(this.getClass().getSimpleName());
 
       /* Handle enum stuff */
       NodesCriteriaProto.NodesCriteria.Builder nodeBuilder =

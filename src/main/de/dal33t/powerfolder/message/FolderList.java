@@ -278,7 +278,7 @@ public class FolderList extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -290,7 +290,7 @@ public class FolderList extends Message
     {
       FolderListProto.FolderList.Builder builder = FolderListProto.FolderList.newBuilder();
 
-      builder.setClazzName("FolderList");
+      builder.setClazzName(this.getClass().getSimpleName());
 
       /* Convert array to list */
       for(FolderInfo finfo : this.secretFolders)

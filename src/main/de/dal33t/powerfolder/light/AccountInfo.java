@@ -228,7 +228,7 @@ public class AccountInfo implements Serializable, D2DObject {
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -240,7 +240,7 @@ public class AccountInfo implements Serializable, D2DObject {
     {
       AccountInfoProto.AccountInfo.Builder builder = AccountInfoProto.AccountInfo.newBuilder();
 
-      builder.setClazzName("AccountInfo");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setOid(this.oid);
       builder.setUsername(this.username);
       builder.setDisplayName(this.displayName);

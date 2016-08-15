@@ -128,6 +128,12 @@ public class GroupAdminPermission implements Permission, D2DObject {
         }
     }
 
+    /** toD2D
+     * Convert to D2D message
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     * @return Converted D2D message
+     **/
+    
     @Override
     public AbstractMessage toD2D() {
         PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();

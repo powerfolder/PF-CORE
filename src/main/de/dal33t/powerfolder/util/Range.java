@@ -181,7 +181,7 @@ public final class Range
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -193,7 +193,7 @@ public final class Range
     {
       RangeProto.Range.Builder builder = RangeProto.Range.newBuilder();
 
-      builder.setClazzName("Range");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setStart(this.start);
       builder.setLength(this.length);
 

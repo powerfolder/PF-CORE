@@ -461,7 +461,7 @@ public class Invitation extends FolderRelatedMessage
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -474,7 +474,7 @@ public class Invitation extends FolderRelatedMessage
       InvitationProto.Invitation.Builder builder =
         InvitationProto.Invitation.newBuilder();
 
-      builder.setClazzName("Invitation");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setInvitor(
         (MemberInfoProto.MemberInfo)this.invitor.toD2D());
       builder.setInvitationText(this.invitationText);

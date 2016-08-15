@@ -78,7 +78,7 @@ public class AddFriendNotification extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -91,7 +91,7 @@ public class AddFriendNotification extends Message
       AddFriendNotificationProto.AddFriendNotification.Builder builder =
         AddFriendNotificationProto.AddFriendNotification.newBuilder();
 
-      builder.setClazzName("AddFriendNotification");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setMemberInfo((de.dal33t.powerfolder.protocol.MemberInfoProto.MemberInfo)
         this.memberInfo.toD2D());
       builder.setPersonalMessage(this.personalMessage);

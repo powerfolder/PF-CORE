@@ -202,7 +202,7 @@ public class KnownNodes extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -214,7 +214,7 @@ public class KnownNodes extends Message
     {
       KnownNodesProto.KnownNodes.Builder builder = KnownNodesProto.KnownNodes.newBuilder();
 
-      builder.setClazzName("KnownNodes");
+      builder.setClazzName(this.getClass().getSimpleName());
 
       /* Convert array to list */
       for(MemberInfo minfo : this.nodes)

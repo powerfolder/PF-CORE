@@ -66,11 +66,17 @@ public class Login extends Message implements D2DObject {
             this.member = new MemberInfo(proto.getMember());
         }
     }
-
+    
+    /** toD2D
+     * Convert to D2D message
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     * @return Converted D2D message
+     **/
+    
     @Override
     public AbstractMessage toD2D() {
         LoginProto.Login.Builder builder = LoginProto.Login.newBuilder();
-        builder.setClazzName("Login");
+        builder.setClazzName(this.getClass().getSimpleName());
         builder.setUsername(this.getUsername());
         builder.setPassword(this.getPassword());
         builder.setMember((MemberInfoProto.MemberInfo)this.member.toD2D());

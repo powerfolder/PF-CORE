@@ -66,7 +66,7 @@ public class AbortDownload extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -78,7 +78,7 @@ public class AbortDownload extends Message
     {
       AbortDownloadProto.AbortDownload.Builder builder = AbortDownloadProto.AbortDownload.newBuilder();
 
-      builder.setClazzName("AbortDownload");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
