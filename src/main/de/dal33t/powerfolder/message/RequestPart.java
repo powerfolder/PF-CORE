@@ -155,7 +155,7 @@ public class RequestPart extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -168,7 +168,7 @@ public class RequestPart extends Message
       RequestPartProto.RequestPart.Builder builder =
         RequestPartProto.RequestPart.newBuilder();
 
-      builder.setClazzName("RequestPart");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setRange((RangeProto.Range)this.range.toD2D());
       builder.setProgress(this.progress);

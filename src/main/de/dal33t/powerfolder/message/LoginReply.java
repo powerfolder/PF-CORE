@@ -46,7 +46,7 @@ public class LoginReply extends Message implements D2DObject {
     @Override
     public AbstractMessage toD2D() {
         LoginReplyProto.LoginReply.Builder builder = LoginReplyProto.LoginReply.newBuilder();
-        builder.setClazzName("LoginReply");
+        builder.setClazzName(this.getClass().getSimpleName());
         builder.setReturnValue(this.returnValue);
         builder.setStatusCode(this.statusCode);
         if (this.account != null) {

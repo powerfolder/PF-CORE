@@ -69,7 +69,7 @@ public class RequestFilePartsRecord extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -82,7 +82,7 @@ public class RequestFilePartsRecord extends Message
       RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder =
         RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
 
-      builder.setClazzName("RequestFilePartsRecord");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();

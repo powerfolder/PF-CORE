@@ -47,7 +47,7 @@ public class FileListRequest extends FolderRelatedMessage
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -60,7 +60,7 @@ public class FileListRequest extends FolderRelatedMessage
       FileListRequestProto.FileListRequest.Builder builder =
         FileListRequestProto.FileListRequest.newBuilder();
 
-      builder.setClazzName("FileListRequest");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();

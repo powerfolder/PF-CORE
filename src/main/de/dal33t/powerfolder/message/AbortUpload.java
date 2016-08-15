@@ -69,7 +69,7 @@ public class AbortUpload extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -81,7 +81,7 @@ public class AbortUpload extends Message
     {
       AbortUploadProto.AbortUpload.Builder builder = AbortUploadProto.AbortUpload.newBuilder();
 
-      builder.setClazzName("AbortUpload");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setFile((FileInfoProto.FileInfo) this.file.toD2D());
 
       return builder.build();
