@@ -347,10 +347,12 @@ public class FileList extends FolderRelatedMessage
       builder.setClazzName("FileList");
 
       /* Convert array to list */
-      for(FileInfo finfo : this.files)
-        {
-          builder.addFiles((FileInfoProto.FileInfo)finfo.toD2D());
-        }
+      if (this.files != null) {
+          for(FileInfo finfo : this.files)
+          {
+              builder.addFiles((FileInfoProto.FileInfo)finfo.toD2D());
+          }
+      }
 
       builder.setNFollowingDeltas(this.nFollowingDeltas);
       builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());

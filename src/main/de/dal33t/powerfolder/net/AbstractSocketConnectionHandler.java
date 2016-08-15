@@ -1027,7 +1027,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     } else if (obj instanceof Login) {
                         if (getController().getMySelf().isServer()) {
                             Login login = (Login) obj;
-                            Account account = getController().getSecurityManager().authenticate(login.getUsername(), login.getPassword().toCharArray());
+                            Account account = getController().getSecurityManager().authenticate(login.getUsername(), login.getPassword().toCharArray(), login.getMember());
                             sendMessagesAsynchron(new LoginReply(true, 1, account));
                         } else {
                             logWarning("Ignoring login request: "

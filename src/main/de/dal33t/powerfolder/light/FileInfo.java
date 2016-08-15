@@ -1152,22 +1152,22 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
       FileInfoProto.FileInfo.Builder builder = FileInfoProto.FileInfo.newBuilder();
 
       builder.setClazzName("FileInfo");
-      builder.setFileName(this.fileName);
-      builder.setOid(this.oid);
-      builder.setHashes(this.hashes);
-      builder.setTags(this.tags);
-      builder.setSize(this.size);
+      if (this.fileName != null) builder.setFileName(this.fileName);
+      if (this.oid != null) builder.setOid(this.oid);
+      if (this.hashes != null) builder.setHashes(this.hashes);
+      if (this.tags != null) builder.setTags(this.tags);
+      if (this.size != null) builder.setSize(this.size);
 
-      builder.setModifiedby(
+      if (this.modifiedBy != null) builder.setModifiedby(
         (MemberInfoProto.MemberInfo)this.modifiedBy.toD2D());
-      builder.setModifiedByAccount(
+      if (this.modifiedByAccount != null) builder.setModifiedByAccount(
         (AccountInfoProto.AccountInfo)this.modifiedByAccount.toD2D());
 
-      builder.setLastModifiedDate(this.lastModifiedDate.getTime());
+      if (this.lastModifiedDate != null) builder.setLastModifiedDate(this.lastModifiedDate.getTime());
       builder.setVersion(this.version);
       builder.setDeleted(this.deleted);
 
-      builder.setFolderInfo(
+      if (this.folderInfo != null) builder.setFolderInfo(
         (FolderInfoProto.FolderInfo)this.folderInfo.toD2D());
 
 

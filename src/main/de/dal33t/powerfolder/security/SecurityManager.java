@@ -47,6 +47,20 @@ public interface SecurityManager {
     Account authenticate(String username, Object credentials);
 
     /**
+     * Authenticates the user.
+     *
+     * @param username
+     *            the username of the login
+     * @param credentials
+     *            the password of the login
+     * @param node
+     *            the node the user logs in from
+     * @return the account if access is possible, null if user could not be
+     *         logged in.
+     */
+    Account authenticate(String username, Object credentials, MemberInfo nodeInfo);
+
+    /**
      * PFC-2548: Token based authentication.
      * 
      * @param tokenSecret
