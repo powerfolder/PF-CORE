@@ -1446,8 +1446,8 @@ public class ServerClient extends PFComponent {
         if (getController().isShuttingDown() || !getController().isStarted()) {
             return;
         }
-        if (isWarning()) {
-            logWarning("findAlternativeServer: " + servers);
+        if (isFine()) {
+            logFine("findAlternativeServer: " + servers);
         }
         List<Member> serversCopy = new ArrayList<>(servers);
         Collections.shuffle(serversCopy);
