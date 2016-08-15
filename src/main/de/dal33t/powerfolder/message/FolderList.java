@@ -290,7 +290,7 @@ public class FolderList extends Message
     {
       FolderListProto.FolderList.Builder builder = FolderListProto.FolderList.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
+      builder.setClazzName("FolderList");
 
       /* Convert array to list */
       for(FolderInfo finfo : this.secretFolders)

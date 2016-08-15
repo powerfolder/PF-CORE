@@ -344,7 +344,7 @@ public class FileList extends FolderRelatedMessage
     {
       FileListProto.FileList.Builder builder = FileListProto.FileList.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
+      builder.setClazzName("FileList");
 
       /* Convert array to list */
       if (this.files != null) {
