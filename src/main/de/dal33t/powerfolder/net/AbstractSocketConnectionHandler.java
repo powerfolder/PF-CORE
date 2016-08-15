@@ -43,9 +43,12 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.IdentityReply;
 import de.dal33t.powerfolder.message.LimitBandwidth;
+import de.dal33t.powerfolder.message.Login;
+import de.dal33t.powerfolder.message.LoginReply;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
 import de.dal33t.powerfolder.util.ByteSerializer;
@@ -461,7 +464,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         // break if remote peer did no identitfy
-        if (identity == null && (!(message instanceof Identity))) {
+        if (identity == null && (!(message instanceof Identity) && !(message instanceof LoginReply))) {
             throw new ConnectionException(
                 "Unable to send message, peer did not identify yet").with(this);
         }
@@ -1021,7 +1024,15 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                                 break;
                             }
                         }
-
+                    } else if (obj instanceof Login) {
+                        if (getController().getMySelf().isServer()) {
+                            Login login = (Login) obj;
+                            Account account = getController().getSecurityManager().authenticate(login.getUsername(), login.getPassword().toCharArray());
+                            sendMessagesAsynchron(new LoginReply(true, 1, account));
+                        } else {
+                            logWarning("Ignoring login request: "
+                                + obj);
+                        }
                     } else if (receivedObject(obj)) {
                         // The object was handled by the subclass.
                         // OK pass through
