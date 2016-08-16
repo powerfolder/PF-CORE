@@ -56,6 +56,9 @@ class OpenWebAction extends PFContextMenuAction {
                     if (fileInfo.isFile()) {
                         name = fileInfo.getRelativeName().replace(
                             fileInfo.getFilenameOnly(), "");
+                        if (name.endsWith("/")) {
+                            name = name.substring(0, name.length() - 1);
+                        }
                     }
 
                     String folderURL = getController().getOSClient()
