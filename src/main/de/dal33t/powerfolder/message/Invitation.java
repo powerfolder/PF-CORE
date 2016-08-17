@@ -271,11 +271,13 @@ public class Invitation extends FolderRelatedMessage {
     }
 
     public boolean isFolderInvitation() {
-        return StringUtils.isNotBlank(folder.getId());
+        return StringUtils.isNotBlank(folder.getId())
+            && !folder.getId().startsWith(ACCOUNT_INVITATION_ID_PREFIX);
     }
 
     public boolean isAccountInvitation() {
-        return StringUtils.isBlank(folder.getId());
+        return StringUtils.isBlank(folder.getId())
+            || folder.getId().startsWith(ACCOUNT_INVITATION_ID_PREFIX);
     }
 
     public SyncProfile getSuggestedSyncProfile() {
