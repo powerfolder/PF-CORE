@@ -212,8 +212,8 @@ public class Util {
         if (!orderOk) {
             return false;
         }
-        if (email.trim().contains(" ")) {
-            // Whitespaces not allowed
+        if (email.trim().contains(" ") || email.trim().contains(";")) {
+            // Whitespaces and semicolon not allowed
             return false;
         }
         return true;
