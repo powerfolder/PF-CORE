@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -43,7 +42,8 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         super(controller);
         tosn = new ToSNotice(Translation.get("dialog.tos.title"),
             Translation.get("dialog.tos.summary"),
-            Translation.get("dialog.tos.text"), controller.getOSClient());
+            Translation.get("dialog.tos.text"),
+            controller.getOSClient().getToSURL());
     }
 
     @Override
@@ -141,11 +141,13 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
 
     private class ToSNotice extends WarningNotice {
         private static final long serialVersionUID = 100L;
-        private final ServerClient client;
+        private final String tosURL;
 
-        public ToSNotice(String title, String summary, String message, ServerClient client) {
+        public ToSNotice(String title, String summary, String message,
+            String tosURL)
+        {
             super(title, summary, message);
-            this.client = client;
+            this.tosURL = tosURL;
         }
 
         @Override
@@ -162,9 +164,11 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                         @Override
                         public void run() {
                             try {
-                                BrowserLauncher.openURL(client.getToSURL());
+                                BrowserLauncher.openURL(tosURL);
                             } catch (IOException ioe) {
-                                logWarning("Could not open browser to view ToS. " + ioe);
+                                logWarning(
+                                    "Could not open browser to view ToS. "
+                                        + ioe);
                             }
                         }
                     });
