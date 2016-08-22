@@ -159,21 +159,6 @@ public class ConnectionHandlerFactory extends PFComponent {
 
     // Factory methods ********************************************************
 
-    /**
-     * Creates a initialized connection handler for a socket based TCP/IP
-     * connection.
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  socket  The TCP/IP {@link socket}
-     * @throw {@link ConnectionException} Raised when something is wrong
-     * @return {@link ConnectionHandler} for basic IO connection.
-     **/
-
-    public ConnectionHandler createAndInitSocketConnectionHandler(Socket socket)
-        throws ConnectionException
-    {
-      return createAndInitSocketConnectionHandler(socket, false);
-    }
-
     /** createAndInitSocketConnectionHandler
      * Creates a initialized connection handler for a socket based TCP/IP
      * connection.
