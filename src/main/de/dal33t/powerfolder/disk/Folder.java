@@ -3289,12 +3289,17 @@ public class Folder extends PFComponent {
                                 .findFiles(c);
                             for (FileInfo fileInfo : filesInDir) {
                                 if (!fileInfo.isDeleted()) {
-                                    logWarning(
-                                        "Found non-deleted file in deleted directory: "
-                                            + fileInfo.toDetailString()
-                                            + ". Directory: "
-                                            + fileInfo.toDetailString()
-                                            + ". Message: " + ioe.toString());
+                                    // PFS-2147:
+                                    removeFileLocal(fileInfo);
+                                    if (isInfo()) {
+                                        logInfo(
+                                            "Deleted file in deleted directory: "
+                                                + fileInfo.toDetailString()
+                                                + ". Directory: "
+                                                + fileInfo.toDetailString()
+                                                + ". Message: "
+                                                + ioe.toString());
+                                    }
                                 }
                             }
                         }
