@@ -64,6 +64,15 @@ public class Identity extends Message
     private boolean tunneled;
 
     /**
+     * If to wait for handshake ack from remote side. Always true. Field
+     * included for backward compatibility.
+     *
+     * @see HandshakeCompleted
+     */
+    @SuppressWarnings("unused")
+    private final boolean acknowledgesHandshakeCompletion = true;
+
+    /**
      * Supports Request/Response pattern with serialized arguments. To avoid
      * problems when class model differs between client and server.
      */
