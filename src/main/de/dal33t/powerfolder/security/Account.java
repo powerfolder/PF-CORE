@@ -1536,6 +1536,12 @@ public class Account implements Serializable, D2DObject {
                 licenseKeyFileList);
             licenseKeyFileList = newLicenseKeyFileList;
         }
+        
+        if (!(licenseKeyFiles instanceof CopyOnWriteArrayList<?>)) {
+            List<String> newlicenseKeyFiles = new CopyOnWriteArrayList<>(
+                licenseKeyFiles);
+            licenseKeyFiles = newlicenseKeyFiles;
+        }
 
         if (!(emails instanceof CopyOnWriteArrayList<?>)) {
             List<String> newEmails = new CopyOnWriteArrayList<>(emails);
