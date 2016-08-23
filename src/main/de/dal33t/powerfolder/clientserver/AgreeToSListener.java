@@ -126,6 +126,9 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         getController().getIOProvider().startIO(new Runnable() {
             @Override
             public void run() {
+                if (!event.getClient().isLoggedIn()) {
+                    return;
+                }
                 AccountDetails ad = getController().getOSClient()
                     .refreshAccountDetails();
                 if (ad.needsToAgreeToS()) {
