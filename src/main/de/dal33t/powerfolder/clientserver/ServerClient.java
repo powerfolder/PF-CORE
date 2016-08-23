@@ -410,7 +410,9 @@ public class ServerClient extends PFComponent {
      *         account. account.
      */
     public boolean isPrimaryServer(ConnectionHandler conHan) {
-        if (server.getInfo().equals(conHan.getIdentity().getMemberInfo())) {
+        if (conHan.getIdentity() != null
+            && server.getInfo().equals(conHan.getIdentity().getMemberInfo()))
+        {
             return true;
         }
         if (isTempServerNode(server)) {
