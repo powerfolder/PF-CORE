@@ -1962,8 +1962,8 @@ public class ServerClient extends PFComponent {
      * @return True if the skin was downloaded correctly
      */
     private boolean downloadClientSkin(String skin) {
-        // Stop if no skin is given
-        if (skin == null) {
+        // Stop if no skin is given or default skin
+        if (skin == null || skin.equalsIgnoreCase("Bluberry")) {
             return false;
         }
         boolean localSkinWasAlreadyInstalled = false;
@@ -2052,6 +2052,11 @@ public class ServerClient extends PFComponent {
         } catch (IOException e) {
             logWarning("Cannot download client skin:" + e, e);
             return localSkinWasAlreadyInstalled;
+        } catch (RuntimeException e) {
+            logSevere(
+                "RuntimeException while downloading skin " + skin + ": " + e,
+                e);
+            return false;
         }
         return true;
     }
