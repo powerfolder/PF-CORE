@@ -212,7 +212,7 @@ public class FileBrowserIntegration extends PFComponent {
             try {
                 logFine("Auto enabling extension.");
                 Runtime.getRuntime().exec(
-                    "pluginkit -e use -i com.liferay.nativity.LiferayFinderSync");
+                    "/usr/bin/pluginkit -e use -i com.liferay.nativity.LiferayFinderSync");
             } catch (Exception e) {
                 logWarning(
                     "Could not activate FinderSync extension automatically! "
