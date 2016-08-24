@@ -1002,7 +1002,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             String message = null;
             if (peer == null || !peer.isConnected()) {
                 if (lastProblem == null) {
-                    message = "Peer disconnected while waiting for handshake acknownledge (or problem)";
+                    message = "Peer " + getNick() + " disconnected while waiting for handshake acknownledge (or problem)";
                 }
             } else {
                 if (lastProblem == null) {
