@@ -212,7 +212,8 @@ public class FileBrowserIntegration extends PFComponent {
             try {
                 logFine("Auto enabling extension.");
                 String[] cmd = new String[5];
-                cmd[0] = "/usr/bin/pluginkit";
+                //cmd[0] = "sudo";
+                cmd[0] = "pluginkit";
                 cmd[1] = "-e";
                 cmd[2] = "use";
                 cmd[3] = "-i";
