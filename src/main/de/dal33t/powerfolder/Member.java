@@ -1529,16 +1529,20 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 .queueUpload(Member.this, dlReq);
                             if (ul == null && isCompletelyConnected()) {
                                 // Send abort
-                                logFine("Sending abort of " + dlReq.file);
-                                sendMessagesAsynchron(new AbortUpload(
-                                    dlReq.file));
+                                if (isFine()) {
+                                    logFine("Sending abort of " + dlReq.file);                                    
+                                }
+                                sendMessagesAsynchron(
+                                    new AbortUpload(dlReq.file));
                             }
                             if (getController().isPaused()) {
                                 // Send abort
-                                logInfo("Sending abort (paused) of "
-                                    + dlReq.file);
-                                sendMessagesAsynchron(new AbortUpload(
-                                    dlReq.file));
+                                if (isInfo()) {
+                                    logInfo("Sending abort (paused) of "
+                                        + dlReq.file);
+                                }
+                                sendMessagesAsynchron(
+                                    new AbortUpload(dlReq.file));
                             }
                         }
                     };
