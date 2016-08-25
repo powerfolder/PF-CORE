@@ -51,7 +51,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
@@ -411,7 +410,9 @@ public class ServerClient extends PFComponent {
      *         account. account.
      */
     public boolean isPrimaryServer(ConnectionHandler conHan) {
-        if (server.getInfo().equals(conHan.getIdentity().getMemberInfo())) {
+        if (conHan.getIdentity() != null
+            && server.getInfo().equals(conHan.getIdentity().getMemberInfo()))
+        {
             return true;
         }
         if (isTempServerNode(server)) {
@@ -1962,12 +1963,27 @@ public class ServerClient extends PFComponent {
      * @return True if the skin was downloaded correctly
      */
     private boolean downloadClientSkin(String skin) {
-        // Stop if no skin is given
+        // Stop if no skin is given or default skin
         if (skin == null) {
             return false;
         }
+       
         boolean localSkinWasAlreadyInstalled = false;
         Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+        if (skin.equalsIgnoreCase("Bluberry")) {
+            // Delete old skin
+            if (Files.exists(skinPath)) {
+                try {
+                    PathUtils.recursiveDelete(skinPath);
+                    return true;
+                } catch (IOException e) {
+                    logWarning("Cannot delete old skin: " + e);
+                    return false;
+                }
+            }
+            return false;
+        }
+ 
         String baseUrl = this.getWebURL() + "/skin/";
         String skinQuery = "?skin=" + skin;
         URL url;
@@ -2001,7 +2017,7 @@ public class ServerClient extends PFComponent {
             }
             // Delete old skin
             try {
-                FileUtils.deleteDirectory(skinPath.resolve("client").toFile());
+                PathUtils.recursiveDelete(skinPath.resolve("client"));
             } catch (IOException e) {
                 logWarning("Cannot delete old skin: " + e, e);
                 return false;
@@ -2052,6 +2068,11 @@ public class ServerClient extends PFComponent {
         } catch (IOException e) {
             logWarning("Cannot download client skin:" + e, e);
             return localSkinWasAlreadyInstalled;
+        } catch (RuntimeException e) {
+            logSevere(
+                "RuntimeException while downloading skin " + skin + ": " + e,
+                e);
+            return false;
         }
         return true;
     }

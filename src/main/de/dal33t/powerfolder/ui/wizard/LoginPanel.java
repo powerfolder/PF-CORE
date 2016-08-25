@@ -318,7 +318,6 @@ public class LoginPanel extends PFWizardPanel {
                     String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
                         .getValue(getController());
                     boolean lastIdPSet = false;
-                    short namesOffset = 0;
 
                     idPSelectBox.removeAllItems();
 
@@ -336,9 +335,8 @@ public class LoginPanel extends PFWizardPanel {
                             if (StringUtils.isNotBlank(name)) {
                                 idPSelectBox.addItem(name.trim());
                                 idPList.add(name.trim());
-                                namesOffset++;
                                 if (!lastIdPSet && name.equals(lastIdP)) {
-                                    idPSelectBox.setSelectedIndex(namesOffset - 1);
+                                    idPSelectBox.setSelectedIndex(idPSelectBox.getItemCount() - 1);
                                     lastIdPSet = true;
                                 }
                             }
@@ -347,7 +345,6 @@ public class LoginPanel extends PFWizardPanel {
                         idPSelectBox.addItem(
                             Translation.get("wizard.login.external_users"));
                         idPList.add("ext");
-                        namesOffset = 1;
                     }
 
                     for (int i = 0; i < resp.length(); i++) {
@@ -361,7 +358,7 @@ public class LoginPanel extends PFWizardPanel {
                         idPList.add(entity);
 
                         if (!lastIdPSet && entity.equals(lastIdP)) {
-                            idPSelectBox.setSelectedIndex(i + namesOffset);
+                            idPSelectBox.setSelectedIndex(idPSelectBox.getItemCount() - 1);
                             lastIdPSet = true;
                         }
                     }

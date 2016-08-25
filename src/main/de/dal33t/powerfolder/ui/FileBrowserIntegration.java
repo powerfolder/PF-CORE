@@ -206,8 +206,25 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not connect to finder sync.");
                 return false;
             }
-            
+
             logFine("Connected to finder sync.");
+
+            try {
+                logFine("Auto enabling extension.");
+                String[] cmd = new String[5];
+                //cmd[0] = "sudo";
+                cmd[0] = "pluginkit";
+                cmd[1] = "-e";
+                cmd[2] = "use";
+                cmd[3] = "-i";
+                cmd[4] = "com.liferay.nativity.LiferayFinderSync";
+                Runtime.getRuntime().exec(cmd);
+            } catch (Exception e) {
+                logWarning(
+                    "Could not activate FinderSync extension automatically! "
+                        + e);
+            }
+
             return true;
         } catch (Exception re) {
             logWarning("Could not start finder sync. " + re);

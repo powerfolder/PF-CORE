@@ -1002,11 +1002,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             String message = null;
             if (peer == null || !peer.isConnected()) {
                 if (lastProblem == null) {
-                    message = "Peer disconnected while waiting for handshake acknownledge (or problem)";
+                    message = "Peer " + getNick() + " disconnected while waiting for handshake acknownledge (or problem)";
                 }
             } else {
                 if (lastProblem == null) {
-                    message = "Did not receive a handshake not acknownledged (or problem) by remote side after "
+                    message = "Did not receive a handshake not acknownledged (or problem) by " + getNick() + " after "
                         + (int) (took / 1000) + 's';
                 }
             }
@@ -1160,7 +1160,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             boolean noChangeReceivedSineOneMinute = System.currentTimeMillis()
                 - lastMessageReceived.getTime() > 1000L * 60;
             if (noChangeReceivedSineOneMinute) {
-                logWarning("No message received since 1 minute while waiting for filelist");
+                logWarning("No message received since 1 minute while waiting for filelist from " + getNick());
                 return false;
             }
 
@@ -1529,16 +1529,20 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 .queueUpload(Member.this, dlReq);
                             if (ul == null && isCompletelyConnected()) {
                                 // Send abort
-                                logFine("Sending abort of " + dlReq.file);
-                                sendMessagesAsynchron(new AbortUpload(
-                                    dlReq.file));
+                                if (isFine()) {
+                                    logFine("Sending abort of " + dlReq.file);                                    
+                                }
+                                sendMessagesAsynchron(
+                                    new AbortUpload(dlReq.file));
                             }
                             if (getController().isPaused()) {
                                 // Send abort
-                                logInfo("Sending abort (paused) of "
-                                    + dlReq.file);
-                                sendMessagesAsynchron(new AbortUpload(
-                                    dlReq.file));
+                                if (isInfo()) {
+                                    logInfo("Sending abort (paused) of "
+                                        + dlReq.file);
+                                }
+                                sendMessagesAsynchron(
+                                    new AbortUpload(dlReq.file));
                             }
                         }
                     };
