@@ -67,7 +67,7 @@ public class FileList extends FolderRelatedMessage
      */
     public int nFollowingDeltas;
 
-    protected FileList() {
+    public FileList() {
         // Serialization
     }
 
