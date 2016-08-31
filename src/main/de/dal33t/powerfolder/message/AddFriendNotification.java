@@ -92,9 +92,9 @@ public class AddFriendNotification extends Message
         AddFriendNotificationProto.AddFriendNotification.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setMemberInfo((de.dal33t.powerfolder.protocol.MemberInfoProto.MemberInfo)
+      if (this.memberInfo != null) builder.setMemberInfo((de.dal33t.powerfolder.protocol.MemberInfoProto.MemberInfo)
         this.memberInfo.toD2D());
-      builder.setPersonalMessage(this.personalMessage);
+      if (this.personalMessage != null) builder.setPersonalMessage(this.personalMessage);
 
       return builder.build();
     }
