@@ -1125,7 +1125,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
           this.fileName          = finfo.getFileName();
           this.oid               = finfo.getOid();
-          this.hashes            = finfo.getHashes();
+          this.hashes            = finfo.getFileHashes();
           this.tags              = finfo.getTags();
           this.size              = finfo.getSize();
           this.modifiedBy        = new MemberInfo(finfo.getModifiedby());
@@ -1154,7 +1154,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
       builder.setClazzName(this.getClass().getSimpleName());
       if (this.fileName != null) builder.setFileName(this.fileName);
       if (this.oid != null) builder.setOid(this.oid);
-      if (this.hashes != null) builder.setHashes(this.hashes);
+      if (this.hashes != null) builder.setFileHashes(this.hashes);
       if (this.tags != null) builder.setTags(this.tags);
       if (this.size != null) builder.setSize(this.size);
 
