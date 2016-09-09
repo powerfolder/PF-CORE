@@ -152,7 +152,7 @@ public class Controller extends PFComponent {
         .getName());
 
     private static final int MAJOR_VERSION = 11;
-    private static final int MINOR_VERSION = 0;
+    private static final int MINOR_VERSION = 1;
     private static final int REVISION_VERSION = 215;
 
     /**
