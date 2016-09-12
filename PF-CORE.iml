@@ -433,5 +433,8 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" name="cryptofs-1.0.0" level="project" />
+    <orderEntry type="library" exported="" name="cryptolib-1.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" exported="" name="cryptomator_libs" level="project" />
   </component>
 </module>

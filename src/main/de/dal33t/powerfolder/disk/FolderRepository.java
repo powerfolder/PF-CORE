@@ -22,15 +22,10 @@ package de.dal33t.powerfolder.disk;
 import static de.dal33t.powerfolder.disk.FolderSettings.ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.DirectoryStream;
+import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -105,6 +100,8 @@ import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
+import org.cryptomator.cryptofs.CryptoFileSystemProperties;
+import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -174,6 +171,13 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private final ReentrantLock scanBasedirLock = new ReentrantLock();
     private ScheduledFuture<?> scanBaseDirFuture;
+
+    /**
+     * PFS-1994: Encrypted storage
+     */
+
+    private boolean isEncrypted;
+    private FileSystem encryptedFileSystem;
 
     /**
      * Constructor
@@ -703,6 +707,20 @@ public class FolderRepository extends PFComponent implements Runnable {
             });
         }
 
+        // PFS-1994: Encrypted storage.
+        if (ConfigurationEntry.ENCRYPTED_STORAGE
+                .getValueBoolean(getController())) {
+            try {
+                if (encryptedFileSystem == null) {
+                    encryptedFileSystem = initFileSystem(IdGenerator.makeId());
+                }
+            } catch (IOException e) {
+                logSevere("Could not initialize CryptoFileSystem for storage encryption: " + e);
+            }
+            isEncrypted = true;
+        } else {
+            isEncrypted = false;
+        }
         started = true;
     }
 
@@ -1244,6 +1262,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             try {
                 if (Files.notExists(metaFolderSettings.getLocalBaseDir())) {
                     Files.createDirectory(metaFolderSettings.getLocalBaseDir());
+                    if (Files.notExists(metaFolderSettings.getLocalBaseDir())){
+                        throw new FileNotFoundException("Unable to create BaseDir of MetaFolder: "
+                                + metaFolderSettings.getLocalBaseDir());
+                    }
                 }
             } catch (IOException ioe) {
                 logInfo("Unable to create metafolder directory: "
@@ -1628,12 +1650,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         // PFS-2000:
                         logWarning("Unable to maintain folder "
                             + currentlyMaintainingFolder.getName() + "/"
-                            + currentlyMaintainingFolder.getId() + ": " + e);
-                        logFine(
-                            "Unable to maintain folder "
-                                + currentlyMaintainingFolder.getName() + "/"
-                                + currentlyMaintainingFolder.getId() + ": " + e,
-                            e);
+                            + currentlyMaintainingFolder.getId() + ": " + e, e);
                     }
                     Folder maintainedFolder = currentlyMaintainingFolder;
                     currentlyMaintainingFolder = null;
@@ -2836,7 +2853,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Do we already have a folder that has this file as its base?
      * 
-     * @param file
+     * @param
      */
     public boolean doesFolderAlreadyExist(Path path) {
         if (!Files.isDirectory(path)) {
@@ -3052,4 +3069,33 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         return true;
     }
+
+    /**
+     * PFS-1994: Encrypted storage.
+     *
+     * @return true if storage encryption is active.
+     */
+
+    public boolean isEncrypted() {
+        return isEncrypted;
+    }
+
+    /**
+     * PFS-1994: Encrypted storage.
+     *
+     * @return CryptoFileSystem Instance.
+     */
+
+    public FileSystem getEncryptedFileSystem() {
+        return encryptedFileSystem;
+    }
+
+    private FileSystem initFileSystem(String password) throws IOException {
+        return CryptoFileSystemProvider.newFileSystem(
+                getController().getFolderRepository().getFoldersBasedir(),
+                CryptoFileSystemProperties.cryptoFileSystemProperties()
+                        .withPassphrase(password)
+                        .build());
+    }
+
 }

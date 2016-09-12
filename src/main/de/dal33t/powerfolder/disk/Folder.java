@@ -320,7 +320,28 @@ public class Folder extends PFComponent {
         dirty = false;
         problems = new CopyOnWriteArrayList<Problem>();
         if (folderSettings.getLocalBaseDir().isAbsolute()) {
-            localBase = folderSettings.getLocalBaseDir();
+
+            // PFS-1994: Encrypted storage.
+            if (getController().getFolderRepository().isEncrypted()){
+
+                if (!currentInfo.isMetaFolder()) {
+                    FileSystem encryptedFileSystem = getController().getFolderRepository().getEncryptedFileSystem();
+                    localBase = encryptedFileSystem.getPath(folderSettings.getLocalBaseDir().toString());
+                    try {
+                        Files.createDirectories(localBase);
+                    } catch (IOException e) {
+                        logWarning("Could not create localBase directories for CryptoFileSystem: " + e);
+                    }
+                } else {
+                    localBase = folderSettings.getLocalBaseDir();
+                    if (!localBase.getFileSystem().provider().getScheme().contains("cryptomator")){
+                        logSevere("Folder localBase " + localBase + " is not encrypted.");
+                    }
+                }
+            } else {
+                localBase = folderSettings.getLocalBaseDir();
+            }
+
         } else {
             localBase = getController().getFolderRepository()
                 .getFoldersBasedir()
@@ -4189,7 +4210,7 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(true);
         } catch (FolderException e) {
-            logFiner("invalid local base: " + e);
+            logSevere("invalid local base: " + e, e);
             return setDeviceDisconnected(true);
         }
 
