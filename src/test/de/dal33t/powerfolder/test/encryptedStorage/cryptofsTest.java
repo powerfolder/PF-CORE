@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.test.encryptedStorage;
 
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 import org.junit.After;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -342,37 +344,77 @@ public class cryptofsTest {
     @Test
     public void moveEncryptedFiles() throws IOException {
 
-        // Create unencrypted test file.
-        Path sourceFile = TestHelper.createRandomFile(unencryptedSource);
-        // Would be nice: Path encFile = fileSystem.resolve(sourceFile.getFileName());
+        Path sourceFile = TestHelper.createRandomFile(unencryptedSource, "foobar.txt");
 
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
+        unencryptedSource = fileSystem.getPath(encryptedDestination.toString());
+        encryptedDestination = fileSystem.getPath(unencryptedSource.toString());
 
-        Path encFile = encryptedDirectory.resolve(sourceFile.getFileName().toString());
-        Path encFile2 = encryptedDirectory.resolve(sourceFile.getFileName().toString() + "2");
-        Path destFile = decryptedDestination.resolve(sourceFile.getFileName());
+        Path encFileFrom = unencryptedSource.resolve(sourceFile.getFileName().toString());
+        Path encFileTo = encryptedDestination.resolve("foobar.txt");
 
-        // Copy from unencryptedSource into encryptedDestination.
-        Files.createDirectories(encryptedDirectory);
-        Files.move(sourceFile, encFile);
+        String md5File1 = DigestUtils.md5Hex(Files.readAllBytes(encFileFrom));
 
-        // Also move an file inside the encryptedDestination.
-        Files.move(encFile, encFile2);
+        Files.move(encFileFrom, encFileTo);
 
-        // Read from encryptedDestination over crypto filesystem in clear text to ensure the files are really encrypted.
-        try (Stream<Path> listing = Files.list(fileSystem.getPath(encryptedDestination.toString()))) {
-            listing.forEach(System.out::println);
-        }
+        String md5File2 = DigestUtils.md5Hex(Files.readAllBytes(encFileTo));
 
-        // Copy from encryptedDestination to unencryptedDestination.
-        Files.move(encFile, destFile);
+        Files.walk(encryptedDestination)
+                .forEach(p -> System.out.println(p));
+
+        assertTrue(md5File1.equals(md5File2));
+
+    }
+
+    @Test
+    public void copyEncryptedFiles() throws IOException {
+
+        Path sourceFile = TestHelper.createRandomFile(unencryptedSource, "foobar.txt");
+
+        unencryptedSource = fileSystem.getPath(encryptedDestination.toString());
+        encryptedDestination = fileSystem.getPath(unencryptedSource.toString());
+
+        Path encFileFrom = unencryptedSource.resolve(sourceFile.getFileName().toString());
+        Path encFileTo = encryptedDestination.resolve("foobar.txt");
+
+        Files.copy(encFileFrom, encFileTo);
+
+        Files.walk(encryptedDestination)
+                .forEach(p -> System.out.println(p));
+
+        assertTrue(TestHelper.compareFiles(encFileFrom, encFileTo));
+
+    }
+
+    @Test
+    public void deleteEncryptedFiles() throws IOException {
+
+        Path sourceFile = TestHelper.createRandomFile(encryptedDestination, "foobar.txt");
+
+        Path encFile = fileSystem.getPath(sourceFile.toString());
+
+        Files.delete(encFile);
+
+        Files.walk(encryptedDestination)
+                .forEach(p -> System.out.println(p));
+
+        assertFalse(Files.exists(encFile));
+
+    }
+
+    @Test
+    public void multiThreadTest() throws IOException {
+
+        // Write and Read from same file
+        // Read and delete file
+        // Write and delete file
+
+        Runnable writeFiles = () -> { };
+        Runnable readFiles = () -> { };
+
     }
 
     public void checkEncryptionProcess(List<Path> beforeEncryption, List<Path> afterEncryption)
             throws IOException {
-
-        // TO-DO: Check every single file -> unencryptedSource to decryptedDestination!
-        // TO-DO: Check if clear-text filename is in encrypted directory.
 
         if (beforeEncryption != null && afterEncryption != null){
             for (int i = 0; i < beforeEncryption.size(); i++){
