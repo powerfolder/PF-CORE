@@ -90,14 +90,14 @@ public class TransferStatus extends Message implements D2DObject {
               : new Date(proto.getTime()));
           this.activeUploads        = proto.getActiveUploads();
           this.queuedUploads        = proto.getQueuedUploads();
-          this.maxUploadCPS         = proto.getMaxUploadCPS();
-          this.currentUploadCPS     = proto.getCurrentUploadCPS();
+          this.maxUploadCPS         = proto.getMaxUploadCps();
+          this.currentUploadCPS     = proto.getCurrentUploadCps();
           this.uploadedBytesTotal   = proto.getUploadedBytesTotal();
           this.activeDownloads      = proto.getActiveDownloads();
           this.queuedDownloads      = proto.getQueuedDownloads();
           this.maxDownloads         = proto.getMaxDownloads();
-          this.maxDownloadCPS       = proto.getMaxDownloadCPS();
-          this.currentDownloadCPS   = proto.getCurrentDownloadCPS();
+          this.maxDownloadCPS       = proto.getMaxDownloadCps();
+          this.currentDownloadCPS   = proto.getCurrentDownloadCps();
           this.downloadedBytesTotal = proto.getDownloadedBytesTotal();
         }
     }
@@ -118,14 +118,14 @@ public class TransferStatus extends Message implements D2DObject {
       builder.setTime(null == this.time ? -1 : this.time.getTime());
       builder.setActiveUploads(this.activeUploads);
       builder.setQueuedUploads(this.queuedUploads);
-      builder.setMaxUploadCPS(this.maxUploadCPS);
-      builder.setCurrentUploadCPS(this.currentUploadCPS);
+      builder.setMaxUploadCps(this.maxUploadCPS);
+      builder.setCurrentUploadCps(this.currentUploadCPS);
       builder.setUploadedBytesTotal(this.uploadedBytesTotal);
       builder.setActiveDownloads(this.activeDownloads);
       builder.setQueuedDownloads(this.queuedDownloads);
       builder.setMaxDownloads(this.maxDownloads);
-      builder.setMaxDownloadCPS(this.maxDownloadCPS);
-      builder.setCurrentUploadCPS(this.currentUploadCPS);
+      builder.setMaxDownloadCps(this.maxDownloadCPS);
+      builder.setCurrentUploadCps(this.currentUploadCPS);
       builder.setDownloadedBytesTotal(this.downloadedBytesTotal);
 
       return builder.build();
