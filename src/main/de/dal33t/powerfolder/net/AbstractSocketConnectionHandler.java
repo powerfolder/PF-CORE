@@ -687,7 +687,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         synchronized (identityAcceptWaiter) {
             if (identityReply == null) {
                 try {
-                    identityAcceptWaiter.wait(20000);
+                    identityAcceptWaiter.wait(60000);
                 } catch (InterruptedException e) {
                     logFiner("InterruptedException", e);
                 }
