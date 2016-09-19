@@ -56,7 +56,7 @@ public class Identity extends Message
     /**
      * #2366: For server only. Since v3.5.13
      */
-    private final boolean supportsQuickLogin = true;
+    private boolean supportsQuickLogin = true;
 
     /**
      * flag to indicate a tunneled connection.
@@ -70,25 +70,25 @@ public class Identity extends Message
      * @see HandshakeCompleted
      */
     @SuppressWarnings("unused")
-    private final boolean acknowledgesHandshakeCompletion = true;
+    private boolean acknowledgesHandshakeCompletion = true;
 
     /**
      * Supports Request/Response pattern with serialized arguments. To avoid
      * problems when class model differs between client and server.
      */
-    private final boolean supportsSerializedRequest = true;
+    private boolean supportsSerializedRequest = true;
 
-    // uses program version. ATTENTION: NEVER MARK THESE FINAL!!!!!
-    private final String programVersion = Controller.PROGRAM_VERSION;
+    // uses program version. ATTENTION: NEVER MARK THESE FINAL; FINAL FIELDS ARE NOT SERIALIZED!
+    private String programVersion = Controller.PROGRAM_VERSION;
 
-    private final Calendar timeGMT = Calendar.getInstance();
+    private Calendar timeGMT = Calendar.getInstance();
 
     // Supports requests for single parts and filepartsrecords.
     // Earlier this was based on a user setting, but that's wrong since we
     // shouldn't deny the
     // remote side to decide how it wants to download.
     // Leftover for semi-old clients
-    private final boolean supportingPartTransfers = true;
+    private boolean supportingPartTransfers = true;
 
     private Boolean useCompressedStream;
     /**
