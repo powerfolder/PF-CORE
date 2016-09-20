@@ -54,8 +54,6 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
 import org.apache.commons.cli.CommandLine;
-import org.cryptomator.cryptofs.CryptoFileSystemProperties;
-import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,7 +87,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 216;
+    private static final int REVISION_VERSION = 217;
 
     /**
      * Program version.

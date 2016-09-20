@@ -433,8 +433,18 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" exported="" name="cryptomator_libs" level="project" />
-    <orderEntry type="library" exported="" name="cryptolib 1.1" level="project" />
-    <orderEntry type="library" exported="" name="cryptofs 1.0" level="project" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/lib/cryptomator_libs" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/lib/cryptomator_libs" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator_libs" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator_libs" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
   </component>
 </module>
