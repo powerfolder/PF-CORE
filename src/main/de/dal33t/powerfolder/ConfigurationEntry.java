@@ -1138,7 +1138,15 @@ public enum ConfigurationEntry {
      * Whether D2D is enabled
      */
 
-    D2D_ENABLED("d2d.enabled", false);
+    D2D_ENABLED("d2d.enabled", false),
+
+    /**
+     * PFS-1994: En-/Disable encrypted storage.
+     */
+
+    ENCRYPTED_STORAGE("encrypted_storage.enabled", false),
+
+    ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", "");
 
     // Methods/Constructors ***************************************************
 
