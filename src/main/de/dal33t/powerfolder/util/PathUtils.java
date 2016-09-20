@@ -311,8 +311,16 @@ public class PathUtils {
         Path candidate = baseDir;
         int suffix = 2;
 
+        String baseDirName = baseDir.getFileName().toString();
+        String baseDirExt = "";
+        int i = baseDirName.lastIndexOf('.');
+        if (i >= 0) {
+            baseDirExt = baseDirName.substring(i);
+            baseDirName = baseDirName.substring(0, i);
+        }
+
         while (Files.exists(candidate)) {
-            candidate = baseDir.getParent().resolve(baseDir.getFileName() + " (" + suffix + ")");
+            candidate = baseDir.getParent().resolve(baseDirName + " (" + suffix + ")" + baseDirExt);
             suffix++;
             if (suffix > 1000) {
                 throw new IllegalStateException(
@@ -461,7 +469,7 @@ public class PathUtils {
     }
 
     /**
-     * Copies a file
+     * Copies a file.
      *
      * @param from
      * @param to
@@ -479,11 +487,16 @@ public class PathUtils {
         if (from.equals(to)) {
             throw new IOException("cannot copy onto itself");
         }
-        try {
-            copyFromStreamToFile(Files.newInputStream(from), to);
-        } catch (IOException e) {
-            IO_EXCEPTION_LISTENER.exceptionThrown(e);
-            throw new IOException(from + " -> " + to + ":" + e.getMessage(), e);
+
+        if (from.toString().contains(".crypto") || to.toString().contains(".crypto")){
+            Files.copy(from, to);
+        } else {
+            try {
+                copyFromStreamToFile(Files.newInputStream(from), to);
+            } catch (IOException e) {
+                IO_EXCEPTION_LISTENER.exceptionThrown(e);
+                throw new IOException(from + " -> " + to + ":" + e.getMessage(), e);
+            }
         }
     }
 

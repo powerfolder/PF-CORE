@@ -1144,7 +1144,9 @@ public enum ConfigurationEntry {
      * PFS-1994: En-/Disable encrypted storage.
      */
 
-    ENCRYPTED_STORAGE("encrypted_storage", true);
+    ENCRYPTED_STORAGE("encrypted_storage.enabled", false),
+
+    ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", "");
 
     // Methods/Constructors ***************************************************
 

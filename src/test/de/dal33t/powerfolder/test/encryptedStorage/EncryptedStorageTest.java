@@ -21,51 +21,12 @@ import java.nio.file.Paths;
 
 public class EncryptedStorageTest extends ControllerTestCase {
 
-    private FileSystem fileSystem;
-    private Path encryptedDestination;
-
     public void testStartFolderRepository() {
 
-        //getController().getFolderRepository().start();
+        getController().getFolderRepository().start();
 
         // Setup a test folder.
-        //setupTestFolder(SyncProfile.HOST_FILES);
+        setupTestFolder(SyncProfile.HOST_FILES);
     }
-
-    public void testEncryptedPathOperations() throws IOException {
-
-
-        /**
-         * TO-DO Montag:
-         *  1. copy, move, delete Test in cryptoTest einbauen.
-         *  2. MultiThreading Test in cryptoTest einbauen.
-         */
-
-        encryptedDestination = Paths.get("/home/jw/test/test1");
-        fileSystem = initFileSystem("78f639876f298793AFAG!!%%12%...ö22öppP");
-        encryptedDestination = fileSystem.getPath(encryptedDestination.toString());
-
-        Path encFileFrom = encryptedDestination.resolve("foobar.txt");
-
-        Path encFileTo = encryptedDestination.resolve("foobar2.txt");
-
-        Files.copy(encFileFrom, encFileTo);
-
-        Files.walk(encryptedDestination)
-                .forEach(p -> System.out.println(p));
-
-    }
-
-    private FileSystem initFileSystem(String password) throws IOException {
-        return CryptoFileSystemProvider.newFileSystem(
-                encryptedDestination,
-                CryptoFileSystemProperties.cryptoFileSystemProperties()
-                        .withPassphrase(password)
-                        .build());
-    }
-
-
-
-
 
 }

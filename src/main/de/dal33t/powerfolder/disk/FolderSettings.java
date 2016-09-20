@@ -20,6 +20,8 @@
 package de.dal33t.powerfolder.disk;
 
 import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -462,12 +464,13 @@ public class FolderSettings {
         }
         if (!str.contains("$")) {
             // No placeholders found
-            try {
-                return Paths.get(URI.create(str));
-            } catch (IllegalArgumentException iae) {
-                return Paths.get(str);
+                try {
+                    return Paths.get(URI.create(str));
+                } catch (IllegalArgumentException iae) {
+                    return Paths.get(str);
+                }
             }
-        }
+
         String res = str;
         if (mapUserDirs) {
             try {

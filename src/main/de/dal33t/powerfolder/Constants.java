@@ -359,6 +359,12 @@ public class Constants {
      */
     public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
 
+    /**
+     * PFS-1994: Encrypted storage.
+     */
+    public static final String FOLDER_ENCRYPTION_SUFFIX = ".crypto";
+
+
     // Pro related ************************************************************
 
     public static final String PACKAGE_PREFIX = "de.dal33t.powerfolder.";
