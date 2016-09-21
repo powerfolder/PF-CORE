@@ -1,23 +1,18 @@
 package de.dal33t.powerfolder.util;
 
-import java.awt.Desktop;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+
+import java.awt.*;
 import java.beans.ExceptionListener;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.URL;
-import java.nio.file.DirectoryStream;
+import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
 import java.util.HashSet;
@@ -30,13 +25,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 public class PathUtils {
 
@@ -482,21 +470,21 @@ public class PathUtils {
         }
         if (Files.notExists(from)) {
             throw new IOException("From file does not exists "
-                + from.toAbsolutePath().toString());
+                    + from.toAbsolutePath().toString());
         }
         if (from.equals(to)) {
             throw new IOException("cannot copy onto itself");
         }
-
-        if (from.toString().contains(".crypto") || to.toString().contains(".crypto")){
-            Files.copy(from, to);
-        } else {
-            try {
+        try {
+            if (from.toString().contains(Constants.FOLDER_ENCRYPTION_SUFFIX) ||
+                    to.toString().contains(Constants.FOLDER_ENCRYPTION_SUFFIX)) {
+                Files.copy(from, to);
+            } else {
                 copyFromStreamToFile(Files.newInputStream(from), to);
-            } catch (IOException e) {
-                IO_EXCEPTION_LISTENER.exceptionThrown(e);
-                throw new IOException(from + " -> " + to + ":" + e.getMessage(), e);
             }
+        } catch (IOException e) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(e);
+            throw new IOException(from + " -> " + to + ":" + e.getMessage(), e);
         }
     }
 

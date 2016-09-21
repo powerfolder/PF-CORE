@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.test.encryptedStorage;
 
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -62,8 +63,8 @@ public class CryptoFSTest {
         Files.createDirectory(decryptedDestination);
 
         // Cryptomator filesystem with cryptolib.
-        fileSystem = initFileSystem(encryptedDestination, "78f639876f298793AFAG!!%%12%...ö22öppP");
-        fileSystem2 = initFileSystem(encryptedDestination2, "78f639876f298793AFAG!!%%12%...ö22öppP");
+        fileSystem = initFileSystem(encryptedDestination, IdGenerator.makeId());
+        fileSystem2 = initFileSystem(encryptedDestination2, IdGenerator.makeId());
 
     }
 

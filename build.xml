@@ -177,9 +177,26 @@ For creation of the installer:
 			<!-- ContextMenu and IconOverlay -->
 			<include name="liferay-nativity-1.0.5.jar" />
 
-      <!-- Protobuf -->
-			<include name="protobuf-java-3.0.0-beta-2.jar" />
-			<include name="powerfolder-protobuf-0.1.jar" />
+			<!-- Protobuf -->
+
+			<include name="protobuf-java-3.0.0-beta-2.jar"/>
+			<include name="powerfolder-protobuf-0.1.jar"/>
+
+			<!-- Encrypted storage - cryptolib/fs -->
+
+			<include name="siv-mode-1.0.8.jar" />
+			<include name="javax.inject-1.jar" />
+			<include name="dagger-compiler-2.6.1.jar" />
+			<include name="dagger-2.6.1.jar" />
+			<include name="commons-lang3-3.4.jar" />
+			<include name="guava-19.0.jar" />
+			<include name="jmh-generator-annprocess-1.12.jar" />
+			<include name="jmh-core-1.12.jar" />
+			<include name="gson-2.7.jar" />
+			<include name="bcprov-jdk15on-1.54.jar" />
+			<include name="cryptolib-1.1.0-SNAPSHOT.jar" />
+			<include name="cryptofs-0.2.0-SNAPSHOT.jar" />
+
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">

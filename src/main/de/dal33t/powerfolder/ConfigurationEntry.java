@@ -1146,7 +1146,7 @@ public enum ConfigurationEntry {
 
     ENCRYPTED_STORAGE("encrypted_storage.enabled", false),
 
-    ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", "");
+    ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", null);
 
     // Methods/Constructors ***************************************************
 

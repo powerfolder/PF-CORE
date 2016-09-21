@@ -19,30 +19,17 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.UserDirectories;
-import de.dal33t.powerfolder.util.UserDirectory;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Class to consolidate the settings for creating a folder. Used as constructor

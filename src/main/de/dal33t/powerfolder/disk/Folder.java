@@ -19,79 +19,15 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import static de.dal33t.powerfolder.Constants.FOLDER_ENCRYPTION_SUFFIX;
-import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
-
-import java.io.BufferedInputStream;
-import java.io.EOFException;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.nio.file.*;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.attribute.FileTime;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TimerTask;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledFuture;
-
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
-import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
-import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
-import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
-import de.dal33t.powerfolder.disk.problem.FolderDatabaseProblem;
-import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
+import de.dal33t.powerfolder.disk.problem.*;
 import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.DirectoryInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FileRequestCommand;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageProducer;
-import de.dal33t.powerfolder.message.RevertedFile;
-import de.dal33t.powerfolder.message.ScanCommand;
+import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
@@ -106,6 +42,23 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
+
+import java.io.*;
+import java.nio.file.*;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileSystem;
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
+
+import static de.dal33t.powerfolder.Constants.FOLDER_ENCRYPTION_SUFFIX;
+import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
 
 /**
@@ -299,7 +252,7 @@ public class Folder extends PFComponent {
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
-        problems = new CopyOnWriteArrayList<Problem>();
+        problems = new CopyOnWriteArrayList<>();
 
         if (folderSettings.getLocalBaseDir().isAbsolute()) {
 
@@ -320,13 +273,11 @@ public class Folder extends PFComponent {
                 try {
                     encryptedFileSystem = initCryptoFileSystem(getController(), folderSettings.getLocalBaseDir());
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() + " " + e);
                 }
 
-                localBase = encryptedFileSystem.getPath(getController()
-                        .getFolderRepository()
-                        .getFoldersBasedir()
-                        .resolve(folderSettings.getLocalBaseDir())
+                localBase = encryptedFileSystem.getPath(folderSettings
+                        .getLocalBaseDir()
                         .toString());
 
                 if (Files.notExists(localBase)) {
@@ -495,11 +446,15 @@ public class Folder extends PFComponent {
 
     private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
 
-        return CryptoFileSystemProvider.newFileSystem(
-                encDir,
-                CryptoFileSystemProperties.cryptoFileSystemProperties()
-                        .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
-                        .build());
+        if (encDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
+            return encDir.getFileSystem();
+        } else {
+            return CryptoFileSystemProvider.newFileSystem(
+                    encDir,
+                    CryptoFileSystemProperties.cryptoFileSystemProperties()
+                            .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
+                            .build());
+        }
     }
 
     public void addProblemListener(ProblemListener l) {

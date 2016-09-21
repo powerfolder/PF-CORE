@@ -1204,10 +1204,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             try {
                 if (Files.notExists(metaFolderSettings.getLocalBaseDir())) {
                     Files.createDirectory(metaFolderSettings.getLocalBaseDir());
-                    if (Files.notExists(metaFolderSettings.getLocalBaseDir())){
-                        throw new FileNotFoundException("Unable to create BaseDir of MetaFolder: "
-                                + metaFolderSettings.getLocalBaseDir());
-                    }
                 }
             } catch (IOException ioe) {
                 logInfo("Unable to create metafolder directory: "
