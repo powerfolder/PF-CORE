@@ -243,7 +243,7 @@ public class AccountInfo implements Serializable, D2DObject {
       builder.setClazzName(this.getClass().getSimpleName());
       builder.setOid(this.oid);
       builder.setUsername(this.username);
-      builder.setDisplayName(this.displayName);
+      if(null != this.displayName) builder.setDisplayName(this.displayName);
 
       return builder.build();
     }
