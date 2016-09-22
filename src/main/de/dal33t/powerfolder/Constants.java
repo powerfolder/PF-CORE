@@ -360,7 +360,7 @@ public class Constants {
     public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
 
     /**
-     * PFS-1994: Encrypted storage.
+     * PFS-1994: Suffix to mark a folder path as encrypted.
      */
     public static final String FOLDER_ENCRYPTION_SUFFIX = ".crypto";
 

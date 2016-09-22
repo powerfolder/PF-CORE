@@ -1141,7 +1141,7 @@ public enum ConfigurationEntry {
     D2D_ENABLED("d2d.enabled", false),
 
     /**
-     * PFS-1994: En-/Disable encrypted storage.
+     * PFS-1994: En-/Disable encrypted storage for this server.
      */
 
     ENCRYPTED_STORAGE("encrypted_storage.enabled", false),

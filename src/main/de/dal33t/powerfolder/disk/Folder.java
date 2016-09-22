@@ -256,7 +256,7 @@ public class Folder extends PFComponent {
 
         if (folderSettings.getLocalBaseDir().isAbsolute()) {
 
-            // PFS-1994: Encrypted storage.
+            // PFS-1994: Start: Encrypted storage.
             boolean isEncryptionActivated = ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(getController());
             boolean isEncryptedFolder = folderSettings.getLocalBaseDir().toString().endsWith(FOLDER_ENCRYPTION_SUFFIX);
 
@@ -288,6 +288,7 @@ public class Folder extends PFComponent {
                                 " directories for encrypted storage: " + e);
                     }
                 }
+            // PFS-1994: End: Encrypted storage.
 
             } else {
                 localBase = folderSettings.getLocalBaseDir();
@@ -442,6 +443,8 @@ public class Folder extends PFComponent {
 
     /**
      * PFS-1994: Encrypted storage.
+     * 
+     * @return A CryptoFileSystem instance.
      */
 
     private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
