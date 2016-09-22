@@ -443,7 +443,7 @@ public class Folder extends PFComponent {
 
     /**
      * PFS-1994: Encrypted storage.
-     * 
+     *
      * @return A CryptoFileSystem instance.
      */
 

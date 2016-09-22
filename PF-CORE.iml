@@ -436,14 +436,11 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/lib/cryptomator_libs" />
+          <root url="file://$MODULE_DIR$/lib/cryptomator" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/lib/cryptomator_libs" />
-        </SOURCES>
-        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator_libs" recursive="false" />
-        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator_libs" recursive="false" type="SOURCES" />
+        <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" />
       </library>
     </orderEntry>
   </component>
