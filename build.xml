@@ -196,6 +196,7 @@ For creation of the installer:
 			<!--  <include name="cryptomator/bcprov-jdk15on-1.54.jar" /> -->
 			<include name="cryptomator/cryptolib-1.1.0-SNAPSHOT.jar" />
 			<include name="cryptomator/cryptofs-0.2.0-SNAPSHOT.jar" />
+			<include name="cryptomator/dagger-producers-2.6.1.jar" />
 
 		</fileset>
 
