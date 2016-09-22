@@ -184,18 +184,18 @@ For creation of the installer:
 
 			<!-- Encrypted storage - cryptolib/fs -->
 
-			<include name="siv-mode-1.0.8.jar" />
-			<include name="javax.inject-1.jar" />
-			<include name="dagger-compiler-2.6.1.jar" />
-			<include name="dagger-2.6.1.jar" />
-			<include name="commons-lang3-3.4.jar" />
-			<include name="guava-19.0.jar" />
-			<include name="jmh-generator-annprocess-1.12.jar" />
-			<include name="jmh-core-1.12.jar" />
-			<include name="gson-2.7.jar" />
-			<include name="bcprov-jdk15on-1.54.jar" />
-			<include name="cryptolib-1.1.0-SNAPSHOT.jar" />
-			<include name="cryptofs-0.2.0-SNAPSHOT.jar" />
+			<include name="cryptomator/siv-mode-1.0.8.jar" />
+			<include name="cryptomator/javax.inject-1.jar" />
+			<include name="cryptomator/dagger-compiler-2.6.1.jar" />
+			<include name="cryptomator/dagger-2.6.1.jar" />
+			<include name="cryptomator/commons-lang3-3.4.jar" />
+			<include name="cryptomator/guava-19.0.jar" />
+			<include name="cryptomator/jmh-generator-annprocess-1.12.jar" />
+			<include name="cryptomator/jmh-core-1.12.jar" />
+			<include name="cryptomator/gson-2.7.jar" />
+			<!--  <include name="cryptomator/bcprov-jdk15on-1.54.jar" /> -->
+			<include name="cryptomator/gcryptolib-1.1.0-SNAPSHOT.jar" />
+			<include name="cryptomator/gcryptofs-0.2.0-SNAPSHOT.jar" />
 
 		</fileset>
 
