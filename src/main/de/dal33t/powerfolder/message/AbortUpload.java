@@ -65,7 +65,7 @@ public class AbortUpload extends Message
         {
           AbortUploadProto.AbortUpload proto = (AbortUploadProto.AbortUpload)mesg;
 
-          this.file = new FileInfo(proto.getFile());
+          this.file = new FileInfo(proto.getFileInfo());
         }
     }
 
@@ -82,7 +82,7 @@ public class AbortUpload extends Message
       AbortUploadProto.AbortUpload.Builder builder = AbortUploadProto.AbortUpload.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setFile((FileInfoProto.FileInfo) this.file.toD2D());
+      builder.setFileInfo((FileInfoProto.FileInfo) this.file.toD2D());
 
       return builder.build();
     }

@@ -62,7 +62,7 @@ public class AbortDownload extends Message
         {
           AbortDownloadProto.AbortDownload proto = (AbortDownloadProto.AbortDownload)mesg;
 
-          this.file = new FileInfo(proto.getFile());
+          this.file = new FileInfo(proto.getFileInfo());
         }
     }
 
@@ -79,7 +79,7 @@ public class AbortDownload extends Message
       AbortDownloadProto.AbortDownload.Builder builder = AbortDownloadProto.AbortDownload.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
     }

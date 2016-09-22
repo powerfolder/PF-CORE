@@ -71,7 +71,7 @@ public class DownloadQueued extends Message
           DownloadQueuedProto.DownloadQueued proto =
             (DownloadQueuedProto.DownloadQueued)mesg;
 
-          this.file = new FileInfo(proto.getFile());
+          this.file = new FileInfo(proto.getFileInfo());
         }
     }
 
@@ -89,7 +89,7 @@ public class DownloadQueued extends Message
         DownloadQueuedProto.DownloadQueued.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
     }

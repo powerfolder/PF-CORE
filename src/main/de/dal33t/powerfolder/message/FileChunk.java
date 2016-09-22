@@ -96,7 +96,7 @@ public class FileChunk extends Message
         {
           FileChunkProto.FileChunk proto = (FileChunkProto.FileChunk)mesg;
 
-          this.file   = new FileInfo(proto.getFile());
+          this.file   = new FileInfo(proto.getFileInfo());
           this.offset = proto.getOffset();
           this.data   = proto.getData().toByteArray();
         }
@@ -114,8 +114,8 @@ public class FileChunk extends Message
     {
       FileChunkProto.FileChunk.Builder builder = FileChunkProto.FileChunk.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setClazzName("FileChunk");
+      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setOffset(this.offset);
       builder.setData(ByteString.copyFrom(this.data));
 

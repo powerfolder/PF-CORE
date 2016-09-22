@@ -86,7 +86,7 @@ public class RequestDownload extends Message
           RequestDownloadProto.RequestDownload proto =
             (RequestDownloadProto.RequestDownload)mesg;
 
-          this.file        = new FileInfo(proto.getFile());
+          this.file        = new FileInfo(proto.getFileInfo());
           this.startOffset = proto.getStartOffset();
         }
     }
@@ -104,8 +104,8 @@ public class RequestDownload extends Message
       RequestDownloadProto.RequestDownload.Builder builder =
         RequestDownloadProto.RequestDownload.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setClazzName("RequestDownload");
+      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
     }

@@ -281,7 +281,7 @@ public class FolderFilesChanged extends FolderRelatedMessage
               this.added[i++] = new FileInfo(finfo);
             }
 
-          this.folder = new FolderInfo(proto.getFolder());
+          this.folder = new FolderInfo(proto.getFolderInfo());
         }
     }
 
@@ -306,7 +306,7 @@ public class FolderFilesChanged extends FolderRelatedMessage
           builder.addAdded((FileInfoProto.FileInfo)finfo.toD2D());
         }
 
-      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
+      builder.setFolderInfo((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
     }

@@ -168,7 +168,7 @@ public class FileList extends FolderRelatedMessage
         Reject.ifTrue(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE <= 0,
             "Unable to split filelist. nFilesPerMessage: "
                 + Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
-
+        
         if (files.isEmpty() && dirs.isEmpty()) {
             if (useExt) {
                 return new Message[]{new FileListExt(foInfo, new FileInfo[0], 0)};
@@ -320,15 +320,15 @@ public class FileList extends FolderRelatedMessage
           /* Convert list back to array */
           int i = 0;
 
-          this.files = new FileInfo[proto.getFilesCount()];
+          this.files = new FileInfo[proto.getFileInfosCount()];
 
-          for(FileInfoProto.FileInfo finfo : proto.getFilesList())
+          for(FileInfoProto.FileInfo finfo : proto.getFileInfosList())
             {
               this.files[i++] = new FileInfo(finfo);
             }
 
           this.nFollowingDeltas = proto.getNFollowingDeltas();
-          this.folder           = new FolderInfo(proto.getFolder());
+          this.folder           = new FolderInfo(proto.getFolderInfo());
         }
     }
 
@@ -350,12 +350,12 @@ public class FileList extends FolderRelatedMessage
       if (this.files != null) {
           for(FileInfo finfo : this.files)
           {
-              builder.addFiles((FileInfoProto.FileInfo)finfo.toD2D());
+              builder.addFileInfos((FileInfoProto.FileInfo)finfo.toD2D());
           }
       }
 
       builder.setNFollowingDeltas(this.nFollowingDeltas);
-      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
+      builder.setFolderInfo((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
     }

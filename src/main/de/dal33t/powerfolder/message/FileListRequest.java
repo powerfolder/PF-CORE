@@ -43,7 +43,7 @@ public class FileListRequest extends FolderRelatedMessage
           FileListRequestProto.FileListRequest proto =
             (FileListRequestProto.FileListRequest)mesg;
 
-          this.folder = new FolderInfo(proto.getFolder());
+          this.folder = new FolderInfo(proto.getFolderInfo());
         }
     }
 
@@ -61,7 +61,7 @@ public class FileListRequest extends FolderRelatedMessage
         FileListRequestProto.FileListRequest.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
+      builder.setFolderInfo((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
     }

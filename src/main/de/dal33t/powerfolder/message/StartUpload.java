@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.RequestDownloadProto;
+import de.dal33t.powerfolder.protocol.StartUploadProto;
 
 /**
  * Message to indicate that the upload can be started. This message is sent by
@@ -59,9 +60,9 @@ public class StartUpload extends Message implements D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof RequestDownloadProto.RequestDownload) {
-            RequestDownloadProto.RequestDownload proto = (RequestDownloadProto.RequestDownload) mesg;
-            this.fileInfo = new FileInfo(proto.getFile());
+        if (mesg instanceof StartUploadProto.StartUpload) {
+            StartUploadProto.StartUpload proto = (StartUploadProto.StartUpload)mesg;
+            this.fileInfo = new FileInfo(proto.getFileInfo());
         }
     }
 
@@ -73,9 +74,11 @@ public class StartUpload extends Message implements D2DObject {
 
     @Override
     public AbstractMessage toD2D() {
-        RequestDownloadProto.RequestDownload.Builder builder = RequestDownloadProto.RequestDownload.newBuilder();
-        builder.setClazzName(this.getClass().getSimpleName());
-        builder.setFile((FileInfoProto.FileInfo) this.fileInfo.toD2D());
+        StartUploadProto.StartUpload.Builder builder = StartUploadProto.StartUpload.newBuilder();
+        
+        builder.setClazzName("StartUpload");
+        builder.setFileInfo((FileInfoProto.FileInfo) this.fileInfo.toD2D());
+        
         return builder.build();
     }
 }
