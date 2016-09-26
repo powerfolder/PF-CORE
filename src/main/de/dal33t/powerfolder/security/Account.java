@@ -1145,10 +1145,11 @@ public class Account implements Serializable, D2DObject {
      */
     public boolean removeNonExistingLdapEmails(List<String> ldapEmails,
         String ldapSearchBase) {
+        ldapSearchBase = ldapSearchBase.trim().toLowerCase();
         // Append LDAP context to emails
         for (final ListIterator<String> i = ldapEmails.listIterator(); i
             .hasNext();) {
-            final String email = i.next();
+            final String email = i.next().trim().toLowerCase();
             i.set(email + ":" + ldapSearchBase);
         }
         boolean store = false;
@@ -1284,6 +1285,7 @@ public class Account implements Serializable, D2DObject {
      */
     public void mergeAccounts(Account account) {
         Reject.ifNull(account, "Account is null");
+        Reject.ifTrue(this.equals(account), "Unable to merge account with itself");
 
         // Add Username and Emails
         if (Util.isValidEmail(account.getUsername())
