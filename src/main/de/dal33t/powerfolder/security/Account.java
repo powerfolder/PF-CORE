@@ -515,16 +515,12 @@ public class Account implements Serializable, D2DObject {
      *         or {@link OrganizationCreatePermission}, {@code false} otherwise.
      */
     public boolean isAdminOfAnyOrganization() {
-        if (StringUtils.isNotBlank(organizationOID)) {
-            if (hasPermission(new OrganizationAdminPermission(organizationOID))) {
-                return true;
-            }
+        if (hasPermission(OrganizationCreatePermission.INSTANCE)) {
+            return true;
         }
 
         for (Permission p : permissions) {
             if (p instanceof OrganizationAdminPermission) {
-                return true;
-            } else if (p instanceof OrganizationCreatePermission) {
                 return true;
             }
         }
