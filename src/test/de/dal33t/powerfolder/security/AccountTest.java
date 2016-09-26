@@ -39,18 +39,18 @@ public class AccountTest {
     @Test
     public void testLEU() {
         // 1. Arrange
-        String ldapSearchBase1 = "OU=User,OU=Leuphana,DC=adint,DC=dir";
-        String ldapSearchBase2 = "OU=Leuphana,DC=adint,DC=dir";
+        String ldapSearchBase1 = "OU=User,OU=Xxx,DC=adint,DC=dir";
+        String ldapSearchBase2 = "OU=Xxx,DC=adint,DC=dir";
         
         Account shansen = new Account();
         shansen.setUsername("shansen");
-        shansen.addEmail("shansen@leuphana.de", ldapSearchBase1);
-        shansen.addEmail("shansen@uni.leuphana.de");
-        shansen.addEmail("sven.hansen@leuphana.de");
-        shansen.addEmail("sven.hansen@uni.leuphana.de");
+        shansen.addEmail("shansen@xx.de", ldapSearchBase1);
+        shansen.addEmail("shansen@uni.xx.de");
+        shansen.addEmail("sohn.hansen@xx.de");
+        shansen.addEmail("sohn.hansen@uni.xx.de");
         
         ArrayList<String> ldapEmails = new ArrayList<String>();
-        ldapEmails.add("shansen@leuphana.de");
+        ldapEmails.add("shansen@xx.de");
 
         // 2. Action
         boolean changed = shansen.removeNonExistingLdapEmails(ldapEmails, ldapSearchBase1);
