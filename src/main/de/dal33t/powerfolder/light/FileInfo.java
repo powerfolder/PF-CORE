@@ -1170,7 +1170,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
       if (this.folderInfo != null) builder.setFolderInfo(
         (FolderInfoProto.FolderInfo)this.folderInfo.toD2D());
 
-
       return builder.build();
     }
 }
