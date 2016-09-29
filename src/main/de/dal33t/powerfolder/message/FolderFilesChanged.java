@@ -274,9 +274,9 @@ public class FolderFilesChanged extends FolderRelatedMessage
           /* Convert list back to array */
           int i = 0;
 
-          this.added = new FileInfo[proto.getAddedCount()];
+          this.added = new FileInfo[proto.getFileInfosCount()];
 
-          for(FileInfoProto.FileInfo finfo : proto.getAddedList())
+          for(FileInfoProto.FileInfo finfo : proto.getFileInfosList())
             {
               this.added[i++] = new FileInfo(finfo);
             }
@@ -298,12 +298,12 @@ public class FolderFilesChanged extends FolderRelatedMessage
       FolderFilesChangedProto.FolderFilesChanged.Builder builder =
         FolderFilesChangedProto.FolderFilesChanged.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
+      builder.setClazzName("FolderFilesChanged");
 
       /* Convert array to list */
       for(FileInfo finfo : this.added)
         {
-          builder.addAdded((FileInfoProto.FileInfo)finfo.toD2D());
+          builder.addFileInfos((FileInfoProto.FileInfo)finfo.toD2D());
         }
 
       builder.setFolderInfo((FolderInfoProto.FolderInfo)this.folder.toD2D());
