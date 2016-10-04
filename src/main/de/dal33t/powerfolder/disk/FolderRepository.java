@@ -73,6 +73,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private static final Logger log = Logger.getLogger(FolderRepository.class
         .getName());
+    // PFS-1657
+    private static final String DIRNAME_SNAPSHOT = ".snapshot";
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
     private Thread myThread;
@@ -1750,6 +1752,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 {
                     return false;
                 }
+                if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
+                    return false;
+                }
                 if (!Files.isDirectory(entry)) {
                     return false;
                 }
@@ -2241,6 +2246,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
                             .getDefaultValue()))
                 {
+                    return false;
+                }
+                if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
                     return false;
                 }
                 if (ignoredFoldersLC.contains(name.toLowerCase())) {
