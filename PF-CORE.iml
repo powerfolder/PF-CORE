@@ -434,14 +434,6 @@
         <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$USER_HOME$/Downloads/commons-io-2.5/commons-io-2.5.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" exported="" name="commons-io-1.3.1" level="project" />
   </component>
 </module>
