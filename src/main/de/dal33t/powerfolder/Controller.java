@@ -19,54 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.GraphicsEnvironment;
-import java.beans.ExceptionListener;
-import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
-import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileSystemException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.Security;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.ServiceLoader;
-import java.util.StringTokenizer;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-
-import javax.swing.JOptionPane;
-
-import org.apache.commons.cli.CommandLine;
-
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -74,31 +26,13 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LimitedConnectivityEvent;
-import de.dal33t.powerfolder.event.LimitedConnectivityListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.NetworkingModeEvent;
-import de.dal33t.powerfolder.event.NetworkingModeListener;
-import de.dal33t.powerfolder.event.PausedModeEvent;
-import de.dal33t.powerfolder.event.PausedModeListener;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.net.BroadcastMananger;
-import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.net.DynDnsManager;
-import de.dal33t.powerfolder.net.HTTPProxySettings;
-import de.dal33t.powerfolder.net.IOProvider;
-import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.net.ReconnectManager;
+import de.dal33t.powerfolder.net.*;
 import de.dal33t.powerfolder.plugin.PluginManager;
 import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerClient;
@@ -111,26 +45,7 @@ import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
-import de.dal33t.powerfolder.util.AntiSerializationVulnerability;
-import de.dal33t.powerfolder.util.ByteSerializer;
-import de.dal33t.powerfolder.util.ConfigurationLoader;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.ForcedLanguageFileResourceBundle;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.JavaVersion;
-import de.dal33t.powerfolder.util.LoginUtil;
-import de.dal33t.powerfolder.util.NamedThreadFactory;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.PropertiesUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.SplitConfig;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
-import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -138,6 +53,25 @@ import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
+import org.apache.commons.cli.CommandLine;
+
+import javax.swing.*;
+import java.awt.*;
+import java.beans.ExceptionListener;
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.nio.file.*;
+import java.nio.file.DirectoryStream.Filter;
+import java.security.Security;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -152,8 +86,8 @@ public class Controller extends PFComponent {
         .getName());
 
     private static final int MAJOR_VERSION = 11;
-    private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 207;
+    private static final int MINOR_VERSION = 1;
+    private static final int REVISION_VERSION = 224;
 
     /**
      * Program version.
@@ -432,7 +366,7 @@ public class Controller extends PFComponent {
         start();
     }
 
-     /** start
+    /** start
      * Starts controller and all other components of PowerFolder
      * @author Christoph <kappel@powerfolder.com>
      **/
@@ -563,7 +497,6 @@ public class Controller extends PFComponent {
 
         // Only one task brother left...
         taskManager = new PersistentTaskManager(this);
-
         // Folder repository
         folderRepository = new FolderRepository(this);
         setLoadingCompletion(0, 10);
@@ -3113,4 +3046,5 @@ public class Controller extends PFComponent {
             log.info("User inactive. Executed resume task.");
         }
     }
+
 }

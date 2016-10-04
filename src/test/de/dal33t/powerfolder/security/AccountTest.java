@@ -37,6 +37,30 @@ import de.dal33t.powerfolder.util.Format;
 public class AccountTest {
 
     @Test
+    public void testLEU() {
+        // 1. Arrange
+        String ldapSearchBase1 = "OU=User,OU=Xxx,DC=adint,DC=dir";
+        String ldapSearchBase2 = "OU=Xxx,DC=adint,DC=dir";
+        
+        Account shansen = new Account();
+        shansen.setUsername("shansen");
+        shansen.addEmail("shansen@xx.de", ldapSearchBase1);
+        shansen.addEmail("shansen@uni.xx.de");
+        shansen.addEmail("sohn.hansen@xx.de");
+        shansen.addEmail("sohn.hansen@uni.xx.de");
+        
+        ArrayList<String> ldapEmails = new ArrayList<String>();
+        ldapEmails.add("shansen@xx.de");
+
+        // 2. Action
+        boolean changed = shansen.removeNonExistingLdapEmails(ldapEmails, ldapSearchBase1);
+        
+        // 3. Assert
+        assertEquals(4, shansen.getEmails().size());
+        assertFalse(changed);
+    }
+    
+    @Test
     public void testJSONData() throws JSONException {
         Account a = new Account();
         JSONObject o = a.getJSONObject();
@@ -210,7 +234,7 @@ public class AccountTest {
         String email2 = "test2@test.de";
         String email3 = "test3@test.de";
         String email4 = "test4@test.de";
-        String ldapSearchBase1 = "dc=test1";
+        String ldapSearchBase1 = "dc=Test1";
         String ldapSearchBase2 = "dc=test2";
         Account account = new Account();
         account.addEmail(email1, ldapSearchBase1);

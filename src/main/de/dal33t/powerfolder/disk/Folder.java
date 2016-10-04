@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import static de.dal33t.powerfolder.Constants.FOLDER_ENCRYPTION_SUFFIX;
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
 import java.io.BufferedInputStream;
@@ -62,6 +63,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 
+import org.cryptomator.cryptofs.CryptoFileSystemProperties;
+import org.cryptomator.cryptofs.CryptoFileSystemProvider;
+
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -102,7 +106,6 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageProducer;
 import de.dal33t.powerfolder.message.RevertedFile;
 import de.dal33t.powerfolder.message.ScanCommand;
-import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
@@ -112,6 +115,7 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -319,10 +323,50 @@ public class Folder extends PFComponent {
         // Not until first scan or db load
         hasOwnDatabase = false;
         dirty = false;
-        problems = new CopyOnWriteArrayList<Problem>();
+        problems = new CopyOnWriteArrayList<>();
+
         if (folderSettings.getLocalBaseDir().isAbsolute()) {
-            localBase = folderSettings.getLocalBaseDir();
+
+            // PFS-1994: Start: Encrypted storage.
+            boolean isEncryptionActivated = ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(getController());
+            boolean isEncryptedFolder = folderSettings.getLocalBaseDir().toString().endsWith(FOLDER_ENCRYPTION_SUFFIX);
+
+            if (isEncryptionActivated && isEncryptedFolder) {
+
+                if (!ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.hasValue(getController())) {
+                    ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.setValue(getController(),
+                            IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId());
+                    getController().saveConfig();
+                }
+
+                FileSystem encryptedFileSystem = null;
+
+                try {
+                    encryptedFileSystem = initCryptoFileSystem(getController(), folderSettings.getLocalBaseDir());
+                } catch (IOException e) {
+                    logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() + " " + e);
+                }
+
+                localBase = encryptedFileSystem.getPath(folderSettings
+                        .getLocalBaseDir()
+                        .toString());
+
+                if (Files.notExists(localBase)) {
+                    try {
+                        Files.createDirectories(localBase);
+                    } catch (IOException e) {
+                        logSevere("Could not create localBase " + localBase.toString() +
+                                " directories for encrypted storage: " + e);
+                    }
+                }
+            // PFS-1994: End: Encrypted storage.
+
+            } else {
+                localBase = folderSettings.getLocalBaseDir();
+            }
+
         } else {
+
             localBase = getController().getFolderRepository()
                 .getFoldersBasedir()
                 .resolve(folderSettings.getLocalBaseDir());
@@ -465,6 +509,25 @@ public class Folder extends PFComponent {
         List<String> newPatterns = diskItemFilter.getPatterns();
         if (!newPatterns.equals(oldPatterns)) {
             triggerPersist();
+        }
+    }
+
+    /**
+     * PFS-1994: Encrypted storage.
+     *
+     * @return A CryptoFileSystem instance.
+     */
+
+    private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
+
+        if (encDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
+            return encDir.getFileSystem();
+        } else {
+            return CryptoFileSystemProvider.newFileSystem(
+                    encDir,
+                    CryptoFileSystemProperties.cryptoFileSystemProperties()
+                            .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
+                            .build());
         }
     }
 
@@ -4190,7 +4253,7 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(true);
         } catch (FolderException e) {
-            logFiner("invalid local base: " + e);
+            logSevere("invalid local base: " + e, e);
             return setDeviceDisconnected(true);
         }
 
@@ -5377,5 +5440,7 @@ public class Folder extends PFComponent {
         public String toString() {
             return "FolderPersister for '" + Folder.this;
         }
+
     }
+
 }

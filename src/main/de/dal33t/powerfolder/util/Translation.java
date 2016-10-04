@@ -85,10 +85,10 @@ public class Translation {
             supportedLocales.add(PORTUGUESE);
             supportedLocales.add(SPANISH);
             supportedLocales.add(Locale.ITALIAN);
+            supportedLocales.add(DUTCH);
             // supportedLocales.add(RUSSIAN);
             // supportedLocales.add(Locale.FRENCH);
             // supportedLocales.add(Locale.CHINESE);
-            // supportedLocales.add(DUTCH);
             // supportedLocales.add(Locale.JAPANESE);
             // supportedLocales.add(SWEDISH);
             // supportedLocales.add(ARABIC);
