@@ -19,21 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Callable;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -43,23 +28,26 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
-import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProgressListener;
-import de.dal33t.powerfolder.util.Range;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.dal33t.powerfolder.util.delta.FilePartsState;
+import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.delta.*;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
-import de.dal33t.powerfolder.util.delta.MatchCopyWorker;
-import de.dal33t.powerfolder.util.delta.MatchInfo;
-import de.dal33t.powerfolder.util.delta.MatchResultWorker;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.FileTime;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Shared implementation of download managers. This class leaves details on what
@@ -113,7 +101,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
     private final FileInfo fileInfo;
     private Controller controller;
-    private RandomAccessFile tempRAF = null;
+    private FileChannel tempFileChannel = null;
 
     /**
      * Only set on init(boolean).
@@ -296,7 +284,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     public String toString() {
         String tInfo = tempFile == null ? "n/a" : tempFile.toString();
         return "[" + getClass().getSimpleName() + "; state= " + state
-            + " file=" + getFileInfo() + "; tempFileRAF: " + tempRAF
+            + " file=" + getFileInfo() + "; tempFileRAF: " + tempFileChannel
             + "; tempFile: " + tInfo + "; broken: " + isBroken()
             + "; completed: " + isCompleted() + "; aborted: " + isAborted()
             + "; partsState: " + filePartsState;
@@ -390,20 +378,15 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert !isDone() : "File broken/aborted before init!";
         assert Files.exists(getTempFile().getParent()) : "Missing PowerFolder system directory";
 
-        // Create temp-file directory structure if necessary
-        // if (!getTempFile().getParentFile().exists()) {
-        // if (!getTempFile().getParentFile().mkdirs()) {
-        // throw new FileNotFoundException(
-        // "Couldn't create parent directory!");
-        // }
-        // }
-
         loadMetaData();
 
         if (isFiner()) {
             logFiner("Init tempfile at " + getTempFile());
         }
-        tempRAF = new RandomAccessFile(getTempFile().toFile(), "rw");
+
+        tempFileChannel = FileChannel.open(getTempFile(),
+                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+
     }
 
     protected boolean isNeedingFilePartsRecord() {
@@ -429,7 +412,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             List<MatchInfo> mInfoRes = null;
             mInfoRes = mInfoWorker.call();
 
-            // logFine("Records: " + record.getInfos().length);
             if (isFine()) {
                 logFine("Matches: "
                     + mInfoRes.size()
@@ -443,6 +425,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 getTempFile(), remotePartRecord, mInfoRes, transferObs);
             FilePartsState calcedState = pStateWorker.call();
             if (calcedState.getFileLength() != fileInfo.getSize()) {
+
                 // Concurrent file modification
                 throw new BrokenDownloadException();
             }
@@ -621,7 +604,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        assert tempRAF != null;
+        assert tempFileChannel != null;
 
         shutdown = true;
         if (isFiner()) {
@@ -632,10 +615,10 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 logFiner("Closing temp file: " + getTempFile() + " of "
                     + getFile());
             }
-            tempRAF.close();
-            tempRAF = null;
+            tempFileChannel.close();
+            tempFileChannel = null;
         } catch (IOException e) {
-            logFine("IOException while closing temp file " + tempRAF + ": " + e);
+            logFine("IOException while closing temp file " + tempFileChannel + ": " + e);
         }
 
         try {
@@ -659,7 +642,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         remotePartRecord = null;
         updateTempFile();
 
-        assert tempRAF == null;
+        assert tempFileChannel == null;
         assert !isCompleted() && !isAborted() || !hasMetaFile();
     }
 
@@ -687,8 +670,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         setStarted();
 
         try {
-            tempRAF.seek(chunk.offset);
-            tempRAF.write(chunk.data);
+            tempFileChannel.position(chunk.offset);
+            tempFileChannel.write(ByteBuffer.wrap(chunk.data));
         } catch (IOException e) {
             logSevere("IOException", e);
             setBroken(TransferProblem.IO_EXCEPTION,
@@ -917,11 +900,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                 logWarning("Couldn't delete old temporary file, some other process could be using it! Trying to set it's length to 0. for file: "
                     + getFileInfo().toDetailString());
             }
-            RandomAccessFile f = new RandomAccessFile(getTempFile().toFile(), "rw");
+
+            FileChannel fileChannel = FileChannel.open(getTempFile(),
+                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+
             try {
-                f.setLength(0);
+                fileChannel.position(0);
             } finally {
-                f.close();
+                fileChannel.close();
             }
         }
     }
@@ -930,15 +916,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // logWarning("loadMetaData()");
 
         try {
+
             if (getTempFile() == null
                 || Files.notExists(getTempFile())
                 || !DateUtil.equalsFileDateCrossPlattform(fileInfo
                     .getModifiedDate().getTime(),
                     Files.getLastModifiedTime(getTempFile()).toMillis()))
             {
-                // If something's wrong with the tempfile, kill the meta data
-                // file
-                // if it exists
+                // If something's wrong with the tempfile, kill the meta data file if it exists.
                 deleteMetaData();
                 deleteTempFile();
                 return;

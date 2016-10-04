@@ -71,7 +71,7 @@ public class Invitation extends FolderRelatedMessage
 
     private MemberInfo invitor;
     // For backward compatibility to pre 3.1.2 versions.
-    private File suggestedLocalBase;
+    private Path suggestedLocalBase;
     private String invitationText;
     private String suggestedSyncProfileConfig;
     private String suggestedLocalBasePath;
@@ -146,7 +146,7 @@ public class Invitation extends FolderRelatedMessage
     {
         Reject.ifNull(suggestedLocalBase, "File is null");
         try {
-            this.suggestedLocalBase = suggestedLocalBase.toFile();
+            this.suggestedLocalBase = suggestedLocalBase;
         } catch (Exception e) {
             Logger.getLogger(Invitation.class.getName()).fine(
                 "Unable to set suggested path: " + suggestedLocalBase + ". "

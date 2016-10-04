@@ -717,25 +717,27 @@ public class PathUtils {
         }
         boolean wasHidden = Files.isHidden(sourceFile);
 
-        if (Files.isDirectory(sourceFile) && Files.notExists(targetFile)) {
+        if (Files.notExists(targetFile)) {
             Files.createDirectories(targetFile);
         }
 
         if (Files.isDirectory(sourceFile) && Files.isDirectory(targetFile)) {
+
             if (isSubdirectory(sourceFile, targetFile)) {
-                // Need to be careful if moving to a subdirectory,
-                // avoid infinite recursion.
                 throw new IOException("Move to a subdirectory not permitted");
+
             } else {
+
                 try (DirectoryStream<Path> stream = Files
-                    .newDirectoryStream(sourceFile)) {
+                        .newDirectoryStream(sourceFile)) {
+
                     for (Path nextOriginalFile : stream) {
+
                         recursiveMove(nextOriginalFile,
-                            targetFile.resolve(nextOriginalFile.getFileName()));
+                                targetFile.resolve(nextOriginalFile.getFileName()));
                     }
+                    Files.delete(sourceFile);
                 }
-                // Delete directory after move
-                Files.delete(sourceFile);
             }
         } else if (!Files.isDirectory(sourceFile)
             && !Files.isDirectory(targetFile))
