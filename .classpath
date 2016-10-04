@@ -47,5 +47,17 @@
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-ext-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/powerfolder-protobuf-0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.0.0-beta-2.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/bcprov-jdk15on-1.54.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/cryptofs-0.2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/cryptolib-1.1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/dagger-2.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/dagger-compiler-2.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/gson-2.7.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/guava-19.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/javax.inject-1.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/jmh-core-1.12.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/jmh-generator-annprocess-1.12.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/siv-mode-1.0.8.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

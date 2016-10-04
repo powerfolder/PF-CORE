@@ -54,7 +54,11 @@ public class StreamUtils {
     public static void copyToStream(Path source, OutputStream destination)
         throws IOException
     {
-        copyToStream(source, destination, 0, -1);
+        if (source.toString().contains(".crypto")) {
+            Files.copy(source, destination);
+        } else {
+            copyToStream(source, destination, 0, -1);
+        }
     }
 
     /**

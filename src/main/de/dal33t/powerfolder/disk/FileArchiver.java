@@ -154,7 +154,9 @@ public class FileArchiver {
         long oldSize = getSize();
 
         try {
-            Files.createDirectories(target.getParent());
+            if (Files.notExists(target.getParent())) {
+                Files.createDirectories(target.getParent());
+            }
         } catch (FileAlreadyExistsException faee) {
             // Ignore.
         } catch (IOException ioe) {

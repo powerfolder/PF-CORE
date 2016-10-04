@@ -283,9 +283,9 @@ public class Constants {
     public static final int MAX_DLS_FROM_INET_MEMBER = 20;
 
     /**
-     * Start uploads until 500kb is started in uploads
+     * Start uploads until 2 MB is started in uploads
      */
-    public static final long START_UPLOADS_TILL_PLANNED_SIZE_INET = 500 * 1024;
+    public static final long START_UPLOADS_TILL_PLANNED_SIZE_INET = 2L * 1024 * 1024;
 
     /**
      * The maximum number of queued download from a lan connected node
@@ -293,9 +293,9 @@ public class Constants {
     public static final int MAX_DLS_FROM_LAN_MEMBER = 50;
 
     /**
-     * Start uploads until 3mb is started in uploads
+     * Start uploads until 10 MB is started in uploads
      */
-    public static final long START_UPLOADS_TILL_PLANNED_SIZE_LAN = 3 * 1024 * 1024;
+    public static final long START_UPLOADS_TILL_PLANNED_SIZE_LAN = 10L * 1024 * 1024;
 
     /**
      * The download timeout of a request. After that time of inactivity the
@@ -358,6 +358,12 @@ public class Constants {
      * @since 2.1
      */
     public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
+
+    /**
+     * PFS-1994: Suffix to mark a folder path as encrypted.
+     */
+    public static final String FOLDER_ENCRYPTION_SUFFIX = ".crypto";
+
 
     // Pro related ************************************************************
 

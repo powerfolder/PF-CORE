@@ -333,6 +333,11 @@ public class LoginPanel extends PFWizardPanel {
 
                         for (String name : extNames) {
                             if (StringUtils.isNotBlank(name)) {
+                                
+                                if (name.startsWith("!")){
+                                    name = name.substring(1);
+                                }
+
                                 idPSelectBox.addItem(name.trim());
                                 idPList.add(name.trim());
                                 if (!lastIdPSet && name.equals(lastIdP)) {

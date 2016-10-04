@@ -19,60 +19,12 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.ID;
-import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
-
-import java.io.IOException;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
-import de.dal33t.powerfolder.event.FolderAutoCreateListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
@@ -88,23 +40,30 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.util.UIUtil;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.UserDirectories;
-import de.dal33t.powerfolder.util.UserDirectory;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
+import org.cryptomator.cryptofs.CryptoFileSystemProperties;
+import org.cryptomator.cryptofs.CryptoFileSystemProvider;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static de.dal33t.powerfolder.disk.FolderSettings.ID;
+import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -116,6 +75,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private static final Logger log = Logger.getLogger(FolderRepository.class
         .getName());
+    // PFS-1657
+    private static final String DIRNAME_SNAPSHOT = ".snapshot";
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
     private Thread myThread;
@@ -1070,7 +1031,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         } catch (IOException ioe) {
-            logInfo(ioe.getMessage());
+            logWarning("Unable to create Folder: " + folderInfo.getName() + " @ " +
+                    folderSettings.getLocalBaseDir() + " : " + ioe.getMessage());
         }
         Folder folder = createFolder0(folderInfo, folderSettings, true);
 
@@ -1628,12 +1590,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         // PFS-2000:
                         logWarning("Unable to maintain folder "
                             + currentlyMaintainingFolder.getName() + "/"
-                            + currentlyMaintainingFolder.getId() + ": " + e);
-                        logFine(
-                            "Unable to maintain folder "
-                                + currentlyMaintainingFolder.getName() + "/"
-                                + currentlyMaintainingFolder.getId() + ": " + e,
-                            e);
+                            + currentlyMaintainingFolder.getId() + ": " + e, e);
                     }
                     Folder maintainedFolder = currentlyMaintainingFolder;
                     currentlyMaintainingFolder = null;
@@ -1795,6 +1752,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
                             .getDefaultValue()))
                 {
+                    return false;
+                }
+                if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
                     return false;
                 }
                 if (!Files.isDirectory(entry)) {
@@ -2288,6 +2248,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
                             .getDefaultValue()))
                 {
+                    return false;
+                }
+                if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
                     return false;
                 }
                 if (ignoredFoldersLC.contains(name.toLowerCase())) {
@@ -2836,7 +2799,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Do we already have a folder that has this file as its base?
      * 
-     * @param file
+     * @param
      */
     public boolean doesFolderAlreadyExist(Path path) {
         if (!Files.isDirectory(path)) {
@@ -3052,4 +3015,5 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         return true;
     }
+
 }
