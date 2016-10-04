@@ -19,10 +19,22 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import org.hibernate.annotations.Type;
 
 import com.google.protobuf.AbstractMessage;
 
@@ -45,87 +57,89 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
- * A Invitation to a folder
+ * An invitation to a folder or an invitation of a user.
  *
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.5 $
+ * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+ * 
+ * Adapted the class to be stored to a database using hibernate.
+ * 
+ * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
+@Entity
 public class Invitation extends FolderRelatedMessage
   implements D2DObject
 {
     private static final long serialVersionUID = 101L;
 
-    /** suggestedLocalBase is absolute. */
-    private static final int ABSOLUTE = 0;
+    // Since 9.1
+    @Id
+    private String oid;
 
-    /** suggestedLocalBase is relative to apps directory. */
-    private static final int RELATIVE_APP_DATA = 1;
-
-    /** suggestedLocalBase is relative to PowerFolder base directory. */
-    private static final int RELATIVE_PF_BASE = 2;
-
-    /** suggestedLocalBase is relative to user home directory. */
-    private static final int RELATIVE_USER_HOME = 3;
-    
-    public static final String ACCOUNT_INVITATION_ID_PREFIX = "AI_";
-
+    @ManyToOne
+    @JoinColumn(name = "nodeInfo_id")
     private MemberInfo invitor;
-    // For backward compatibility to pre 3.1.2 versions.
-    private File suggestedLocalBase;
+    @Column(length = 2048)
     private String invitationText;
     private String suggestedSyncProfileConfig;
+
+    @Column(length = 2048)
     private String suggestedLocalBasePath;
-    private int relative;
+    @Enumerated(EnumType.STRING)
+    private PathType relative;
+    @Type(type = "permissionType")
     private FolderPermission permission;
 
-    // Since 4.0.1:
-    private long size;
-    private int filesCount;
-
-    // Since 6.0: invitorUsername
-    private String username;
-
-    // Since 9.1
-    private String oid;
-    private String inviteeUsername;
-
-    // Since 11.0: PFS-2455
+    /**
+     * PFS-2455
+     * @since 11.0
+     */
+    @ManyToOne
+    @JoinColumn(name = "serviceInfo_id")
     private ServerInfo server;
+
+    /**
+     * PFS-2008: replaces {@link #username}
+     * @since 11.2
+     */
+    @Column(length = 512)
+    private String sender;
+
+    /**
+     * PFS-2008: replaces {@link #inviteeUsername}
+     * @since 11.2
+     */
+    @Column(length = 512)
+    private String recipient;
+
+    /**
+     * PFS-2008
+     * @since 6.0
+     * @deprecated as of v11.1, replaced by {@link #sender}
+     */
+    @Deprecated()
+    private String username;
+    /**
+     * PFS-2008
+     * @since 9.1
+     * @deprecated as of v11.1, replaced by {@link #recipient}
+     */
+    @Deprecated
+    private String inviteeUsername;
 
     /**
      * Constructor
      *
-     * @param folder
-     * @param invitor
+     * @param permission The permission to the folder of this invitation
      */
-    public Invitation(FolderInfo folder, MemberInfo invitor) {
-        this.folder = folder;
-        this.invitor = invitor;
+    public Invitation(FolderPermission permisison) {
+        Reject.ifNull(permisison, "Permission is null");
         oid = IdGenerator.makeId();
+        this.permission = permisison;
+        this.folder = permission.getFolder();
     }
 
     public String getOID() {
         return oid;
-    }
-
-    public long getSize() {
-        return size;
-    }
-
-    public void setSize(long size) {
-        this.size = size;
-    }
-
-    public int getFilesCount() {
-        return filesCount;
-    }
-
-    public void setFilesCount(int filesCount) {
-        this.filesCount = filesCount;
-    }
-
-    public void setInvitor(MemberInfo invitor) {
-        this.invitor = invitor;
     }
 
     public void setSuggestedSyncProfile(SyncProfile suggestedSyncProfile) {
@@ -145,19 +159,12 @@ public class Invitation extends FolderRelatedMessage
         Path suggestedLocalBase)
     {
         Reject.ifNull(suggestedLocalBase, "File is null");
-        try {
-            this.suggestedLocalBase = suggestedLocalBase.toFile();
-        } catch (Exception e) {
-            Logger.getLogger(Invitation.class.getName()).fine(
-                "Unable to set suggested path: " + suggestedLocalBase + ". "
-                    + e);
-        }
         String folderBase = controller.getFolderRepository()
             .getFoldersBasedirString();
         String appsDir = getAppsDir();
         String userHomeDir = getUserHomeDir();
         if (OSUtil.isWindowsSystem() && appsDir != null
-            && suggestedLocalBase.toAbsolutePath().toString().startsWith(appsDir))
+            && suggestedLocalBase.toAbsolutePath().startsWith(appsDir))
         {
             String filePath = suggestedLocalBase.toAbsolutePath().toString();
             suggestedLocalBasePath = filePath.substring(appsDir.length());
@@ -166,9 +173,9 @@ public class Invitation extends FolderRelatedMessage
             while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
-            relative = RELATIVE_APP_DATA;
+            relative = PathType.RELATIVE_APP_DATA;
         } else if (folderBase != null
-            && suggestedLocalBase.toAbsolutePath().toString().startsWith(folderBase))
+            && suggestedLocalBase.toAbsolutePath().startsWith(folderBase))
         {
             String filePath = suggestedLocalBase.toAbsolutePath().toString();
             String baseDirPath = controller.getFolderRepository()
@@ -179,9 +186,9 @@ public class Invitation extends FolderRelatedMessage
             while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
-            relative = RELATIVE_PF_BASE;
+            relative = PathType.RELATIVE_PF_BASE;
         } else if (userHomeDir != null
-            && suggestedLocalBase.toAbsolutePath().toString().startsWith(userHomeDir))
+            && suggestedLocalBase.toAbsolutePath().startsWith(userHomeDir))
         {
             String filePath = suggestedLocalBase.toAbsolutePath().toString();
             suggestedLocalBasePath = filePath.substring(userHomeDir.length());
@@ -190,10 +197,10 @@ public class Invitation extends FolderRelatedMessage
             while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
-            relative = RELATIVE_USER_HOME;
+            relative = PathType.RELATIVE_USER_HOME;
         } else {
             suggestedLocalBasePath = suggestedLocalBase.toAbsolutePath().toString();
-            relative = ABSOLUTE;
+            relative = PathType.ABSOLUTE;
         }
     }
 
@@ -214,38 +221,39 @@ public class Invitation extends FolderRelatedMessage
 
         if (OSUtil.isLinux() || OSUtil.isMacOS()) {
             suggestedLocalBasePath = Util.replace(suggestedLocalBasePath, "\\",
-                Paths.get("").getFileSystem().getSeparator());
+                FileSystems.getDefault().getSeparator());
         } else {
             suggestedLocalBasePath = Util.replace(suggestedLocalBasePath, "/",
-                Paths.get("").getFileSystem().getSeparator());
+                FileSystems.getDefault().getSeparator());
         }
 
-        if (relative == RELATIVE_APP_DATA) {
+        if (relative == PathType.RELATIVE_APP_DATA) {
             return Paths.get(getAppsDir(), suggestedLocalBasePath);
-        } else if (relative == RELATIVE_PF_BASE) {
+        } else if (relative == PathType.RELATIVE_PF_BASE) {
             Path powerFolderBaseDir = controller.getFolderRepository()
                 .getFoldersBasedir();
             return powerFolderBaseDir.resolve(suggestedLocalBasePath);
-        } else if (relative == RELATIVE_USER_HOME) {
+        } else if (relative == PathType.RELATIVE_USER_HOME) {
             return Paths.get(getUserHomeDir(), suggestedLocalBasePath);
         } else {
             return Paths.get(suggestedLocalBasePath);
         }
     }
 
-    // Return the user name if not blank, else the invitor nick.
-    public String getInvitorUsername() {
-        if (StringUtils.isBlank(username)) {
-            if (invitor == null) {
-                return "";
-            }
-            return invitor.getNick();
-        }
-        return username;
+    public String getSender() {
+        return sender;
     }
 
-    public void setInvitorUsername(String username) {
-        this.username = username;
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(String recipient) {
+        this.recipient = recipient;
     }
 
     public ServerInfo getServer() {
@@ -256,16 +264,12 @@ public class Invitation extends FolderRelatedMessage
         this.server = server;
     }
 
-    public void setInviteeUsername(String username) {
-        this.inviteeUsername = username;
-    }
-
-    public String getInviteeUsername() {
-        return inviteeUsername;
-    }
-
     public MemberInfo getInvitor() {
         return invitor;
+    }
+
+    public void setInvitor(MemberInfo invitor) {
+        this.invitor = invitor;
     }
 
     public String getInvitationText() {
@@ -276,26 +280,15 @@ public class Invitation extends FolderRelatedMessage
         this.invitationText = invitationText;
     }
 
-    public int getRelative() {
-        return relative;
-    }
-
     public FolderPermission getPermission() {
         return permission;
     }
 
     public void setPermission(FolderPermission permission) {
+        if (permission != null) {
+            this.folder = permission.getFolder();
+        }
         this.permission = permission;
-    }
-
-    public boolean isFolderInvitation() {
-        return StringUtils.isNotBlank(folder.getId())
-            && !folder.getId().startsWith(ACCOUNT_INVITATION_ID_PREFIX);
-    }
-
-    public boolean isAccountInvitation() {
-        return StringUtils.isBlank(folder.getId())
-            || folder.getId().startsWith(ACCOUNT_INVITATION_ID_PREFIX);
     }
 
     public SyncProfile getSuggestedSyncProfile() {
@@ -305,11 +298,6 @@ public class Invitation extends FolderRelatedMessage
         }
         return SyncProfile
             .getSyncProfileByFieldList(suggestedSyncProfileConfig);
-    }
-
-    @Override
-    public String toString() {
-        return "Invitation to " + folder + " from " + invitor;
     }
 
     private static String getAppsDir() {
@@ -326,6 +314,22 @@ public class Invitation extends FolderRelatedMessage
         return System.getProperty("user.home");
     }
 
+    private static enum PathType {
+        /** suggestedLocalBase is absolute. */
+        ABSOLUTE,
+        /** suggestedLocalBase is relative to apps directory. */
+        RELATIVE_APP_DATA,
+        /** suggestedLocalBase is relative to PowerFolder base directory. */
+        RELATIVE_PF_BASE,
+        /** suggestedLocalBase is relative to user home directory. */
+        RELATIVE_USER_HOME
+    }
+
+    @Override
+    public String toString() {
+        return "Invitation to " + folder + " from " + invitor;
+    }
+
     @Override
     public int hashCode() {
         int prime = 31;
@@ -336,13 +340,9 @@ public class Invitation extends FolderRelatedMessage
         result = prime * result + (invitor == null ? 0 : invitor.hashCode());
         result = prime * result
             + (permission == null ? 0 : permission.hashCode());
-        result = prime * result + relative;
         result = prime * result + (username == null ? 0 : username.hashCode());
         result = prime * result
             + (inviteeUsername == null ? 0 : inviteeUsername.hashCode());
-        result = prime
-            * result
-            + (suggestedLocalBase == null ? 0 : suggestedLocalBase.hashCode());
         result = prime
             * result
             + (suggestedLocalBasePath == null ? 0 : suggestedLocalBasePath
@@ -412,13 +412,6 @@ public class Invitation extends FolderRelatedMessage
         if (relative != other.relative) {
             return false;
         }
-        if (suggestedLocalBase == null) {
-            if (other.suggestedLocalBase != null) {
-                return false;
-            }
-        } else if (!suggestedLocalBase.equals(other.suggestedLocalBase)) {
-            return false;
-        }
         if (suggestedLocalBasePath == null) {
             if (other.suggestedLocalBasePath != null) {
                 return false;
@@ -437,6 +430,8 @@ public class Invitation extends FolderRelatedMessage
         return true;
     }
 
+    // +++ D2D (un)marshalling +++
+
     /** initFromD2DMessage
      * Init from D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
@@ -453,7 +448,6 @@ public class Invitation extends FolderRelatedMessage
 
           this.invitor = new MemberInfo(proto.getInvitor());
           this.invitationText = proto.getInvitationText();
-          this.size = proto.getSize();
           this.username = proto.getUsername();
           this.oid = proto.getOid();
           this.inviteeUsername = proto.getInviteeUsername();
@@ -478,7 +472,6 @@ public class Invitation extends FolderRelatedMessage
       builder.setInvitor(
         (MemberInfoProto.MemberInfo)this.invitor.toD2D());
       builder.setInvitationText(this.invitationText);
-      builder.setSize(this.size);
       builder.setUsername(this.username);
       builder.setOid(this.oid);
       builder.setInviteeUsername(this.inviteeUsername);
@@ -486,5 +479,58 @@ public class Invitation extends FolderRelatedMessage
         (FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
+    }
+
+    // Backward compatability for deprecated/replaced fields.
+
+    public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.sender    = this.username;
+        this.recipient = this.inviteeUsername;
+    }
+
+    public void writeObject(ObjectOutputStream out) throws IOException {
+        this.inviteeUsername = this.recipient;
+        this.username        = this.sender;
+        out.defaultWriteObject();
+    }
+
+    /**
+     * @deprecated Since 11.1 use {@link #getSender()}
+     */
+    @Deprecated
+    // Return the user name if not blank, else the invitor nick.
+    public String getInvitorUsername() {
+        if (StringUtils.isBlank(username)) {
+            if (invitor == null) {
+                return "";
+            }
+            return invitor.getNick();
+        }
+        return username;
+    }
+
+    /**
+     * @deprecated Since 11.1 use {@link #setSender()}
+     */
+    @Deprecated
+    public void setInvitorUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * @deprecated Since 11.1 use {@link #getRecipient()}
+     */
+    @Deprecated
+    public String getInviteeUsername() {
+        return inviteeUsername;
+    }
+
+    /**
+     * @deprecated Since 11.1 use {@link #setRecipient()}
+     */
+    @Deprecated
+    public void setInviteeUsername(String username) {
+        this.inviteeUsername = username;
     }
 }

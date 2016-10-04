@@ -132,6 +132,14 @@ public class Token {
         return new Token(validTo, fedService, aInfo, null);
     }
 
+    public static Token newMergeToken(long validMS, AccountInfo aInfo) {
+        return newAccessToken(validMS, aInfo, (MemberInfo)null);
+    }
+
+    public static Token newAddEmailToken(long validMS, AccountInfo aInfo) {
+        return newAccessToken(validMS, aInfo, (MemberInfo)null);
+    }
+
     /**
      * Constructs and prepares a new token.
      * 

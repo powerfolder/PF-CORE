@@ -102,6 +102,7 @@ import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageProducer;
 import de.dal33t.powerfolder.message.RevertedFile;
 import de.dal33t.powerfolder.message.ScanCommand;
+import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
@@ -4829,11 +4830,8 @@ public class Folder extends PFComponent {
      * @return an Invitation to this folder. Includes a intelligent opposite
      *         sync profile.
      */
-    public Invitation createInvitation() {
-        Invitation inv = new Invitation(currentInfo, getController()
-            .getMySelf().getInfo());
-        inv.setFilesCount(statistic.getLocalFilesCount());
-        inv.setSize(statistic.getLocalSize());
+    public Invitation createInvitation(FolderPermission fp) {
+        Invitation inv = new Invitation(fp);
         inv.setSuggestedSyncProfile(syncProfile);
         if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);

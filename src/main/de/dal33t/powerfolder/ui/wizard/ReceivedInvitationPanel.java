@@ -44,12 +44,10 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
-import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
@@ -93,17 +91,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
     @Override
     public boolean validateNext() {
-        return !previewOnlyCB.isSelected() || createPreviewFolder();
-    }
-
-    private boolean createPreviewFolder() {
-        FolderSettings folderSettings = new FolderSettings(
-            PathUtils.removeInvalidFilenameChars(invitation
-                .getSuggestedLocalBase(getController())),
-            syncProfileSelectorPanel.getSyncProfile(), null, 0, true);
-        getController().getFolderRepository().createFolder(invitation.folder,
-            folderSettings);
-        return true;
+        return !previewOnlyCB.isSelected();
     }
 
     @Override
@@ -184,7 +172,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         // Invite info
 
         builder.addLabel(Translation.get(
-            "wizard.folder_invitation.intro", invitation.getInvitorUsername(),
+            "wizard.folder_invitation.intro", invitation.getSender(),
             invitation.folder.getLocalizedName()), cc.xyw(1, 1, 4));
 
         // Message
@@ -275,7 +263,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             folderNameLabel.setText(invitation.folder.getLocalizedName());
 
             invitorHintLabel.setEnabled(true);
-            invitorLabel.setText(invitation.getInvitorUsername());
+            invitorLabel.setText(invitation.getSender());
 
             invitationMessageHintLabel.setEnabled(true);
             invitationMessageLabel

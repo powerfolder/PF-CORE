@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.util.InvitationUtil;
@@ -59,8 +60,11 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         MemberInfo inf = new MemberInfo("Nobody", "0", null);
         getContollerBart().getNodeManager().addNode(inf);
 
-        man.scheduleTask(new SendMessageTask(getFolderAtBart()
-            .createInvitation(), inf.id));
+        man.scheduleTask(
+            new SendMessageTask(
+                getFolderAtBart().createInvitation(
+                    FolderPermission.read(getFolderAtBart().getInfo())),
+                inf.id));
 
         man.shutdown();
         man.start();
@@ -85,8 +89,8 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
 
         getContollerLisa().getFolderRepository().removeFolder(
             getFolderAtLisa(), true);
-        Invitation inv = new Invitation(getFolderAtBart().getInfo(),
-            getContollerBart().getMySelf().getInfo());
+        Invitation inv = new Invitation(
+            FolderPermission.read(getFolderAtBart().getInfo()));
         InvitationUtil.invitationToNode(getContollerBart(), inv, lisaAtBart);
         TestHelper.waitMilliSeconds(2500);
         // Should have one more task now.
