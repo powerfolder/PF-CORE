@@ -2518,7 +2518,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Move it.
-        recursiveMoveAndDelete(originalDirectory, newDirectory);
+        recursiveMoveAndOptionalDelete(originalDirectory, newDirectory, true);
 
         // Remember patterns if content not moving.
         List<String> patterns = folder.getDiskItemFilter().getPatterns();
@@ -3019,7 +3019,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         return true;
     }
 
-    private void recursiveMoveAndDelete(Path oldDirectory, Path newDirectory) throws IOException {
+    public static void recursiveMoveAndOptionalDelete(Path oldDirectory, Path newDirectory, boolean deleteFlag) throws IOException {
 
         List<Path> filesToMove = new ArrayList<>();
 
@@ -3037,39 +3037,40 @@ public class FolderRepository extends PFComponent implements Runnable {
                 onlyMissingSubDirs = onlyMissingSubDirs.replaceFirst("/", "");
             }
 
-            Path encryptedDirectoryWithMissingSubDirs = newDirectory.resolve(onlyMissingSubDirs);
+            Path directoryWithMissingSubDirs = newDirectory.resolve(onlyMissingSubDirs);
 
-            if (!Files.exists(encryptedDirectoryWithMissingSubDirs)) {
-                Files.createDirectories(encryptedDirectoryWithMissingSubDirs);
+            if (!Files.exists(directoryWithMissingSubDirs)) {
+                Files.createDirectories(directoryWithMissingSubDirs);
             }
 
-            Files.move(p, encryptedDirectoryWithMissingSubDirs.resolve(fileName.toString()));
+            Files.move(p, directoryWithMissingSubDirs.resolve(fileName.toString()));
         }
 
-        oldDirectory = Paths.get(oldDirectory.toString());
+        if (deleteFlag) {
 
-        Files.walkFileTree(oldDirectory, new SimpleFileVisitor<Path>() {
+            oldDirectory = Paths.get(oldDirectory.toString());
 
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException
-            {
-                Files.delete(file);
-                return FileVisitResult.CONTINUE;
-            }
+            Files.walkFileTree(oldDirectory, new SimpleFileVisitor<Path>() {
 
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException e)
-                    throws IOException
-            {
-                if (e == null) {
-                    Files.delete(dir);
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                    Files.delete(file);
                     return FileVisitResult.CONTINUE;
-                } else {
-                    throw e;
                 }
-            }
-        });
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                        throws IOException {
+                    if (e == null) {
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        throw e;
+                    }
+                }
+            });
+        }
     }
 
 }

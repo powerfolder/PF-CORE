@@ -19,20 +19,21 @@
  */
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.concurrent.Callable;
-
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProgressListener;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
 import de.dal33t.powerfolder.util.logging.Loggable;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 public class MatchCopyWorker extends Loggable implements
     Callable<FilePartsState>
@@ -42,10 +43,10 @@ public class MatchCopyWorker extends Loggable implements
     private final FilePartsRecord record;
     private final List<MatchInfo> matchInfoList;
 
-    private RandomAccessFile src;
+    private FileChannel src;
+    private FileChannel dst;
     private InputStream srcStream;
     private long srcStreamPos;
-    private RandomAccessFile dst;
     private final ProgressListener progressObserver;
 
     public MatchCopyWorker(Path srcFile, Path dstFile, FilePartsRecord record,
@@ -62,14 +63,14 @@ public class MatchCopyWorker extends Loggable implements
 
     public FilePartsState call() throws Exception {
         try {
-            src = new RandomAccessFile(srcFile.toFile(), "r");
+            src = FileChannel.open(srcFile, StandardOpenOption.READ);
         } catch (Exception e) {
             // Fallback in case RAF is not supported
             src = null;
             resetSrcStream();
         }
         try {
-            dst = new RandomAccessFile(dstFile.toFile(), "rw");
+            dst = FileChannel.open(dstFile, StandardOpenOption.READ, StandardOpenOption.WRITE);
             try {
                 FilePartsState result = new FilePartsState(
                     record.getFileLength());
@@ -87,7 +88,7 @@ public class MatchCopyWorker extends Loggable implements
                     index++;
 
                     if (src != null) {
-                        src.seek(info.getMatchedPosition());
+                        src.position(info.getMatchedPosition());
                     } else {
                         if (srcStreamPos > info.getMatchedPosition()) {
                             // Reset stream, we need to start from the beginning
@@ -98,7 +99,8 @@ public class MatchCopyWorker extends Loggable implements
                     }
                     long dstPos = info.getMatchedPart().getIndex()
                         * record.getPartLength();
-                    dst.seek(dstPos);
+                    //dst.seek(dstPos);
+                    dst.position(dstPos);
                     int rem = (int) Math.min(record.getPartLength(),
                         record.getFileLength() - dstPos);
                     if (src != null) {

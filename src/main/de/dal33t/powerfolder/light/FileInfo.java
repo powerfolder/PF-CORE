@@ -925,8 +925,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             throw new IllegalStateException("Filename ends with slash: "
                 + fileName);
         }
-        Reject.ifNull(size, "Size is null");
-        Reject.ifFalse(size >= 0, "Negative file size");
+
+        //Reject.ifNull(size, "Size is null");
+        //Reject.ifFalse(size < 0, "Negative file size");
         Reject.ifNull(folderInfo, "FolderInfo is null");
     }
 
