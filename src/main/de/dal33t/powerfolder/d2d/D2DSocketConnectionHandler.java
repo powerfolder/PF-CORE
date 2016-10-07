@@ -29,8 +29,10 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.message.AddFriendNotification;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.Ping;
 import de.dal33t.powerfolder.net.AbstractSocketConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -124,6 +126,11 @@ public class D2DSocketConnectionHandler extends
 
   @Override
   protected byte[] serialize(Message mesg) throws ConnectionException {
+    // Block the AddFriendNotification message
+    if (mesg instanceof AddFriendNotification) {
+        mesg = new Ping();
+    }
+
     byte[] data = null;
 
     if(mesg instanceof D2DObject) {
