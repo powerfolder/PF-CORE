@@ -46,13 +46,11 @@ import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import org.cryptomator.cryptofs.CryptoFileSystemProperties;
-import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.*;
@@ -2498,11 +2496,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+
         if (Files.exists(newDirectory)) {
             logSevere("Not moving folder " + folder + " to new directory "
                 + newDirectory.toString()
                 + ". The new directory already exists!");
-
             return;
         }
 
@@ -2513,8 +2511,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Remove the old folder from the repository.
         removeFolder(folder, false);
 
+        // PFS-1994: Encrypted storage.
+        if (newDirectory.toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX)){
+            FileSystem encryptedFileSystem = folder.initCryptoFileSystem(getController(), newDirectory);
+            newDirectory = encryptedFileSystem.getPath(newDirectory.toString());
+        }
+
         // Move it.
-        PathUtils.recursiveMove(originalDirectory, newDirectory);
+        recursiveMoveAndOptionalDelete(originalDirectory, newDirectory, true);
 
         // Remember patterns if content not moving.
         List<String> patterns = folder.getDiskItemFilter().getPatterns();
@@ -2988,32 +2992,85 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Schedule for removal
-        getController().schedule(new Runnable() {
-            @Override
-            public void run() {
-                if (hasJoinedFolder(folder.getInfo())) {
-                    // Handle possible renames
-                    scanBasedir();
-                    Folder currentFolder = getFolder(folder.getInfo());
-                    if (currentFolder != null
-                        && !currentFolder.checkIfDeviceDisconnected())
-                    {
-                        return;
-                    }
+        getController().schedule(() -> {
 
-                    logFine("Removing " + folder.toString());
-                    // sync with #scanBasedir()
-                    scanBasedirLock.lock();
-                    try {
-                        removeFolder(folder, false);
-                    } finally {
-                        scanBasedirLock.unlock();
-                    }
+            if (hasJoinedFolder(folder.getInfo())) {
+
+                // Handle possible renames
+                scanBasedir();
+                Folder currentFolder = getFolder(folder.getInfo());
+                if (currentFolder != null
+                    && !currentFolder.checkIfDeviceDisconnected())
+                {
+                    return;
+                }
+
+                logFine("Removing " + folder.toString());
+                // sync with #scanBasedir()
+                scanBasedirLock.lock();
+                try {
+                    removeFolder(folder, false);
+                } finally {
+                    scanBasedirLock.unlock();
                 }
             }
         }, 5000L);
 
         return true;
+    }
+
+    public static void recursiveMoveAndOptionalDelete(Path oldDirectory, Path newDirectory, boolean deleteFlag) throws IOException {
+
+        List<Path> filesToMove = new ArrayList<>();
+
+        Files.walk(oldDirectory)
+                .filter(Files::isRegularFile)
+                .forEach(p -> filesToMove.add(p));
+
+        for (Path p : filesToMove) {
+
+            Path fileName = p.getFileName();
+            String fileAndMissingSubDirs = p.toString().replace(oldDirectory.toString(), "");
+            String onlyMissingSubDirs = fileAndMissingSubDirs.replace(fileName.toString(), "");
+
+            if (onlyMissingSubDirs.startsWith("/")) {
+                onlyMissingSubDirs = onlyMissingSubDirs.replaceFirst("/", "");
+            }
+
+            Path directoryWithMissingSubDirs = newDirectory.resolve(onlyMissingSubDirs);
+
+            if (!Files.exists(directoryWithMissingSubDirs)) {
+                Files.createDirectories(directoryWithMissingSubDirs);
+            }
+
+            Files.move(p, directoryWithMissingSubDirs.resolve(fileName.toString()));
+        }
+
+        if (deleteFlag) {
+
+            oldDirectory = Paths.get(oldDirectory.toString());
+
+            Files.walkFileTree(oldDirectory, new SimpleFileVisitor<Path>() {
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                        throws IOException {
+                    if (e == null) {
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        throw e;
+                    }
+                }
+            });
+        }
     }
 
 }

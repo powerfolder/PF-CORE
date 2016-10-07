@@ -299,8 +299,10 @@ public class Folder extends PFComponent {
             localBase = getController().getFolderRepository()
                 .getFoldersBasedir()
                 .resolve(folderSettings.getLocalBaseDir());
+
             logFine("Original path: " + folderSettings.getLocalBaseDir()
                 + ". Choosen relative path: " + localBase);
+
             if (Files.notExists(localBase)) {
                 try {
                     Files.createDirectories(localBase);
@@ -447,7 +449,7 @@ public class Folder extends PFComponent {
      * @return A CryptoFileSystem instance.
      */
 
-    private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
+    public static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
 
         if (encDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
             return encDir.getFileSystem();

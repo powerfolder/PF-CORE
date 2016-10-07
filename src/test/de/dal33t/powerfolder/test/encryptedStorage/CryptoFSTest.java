@@ -12,15 +12,12 @@ import org.junit.Test;
 import org.openjdk.jmh.generators.core.SourceThrowableError;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.*;
 import java.util.stream.Stream;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -82,6 +79,27 @@ public class CryptoFSTest {
     }
 
     @Test
+    public void readFilesDate() throws IOException {
+
+        // Create unencrypted test file.
+        Path sourceFile = TestHelper.createRandomFile(unencryptedSource);
+
+        // Create encrypted file over cryptofs.
+        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
+        Path encFile = encryptedDirectory.resolve(sourceFile.getFileName().toString());
+
+        // Copy into encryptedDestination directory.
+        Files.createDirectories(encryptedDirectory);
+        Files.copy(sourceFile, encFile);
+
+        Date fileDate = new Date(Files.getLastModifiedTime(encFile).toMillis());
+
+        System.out.println(fileDate);
+
+        assertNotNull(fileDate);
+    }
+
+    @Test
     public void encryptSingleFile() throws IOException {
 
         // Create unencrypted test file.
@@ -94,13 +112,12 @@ public class CryptoFSTest {
         Path encryptedDirectory2 = fileSystem2.getPath(encryptedDestination2.toString());
         Path encFile2 = encryptedDirectory2.resolve(sourceFile.getFileName().toString());
 
-
         // Copy into encryptedDestination directory.
         Files.createDirectories(encryptedDirectory);
         Files.copy(sourceFile, encFile);
 
         Files.createDirectories(encryptedDirectory2);
-        Files.copy(sourceFile, encFile2);
+        Files.copy(encFile, encFile2);
 
         // Read from encrypted dir over crypto filesystem in clear text to ensure the files are really encrypted.
         try (Stream<Path> listing = Files.list(fileSystem.getPath(encryptedDestination.toString()))) {
@@ -264,17 +281,55 @@ public class CryptoFSTest {
     @Test
     public void encryptSubDirectories() throws IOException {
 
-        Files.createDirectory(unencryptedSource.resolve("testDir1"));
+        /*Files.createDirectory(unencryptedSource.resolve("testDir1"));
         Files.createDirectory(unencryptedSource.resolve("testDir2"));
         Files.createDirectory(unencryptedSource.resolve("testDir3"));
 
         TestHelper.createRandomFile(unencryptedSource.resolve("testDir1"));
         TestHelper.createRandomFile(unencryptedSource.resolve("testDir2"));
         TestHelper.createRandomFile(unencryptedSource.resolve("testDir3"));
-        TestHelper.createRandomFile(unencryptedSource);
+        TestHelper.createRandomFile(unencryptedSource);*/
+
+        encryptedDestination = fileSystem.getPath(encryptedDestination.toString());
+        encryptedDestination2 = fileSystem2.getPath(encryptedDestination2.toString());
+
+        Files.createDirectories(encryptedDestination.resolve("testDir1"));
+        Files.createDirectories(encryptedDestination.resolve("testDir2"));
+        Files.createDirectories(encryptedDestination.resolve("testDir3"));
+
+        TestHelper.createRandomFile(encryptedDestination.resolve("testDir1"));
+        TestHelper.createRandomFile(encryptedDestination.resolve("testDir2"));
+        TestHelper.createRandomFile(encryptedDestination.resolve("testDir3"));
+        TestHelper.createRandomFile(encryptedDestination);
+
+
+        Files.walkFileTree(encryptedDestination, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+
+                new SimpleFileVisitor<Path>() {
+
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                            throws IOException {
+                        Path targetdir = encryptedDestination2.resolve(encryptedDestination.relativize(dir));
+                        try {
+                            Files.copy(dir, targetdir);
+                        } catch (FileAlreadyExistsException e) {
+                            if (!Files.isDirectory(targetdir))
+                                System.out.println("Could not move file.");
+                        }
+                        return CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException {
+                        Files.move(file, encryptedDestination2.resolve(encryptedDestination.relativize(file)));
+                        return CONTINUE;
+                    }
+                });
 
         // Get a file list from all unencrypted files with subdirs.
-        List<Path> unencryptedFiles = new ArrayList<>();
+        /*List<Path> unencryptedFiles = new ArrayList<>();
 
         Files.walk(unencryptedSource)
                 .filter(Files::isRegularFile)
@@ -298,11 +353,24 @@ public class CryptoFSTest {
                 Files.createDirectories(encryptedDirectoryWithMissingSubDirs);
             }
 
-            Files.copy(p, encryptedDirectoryWithMissingSubDirs.resolve(fileName.toString()));
+            Files.move(p, encryptedDirectoryWithMissingSubDirs.resolve(fileName.toString()));
         }
 
+        Files.walk(unencryptedSource)
+                .filter(p -> p.compareTo(unencryptedSource) != 0)
+                .forEach(p -> {
+                    if (Files.isDirectory(p)){
+                        try {
+                            Files.delete(p);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+        Files.delete(unencryptedSource);
+
         // Get a file list from all encrypted files and subdirs.
-        List<Path> encryptedFiles = new ArrayList<>();
+        /*List<Path> encryptedFiles = new ArrayList<>();
 
         Files.walk(fileSystem.getPath(encryptedDestination.toString()))
                 .filter(Files::isRegularFile)
@@ -327,7 +395,7 @@ public class CryptoFSTest {
             }
 
             Files.copy(p, decryptedDirectoryWithMissingSubDirs.resolve(fileName.toString()));
-        }
+        }*/
 
     }
 

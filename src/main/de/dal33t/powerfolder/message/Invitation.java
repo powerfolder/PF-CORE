@@ -19,13 +19,7 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.logging.Logger;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -36,13 +30,14 @@ import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.InvitationProto;
 import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 /**
  * A Invitation to a folder
