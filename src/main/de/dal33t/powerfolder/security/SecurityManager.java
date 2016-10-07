@@ -53,7 +53,7 @@ public interface SecurityManager {
      *            the username of the login
      * @param credentials
      *            the password of the login
-     * @param node
+     * @param nodeInfo
      *            the node the user logs in from
      * @return the account if access is possible, null if user could not be
      *         logged in.

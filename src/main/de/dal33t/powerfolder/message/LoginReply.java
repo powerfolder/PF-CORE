@@ -11,7 +11,6 @@ public class LoginReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
     private boolean returnValue;
     private int statusCode;
-    private Account account;
 
     /**
      * Serialization constructor
@@ -19,10 +18,9 @@ public class LoginReply extends Message implements D2DObject {
     public LoginReply() {
     }
 
-    public LoginReply(boolean returnValue, int statusCode, Account account) {
+    public LoginReply(boolean returnValue, int statusCode) {
         this.returnValue = returnValue;
         this.statusCode = statusCode;
-        this.account = account;
     }
 
     /**
@@ -39,7 +37,6 @@ public class LoginReply extends Message implements D2DObject {
             LoginReplyProto.LoginReply proto = (LoginReplyProto.LoginReply)mesg;
             this.returnValue = proto.getReturnValue();
             this.statusCode = proto.getStatusCode();
-            this.account = new Account(proto.getAccount());
         }
     }
 
@@ -49,9 +46,6 @@ public class LoginReply extends Message implements D2DObject {
         builder.setClazzName(this.getClass().getSimpleName());
         builder.setReturnValue(this.returnValue);
         builder.setStatusCode(this.statusCode);
-        if (this.account != null) {
-            builder.setAccount((AccountProto.Account)this.account.toD2D());
-        }
         return builder.build();
     }
 }

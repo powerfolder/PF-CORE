@@ -21,7 +21,7 @@ import java.io.IOException;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.message.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
