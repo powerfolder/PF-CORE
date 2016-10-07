@@ -48,7 +48,9 @@ import de.dal33t.powerfolder.message.LoginReply;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.Pong;
 import de.dal33t.powerfolder.message.Problem;
+import de.dal33t.powerfolder.protocol.LoginReplyProto;
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
 import de.dal33t.powerfolder.util.ByteSerializer;
@@ -1027,11 +1029,22 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     } else if (obj instanceof Login) {
                         if (getController().getMySelf().isServer()) {
                             Login login = (Login) obj;
-                            Account account = getController().getSecurityManager().authenticate(login.getUsername(), login.getPassword().toCharArray(), login.getMember());
-                            sendMessagesAsynchron(new LoginReply(true, 1, account));
+                            
+                            /* Try to authenticate */
+                            try {
+                                Account account = getController().getSecurityManager()
+                                    .authenticate(login.getUsername(), 
+                                        login.getPassword().toCharArray(), login.getMember());
+                               
+                                sendMessagesAsynchron(new LoginReply(null == account ?
+                                    LoginReplyProto.LoginReply.StatusCode.UNKNOWN : 
+                                        LoginReplyProto.LoginReply.StatusCode.SUCCESS));
+                            } catch(SecurityException e) {
+                                sendMessagesAsynchron(new LoginReply(
+                                    LoginReplyProto.LoginReply.StatusCode.FAILURE));
+                            }
                         } else {
-                            logWarning("Ignoring login request: "
-                                + obj);
+                            logWarning("Ignoring login request: " + obj);
                         }
                     } else if (receivedObject(obj)) {
                         // The object was handled by the subclass.
