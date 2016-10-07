@@ -9,8 +9,8 @@ import de.dal33t.powerfolder.security.Account;
 
 public class LoginReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
-    private boolean returnValue;
-    private int statusCode;
+
+    private LoginReplyProto.LoginReply.StatusCode statusCode;
 
     /**
      * Serialization constructor
@@ -18,8 +18,7 @@ public class LoginReply extends Message implements D2DObject {
     public LoginReply() {
     }
 
-    public LoginReply(boolean returnValue, int statusCode) {
-        this.returnValue = returnValue;
+    public LoginReply(LoginReplyProto.LoginReply.StatusCode statusCode) {
         this.statusCode = statusCode;
     }
 
@@ -27,25 +26,39 @@ public class LoginReply extends Message implements D2DObject {
      * Init from D2D message
      * @param mesg Message to use data from
      **/
+
     public LoginReply(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof LoginReplyProto.LoginReply) {
             LoginReplyProto.LoginReply proto = (LoginReplyProto.LoginReply)mesg;
-            this.returnValue = proto.getReturnValue();
+            
             this.statusCode = proto.getStatusCode();
         }
     }
 
+    /** toD2D
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
     @Override
     public AbstractMessage toD2D() {
         LoginReplyProto.LoginReply.Builder builder = LoginReplyProto.LoginReply.newBuilder();
+
         builder.setClazzName(this.getClass().getSimpleName());
-        builder.setReturnValue(this.returnValue);
         builder.setStatusCode(this.statusCode);
+
         return builder.build();
     }
 }

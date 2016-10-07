@@ -46,8 +46,7 @@ import de.dal33t.powerfolder.protocol.AnyMessageProto;
  * @version $Revision: 1.72 $
  */
 public class D2DSocketConnectionHandler extends
-  AbstractSocketConnectionHandler implements ConnectionHandler
-{
+  AbstractSocketConnectionHandler implements ConnectionHandler {
   /**
    * Builds a new D2D connection manager for the socket.
    * <p>
@@ -59,10 +58,7 @@ public class D2DSocketConnectionHandler extends
    * @throws ConnectionException
    **/
 
-  public
-  D2DSocketConnectionHandler(Controller controller,
-    Socket socket)
-  {
+  public D2DSocketConnectionHandler(Controller controller, Socket socket) {
     super(controller, socket);
   }
 
@@ -75,17 +71,15 @@ public class D2DSocketConnectionHandler extends
    **/
 
   @Override
-  protected Object
-  deserialize(byte[] data,
-    int len) throws ClassNotFoundException, ConnectionException
-  {
+  protected Object deserialize(byte[] data, int len) 
+      throws ClassNotFoundException, ConnectionException {
     String className = "unknown";
 
     logFiner("Got message; parsing it..");
 
-    try
-      {
-        AnyMessageProto.AnyMessage anyMessage = AnyMessageProto.AnyMessage.parseFrom(data);
+    try {
+        AnyMessageProto.AnyMessage anyMessage =
+            AnyMessageProto.AnyMessage.parseFrom(data);
 
         /* Assemble name and package */
         className        = anyMessage.getClazzName();
@@ -110,11 +104,9 @@ public class D2DSocketConnectionHandler extends
         meth.invoke(mesg, amesg); ///< Call initFromD2DMessage
 
         return mesg;
-      }
-    catch(NoSuchMethodException|SecurityException|IllegalArgumentException|
-        InvocationTargetException|InstantiationException|
-        IllegalAccessException|InvalidProtocolBufferException e)
-      {
+    } catch(NoSuchMethodException|SecurityException|IllegalArgumentException|
+            InvocationTargetException|InstantiationException|
+            IllegalAccessException|InvalidProtocolBufferException e) {
         logFiner("Cannot read message(" + className + "): " + e.toString());
 
         throw new ConnectionException(
@@ -131,23 +123,19 @@ public class D2DSocketConnectionHandler extends
    **/
 
   @Override
-  protected byte[]
-  serialize(Message mesg) throws ConnectionException
-  {
+  protected byte[] serialize(Message mesg) throws ConnectionException {
     byte[] data = null;
 
-    if(mesg instanceof D2DObject)
-      {
+    if(mesg instanceof D2DObject) {
         AbstractMessage amesg = ((D2DObject)mesg).toD2D();
 
         logFiner("Sent " + amesg.getClass().getCanonicalName());
 
         data = amesg.toByteArray();
-      }
-    else {
-        throw new ConnectionException("Message "
-            + mesg.getClass().getSimpleName()
-            + " does not implement D2Object").with(this);
+    } else {
+        throw new ConnectionException("Message " +
+            mesg.getClass().getSimpleName() +
+            " does not implement D2Object").with(this);
     }
 
     return data;
@@ -159,9 +147,7 @@ public class D2DSocketConnectionHandler extends
    **/
 
   @Override
-  protected Identity
-  createOwnIdentity()
-  {
+  protected Identity createOwnIdentity() {
     return new Identity(getController(), getController().getMySelf()
       .getInfo(), getMyMagicId(), false, false, this);
   }
