@@ -19,37 +19,25 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.Queue;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.FileChunkExt;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.RequestFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestPart;
-import de.dal33t.powerfolder.message.StartUpload;
-import de.dal33t.powerfolder.message.StartUploadExt;
-import de.dal33t.powerfolder.message.StopUpload;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.ProgressListener;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Simple class for a scheduled Upload
@@ -62,7 +50,7 @@ public class Upload extends Transfer {
 
     private boolean aborted;
     private transient Queue<Message> pendingRequests = new LinkedList<Message>();
-    protected transient RandomAccessFile raf;
+    protected transient FileChannel fileChannel;
     protected transient InputStream in;
     private long inpos;
     private String debugState;
@@ -205,11 +193,14 @@ public class Upload extends Transfer {
                         .equals("file"))
                     {
                         useInputStream = false;
+                        Path inputFile = null;
                         try {
-                            raf = new RandomAccessFile(getFile().getDiskFile(
-                                getController().getFolderRepository()).toFile(), "r");
+                            inputFile = getFile().getDiskFile(getController().getFolderRepository());
+                            fileChannel = FileChannel.open(inputFile, StandardOpenOption.READ);
                         } catch (FileNotFoundException e) {
                             useInputStream = true;
+                        } catch (IOException e) {
+                            logWarning("Could not read file " + inputFile + " for upload.", e);
                         }
                     }
                     if (useInputStream) {
@@ -316,14 +307,14 @@ public class Upload extends Transfer {
                 logSevere("IOException", e);
             }
         }
-        if (raf != null) {
+        if (fileChannel != null) {
             try {
                 if (isFiner()) {
-                    logFiner("Closing raf for "
+                    logFiner("Closing fileChannel for "
                         + getFile().toDetailString());
                 }
-                raf.close();
-                raf = null;
+                fileChannel.close();
+                fileChannel = null;
             } catch (IOException e) {
                 logSevere("IOException", e);
             }
@@ -425,8 +416,8 @@ public class Upload extends Transfer {
         try {
             byte[] data = new byte[(int) pr.getRange().getLength()];
             long startOffset = pr.getRange().getStart();
-            if (raf != null) {
-                raf.seek(startOffset);
+            if (fileChannel != null) {
+                fileChannel.position(startOffset);
             } else if (in != null) {
                 long skip = startOffset - inpos;
                 if (skip >= 0) {
@@ -452,8 +443,8 @@ public class Upload extends Transfer {
             while (pos < data.length) {
                 int read;
                 int readLen = data.length - pos;
-                if (raf != null) {
-                    read = raf.read(data, pos, readLen);
+                if (fileChannel != null) {
+                    read = fileChannel.read(ByteBuffer.wrap(data, pos, readLen));
                 } else if (in != null) {
                     read = in.read(data, pos, readLen);
                     inpos += read;
