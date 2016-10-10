@@ -86,7 +86,7 @@ public class AccountStateChanged extends Message implements D2DObject {
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof AccountStateChangedProto.AccountStateChanged) {
             AccountStateChangedProto.AccountStateChanged proto = (AccountStateChangedProto.AccountStateChanged)mesg;
-            this.node = new MemberInfo(proto.getMember());
+            this.node = new MemberInfo(proto.getMemberInfo());
           }
     }
 
@@ -100,7 +100,7 @@ public class AccountStateChanged extends Message implements D2DObject {
     public AbstractMessage toD2D() {
         AccountStateChangedProto.AccountStateChanged.Builder builder = AccountStateChangedProto.AccountStateChanged.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        builder.setMember((MemberInfoProto.MemberInfo)this.node.toD2D());
+        builder.setMemberInfo((MemberInfoProto.MemberInfo)this.node.toD2D());
         return builder.build();
     }
 
