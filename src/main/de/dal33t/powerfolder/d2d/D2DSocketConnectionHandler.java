@@ -29,15 +29,13 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.message.AddFriendNotification;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.Ping;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.AbstractSocketConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
 import de.dal33t.powerfolder.protocol.AnyMessageProto;
+import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
 
 /**
  * Handler for relayed connections to other clients. NO encrypted transfer.
@@ -90,6 +88,14 @@ public class D2DSocketConnectionHandler extends
           className, className);
 
         logFiner("Got " + classPkg);
+
+        // Workaround for FolderFilesChanged (protected variables cannot be set via reflection)
+        if (className.equals("FolderFilesChanged")) {
+            FolderFilesChangedProto.FolderFilesChanged folderFilesChangedProto = FolderFilesChangedProto.FolderFilesChanged.parseFrom(data);
+            FolderFilesChangedExt folderFilesChangedExt = new FolderFilesChangedExt();
+            folderFilesChangedExt.initFromD2D(folderFilesChangedProto);
+            return folderFilesChangedExt;
+        }
 
         /* Try to create D2D message */
         Class<?>        klass = Class.forName(classPkg);
