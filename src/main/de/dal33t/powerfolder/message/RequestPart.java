@@ -168,7 +168,7 @@ public class RequestPart extends Message
       RequestPartProto.RequestPart.Builder builder =
         RequestPartProto.RequestPart.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
+      builder.setClazzName("RequestPart");
       builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setDataRange((DataRangeProto.DataRange)this.range.toD2D());
       builder.setProgress(this.progress);

@@ -193,7 +193,7 @@ public final class Range
     {
       DataRangeProto.DataRange.Builder builder = DataRangeProto.DataRange.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
+	  builder.setClazzName("DataRange");
       builder.setStart(this.start);
       builder.setLength(this.length);
 
