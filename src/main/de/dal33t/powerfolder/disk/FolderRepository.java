@@ -2898,8 +2898,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                     // OK: Handle it. There is a connected member on an unsyced
                     // folder, which has send ZERO files.
-                    logInfo("Re-requesting file list for " + folder.getName()
-                        + " from " + member.getNick());
+                    if (isFine()) {
+                        logFine("Re-requesting file list for "
+                            + folder.getName() + " from " + member.getNick());
+                    }
                     member.sendMessageAsynchron(new FileListRequest(folder
                         .getInfo()));
                 }
