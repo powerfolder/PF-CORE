@@ -63,7 +63,7 @@ public class Login extends Message implements D2DObject {
             LoginProto.Login proto = (LoginProto.Login)mesg;
             this.setUsername(proto.getUsername());
             this.setPassword(proto.getPassword());
-            this.member = new MemberInfo(proto.getMember());
+            this.member = new MemberInfo(proto.getMemberInfo());
         }
     }
     
@@ -79,7 +79,7 @@ public class Login extends Message implements D2DObject {
         builder.setClazzName(this.getClass().getSimpleName());
         builder.setUsername(this.getUsername());
         builder.setPassword(this.getPassword());
-        builder.setMember((MemberInfoProto.MemberInfo)this.member.toD2D());
+        builder.setMemberInfo((MemberInfoProto.MemberInfo)this.member.toD2D());
         return builder.build();
     }
 }

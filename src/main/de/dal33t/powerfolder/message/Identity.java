@@ -299,7 +299,7 @@ public class Identity extends Message
       if(mesg instanceof IdentityProto.Identity) {
           IdentityProto.Identity proto = (IdentityProto.Identity)mesg;
 
-          this.member                = new MemberInfo(proto.getMember());
+          this.member                = new MemberInfo(proto.getMemberInfo());
           this.magicId               = proto.getMagicId();
           this.protocolVersion       = proto.getProtocolVersion();
           this.requestFullFolderlist = proto.getRequestFullFolderlist();
@@ -318,7 +318,7 @@ public class Identity extends Message
       IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setMember((MemberInfoProto.MemberInfo)this.member.toD2D());
+      builder.setMemberInfo((MemberInfoProto.MemberInfo)this.member.toD2D());
       builder.setMagicId(this.magicId);
       builder.setProtocolVersion(this.protocolVersion);
       builder.setRequestFullFolderlist(this.requestFullFolderlist);
