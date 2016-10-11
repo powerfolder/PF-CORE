@@ -946,6 +946,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             logInfo("Original path: " + targetDir
                 + ". Choosen relative path: " + targetDir);
         }
+
+        Collection<Folder> foobar = getController().getFolderRepository().getFolders();
+
         for (Folder folder : getController().getFolderRepository()
             .getFolders())
         {
@@ -1335,9 +1338,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Shutdown meta folder as well
             Folder metaFolder = getMetaFolderForParent(folder.getInfo());
             if (metaFolder != null) {
-                metaFolder.shutdown();
                 metaFolders.remove(metaFolder.getInfo());
                 metaFolders.remove(folder.getInfo());
+
+                // Break transfers
+                getController().getTransferManager().breakTransfers(
+                        metaFolder.getInfo());
+
+                metaFolder.shutdown();
             }
 
             // Remove internal
@@ -1389,6 +1397,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                 }
             }
+
         } finally {
             suspendNewFolderSearch.decrementAndGet();
         }
@@ -2512,7 +2521,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         removeFolder(folder, false);
 
         // PFS-1994: Encrypted storage.
-        if (newDirectory.toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX)){
+        if (newDirectory.toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX)) {
             FileSystem encryptedFileSystem = folder.initCryptoFileSystem(getController(), newDirectory);
             newDirectory = encryptedFileSystem.getPath(newDirectory.toString());
         }
@@ -3019,6 +3028,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         return true;
     }
 
+    // PFS-1994: Encrypted storage.
     public static void recursiveMoveAndOptionalDelete(Path oldDirectory, Path newDirectory, boolean deleteFlag) throws IOException {
 
         List<Path> filesToMove = new ArrayList<>();
