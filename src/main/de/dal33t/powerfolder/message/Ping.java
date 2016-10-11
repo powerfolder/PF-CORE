@@ -160,7 +160,7 @@ public class Ping extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -172,7 +172,7 @@ public class Ping extends Message
     {
       PingProto.Ping.Builder builder = PingProto.Ping.newBuilder();
 
-      builder.setClazzName("Ping");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setSendTime(sendTime);
       builder.setPayload(String.valueOf(payload));
       if (this.id != null) {

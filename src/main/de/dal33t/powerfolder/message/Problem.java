@@ -19,13 +19,18 @@
 */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.ProblemProto;
+
 /**
  * General problem response
  *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
-public class Problem extends Message {
+public class Problem extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
     // The problem codes
@@ -70,5 +75,41 @@ public class Problem extends Message {
 
     public String toString() {
         return "Problem: '" + message + "'";
+    }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof ProblemProto.Problem) {
+            ProblemProto.Problem proto = (ProblemProto.Problem)mesg;
+            
+            this.message     = proto.getMessage();
+            this.fatal       = proto.getFatal();
+            this.problemCode = proto.getProblemCodeValue();
+        }
+    }
+
+    /** toD2D
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage toD2D() {
+        ProblemProto.Problem.Builder builder = ProblemProto.Problem.newBuilder();
+        
+        builder.setClazzName("Problem");
+        builder.setFatal(this.fatal);
+        builder.setProblemCodeValue(this.problemCode);
+
+        if(null != this.message) builder.setMessage(this.message);
+        
+        return builder.build();
     }
 }

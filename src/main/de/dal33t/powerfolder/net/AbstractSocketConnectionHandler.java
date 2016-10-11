@@ -19,42 +19,20 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.InvalidObjectException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.transfer.LimitedInputStream;
+import de.dal33t.powerfolder.transfer.LimitedOutputStream;
+import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
+
+import java.io.*;
+import java.net.*;
 import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.IdentityReply;
-import de.dal33t.powerfolder.message.LimitBandwidth;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.Pong;
-import de.dal33t.powerfolder.message.Problem;
-import de.dal33t.powerfolder.transfer.LimitedInputStream;
-import de.dal33t.powerfolder.transfer.LimitedOutputStream;
-import de.dal33t.powerfolder.util.ByteSerializer;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StreamUtils;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Abstract version of a connection handler acting upon
@@ -461,7 +439,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         // break if remote peer did no identitfy
-        if (identity == null && (!(message instanceof Identity))) {
+        if (identity == null && (!(message instanceof Identity) && !(message instanceof LoginReply))) {
             throw new ConnectionException(
                 "Unable to send message, peer did not identify yet").with(this);
         }
@@ -1021,7 +999,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                                 break;
                             }
                         }
-
                     } else if (receivedObject(obj)) {
                         // The object was handled by the subclass.
                         // OK pass through

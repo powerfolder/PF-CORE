@@ -99,7 +99,7 @@ public class Pong extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -111,7 +111,7 @@ public class Pong extends Message
     {
       PongProto.Pong.Builder builder = PongProto.Pong.newBuilder();
 
-      builder.setClazzName("Pong");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setReceiveTime(receiveTime);
       builder.setPayload(String.valueOf(payload));
       builder.setId(id);

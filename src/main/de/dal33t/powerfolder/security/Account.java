@@ -1692,11 +1692,16 @@ public class Account implements Serializable, D2DObject {
             this.agreedToSVersion           = proto.getAgreedToSversion();
         }
     }
+    /** toD2D
+     * Convert to D2D message
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     * @return Converted D2D message
+     **/
 
     @Override
     public AbstractMessage toD2D() {
         AccountProto.Account.Builder builder = AccountProto.Account.newBuilder();
-        builder.setClazzName("Account");
+        builder.setClazzName(this.getClass().getSimpleName());
         if (this.oid != null) builder.setOid(this.oid);
         if (this.username != null) builder.setUsername(this.username);
         if (this.password != null) builder.setPassword(this.password);

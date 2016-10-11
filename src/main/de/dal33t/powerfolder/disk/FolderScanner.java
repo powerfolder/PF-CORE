@@ -560,7 +560,7 @@ public class FolderScanner extends PFComponent {
         Reject.ifNull(currentScanningFolder,
             "currentScanningFolder must not be null");
         if (isFiner()) {
-            logFiner("Scanning subdir " + dirToScan + " / " + currentDirName);
+            //logFiner("Scanning subdir " + dirToScan + " / " + currentDirName);
         }
         currentScanResult.incrementTotalFilesCount();
         return scanDiskItem(dirToScan, FileInfoFactory.decodeIllegalChars(currentDirName), true);

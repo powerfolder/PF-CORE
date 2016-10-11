@@ -71,11 +71,11 @@ public class DownloadQueued extends Message
           DownloadQueuedProto.DownloadQueued proto =
             (DownloadQueuedProto.DownloadQueued)mesg;
 
-          this.file = new FileInfo(proto.getFile());
+          this.file = new FileInfo(proto.getFileInfo());
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -88,8 +88,8 @@ public class DownloadQueued extends Message
       DownloadQueuedProto.DownloadQueued.Builder builder =
         DownloadQueuedProto.DownloadQueued.newBuilder();
 
-      builder.setClazzName("DownloadQueued");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setClazzName(this.getClass().getSimpleName());
+      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
     }

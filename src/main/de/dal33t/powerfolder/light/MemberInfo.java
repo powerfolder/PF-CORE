@@ -433,7 +433,7 @@ public class MemberInfo implements Serializable, D2DObject {
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -445,7 +445,7 @@ public class MemberInfo implements Serializable, D2DObject {
     {
       MemberInfoProto.MemberInfo.Builder builder = MemberInfoProto.MemberInfo.newBuilder();
 
-      builder.setClazzName("MemberInfo");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setNick(this.nick);
       builder.setId(this.id);
       builder.setNetworkId(this.networkId);

@@ -384,11 +384,17 @@ public class Group implements Serializable, D2DObject {
             }
         }
     }
-
+    
+    /** toD2D
+     * Convert to D2D message
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     * @return Converted D2D message
+     **/
+    
     @Override
     public AbstractMessage toD2D() {
         GroupProto.Group.Builder builder = GroupProto.Group.newBuilder();
-        builder.setClazzName("Group");
+        builder.setClazzName(this.getClass().getSimpleName());
         if (this.oid != null) builder.setOid(this.oid);
         if (this.name != null) builder.setName(this.name);
         if (this.ldapDN != null) builder.setLdapDn(this.ldapDN);

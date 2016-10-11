@@ -62,11 +62,11 @@ public class AbortDownload extends Message
         {
           AbortDownloadProto.AbortDownload proto = (AbortDownloadProto.AbortDownload)mesg;
 
-          this.file = new FileInfo(proto.getFile());
+          this.file = new FileInfo(proto.getFileInfo());
         }
     }
 
-    /** toD2DMessage
+    /** toD2
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -78,8 +78,8 @@ public class AbortDownload extends Message
     {
       AbortDownloadProto.AbortDownload.Builder builder = AbortDownloadProto.AbortDownload.newBuilder();
 
-      builder.setClazzName("AbortDownload");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setClazzName(this.getClass().getSimpleName());
+      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();
     }

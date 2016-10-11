@@ -96,7 +96,7 @@ public class IdentityReply extends Message
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -108,7 +108,7 @@ public class IdentityReply extends Message
     {
       IdentityReplyProto.IdentityReply.Builder builder = IdentityReplyProto.IdentityReply.newBuilder();
 
-      builder.setClazzName("IdentityReply");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setAccepted(this.accepted);
       builder.setMessage(null == this.message ? "" : this.message);
 

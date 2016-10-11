@@ -26,7 +26,7 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
-import de.dal33t.powerfolder.protocol.RangeProto;
+import de.dal33t.powerfolder.protocol.DataRangeProto;
 import de.dal33t.powerfolder.protocol.RequestPartProto;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
@@ -149,13 +149,13 @@ public class RequestPart extends Message
           RequestPartProto.RequestPart proto =
             (RequestPartProto.RequestPart)mesg;
 
-          this.file     = new FileInfo(proto.getFile());
-          this.range    = new Range(proto.getRange());
+          this.file     = new FileInfo(proto.getFileInfo());
+          this.range    = new Range(proto.getDataRange());
           this.progress = proto.getProgress();
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -169,8 +169,8 @@ public class RequestPart extends Message
         RequestPartProto.RequestPart.newBuilder();
 
       builder.setClazzName("RequestPart");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
-      builder.setRange((RangeProto.Range)this.range.toD2D());
+      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setDataRange((DataRangeProto.DataRange)this.range.toD2D());
       builder.setProgress(this.progress);
 
       return builder.build();

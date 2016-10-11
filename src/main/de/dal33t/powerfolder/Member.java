@@ -1965,15 +1965,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                     logWarning("Ignoring reload config request from non server: "
                         + message);
                 }
-            } else if (message instanceof Login) {
-                if (getController().getMySelf().isServer()) {
-                    Login login = (Login) message;
-                    Account account = getController().getSecurityManager().authenticate(login.getUsername(), login.getPassword().toCharArray());
-                    sendMessageAsynchron(new LoginReply(true, 1, account));
-                } else {
-                    logWarning("Ignoring login request: "
-                        + message);
-                }
             } else if (message instanceof LoginReply) {
                 LoginReply loginReply = (LoginReply) message;
             } else {

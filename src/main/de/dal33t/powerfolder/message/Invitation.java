@@ -452,11 +452,11 @@ public class Invitation extends FolderRelatedMessage
           this.username = proto.getUsername();
           this.oid = proto.getOid();
           this.inviteeUsername = proto.getInviteeUsername();
-          this.folder = new FolderInfo(proto.getFolder());
+          this.folder = new FolderInfo(proto.getFolderInfo());
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -469,7 +469,7 @@ public class Invitation extends FolderRelatedMessage
       InvitationProto.Invitation.Builder builder =
         InvitationProto.Invitation.newBuilder();
 
-      builder.setClazzName("Invitation");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setInvitor(
         (MemberInfoProto.MemberInfo)this.invitor.toD2D());
       builder.setInvitationText(this.invitationText);
@@ -477,7 +477,7 @@ public class Invitation extends FolderRelatedMessage
       builder.setUsername(this.username);
       builder.setOid(this.oid);
       builder.setInviteeUsername(this.inviteeUsername);
-      builder.setFolder(
+      builder.setFolderInfo(
         (FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
