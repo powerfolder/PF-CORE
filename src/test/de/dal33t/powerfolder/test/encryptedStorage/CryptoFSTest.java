@@ -29,7 +29,6 @@ import static org.junit.Assert.assertTrue;
  * @since <pre>Aug 23, 2016</pre>
  */
 
-
 public class CryptoFSTest {
 
     private Path unencryptedSource;
@@ -44,7 +43,7 @@ public class CryptoFSTest {
 
         PathUtils.recursiveDelete(TestHelper.getTestDir());
 
-        // Enencrypted files
+        // Encrypted files
         unencryptedSource = TestHelper.getTestDir().resolve("unencryptedSource");
         Files.createDirectory(unencryptedSource);
 
@@ -59,7 +58,7 @@ public class CryptoFSTest {
         decryptedDestination = TestHelper.getTestDir().resolve("decryptedDestination");
         Files.createDirectory(decryptedDestination);
 
-        // Cryptomator filesystem with cryptolib.
+        // Cryptomator filesystems.
         fileSystem = initFileSystem(encryptedDestination, IdGenerator.makeId());
         fileSystem2 = initFileSystem(encryptedDestination2, IdGenerator.makeId());
 
@@ -76,27 +75,6 @@ public class CryptoFSTest {
     @After
     public void shutDown() throws IOException {
         fileSystem.close();
-    }
-
-    @Test
-    public void readFilesDate() throws IOException {
-
-        // Create unencrypted test file.
-        Path sourceFile = TestHelper.createRandomFile(unencryptedSource);
-
-        // Create encrypted file over cryptofs.
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
-        Path encFile = encryptedDirectory.resolve(sourceFile.getFileName().toString());
-
-        // Copy into encryptedDestination directory.
-        Files.createDirectories(encryptedDirectory);
-        Files.copy(sourceFile, encFile);
-
-        Date fileDate = new Date(Files.getLastModifiedTime(encFile).toMillis());
-
-        System.out.println(fileDate);
-
-        assertNotNull(fileDate);
     }
 
     @Test
@@ -136,6 +114,27 @@ public class CryptoFSTest {
 
         // Check encrypted output.
         checkEncryptionProcess(null, null);
+    }
+
+    @Test
+    public void readFilesDate() throws IOException {
+
+        // Create unencrypted test file.
+        Path sourceFile = TestHelper.createRandomFile(unencryptedSource);
+
+        // Create encrypted file over cryptofs.
+        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
+        Path encFile = encryptedDirectory.resolve(sourceFile.getFileName().toString());
+
+        // Copy into encryptedDestination directory.
+        Files.createDirectories(encryptedDirectory);
+        Files.copy(sourceFile, encFile);
+
+        Date fileDate = new Date(Files.getLastModifiedTime(encFile).toMillis());
+
+        System.out.println(fileDate);
+
+        assertNotNull(fileDate);
     }
 
     @Test

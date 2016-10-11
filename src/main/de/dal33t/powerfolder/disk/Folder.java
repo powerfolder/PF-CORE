@@ -42,8 +42,10 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
+import org.cryptomator.cryptofs.CryptoFileSystemUris;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileSystem;
@@ -78,7 +80,7 @@ public class Folder extends PFComponent {
     //private static final int THIRTY_SECONDS = 30;
 
     /** The base location of the folder. */
-    private final Path localBase;
+    private Path localBase;
 
     /**
      * #2056: The directory to commit/mirror the whole folder to when in reaches
@@ -269,16 +271,33 @@ public class Folder extends PFComponent {
                 }
 
                 FileSystem encryptedFileSystem = null;
+                Path localBaseDir = folderSettings.getLocalBaseDir();
 
                 try {
-                    encryptedFileSystem = initCryptoFileSystem(getController(), folderSettings.getLocalBaseDir());
-                } catch (IOException e) {
-                    logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() + " " + e);
-                }
 
-                localBase = encryptedFileSystem.getPath(folderSettings
-                        .getLocalBaseDir()
-                        .toString());
+
+                    if (localBaseDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
+                        localBase = localBaseDir;
+                    } else {
+                        // UNIT TEST!
+                        throw new FileSystemNotFoundException();
+                        //URI encFolderUri = CryptoFileSystemUris.createUri(localBaseDir);
+                        //localBase = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
+                    }
+
+                } catch (FileSystemNotFoundException ioe) {
+
+                    try {
+                        encryptedFileSystem = initCryptoFileSystem(getController(), localBaseDir);
+                    } catch (IOException e) {
+                        logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
+                                " with localbase " + localBaseDir + " " + e);
+                        throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
+                                + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
+                    }
+
+                    localBase = encryptedFileSystem.getPath(localBaseDir.toString());
+                }
 
                 if (Files.notExists(localBase)) {
                     try {
@@ -451,15 +470,11 @@ public class Folder extends PFComponent {
 
     public static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
 
-        if (encDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
-            return encDir.getFileSystem();
-        } else {
             return CryptoFileSystemProvider.newFileSystem(
                     encDir,
                     CryptoFileSystemProperties.cryptoFileSystemProperties()
                             .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
                             .build());
-        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -1993,6 +2008,15 @@ public class Folder extends PFComponent {
         getController().removeScheduled(persister);
         getController().removeScheduled(persisterFuture);
         dao.stop();
+
+        if (localBase.toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX)){
+            try {
+                localBase.getFileSystem().close();
+            } catch (IOException e) {
+                logWarning("Could not close CryptoFileSystem @ " + localBase + " " + e);
+            }
+        }
+
         removeAllListeners();
         ListenerSupportFactory.removeAllListeners(folderListenerSupport);
         ListenerSupportFactory
@@ -4957,7 +4981,7 @@ public class Folder extends PFComponent {
             Files.setLastModifiedTime(lastSyncFile,
                 FileTime.fromMillis(lastSyncDate.getTime()));
         } catch (Exception e) {
-            logSevere("Unable to update last synced date to " + lastSyncFile);
+            logSevere("Unable to update last synced date to " + lastSyncFile + " " + e);
         }
     }
 

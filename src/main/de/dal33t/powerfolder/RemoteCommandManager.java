@@ -300,8 +300,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     } else if (line.startsWith("GET")
                         || line.startsWith("POST"))
                     {
-                        logWarning("Web requests to client not longer supported");
-                        //processWebRequest(line, socket.getOutputStream());
+                        //logWarning("Web requests to client not longer supported");
+                        processWebRequest(line, socket.getOutputStream());
                     } else {
                         logWarning("Unknown remote command: " + line);
                     }
