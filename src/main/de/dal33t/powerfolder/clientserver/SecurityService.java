@@ -70,21 +70,6 @@ public interface SecurityService {
     boolean login(String username, Serializable credentials);
 
     /**
-     * Logs in from a remote location.
-     *
-     * @param username
-     * @param credentials
-     *            the credentials
-     * @param nodeInfo
-     *            the node the user logs in from
-     * @throws SecurityException
-     *             if the log in failed, but credentials were right.
-     * @return {@code True} if login succeeded, {@code false} if the credentials
-     *         were wrong
-     */
-    boolean login(String username, Serializable credentials, MemberInfo nodeInfo);
-
-    /**
      * PFC-2548: Logs in by a token secret (device specific token).
      * 
      * @param tokenSecret
@@ -132,13 +117,6 @@ public interface SecurityService {
      * @return Account details about the currently logged in user.
      */
     AccountDetails getAccountDetails();
-
-    /**
-     * @param nodeInfo
-     *            the node of the logged in user
-     * @return Account details about the currently logged in user.
-     */
-    AccountDetails getAccountDetails(MemberInfo nodeInfo);
 
     /**
      * Resulting map may not contain all nodes only those connected to the
