@@ -66,7 +66,7 @@ import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.IdentityReply;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.KnownNodes;
-import de.dal33t.powerfolder.message.Login;
+import de.dal33t.powerfolder.message.clientserver.Login;
 import de.dal33t.powerfolder.message.LoginReply;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.message.MessageListener;
