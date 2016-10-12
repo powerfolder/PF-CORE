@@ -51,7 +51,8 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
     /* Define full packages here; might be required in the future */
     private final String[] PACKAGES = new String[] {
         "de.dal33t.powerfolder.message.%s",
-        "de.dal33t.powerfolder.clientserver.%s"
+        "de.dal33t.powerfolder.message.clientserver.%s",
+        "de.dal33t.powerfolder.util.delta.%s"
     };
 
     /**
@@ -126,7 +127,7 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                 try {
                     klass = Class.forName(String.format(pkg, klassName));
                 } catch (ClassNotFoundException e) {
-                    /* We ignore that here */
+                    klass = null; ///< Make this this fails
                 }
                 
                 if(null != klass) break; ///< Exit when done
