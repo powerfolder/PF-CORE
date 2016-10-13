@@ -22,13 +22,20 @@ package de.dal33t.powerfolder.util.delta;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ByteString;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.FilePartsRecordProto;
+import de.dal33t.powerfolder.protocol.PartInfoProto;
+
 /**
  * Holds the info of one set of PartInfos.
  *
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $
  */
-public final class FilePartsRecord implements Serializable {
+public final class FilePartsRecord implements Serializable, D2DObject {
 	private static final long serialVersionUID = 1L;
 
 	private PartInfo[] infos;
@@ -104,5 +111,62 @@ public final class FilePartsRecord implements Serializable {
     @Override
     public String toString() {
         return "[FilePartsRecord, fsize: " + fileLength + ", partLength: " + partLength + ", infocount: " + infos.length + "]";
+    }
+
+    /**
+     * Init from D2D message
+     * 
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param mesg
+     *            Message to use data from
+     **/
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof FilePartsRecordProto.FilePartsRecord) {
+            FilePartsRecordProto.FilePartsRecord proto = 
+                (FilePartsRecordProto.FilePartsRecord) mesg;
+
+            /* Convert list back to array */
+            int i = 0;
+
+            this.infos = new PartInfo[proto.getPartInfosCount()];
+
+            for(PartInfoProto.PartInfo pinfo : proto.getPartInfosList()) {
+                this.infos[i++] = new PartInfo(pinfo);
+              }
+
+            this.partLength = proto.getPartLength();
+            this.fileLength = proto.getFileLength();
+            this.fileDigest = proto.getFileDigest().toByteArray();
+        }
+    }
+
+    /**
+     * Convert to D2D message
+     * 
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage toD2D() {
+        FilePartsRecordProto.FilePartsRecord.Builder builder =
+            FilePartsRecordProto.FilePartsRecord.newBuilder();
+
+        builder.setClazzName(this.getClass().getSimpleName());
+
+        /* Convert array to list */
+        if (null != this.infos) {
+            for(PartInfo pinfo : this.infos) {
+               builder.addPartInfos((PartInfoProto.PartInfo)pinfo.toD2D());
+            }
+         }
+
+        builder.setPartLength(this.partLength);
+        builder.setFileLength(this.fileLength);
+        builder.setFileDigest(ByteString.copyFrom(this.fileDigest));
+
+        return builder.build();
     }
 }

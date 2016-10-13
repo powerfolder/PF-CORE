@@ -22,6 +22,12 @@ package de.dal33t.powerfolder.util.delta;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ByteString;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.PartInfoProto;
+
 /**
  * Info for a frame of bytes.
  * A partinfo contains only enough information to check for matches and reconstruct
@@ -30,7 +36,7 @@ import java.util.Arrays;
  * @author Dennis "Dante" Waldherr
  * @version $Revision: $
  */
-public final class PartInfo implements Serializable {
+public final class PartInfo implements Serializable, D2DObject {
 	private static final long serialVersionUID = 1L;
 	private long index;
 	private long checksum;
@@ -42,6 +48,18 @@ public final class PartInfo implements Serializable {
 		this.checksum = checksum;
 		this.digest = digest;
 	}
+
+    /**
+     * Init from D2D message
+     *
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    public PartInfo(AbstractMessage mesg) {
+      initFromD2D(mesg);
+    }
+
 	/**
 	 * Returns the checksum calculated for this part.
 	 * @return
@@ -91,4 +109,42 @@ public final class PartInfo implements Serializable {
 	public int hashCode() {
 		return (int) index ^ (int) (index >> 32) ^ (int) checksum ^ (int) (checksum >> 32) ^ Arrays.hashCode(digest);
 	}
+
+    /**
+     * Init from D2D message
+     * 
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param mesg
+     *            Message to use data from
+     **/
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof PartInfoProto.PartInfo) {
+            PartInfoProto.PartInfo proto = (PartInfoProto.PartInfo) mesg;
+
+            this.index    = proto.getIndex();
+            this.checksum = proto.getChecksum();
+            this.digest   = proto.getDigest().toByteArray();
+        }
+    }
+
+    /**
+     * Convert to D2D message
+     * 
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage toD2D() {
+        PartInfoProto.PartInfo.Builder builder = PartInfoProto.PartInfo.newBuilder();
+
+        builder.setClazzName(this.getClass().getSimpleName());
+        builder.setIndex(this.index);
+        builder.setChecksum(this.checksum);
+        builder.setDigest(ByteString.copyFrom(this.digest));
+
+        return builder.build();
+    }
 }

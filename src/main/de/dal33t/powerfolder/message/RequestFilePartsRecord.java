@@ -28,63 +28,60 @@ import de.dal33t.powerfolder.protocol.RequestFilePartsRecordProto;
 
 /**
  * Requests a FilePartsRecord for a given file.
+ * 
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
-public class RequestFilePartsRecord extends Message
-  implements D2DObject
-{
-	private static final long serialVersionUID = 100L;
+public class RequestFilePartsRecord extends Message implements D2DObject {
+    private static final long serialVersionUID = 100L;
 
-	private FileInfo file;
+    private FileInfo file;
 
-	public RequestFilePartsRecord() {
-	}
+    public RequestFilePartsRecord() {
+    }
 
-	public RequestFilePartsRecord(FileInfo file) {
-		super();
-		this.file = file;
-	}
+    public RequestFilePartsRecord(FileInfo file) {
+        super();
+        this.file = file;
+    }
 
-	public FileInfo getFile() {
-		return file;
-	}
+    public FileInfo getFile() {
+        return file;
+    }
 
-    /** initFromD2DMessage
+    /**
      * Init from D2D message
+     * 
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
+     * @param mesg
+     *            Message to use data from
      **/
 
     @Override
-    public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof RequestFilePartsRecordProto.RequestFilePartsRecord)
-        {
-          RequestFilePartsRecordProto.RequestFilePartsRecord proto =
-            (RequestFilePartsRecordProto.RequestFilePartsRecord)mesg;
+    public void initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof RequestFilePartsRecordProto.RequestFilePartsRecord) {
+            RequestFilePartsRecordProto.RequestFilePartsRecord proto = 
+                (RequestFilePartsRecordProto.RequestFilePartsRecord) mesg;
 
-          this.file = new FileInfo(proto.getFileInfo());
+            this.file = new FileInfo(proto.getFileInfo());
         }
     }
 
-    /** toD2D
+    /**
      * Convert to D2D message
+     * 
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
      **/
 
     @Override
-    public AbstractMessage
-    toD2D()
-    {
-      RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder =
-        RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
+    public AbstractMessage toD2D() {
+        RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder =
+            RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
-      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
+        builder.setClazzName(this.getClass().getSimpleName());
+        builder.setFileInfo((FileInfoProto.FileInfo) this.file.toD2D());
 
-      return builder.build();
+        return builder.build();
     }
 }
