@@ -80,7 +80,7 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.AccountDetails;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.NodeList;

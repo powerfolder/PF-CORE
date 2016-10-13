@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.clientserver;
 import java.util.EventObject;
 
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.message.AccountDetails;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 
 @SuppressWarnings("serial")
 public class ServerClientEvent extends EventObject {

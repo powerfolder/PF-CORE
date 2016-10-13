@@ -1,9 +1,10 @@
-package de.dal33t.powerfolder.message;
+package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.LoginProto;
 import de.dal33t.powerfolder.protocol.MemberInfoProto;
 

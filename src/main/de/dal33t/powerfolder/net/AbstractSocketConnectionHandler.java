@@ -439,7 +439,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         // break if remote peer did no identitfy
-        if (identity == null && (!(message instanceof Identity) && !(message instanceof LoginReply))) {
+        if (identity == null && !(message instanceof Identity)) {
             throw new ConnectionException(
                 "Unable to send message, peer did not identify yet").with(this);
         }
