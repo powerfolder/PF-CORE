@@ -323,7 +323,6 @@ public class Group implements Serializable, D2DObject {
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof GroupProto.Group) {
             GroupProto.Group proto  = (GroupProto.Group)mesg;
-            this.oid                = proto.getOid();
             this.name               = proto.getName();
             this.ldapDN             = proto.getLdapDn();
             this.notes              = proto.getNotes();
@@ -395,7 +394,6 @@ public class Group implements Serializable, D2DObject {
     public AbstractMessage toD2D() {
         GroupProto.Group.Builder builder = GroupProto.Group.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        if (this.oid != null) builder.setOid(this.oid);
         if (this.name != null) builder.setName(this.name);
         if (this.ldapDN != null) builder.setLdapDn(this.ldapDN);
         if (this.notes != null) builder.setNotes(this.notes);
