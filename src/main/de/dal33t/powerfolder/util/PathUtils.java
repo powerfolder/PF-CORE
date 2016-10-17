@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.util;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -478,8 +479,8 @@ public class PathUtils {
             throw new IOException("cannot copy onto itself");
         }
         try {
-            if (from.toString().contains(Constants.FOLDER_ENCRYPTION_SUFFIX) ||
-                    to.toString().contains(Constants.FOLDER_ENCRYPTION_SUFFIX)) {
+            if (EncryptedFileSystemUtils.isEncryptedPath(from) ||
+                    EncryptedFileSystemUtils.isEncryptedPath(to)) {
                 Files.copy(from, to);
             } else {
                 copyFromStreamToFile(Files.newInputStream(from), to);
