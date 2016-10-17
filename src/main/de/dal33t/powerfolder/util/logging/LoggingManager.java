@@ -123,7 +123,12 @@ public class LoggingManager {
                 .startsWith("com.mchange"))
                 && record.getLevel().intValue() > Level.FINE.intValue())
             {
-                if (record.getLevel() == Level.INFO) {
+                // PFS-2200:
+                if (loggerName.endsWith("ReadWriteCache")
+                    && record.getLevel() == Level.WARNING)
+                {
+                    record.setLevel(Level.FINE);
+                } else if (record.getLevel() == Level.INFO) {
                     record.setLevel(Level.FINE);
                 }
                 return true;

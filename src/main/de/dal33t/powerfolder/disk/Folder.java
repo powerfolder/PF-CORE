@@ -4157,7 +4157,7 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(true);
         } catch (FolderException e) {
-            logSevere("invalid local base: " + e, e);
+            logSevere("invalid local base: " + getLocalBase() + " " + e, e);
             return setDeviceDisconnected(true);
         }
 

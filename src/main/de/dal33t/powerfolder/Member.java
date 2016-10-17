@@ -19,24 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import java.io.Externalizable;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
-
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -45,75 +27,29 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.AbortDownload;
-import de.dal33t.powerfolder.message.AbortUpload;
-import de.dal33t.powerfolder.message.AddFriendNotification;
-import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
-import de.dal33t.powerfolder.message.DownloadQueued;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.FileHistoryReply;
-import de.dal33t.powerfolder.message.FileHistoryRequest;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FileListRequest;
-import de.dal33t.powerfolder.message.FileRequestCommand;
-import de.dal33t.powerfolder.message.FolderDBMaintCommando;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
-import de.dal33t.powerfolder.message.FolderList;
-import de.dal33t.powerfolder.message.FolderListExt;
-import de.dal33t.powerfolder.message.FolderRelatedMessage;
-import de.dal33t.powerfolder.message.HandshakeCompleted;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.IdentityReply;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.KnownNodes;
-import de.dal33t.powerfolder.message.Login;
-import de.dal33t.powerfolder.message.LoginReply;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.message.NodeInformation;
-import de.dal33t.powerfolder.message.Notification;
-import de.dal33t.powerfolder.message.Ping;
-import de.dal33t.powerfolder.message.Pong;
-import de.dal33t.powerfolder.message.Problem;
-import de.dal33t.powerfolder.message.QuotaExceeded;
-import de.dal33t.powerfolder.message.RelayedMessage;
-import de.dal33t.powerfolder.message.ReplyFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.RequestFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestNodeInformation;
-import de.dal33t.powerfolder.message.RequestNodeList;
-import de.dal33t.powerfolder.message.RequestPart;
-import de.dal33t.powerfolder.message.RevertedFile;
-import de.dal33t.powerfolder.message.ScanCommand;
-import de.dal33t.powerfolder.message.SearchNodeRequest;
-import de.dal33t.powerfolder.message.SettingsChange;
-import de.dal33t.powerfolder.message.StartUpload;
-import de.dal33t.powerfolder.message.StopUpload;
-import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.message.UDTMessage;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.message.clientserver.AccountStateChanged;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
-import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
-import de.dal33t.powerfolder.util.ConfigurationLoader;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.Filter;
-import de.dal33t.powerfolder.util.MessageListenerSupport;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+
+import java.io.Externalizable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A full quailfied member, can have a connection to interact with remote
@@ -1965,8 +1901,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                     logWarning("Ignoring reload config request from non server: "
                         + message);
                 }
-            } else if (message instanceof LoginReply) {
-                LoginReply loginReply = (LoginReply) message;
             } else {
                 if (isFiner()) {
                     logFiner("Message not known to message handling code, "

@@ -1,17 +1,16 @@
-package de.dal33t.powerfolder.message;
+package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.LoginProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
 
 public class Login extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
     private String username;
     private String password;
-    private MemberInfo member;
 
     /**
      * Serialization constructor
@@ -19,10 +18,9 @@ public class Login extends Message implements D2DObject {
     public Login() {
     }
 
-    public Login(String username, String password, MemberInfo member) {
+    public Login(String username, String password) {
         this.setUsername(username);
         this.setPassword(password);
-        this.setMember(member);
     }
 
     /**
@@ -49,21 +47,12 @@ public class Login extends Message implements D2DObject {
         this.password = password;
     }
 
-    public MemberInfo getMember() {
-        return member;
-    }
-
-    public void setMember(MemberInfo member) {
-        this.member = member;
-    }
-
     @Override
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof LoginProto.Login) {
             LoginProto.Login proto = (LoginProto.Login)mesg;
             this.setUsername(proto.getUsername());
             this.setPassword(proto.getPassword());
-            this.member = new MemberInfo(proto.getMemberInfo());
         }
     }
     
@@ -79,7 +68,6 @@ public class Login extends Message implements D2DObject {
         builder.setClazzName(this.getClass().getSimpleName());
         builder.setUsername(this.getUsername());
         builder.setPassword(this.getPassword());
-        builder.setMemberInfo((MemberInfoProto.MemberInfo)this.member.toD2D());
         return builder.build();
     }
 }

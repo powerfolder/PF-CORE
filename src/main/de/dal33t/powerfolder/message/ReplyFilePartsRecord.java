@@ -21,7 +21,12 @@ package de.dal33t.powerfolder.message;
 
 import java.io.IOException;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.RequestFilePartsRecordProto;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
@@ -31,7 +36,7 @@ import de.dal33t.powerfolder.util.delta.FilePartsRecord;
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
-public class ReplyFilePartsRecord extends Message {
+public class ReplyFilePartsRecord extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
     private FileInfo file;
@@ -65,5 +70,41 @@ public class ReplyFilePartsRecord extends Message {
     {
         stream.defaultReadObject();
         validate();
+    }
+    
+    /**
+     * Init from D2D message
+     * 
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param mesg
+     *            Message to use data from
+     **/
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof RequestFilePartsRecordProto.RequestFilePartsRecord) {
+            RequestFilePartsRecordProto.RequestFilePartsRecord proto = 
+                (RequestFilePartsRecordProto.RequestFilePartsRecord) mesg;
+
+            this.file = new FileInfo(proto.getFileInfo());
+        }
+    }
+
+    /**
+     * Convert to D2D message
+     * 
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage toD2D() {
+        RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder = 
+            RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
+
+        builder.setClazzName(this.getClass().getSimpleName());
+        builder.setFileInfo((FileInfoProto.FileInfo) this.file.toD2D());
+
+        return builder.build();
     }
 }

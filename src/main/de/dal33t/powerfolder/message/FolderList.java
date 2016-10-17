@@ -266,9 +266,9 @@ public class FolderList extends Message
           /* Convert list back to array */
           int i = 0;
 
-          this.secretFolders = new FolderInfo[proto.getSecretFoldersCount()];
+          this.secretFolders = new FolderInfo[proto.getFolderInfosCount()];
 
-          for(FolderInfoProto.FolderInfo finfo : proto.getSecretFoldersList())
+          for(FolderInfoProto.FolderInfo finfo : proto.getFolderInfosList())
             {
               this.secretFolders[i++] = new FolderInfo(finfo);
             }
@@ -295,7 +295,7 @@ public class FolderList extends Message
       /* Convert array to list */
       for(FolderInfo finfo : this.secretFolders)
         {
-          builder.addSecretFolders((FolderInfoProto.FolderInfo)finfo.toD2D());
+          builder.addFolderInfos((FolderInfoProto.FolderInfo)finfo.toD2D());
         }
 
       builder.setJoinedMetaFolders(this.joinedMetaFolders);
