@@ -40,12 +40,8 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
-import org.cryptomator.cryptofs.CryptoFileSystemProperties;
-import org.cryptomator.cryptofs.CryptoFileSystemProvider;
-import org.cryptomator.cryptofs.CryptoFileSystemUris;
 
 import java.io.*;
-import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileSystem;
@@ -59,7 +55,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 
-import static de.dal33t.powerfolder.Constants.FOLDER_ENCRYPTION_SUFFIX;
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
 
@@ -256,61 +251,39 @@ public class Folder extends PFComponent {
         dirty = false;
         problems = new CopyOnWriteArrayList<>();
 
-        if (folderSettings.getLocalBaseDir().isAbsolute()) {
+        Path localBaseDir = folderSettings.getLocalBaseDir();
+
+        if (localBaseDir.isAbsolute()) {
 
             // PFS-1994: Start: Encrypted storage.
-            boolean isEncryptionActivated = ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(getController());
-            boolean isEncryptedFolder = folderSettings.getLocalBaseDir().toString().endsWith(FOLDER_ENCRYPTION_SUFFIX);
+            boolean isEncryptionActivated = EncryptedFileSystemUtils.isEncryptionActivated(getController());
+            boolean isEncryptedFolder = EncryptedFileSystemUtils.isEncryptedPath(localBaseDir);
 
             if (isEncryptionActivated && isEncryptedFolder) {
 
-                if (!ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.hasValue(getController())) {
-                    ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.setValue(getController(),
-                            IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId());
-                    getController().saveConfig();
-                }
-
-                FileSystem encryptedFileSystem = null;
-                Path localBaseDir = folderSettings.getLocalBaseDir();
+                // Check if server config has a passphrase, if yes use it, if no, create a new one.
+                EncryptedFileSystemUtils.setEncryptionPassphrase(getController());
 
                 try {
 
-
-                    if (localBaseDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
+                    // Check if the incoming localBaseDir is already an encrypted path.
+                    if (EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir)) {
                         localBase = localBaseDir;
                     } else {
-                        // UNIT TEST!
-                        throw new FileSystemNotFoundException();
-                        //URI encFolderUri = CryptoFileSystemUris.createUri(localBaseDir);
-                        //localBase = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
+                        // If incoming localBaseDir has no CryptoPath instance, create one.
+                        localBase = EncryptedFileSystemUtils.initCryptoFS(getController(), localBaseDir);
                     }
 
-                } catch (FileSystemNotFoundException ioe) {
-
-                    try {
-                        encryptedFileSystem = initCryptoFileSystem(getController(), localBaseDir);
-                    } catch (IOException e) {
-                        logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
-                                " with localbase " + localBaseDir + " " + e);
-                        throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
-                                + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
-                    }
-
-                    localBase = encryptedFileSystem.getPath(localBaseDir.toString());
+                } catch (IOException e) {
+                    logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
+                            " with localbase " + localBaseDir + " " + e);
+                    throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
+                            + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
                 }
-
-                if (Files.notExists(localBase)) {
-                    try {
-                        Files.createDirectories(localBase);
-                    } catch (IOException e) {
-                        logSevere("Could not create localBase " + localBase.toString() +
-                                " directories for encrypted storage: " + e);
-                    }
-                }
-            // PFS-1994: End: Encrypted storage.
+                // PFS-1994: End: Encrypted storage.
 
             } else {
-                localBase = folderSettings.getLocalBaseDir();
+                localBase = localBaseDir;
             }
 
         } else {
@@ -460,21 +433,6 @@ public class Folder extends PFComponent {
         if (!newPatterns.equals(oldPatterns)) {
             triggerPersist();
         }
-    }
-
-    /**
-     * PFS-1994: Encrypted storage.
-     *
-     * @return A CryptoFileSystem instance.
-     */
-
-    public static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
-
-            return CryptoFileSystemProvider.newFileSystem(
-                    encDir,
-                    CryptoFileSystemProperties.cryptoFileSystemProperties()
-                            .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
-                            .build());
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -2008,15 +1966,6 @@ public class Folder extends PFComponent {
         getController().removeScheduled(persister);
         getController().removeScheduled(persisterFuture);
         dao.stop();
-
-        if (localBase.toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX)){
-            try {
-                localBase.getFileSystem().close();
-            } catch (IOException e) {
-                logWarning("Could not close CryptoFileSystem @ " + localBase + " " + e);
-            }
-        }
-
         removeAllListeners();
         ListenerSupportFactory.removeAllListeners(folderListenerSupport);
         ListenerSupportFactory
