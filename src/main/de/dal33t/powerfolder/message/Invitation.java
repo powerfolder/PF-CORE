@@ -26,14 +26,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
+import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Type;
 
 import com.google.protobuf.AbstractMessage;
@@ -71,6 +66,17 @@ public class Invitation extends FolderRelatedMessage
 {
     private static final long serialVersionUID = 101L;
 
+    public static final String PROPERTY_OID = "oid";
+    public static final String PROPERTY_INVITOR = "invitor";
+    public static final String PROPERTY_INVITATION_TEXT = "invitationText";
+    public static final String PROPERTY_SUGGESTED_SYNC_PROFILE_CONFIG = "suggestedSyncProfileConfig";
+    public static final String PROPERTY_SUGGESTED_LOCAL_BASE_PATH = "suggestedLocalBasePath";
+    public static final String PROPERTY_RELATIVE = "relative";
+    public static final String PROPERTY_PERMISSION = "permission";
+    public static final String PROPERTY_SERVER = "server";
+    public static final String PROPERTY_SENDER = "sender";
+    public static final String PROPERTY_RECIPIENT = "recipient";
+
     // Since 9.1
     @Id
     private String oid;
@@ -99,16 +105,24 @@ public class Invitation extends FolderRelatedMessage
 
     /**
      * PFS-2008: replaces {@link #username}
+     * NOTE: sender should be annotated with a @Column(length = 512) as it could contain
+     *       an e-mail address {@link de.dal33t.powerfolder.security.Account#emails}
+     *       and those can be up to 512 char long. BUT this would lead to an index of
+     *       size > 900 which is a hard limit in MS SQL databases.
      * @since 11.2
      */
-    @Column(length = 512)
+    @Index(name = "IDX_INV_SENDER")
     private String sender;
 
     /**
      * PFS-2008: replaces {@link #inviteeUsername}
+     * NOTE: recipient should be annotated with a @Column(length = 512) as it could contain
+     *       an e-mail address {@link de.dal33t.powerfolder.security.Account#emails}
+     *       and those can be up to 512 char long. BUT this would lead to an index of
+     *       size > 900 which is a hard limit in MS SQL databases.
      * @since 11.2
      */
-    @Column(length = 512)
+    @Index(name = "IDX_INV_RECIPIENT")
     private String recipient;
 
     /**
@@ -116,7 +130,8 @@ public class Invitation extends FolderRelatedMessage
      * @since 6.0
      * @deprecated as of v11.1, replaced by {@link #sender}
      */
-    @Deprecated()
+    @Deprecated
+    @Transient
     private String username;
     /**
      * PFS-2008
@@ -124,6 +139,7 @@ public class Invitation extends FolderRelatedMessage
      * @deprecated as of v11.1, replaced by {@link #recipient}
      */
     @Deprecated
+    @Transient
     private String inviteeUsername;
 
     /**
@@ -131,11 +147,14 @@ public class Invitation extends FolderRelatedMessage
      *
      * @param permission The permission to the folder of this invitation
      */
-    public Invitation(FolderPermission permisison) {
-        Reject.ifNull(permisison, "Permission is null");
+    public Invitation(FolderPermission permission) {
         oid = IdGenerator.makeId();
-        this.permission = permisison;
+        this.permission = permission;
         this.folder = permission.getFolder();
+    }
+
+    private Invitation() {
+        // NOP - Hibernate
     }
 
     public String getOID() {
@@ -511,7 +530,7 @@ public class Invitation extends FolderRelatedMessage
     }
 
     /**
-     * @deprecated Since 11.1 use {@link #setSender()}
+     * @deprecated Since 11.1 use {@link #setSender(String)}
      */
     @Deprecated
     public void setInvitorUsername(String username) {
@@ -527,7 +546,7 @@ public class Invitation extends FolderRelatedMessage
     }
 
     /**
-     * @deprecated Since 11.1 use {@link #setRecipient()}
+     * @deprecated Since 11.1 use {@link #setRecipient(String)}
      */
     @Deprecated
     public void setInviteeUsername(String username) {

@@ -261,8 +261,8 @@ public class InvitationUtil {
         }
 
         System.out.format("-> %s\n", inv.getOID());
-        System.out.format("Invitation from '%s' to '%s'\n", inv.getInvitorUsername(),
-            inv.getInviteeUsername());
+        System.out.format("Invitation from '%s' to '%s'\n", inv.getSender(),
+            inv.getRecipient());
         System.out.format("Permission '%s' for Folder '%s' - localized '%s' - ID '%s'\n",
             inv.getPermission().getMode().toString(),
             inv.getPermission().getFolder().getName(),
