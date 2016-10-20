@@ -1,10 +1,7 @@
 package de.dal33t.powerfolder.test.encryptedStorage;
 
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
@@ -25,7 +22,7 @@ import static java.nio.file.FileVisitResult.CONTINUE;
 import static org.junit.Assert.*;
 
 /**
- * JUnit Test for storage encryption with cryptolib and cryptofs.
+ * Cryptomator cryptolib and cryptofs JUnit tests.
  *
  * @author Jan Wiegmann <wiegmann@powerfolder.com>
  */
@@ -62,15 +59,6 @@ public class CryptoFSTest {
         // Cryptomator filesystems.
         fileSystem = initFileSystem(encryptedDestination, IdGenerator.makeId());
         fileSystem2 = initFileSystem(encryptedDestination2, IdGenerator.makeId());
-
-        // Initialize stuff for FiveControllerTestCase.
-        /*super.setUp();
-        PreferencesEntry.EXPERT_MODE.setValue(getContollerHomer(), true);
-        PreferencesEntry.EXPERT_MODE.setValue(getContollerMarge(), true);
-        PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
-        PreferencesEntry.EXPERT_MODE.setValue(getContollerMaggie(), true);
-        PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
-        joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION, false);*/
 
     }
 
@@ -551,8 +539,6 @@ public class CryptoFSTest {
         encPath2 = fileSystem2.getPath(encryptedDestination.resolve(encPath2.getFileName()).toString());
 
         encPath1.getFileSystem().close();
-
-        encPath2 = encPath2.resolve("foo");
 
     }
 
