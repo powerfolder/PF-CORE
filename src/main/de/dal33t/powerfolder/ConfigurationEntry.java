@@ -91,6 +91,15 @@ public enum ConfigurationEntry {
      * hides updates from the UI.
      */
     ENABLE_UPDATE("enable.update", true) {
+        // Always return false if software was installed via MSI
+        @Override
+        public Boolean getValueBoolean(Controller controller) {
+            if (WinUtils.isSupported() && WinUtils.isMSI()) {
+                return Boolean.FALSE;
+            }
+            return super.getValueBoolean(controller);
+        }
+        
         @Override
         public String getDefaultValue() {
             // Hack for PFC-2461
