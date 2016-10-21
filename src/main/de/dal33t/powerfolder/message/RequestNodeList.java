@@ -229,7 +229,7 @@ public class RequestNodeList extends Message
           if(null != this.nodeIds)
               this.nodeIds.clear();
 
-          for(String str : proto.getNodeIDsList())
+          for(String str : proto.getNodeIdsList())
             {
               this.nodeIds.add(str);
             }
@@ -265,8 +265,8 @@ public class RequestNodeList extends Message
 
       /* Just append collection here */
       if(null != this.nodeIds) {
-          builder.addAllNodeIDs(this.nodeIds);
-      } else builder.addAllNodeIDs(Collections.emptyList());
+          builder.addAllNodeIds(this.nodeIds);
+      } else builder.addAllNodeIds(Collections.emptyList());
 
       return builder.build();
     }
