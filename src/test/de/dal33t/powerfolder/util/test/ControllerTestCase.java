@@ -26,6 +26,8 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.UUID;
 
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.util.StringUtils;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -52,6 +54,9 @@ public abstract class ControllerTestCase extends TestCase {
     private static final Path TESTFOLDER_BASEDIR = TestHelper.getTestDir()
         .resolve("ControllerBart/testFolder").toAbsolutePath();
 
+    private static final Path ENCRYPTED_TESTFOLDER_BASEDIR = TestHelper.getTestDir()
+            .resolve("ControllerBart/testFolder" + Constants.FOLDER_ENCRYPTION_SUFFIX).toAbsolutePath();
+
     private Controller controller;
 
     // The optional test folders
@@ -75,6 +80,10 @@ public abstract class ControllerTestCase extends TestCase {
         Path source = Paths.get("src/test-resources/ControllerBart.config");
         Path target = Controller.getMiscFilesLocation().resolve(
             "ControllerBart.config");
+        source = Paths.get(target.toString()
+                .replace("build/test/home/.PowerFolder/ControllerBart.config", source.toString()));
+
+
         Files.copy(source, target);
         assertTrue(Files.exists(target));
 
@@ -139,6 +148,13 @@ public abstract class ControllerTestCase extends TestCase {
         FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
             .toString());
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
+    }
+
+    protected void setupEncryptedTestFolder(SyncProfile syncprofile)
+    {
+        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
+                .toString());
+        folder = joinFolder(testFolder, ENCRYPTED_TESTFOLDER_BASEDIR, syncprofile);
     }
 
     /**

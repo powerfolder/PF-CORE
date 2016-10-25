@@ -27,12 +27,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * This test checks that a folder can be moved for one location to another. It
@@ -54,7 +56,9 @@ public class FolderMoveTest extends ControllerTestCase {
 
         // Setup a test folder; delete previous tests.
         getController().setPaused(true);
-        setupTestFolder(SyncProfile.HOST_FILES);
+        //setupTestFolder(SyncProfile.HOST_FILES);
+        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(super.getController(), true);
+        setupEncryptedTestFolder(SyncProfile.HOST_FILES);
         folder = getFolder();
         Path localBase = folder.getLocalBase();
 
@@ -129,7 +133,7 @@ public class FolderMoveTest extends ControllerTestCase {
         Path oldLocalBase = folder.getLocalBase();
         try {
             // Move the contents.
-            PathUtils.recursiveMove(oldLocalBase, testFolder2);
+            PathUtils.recursiveMoveVisitor(oldLocalBase, testFolder2);
 
             // The new location should contain the
             // 1) .PowerFolder dir, 2) the test file, 3) sub dir and 4) emptySub

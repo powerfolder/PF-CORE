@@ -172,7 +172,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String[] parts = list.split("\\$");
         for (String s : parts) {
             try {
-                if (!s.contains(Constants.FOLDER_ENCRYPTION_SUFFIX)) {
+                if (!EncryptedFileSystemUtils.isEncryptedPath(s)) {
                     Path p = Paths.get(s);
                     removedFolderDirectories.add(p);
                 }
@@ -952,8 +952,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 + ". Choosen relative path: " + targetDir);
         }
 
-        Collection<Folder> foobar = getController().getFolderRepository().getFolders();
-
         for (Folder folder : getController().getFolderRepository()
             .getFolders())
         {
@@ -1386,7 +1384,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 try {
-                    FolderRepository.recursiveDelete(folder.getSystemSubDir(), true);
+                    PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir(), true);
                 } catch (IOException e) {
                     logSevere("Failed to delete: " + folder.getSystemSubDir(), e);
                 }
@@ -1416,24 +1414,20 @@ public class FolderRepository extends PFComponent implements Runnable {
         fileRequestor.triggerFileRequesting();
 
         // PFS-1994: If folder was moved, delete the old folder and close the encrypted filesystem.
-        if (wasMoved) {
+        if (wasMoved && EncryptedFileSystemUtils.isEncryptedPath(folder.getLocalBase())) {
             try {
-                if (EncryptedFileSystemUtils.isEncryptedPath(folder.getLocalBase())) {
-                    FolderRepository.recursiveDelete(folder.getLocalBase(), false);
-                    folder.getLocalBase().getFileSystem().close();
-                } else {
-                    FolderRepository.recursiveDelete(folder.getLocalBase(), false);
-                }
+                PathUtils.recursiveDeleteVisitor(folder.getLocalBase(), false);
+                folder.getLocalBase().getFileSystem().close();
                 wasMoved = false;
             } catch (IOException e) {
                 logWarning("Failed to close encrypted filesystem for localbase @ " + folder.getLocalBase()
                         + " " + e);
             }
         }
-
         if (isFine()) {
             logFine(folder + " removed");
         }
+
     }
 
     /**
@@ -2546,7 +2540,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Move it.
-        recursiveMove(originalDirectory, newDirectory);
+        PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
         wasMoved = true;
 
         // Remember patterns if content not moving.
@@ -3053,68 +3047,4 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         return true;
     }
-
-    // PFS-1994: Encrypted storage.
-    public static void recursiveMove(Path oldDirectory, Path newDirectory) throws IOException {
-
-        Path finalOldDirectory = oldDirectory;
-
-        Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-
-                new SimpleFileVisitor<Path>() {
-
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                            throws IOException {
-                        Path targetDir = newDirectory.resolve(finalOldDirectory.relativize(dir).toString());
-                        if (!Files.exists(targetDir)) {
-                            Files.createDirectories(targetDir);
-                        }
-                        try {
-                            Files.copy(dir, targetDir);
-                        } catch (FileAlreadyExistsException e) {
-                            if (!Files.isDirectory(targetDir))
-                                System.out.println("Could not move file.");
-                        }
-                        return CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                            throws IOException {
-                        Files.move(file, newDirectory.resolve(finalOldDirectory.relativize(file).toString()));
-                        return CONTINUE;
-                    }
-                });
-
-    }
-
-    public static void recursiveDelete(Path dir, boolean encryptedDelete) throws IOException {
-
-        if (!encryptedDelete) {
-            dir = Paths.get(dir.toString());
-        }
-
-        Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
-                Files.delete(file);
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException e)
-                    throws IOException {
-                if (e == null) {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                } else {
-                    throw e;
-                }
-            }
-        });
-    }
-
 }

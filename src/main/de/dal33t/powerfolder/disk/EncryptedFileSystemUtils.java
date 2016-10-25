@@ -11,6 +11,10 @@ import org.cryptomator.cryptofs.CryptoFileSystemUris;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
  * Helper class for working with the encrypted FileSystem from Cryptomator.
@@ -53,7 +57,12 @@ public class EncryptedFileSystemUtils {
 
     public static boolean isEncryptedPath (Path path){
 
-        return path.toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
+        return path.toString().contains(Constants.FOLDER_ENCRYPTION_SUFFIX);
+    }
+
+    public static boolean isEncryptedPath (String path){
+
+        return path.contains(Constants.FOLDER_ENCRYPTION_SUFFIX);
     }
 
     public static boolean isCryptoPathInstance(Path path){
