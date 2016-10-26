@@ -1621,8 +1621,11 @@ public class PathUtils {
     }
 
     /**
-     * @param base
-     * @return
+     * Check {@code base} if it does contain data other than a
+     * {@link Constants.POWERFOLDER_SYSTEM_SUBDIR} directory.
+     *
+     * @param base The path check for contents
+     * @return {@code True} if {@code base} contains content other than a "powerfolder system subdir", {@code false} otherwise.
      * @throws IllegalArgumentException
      */
     public static boolean hasContents(Path base) {

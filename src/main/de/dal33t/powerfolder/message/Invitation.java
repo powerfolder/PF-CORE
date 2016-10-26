@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 
 import javax.persistence.*;
 
+import com.liferay.nativity.util.StringUtil;
 import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Type;
 
@@ -310,6 +311,16 @@ public class Invitation extends FolderRelatedMessage
         this.permission = permission;
     }
 
+    /**
+     * Storing Invitation to the database does not store the {@link FolderInfo}
+     * from {@link FolderRelatedMessage}. So when an Invitation is loaded from
+     * the database the FolderInfo has to be reset. This is necessary for example
+     * to test two {@link Invitation Invitations} to be {@link #equals(Object) equal}.
+     */
+    public void populateFolderInfoFromPermission() {
+        this.folder = this.permission.getFolder();
+    }
+
     public SyncProfile getSuggestedSyncProfile() {
         if (suggestedSyncProfileConfig == null) {
             // For backward compatibility.
@@ -502,15 +513,33 @@ public class Invitation extends FolderRelatedMessage
 
     // Backward compatability for deprecated/replaced fields.
 
-    public void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream in)
+        throws IOException, ClassNotFoundException
+    {
         in.defaultReadObject();
-        this.sender    = this.username;
-        this.recipient = this.inviteeUsername;
+        if (StringUtils.isBlank(this.sender) &&
+            StringUtils.isNotBlank(this.username))
+        {
+            this.sender = this.username;
+        }
+        if (StringUtils.isBlank(this.recipient) &&
+            StringUtils.isNotBlank(this.inviteeUsername))
+        {
+            this.recipient = this.inviteeUsername;
+        }
     }
 
-    public void writeObject(ObjectOutputStream out) throws IOException {
-        this.inviteeUsername = this.recipient;
-        this.username        = this.sender;
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        if (StringUtils.isBlank(this.inviteeUsername) &&
+            StringUtils.isNotBlank(this.recipient))
+        {
+            this.inviteeUsername = this.recipient;
+        }
+        if (StringUtils.isBlank(this.username) &&
+            StringUtils.isNotBlank(this.sender))
+        {
+            this.username = this.sender;
+        }
         out.defaultWriteObject();
     }
 
@@ -520,13 +549,13 @@ public class Invitation extends FolderRelatedMessage
     @Deprecated
     // Return the user name if not blank, else the invitor nick.
     public String getInvitorUsername() {
-        if (StringUtils.isBlank(username)) {
+        if (StringUtils.isBlank(sender)) {
             if (invitor == null) {
                 return "";
             }
             return invitor.getNick();
         }
-        return username;
+        return sender;
     }
 
     /**
@@ -552,4 +581,15 @@ public class Invitation extends FolderRelatedMessage
     public void setInviteeUsername(String username) {
         this.inviteeUsername = username;
     }
+
+    public boolean isFolderInvitation() {
+        return StringUtils.isNotBlank(folder.getId())
+            && !folder.getId().startsWith("AI_");
+    }
+
+    public boolean isAccountInvitation() {
+        return StringUtils.isBlank(folder.getId())
+            || folder.getId().startsWith("AI_");
+    }
+
 }

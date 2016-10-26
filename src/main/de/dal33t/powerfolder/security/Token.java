@@ -132,12 +132,22 @@ public class Token {
         return new Token(validTo, fedService, aInfo, null);
     }
 
-    public static Token newMergeToken(long validMS, AccountInfo aInfo) {
-        return newAccessToken(validMS, aInfo, (MemberInfo)null);
+    public static Token newMergeToken(long validMS, AccountInfo aInfo,
+        String usernameToMerge)
+    {
+        Token token = newAccessToken(validMS, aInfo);
+        token.addNotesWithDate(
+            aInfo.getUsername() + " merging with " + usernameToMerge);
+        return token;
     }
 
-    public static Token newAddEmailToken(long validMS, AccountInfo aInfo) {
-        return newAccessToken(validMS, aInfo, (MemberInfo)null);
+    public static Token newAddEmailToken(long validMS, AccountInfo aInfo,
+        String eMailToAdd)
+    {
+        Token token = newAccessToken(validMS, aInfo);
+        token.addNotesWithDate(
+            aInfo.getUsername() + " adding email " + eMailToAdd);
+        return token;
     }
 
     /**
