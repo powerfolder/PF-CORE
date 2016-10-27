@@ -190,7 +190,12 @@ public class Organization implements Serializable {
     }
 
     public void setDomains (List<String> domains){
-        this.domains = domains;
+        List<String> domainsLower = new ArrayList<>();
+        for (String dom : domains){
+            dom = dom.toLowerCase();
+            domainsLower.add(dom);
+        }
+        this.domains = domainsLower;
     }
 
     /**
