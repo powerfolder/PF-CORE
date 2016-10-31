@@ -29,13 +29,13 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.AbstractSocketConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
 import de.dal33t.powerfolder.protocol.AnyMessageProto;
+import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
 
 /**
  * Handler for relayed connections to other clients. NO encrypted transfer.
@@ -45,124 +45,161 @@ import de.dal33t.powerfolder.protocol.AnyMessageProto;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.72 $
  */
-public class D2DSocketConnectionHandler extends
-  AbstractSocketConnectionHandler implements ConnectionHandler
-{
-  /**
-   * Builds a new D2D connection manager for the socket.
-   * <p>
-   * Should be called from <code>ConnectionHandlerFactory</code> only.
-   *
-   * @see ConnectionHandlerFactory
-   * @param  controller  The {@link controller}
-   * @param  socket      The {@link socket}
-   * @throws ConnectionException
-   **/
+public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
+    implements ConnectionHandler {
 
-  public
-  D2DSocketConnectionHandler(Controller controller,
-    Socket socket)
-  {
-    super(controller, socket);
-  }
+    /* Define full packages here; might be required in the future */
+    private final String[] PACKAGES = new String[] {
+        "de.dal33t.powerfolder.message.%s",
+        "de.dal33t.powerfolder.message.clientserver.%s",
+        "de.dal33t.powerfolder.util.delta.%s"
+    };
 
-  /** deserialize
-   * Deserialize data and convert to object
-   * @param  data  Data to deserialize
-   * @param  len   Length of data
-   * @return Returns the serialized object
-   * @throws {@link ConnectionException} when an error occurred
-   **/
+    /**
+     * Builds a new D2D connection manager for the socket.
+     * <p>
+     * Should be called from <code>ConnectionHandlerFactory</code> only.
+     *
+     * @see ConnectionHandlerFactory
+     * @param controller
+     *            The {@link controller}
+     * @param socket
+     *            The {@link socket}
+     * @throws ConnectionException
+     **/
 
-  @Override
-  protected Object
-  deserialize(byte[] data,
-    int len) throws ClassNotFoundException, ConnectionException
-  {
-    String className = "unknown";
-
-    logFiner("Got message; parsing it..");
-
-    try
-      {
-        AnyMessageProto.AnyMessage anyMessage = AnyMessageProto.AnyMessage.parseFrom(data);
-
-        /* Assemble name and package */
-        className        = anyMessage.getClazzName();
-        String classPkg  = String.format(
-          "de.dal33t.powerfolder.protocol.%sProto$%s",
-          className, className);
-
-        logFiner("Got " + classPkg);
-
-        /* Try to create D2D message */
-        Class<?>        klass = Class.forName(classPkg);
-        Method          meth  = klass.getMethod("parseFrom", byte[].class);
-        AbstractMessage amesg = (AbstractMessage)meth.invoke(null, data); ///< Call parseForm()
-
-        /* Try to create message */
-        classPkg = String.format("de.dal33t.powerfolder.message.%s", className);
-        klass    = Class.forName(classPkg);
-        meth     = klass.getMethod("initFromD2D", AbstractMessage.class);
-
-        Object mesg = klass.newInstance();
-
-        meth.invoke(mesg, amesg); ///< Call initFromD2DMessage
-
-        return mesg;
-      }
-    catch(NoSuchMethodException|SecurityException|IllegalArgumentException|
-        InvocationTargetException|InstantiationException|
-        IllegalAccessException|InvalidProtocolBufferException e)
-      {
-        logFiner("Cannot read message(" + className + "): " + e.toString());
-
-        throw new ConnectionException(
-          "Unable to read message from peer, connection closed", e)
-          .with(this);
-      }
-  }
-
-  /** serialize
-   * Serialize message data
-   * @param  message  {@link Message} to serialize
-   * @return Serialized byte data
-   * @throws ConnectionException
-   **/
-
-  @Override
-  protected byte[]
-  serialize(Message mesg) throws ConnectionException
-  {
-    byte[] data = null;
-
-    if(mesg instanceof D2DObject)
-      {
-        AbstractMessage amesg = ((D2DObject)mesg).toD2D();
-
-        logFiner("Sent " + amesg.getClass().getCanonicalName());
-
-        data = amesg.toByteArray();
-      }
-    else {
-        throw new ConnectionException("Message "
-            + mesg.getClass().getSimpleName()
-            + " does not implement D2Object").with(this);
+    public D2DSocketConnectionHandler(Controller controller, Socket socket) {
+        super(controller, socket);
     }
 
-    return data;
-  }
+    /**
+     * deserialize Deserialize data and convert to object
+     * 
+     * @param data
+     *            Data to deserialize
+     * @param len
+     *            Length of data
+     * @return Returns the serialized object
+     * @throws {@link
+     *             ConnectionException} when an error occurred
+     **/
 
-  /** createOwnIdentity
-   * Create identity
-   * @return Own {@link Identity}
-   **/
+    @Override
+    protected Object deserialize(byte[] data, int len)
+        throws ClassNotFoundException, ConnectionException {
 
-  @Override
-  protected Identity
-  createOwnIdentity()
-  {
-    return new Identity(getController(), getController().getMySelf()
-      .getInfo(), getMyMagicId(), false, false, this);
-  }
+        String klassName = "unknown";
+
+        if (isFiner()) {
+            logFiner("Got message; parsing it..");
+        }
+
+        try {
+            AnyMessageProto.AnyMessage anyMessage = AnyMessageProto.AnyMessage
+                .parseFrom(data);
+
+            /* Assemble name and package */
+            klassName = anyMessage.getClazzName();
+            String klassPkg = String.format(
+                "de.dal33t.powerfolder.protocol.%sProto$%s", klassName,
+                klassName);
+
+            // Workaround for FolderFilesChanged (protected variables cannot be
+            // set via reflection)
+            if (klassName.equals("FolderFilesChanged")) {
+                FolderFilesChangedProto.FolderFilesChanged folderFilesChangedProto = 
+                    FolderFilesChangedProto.FolderFilesChanged.parseFrom(data);
+
+                FolderFilesChangedExt folderFilesChangedExt = new FolderFilesChangedExt();
+                folderFilesChangedExt.initFromD2D(folderFilesChangedProto);
+
+                return folderFilesChangedExt;
+            }
+
+            /* Try to create D2D message */
+            Class<?> klass = Class.forName(klassPkg);
+            Method meth = klass.getMethod("parseFrom", byte[].class);
+            AbstractMessage amesg = (AbstractMessage) meth.invoke(null, data);
+
+            /* Try to find klass in package list and might
+             * cause a NPE when no matching class can be found */
+            for(String pkg : PACKAGES) {
+                try {
+                    klass = Class.forName(String.format(pkg, klassName));
+                } catch (ClassNotFoundException e) {
+                    klass = null; ///< Make this this fails
+                }
+                
+                if(null != klass) break; ///< Exit when done
+            }
+            
+            meth = klass.getMethod("initFromD2D", AbstractMessage.class);
+
+            Object mesg = klass.newInstance();
+
+            meth.invoke(mesg, amesg); ///< Call initFromD2DMessage
+
+            return mesg;
+        } catch (NoSuchMethodException | SecurityException
+            | IllegalArgumentException | InvocationTargetException
+            | InstantiationException | IllegalAccessException
+            | InvalidProtocolBufferException | NullPointerException e)
+        {
+            if (isFiner()) {
+                logFiner("Cannot read message(" + klassName + "): " + e.toString());
+            }
+
+            throw new ConnectionException(
+                "Unable to read message from peer, connection closed", e)
+                    .with(this);
+        }
+    }
+
+    /**
+     * serialize Serialize message data
+     * 
+     * @param message
+     *            {@link Message} to serialize
+     * @return Serialized byte data
+     * @throws ConnectionException
+     **/
+
+    @Override
+    protected byte[] serialize(Message mesg) throws ConnectionException {
+        // Block the AddFriendNotification message
+        if (mesg instanceof AddFriendNotification) {
+            mesg = new Ping();
+        }
+
+        byte[] data = null;
+
+        if (mesg instanceof D2DObject) {
+            AbstractMessage amesg = ((D2DObject) mesg).toD2D();
+
+            if (isFiner()) {
+                logFiner("Sent " + amesg.getClass().getCanonicalName());
+            }
+
+            data = amesg.toByteArray();
+        } else {
+            throw new ConnectionException(
+                "Message " + mesg.getClass().getSimpleName()
+                    + " does not implement D2Object").with(this);
+        }
+
+        return data;
+    }
+
+    /**
+     * createOwnIdentity Create identity
+     * 
+     * @return Own {@link Identity}
+     **/
+
+    @Override
+    protected Identity createOwnIdentity() {
+        return new Identity(getController(),
+            getController().getMySelf().getInfo(), getMyMagicId(), false, false,
+            this);
+    }
 }

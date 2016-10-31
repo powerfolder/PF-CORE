@@ -24,7 +24,7 @@ import java.io.Serializable;
 import com.google.protobuf.AbstractMessage;
 
 import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.protocol.RangeProto;
+import de.dal33t.powerfolder.protocol.DataRangeProto;
 
 /**
  * This class represents an interval.
@@ -172,16 +172,16 @@ public final class Range
     public void
     initFromD2D(AbstractMessage mesg)
     {
-      if(mesg instanceof RangeProto.Range)
+      if(mesg instanceof DataRangeProto.DataRange)
         {
-          RangeProto.Range proto = (RangeProto.Range)mesg;
+          DataRangeProto.DataRange proto = (DataRangeProto.DataRange)mesg;
 
           this.start  = proto.getStart();
           this.length = proto.getLength();
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -191,9 +191,9 @@ public final class Range
     public AbstractMessage
     toD2D()
     {
-      RangeProto.Range.Builder builder = RangeProto.Range.newBuilder();
+      DataRangeProto.DataRange.Builder builder = DataRangeProto.DataRange.newBuilder();
 
-      builder.setClazzName("Range");
+	  builder.setClazzName("DataRange");
       builder.setStart(this.start);
       builder.setLength(this.length);
 

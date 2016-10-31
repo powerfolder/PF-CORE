@@ -19,117 +19,43 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import static de.dal33t.powerfolder.Constants.FOLDER_ENCRYPTION_SUFFIX;
-import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
-
-import java.io.BufferedInputStream;
-import java.io.EOFException;
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileTime;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TimerTask;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledFuture;
-
-import org.cryptomator.cryptofs.CryptoFileSystemProperties;
-import org.cryptomator.cryptofs.CryptoFileSystemProvider;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
-import de.dal33t.powerfolder.disk.problem.DeviceDisconnectedProblem;
-import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
-import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
-import de.dal33t.powerfolder.disk.problem.FolderDatabaseProblem;
-import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
+import de.dal33t.powerfolder.disk.problem.*;
 import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.disk.problem.UnsynchronizedFolderProblem;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.DirectoryInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FileRequestCommand;
-import de.dal33t.powerfolder.message.FolderFilesChanged;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageProducer;
-import de.dal33t.powerfolder.message.RevertedFile;
-import de.dal33t.powerfolder.message.ScanCommand;
+import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
-import de.dal33t.powerfolder.util.ArchiveMode;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.UserDirectories;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Visitor;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
+
+import java.io.*;
+import java.nio.file.*;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileSystem;
+import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledFuture;
+
+import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
 
 /**
@@ -149,7 +75,7 @@ public class Folder extends PFComponent {
     //private static final int THIRTY_SECONDS = 30;
 
     /** The base location of the folder. */
-    private final Path localBase;
+    private Path localBase;
 
     /**
      * #2056: The directory to commit/mirror the whole folder to when in reaches
@@ -287,9 +213,7 @@ public class Folder extends PFComponent {
 
     /**
      * The number of seconds the folder is allowed to be out of sync. If it is
-     * longer out of sync it produces an {@link UnsynchronizedFolderProblem}. If
-     * not set (0) the default global will be assumed
-     * {@link ConfigurationEntry#FOLDER_SYNC_WARN_DAYS}.
+     * longer out of sync it produces an {@link UnsynchronizedFolderProblem}.
      */
     private int syncWarnSeconds;
     private Persister persister;
@@ -325,44 +249,39 @@ public class Folder extends PFComponent {
         dirty = false;
         problems = new CopyOnWriteArrayList<>();
 
-        if (folderSettings.getLocalBaseDir().isAbsolute()) {
+        Path localBaseDir = folderSettings.getLocalBaseDir();
+
+        if (localBaseDir.isAbsolute()) {
 
             // PFS-1994: Start: Encrypted storage.
-            boolean isEncryptionActivated = ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(getController());
-            boolean isEncryptedFolder = folderSettings.getLocalBaseDir().toString().endsWith(FOLDER_ENCRYPTION_SUFFIX);
+            boolean isEncryptionActivated = EncryptedFileSystemUtils.isEncryptionActivated(getController());
+            boolean isEncryptedFolder = EncryptedFileSystemUtils.isEncryptedPath(localBaseDir);
 
             if (isEncryptionActivated && isEncryptedFolder) {
 
-                if (!ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.hasValue(getController())) {
-                    ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.setValue(getController(),
-                            IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId());
-                    getController().saveConfig();
-                }
-
-                FileSystem encryptedFileSystem = null;
+                // Check if server config has a passphrase, if yes use it, if no, create a new one.
+                EncryptedFileSystemUtils.setEncryptionPassphrase(getController());
 
                 try {
-                    encryptedFileSystem = initCryptoFileSystem(getController(), folderSettings.getLocalBaseDir());
-                } catch (IOException e) {
-                    logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() + " " + e);
-                }
 
-                localBase = encryptedFileSystem.getPath(folderSettings
-                        .getLocalBaseDir()
-                        .toString());
-
-                if (Files.notExists(localBase)) {
-                    try {
-                        Files.createDirectories(localBase);
-                    } catch (IOException e) {
-                        logSevere("Could not create localBase " + localBase.toString() +
-                                " directories for encrypted storage: " + e);
+                    // Check if the incoming localBaseDir is already an encrypted path.
+                    if (EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir)) {
+                        localBase = localBaseDir;
+                    } else {
+                        // If incoming localBaseDir has no CryptoPath instance, create one.
+                        localBase = EncryptedFileSystemUtils.initCryptoFS(getController(), localBaseDir);
                     }
+
+                } catch (IOException e) {
+                    logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
+                            " with localbase " + localBaseDir + " " + e);
+                    throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
+                            + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
                 }
-            // PFS-1994: End: Encrypted storage.
+                // PFS-1994: End: Encrypted storage.
 
             } else {
-                localBase = folderSettings.getLocalBaseDir();
+                localBase = localBaseDir;
             }
 
         } else {
@@ -370,8 +289,10 @@ public class Folder extends PFComponent {
             localBase = getController().getFolderRepository()
                 .getFoldersBasedir()
                 .resolve(folderSettings.getLocalBaseDir());
+
             logFine("Original path: " + folderSettings.getLocalBaseDir()
                 + ". Choosen relative path: " + localBase);
+
             if (Files.notExists(localBase)) {
                 try {
                     Files.createDirectories(localBase);
@@ -509,25 +430,6 @@ public class Folder extends PFComponent {
         List<String> newPatterns = diskItemFilter.getPatterns();
         if (!newPatterns.equals(oldPatterns)) {
             triggerPersist();
-        }
-    }
-
-    /**
-     * PFS-1994: Encrypted storage.
-     *
-     * @return A CryptoFileSystem instance.
-     */
-
-    private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
-
-        if (encDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
-            return encDir.getFileSystem();
-        } else {
-            return CryptoFileSystemProvider.newFileSystem(
-                    encDir,
-                    CryptoFileSystemProperties.cryptoFileSystemProperties()
-                            .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
-                            .build());
         }
     }
 
@@ -3088,7 +2990,7 @@ public class Folder extends PFComponent {
     /**
      * Synchronizes the deleted files with local folder
      *
-     * @param members
+     * @param collection
      *            the members to sync the deletions with.
      * @param force
      *            true if the sync is forced with ALL connected members of the
@@ -4021,7 +3923,7 @@ public class Folder extends PFComponent {
      * methods takes over the file information from remote under following
      * circumstances: See #findSameFiles(FileInfo[])
      *
-     * @see #findSameFiles(FileInfo[])
+     * @see #findSameFiles(Member, Collection<FileInfo>)
      */
     private void findSameFilesOnRemote() {
         for (Member member : getConnectedMembers()) {
@@ -4253,7 +4155,7 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(true);
         } catch (FolderException e) {
-            logSevere("invalid local base: " + e, e);
+            logSevere("invalid local base: " + getLocalBase() + " " + e, e);
             return setDeviceDisconnected(true);
         }
 
@@ -5023,7 +4925,7 @@ public class Folder extends PFComponent {
             Files.setLastModifiedTime(lastSyncFile,
                 FileTime.fromMillis(lastSyncDate.getTime()));
         } catch (Exception e) {
-            logSevere("Unable to update last synced date to " + lastSyncFile);
+            logSevere("Unable to update last synced date to " + lastSyncFile + " " + e);
         }
     }
 

@@ -19,21 +19,7 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import javax.persistence.*;
-
-import com.liferay.nativity.util.StringUtil;
-import org.hibernate.annotations.Index;
-import org.hibernate.annotations.Type;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -44,13 +30,19 @@ import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.InvitationProto;
 import de.dal33t.powerfolder.protocol.MemberInfoProto;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import org.hibernate.annotations.Index;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * An invitation to a folder or an invitation of a user.
@@ -481,11 +473,11 @@ public class Invitation extends FolderRelatedMessage
           this.username = proto.getUsername();
           this.oid = proto.getOid();
           this.inviteeUsername = proto.getInviteeUsername();
-          this.folder = new FolderInfo(proto.getFolder());
+          this.folder = new FolderInfo(proto.getFolderInfo());
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -498,14 +490,14 @@ public class Invitation extends FolderRelatedMessage
       InvitationProto.Invitation.Builder builder =
         InvitationProto.Invitation.newBuilder();
 
-      builder.setClazzName("Invitation");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setInvitor(
         (MemberInfoProto.MemberInfo)this.invitor.toD2D());
       builder.setInvitationText(this.invitationText);
       builder.setUsername(this.username);
       builder.setOid(this.oid);
       builder.setInviteeUsername(this.inviteeUsername);
-      builder.setFolder(
+      builder.setFolderInfo(
         (FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();

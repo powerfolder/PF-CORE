@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -80,6 +81,7 @@ public class Organization implements Serializable {
 
     private int maxUsers;
 
+    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
     @Index(name = "IDX_ORGANIZATION_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
@@ -188,7 +190,12 @@ public class Organization implements Serializable {
     }
 
     public void setDomains (List<String> domains){
-        this.domains = domains;
+        List<String> domainsLower = new ArrayList<>();
+        for (String dom : domains){
+            dom = dom.toLowerCase();
+            domainsLower.add(dom);
+        }
+        this.domains = domainsLower;
     }
 
     /**

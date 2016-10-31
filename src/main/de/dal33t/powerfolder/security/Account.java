@@ -151,9 +151,13 @@ public class Account implements Serializable, D2DObject {
     private Map<ServerInfo, String> tokens;
     
     private String language;
+    
+    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
     @Index(name = "IDX_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
+    
+    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
     @Index(name = "IDX_SHIB_PID")
     @Column(length = 2048)
     private String shibbolethPersistentID;
@@ -164,8 +168,9 @@ public class Account implements Serializable, D2DObject {
     private MemberInfo lastLoginFrom;
     private boolean proUser;
 
-    @Column(length = 256)
+    @Column(length = 255)
     @Index(name = "IDX_ACC_FIRSTNAME")
+    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
     private String firstname;
     @Column(length = 255)
     @Index(name = "IDX_ACC_SURNAME")
@@ -256,6 +261,7 @@ public class Account implements Serializable, D2DObject {
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
+    // PFS-2199: FIXME: Index is not created: IDX_AP_ELM
     private Collection<Permission> permissions;
 
     @ManyToMany
@@ -1692,11 +1698,16 @@ public class Account implements Serializable, D2DObject {
             this.agreedToSVersion           = proto.getAgreedToSversion();
         }
     }
+    /** toD2D
+     * Convert to D2D message
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     * @return Converted D2D message
+     **/
 
     @Override
     public AbstractMessage toD2D() {
         AccountProto.Account.Builder builder = AccountProto.Account.newBuilder();
-        builder.setClazzName("Account");
+        builder.setClazzName(this.getClass().getSimpleName());
         if (this.oid != null) builder.setOid(this.oid);
         if (this.username != null) builder.setUsername(this.username);
         if (this.password != null) builder.setPassword(this.password);

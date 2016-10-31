@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.util;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -11,10 +12,14 @@ import java.awt.*;
 import java.beans.ExceptionListener;
 import java.io.*;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -25,6 +30,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 public class PathUtils {
 
@@ -476,8 +483,8 @@ public class PathUtils {
             throw new IOException("cannot copy onto itself");
         }
         try {
-            if (from.toString().contains(Constants.FOLDER_ENCRYPTION_SUFFIX) ||
-                    to.toString().contains(Constants.FOLDER_ENCRYPTION_SUFFIX)) {
+            if (EncryptedFileSystemUtils.isEncryptedPath(from) ||
+                    EncryptedFileSystemUtils.isEncryptedPath(to)) {
                 Files.copy(from, to);
             } else {
                 copyFromStreamToFile(Files.newInputStream(from), to);
@@ -717,25 +724,27 @@ public class PathUtils {
         }
         boolean wasHidden = Files.isHidden(sourceFile);
 
-        if (Files.isDirectory(sourceFile) && Files.notExists(targetFile)) {
+        if (Files.notExists(targetFile)) {
             Files.createDirectories(targetFile);
         }
 
         if (Files.isDirectory(sourceFile) && Files.isDirectory(targetFile)) {
+
             if (isSubdirectory(sourceFile, targetFile)) {
-                // Need to be careful if moving to a subdirectory,
-                // avoid infinite recursion.
                 throw new IOException("Move to a subdirectory not permitted");
+
             } else {
+
                 try (DirectoryStream<Path> stream = Files
-                    .newDirectoryStream(sourceFile)) {
+                        .newDirectoryStream(sourceFile)) {
+
                     for (Path nextOriginalFile : stream) {
+
                         recursiveMove(nextOriginalFile,
-                            targetFile.resolve(nextOriginalFile.getFileName()));
+                                targetFile.resolve(nextOriginalFile.getFileName()));
                     }
+                    Files.delete(sourceFile);
                 }
-                // Delete directory after move
-                Files.delete(sourceFile);
             }
         } else if (!Files.isDirectory(sourceFile)
             && !Files.isDirectory(targetFile))
@@ -1398,6 +1407,33 @@ public class PathUtils {
     }
 
     /**
+     * Copies a given amount of data from one FileChannel to another.
+     *
+     * @param in
+     *            the file to read the data from
+     * @param out
+     *            the file to write the data to
+     * @param n
+     *            the amount of bytes to transfer
+     * @throws IOException
+     *             if an Exception occurred while reading or writing the data
+     */
+    public static void ncopy(FileChannel in, FileChannel out, int n)
+            throws IOException
+    {
+        int w = n;
+        byte[] buf = new byte[BYTE_CHUNK_SIZE];
+        while (w > 0) {
+            int read = in.read(ByteBuffer.wrap(buf));
+            if (read < 0) {
+                throw new EOFException();
+            }
+            out.write(ByteBuffer.wrap(buf, 0, read));
+            w -= read;
+        }
+    }
+
+    /**
      * Copies a given amount of data from one RandomAccessFile to another.
      *
      * @param in
@@ -1423,6 +1459,34 @@ public class PathUtils {
             w -= read;
         }
     }
+
+    /**
+     * Copies a given amount of data from InputStream to FileChannel.
+     *
+     * @param in
+     *            the inputstream to read the data from
+     * @param out
+     *            the file to write the data to
+     * @param n
+     *            the amount of bytes to transfer
+     * @throws IOException
+     *             if an Exception occurred while reading or writing the data
+     */
+    public static void ncopy(InputStream in, FileChannel out, int n)
+            throws IOException
+    {
+        int w = n;
+        byte[] buf = new byte[BYTE_CHUNK_SIZE];
+        while (w > 0) {
+            int read = in.read(buf);
+            if (read < 0) {
+                throw new EOFException();
+            }
+            out.write(ByteBuffer.wrap(buf, 0, read));
+            w -= read;
+        }
+    }
+
 
     public static boolean openFileIfExists(Path file) {
         if (Files.notExists(file)) {
@@ -1707,5 +1771,65 @@ public class PathUtils {
             IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             return false;
         }
+    }
+
+    public static void recursiveMoveVisitor(Path oldDirectory, Path newDirectory) throws IOException {
+
+        Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+
+                new SimpleFileVisitor<Path>() {
+
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                            throws IOException {
+                        Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
+                        if (!Files.exists(targetDir)) {
+                            Files.createDirectories(targetDir);
+                        }
+                        try {
+                            Files.copy(dir, targetDir);
+                        } catch (FileAlreadyExistsException e) {
+                            if (!Files.isDirectory(targetDir))
+                                System.out.println("Could not move file.");
+                        }
+                        return CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException {
+                        Files.move(file, newDirectory.resolve(oldDirectory.relativize(file).toString()));
+                        return CONTINUE;
+                    }
+                });
+
+    }
+
+    public static void recursiveDeleteVisitor(Path dir, boolean encryptedDelete) throws IOException {
+
+        if (!encryptedDelete) {
+            dir = Paths.get(dir.toString());
+        }
+
+        Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                    throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                    throws IOException {
+                if (e == null) {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                } else {
+                    throw e;
+                }
+            }
+        });
     }
 }

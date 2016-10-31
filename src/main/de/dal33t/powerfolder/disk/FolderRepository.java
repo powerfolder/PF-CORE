@@ -46,13 +46,11 @@ import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import org.cryptomator.cryptofs.CryptoFileSystemProperties;
-import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.*;
@@ -64,6 +62,7 @@ import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -90,6 +89,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean triggered;
     private final AtomicInteger suspendNewFolderSearch = new AtomicInteger(0);
     private Path foldersBasedir;
+    private boolean wasMoved;
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
@@ -151,6 +151,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         onLoginFolderEntryIds = new HashSet<String>();
         fileRequestor = new FileRequestor(controller);
         started = false;
+        wasMoved = false;
         loadRemovedFolderDirectories();
 
         folderScanner = new FolderScanner(getController());
@@ -171,8 +172,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         String[] parts = list.split("\\$");
         for (String s : parts) {
             try {
-                Path p = Paths.get(s);
-                removedFolderDirectories.add(p);
+                if (!EncryptedFileSystemUtils.isEncryptedPath(s)) {
+                    Path p = Paths.get(s);
+                    removedFolderDirectories.add(p);
+                }
             } catch (Exception e) {
                 logFine("Unable to check removed dir: " + s + ". " + e);
             }
@@ -948,6 +951,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logInfo("Original path: " + targetDir
                 + ". Choosen relative path: " + targetDir);
         }
+
         for (Folder folder : getController().getFolderRepository()
             .getFolders())
         {
@@ -1313,7 +1317,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             removeLink(folder);
 
             // Remember that we have removed this folder.
-            addToRemovedFolderDirectories(folder);
+            if (!EncryptedFileSystemUtils.isEncryptedPath(folder.getLocalBase())) {
+                addToRemovedFolderDirectories(folder);
+            }
 
             // Remove the desktop shortcut
             folder.removeDesktopShortcut();
@@ -1337,9 +1343,14 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Shutdown meta folder as well
             Folder metaFolder = getMetaFolderForParent(folder.getInfo());
             if (metaFolder != null) {
-                metaFolder.shutdown();
                 metaFolders.remove(metaFolder.getInfo());
                 metaFolders.remove(folder.getInfo());
+
+                // Break transfers
+                getController().getTransferManager().breakTransfers(
+                        metaFolder.getInfo());
+
+                metaFolder.shutdown();
             }
 
             // Remove internal
@@ -1373,9 +1384,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 try {
-                    PathUtils.recursiveDelete(folder.getSystemSubDir());
+                    PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir(), true);
                 } catch (IOException e) {
-                    logSevere("Failed to delete: " + folder.getSystemSubDir());
+                    logSevere("Failed to delete: " + folder.getSystemSubDir(), e);
                 }
 
                 if (!PathUtils.isZyncroPath(folder.getLocalBase())) {
@@ -1386,11 +1397,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                         // this can happen, and is just fine
                     } catch (IOException ioe) {
                         logSevere("Failed to delete local base: "
-                            + folder.getLocalBase().toAbsolutePath() + ": "
-                            + ioe);
+                                + folder.getLocalBase().toAbsolutePath() + ": "
+                                + ioe);
                     }
                 }
             }
+
         } finally {
             suspendNewFolderSearch.decrementAndGet();
         }
@@ -1401,9 +1413,21 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Trigger sync on other folders.
         fileRequestor.triggerFileRequesting();
 
+        // PFS-1994: If folder was moved, delete the old folder and close the encrypted filesystem.
+        if (wasMoved && EncryptedFileSystemUtils.isEncryptedPath(folder.getLocalBase())) {
+            try {
+                PathUtils.recursiveDeleteVisitor(folder.getLocalBase(), false);
+                folder.getLocalBase().getFileSystem().close();
+                wasMoved = false;
+            } catch (IOException e) {
+                logWarning("Failed to close encrypted filesystem for localbase @ " + folder.getLocalBase()
+                        + " " + e);
+            }
+        }
         if (isFine()) {
             logFine(folder + " removed");
         }
+
     }
 
     /**
@@ -2498,11 +2522,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+
         if (Files.exists(newDirectory)) {
             logSevere("Not moving folder " + folder + " to new directory "
                 + newDirectory.toString()
                 + ". The new directory already exists!");
-
             return;
         }
 
@@ -2510,14 +2534,20 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings fs = FolderSettings.load(getController(),
             folder.getConfigEntryId());
 
-        // Remove the old folder from the repository.
-        removeFolder(folder, false);
+        // PFS-1994: If old directory is encrypted, new directory must also be encrypted.
+        if (EncryptedFileSystemUtils.isEncryptedPath(originalDirectory)) {
+            newDirectory = EncryptedFileSystemUtils.initCryptoFS(getController(), newDirectory);
+        }
 
         // Move it.
-        PathUtils.recursiveMove(originalDirectory, newDirectory);
+        PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
+        wasMoved = true;
 
         // Remember patterns if content not moving.
         List<String> patterns = folder.getDiskItemFilter().getPatterns();
+
+        // Remove the old folder from the repository.
+        removeFolder(folder, false);
 
         // Create the new Folder in the repository.
         fs = fs.changeBaseDir(newDirectory);
@@ -2527,6 +2557,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         for (String pattern : patterns) {
             folder.addPattern(pattern);
         }
+
     }
 
     private void removeLocalFolders(Account a, Collection<FolderInfo> skip) {
@@ -2894,8 +2925,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                     // OK: Handle it. There is a connected member on an unsyced
                     // folder, which has send ZERO files.
-                    logInfo("Re-requesting file list for " + folder.getName()
-                        + " from " + member.getNick());
+                    if (isFine()) {
+                        logFine("Re-requesting file list for "
+                            + folder.getName() + " from " + member.getNick());
+                    }
                     member.sendMessageAsynchron(new FileListRequest(folder
                         .getInfo()));
                 }
@@ -2988,32 +3021,30 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Schedule for removal
-        getController().schedule(new Runnable() {
-            @Override
-            public void run() {
-                if (hasJoinedFolder(folder.getInfo())) {
-                    // Handle possible renames
-                    scanBasedir();
-                    Folder currentFolder = getFolder(folder.getInfo());
-                    if (currentFolder != null
-                        && !currentFolder.checkIfDeviceDisconnected())
-                    {
-                        return;
-                    }
+        getController().schedule(() -> {
 
-                    logFine("Removing " + folder.toString());
-                    // sync with #scanBasedir()
-                    scanBasedirLock.lock();
-                    try {
-                        removeFolder(folder, false);
-                    } finally {
-                        scanBasedirLock.unlock();
-                    }
+            if (hasJoinedFolder(folder.getInfo())) {
+
+                // Handle possible renames
+                scanBasedir();
+                Folder currentFolder = getFolder(folder.getInfo());
+                if (currentFolder != null
+                    && !currentFolder.checkIfDeviceDisconnected())
+                {
+                    return;
+                }
+
+                logFine("Removing " + folder.toString());
+                // sync with #scanBasedir()
+                scanBasedirLock.lock();
+                try {
+                    removeFolder(folder, false);
+                } finally {
+                    scanBasedirLock.unlock();
                 }
             }
         }, 5000L);
 
         return true;
     }
-
 }

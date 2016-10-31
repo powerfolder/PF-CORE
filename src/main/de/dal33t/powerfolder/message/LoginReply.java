@@ -9,9 +9,8 @@ import de.dal33t.powerfolder.security.Account;
 
 public class LoginReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
-    private boolean returnValue;
-    private int statusCode;
-    private Account account;
+
+    private LoginReplyProto.LoginReply.StatusCode statusCode;
 
     /**
      * Serialization constructor
@@ -19,39 +18,47 @@ public class LoginReply extends Message implements D2DObject {
     public LoginReply() {
     }
 
-    public LoginReply(boolean returnValue, int statusCode, Account account) {
-        this.returnValue = returnValue;
+    public LoginReply(LoginReplyProto.LoginReply.StatusCode statusCode) {
         this.statusCode = statusCode;
-        this.account = account;
     }
 
     /**
      * Init from D2D message
      * @param mesg Message to use data from
      **/
+
     public LoginReply(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof LoginReplyProto.LoginReply) {
             LoginReplyProto.LoginReply proto = (LoginReplyProto.LoginReply)mesg;
-            this.returnValue = proto.getReturnValue();
+            
             this.statusCode = proto.getStatusCode();
-            this.account = new Account(proto.getAccount());
         }
     }
+
+    /** toD2D
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
 
     @Override
     public AbstractMessage toD2D() {
         LoginReplyProto.LoginReply.Builder builder = LoginReplyProto.LoginReply.newBuilder();
-        builder.setClazzName("LoginReply");
-        builder.setReturnValue(this.returnValue);
+
+        builder.setClazzName(this.getClass().getSimpleName());
         builder.setStatusCode(this.statusCode);
-        if (this.account != null) {
-            builder.setAccount((AccountProto.Account)this.account.toD2D());
-        }
+
         return builder.build();
     }
 }

@@ -274,18 +274,18 @@ public class FolderFilesChanged extends FolderRelatedMessage
           /* Convert list back to array */
           int i = 0;
 
-          this.added = new FileInfo[proto.getAddedCount()];
+          this.added = new FileInfo[proto.getFileInfosCount()];
 
-          for(FileInfoProto.FileInfo finfo : proto.getAddedList())
+          for(FileInfoProto.FileInfo finfo : proto.getFileInfosList())
             {
               this.added[i++] = new FileInfo(finfo);
             }
 
-          this.folder = new FolderInfo(proto.getFolder());
+          this.folder = new FolderInfo(proto.getFolderInfo());
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -303,10 +303,10 @@ public class FolderFilesChanged extends FolderRelatedMessage
       /* Convert array to list */
       for(FileInfo finfo : this.added)
         {
-          builder.addAdded((FileInfoProto.FileInfo)finfo.toD2D());
+          builder.addFileInfos((FileInfoProto.FileInfo)finfo.toD2D());
         }
 
-      builder.setFolder((FolderInfoProto.FolderInfo)this.folder.toD2D());
+      builder.setFolderInfo((FolderInfoProto.FolderInfo)this.folder.toD2D());
 
       return builder.build();
     }

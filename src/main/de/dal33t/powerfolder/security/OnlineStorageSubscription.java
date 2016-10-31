@@ -285,7 +285,7 @@ public class OnlineStorageSubscription implements Serializable, D2DObject {
     @Override
     public AbstractMessage toD2D() {
         OnlineStorageSubscriptionProto.OnlineStorageSubscription.Builder builder = OnlineStorageSubscriptionProto.OnlineStorageSubscription.newBuilder();
-        builder.setClazzName("OnlineStorageSubscription");
+        builder.setClazzName(this.getClass().getSimpleName());
         builder.setStorageSize(this.storageSize);
         if (this.validFrom != null) builder.setValidFrom(this.validFrom.getTime());
         if (this.validTill != null) builder.setValidTill(this.validTill.getTime());

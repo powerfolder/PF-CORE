@@ -775,6 +775,8 @@ public class FolderScanner extends PFComponent {
             }
             scanDirectory(dirToScan, currentDirName);
 
+            logWarning("Scan: " + dirToScan + ", instance " + dirToScan.getClass());
+
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirToScan)) {
                 Iterator<Path> it = stream.iterator();
 

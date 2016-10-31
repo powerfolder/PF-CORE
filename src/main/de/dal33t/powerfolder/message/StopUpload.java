@@ -19,7 +19,12 @@
 */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+
+import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.StopUploadProto;
 
 /**
  * Tells the uploader to stop uploading.
@@ -27,7 +32,7 @@ import de.dal33t.powerfolder.light.FileInfo;
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
-public class StopUpload extends Message {
+public class StopUpload extends Message implements D2DObject {
 	private static final long serialVersionUID = 100L;
 	protected FileInfo fileInfo;
 
@@ -41,4 +46,34 @@ public class StopUpload extends Message {
 	public FileInfo getFile() {
 		return fileInfo;
 	}
+
+    /** initFromD2DMessage
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof StopUploadProto.StopUpload) {
+            StopUploadProto.StopUpload proto = (StopUploadProto.StopUpload)mesg;
+            this.fileInfo = new FileInfo(proto.getFileInfo());
+        }
+    }
+
+    /** toD2D
+     * Convert to D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return Converted D2D message
+     **/
+
+    @Override
+    public AbstractMessage toD2D() {
+        StopUploadProto.StopUpload.Builder builder = StopUploadProto.StopUpload.newBuilder();
+
+        builder.setClazzName("StopUpload");
+        builder.setFileInfo((FileInfoProto.FileInfo)this.fileInfo.toD2D());
+
+        return builder.build();
+    }
 }

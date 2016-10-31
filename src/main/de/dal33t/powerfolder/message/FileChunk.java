@@ -96,13 +96,13 @@ public class FileChunk extends Message
         {
           FileChunkProto.FileChunk proto = (FileChunkProto.FileChunk)mesg;
 
-          this.file   = new FileInfo(proto.getFile());
+          this.file   = new FileInfo(proto.getFileInfo());
           this.offset = proto.getOffset();
           this.data   = proto.getData().toByteArray();
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -115,7 +115,7 @@ public class FileChunk extends Message
       FileChunkProto.FileChunk.Builder builder = FileChunkProto.FileChunk.newBuilder();
 
       builder.setClazzName("FileChunk");
-      builder.setFile((FileInfoProto.FileInfo)this.file.toD2D());
+      builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setOffset(this.offset);
       builder.setData(ByteString.copyFrom(this.data));
 

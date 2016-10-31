@@ -19,26 +19,7 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
-import java.util.Date;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -50,12 +31,20 @@ import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.MemberInfoProto;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.ExternalizableUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.util.Date;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
@@ -936,8 +925,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             throw new IllegalStateException("Filename ends with slash: "
                 + fileName);
         }
-        Reject.ifNull(size, "Size is null");
-        Reject.ifFalse(size >= 0, "Negative file size");
+
+        //Reject.ifNull(size, "Size is null");
+        //Reject.ifFalse(size < 0, "Negative file size");
         Reject.ifNull(folderInfo, "FolderInfo is null");
     }
 
@@ -1125,7 +1115,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
           this.fileName          = finfo.getFileName();
           this.oid               = finfo.getOid();
-          this.hashes            = finfo.getHashes();
+          this.hashes            = finfo.getFileHashes();
           this.tags              = finfo.getTags();
           this.size              = finfo.getSize();
           this.modifiedBy        = new MemberInfo(finfo.getModifiedby());
@@ -1139,7 +1129,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -1151,25 +1141,24 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     {
       FileInfoProto.FileInfo.Builder builder = FileInfoProto.FileInfo.newBuilder();
 
-      builder.setClazzName("FileInfo");
-      builder.setFileName(this.fileName);
-      builder.setOid(this.oid);
-      builder.setHashes(this.hashes);
-      builder.setTags(this.tags);
-      builder.setSize(this.size);
+      builder.setClazzName(this.getClass().getSimpleName());
+      if (this.fileName != null) builder.setFileName(this.fileName);
+      if (this.oid != null) builder.setOid(this.oid);
+      if (this.hashes != null) builder.setFileHashes(this.hashes);
+      if (this.tags != null) builder.setTags(this.tags);
+      if (this.size != null) builder.setSize(this.size);
 
-      builder.setModifiedby(
+      if (this.modifiedBy != null) builder.setModifiedby(
         (MemberInfoProto.MemberInfo)this.modifiedBy.toD2D());
-      builder.setModifiedByAccount(
+      if (this.modifiedByAccount != null) builder.setModifiedByAccount(
         (AccountInfoProto.AccountInfo)this.modifiedByAccount.toD2D());
 
-      builder.setLastModifiedDate(this.lastModifiedDate.getTime());
+      if (this.lastModifiedDate != null) builder.setLastModifiedDate(this.lastModifiedDate.getTime());
       builder.setVersion(this.version);
       builder.setDeleted(this.deleted);
 
-      builder.setFolderInfo(
+      if (this.folderInfo != null) builder.setFolderInfo(
         (FolderInfoProto.FolderInfo)this.folderInfo.toD2D());
-
 
       return builder.build();
     }

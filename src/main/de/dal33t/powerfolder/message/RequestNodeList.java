@@ -229,14 +229,14 @@ public class RequestNodeList extends Message
           if(null != this.nodeIds)
               this.nodeIds.clear();
 
-          for(String str : proto.getNodeIDsList())
+          for(String str : proto.getNodeIdsList())
             {
               this.nodeIds.add(str);
             }
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -249,7 +249,7 @@ public class RequestNodeList extends Message
       RequestNodeListProto.RequestNodeList.Builder builder =
         RequestNodeListProto.RequestNodeList.newBuilder();
 
-      builder.setClazzName("RequestNodeList");
+      builder.setClazzName(this.getClass().getSimpleName());
 
       /* Handle enum stuff */
       NodesCriteriaProto.NodesCriteria.Builder nodeBuilder =
@@ -265,8 +265,8 @@ public class RequestNodeList extends Message
 
       /* Just append collection here */
       if(null != this.nodeIds) {
-          builder.addAllNodeIDs(this.nodeIds);
-      } else builder.addAllNodeIDs(Collections.emptyList());
+          builder.addAllNodeIds(this.nodeIds);
+      } else builder.addAllNodeIds(Collections.emptyList());
 
       return builder.build();
     }

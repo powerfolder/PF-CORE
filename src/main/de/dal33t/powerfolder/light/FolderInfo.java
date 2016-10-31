@@ -321,7 +321,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         }
     }
 
-    /** toD2DMessage
+    /** toD2D
      * Convert to D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
@@ -333,7 +333,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     {
       FolderInfoProto.FolderInfo.Builder builder = FolderInfoProto.FolderInfo.newBuilder();
 
-      builder.setClazzName("FolderInfo");
+      builder.setClazzName(this.getClass().getSimpleName());
       builder.setName(this.name);
       builder.setId(this.id);
 
