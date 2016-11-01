@@ -317,7 +317,7 @@ public class PathUtils {
         while (Files.exists(candidate)) {
             candidate = baseDir.getParent().resolve(baseDirName + " (" + suffix + ")" + baseDirExt);
             suffix++;
-            if (suffix > 1000) {
+            if (suffix > 999999999) {
                 throw new IllegalStateException(
                     "Unable to find empty directory Tried " + candidate);
             }
