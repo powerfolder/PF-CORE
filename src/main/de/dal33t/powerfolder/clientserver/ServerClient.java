@@ -1947,7 +1947,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void updateFriendsList(Account a) {
-        for (MemberInfo nodeInfo : a.getComputers()) {
+        for (MemberInfo nodeInfo : a.getDevices()) {
             Member node = nodeInfo.getNode(getController(), true);
             if (!node.isFriend()) {
                 node.setFriend(true, null);

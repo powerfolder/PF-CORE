@@ -1022,7 +1022,7 @@ public class Account implements Serializable, D2DObject {
         touchLogin();
 
         // Ensure initialization
-        getComputers();
+        getDevices();
         if (lastLoginFrom != null && !computers.contains(lastLoginFrom)) {
             computers.add(lastLoginFrom);
             return true;
@@ -1042,10 +1042,36 @@ public class Account implements Serializable, D2DObject {
     }
 
     /**
-     * @return the computers this account is associated with.
+     * @return the devices this account is associated with.
      */
-    public Collection<MemberInfo> getComputers() {
-        return computers;
+    public Collection<MemberInfo> getDevices() {
+        return Collections.unmodifiableCollection(computers);
+    }
+
+    /**
+     * Adds a device/computer to the list of associated devices.
+     * 
+     * @param nodeInfo
+     */
+    public void addDevice(MemberInfo nodeInfo) {
+        Reject.ifNull(nodeInfo, "NodeInfo");
+        synchronized (computers) {
+            if (!computers.contains(nodeInfo)) {
+                computers.add(nodeInfo);
+            }
+        }
+    }
+
+    /**
+     * Removes a device/computer from the list of associated devices.
+     * 
+     * @param nodeInfo
+     * @return true if the device was removed, false if the device was not in
+     *         list
+     */
+    public boolean removeDevice(MemberInfo nodeInfo) {
+        Reject.ifNull(nodeInfo, "NodeInfo");
+        return computers.remove(nodeInfo);
     }
 
     public Collection<Group> getGroups() {
