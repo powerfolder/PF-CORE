@@ -54,6 +54,7 @@
     <facet type="web" name="Web">
       <configuration>
         <webroots />
+        <sourceRoots />
       </configuration>
     </facet>
   </component>
@@ -74,15 +75,6 @@
       <library name="commons-cli-1.0.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/commons-cli-1.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="liferay-nativity-1.0.5.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -315,15 +307,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
-      <library name="commons-codec-1.6.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-codec-1.6.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
       <library name="httpclient-4.3.5.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/httpclient-4.3.5.jar!/" />
@@ -424,16 +407,36 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.6.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-io-1.3.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
           <root url="file://$MODULE_DIR$/lib/cryptomator" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/lib/cryptomator" />
+        </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" type="SOURCES" />
       </library>
     </orderEntry>
-    <orderEntry type="library" exported="" name="commons-io-1.3.1" level="project" />
   </component>
 </module>

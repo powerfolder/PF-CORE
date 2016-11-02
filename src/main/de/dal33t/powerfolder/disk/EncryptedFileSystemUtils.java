@@ -30,7 +30,7 @@ public class EncryptedFileSystemUtils {
     public static Path initCryptoFS(Controller controller, Path encDir) throws IOException {
 
         try {
-            URI encFolderUri = CryptoFileSystemUris.createUri(encDir, encDir.toString());
+            URI encFolderUri = CryptoFileSystemUris.createUri(encDir);
             encDir = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
             if (!Files.exists(encDir)){
                 Files.createDirectories(encDir);
