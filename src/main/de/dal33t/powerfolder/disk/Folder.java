@@ -222,6 +222,11 @@ public class Folder extends PFComponent {
     private ScheduledFuture<?> persisterFuture;
 
     /**
+     * PFS-1994: Mark this folder as a folder which has been moved.
+     */
+    private boolean isMovedFolder;
+
+    /**
      * Constructor for folder.
      *
      * @param controller
@@ -269,6 +274,9 @@ public class Folder extends PFComponent {
                     // Check if the incoming localBaseDir is already an encrypted path.
                     if (EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir)) {
                         localBase = localBaseDir;
+                        if (Files.notExists(localBase)){
+                            Files.createDirectories(localBase);
+                        }
                     } else {
                         // If incoming localBaseDir has no CryptoPath instance, create one.
                         localBase = EncryptedFileSystemUtils.initCryptoFS(getController(), localBaseDir);
@@ -280,11 +288,11 @@ public class Folder extends PFComponent {
                     throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
                             + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
                 }
-                // PFS-1994: End: Encrypted storage.
 
             } else {
                 localBase = localBaseDir;
             }
+            // PFS-1994: End: Encrypted storage.
 
         } else {
 
@@ -5348,6 +5356,18 @@ public class Folder extends PFComponent {
             return "FolderPersister for '" + Folder.this;
         }
 
+    }
+
+    /**
+     * PFS-1994: Mark this Folder as a Folder which has been moved.
+     */
+
+    public void setMovedFolder(boolean movedFolder){
+        isMovedFolder = movedFolder;
+    }
+
+    public boolean isMovedFolder() {
+        return isMovedFolder;
     }
 
 }

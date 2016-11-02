@@ -89,7 +89,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean triggered;
     private final AtomicInteger suspendNewFolderSearch = new AtomicInteger(0);
     private Path foldersBasedir;
-    private boolean wasMoved;
 
     /** folder repository listeners */
     private final FolderRepositoryListener folderRepositoryListenerSupport;
@@ -151,7 +150,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         onLoginFolderEntryIds = new HashSet<String>();
         fileRequestor = new FileRequestor(controller);
         started = false;
-        wasMoved = false;
         loadRemovedFolderDirectories();
 
         folderScanner = new FolderScanner(getController());
@@ -1413,17 +1411,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Trigger sync on other folders.
         fileRequestor.triggerFileRequesting();
 
-        // PFS-1994: If folder was moved, delete the old folder and close the encrypted filesystem.
-        if (wasMoved && EncryptedFileSystemUtils.isEncryptedPath(folder.getLocalBase())) {
-            try {
-                PathUtils.recursiveDeleteVisitor(folder.getLocalBase(), false);
-                folder.getLocalBase().getFileSystem().close();
-                wasMoved = false;
-            } catch (IOException e) {
-                logWarning("Failed to close encrypted filesystem for localbase @ " + folder.getLocalBase()
-                        + " " + e);
-            }
-        }
         if (isFine()) {
             logFine(folder + " removed");
         }
@@ -2459,24 +2446,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                 String currentDirectoryName = currentDirectory.getFileName().toString();
                 if (!PathUtils.isSameName(currentDirectoryName, localFolder.getLocalizedName())) {
                     logWarning("Not renaming Folder " + localFolder.getName()
-                        + " to " + foInfo.getName()
-                        + ". Current local directory name (" + currentDirectoryName
-                        + ") does not match folder name ("
-                        + localFolder.getLocalizedName() + ")");
+                            + " to " + foInfo.getName()
+                            + ". Current local directory name (" + currentDirectoryName
+                            + ") does not match folder name ("
+                            + localFolder.getLocalizedName() + ")");
                     continue;
                 }
-    
+
                 logInfo("Renaming Folder " + localFolder.getName() + " to "
-                    + foInfo.getName());
+                        + foInfo.getName());
                 foInfo = foInfo.intern(true);
-                try {
-                    Path newDirectory = folder.getLocalBase().getParent()
+
+                Path newDirectory = folder.getLocalBase().getParent()
                         .resolve(PathUtils
-                            .removeInvalidFilenameChars(foInfo.getLocalizedName()));
-                    moveLocalFolder(folder, newDirectory);
-                } catch (IOException ioe) {
-                    logWarning("Could not move Folder " + foInfo);
-                }
+                                .removeInvalidFilenameChars(foInfo.getLocalizedName()));
+                moveLocalFolder(folder, newDirectory);
             }
 
             logInfo("Syncing folder setup with account permissions("
@@ -2521,43 +2505,66 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    public void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+    public Folder moveLocalFolder(Folder folder, Path newDirectory) {
+
+        newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
 
         if (Files.exists(newDirectory)) {
             logSevere("Not moving folder " + folder + " to new directory "
                 + newDirectory.toString()
                 + ". The new directory already exists!");
-            return;
+            return null;
         }
 
-        Path originalDirectory = folder.getLocalBase().toRealPath();
-        FolderSettings fs = FolderSettings.load(getController(),
-            folder.getConfigEntryId());
+        try {
+            Path originalDirectory = folder.getLocalBase();
+            FolderSettings fs = FolderSettings.load(getController(),
+                    folder.getConfigEntryId());
 
-        // PFS-1994: If old directory is encrypted, new directory must also be encrypted.
-        if (EncryptedFileSystemUtils.isEncryptedPath(originalDirectory)) {
-            newDirectory = EncryptedFileSystemUtils.initCryptoFS(getController(), newDirectory);
+            // PFS-1994: If old directory is encrypted, new directory must also be encrypted.
+            if (EncryptedFileSystemUtils.isEncryptedPath(originalDirectory)) {
+                Thread.sleep(50);
+                newDirectory = EncryptedFileSystemUtils.initCryptoFS(getController(), newDirectory);
+            }
+
+            // Remember patterns if content not moving.
+            List<String> patterns = folder.getDiskItemFilter().getPatterns();
+
+            // Remove the old folder from the repository.
+            removeFolder(folder, false);
+
+            // Move it.
+            try {
+                PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
+            } catch (IOException e){
+                PathUtils.recursiveCopyVisitor(originalDirectory, newDirectory);
+                logWarning("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " +
+                        "Instead of moving, the folder has been copied to " + newDirectory + ". Please remove " +
+                        "duplicate contents from " + originalDirectory + " manually!");
+            }
+
+            // Create the new Folder in the repository.
+            fs = fs.changeBaseDir(newDirectory);
+            folder = createFolder0(folder.getInfo().intern(), fs, true);
+
+            // Restore patterns if content not moved.
+            for (String pattern : patterns) {
+                folder.addPattern(pattern);
+            }
+
+            PathUtils.setAttributesOnWindows(newDirectory, true, true);
+
+            logInfo("Successfully moved folder from " + originalDirectory + " to " + newDirectory + ".");
+
+        } catch (IOException e) {
+            logSevere("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " + e);
+            logFine(e);
+            return null;
+        } catch (InterruptedException ie) {
+            System.err.println("Exception while trying to sleep. " + ie);
         }
 
-        // Move it.
-        PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
-        wasMoved = true;
-
-        // Remember patterns if content not moving.
-        List<String> patterns = folder.getDiskItemFilter().getPatterns();
-
-        // Remove the old folder from the repository.
-        removeFolder(folder, false);
-
-        // Create the new Folder in the repository.
-        fs = fs.changeBaseDir(newDirectory);
-        folder = createFolder0(folder.getInfo().intern(), fs, true);
-
-        // Restore patterns if content not moved.
-        for (String pattern : patterns) {
-            folder.addPattern(pattern);
-        }
-
+        return folder;
     }
 
     private void removeLocalFolders(Account a, Collection<FolderInfo> skip) {

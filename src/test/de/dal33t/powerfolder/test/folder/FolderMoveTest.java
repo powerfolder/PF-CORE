@@ -22,27 +22,26 @@ package de.dal33t.powerfolder.test.folder;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
-import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
- * This test checks that a folder can be moved for one location to another. It
+ * This test checks that a testFolder can be moved for one location to another. It
  * moves a file from testFolder to testFolder2. Tests functionality found in the
  * HomeTab class.
  */
 public class FolderMoveTest extends ControllerTestCase {
-    private Folder folder;
+
+    private Folder testFolder;
+
+    private Path testFolder2;
+    private Path testFolder3;
 
     /**
      * Creates test.txt and sub/test2.txt file2 to move.
@@ -54,20 +53,32 @@ public class FolderMoveTest extends ControllerTestCase {
 
         super.setUp();
 
-        // Setup a test folder; delete previous tests.
+        // Test for encrypted Folder or "normal" Folder.
+        prepareFolderMove(true);
+
+    }
+
+    private void prepareFolderMove(boolean isEncryptedFolder) throws Exception {
+
+        // Setup a test testFolder; delete previous tests.
         getController().setPaused(true);
-        //setupTestFolder(SyncProfile.HOST_FILES);
-        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(super.getController(), true);
-        setupEncryptedTestFolder(SyncProfile.HOST_FILES);
-        folder = getFolder();
-        Path localBase = folder.getLocalBase();
+
+        if (isEncryptedFolder) {
+            ConfigurationEntry.ENCRYPTED_STORAGE.setValue(super.getController(), true);
+            setupEncryptedTestFolder(SyncProfile.HOST_FILES);
+        } else {
+            setupTestFolder(SyncProfile.HOST_FILES);
+        }
+
+        testFolder = getFolder();
+        Path localBase = testFolder.getLocalBase();
 
         // Create a test.txt file
         Path testFile = localBase.resolve("test.txt");
         Files.deleteIfExists(testFile);
         Files.createFile(testFile);
 
-        // Create a text2.txt file in the 'sub' folder.
+        // Create a text2.txt file in the 'sub' testFolder.
         Path sub = localBase.resolve("sub");
         Files.createDirectory(sub);
         assertTrue(Files.exists(sub));
@@ -83,16 +94,23 @@ public class FolderMoveTest extends ControllerTestCase {
         // Write a test files.
         try (BufferedWriter writer = Files.newBufferedWriter(testFile, Charset.forName("UTF-8"))) {
             writer
-                .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
+                    .write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
         }
         try (BufferedWriter writer = Files.newBufferedWriter(testFile2, Charset.forName("UTF-8"))) {
             writer
-                .write("This is the test2 text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh osdjft");
+                    .write("This is the test2 text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh osdjft");
         }
 
-        scanFolder(folder);
+        scanFolder(testFolder);
 
-        Path testFolder3 = Paths.get(localBase.toAbsolutePath().toString() + "3");
+        if (isEncryptedFolder){
+            testFolder2 = Paths.get(testFolder.getLocalBase().toAbsolutePath().toString().replace(".crypto", "2.crypto"));
+            testFolder3 = Paths.get(localBase.toAbsolutePath().toString().replace(".crypto", "3.crypto"));
+        } else {
+            testFolder2 = Paths.get(testFolder.getLocalBase().toAbsolutePath().toString() + "2");
+            testFolder3 = Paths.get(localBase.toAbsolutePath().toString() + "3");
+        }
+
         Files.createDirectory(testFolder3);
         assertTrue(Files.exists(testFolder3));
 
@@ -120,54 +138,37 @@ public class FolderMoveTest extends ControllerTestCase {
      */
     public void testFolderMove() {
 
-        // Create new directories
-        // .../ControllerBart/testFolder2
-        Path testFolder2 = Paths.get(
-            folder.getLocalBase().toAbsolutePath().toString() + "2");
         FolderRepository repository = getController().getFolderRepository();
 
-        // Remove original folder from the folder repository.
-        repository.removeFolder(folder, false);
-
-        // Simulate tests done in HomeTab to check the folder can be moved.
-        Path oldLocalBase = folder.getLocalBase();
         try {
-            // Move the contents.
-            PathUtils.recursiveMoveVisitor(oldLocalBase, testFolder2);
 
-            // The new location should contain the
-            // 1) .PowerFolder dir, 2) the test file, 3) sub dir and 4) emptySub
-            // dir.
-            assertEquals(4, PathUtils.getNumberOfSiblings(testFolder2));
+            System.out.println("Before moving:");
 
-            // Create new folder
-            FolderSettings folderSettings = new FolderSettings(testFolder2,
-                getFolder().getSyncProfile(), getFolder().getFileArchiver()
-                    .getVersionsPerFile());
+            Files.walk(testFolder.getLocalBase())
+                    .forEach(p -> System.out.println(p));
 
-            // Move the folder
-            folder = repository.createFolder(folder.getInfo(), folderSettings);
+            Path oldLocalBase = testFolder.getLocalBase();
 
-            scanFolder(folder);
+            testFolder = repository.moveLocalFolder(testFolder, testFolder2);
 
-            // The folder should have the test files plus 2 subdirs
-            assertEquals(4, folder.getKnownItemCount());
+            scanFolder(testFolder);
+
+            System.out.println("After moving:");
+
+            Files.walk(testFolder.getLocalBase())
+                    .forEach(p -> System.out.println(p));
+
+            // The testFolder should have the test files plus 2 subdirs
+            assertEquals(4, testFolder.getKnownItemCount());
 
             // Sub dir should contain one file; test2.txt
-            boolean foundTest2 = false;
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(testFolder2)) {
-                for (Path file : stream) {
-                    if (file.getFileName().toString().equals("sub") && Files.isDirectory(file)) {
-                        assertEquals(1, PathUtils.getNumberOfSiblings(file));
-                        foundTest2 = true;
-                    }
-                }
-            }
-            assertTrue(foundTest2);
+            Files.walk(testFolder2)
+                    .filter(p -> p.getFileName().toString().equals("sub") && Files.isDirectory(p))
+                    .forEach(p -> assertEquals(1, PathUtils.getNumberOfSiblings(p)));
 
-            // The old location should be gone.
-            assertFalse("Old location still existing!:  " + oldLocalBase,
-                Files.exists(oldLocalBase));
+            // Since moveFolder method is NOT removing the old directory, this has to be true:
+            assertTrue("Old location still existing!:  " + oldLocalBase, Files.exists(oldLocalBase));
+
         } catch (IOException e) {
             e.printStackTrace();
         }

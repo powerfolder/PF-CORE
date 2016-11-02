@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.Assert.*;
 
 /**
@@ -35,6 +36,7 @@ public class CryptoFSTest {
     private Path decryptedDestination;
     private FileSystem fileSystem;
     private FileSystem fileSystem2;
+
 
     @Before
     public void setUp() throws Exception {
@@ -60,12 +62,12 @@ public class CryptoFSTest {
         fileSystem = initFileSystem(encryptedDestination, IdGenerator.makeId());
         fileSystem2 = initFileSystem(encryptedDestination2, IdGenerator.makeId());
 
-
-        encryptedDestination = fileSystem.getPath(encryptedDestination.toString());
+        encryptedDestination = fileSystem.getPath("/testDir");
         Files.createDirectories(encryptedDestination);
 
-        encryptedDestination2 = fileSystem2.getPath(encryptedDestination2.toString());
+        encryptedDestination2 = fileSystem2.getPath("/testDir");
         Files.createDirectories(encryptedDestination2);
+
     }
 
     private static FileSystem initFileSystem(Path encDir, String password) throws IOException {
@@ -93,21 +95,16 @@ public class CryptoFSTest {
         Path sourceFile = TestHelper.createRandomFile(unencryptedSource);
 
         // Create encrypted file over cryptofs.
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
-        Path encFile = encryptedDirectory.resolve(sourceFile.getFileName().toString());
-
-        Path encryptedDirectory2 = fileSystem2.getPath(encryptedDestination2.toString());
-        Path encFile2 = encryptedDirectory2.resolve(sourceFile.getFileName().toString());
+        
+        Path encFile = encryptedDestination.resolve(sourceFile.getFileName().toString());
+        Path encFile2 = encryptedDestination2.resolve(sourceFile.getFileName().toString());
 
         // Copy into encryptedDestination directory.
-        Files.createDirectories(encryptedDirectory);
         Files.copy(sourceFile, encFile);
-
-        Files.createDirectories(encryptedDirectory2);
         Files.copy(encFile, encFile2);
 
         // Read from encrypted dir over crypto filesystem in clear text to ensure the files are really encrypted.
-        try (Stream<Path> listing = Files.list(fileSystem.getPath(encryptedDestination.toString()))) {
+        try (Stream<Path> listing = Files.list(encryptedDestination)) {
             listing.forEach(System.out::println);
         }
 
@@ -121,8 +118,6 @@ public class CryptoFSTest {
 
         assertTrue(TestHelper.compareFiles(sourceFile, encFile2));
 
-        // Check encrypted output.
-        checkEncryptionProcess(null, null);
     }
 
     @Test
@@ -144,20 +139,18 @@ public class CryptoFSTest {
                 .forEach(p -> beforeEncryption.add(p));
 
         // Encrypt all files and copy them to encryptedDestination dir.
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
-        Files.createDirectories(encryptedDirectory);
 
         for (Path p : Files.newDirectoryStream(unencryptedSource)) {
-            Files.copy(p, encryptedDirectory.resolve(p.getFileName().toString()));
+            Files.copy(p, encryptedDestination.resolve(p.getFileName().toString()));
         }
 
         // Read from encrypted dir over crypto filesystem in clear text to ensure the files are really encrypted.
-        try (Stream<Path> listing = Files.list(fileSystem.getPath(encryptedDestination.toString()))) {
+        try (Stream<Path> listing = Files.list(encryptedDestination)) {
             listing.forEach(System.out::println);
         }
 
         // Decrypt all files and copy them to decryptedDestination.
-        for (Path p : Files.newDirectoryStream(fileSystem.getPath(encryptedDestination.toString()))) {
+        for (Path p : Files.newDirectoryStream(encryptedDestination)) {
             Files.copy(p, decryptedDestination.resolve(p.getFileName().toString()));
         }
 
@@ -169,7 +162,7 @@ public class CryptoFSTest {
                 .forEach(p -> afterEncryption.add(p));
 
         // Check encrypted output.
-        checkEncryptionProcess(beforeEncryption, afterEncryption);
+        assertEquals(beforeEncryption.size(), afterEncryption.size());
     }
 
     @Test
@@ -179,20 +172,18 @@ public class CryptoFSTest {
         Path largeFile = TestHelper.createRandomFile(unencryptedSource, 1024 /*1000L * 1024 * 1024*/);
 
         // Encrypt and copy large file to encrypted dir.
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
-        Files.createDirectories(encryptedDirectory);
 
-        Path encFile = encryptedDirectory.resolve(largeFile.getFileName().toString());
+        Path encFile = encryptedDestination.resolve(largeFile.getFileName().toString());
         Files.copy(largeFile, encFile);
 
         // Read from fileSystem dir over crypto filesystem in clear text to ensure the files are really encrypted.
-        try (Stream<Path> listing = Files.list(fileSystem.getPath(encryptedDestination.toString()))) {
+        try (Stream<Path> listing = Files.list(encryptedDestination)) {
             listing.forEach(System.out::println);
         }
 
         // Decrypt all files and copy them to decryptedDestination.
         Path decryptedLargeFile = null;
-        for (Path p : Files.newDirectoryStream(fileSystem.getPath(encryptedDestination.toString()))) {
+        for (Path p : Files.newDirectoryStream(encryptedDestination)) {
             decryptedLargeFile = p;
             Files.copy(p, decryptedDestination.resolve(p.getFileName().toString()));
         }
@@ -200,8 +191,6 @@ public class CryptoFSTest {
         // Check if unencryptedSource file is the same after decryption.
         assertTrue(TestHelper.compareFiles(largeFile, decryptedLargeFile));
 
-        // Check encrypted output.
-        checkEncryptionProcess(null, null);
     }
 
     @Test
@@ -211,18 +200,16 @@ public class CryptoFSTest {
         Path utf8File = TestHelper.createRandomFile(unencryptedSource, "\u00fc\u0080\u005EFOOBAR\u005B");
 
         // Encrypt and copy UTF-8 file to encryptedDestination.
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
-        Files.createDirectories(encryptedDirectory);
-        Files.copy(utf8File, encryptedDirectory.resolve(utf8File.getFileName().toString()));
+        Files.copy(utf8File, encryptedDestination.resolve(utf8File.getFileName().toString()));
 
         // Read from encryptedDestination over cryptofs in cleartext to ensure the files are really encrypted.
-        try (Stream<Path> listing = Files.list(fileSystem.getPath(encryptedDestination.toString()))) {
+        try (Stream<Path> listing = Files.list(encryptedDestination)) {
             listing.forEach(System.out::println);
         }
 
         // Decrypt all files and copy them to decryptedDestination.
         Path decryptedUTF8File = null;
-        for (Path p : Files.newDirectoryStream(fileSystem.getPath(encryptedDestination.toString()))) {
+        for (Path p : Files.newDirectoryStream(encryptedDestination)) {
             decryptedUTF8File = p;
             Files.copy(p, decryptedDestination.resolve(p.getFileName().toString()));
         }
@@ -230,8 +217,6 @@ public class CryptoFSTest {
         // Check if unencryptedSource file is the same after decryption.
         assertTrue(TestHelper.compareFiles(utf8File, decryptedUTF8File));
 
-        // Check encrypted output.
-        checkEncryptionProcess(null, null);
     }
 
     @Test
@@ -241,17 +226,16 @@ public class CryptoFSTest {
         Path sourceFile = TestHelper.createRandomFile(unencryptedSource, 0);
         // Would be nice: Path encFile = fileSystem.resolve(sourceFile.getFileName());
 
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
+        
 
-        Path encFile = encryptedDirectory.resolve(sourceFile.getFileName().toString());
+        Path encFile = encryptedDestination.resolve(sourceFile.getFileName().toString());
         Path destFile = decryptedDestination.resolve(sourceFile.getFileName());
 
         // Copy into encryptedDestination directory.
-        Files.createDirectories(encryptedDirectory);
         Files.copy(sourceFile, encFile);
 
         // Read from encrypted dir over crypto filesystem in clear text to ensure the files are really encrypted.
-        try (Stream<Path> listing = Files.list(fileSystem.getPath(encryptedDestination.toString()))) {
+        try (Stream<Path> listing = Files.list(encryptedDestination)) {
             listing.forEach(System.out::println);
         }
 
@@ -261,8 +245,6 @@ public class CryptoFSTest {
         // Optional test: Is the file content identical?
         assertTrue(TestHelper.compareFiles(sourceFile, destFile));
 
-        // Check encrypted output.
-        checkEncryptionProcess(null, null);
     }
 
     @Test
@@ -272,11 +254,10 @@ public class CryptoFSTest {
         Path sourceFile = TestHelper.createRandomFile(unencryptedSource);
 
         // Create encrypted file over cryptofs.
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
-        Path encFile = encryptedDirectory.resolve(sourceFile.getFileName().toString());
+        
+        Path encFile = encryptedDestination.resolve(sourceFile.getFileName().toString());
 
         // Copy into encryptedDestination directory.
-        Files.createDirectories(encryptedDirectory);
         Files.copy(sourceFile, encFile);
 
         Date fileDate = new Date(Files.getLastModifiedTime(encFile).toMillis());
@@ -287,14 +268,12 @@ public class CryptoFSTest {
     @Test
     public void readFilesAttributesInsideEncryptedFS() throws IOException {
 
-        // 1) Create unencrypted test file.
         Path sourceFile = TestHelper.createRandomFile(unencryptedSource);
         Map<String, Object> attrsSource;
         attrsSource = Files.readAttributes(sourceFile,
                 "size,lastModifiedTime,isDirectory");
         assertNotNull(attrsSource);
 
-        // 2) Create encrypted file over cryptofs.
         Path encFile = encryptedDestination.resolve(sourceFile.getFileName().toString());
         Files.copy(sourceFile, encFile);
         Map<String, Object> attrs;
@@ -302,46 +281,17 @@ public class CryptoFSTest {
                 "size,lastModifiedTime,isDirectory");
         assertNotNull(attrs);
 
-        // 2b)
         Path encSubDir = encryptedDestination.resolve("sub");
         Files.createDirectory(encSubDir);
         assertTrue(Files.exists(encSubDir));
 
-        assertNotNull(Files.newDirectoryStream(encSubDir));
-
-        // 3) Test non existing file on unencrypted path
-        Files.delete(sourceFile);
-        try {
-            attrsSource = Files.readAttributes(sourceFile,
-                    "size,lastModifiedTime,isDirectory");
-            fail("Attributes must not be read");
-        } catch (NoSuchFileException e) {
-            // OK!
-        }
-
-        // 4) Test non existing file in encrypted path.
-        Path notExisting = TestHelper.createRandomFile(encryptedDestination);
-        Files.delete(notExisting);
-        try {
-            attrsSource = Files.readAttributes(sourceFile,
-                    "size,lastModifiedTime,isDirectory");
-            fail("Attributes must not be read");
-        } catch (NoSuchFileException e) {
-            // OK!
-        }
-
-        try {
-            Files.readAttributes(sourceFile, BasicFileAttributes.class).isRegularFile();
-            fail("Attributes must not be read");
-        } catch (NoSuchFileException e) {
-            // OK!
-        }
     }
 
     @Test
     public void testDirectoryStream() throws IOException {
+
         Path sub = unencryptedSource.resolve("sub");
-        Files.createDirectory(sub);
+        Files.createDirectories(sub);
 
         try (DirectoryStream<Path> stream = Files
                 .newDirectoryStream(unencryptedSource)) {
@@ -354,7 +304,7 @@ public class CryptoFSTest {
         }
 
         sub = encryptedDestination.resolve("sub");
-        Files.createDirectory(sub);
+        Files.createDirectories(sub);
 
         try (DirectoryStream<Path> stream = Files
                 .newDirectoryStream(encryptedDestination)) {
@@ -372,17 +322,21 @@ public class CryptoFSTest {
     @Test
     public void moveSubDirectoriesInsideEncryptedFS() throws IOException {
 
-        encryptedDestination = fileSystem.getPath(encryptedDestination.toString());
-        encryptedDestination2 = fileSystem2.getPath(encryptedDestination2.toString());
-
+        // Test dirs.
         Files.createDirectories(encryptedDestination.resolve("testDir1"));
         Files.createDirectories(encryptedDestination.resolve("testDir2"));
         Files.createDirectories(encryptedDestination.resolve("testDir3"));
 
+        // Test files.
         TestHelper.createRandomFile(encryptedDestination.resolve("testDir1"));
         TestHelper.createRandomFile(encryptedDestination.resolve("testDir2"));
         TestHelper.createRandomFile(encryptedDestination.resolve("testDir3"));
         TestHelper.createRandomFile(encryptedDestination);
+
+        List<Path> beforeMoving = new ArrayList<>();
+
+        Files.walk(encryptedDestination)
+                .forEach(p -> beforeMoving.add(p));
 
         Files.walkFileTree(encryptedDestination, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 
@@ -391,10 +345,13 @@ public class CryptoFSTest {
                     @Override
                     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                             throws IOException {
-                        Path targetDir = encryptedDestination2.resolve(encryptedDestination.relativize(dir).toString());
-                        Files.createDirectories(targetDir);
+                        Path targetDir = encryptedDestination2.resolve(encryptedDestination.relativize(dir)
+                                .toString());
+                        if (!Files.exists(targetDir)) {
+                            Files.createDirectories(targetDir);
+                        }
                         try {
-                            Files.copy(dir, targetDir);
+                            Files.copy(dir, targetDir, REPLACE_EXISTING);
                         } catch (FileAlreadyExistsException e) {
                             if (!Files.isDirectory(targetDir))
                                 System.out.println("Could not move file.");
@@ -405,10 +362,19 @@ public class CryptoFSTest {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                             throws IOException {
-                        Files.move(file, encryptedDestination2.resolve(encryptedDestination.relativize(file).toString()));
+                        Files.move(file, encryptedDestination2.resolve(encryptedDestination.relativize(file)
+                                .toString()), REPLACE_EXISTING);
                         return CONTINUE;
                     }
                 });
+
+        List<Path> afterMoving = new ArrayList<>();
+
+        Files.walk(encryptedDestination2)
+                .forEach(p -> afterMoving.add(p));
+
+        assertEquals(beforeMoving.size(), afterMoving.size());
+
     }
 
     @Test
@@ -417,10 +383,7 @@ public class CryptoFSTest {
         // Create unencrypted empty test file.
         Path sourceFile = TestHelper.createRandomFile(unencryptedSource, 0);
 
-        Path encryptedDirectory = fileSystem.getPath(encryptedDestination.toString());
-        Files.createDirectories(encryptedDirectory);
-
-        Path encFile = encryptedDirectory.resolve(sourceFile.getFileName().toString());
+        Path encFile = encryptedDestination.resolve(sourceFile.getFileName().toString());
 
         Path destFile = decryptedDestination.resolve(sourceFile.getFileName());
 
@@ -431,7 +394,7 @@ public class CryptoFSTest {
         Files.write(encFile, "foobar".getBytes());
 
         // Read from encryptedDestination over crypto filesystem in clear text to ensure the files are really encrypted.
-        try (Stream<Path> listing = Files.list(fileSystem.getPath(encryptedDestination.toString()))) {
+        try (Stream<Path> listing = Files.list(encryptedDestination)) {
             listing.forEach(System.out::println);
         }
 
@@ -447,15 +410,14 @@ public class CryptoFSTest {
 
         Path sourceFile = TestHelper.createRandomFile(unencryptedSource, "foobar.txt");
 
-        encryptedDestination = fileSystem.getPath(encryptedDestination.toString());
+        encryptedDestination = encryptedDestination;
         decryptedDestination = fileSystem.getPath(decryptedDestination.toString());
 
         Path fileFrom = unencryptedSource.resolve(sourceFile.getFileName().toString());
-
         Path encFileTo = encryptedDestination.resolve(sourceFile.getFileName().toString());
         Files.createDirectories(encFileTo);
 
-        Files.copy(fileFrom, encFileTo, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(fileFrom, encFileTo, REPLACE_EXISTING);
 
         String md5File1 = DigestUtils.md5Hex(Files.readAllBytes(encFileTo));
 
@@ -478,21 +440,19 @@ public class CryptoFSTest {
 
         Path sourceFile = TestHelper.createRandomFile(unencryptedSource, "foobar.txt");
 
-        encryptedDestination = fileSystem.getPath(encryptedDestination.toString());
-        Files.createDirectories(encryptedDestination);
-        encryptedDestination2 = fileSystem.getPath(encryptedDestination2.toString());
-        Files.createDirectories(encryptedDestination2);
+        encryptedDestination2 = fileSystem2.getPath(encryptedDestination2.toString());
+
         decryptedDestination = Paths.get(decryptedDestination.toString());
         Files.createDirectories(decryptedDestination);
 
         Path encFileTo = encryptedDestination.resolve(sourceFile.getFileName().toString());
-        Files.copy(sourceFile, encFileTo, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(sourceFile, encFileTo, REPLACE_EXISTING);
 
         Path encFileFinal = encryptedDestination2.resolve(sourceFile.getFileName().toString());
-        Files.copy(encFileTo, encFileFinal, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(encFileTo, encFileFinal, REPLACE_EXISTING);
 
         Path decryptedFile = decryptedDestination.resolve(sourceFile.getFileName().toString());
-        Files.copy(encFileFinal, decryptedFile, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(encFileFinal, decryptedFile, REPLACE_EXISTING);
 
         assertEquals(Files.size(sourceFile), Files.size(decryptedFile));
 
@@ -580,25 +540,6 @@ public class CryptoFSTest {
         System.out.println("2. Encrypted file size: " + encryptedDestinationInfo[0] + " Encrypted files total: " + encryptedDestinationInfo[1]);
         System.out.println("3. Unencrypted file size after decryption: " + unencryptedDestinationInfo[0] + " Unencrypted files total before encryption: " + unencryptedDestinationInfo[1]);
         System.out.println("-----------------------");
-    }
-
-    /**
-     * Several test methods with the encrypted filesystem.
-     */
-
-    @Test
-    public void createCryptomatorURI() throws IOException {
-
-        // Encrypted path.
-        Path encPath = fileSystem.getPath(encryptedDestination.toString());
-
-        // Create crypto URI and refer back to encrypted path instance.
-        URI encFolderUri = CryptoFileSystemUris.createUri(encPath, encPath.toString());
-        Path encPath2 = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
-
-        // Check if the final path is encrypted.
-        assertEquals(encPath.toString(), encPath2.toString());
-
     }
 
     @Test

@@ -32,6 +32,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class PathUtils {
 
@@ -1770,6 +1771,38 @@ public class PathUtils {
         }
     }
 
+    public static void recursiveCopyVisitor(Path oldDirectory, Path newDirectory) throws IOException {
+
+        Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+
+                new SimpleFileVisitor<Path>() {
+
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                            throws IOException {
+                        Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
+                        if (!Files.exists(targetDir)) {
+                            Files.createDirectories(targetDir);
+                        }
+                        try {
+                            Files.copy(dir, targetDir);
+                        } catch (FileAlreadyExistsException e) {
+                            if (!Files.isDirectory(targetDir))
+                                System.out.println("Could not move file.");
+                        }
+                        return CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException {
+                        Files.copy(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
+                        return CONTINUE;
+                    }
+                });
+
+    }
+
     public static void recursiveMoveVisitor(Path oldDirectory, Path newDirectory) throws IOException {
 
         Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
@@ -1795,7 +1828,7 @@ public class PathUtils {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                             throws IOException {
-                        Files.move(file, newDirectory.resolve(oldDirectory.relativize(file).toString()));
+                        Files.move(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
                         return CONTINUE;
                     }
                 });
