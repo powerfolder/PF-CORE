@@ -71,15 +71,6 @@ public class FolderAdminPermission extends FolderPermission {
         return AccessMode.ADMIN;
     }
 
-    public boolean migrate() {
-        if (super.folder == null) {
-            super.folder = folder;
-            folder = null;
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public boolean implies(Permission impliedPermision) {
         if (impliedPermision instanceof FolderReadPermission) {

@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.SendMessageTask;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -103,7 +104,8 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
     // }
 
     public void testInviteDirectly() throws Exception {
-        Invitation invitation = folderAtLisa.createInvitation();
+        Invitation invitation = folderAtLisa
+            .createInvitation(FolderPermission.read(folderAtLisa.getInfo()));
 
         LoggingManager.setConsoleLogging(Level.FINER);
         // Send invitation over PF to bart.

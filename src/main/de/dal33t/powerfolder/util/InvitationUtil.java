@@ -104,14 +104,14 @@ public class InvitationUtil {
         try (ObjectInputStream oIn = new ObjectInputStream(in)) {
             Invitation invitation = (Invitation) oIn.readObject();
 
-            if (invitation.getInvitor() == null) {
+            if (invitation.getSenderDevice() == null) {
                 // Old file version, has another member info at end
                 // New invitation files have memberinfo inclueded in invitation
                 try {
                     MemberInfo from = (MemberInfo) oIn.readObject();
-                    if (invitation.getInvitor() == null) {
+                    if (invitation.getSenderDevice() == null) {
                         // Use invitation
-                        invitation.setInvitor(from);
+                        invitation.setSenderDevice(from);
                     }
                 } catch (IOException e) {
                     // Ingnore
@@ -261,8 +261,8 @@ public class InvitationUtil {
         }
 
         System.out.format("-> %s\n", inv.getOID());
-        System.out.format("Invitation from '%s' to '%s'\n", inv.getInvitorUsername(),
-            inv.getInviteeUsername());
+        System.out.format("Invitation from '%s' to '%s'\n", inv.getSender(),
+            inv.getRecipient());
         System.out.format("Permission '%s' for Folder '%s' - localized '%s' - ID '%s'\n",
             inv.getPermission().getMode().toString(),
             inv.getPermission().getFolder().getName(),

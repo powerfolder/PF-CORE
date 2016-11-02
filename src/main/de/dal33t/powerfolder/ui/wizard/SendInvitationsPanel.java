@@ -56,7 +56,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -92,7 +91,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private DefaultComboBoxModel<String> permissionsComboModel;
     private JComboBox<String> permissionsCombo;
 
-    public SendInvitationsPanel(Controller controller) {
+    SendInvitationsPanel(Controller controller) {
         super(controller);
     }
 
@@ -129,9 +128,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
             if(text.contains("<") && text.contains(">")) {
                 text = text.substring(text.indexOf("<") + 1, text.indexOf(">")).trim();
             }
-            if(LoginUtil.isValidUsername(getController(), text)) {
-                Invitation invitation = folderInfo.getFolder(getController()).createInvitation();
-                invitation.setPermission(folderPermission);
+            if (LoginUtil.isValidUsername(getController(), text)) {
+                Invitation invitation = folderInfo.getFolder(getController())
+                    .createInvitation(folderPermission);
                 sendInvite(candidates, text, invitation);
             } else {
                 invalidEmail.setVisible(true);
@@ -140,8 +139,8 @@ public class SendInvitationsPanel extends PFWizardPanel {
             theResult = true;
         }
         for (Object o : inviteesListModel.toArray()) {
-            Invitation invitation = folderInfo.getFolder(getController()).createInvitation();
-            invitation.setPermission(folderPermission);
+            Invitation invitation = folderInfo.getFolder(getController())
+                .createInvitation(folderPermission);
 
             String invitee = (String) o;
             sendInvite(candidates, invitee, invitation);
@@ -162,7 +161,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         RuntimeException rte = null;
         // Invitation by email
         try {
-            invitation.setInviteeUsername(invitee);
+            invitation.setRecipient(invitee);
             InvitationUtil.invitationByServer(getController(), invitation,
                 invitee, false);
         } catch (RuntimeException e) {

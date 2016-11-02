@@ -77,11 +77,10 @@ public class SendInvitationEmail implements Serializable {
     public static SendInvitationEmail create(MemberInfo invitorDevice,
         FolderPermission foPermission, Account invitor, String inviteeName)
     {
-        Invitation inv = new Invitation(foPermission.getFolder(),
-            invitorDevice);
-        inv.setPermission(foPermission);
-        inv.setInvitorUsername(invitor.getUsername());
-        inv.setInviteeUsername(inviteeName);
+        Invitation inv = new Invitation(foPermission);
+        inv.setSenderDevice(invitorDevice);
+        inv.setSender(invitor.getUsername());
+        inv.setRecipient(inviteeName);
         return new SendInvitationEmail(inv, inviteeName);
     }
 

@@ -213,9 +213,7 @@ public class Folder extends PFComponent {
 
     /**
      * The number of seconds the folder is allowed to be out of sync. If it is
-     * longer out of sync it produces an {@link UnsynchronizedFolderProblem}. If
-     * not set (0) the default global will be assumed
-     * {@link ConfigurationEntry#FOLDER_SYNC_WARN_DAYS}.
+     * longer out of sync it produces an {@link UnsynchronizedFolderProblem}.
      */
     private int syncWarnSeconds;
     private Persister persister;
@@ -3000,7 +2998,7 @@ public class Folder extends PFComponent {
     /**
      * Synchronizes the deleted files with local folder
      *
-     * @param members
+     * @param collection
      *            the members to sync the deletions with.
      * @param force
      *            true if the sync is forced with ALL connected members of the
@@ -3933,7 +3931,7 @@ public class Folder extends PFComponent {
      * methods takes over the file information from remote under following
      * circumstances: See #findSameFiles(FileInfo[])
      *
-     * @see #findSameFiles(FileInfo[])
+     * @see #findSameFiles(Member, Collection<FileInfo>)
      */
     private void findSameFilesOnRemote() {
         for (Member member : getConnectedMembers()) {
@@ -4805,11 +4803,8 @@ public class Folder extends PFComponent {
      * @return an Invitation to this folder. Includes a intelligent opposite
      *         sync profile.
      */
-    public Invitation createInvitation() {
-        Invitation inv = new Invitation(currentInfo, getController()
-            .getMySelf().getInfo());
-        inv.setFilesCount(statistic.getLocalFilesCount());
-        inv.setSize(statistic.getLocalSize());
+    public Invitation createInvitation(FolderPermission fp) {
+        Invitation inv = new Invitation(fp);
         inv.setSuggestedSyncProfile(syncProfile);
         if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);

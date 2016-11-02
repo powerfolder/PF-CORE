@@ -1027,9 +1027,13 @@ public class NodeManager extends PFComponent {
                 + acceptors.size() + "), throttled (" + waitTime + "ms wait)");
         }
         if (acceptors.size() > Constants.MAX_INCOMING_CONNECTIONS) {
-            // Show warning
-            logWarning("Processing too many incoming connections ("
-                + acceptors.size() + "), throttled (" + waitTime + "ms wait)");
+            String msg = "Processing many incoming connections ("
+                + acceptors.size() + "), throttled (" + waitTime + "ms wait)";
+            if (acceptors.size() > Constants.MAX_INCOMING_CONNECTIONS * 3) {
+                logWarning(msg);
+            } else {
+                logFine(msg);
+            }
         }
         try {
             Thread.sleep(waitTime);
@@ -1752,10 +1756,17 @@ public class NodeManager extends PFComponent {
         @Override
         public void run() {
             int size = acceptors.size();
-            logFine("Checking incoming connection queue (" + size + ")");
+            if (isFine()) {
+                logFine("Checking incoming connection queue (" + size + ")");
+            }
             if (size > Constants.MAX_INCOMING_CONNECTIONS) {
-                logWarning("Processing too many incoming connections (" + size
-                    + ")");
+                String msg = "Processing many incoming connections (" + size
+                    + ")";
+                if (size > Constants.MAX_INCOMING_CONNECTIONS * 3) {
+                    logWarning(msg);
+                } else {
+                    logFine(msg);
+                }
             }
             for (AbstractAcceptor acceptor : acceptors) {
                 if (acceptor.hasTimeout()) {

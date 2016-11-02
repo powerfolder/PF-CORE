@@ -492,9 +492,11 @@ public class FolderSettings {
                     + res);
                 return null;
             }
-            if (res.contains("$")) {
-                LOG.warning("Directory path may still contain placeholders: "
-                    + res);
+            if (res.contains("$") && !res.contains("$RECYCLE.BIN")
+                && !res.contains(Constants.MAIL_ATTACHMENT_FOLDER))
+            {
+                LOG.warning(
+                    "Directory path may still contain placeholders: " + res);
             }
         }
 

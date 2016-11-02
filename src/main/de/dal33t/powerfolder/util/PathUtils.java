@@ -318,7 +318,7 @@ public class PathUtils {
         while (Files.exists(candidate)) {
             candidate = baseDir.getParent().resolve(baseDirName + " (" + suffix + ")" + baseDirExt);
             suffix++;
-            if (suffix > 1000) {
+            if (suffix > 999999999) {
                 throw new IllegalStateException(
                     "Unable to find empty directory Tried " + candidate);
             }
@@ -1686,8 +1686,11 @@ public class PathUtils {
     }
 
     /**
-     * @param base
-     * @return
+     * Check {@code base} if it does contain data other than a
+     * {@link Constants.POWERFOLDER_SYSTEM_SUBDIR} directory.
+     *
+     * @param base The path check for contents
+     * @return {@code True} if {@code base} contains content other than a "powerfolder system subdir", {@code false} otherwise.
      * @throws IllegalArgumentException
      */
     public static boolean hasContents(Path base) {
