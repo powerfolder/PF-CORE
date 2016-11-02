@@ -56,6 +56,11 @@ public class EncryptedFileSystemUtils {
         return path.toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
     }
 
+    public static boolean isEncryptedPath (String path){
+
+        return path.endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
+    }
+
     public static boolean isCryptoPathInstance(Path path){
 
         return path.getFileSystem().provider() instanceof CryptoFileSystemProvider;
