@@ -1692,7 +1692,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // with a different invitor
                 if (!getController().getOSClient().isPrimaryServer(this)) {
                     // To ensure invitor is correct for all other computers
-                    invitation.setInvitor(getInfo());
+                    invitation.setSenderDevice(getInfo());
                 }
 
                 getController().invitationReceived(invitation);

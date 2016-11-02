@@ -140,7 +140,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 PFWizard.SUCCESS_PANEL);
         } else {
             getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
-                invitation.getInvitor());
+                invitation.getSenderDevice());
 
             next = new ChooseDiskLocationPanel(getController(), invitation
                 .getSuggestedLocalBase(getController()).toAbsolutePath().toString(),

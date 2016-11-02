@@ -78,7 +78,7 @@ public class SendInvitationEmail implements Serializable {
         FolderPermission foPermission, Account invitor, String inviteeName)
     {
         Invitation inv = new Invitation(foPermission);
-        inv.setInvitor(invitorDevice);
+        inv.setSenderDevice(invitorDevice);
         inv.setSender(invitor.getUsername());
         inv.setRecipient(inviteeName);
         return new SendInvitationEmail(inv, inviteeName);

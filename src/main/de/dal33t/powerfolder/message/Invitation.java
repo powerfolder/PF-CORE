@@ -60,7 +60,7 @@ public class Invitation extends FolderRelatedMessage
     private static final long serialVersionUID = 101L;
 
     public static final String PROPERTY_OID = "oid";
-    public static final String PROPERTY_INVITOR = "invitor";
+    public static final String PROPERTY_SENDER_DEVICE = "senderDevice";
     public static final String PROPERTY_INVITATION_TEXT = "invitationText";
     public static final String PROPERTY_SUGGESTED_SYNC_PROFILE_CONFIG = "suggestedSyncProfileConfig";
     public static final String PROPERTY_SUGGESTED_LOCAL_BASE_PATH = "suggestedLocalBasePath";
@@ -76,7 +76,7 @@ public class Invitation extends FolderRelatedMessage
 
     @ManyToOne
     @JoinColumn(name = "nodeInfo_id")
-    private MemberInfo invitor;
+    private MemberInfo senderDevice;
     @Column(length = 2048)
     private String invitationText;
     private String suggestedSyncProfileConfig;
@@ -276,12 +276,12 @@ public class Invitation extends FolderRelatedMessage
         this.server = server;
     }
 
-    public MemberInfo getInvitor() {
-        return invitor;
+    public MemberInfo getSenderDevice() {
+        return senderDevice;
     }
 
-    public void setInvitor(MemberInfo invitor) {
-        this.invitor = invitor;
+    public void setSenderDevice(MemberInfo senderDevice) {
+        this.senderDevice = senderDevice;
     }
 
     public String getInvitationText() {
@@ -349,7 +349,7 @@ public class Invitation extends FolderRelatedMessage
 
     @Override
     public String toString() {
-        return "Invitation to " + folder + " from " + invitor;
+        return "Invitation to " + folder + " from " + senderDevice;
     }
 
     @Override
@@ -359,7 +359,7 @@ public class Invitation extends FolderRelatedMessage
         result = prime * result + (oid == null ? 0 : oid.hashCode());
         result = prime * result
             + (invitationText == null ? 0 : invitationText.hashCode());
-        result = prime * result + (invitor == null ? 0 : invitor.hashCode());
+        result = prime * result + (senderDevice == null ? 0 : senderDevice.hashCode());
         result = prime * result
             + (permission == null ? 0 : permission.hashCode());
         result = prime * result + (username == null ? 0 : username.hashCode());
@@ -403,11 +403,11 @@ public class Invitation extends FolderRelatedMessage
         } else if (!invitationText.equals(other.invitationText)) {
             return false;
         }
-        if (invitor == null) {
-            if (other.invitor != null) {
+        if (senderDevice == null) {
+            if (other.senderDevice != null) {
                 return false;
             }
-        } else if (!invitor.equals(other.invitor)) {
+        } else if (!senderDevice.equals(other.senderDevice)) {
             return false;
         }
         if (username == null) {
@@ -468,7 +468,7 @@ public class Invitation extends FolderRelatedMessage
         {
           InvitationProto.Invitation proto = (InvitationProto.Invitation)mesg;
 
-          this.invitor = new MemberInfo(proto.getInvitor());
+          this.senderDevice = new MemberInfo(proto.getInvitor());
           this.invitationText = proto.getInvitationText();
           this.username = proto.getUsername();
           this.oid = proto.getOid();
@@ -492,7 +492,7 @@ public class Invitation extends FolderRelatedMessage
 
       builder.setClazzName(this.getClass().getSimpleName());
       builder.setInvitor(
-        (MemberInfoProto.MemberInfo)this.invitor.toD2D());
+        (MemberInfoProto.MemberInfo)this.senderDevice.toD2D());
       builder.setInvitationText(this.invitationText);
       builder.setUsername(this.username);
       builder.setOid(this.oid);
@@ -542,10 +542,10 @@ public class Invitation extends FolderRelatedMessage
     // Return the user name if not blank, else the invitor nick.
     public String getInvitorUsername() {
         if (StringUtils.isBlank(sender)) {
-            if (invitor == null) {
+            if (senderDevice == null) {
                 return "";
             }
-            return invitor.getNick();
+            return senderDevice.getNick();
         }
         return sender;
     }

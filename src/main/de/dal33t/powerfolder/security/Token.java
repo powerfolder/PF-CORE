@@ -70,6 +70,9 @@ public class Token {
     private static final long REQUEST_TOKEN_TIMEOUT = 60 * 1000L;
     // 1337 Years valid if not removed/revoked
     private static final long SERVICE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
+    // PFS-2008:
+    private static final long MERGE_TOKEN_TIMEOUT = 10 * 60 * 1000L;
+    private static final long ADD_EMAIL_TOKEN_TIMEOUT = 10 * 60 * 1000L;
 
     @Id
     private String id;
@@ -132,19 +135,19 @@ public class Token {
         return new Token(validTo, fedService, aInfo, null);
     }
 
-    public static Token newMergeToken(long validMS, AccountInfo aInfo,
+    public static Token newMergeToken(AccountInfo aInfo,
         String usernameToMerge)
     {
-        Token token = newAccessToken(validMS, aInfo);
+        Token token = newAccessToken(MERGE_TOKEN_TIMEOUT, aInfo);
         token.addNotesWithDate(
             aInfo.getUsername() + " merging with " + usernameToMerge);
         return token;
     }
 
-    public static Token newAddEmailToken(long validMS, AccountInfo aInfo,
+    public static Token newAddEmailToken(AccountInfo aInfo,
         String eMailToAdd)
     {
-        Token token = newAccessToken(validMS, aInfo);
+        Token token = newAccessToken(ADD_EMAIL_TOKEN_TIMEOUT, aInfo);
         token.addNotesWithDate(
             aInfo.getUsername() + " adding email " + eMailToAdd);
         return token;
