@@ -56,7 +56,6 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -161,7 +160,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
     private void sendInvite(Collection<Member> candidates, String invitee, Invitation invitation) {
         Reject.ifBlank(invitee, "Invitee");
         RuntimeException rte = null;
-        invitee = invitee.toLowerCase();
+        invitee = invitee.trim().toLowerCase();
         // Invitation by email
         try {
             invitation.setInviteeUsername(invitee);
