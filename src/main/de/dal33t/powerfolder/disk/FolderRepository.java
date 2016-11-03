@@ -1390,7 +1390,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (!PathUtils.isZyncroPath(folder.getLocalBase())) {
                     // Remove the folder if totally empty.
                     try {
-                        Files.delete(folder.getLocalBase());
+                        PathUtils.recursiveDeleteVisitor(folder.getLocalBase(), true);
                     } catch (DirectoryNotEmptyException | NoSuchFileException e) {
                         // this can happen, and is just fine
                     } catch (IOException ioe) {
@@ -2561,7 +2561,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFine(e);
             return null;
         } catch (InterruptedException ie) {
-            System.err.println("Exception while trying to sleep. " + ie);
+            logWarning("Interrupted while trying to sleep for CryptoFileSystem initialization. " + ie);
         }
 
         return folder;

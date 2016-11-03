@@ -1,16 +1,22 @@
 package de.dal33t.powerfolder.test.encryptedStorage;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
-import org.junit.Before;
-import org.junit.Test;
 
+import javax.imageio.spi.ServiceRegistry;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * JUnit Test for file encryption with cryptomator lib, cryptofs and PowerFolder.
@@ -21,57 +27,124 @@ import java.nio.file.Path;
 
 public class EncryptedStorageTest extends ControllerTestCase {
 
-    private Folder folder;
-    private Path localBase;
+    private Folder testFolder1;
+    private Path testFolder2;
 
     @Override
     public void setUp() throws Exception {
 
         super.setUp();
 
-        // Activate storage encryption.
-        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(super.getController(), true);
-
+        // Setup encrypted folder.
+        setupEncryptedFolder();
     }
 
-    public void testSetupEncryptedFolder() {
+    public void setupEncryptedFolder() {
 
-        // Setup a encrypted test folder.
-        //getController().setPaused(true);
+        // Setup a encrypted test testFolder1.
+        getController().setPaused(true);
+        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(super.getController(), true);
         setupEncryptedTestFolder(SyncProfile.HOST_FILES);
-        folder = getFolder();
-        localBase = folder.getLocalBase();
+        testFolder1 = getFolder();
+
+        Path localBase = testFolder1.getLocalBase();
 
         assertTrue(EncryptedFileSystemUtils.isCryptoPathInstance(localBase));
+
+        // Create a test.txt file
+        try {
+
+            Path testFile = localBase.resolve("test.txt");
+            Files.deleteIfExists(testFile);
+            Files.createFile(testFile);
+
+            // Create a text2.txt file in the 'sub' testFolder.
+            Path sub = localBase.resolve("sub");
+            Files.createDirectory(sub);
+            assertTrue(Files.exists(sub));
+
+            Path testFile2 = sub.resolve("test2.txt");
+            Files.deleteIfExists(testFile2);
+            Files.createFile(testFile2);
+
+            Path emptySub = localBase.resolve("emptySub");
+            Files.createDirectory(emptySub);
+            assertTrue(Files.exists(emptySub));
+
+            // Write a test files.
+            BufferedWriter writer = Files.newBufferedWriter(testFile, Charset.forName("UTF-8"));
+
+            writer.write("This is the test text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf" +
+                    "\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh klh8iesyt");
+
+            writer.flush();
+
+            writer = Files.newBufferedWriter(testFile2, Charset.forName("UTF-8"));
+            writer.write("This is the test2 text.\n\nl;fjk sdl;fkjs dfljkdsf ljds flsfjd lsjdf lsfjdoi;ureffd dshf" +
+                    "\nhjfkluhgfidgh kdfghdsi8yt ribnv.,jbnfd kljhfdlkghes98o jkkfdgh osdjft");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        testFolder2 = Paths.get(testFolder1.getLocalBase().toAbsolutePath().toString().replace(".crypto", "2.crypto"));
 
     }
 
     public void testMoveEncryptedFolder() throws IOException {
 
-        // Setup a encrypted test folder.
-        testSetupEncryptedFolder();
+        FolderRepository repository = getController().getFolderRepository();
 
-        Path localBase = folder.getLocalBase();
+        try {
 
-        // Create a test.txt file
-        Path testFile = localBase.resolve("test.txt");
-        Files.deleteIfExists(testFile);
-        Files.createFile(testFile);
+            System.out.println("Before moving:");
 
-        // Create a text2.txt file in the 'sub' folder.
-        Path sub = localBase.resolve("sub");
-        Files.createDirectory(sub);
-        assertTrue(Files.exists(sub));
+            Files.walk(testFolder1.getLocalBase())
+                    .forEach(p -> System.out.println(p));
 
-        Path testFile2 = sub.resolve("test2.txt");
-        Files.deleteIfExists(testFile2);
-        Files.createFile(testFile2);
+            Path oldLocalBase = testFolder1.getLocalBase();
 
-        Path emptySub = localBase.resolve("emptySub");
-        Files.createDirectory(emptySub);
-        assertTrue(Files.exists(emptySub));
+            testFolder1 = repository.moveLocalFolder(testFolder1, testFolder2);
 
-        scanFolder(folder);
+            scanFolder(testFolder1);
+
+            System.out.println("After moving:");
+
+            Files.walk(testFolder1.getLocalBase())
+                    .forEach(p -> System.out.println(p));
+
+            // The testFolder should have the test files plus 2 subdirs
+            assertEquals(4, testFolder1.getKnownItemCount());
+
+            // Sub dir should contain one file; test2.txt
+            Files.walk(testFolder2)
+                    .filter(p -> p.getFileName().toString().equals("sub") && Files.isDirectory(p))
+                    .forEach(p -> assertEquals(1, PathUtils.getNumberOfSiblings(p)));
+
+            // Since moveFolder method is NOT removing the old directory, this has to be true:
+            assertTrue("Old location still existing!:  " + oldLocalBase, Files.exists(oldLocalBase));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void testDeleteEncryptedFolder() throws IOException {
+
+        boolean isDirectoryEmpty = false;
+
+        FolderRepository repo = getController().getFolderRepository();
+
+        repo.removeFolder(testFolder1, true);
+
+        try {
+            Files.list(testFolder1.getLocalBase());
+        } catch (NoSuchFileException nsf){
+            isDirectoryEmpty = true;
+        }
+
+        assertTrue(isDirectoryEmpty);
 
     }
 
