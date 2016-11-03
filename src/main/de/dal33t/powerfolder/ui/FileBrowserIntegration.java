@@ -245,6 +245,7 @@ public class FileBrowserIntegration extends PFComponent {
                 return false;
             }
             nc.setFilterFolder("");
+            iconControl.enableFileIcons();
             logFine("Connected to shell extensions.");
             return true;
         } catch (RuntimeException re) {
