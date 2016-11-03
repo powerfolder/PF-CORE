@@ -159,6 +159,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
      */
     private void sendInvite(Collection<Member> candidates, String invitee, Invitation invitation) {
         RuntimeException rte = null;
+        if (invitee.toLowerCase().trim().contains("@")) {
+            invitee = invitee.toLowerCase();
+        }
         // Invitation by email
         try {
             invitation.setRecipient(invitee);
