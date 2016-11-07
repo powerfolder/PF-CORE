@@ -6,12 +6,14 @@ import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
 import javax.imageio.spi.ServiceRegistry;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -125,6 +127,7 @@ public class EncryptedStorageTest extends ControllerTestCase {
             assertTrue("Old location still existing!:  " + oldLocalBase, Files.exists(oldLocalBase));
 
         } catch (IOException e) {
+            //fail(e);
             e.printStackTrace();
         }
 

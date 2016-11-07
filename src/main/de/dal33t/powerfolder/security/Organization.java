@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -186,13 +187,17 @@ public class Organization implements Serializable {
     }
 
     public List<String> getDomains() {
-        return domains;
+        return Collections.unmodifiableList(domains);
     }
 
     public void setDomains (List<String> domains){
+        Reject.ifNull(domains, "Domains");
         List<String> domainsLower = new ArrayList<>();
         for (String dom : domains){
-            dom = dom.toLowerCase();
+            if (dom == null) {
+                continue;
+            }
+            dom = dom.trim().toLowerCase();
             domainsLower.add(dom);
         }
         this.domains = domainsLower;
