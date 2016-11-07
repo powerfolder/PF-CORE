@@ -63,10 +63,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.NodesSelectDialog2;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
-import de.dal33t.powerfolder.util.InvitationUtil;
-import de.dal33t.powerfolder.util.LoginUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import jwf.WizardPanel;
 
@@ -158,7 +155,9 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * @param invitee
      */
     private void sendInvite(Collection<Member> candidates, String invitee, Invitation invitation) {
+        Reject.ifBlank(invitee, "Invitee");
         RuntimeException rte = null;
+        invitee = invitee.trim().toLowerCase();
         // Invitation by email
         try {
             invitation.setRecipient(invitee);
