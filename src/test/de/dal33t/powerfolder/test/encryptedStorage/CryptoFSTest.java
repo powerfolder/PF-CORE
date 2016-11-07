@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -226,8 +227,6 @@ public class CryptoFSTest {
         Path sourceFile = TestHelper.createRandomFile(unencryptedSource, 0);
         // Would be nice: Path encFile = fileSystem.resolve(sourceFile.getFileName());
 
-        
-
         Path encFile = encryptedDestination.resolve(sourceFile.getFileName().toString());
         Path destFile = decryptedDestination.resolve(sourceFile.getFileName());
 
@@ -284,6 +283,21 @@ public class CryptoFSTest {
         Path encSubDir = encryptedDestination.resolve("sub");
         Files.createDirectory(encSubDir);
         assertTrue(Files.exists(encSubDir));
+
+    }
+
+    @Test
+    public void getFileOwnerFromEncryptedFile() throws IOException {
+
+        // Create unencrypted empty test file.
+        Path sourceFile = TestHelper.createRandomFile(unencryptedSource);
+        Path encFile = encryptedDestination.resolve(sourceFile.getFileName().toString());
+
+        // Copy into encryptedDestination directory.
+        Files.copy(sourceFile, encFile);
+
+        UserPrincipal fileOwner = null;
+        fileOwner = Files.getOwner(encFile);
 
     }
 

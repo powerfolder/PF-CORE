@@ -1,3 +1,23 @@
+/*
+ * Copyright 2004 - 2016 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * $Id: Controller.java 21251 2013-03-19 01:46:23Z sprajc $
+ */
+
 package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
@@ -37,13 +57,13 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 public class PathUtils {
 
     private static final Logger log = Logger.getLogger(PathUtils.class
-        .getName());
+            .getName());
 
     private static final int BYTE_CHUNK_SIZE = 8192;
 
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
-    
+
     private static ExceptionListener IO_EXCEPTION_LISTENER = new ExceptionListener() {
         @Override
         public void exceptionThrown(Exception e) {
@@ -57,11 +77,10 @@ public class PathUtils {
 
     /**
      * PFI-312
-     * 
+     *
      * @param listener
      */
-    public static final void setIOExceptionListener(ExceptionListener listener)
-    {
+    public static final void setIOExceptionListener(ExceptionListener listener) {
         if (listener == null) {
             IO_EXCEPTION_LISTENER = new ExceptionListener() {
                 @Override
@@ -83,7 +102,7 @@ public class PathUtils {
             throw new NullPointerException("File is null");
         }
         return file.getFileName().toString()
-            .equalsIgnoreCase(DESKTOP_INI_FILENAME);
+                .equalsIgnoreCase(DESKTOP_INI_FILENAME);
     }
 
     /**
@@ -113,17 +132,17 @@ public class PathUtils {
      */
     public static boolean isZyncroPath(Path path) {
         return path.getFileSystem().provider().getScheme()
-            .equals(Constants.ZYNCRO_SCHEME);
+                .equals(Constants.ZYNCRO_SCHEME);
     }
 
     /**
      * The paths have the same name, if the condition of
      * {@link #isSameName(String, String)} applies to only their file names.
-     * 
+     *
      * @param path1
      * @param path2
      * @return {@code True} if the two parameters are the same (see
-     *         description), {@code false} otherwise.
+     * description), {@code false} otherwise.
      */
     public static boolean isSameName(Path path1, Path path2) {
         Reject.ifNull(path1, "Path 1");
@@ -150,11 +169,11 @@ public class PathUtils {
      * <li>One of them starts with the other, and ends with an opening and
      * closing paranthesis containing at least one other character</li>
      * <ul>
-     * 
+     *
      * @param name1
      * @param name2
      * @return {@code True} if the two parameters are the same (see
-     *         description), {@code false} otherwise.
+     * description), {@code false} otherwise.
      */
     public static boolean isSameName(String name1, String name2) {
         Reject.ifBlank(name1, "Name 1");
@@ -162,21 +181,21 @@ public class PathUtils {
 
         boolean reallySameName = name1.equals(name2);
         boolean matchingWithOwner1 = name1.matches(Pattern.quote(name2).replaceAll("\\(",
-            "\\\\(").replaceAll("\\)", "\\\\)")
-            + " \\(.*\\)");
+                "\\\\(").replaceAll("\\)", "\\\\)")
+                + " \\(.*\\)");
         boolean matchingWithOwner2 = name2.matches(Pattern.quote(name1).replaceAll("\\(",
-            "\\\\(").replaceAll("\\)", "\\\\)")
-            + " \\(.*\\)");
+                "\\\\(").replaceAll("\\)", "\\\\)")
+                + " \\(.*\\)");
 
         return reallySameName || matchingWithOwner1 || matchingWithOwner2;
     }
 
     /**
      * PFC-2572
-     * 
+     *
      * @param path
      * @return true if the given input path is or is located on a networked
-     *         drive or is a UNC path share.
+     * drive or is a UNC path share.
      */
     public static boolean isNetworkPath(Path path) {
         Reject.ifNull(path, "Path");
@@ -200,11 +219,10 @@ public class PathUtils {
      * The last column of the output of {@code df}, "Mounted on" specifies the
      * mount point. If the passed {@code path} starts with this mount point, it
      * is located on a network share.
-     * 
-     * @param path
-     *            Path to be checked
+     *
+     * @param path Path to be checked
      * @return {@code True} if {@code path} is on a network mount, {@code false}
-     *         otherwise.
+     * otherwise.
      */
     private static boolean isNetworkPathUnix(Path path) {
         try {
@@ -214,11 +232,10 @@ public class PathUtils {
             String line;
 
             try (BufferedReader in = new BufferedReader(new InputStreamReader(
-                stdout))) {
+                    stdout))) {
                 while ((line = in.readLine()) != null) {
                     if (line.contains("//") || line.contains("\\\\")
-                        || line.contains(":"))
-                    {
+                            || line.contains(":")) {
                         int lastBlank = line.lastIndexOf(" ");
                         String mountPointString = line.substring(lastBlank + 1);
                         Path mountPoint = Paths.get(mountPointString);
@@ -233,7 +250,7 @@ public class PathUtils {
             return false;
         } catch (IOException ioe) {
             log.warning("Unable to check, if path " + path.toString()
-                + " is a network drive. " + ioe);
+                    + " is a network drive. " + ioe);
             return false;
         }
     }
@@ -241,7 +258,7 @@ public class PathUtils {
     /**
      * @param path
      * @return true if the given input path is or is located on a networked
-     *         drive or is a UNC path share.
+     * drive or is a UNC path share.
      */
     private static boolean isNetworkPathWindows(Path path) {
         // C:\normal\path\to
@@ -255,7 +272,7 @@ public class PathUtils {
         }
 
         String drive = path.toString().substring(0,
-            path.toString().indexOf(":") + 1);
+                path.toString().indexOf(":") + 1);
 
         String command = "cmd /c net use " + drive;
         // System.out.println("command = " + command);
@@ -269,7 +286,7 @@ public class PathUtils {
 
             String line;
             BufferedReader in = new BufferedReader(
-                new InputStreamReader(stdout));
+                    new InputStreamReader(stdout));
             while ((line = in.readLine()) != null) {
                 // System.out.println(line);
                 consoleOutput.append(line);
@@ -286,7 +303,7 @@ public class PathUtils {
             return xVal == 0;
         } catch (Exception e) {
             log.warning("Unable to check if path is network drive: " + path
-                + ". " + e);
+                    + ". " + e);
             return false;
         }
     }
@@ -320,7 +337,7 @@ public class PathUtils {
             suffix++;
             if (suffix > 999999999) {
                 throw new IllegalStateException(
-                    "Unable to find empty directory Tried " + candidate);
+                        "Unable to find empty directory Tried " + candidate);
             }
         }
 
@@ -337,7 +354,7 @@ public class PathUtils {
 
         return candidate;
     }
-    
+
     /**
      * Searches and takes care that this directory is new and not yet existing.
      * If dir already exists with the same raw name it appends (1), (2), and so
@@ -346,10 +363,9 @@ public class PathUtils {
      * <p>
      *
      * @param baseDir
-     * @param rawName
-     *            the raw name of the directory. is it NOT guranteed that it
-     *            will/can be named like this. if illegal characters should be
-     *            removed
+     * @param rawName the raw name of the directory. is it NOT guranteed that it
+     *                will/can be named like this. if illegal characters should be
+     *                removed
      * @return the directory that is guranteed to be NEW and EMPTY.
      */
     public static Path createEmptyDirectory(Path baseDir, String rawName) {
@@ -370,7 +386,7 @@ public class PathUtils {
     public static int getNumberOfSiblings(Path base, Filter<Path> filter) {
         int i = 0;
         try (DirectoryStream<Path> files = Files.newDirectoryStream(base,
-            filter)) {
+                filter)) {
 
             if (files == null) {
                 return 0;
@@ -409,7 +425,7 @@ public class PathUtils {
         }
 
         try (DirectoryStream<Path> files = Files.newDirectoryStream(path,
-            filter)) {
+                filter)) {
             if (files == null) {
                 return false;
             }
@@ -440,8 +456,7 @@ public class PathUtils {
             return null;
         }
         if (f.getFileName() != null
-            && StringUtils.isNotBlank(f.getFileName().toString()))
-        {
+                && StringUtils.isNotBlank(f.getFileName().toString())) {
             return f.getFileName().toString();
         }
         return f.toAbsolutePath().toString();
@@ -460,7 +475,7 @@ public class PathUtils {
             return name;
         }
         Path p = Paths.get(rootPath).relativize(
-            Paths.get(rootPath, name).toAbsolutePath());
+                Paths.get(rootPath, name).toAbsolutePath());
         return p.toString();
     }
 
@@ -468,8 +483,7 @@ public class PathUtils {
      * Copies a file.
      *
      * @param from
-     * @param to
-     *            if file exists it will be overwritten!
+     * @param to   if file exists it will be overwritten!
      * @throws IOException
      */
     public static void copyFile(Path from, Path to) throws IOException {
@@ -500,16 +514,13 @@ public class PathUtils {
      * Copies a file to disk from a stream. Overwrites the target file if exists.
      * Input stream is automatically closed.
      *
-     * @see #copyFromStreamToFile(InputStream, Path, StreamCallback, int)
-     * @param in
-     *            the input stream
-     * @param to
-     *            the file where the stream should be written in
+     * @param in the input stream
+     * @param to the file where the stream should be written in
      * @throws IOException
+     * @see #copyFromStreamToFile(InputStream, Path, StreamCallback, int)
      */
     public static void copyFromStreamToFile(InputStream in, Path to)
-        throws IOException
-    {
+            throws IOException {
         copyFromStreamToFile(in, to, null, 0);
     }
 
@@ -518,21 +529,15 @@ public class PathUtils {
      * exists. The processe may be observed with a stream callback.
      * Input stream is automatically closed.
      *
-     * @param in
-     *            the input stream
-     * @param to
-     *            the file wher the stream should be written in
-     * @param callback
-     *            the callback to get information about the process, may be left
-     *            null
-     * @param totalAvailableBytes
-     *            the byte total available
-     * @throws IOException
-     *             any io excetion or the stream read is broken by the callback
+     * @param in                  the input stream
+     * @param to                  the file wher the stream should be written in
+     * @param callback            the callback to get information about the process, may be left
+     *                            null
+     * @param totalAvailableBytes the byte total available
+     * @throws IOException any io excetion or the stream read is broken by the callback
      */
     public static void copyFromStreamToFile(InputStream in, Path to,
-        StreamCallback callback, int totalAvailableBytes) throws IOException
-    {
+                                            StreamCallback callback, int totalAvailableBytes) throws IOException {
         if (in == null) {
             throw new NullPointerException("InputStream file is null");
         }
@@ -545,7 +550,7 @@ public class PathUtils {
         } catch (IOException ioe) {
             IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw new IOException("Unable to delete old file "
-                + to.toAbsolutePath().toString(), ioe);
+                    + to.toAbsolutePath().toString(), ioe);
         }
         if (to.getParent() != null && Files.notExists(to.getParent())) {
             Files.createDirectories(to.getParent());
@@ -556,15 +561,15 @@ public class PathUtils {
         } catch (IOException ioe) {
             IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw new IOException("Unable to create file "
-                + to.toAbsolutePath().toString(), ioe);
+                    + to.toAbsolutePath().toString(), ioe);
         }
         if (!Files.isWritable(to)) {
             throw new IOException("Unable to write to "
-                + to.toAbsolutePath().toString());
+                    + to.toAbsolutePath().toString());
         }
 
         OutputStream out = new BufferedOutputStream(
-            Files.newOutputStream(to));
+                Files.newOutputStream(to));
         try {
             byte[] buffer = new byte[BYTE_CHUNK_SIZE];
             int read;
@@ -580,11 +585,11 @@ public class PathUtils {
                 if (callback != null) {
                     // Execute callback
                     boolean breakStream = callback.streamPositionReached(
-                        position, totalAvailableBytes);
+                            position, totalAvailableBytes);
                     if (breakStream) {
                         throw new IOException(
-                            "Stream read break requested by callback. "
-                                + callback);
+                                "Stream read break requested by callback. "
+                                        + callback);
                     }
                 }
             } while (read >= 0);
@@ -613,7 +618,7 @@ public class PathUtils {
         FileSystemProvider inProv = from.getFileSystem().provider();
 
         try (OutputStream os = outProv.newOutputStream(to);
-            InputStream is = inProv.newInputStream(from)) {
+             InputStream is = inProv.newInputStream(from)) {
             int BUFFER_SIZE = 8192;
             byte[] BUFFER = new byte[BUFFER_SIZE];
 
@@ -630,8 +635,7 @@ public class PathUtils {
     }
 
     public static void rawCopy(InputStream from, OutputStream to)
-        throws IOException
-    {
+            throws IOException {
         Reject.ifNull(from, "Source is null");
         Reject.ifNull(to, "Target is null");
 
@@ -654,8 +658,7 @@ public class PathUtils {
     /**
      * A recursive delete of a directory.
      *
-     * @param file
-     *            directory to delete
+     * @param file directory to delete
      * @throws IOException
      */
 
@@ -670,16 +673,13 @@ public class PathUtils {
     /**
      * A recursive delete of a directory.
      *
-     * @param file
-     *            directory to delete
-     * @param filter
-     *            accept to delete
+     * @param file   directory to delete
+     * @param filter accept to delete
      * @throws IOException
      */
 
     public static void recursiveDelete(Path file, Filter<Path> filter)
-        throws IOException
-    {
+            throws IOException {
         if (file == null) {
             return;
         }
@@ -688,7 +688,7 @@ public class PathUtils {
         }
         if (Files.isDirectory(file)) {
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(file,
-                filter)) {
+                    filter)) {
                 for (Path path : stream) {
                     recursiveDelete(path);
                 }
@@ -702,7 +702,7 @@ public class PathUtils {
         } catch (IOException ioe) {
             IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw new IOException("Could not delete file "
-                + file.toAbsolutePath(), ioe);
+                    + file.toAbsolutePath(), ioe);
         }
     }
 
@@ -714,8 +714,7 @@ public class PathUtils {
      * @throws IOException
      */
     public static void recursiveMove(Path sourceFile, Path targetFile)
-        throws IOException
-    {
+            throws IOException {
         Reject.ifNull(sourceFile, "Source directory is null");
         Reject.ifNull(targetFile, "Target directory is null");
 
@@ -748,14 +747,13 @@ public class PathUtils {
                 }
             }
         } else if (!Files.isDirectory(sourceFile)
-            && !Files.isDirectory(targetFile))
-        {
+                && !Files.isDirectory(targetFile)) {
             Files.move(sourceFile, targetFile);
         } else {
             throw new UnsupportedOperationException(
-                "Can only move directory to directory or file to file: "
-                    + sourceFile.toAbsolutePath().toString() + " --> "
-                    + targetFile.toAbsolutePath().toString());
+                    "Can only move directory to directory or file to file: "
+                            + sourceFile.toAbsolutePath().toString() + " --> "
+                            + targetFile.toAbsolutePath().toString());
         }
 
         // Hide target if original is hidden.
@@ -772,8 +770,7 @@ public class PathUtils {
      * @throws IOException
      */
     public static void recursiveCopy(Path sourceFile, Path targetFile)
-        throws IOException
-    {
+            throws IOException {
         recursiveCopy(sourceFile, targetFile, new Filter<Path>() {
             public boolean accept(Path pathname) {
                 return true;
@@ -786,14 +783,12 @@ public class PathUtils {
      *
      * @param sourceFile
      * @param targetFile
-     * @param filter
-     *            the filter to apply while coping. null if all files should be
-     *            copied.
+     * @param filter     the filter to apply while coping. null if all files should be
+     *                   copied.
      * @throws IOException
      */
     public static void recursiveCopy(Path sourceFile, Path targetFile,
-        Filter<Path> filter) throws IOException
-    {
+                                     Filter<Path> filter) throws IOException {
         Reject.ifNull(sourceFile, "Source directory is null");
         Reject.ifNull(targetFile, "Target directory is null");
 
@@ -811,25 +806,24 @@ public class PathUtils {
                 throw new IOException("Copy to a subdirectory not permitted");
             } else {
                 try (DirectoryStream<Path> sourceStream = Files
-                    .newDirectoryStream(sourceFile, filter)) {
+                        .newDirectoryStream(sourceFile, filter)) {
                     for (Path nextOriginalFile : sourceStream) {
                         // Synthesize target file name.
                         String lastPart = nextOriginalFile.getFileName()
-                            .toString();
+                                .toString();
                         Path nextTargetFile = targetFile.resolve(lastPart);
                         recursiveCopy(nextOriginalFile, nextTargetFile, filter);
                     }
                 }
             }
         } else if (!Files.isDirectory(sourceFile)
-            && !Files.isDirectory(targetFile) && filter.accept(sourceFile))
-        {
+                && !Files.isDirectory(targetFile) && filter.accept(sourceFile)) {
             copyFile(sourceFile, targetFile);
         } else {
             throw new UnsupportedOperationException(
-                "Can only copy directory to directory or file to file: "
-                    + sourceFile.toAbsolutePath().toString() + " --> "
-                    + targetFile.toAbsolutePath().toString());
+                    "Can only copy directory to directory or file to file: "
+                            + sourceFile.toAbsolutePath().toString() + " --> "
+                            + targetFile.toAbsolutePath().toString());
         }
     }
 
@@ -844,8 +838,7 @@ public class PathUtils {
      * @throws IOException
      */
     public static void recursiveMirror(Path source, Path target)
-        throws IOException
-    {
+            throws IOException {
         recursiveMirror(source, target, new Filter<Path>() {
             @Override
             public boolean accept(Path pathname) {
@@ -862,13 +855,11 @@ public class PathUtils {
      *
      * @param source
      * @param target
-     * @param filter
-     *            the filter which answers to check
+     * @param filter the filter which answers to check
      * @throws IOException
      */
     public static void recursiveMirror(Path source, Path target,
-        Filter<Path> filter) throws IOException
-    {
+                                       Filter<Path> filter) throws IOException {
         Reject.ifNull(source, "Source directory is null");
         Reject.ifNull(target, "Target directory is null");
         Reject.ifNull(filter, "Filter is null");
@@ -889,16 +880,16 @@ public class PathUtils {
 
                 Set<String> done = new HashSet<String>();
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(
-                    source, filter)) {
+                        source, filter)) {
                     for (Path entry : stream) {
                         Path targetDirFile = target
-                            .resolve(entry.getFileName());
+                                .resolve(entry.getFileName());
                         recursiveMirror(entry, targetDirFile, filter);
                         done.add(targetDirFile.getFileName().toString());
                     }
                 }
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(
-                    target, filter)) {
+                        target, filter)) {
                     for (Path entry : stream) {
                         if (done.contains(entry.getFileName().toString())) {
                             continue;
@@ -909,8 +900,8 @@ public class PathUtils {
                             } catch (IOException ioe) {
                                 IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
                                 throw new IOException(
-                                    "Unable to delete file in target directory: "
-                                        + entry.toAbsolutePath() + ". " + ioe);
+                                        "Unable to delete file in target directory: "
+                                                + entry.toAbsolutePath() + ". " + ioe);
                             }
                         } else if (Files.isDirectory(entry)) {
                             recursiveDelete(entry);
@@ -919,17 +910,16 @@ public class PathUtils {
                 }
             }
         } else if (!Files.isDirectory(source) && !Files.isDirectory(target)
-            && filter.accept(source))
-        {
+                && filter.accept(source)) {
             copyFile(source, target);
             // Preserve modification date.
             Files
-                .setLastModifiedTime(target, Files.getLastModifiedTime(source));
+                    .setLastModifiedTime(target, Files.getLastModifiedTime(source));
         } else {
             throw new UnsupportedOperationException(
-                "Can only copy directory to directory or file to file: "
-                    + source.toAbsolutePath() + " --> "
-                    + target.toAbsolutePath());
+                    "Can only copy directory to directory or file to file: "
+                            + source.toAbsolutePath() + " --> "
+                            + target.toAbsolutePath());
         }
     }
 
@@ -937,20 +927,16 @@ public class PathUtils {
      * Helper method to perform hashing on a file.
      *
      * @param file
-     * @param digest
-     *            the MessageDigest to use, MUST be in initial state - aka
-     *            either newly created or being reseted.
+     * @param digest   the MessageDigest to use, MUST be in initial state - aka
+     *                 either newly created or being reseted.
      * @param listener
      * @return the result of the hashing, usually size 16.
-     * @throws IOException
-     *             if the file was not found or an error occured while reading.
-     * @throws InterruptedException
-     *             if this thread got interrupted, this can be used to cancel a
-     *             ongoing hashing operation.
+     * @throws IOException          if the file was not found or an error occured while reading.
+     * @throws InterruptedException if this thread got interrupted, this can be used to cancel a
+     *                              ongoing hashing operation.
      */
     public static byte[] digest(Path file, MessageDigest digest,
-        ProgressListener listener) throws IOException, InterruptedException
-    {
+                                ProgressListener listener) throws IOException, InterruptedException {
         try (InputStream in = Files.newInputStream(file)) {
             byte[] buf = new byte[BYTE_CHUNK_SIZE];
             long size = Files.size(file);
@@ -980,7 +966,7 @@ public class PathUtils {
     public static boolean isSubdirectory(Path parent, Path targetChild) {
         String parentPathString = parent.toAbsolutePath().toString();
         String childPathString = targetChild.getParent().toAbsolutePath()
-            .toString();
+                .toString();
 
         if (parentPathString == null || childPathString == null) {
             return false;
@@ -995,14 +981,11 @@ public class PathUtils {
      * this method ensures that the file is built using the correct underlying
      * OS separators.
      *
-     * @param base
-     *            a base directory File
-     * @param relativeName
-     *            the DiskItem relativeName, like bob/dir/sub
+     * @param base         a base directory File
+     * @param relativeName the DiskItem relativeName, like bob/dir/sub
      * @return
      */
-    public static Path buildFileFromRelativeName(Path base, String relativeName)
-    {
+    public static Path buildFileFromRelativeName(Path base, String relativeName) {
         Reject.ifNull(base, "Need a base directory");
         Reject.ifNull(relativeName, "RelativeName required");
         if (relativeName.indexOf('/') == -1) {
@@ -1024,7 +1007,7 @@ public class PathUtils {
      */
     public static boolean isFileInDirectory(Path file, Path directory) {
         Reject.ifTrue(file == null || directory == null,
-            "File and directory may not be null");
+                "File and directory may not be null");
 
         Path fileParent = file.getParent();
         String fileParentPath;
@@ -1050,8 +1033,7 @@ public class PathUtils {
      * @param controller
      * @param directory
      */
-    public static void maintainDesktopIni(Controller controller, Path directory)
-    {
+    public static void maintainDesktopIni(Controller controller, Path directory) {
         // Only works on Windows
         // Vista you must log off and on again to see change
         if (!OSUtil.isWindowsSystem() || OSUtil.isWebStart()) {
@@ -1060,8 +1042,7 @@ public class PathUtils {
 
         // Safty checks.
         if (directory == null || Files.notExists(directory)
-            || !Files.isDirectory(directory))
-        {
+                || !Files.isDirectory(directory)) {
             return;
         }
 
@@ -1069,12 +1050,11 @@ public class PathUtils {
         Path desktopIniFile = directory.resolve(DESKTOP_INI_FILENAME);
         boolean iniExists = Files.exists(desktopIniFile);
         boolean usePfIcon = ConfigurationEntry.USE_PF_ICON
-            .getValueBoolean(controller);
+                .getValueBoolean(controller);
         // Migration to 8 SP1: Correct older folder icon setup
         try {
             if (iniExists
-                && Files.getLastModifiedTime(desktopIniFile).toMillis() < MS_31_OCT_2013)
-            {
+                    && Files.getLastModifiedTime(desktopIniFile).toMillis() < MS_31_OCT_2013) {
                 // PFC-1500 / PFC-2373: Migration
                 try {
                     Files.delete(desktopIniFile);
@@ -1096,7 +1076,7 @@ public class PathUtils {
                 if (iconFile == null) {
                     // Try harder, use EXE file icon
                     String exeName = controller.getDistribution()
-                        .getBinaryName() + ".exe";
+                            .getBinaryName() + ".exe";
                     iconFile = findDistributionFile(exeName);
                 }
 
@@ -1106,13 +1086,13 @@ public class PathUtils {
 
                 // Write desktop ini directory
                 pw = new PrintWriter(Files.newOutputStream(directory
-                    .resolve(DESKTOP_INI_FILENAME)));
+                        .resolve(DESKTOP_INI_FILENAME)));
                 pw.println("[.ShellClassInfo]");
                 pw.println("ConfirmFileOp=0");
                 pw.println("IconFile=" + iconFile.toAbsolutePath());
                 pw.println("IconIndex=0");
                 pw.println("InfoTip="
-                    + Translation.get("folder.info_tip"));
+                        + Translation.get("folder.info_tip"));
                 // Required on Win7
                 pw.println("IconResource=" + iconFile.toAbsolutePath() + ",0");
                 pw.println("[ViewState]");
@@ -1151,7 +1131,7 @@ public class PathUtils {
             }
         }
     }
-    
+
     /**
      * Updated desktop ini in managed folders.
      *
@@ -1167,8 +1147,7 @@ public class PathUtils {
 
         // Safty checks.
         if (directory == null || Files.notExists(directory)
-            || !Files.isDirectory(directory))
-        {
+                || !Files.isDirectory(directory)) {
             return;
         }
 
@@ -1200,7 +1179,7 @@ public class PathUtils {
 
                 if (Files.notExists(distroFile)) {
                     log.fine("Could not find " + distroFile.getFileName()
-                        + " at " + distroFile.getParent().toAbsolutePath());
+                            + " at " + distroFile.getParent().toAbsolutePath());
                     return null;
                 }
             }
@@ -1239,8 +1218,7 @@ public class PathUtils {
     }
 
     private static Long[] calculateDirectorySizeAndCount0(Path directory,
-        int depth)
-    {
+                                                          int depth) {
 
         // Limit evil recursive symbolic links.
         if (depth == 100) {
@@ -1253,7 +1231,7 @@ public class PathUtils {
             for (Path file : files) {
                 if (Files.isDirectory(file)) {
                     Long[] longs = calculateDirectorySizeAndCount0(file,
-                        depth + 1);
+                            depth + 1);
                     sum += longs[0];
                     count += longs[1];
                 } else {
@@ -1271,10 +1249,8 @@ public class PathUtils {
     /**
      * Zips the file
      *
-     * @param file
-     *            the file to zip
-     * @param zipfile
-     *            the zip file
+     * @param file    the file to zip
+     * @param zipfile the zip file
      * @throws IOException
      * @throws IllegalArgumentException
      */
@@ -1284,10 +1260,10 @@ public class PathUtils {
             throw new IllegalArgumentException("Not a file:  " + file);
         }
         ZipOutputStream out = new ZipOutputStream(
-            Files.newOutputStream(zipfile));
+                Files.newOutputStream(zipfile));
         InputStream in = Files.newInputStream(file); // Stream to read file
         ZipEntry entry = new ZipEntry(file.getFileName().toString()); // Make a
-                                                                      // ZipEntry
+        // ZipEntry
         out.putNextEntry(entry); // Store entry
         int bytesRead;
         byte[] buffer = new byte[4096]; // Create a buffer for copying
@@ -1311,7 +1287,7 @@ public class PathUtils {
             while (filename.indexOf(c) != -1) {
                 int index = filename.indexOf(c);
                 filename = filename.substring(0, index)
-                    + filename.substring(index + 1, filename.length());
+                        + filename.substring(index + 1, filename.length());
             }
         }
         while (filename.endsWith(".")) {
@@ -1383,18 +1359,13 @@ public class PathUtils {
     /**
      * Copies a given amount of data from one RandomAccessFile to another.
      *
-     * @param in
-     *            the file to read the data from
-     * @param out
-     *            the file to write the data to
-     * @param n
-     *            the amount of bytes to transfer
-     * @throws IOException
-     *             if an Exception occurred while reading or writing the data
+     * @param in  the file to read the data from
+     * @param out the file to write the data to
+     * @param n   the amount of bytes to transfer
+     * @throws IOException if an Exception occurred while reading or writing the data
      */
     public static void ncopy(RandomAccessFile in, RandomAccessFile out, int n)
-        throws IOException
-    {
+            throws IOException {
         int w = n;
         byte[] buf = new byte[BYTE_CHUNK_SIZE];
         while (w > 0) {
@@ -1410,18 +1381,13 @@ public class PathUtils {
     /**
      * Copies a given amount of data from one FileChannel to another.
      *
-     * @param in
-     *            the file to read the data from
-     * @param out
-     *            the file to write the data to
-     * @param n
-     *            the amount of bytes to transfer
-     * @throws IOException
-     *             if an Exception occurred while reading or writing the data
+     * @param in  the file to read the data from
+     * @param out the file to write the data to
+     * @param n   the amount of bytes to transfer
+     * @throws IOException if an Exception occurred while reading or writing the data
      */
     public static void ncopy(FileChannel in, FileChannel out, int n)
-            throws IOException
-    {
+            throws IOException {
         int w = n;
         byte[] buf = new byte[BYTE_CHUNK_SIZE];
         while (w > 0) {
@@ -1437,18 +1403,13 @@ public class PathUtils {
     /**
      * Copies a given amount of data from one RandomAccessFile to another.
      *
-     * @param in
-     *            the inputstream to read the data from
-     * @param out
-     *            the file to write the data to
-     * @param n
-     *            the amount of bytes to transfer
-     * @throws IOException
-     *             if an Exception occurred while reading or writing the data
+     * @param in  the inputstream to read the data from
+     * @param out the file to write the data to
+     * @param n   the amount of bytes to transfer
+     * @throws IOException if an Exception occurred while reading or writing the data
      */
     public static void ncopy(InputStream in, RandomAccessFile out, int n)
-        throws IOException
-    {
+            throws IOException {
         int w = n;
         byte[] buf = new byte[BYTE_CHUNK_SIZE];
         while (w > 0) {
@@ -1464,18 +1425,13 @@ public class PathUtils {
     /**
      * Copies a given amount of data from InputStream to FileChannel.
      *
-     * @param in
-     *            the inputstream to read the data from
-     * @param out
-     *            the file to write the data to
-     * @param n
-     *            the amount of bytes to transfer
-     * @throws IOException
-     *             if an Exception occurred while reading or writing the data
+     * @param in  the inputstream to read the data from
+     * @param out the file to write the data to
+     * @param n   the amount of bytes to transfer
+     * @throws IOException if an Exception occurred while reading or writing the data
      */
     public static void ncopy(InputStream in, FileChannel out, int n)
-            throws IOException
-    {
+            throws IOException {
         int w = n;
         byte[] buf = new byte[BYTE_CHUNK_SIZE];
         while (w > 0) {
@@ -1511,8 +1467,8 @@ public class PathUtils {
             try {
                 if (OSUtil.isWindowsSystem() && !Files.isDirectory(file)) {
                     Runtime.getRuntime().exec(
-                        "rundll32 SHELL32.DLL,ShellExec_RunDLL \""
-                            + file.toString() + "\"");
+                            "rundll32 SHELL32.DLL,ShellExec_RunDLL \""
+                                    + file.toString() + "\"");
                 } else {
                     Desktop.getDesktop().open(file.toFile());
                 }
@@ -1526,7 +1482,7 @@ public class PathUtils {
             // PFC-2314: Workaround for missing Java Desktop
             try {
                 Runtime.getRuntime().exec(
-                    "/usr/bin/xdg-open " + file.toUri().toString());
+                        "/usr/bin/xdg-open " + file.toUri().toString());
                 return true;
             } catch (Exception e) {
                 log.warning("Unable to open file " + file + ". " + e);
@@ -1534,7 +1490,7 @@ public class PathUtils {
             }
         } else {
             log.warning("Unable to open file " + file
-                + ". Java Desktop not supported");
+                    + ". Java Desktop not supported");
             return false;
         }
     }
@@ -1542,20 +1498,16 @@ public class PathUtils {
     /**
      * Sets file attributes on windows system
      *
-     * @param file
-     *            the file to change
-     * @param hidden
-     *            true if file should be hidden, false if it should be unhidden,
-     *            null if no change to the hidden status should be done.
-     * @param system
-     *            true if file should be system, false if it should be marked as
-     *            non-system, null if no change to the system status should be
-     *            done.
+     * @param file   the file to change
+     * @param hidden true if file should be hidden, false if it should be unhidden,
+     *               null if no change to the hidden status should be done.
+     * @param system true if file should be system, false if it should be marked as
+     *               non-system, null if no change to the system status should be
+     *               done.
      * @return true if succeeded
      */
     public static boolean setAttributesOnWindows(Path file, Boolean hidden,
-        Boolean system)
-    {
+                                                 Boolean system) {
         if (!OSUtil.isWindowsSystem() || OSUtil.isWindowsMEorOlder()) {
             // Not set attributes on non-windows systems or win ME or older
             return false;
@@ -1565,13 +1517,13 @@ public class PathUtils {
             return true;
         }
         boolean useFallback = false;
-        
+
         if (hidden != null) {
             try {
                 Files.setAttribute(file, "dos:hidden", hidden);
             } catch (IOException e) {
                 log.warning("Unable to set/unset hidden attribute for " + file
-                    + ". " + e);
+                        + ". " + e);
                 useFallback = true;
             }
         }
@@ -1581,15 +1533,15 @@ public class PathUtils {
                 Files.setAttribute(file, "dos:system", system);
             } catch (IOException e) {
                 log.warning("Unable to set/unset system attribute for " + file
-                    + ". " + e);
+                        + ". " + e);
                 useFallback = true;
             }
         }
-        
+
         if (!useFallback) {
             return true;
         }
-     
+
         try {
             String s = "attrib ";
             if (hidden != null) {
@@ -1627,10 +1579,8 @@ public class PathUtils {
     /**
      * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
      *
-     * @param file
-     *            Guess what
-     * @param folder
-     *            Guess what
+     * @param file   Guess what
+     * @param folder Guess what
      * @return true if file scan is allowed
      */
     public static boolean isScannable(Path file, Folder folder) {
@@ -1640,17 +1590,14 @@ public class PathUtils {
     /**
      * Do not scan POWERFOLDER_SYSTEM_SUBDIR (".PowerFolder").
      *
-     * @param relOrAbsfilePath
-     *            The relative OR absolute path.
-     * @param folder
-     *            Guess what
+     * @param relOrAbsfilePath The relative OR absolute path.
+     * @param folder           Guess what
      * @return true if file scan is allowed
      */
     public static boolean isScannable(String relOrAbsfilePath, Folder folder) {
         Reject.ifNull(folder, "Folder must not be null");
         Reject.ifNull(relOrAbsfilePath, "File name must not be null");
-        if (relOrAbsfilePath.endsWith(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR))
-        {
+        if (relOrAbsfilePath.endsWith(Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR)) {
             return false;
         }
 
@@ -1659,7 +1606,7 @@ public class PathUtils {
         }
 
         int firstSystemDir = relOrAbsfilePath
-            .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+                .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (firstSystemDir < 0) {
             return true;
         }
@@ -1670,13 +1617,13 @@ public class PathUtils {
             // C:\Users\Harry\PowerFolders\1765X\.PowerFolder\meta\xyz
             // So look after the '.PowerFolder\meta' part
             int metaDir = relOrAbsfilePath.indexOf(Constants.METAFOLDER_SUBDIR,
-                firstSystemDir);
+                    firstSystemDir);
             if (metaDir >= 0) {
                 // File is somewhere in the metaFolder file structure.
                 // Make sure we are not in the metaFolder's system subdir.
                 int secondSystemDir = relOrAbsfilePath.indexOf(
-                    Constants.POWERFOLDER_SYSTEM_SUBDIR, metaDir
-                        + Constants.METAFOLDER_SUBDIR.length());
+                        Constants.POWERFOLDER_SYSTEM_SUBDIR, metaDir
+                                + Constants.METAFOLDER_SUBDIR.length());
                 return secondSystemDir < 0;
             }
         }
@@ -1701,12 +1648,12 @@ public class PathUtils {
             @Override
             public boolean accept(Path entry) {
                 return !entry.getFileName().toString()
-                    .equals(Constants.POWERFOLDER_SYSTEM_SUBDIR);
+                        .equals(Constants.POWERFOLDER_SYSTEM_SUBDIR);
             }
         };
 
         try (DirectoryStream<Path> contents = Files.newDirectoryStream(base,
-            filter)) {
+                filter)) {
 
             if (contents == null) {
                 return false;
@@ -1746,8 +1693,7 @@ public class PathUtils {
             // Smells fishy. Should not be this deep into the structure.
         }
         if (dir.getFileName().toString()
-            .equals(Constants.POWERFOLDER_SYSTEM_SUBDIR))
-        {
+                .equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
             // Don't care about our .PowerFolder files, just the user's stuff.
             return false;
         }
@@ -1776,93 +1722,103 @@ public class PathUtils {
 
     public static void recursiveCopyVisitor(Path oldDirectory, Path newDirectory) throws IOException {
 
-        Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+        try {
+            Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 
-                new SimpleFileVisitor<Path>() {
+                    new SimpleFileVisitor<Path>() {
 
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                            throws IOException {
-                        Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
-                        if (!Files.exists(targetDir)) {
-                            Files.createDirectories(targetDir);
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                                throws IOException {
+                            Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
+                            if (!Files.exists(targetDir)) {
+                                Files.createDirectories(targetDir);
+                            }
+                            try {
+                                Files.copy(dir, targetDir);
+                            } catch (FileAlreadyExistsException e) {
+                                if (!Files.isDirectory(targetDir))
+                                    System.out.println("Could not move file.");
+                            }
+                            return CONTINUE;
                         }
-                        try {
-                            Files.copy(dir, targetDir);
-                        } catch (FileAlreadyExistsException e) {
-                            if (!Files.isDirectory(targetDir))
-                                System.out.println("Could not move file.");
+
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                                throws IOException {
+                            Files.copy(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
+                            return CONTINUE;
                         }
-                        return CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                            throws IOException {
-                        Files.copy(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
-                        return CONTINUE;
-                    }
-                });
-
+                    });
+        } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
+            throw ioe;
+        }
     }
 
     public static void recursiveMoveVisitor(Path oldDirectory, Path newDirectory) throws IOException {
 
-        Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+        try {
+            Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 
-                new SimpleFileVisitor<Path>() {
+                    new SimpleFileVisitor<Path>() {
 
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                            throws IOException {
-                        Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
-                        if (!Files.exists(targetDir)) {
-                            Files.createDirectories(targetDir);
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                                throws IOException {
+                            Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
+                            if (!Files.exists(targetDir)) {
+                                Files.createDirectories(targetDir);
+                            }
+                            try {
+                                Files.copy(dir, targetDir);
+                            } catch (FileAlreadyExistsException e) {
+                                if (!Files.isDirectory(targetDir))
+                                    System.out.println("Could not move file.");
+                            }
+                            return CONTINUE;
                         }
-                        try {
-                            Files.copy(dir, targetDir);
-                        } catch (FileAlreadyExistsException e) {
-                            if (!Files.isDirectory(targetDir))
-                                System.out.println("Could not move file.");
-                        }
-                        return CONTINUE;
-                    }
 
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                            throws IOException {
-                        Files.move(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
-                        return CONTINUE;
-                    }
-                });
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                                throws IOException {
+                            Files.move(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
+                            return CONTINUE;
+                        }
+                    });
+        } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
+            throw ioe;
+        }
 
     }
 
-    public static void recursiveDeleteVisitor(Path dir, boolean encryptedDelete) throws IOException {
+    public static void recursiveDeleteVisitor(Path dir) throws IOException {
 
-        if (!encryptedDelete) {
-            dir = Paths.get(dir.toString());
-        }
+        try {
+            Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
 
-        Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException {
-                Files.delete(file);
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException e)
-                    throws IOException {
-                if (e == null) {
-                    Files.delete(dir);
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                    Files.delete(file);
                     return FileVisitResult.CONTINUE;
-                } else {
-                    throw e;
                 }
-            }
-        });
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                        throws IOException {
+                    if (e == null) {
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    } else {
+                        throw e;
+                    }
+                }
+            });
+        } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
+            throw ioe;
+        }
     }
 }

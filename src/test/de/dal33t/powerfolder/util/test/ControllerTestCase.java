@@ -83,7 +83,6 @@ public abstract class ControllerTestCase extends TestCase {
         source = Paths.get(target.toString()
                 .replace("build/test/home/.PowerFolder/ControllerBart.config", source.toString()));
 
-
         Files.copy(source, target);
         assertTrue(Files.exists(target));
 

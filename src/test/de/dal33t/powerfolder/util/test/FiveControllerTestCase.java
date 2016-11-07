@@ -20,10 +20,13 @@
 package de.dal33t.powerfolder.util.test;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -31,6 +34,8 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Provides basic testcase-setup with five controllers. Bart, Lisa, Homer, Marge
@@ -57,16 +62,14 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     protected static final String MAGGIE_ID = "Maggie";
 
     // For the optional test folder.
-    protected static final Path TESTFOLDER_BASEDIR_BART = TestHelper
-        .getTestDir().resolve("ControllerBart/testFolder").toAbsolutePath();
-    protected static final Path TESTFOLDER_BASEDIR_HOMER = TestHelper
-        .getTestDir().resolve("ControllerHomer/testFolder").toAbsolutePath();
-    protected static final Path TESTFOLDER_BASEDIR_MARGE = TestHelper
-        .getTestDir().resolve("ControllerMarge/testFolder").toAbsolutePath();
-    protected static final Path TESTFOLDER_BASEDIR_LISA = TestHelper
-        .getTestDir().resolve("ControllerLisa/testFolder").toAbsolutePath();
-    protected static final Path TESTFOLDER_BASEDIR_MAGGIE = TestHelper
-        .getTestDir().resolve("ControllerMaggie/testFolder").toAbsolutePath();
+    protected static Path TESTFOLDER_BASEDIR_BART;
+    protected static Path TESTFOLDER_BASEDIR_HOMER;
+    protected static Path TESTFOLDER_BASEDIR_MARGE;
+    protected static Path TESTFOLDER_BASEDIR_LISA;
+    protected static Path TESTFOLDER_BASEDIR_MAGGIE;
+
+    // Activate encrypted storage for this test.
+    protected static final boolean isEncryptedStorageTest = true;
 
     /**
      * The test folder info.
@@ -75,13 +78,23 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
 
     @Override
     protected void setUp() throws Exception {
+
         super.setUp();
+
         // Copy fresh configs
         startController(HOMER_ID);
         startController(BART_ID);
         startController(MARGE_ID);
         startController(LISA_ID);
         startController(MAGGIE_ID);
+
+        if (isEncryptedStorageTest){
+            setConfigEntriesForEncryption();
+        }
+
+        // PFS-1994: Activate encrypted storage for this test.
+        prepareTestFolderBaseDirs();
+
         System.out
             .println("-------------- Controllers started -----------------");
     }
@@ -93,12 +106,79 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     }
 
     protected void startController(String id) throws IOException {
-        PathUtils.copyFile(Paths.get("src/test-resources/Controller" + id + ".config"),
-            Paths.get("build/test/Controller" + id + "/PowerFolder.config"));
+
+        /*Path targetDir = Controller.getMiscFilesLocation().resolve(
+                "build/test/Controller" + id);
+        Files.createDirectories(targetDir);
+
+        String relativeTargetDir = targetDir.toString()
+                .substring(targetDir.toString().indexOf("/developer-resources"));
+
+        Path controllerConfig = Paths.get(targetDir.toString()
+                .replace(relativeTargetDir, "/src/test-resources/Controller" + id + ".config"));
+
+        Files.copy(controllerConfig, targetDir.resolve("Controller" + id + ".config"), REPLACE_EXISTING);
+
+        startController(id, targetDir.toString() + "/PowerFolder");*/
+
+
         Path miscDic = Controller.getMiscFilesLocation().resolve(
-            "build/test/Controller" + id);
+                "build/test/Controller" + id);
+
+
+        PathUtils.copyFile(Paths.get("src/test-resources/Controller" + id + ".config"),
+
+            Paths.get("build/test/Controller" + id + "/PowerFolder.config"));
+
+
         PathUtils.recursiveDelete(miscDic);
+
         startController(id, "build/test/Controller" + id + "/PowerFolder");
+    }
+
+    protected void prepareTestFolderBaseDirs() {
+
+        if (isEncryptedStorageTest){
+            
+            TESTFOLDER_BASEDIR_BART = TestHelper
+                    .getTestDir().resolve("ControllerBart/testFolder" 
+                            + Constants.FOLDER_ENCRYPTION_SUFFIX).toAbsolutePath();
+            TESTFOLDER_BASEDIR_HOMER = TestHelper
+                    .getTestDir().resolve("ControllerHomer/testFolder" 
+                            + Constants.FOLDER_ENCRYPTION_SUFFIX).toAbsolutePath();
+            TESTFOLDER_BASEDIR_MARGE = TestHelper
+                    .getTestDir().resolve("ControllerMarge/testFolder" 
+                            + Constants.FOLDER_ENCRYPTION_SUFFIX).toAbsolutePath();
+            TESTFOLDER_BASEDIR_LISA = TestHelper
+                    .getTestDir().resolve("ControllerLisa/testFolder" 
+                            + Constants.FOLDER_ENCRYPTION_SUFFIX).toAbsolutePath();
+            TESTFOLDER_BASEDIR_MAGGIE = TestHelper
+                    .getTestDir().resolve("ControllerMaggie/testFolder" 
+                            + Constants.FOLDER_ENCRYPTION_SUFFIX).toAbsolutePath();
+
+        } else {
+
+            TESTFOLDER_BASEDIR_BART = TestHelper
+                    .getTestDir().resolve("ControllerBart/testFolder").toAbsolutePath();
+            TESTFOLDER_BASEDIR_HOMER = TestHelper
+                    .getTestDir().resolve("ControllerHomer/testFolder").toAbsolutePath();
+            TESTFOLDER_BASEDIR_MARGE = TestHelper
+                    .getTestDir().resolve("ControllerMarge/testFolder").toAbsolutePath();
+            TESTFOLDER_BASEDIR_LISA = TestHelper
+                    .getTestDir().resolve("ControllerLisa/testFolder").toAbsolutePath();
+            TESTFOLDER_BASEDIR_MAGGIE = TestHelper
+                    .getTestDir().resolve("ControllerMaggie/testFolder").toAbsolutePath();
+
+        }
+    }
+
+    protected void setConfigEntriesForEncryption() {
+
+        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(getController(HOMER_ID), true);
+        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(getController(BART_ID), true);
+        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(getController(MARGE_ID), true);
+        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(getController(LISA_ID), true);
+        ConfigurationEntry.ENCRYPTED_STORAGE.setValue(getController(MAGGIE_ID), true);
     }
 
     // For subtest ************************************************************

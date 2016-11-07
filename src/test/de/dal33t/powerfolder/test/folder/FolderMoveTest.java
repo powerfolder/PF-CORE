@@ -53,8 +53,8 @@ public class FolderMoveTest extends ControllerTestCase {
 
         super.setUp();
 
-        // Test for encrypted Folder or "normal" Folder.
-        prepareFolderMove(true);
+        // Test for encrypted Folder or "normal" Folder. Default value: false for normal folder.
+        prepareFolderMove(false);
 
     }
 

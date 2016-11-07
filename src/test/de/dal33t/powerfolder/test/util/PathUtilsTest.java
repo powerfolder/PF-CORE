@@ -424,7 +424,6 @@ public class PathUtilsTest extends TestCase {
         try {
             PathUtils.recursiveMove(baseDir, copyDir);
         } catch (IOException e) {
-            e.printStackTrace();
             success = false;
         }
 
