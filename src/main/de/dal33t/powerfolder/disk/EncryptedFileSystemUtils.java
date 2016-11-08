@@ -29,9 +29,12 @@ import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 import org.cryptomator.cryptofs.CryptoFileSystemUris;
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Helper class for working with the encrypted FileSystem from Cryptomator.
@@ -40,8 +43,8 @@ import java.nio.file.*;
 public class EncryptedFileSystemUtils {
 
     public static Path initCryptoFS(Controller controller, Path encDir) throws IOException {
-        try {
-            URI encFolderUri = CryptoFileSystemUris.createUri(encDir);
+       try {
+            URI encFolderUri = CryptoFileSystemUris.createUri(encDir, encDir.toString());
             encDir = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
             if (!Files.exists(encDir)){
                 Files.createDirectories(encDir);
@@ -86,6 +89,15 @@ public class EncryptedFileSystemUtils {
         }
     }
 
+    public static boolean checkJCEinstalled() throws NoSuchPaddingException, NoSuchAlgorithmException {
+        int keyLength = Cipher.getInstance("AES/CBC/PKCS5Padding").getMaxAllowedKeyLength("AES");
+        if (keyLength == 128) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     // Internal helper ********************************************************
 
     private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
@@ -95,4 +107,5 @@ public class EncryptedFileSystemUtils {
                         .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
                         .build());
     }
+
 }

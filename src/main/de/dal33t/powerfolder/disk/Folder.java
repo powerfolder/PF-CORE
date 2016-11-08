@@ -265,7 +265,6 @@ public class Folder extends PFComponent {
             if (isEncryptionActivated && isEncryptedFolder) {
 
                 try {
-
                     // Check if the incoming localBaseDir is already an encrypted path.
                     if (EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir)) {
                         localBase = localBaseDir;
