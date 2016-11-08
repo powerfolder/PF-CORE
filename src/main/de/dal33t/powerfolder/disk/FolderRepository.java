@@ -2387,7 +2387,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Is this invitation from a friend?
         boolean invitorIsFriend = false;
-        MemberInfo memberInfo = invitation.getSenderDevice();
+        MemberInfo memberInfo = invitation.getInvitor();
         if (memberInfo != null) {
             Member node = getController().getNodeManager().getNode(memberInfo);
             if (node != null) {
