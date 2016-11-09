@@ -1835,11 +1835,7 @@ public class PathUtils {
 
     }
 
-    public static void recursiveDeleteVisitor(Path dir, boolean encryptedDelete) throws IOException {
-
-        if (!encryptedDelete) {
-            dir = Paths.get(dir.toString());
-        }
+    public static void recursiveDeleteVisitor(Path dir) throws IOException {
 
         Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
 

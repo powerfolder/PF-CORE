@@ -1382,7 +1382,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 try {
-                    PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir(), true);
+                    PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir());
                 } catch (IOException e) {
                     logSevere("Failed to delete: " + folder.getSystemSubDir(), e);
                 }
