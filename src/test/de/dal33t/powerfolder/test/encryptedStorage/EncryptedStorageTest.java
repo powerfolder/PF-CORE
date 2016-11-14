@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.test.encryptedStorage;
 
+import com.sun.corba.se.spi.activation.Repository;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
@@ -15,10 +16,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 
 /**
  * JUnit Test for file encryption with cryptomator lib, cryptofs and PowerFolder.
@@ -45,6 +43,7 @@ public class EncryptedStorageTest extends ControllerTestCase {
 
         // Setup a encrypted test testFolder1.
         getController().setPaused(true);
+        EncryptedFileSystemUtils.setEncryptionPassphrase(super.getController());
         ConfigurationEntry.ENCRYPTED_STORAGE.setValue(super.getController(), true);
         setupEncryptedTestFolder(SyncProfile.HOST_FILES);
         testFolder1 = getFolder();
@@ -148,6 +147,39 @@ public class EncryptedStorageTest extends ControllerTestCase {
         }
 
         assertTrue(isDirectoryEmpty);
+
+    }
+
+    public void testInitCryptoFileSystem() throws IOException {
+
+        Path locaBase = null;
+        Path tempLocalBase = testFolder1.getLocalBase();
+
+        try {
+            locaBase = EncryptedFileSystemUtils.initCryptoFS(getController(), testFolder1.getLocalBase());
+            fail("Must not succeed!");
+        } catch (FileAlreadyExistsException e) {
+            // Expected.
+        }
+
+        FolderRepository repository = getController().getFolderRepository();
+
+        repository.removeFolder(testFolder1, false, false);
+
+        locaBase = EncryptedFileSystemUtils.initCryptoFS(getController(), tempLocalBase);
+
+        assertEquals(tempLocalBase.toString(), locaBase.toString());
+
+        Path testPath = Paths.get("/home/jw/PowerFolders/admin/encr1.crypto");
+        PathUtils.recursiveDelete(testPath);
+        Files.createDirectories(testPath);
+
+        locaBase = EncryptedFileSystemUtils.initCryptoFS(getController(), testPath);
+        assertEquals(testPath.toString(), locaBase.toString());
+
+        locaBase = EncryptedFileSystemUtils.initCryptoFS(getController(), testPath);
+        assertEquals(testPath.toString(), locaBase.toString());
+
 
     }
 

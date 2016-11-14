@@ -264,11 +264,7 @@ public class Folder extends PFComponent {
 
             if (isEncryptionActivated && isEncryptedFolder) {
 
-                // Check if server config has a passphrase, if yes use it, if no, create a new one.
-                EncryptedFileSystemUtils.setEncryptionPassphrase(getController());
-
                 try {
-
                     // Check if the incoming localBaseDir is already an encrypted path.
                     if (EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir)) {
                         localBase = localBaseDir;

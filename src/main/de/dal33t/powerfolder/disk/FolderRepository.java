@@ -1390,7 +1390,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (!PathUtils.isZyncroPath(folder.getLocalBase())) {
                     // Remove the folder if totally empty.
                     try {
-                        PathUtils.recursiveDeleteVisitor(folder.getLocalBase());
+                        Files.delete(folder.getLocalBase());
                     } catch (DirectoryNotEmptyException | NoSuchFileException e) {
                         // this can happen, and is just fine
                     } catch (IOException ioe) {
@@ -1790,8 +1790,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                     Path localBase = folder.getLocalBase();
                     if (localBase.equals(localBase.getFileSystem().getPath(dir.toString()))
-                        || localBase.toAbsolutePath().startsWith(
-                            localBase.getFileSystem().getPath(dir.toAbsolutePath().toString())))
+                            || localBase.toAbsolutePath().startsWith(localBase.getFileSystem().getPath(dir.toAbsolutePath().toString()))
+                            || localBase.toAbsolutePath().startsWith(dir.toAbsolutePath())
+                            || localBase.equals(dir))
                     {
                         known = true;
                         break;

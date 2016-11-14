@@ -568,7 +568,14 @@ public class CryptoFSTest {
         encPath1.getFileSystem().close();
 
     }
-
+    
+    @Test
+    public void testPathEquals() {
+        Path encPath = TestHelper.createRandomFile(encryptedDestination, "foobar1.txt");
+        Path unixPath = Paths.get("/tmp");
+        assertFalse(unixPath.equals(encPath));
+        assertFalse(encPath.equals(unixPath));
+    }
 }
 
 
