@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
+import de.dal33t.powerfolder.disk.FileInfoDAOTestCase;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOSQLImpl;
 import de.dal33t.powerfolder.disk.dao.FileInfoSQLConverter;
