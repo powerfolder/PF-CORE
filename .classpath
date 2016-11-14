@@ -45,7 +45,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/bcpkix-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-ext-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/powerfolder-protobuf-0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.0.0-beta-2.jar"/>
 	<classpathentry kind="lib" path="lib/cryptomator/commons-lang3-3.4.jar"/>
 	<classpathentry kind="lib" path="lib/cryptomator/dagger-2.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/cryptomator/gson-2.7.jar"/>
@@ -56,5 +55,6 @@
 	<classpathentry kind="lib" path="lib/cryptomator/cryptofs-0.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/cryptomator/cryptolib-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/cryptomator/dagger-producers-2.6.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.1.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

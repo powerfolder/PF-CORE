@@ -391,15 +391,6 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/protobuf-java-3.0.0-beta-2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/powerfolder-protobuf-0.1.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -435,6 +426,15 @@
         </SOURCES>
         <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" />
         <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/protobuf-java-3.1.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
       </library>
     </orderEntry>
   </component>
