@@ -2479,14 +2479,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logInfo("Renaming Folder " + localFolder.getName() + " to "
                     + foInfo.getName());
                 foInfo = foInfo.intern(true);
-                try {
-                    Path newDirectory = folder.getLocalBase().getParent()
-                        .resolve(PathUtils
-                            .removeInvalidFilenameChars(foInfo.getLocalizedName()));
-                    moveLocalFolder(folder, newDirectory);
-                } catch (IOException ioe) {
-                    logWarning("Could not move Folder " + foInfo);
-                }
+                Path newDirectory = folder.getLocalBase().getParent()
+                    .resolve(PathUtils
+                        .removeInvalidFilenameChars(foInfo.getLocalizedName()));
+                moveLocalFolder(folder, newDirectory);
             }
 
             logInfo("Syncing folder setup with account permissions("
@@ -2531,36 +2527,58 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    public void moveLocalFolder(Folder folder, Path newDirectory) throws IOException {
+    public Folder moveLocalFolder(Folder folder, Path newDirectory) {
+
+        newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
+
         if (Files.exists(newDirectory)) {
             logSevere("Not moving folder " + folder + " to new directory "
-                + newDirectory.toString()
-                + ". The new directory already exists!");
-
-            return;
+                    + newDirectory.toString()
+                    + ". The new directory already exists!");
+            return null;
         }
 
-        Path originalDirectory = folder.getLocalBase().toRealPath();
-        FolderSettings fs = FolderSettings.load(getController(),
-            folder.getConfigEntryId());
+        try {
+            Path originalDirectory = folder.getLocalBase();
+            FolderSettings fs = FolderSettings.load(getController(),
+                    folder.getConfigEntryId());
 
-        // Remove the old folder from the repository.
-        removeFolder(folder, false);
+            // Remember patterns if content not moving.
+            List<String> patterns = folder.getDiskItemFilter().getPatterns();
 
-        // Move it.
-        PathUtils.recursiveMove(originalDirectory, newDirectory);
+            // Remove the old folder from the repository.
+            removeFolder(folder, false);
 
-        // Remember patterns if content not moving.
-        List<String> patterns = folder.getDiskItemFilter().getPatterns();
+            // Move it.
+            try {
+                PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
+            } catch (IOException e) {
+                PathUtils.recursiveCopyVisitor(originalDirectory, newDirectory);
+                logWarning("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " +
+                        "Instead of moving, the folder has been copied to " + newDirectory + ". Please remove " +
+                        "duplicate contents from " + originalDirectory + " manually!");
+            }
 
-        // Create the new Folder in the repository.
-        fs = fs.changeBaseDir(newDirectory);
-        folder = createFolder0(folder.getInfo().intern(), fs, true);
+            // Create the new Folder in the repository.
+            fs = fs.changeBaseDir(newDirectory);
+            folder = createFolder0(folder.getInfo().intern(), fs, true);
 
-        // Restore patterns if content not moved.
-        for (String pattern : patterns) {
-            folder.addPattern(pattern);
+            // Restore patterns if content not moved.
+            for (String pattern : patterns) {
+                folder.addPattern(pattern);
+            }
+
+            PathUtils.setAttributesOnWindows(newDirectory, true, true);
+
+            logInfo("Successfully moved folder from " + originalDirectory + " to " + newDirectory + ".");
+
+        } catch (IOException e) {
+            logSevere("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " + e);
+            logFine(e);
+            return null;
         }
+
+        return folder;
     }
 
     private void removeLocalFolders(Account a, Collection<FolderInfo> skip) {
@@ -2833,7 +2851,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Do we already have a folder that has this file as its base?
      * 
-     * @param file
+     * @param path
      */
     public boolean doesFolderAlreadyExist(Path path) {
         if (!Files.isDirectory(path)) {

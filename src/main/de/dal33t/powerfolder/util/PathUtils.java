@@ -12,14 +12,12 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.URL;
-import java.nio.file.DirectoryStream;
+import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -37,6 +35,9 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class PathUtils {
 
@@ -1660,6 +1661,108 @@ public class PathUtils {
             log.info(ioe.getMessage());
             IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             return false;
+        }
+    }
+
+    public static void recursiveCopyVisitor(Path oldDirectory, Path newDirectory) throws IOException {
+
+        try {
+            Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+
+                    new SimpleFileVisitor<Path>() {
+
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                                throws IOException {
+                            Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
+                            if (!Files.exists(targetDir)) {
+                                Files.createDirectories(targetDir);
+                            }
+                            try {
+                                Files.copy(dir, targetDir);
+                            } catch (FileAlreadyExistsException e) {
+                                if (!Files.isDirectory(targetDir))
+                                    System.out.println("Could not move file.");
+                            }
+                            return CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                                throws IOException {
+                            Files.copy(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
+                            return CONTINUE;
+                        }
+                    });
+        } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
+            throw ioe;
+        }
+    }
+
+    public static void recursiveMoveVisitor(Path oldDirectory, Path newDirectory) throws IOException {
+
+        try {
+            Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+
+                    new SimpleFileVisitor<Path>() {
+
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                                throws IOException {
+                            Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
+                            if (!Files.exists(targetDir)) {
+                                Files.createDirectories(targetDir);
+                            }
+                            try {
+                                Files.copy(dir, targetDir);
+                            } catch (FileAlreadyExistsException e) {
+                                if (!Files.isDirectory(targetDir))
+                                    System.out.println("Could not move file.");
+                            }
+                            return CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                                throws IOException {
+                            Files.move(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
+                            return CONTINUE;
+                        }
+                    });
+        } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
+            throw ioe;
+        }
+
+    }
+
+    public static void recursiveDeleteVisitor(Path dir) throws IOException {
+
+        try {
+            Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                    Files.delete(file);
+                    return CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                        throws IOException {
+                    if (e == null) {
+                        Files.delete(dir);
+                        return CONTINUE;
+                    } else {
+                        throw e;
+                    }
+                }
+            });
+        } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
+            throw ioe;
         }
     }
 }
