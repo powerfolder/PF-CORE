@@ -34,6 +34,7 @@ import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
 import de.dal33t.powerfolder.disk.FolderWatcher;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -64,8 +65,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         super.setUp();
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
+
         deleteTestFolderContents();
         connectBartAndLisa();
+
         // Join on testfolder
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
@@ -452,9 +455,10 @@ public class FileTransferTest extends TwoControllerTestCase {
             + getFolderAtLisa().getKnownItemCount(), 3, getFolderAtLisa()
             .getKnownItemCount());
         // 3 physical files (1 file + 1 system dir + 1 subdir)
-        assertEquals("Lisa.getLocalBase.list: "
-            + getFolderAtLisa().getLocalBase().toFile().list().length, 3,
-            getFolderAtLisa().getLocalBase().toFile().list().length);
+        List<Path> filesInFolder = new ArrayList<>();
+        Files.walk(getFolderAtBart().getLocalBase())
+                .forEach(p -> filesInFolder.add(p));
+        assertEquals(filesInFolder.size(), 3, filesInFolder.size());
 
         // No active downloads?
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
@@ -509,7 +513,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     /**
      * Tests the copy of a big file. approx. 10 megs.
      */
-    public void testBigFileCopy() {
+    public void testBigFileCopy() throws IOException {
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
@@ -579,10 +583,12 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals("Lisa.getKnownItemCount: "
             + getFolderAtLisa().getKnownItemCount(), 1, getFolderAtLisa()
             .getKnownItemCount());
+
         // 2 physical files (1 + 1 system dir)
-        assertEquals("Lisa.getLocalBase.list: "
-            + getFolderAtLisa().getLocalBase().toFile().list().length, 2,
-            getFolderAtLisa().getLocalBase().toFile().list().length);
+        List<Path> filesInFolder = new ArrayList<>();
+        Files.walk(getFolderAtLisa().getLocalBase())
+                .forEach(p -> filesInFolder.add(p));
+        assertEquals(filesInFolder.size(), 2, filesInFolder.size());
 
         // No active downloads?
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
@@ -608,7 +614,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testMultipleFilesCopy() {
+    public void testMultipleFilesCopy() throws IOException {
         // Register listeners
         final MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
@@ -682,9 +688,10 @@ public class FileTransferTest extends TwoControllerTestCase {
             + getFolderAtLisa().getKnownItemCount(), nFiles, getFolderAtLisa()
             .getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals("Lisa.getLocalBase.list: "
-            + getFolderAtLisa().getLocalBase().toFile().list().length,
-            nFiles + 1, getFolderAtLisa().getLocalBase().toFile().list().length);
+        List<Path> filesInFolder = new ArrayList<>();
+        Files.walk(getFolderAtLisa().getLocalBase())
+                .forEach(p -> filesInFolder.add(p));
+        assertEquals(filesInFolder.size(), nFiles + 1, filesInFolder.size());
 
         // No active downloads?
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
@@ -709,7 +716,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testMultipleFilesCopyWithFolderWatcher() {
+    public void testMultipleFilesCopyWithFolderWatcher() throws IOException {
         // Register listeners
         if (!FolderWatcher.isLibLoaded()) {
             return;
@@ -789,8 +796,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtBart().getLocalBase().toFile()
-            .list().length);
+        List<Path> filesInFolder = new ArrayList<>();
+        Files.walk(getFolderAtBart().getLocalBase())
+                .forEach(p -> filesInFolder.add(p));
+        assertEquals(nFiles + 1, filesInFolder.size());
 
         // No active downloads?!
         assertEquals(0, getContollerBart().getTransferManager()
@@ -857,8 +866,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile()
-            .list().length);
+        List<Path> filesInFolder = new ArrayList<>();
+        Files.walk(getFolderAtLisa().getLocalBase())
+                .forEach(p -> filesInFolder.add(p));
+        assertEquals(nFiles + 1, filesInFolder.size());
 
         // Check correct event fireing
         assertEquals(0, bartsListener.uploadAborted);
@@ -1025,7 +1036,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
     }
 
-    public void testMany0SizeFilesCopy() {
+    public void testMany0SizeFilesCopy() throws IOException {
         // Register listeners
         MyTransferManagerListener bartsListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartsListener);
@@ -1064,8 +1075,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile()
-            .list().length);
+        List<Path> filesInFolder = new ArrayList<>();
+        Files.walk(getFolderAtLisa().getLocalBase())
+                .forEach(p -> filesInFolder.add(p));
+        assertEquals(nFiles + 1, filesInFolder.size());
 
         // Check correct event fireing
         assertEquals(0, bartsListener.uploadAborted);
@@ -1094,7 +1107,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testMany0SizeFilesCopyDeltaSync() {
+    public void testMany0SizeFilesCopyDeltaSync() throws IOException {
         ConfigurationEntry.USE_DELTA_ON_LAN
             .setValue(getContollerBart(), "true");
         ConfigurationEntry.USE_DELTA_ON_LAN
@@ -1133,8 +1146,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
         // test physical files (1 + 1 system dir)
-        assertEquals(nFiles + 1, getFolderAtLisa().getLocalBase().toFile()
-            .list().length);
+        List<Path> filesInFolder = new ArrayList<>();
+        Files.walk(getFolderAtLisa().getLocalBase())
+                .forEach(p -> filesInFolder.add(p));
+        assertEquals(nFiles + 1, filesInFolder.size());
 
         // Check correct event fireing
         assertEquals(0, bartsListener.uploadAborted);
@@ -1782,7 +1797,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Test ;)
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
         // 2 physical files (1 + 1 system dir)
-        assertEquals(2, getFolderAtLisa().getLocalBase().toFile().list().length);
+        List<Path> filesInFolder = new ArrayList<>();
+        Files.walk(getFolderAtLisa().getLocalBase())
+                .forEach(p -> filesInFolder.add(p));
+        assertEquals(2, filesInFolder.size());
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
