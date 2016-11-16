@@ -101,6 +101,8 @@ public class EncryptedFileSystemUtils {
     // Internal helper ********************************************************
 
     private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
+
+
         return CryptoFileSystemProvider.newFileSystem(
                 encDir,
                 CryptoFileSystemProperties.cryptoFileSystemProperties()

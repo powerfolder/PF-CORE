@@ -50,7 +50,6 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
 import java.util.concurrent.*;
@@ -62,7 +61,6 @@ import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.ID;
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
-import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -2518,7 +2516,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         try {
-            Path originalDirectory = folder.getLocalBase();
+            Path originalDirectory = folder.getLocalBase().toRealPath();
             FolderSettings fs = FolderSettings.load(getController(),
                     folder.getConfigEntryId());
 

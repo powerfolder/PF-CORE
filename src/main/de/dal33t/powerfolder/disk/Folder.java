@@ -283,6 +283,8 @@ public class Folder extends PFComponent {
                             " with localbase " + localBaseDir + " " + e);
                     throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
                             + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
+                } catch (NullPointerException npe){
+                    logSevere("localBaseDir " + localBaseDir + " is null." + npe, npe);
                 }
 
             } else {
