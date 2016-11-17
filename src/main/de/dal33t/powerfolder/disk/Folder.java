@@ -262,9 +262,12 @@ public class Folder extends PFComponent {
 
             // PFS-1994: Start: Encrypted storage.
             boolean isEncryptionActivated = EncryptedFileSystemUtils.isEncryptionActivated(getController());
-            boolean isEncryptedFolder = EncryptedFileSystemUtils.isEncryptedPath(localBaseDir);
+            boolean isNewEncryptedFolder = EncryptedFileSystemUtils.isEncryptedPath(localBaseDir);
 
-            if (isEncryptionActivated && isEncryptedFolder) {
+            // For creation of the metafolder inside encrypted folders.
+            boolean isAlreadyEncrypted = EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir);
+
+            if (isEncryptionActivated && isNewEncryptedFolder || isAlreadyEncrypted) {
 
                 try {
                     // Check if the incoming localBaseDir is already an encrypted path.
@@ -1119,7 +1122,7 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (syncProfile.isManualSync()) {
+        if (syncProfile.isManualSync() || EncryptedFileSystemUtils.isCryptoPathInstance(localBase)) {
             return false;
         }
         Date wasLastScan = lastScan;

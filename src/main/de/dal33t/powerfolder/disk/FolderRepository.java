@@ -1313,7 +1313,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             removeLink(folder);
 
             // Remember that we have removed this folder.
-            if (!EncryptedFileSystemUtils.isEncryptedPath(folder.getLocalBase())) {
+            if (!EncryptedFileSystemUtils.isCryptoPathInstance(folder.getLocalBase())) {
                 addToRemovedFolderDirectories(folder);
             }
 
@@ -2521,7 +2521,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folder.getConfigEntryId());
 
             // PFS-1994: If old directory is encrypted, new directory must also be encrypted.
-            if (EncryptedFileSystemUtils.isEncryptedPath(originalDirectory)) {
+            if (EncryptedFileSystemUtils.isCryptoPathInstance(originalDirectory)) {
                 newDirectory = EncryptedFileSystemUtils.initCryptoFS(getController(), newDirectory);
             }
 
