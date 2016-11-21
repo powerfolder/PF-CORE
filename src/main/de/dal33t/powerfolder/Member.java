@@ -1107,7 +1107,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
         }
         if (waiter.isTimeout()) {
-            logSevere("Timeout ("
+            logWarning("Timeout ("
                 + (waiter.getWaitTimeMS() / (1000 * 60))
                 + " minutes) while waiting for filelist from " + info);
         }
