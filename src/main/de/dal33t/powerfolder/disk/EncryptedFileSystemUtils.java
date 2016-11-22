@@ -44,11 +44,8 @@ public class EncryptedFileSystemUtils {
 
     public static Path initCryptoFS(Controller controller, Path incDir) throws IOException {
         try {
-            URI encFolderUri = CryptoFileSystemUris.createUri(incDir, incDir.toString());
+            URI encFolderUri = CryptoFileSystemUris.createUri(incDir, "/encDir");
             incDir = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
-            if (!Files.exists(incDir)){
-                Files.createDirectories(incDir);
-            }
             return incDir;
         } catch (FileSystemNotFoundException e){
             FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
@@ -77,7 +74,7 @@ public class EncryptedFileSystemUtils {
 
     public static boolean isCryptoPathInstance(Path path){
         Reject.ifNull(path, "Path");
-        return path.getFileSystem().provider() instanceof CryptoFileSystemProvider;
+        return path.getFileSystem().provider() instanceof CryptoFileSystemProvider || path.equals(Paths.get("/encDir"));
     }
 
     public static void setEncryptionPassphrase(Controller controller){
