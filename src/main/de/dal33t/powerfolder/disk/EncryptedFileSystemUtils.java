@@ -42,17 +42,14 @@ import java.security.NoSuchAlgorithmException;
 
 public class EncryptedFileSystemUtils {
 
-    public static Path initCryptoFS(Controller controller, Path encDir) throws IOException {
-       try {
-            URI encFolderUri = CryptoFileSystemUris.createUri(encDir, encDir.toString());
-            encDir = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
-            if (!Files.exists(encDir)){
-                Files.createDirectories(encDir);
-            }
-            return encDir;
+    public static Path initCryptoFS(Controller controller, Path incDir) throws IOException {
+        try {
+            URI encFolderUri = CryptoFileSystemUris.createUri(incDir, "/encDir");
+            incDir = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
+            return incDir;
         } catch (FileSystemNotFoundException e){
-            FileSystem cryptoFS = initCryptoFileSystem(controller, encDir);
-            encDir = cryptoFS.getPath(encDir.toString());
+            FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
+            Path encDir = cryptoFS.getPath("/encDir");
             if (!Files.exists(encDir)){
                 Files.createDirectories(encDir);
             }
@@ -101,11 +98,14 @@ public class EncryptedFileSystemUtils {
     // Internal helper ********************************************************
 
     private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
-        return CryptoFileSystemProvider.newFileSystem(
+
+         FileSystem fs = CryptoFileSystemProvider.newFileSystem(
                 encDir,
                 CryptoFileSystemProperties.cryptoFileSystemProperties()
                         .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
                         .build());
+
+        return fs;
     }
 
 }

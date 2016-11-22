@@ -185,15 +185,15 @@ For creation of the installer:
 
 			<include name="cryptomator/commons-codec-1.10.jar" />
 			<include name="cryptomator/commons-lang3-3.4.jar" />
-			<include name="cryptomator/cryptofs-0.1.4.jar" />
-			<include name="cryptomator/cryptolib-1.0.2.jar" />
+			<include name="cryptomator/cryptofs-0.1.5.jar" />
+			<include name="cryptomator/cryptolib-1.1.0.jar" />
 			<include name="cryptomator/dagger-2.6.1.jar" />
 			<include name="cryptomator/dagger-producers-2.6.1.jar" />
 			<include name="cryptomator/gson-2.7.jar" />
 			<include name="cryptomator/guava-19.0.jar" />
 			<include name="cryptomator/javax.inject-1.jar" />
 			<include name="cryptomator/slf4j-api-1.7.21.jar" />
-			<include name="cryptomator/siv-mode-1.0.8.jar" />
+			<include name="cryptomator/siv-mode-1.2.0.jar" />
 
 		</fileset>
 
