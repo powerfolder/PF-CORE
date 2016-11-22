@@ -260,9 +260,12 @@ public class Folder extends PFComponent {
 
             // PFS-1994: Start: Encrypted storage.
             boolean isEncryptionActivated = EncryptedFileSystemUtils.isEncryptionActivated(getController());
-            boolean isEncryptedFolder = EncryptedFileSystemUtils.isEncryptedPath(localBaseDir);
+            boolean isNewEncryptedFolder = EncryptedFileSystemUtils.isEncryptedPath(localBaseDir);
 
-            if (isEncryptionActivated && isEncryptedFolder) {
+            // For creation of the metafolder inside encrypted folders.
+            boolean isAlreadyEncrypted = EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir);
+
+            if (isEncryptionActivated && isNewEncryptedFolder || isAlreadyEncrypted) {
 
                 try {
                     // Check if the incoming localBaseDir is already an encrypted path.
@@ -277,6 +280,11 @@ public class Folder extends PFComponent {
                     }
 
                 } catch (IOException e) {
+                    logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
+                            " with localbase " + localBaseDir + " " + e);
+                    throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
+                            + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
+                } catch (RuntimeException e){
                     logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
                             " with localbase " + localBaseDir + " " + e);
                     throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
@@ -1115,7 +1123,7 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (syncProfile.isManualSync()) {
+        if (syncProfile.isManualSync() || EncryptedFileSystemUtils.isCryptoPathInstance(localBase)) {
             return false;
         }
         Date wasLastScan = lastScan;

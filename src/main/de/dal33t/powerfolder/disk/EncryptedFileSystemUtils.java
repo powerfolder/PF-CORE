@@ -74,7 +74,7 @@ public class EncryptedFileSystemUtils {
 
     public static boolean isCryptoPathInstance(Path path){
         Reject.ifNull(path, "Path");
-        return path.getFileSystem().provider() instanceof CryptoFileSystemProvider;
+        return path.getFileSystem().provider() instanceof CryptoFileSystemProvider || path.equals(Paths.get("/encDir"));
     }
 
     public static void setEncryptionPassphrase(Controller controller){
