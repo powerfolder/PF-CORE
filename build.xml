@@ -185,8 +185,8 @@ For creation of the installer:
 
 			<include name="cryptomator/commons-codec-1.10.jar" />
 			<include name="cryptomator/commons-lang3-3.4.jar" />
-			<include name="cryptomator/cryptofs-0.1.5.jar" />
-			<include name="cryptomator/cryptolib-1.1.0.jar" />
+			<include name="cryptomator/cryptofs-0.1.4.jar" />
+			<include name="cryptomator/cryptolib-1.0.2.jar" />
 			<include name="cryptomator/dagger-2.6.1.jar" />
 			<include name="cryptomator/dagger-producers-2.6.1.jar" />
 			<include name="cryptomator/gson-2.7.jar" />
