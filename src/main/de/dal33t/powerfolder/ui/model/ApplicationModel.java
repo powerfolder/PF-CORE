@@ -71,6 +71,7 @@ import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
+import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.notification.NotificationHandlerBase;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
@@ -578,6 +579,7 @@ public class ApplicationModel extends PFUIComponent {
             if (client.isPasswordRequired() && !client.isLoggedIn()
                 && !PFWizard.isWizardOpen())
             {
+                getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(new SimpleNotificationNotice(Translation.get("main_frame.log_in_failed.text"), Translation.get("exp.uilock.dialog.error.wronglogin")));
                 PFWizard.openLoginWizard(getController(), client);
             }
         }
