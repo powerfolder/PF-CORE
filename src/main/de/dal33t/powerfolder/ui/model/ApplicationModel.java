@@ -78,6 +78,7 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.wizard.DesktopSyncSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -579,7 +580,10 @@ public class ApplicationModel extends PFUIComponent {
             if (client.isPasswordRequired() && !client.isLoggedIn()
                 && !PFWizard.isWizardOpen())
             {
-                getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(new SimpleNotificationNotice(Translation.get("main_frame.log_in_failed.text"), Translation.get("exp.uilock.dialog.error.wronglogin")));
+                // Only show notification, if username was already set
+                if (!StringUtils.isBlank(client.getUsername())) {
+                    getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(new SimpleNotificationNotice(Translation.get("main_frame.log_in_failed.text"), Translation.get("exp.uilock.dialog.error.wronglogin")));
+                }
                 PFWizard.openLoginWizard(getController(), client);
             }
         }
