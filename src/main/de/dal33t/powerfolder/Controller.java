@@ -1123,13 +1123,10 @@ public class Controller extends PFComponent {
         }, secondsToMidnight, 60 * 60 * 24, TimeUnit.SECONDS);
 
         // Also run housekeeping one minute after start up.
-        threadPool.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                performHousekeeping(false);
-            }
-        }, 1, TimeUnit.MINUTES);
-
+        threadPool.schedule(() -> {
+            performHousekeeping(false);
+        } , 1, TimeUnit.MINUTES);
+        
         // ============
         // Do profiling
         // ============
