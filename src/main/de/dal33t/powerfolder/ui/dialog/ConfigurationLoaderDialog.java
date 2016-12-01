@@ -348,11 +348,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             getController().saveConfig();
         } else {
             // Not started. Try a delayed store
-            getController().schedule(new Runnable() {
-                public void run() {
-                    getController().saveConfig();
-                }
-            }, 5000L);
+            getController().schedule(() -> {
+                getController().saveConfig();
+            } , 5000L);
         }
     }
 

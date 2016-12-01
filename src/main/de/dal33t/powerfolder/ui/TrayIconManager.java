@@ -108,20 +108,16 @@ public class TrayIconManager extends PFComponent {
     }
 
     public static void whitelistSystray(Controller controller) {
-        ScheduledFuture<?> fut = controller.schedule(new Runnable() {
-            public void run() {
-                try {
-                    Runtime
-                        .getRuntime()
-                        .exec(
-                            "gsettings set com.canonical.Unity.Panel systray-whitelist \"['all']\"");
-                } catch (IOException e) {
-                    Logger.getLogger(TrayIconManager.class.getName()).warning(
-                        "Unable to whitelist application for system tray icon. "
-                            + e);
-                }
+        ScheduledFuture<?> fut = controller.schedule(() -> {
+            try {
+                Runtime.getRuntime().exec(
+                    "gsettings set com.canonical.Unity.Panel systray-whitelist \"['all']\"");
+            } catch (IOException e) {
+                Logger.getLogger(TrayIconManager.class.getName()).warning(
+                    "Unable to whitelist application for system tray icon. "
+                        + e);
             }
-        }, 0);
+        } , 0);
         try {
             fut.get(5, TimeUnit.SECONDS);
         } catch (Exception e) {

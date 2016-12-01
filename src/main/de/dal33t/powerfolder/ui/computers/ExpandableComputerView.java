@@ -31,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.BorderFactory;
@@ -479,15 +478,13 @@ public class ExpandableComputerView extends PFUIComponent implements
             if (PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController())) {
                 mouseOver = true;
                 if (!expanded.get()) {
-                    getController().schedule(new TimerTask() {
-                        public void run() {
-                            if (mouseOver) {
-                                if (!expanded.get()) {
-                                    expand();
-                                }
+                    getController().schedule(() -> {
+                        if (mouseOver) {
+                            if (!expanded.get()) {
+                                expand();
                             }
                         }
-                    }, 2000);
+                    } , 2000);
                 }
             }
         }

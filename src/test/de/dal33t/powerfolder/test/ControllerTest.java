@@ -110,12 +110,17 @@ public class ControllerTest extends ControllerTestCase {
         assertTrue(run);
     }
 
+    /**
+     * PFS-2232 / PFC-2941
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     public void testManyThreadPoolTasks()
         throws InterruptedException, ExecutionException
     {
         final AtomicBoolean interrupted = new AtomicBoolean();
         // 1) Schedule tasks and wait for execution
-        int nTasks = Constants.CONTROLLER_THREADS_IN_THREADPOOL * 10;
+        int nTasks = Constants.CONTROLLER_MIN_THREADS_IN_THREADPOOL * 10;
         int waitMS = 1000;
         for (int i = 0; i < nTasks; i++) {
             getController().getThreadPool().schedule(new Runnable() {
@@ -129,24 +134,19 @@ public class ControllerTest extends ControllerTestCase {
                     }
                 }
             }, 0, TimeUnit.MILLISECONDS);
+            TestHelper.waitMilliSeconds(1);
         }
         TestHelper.waitMilliSeconds(500);
 
-        // 2) Check busyness
-        ThreadPoolExecutor tpe = (ThreadPoolExecutor) getController()
-            .getThreadPool();
-        assertEquals(Constants.CONTROLLER_THREADS_IN_THREADPOOL,
-            tpe.getActiveCount());
-
-        // 3) Terminate
+        // 2) Terminate
         getController().getThreadPool().shutdown();
         getController().getThreadPool().awaitTermination(waitMS * 2,
             TimeUnit.MILLISECONDS);
         List<Runnable> remainingTasks = getController().getThreadPool()
             .shutdownNow();
-
         TestHelper.waitMilliSeconds(1000);
-        // 4) Check empty threadpool
+
+        // 3) Check empty threadpool
         // Two tasks may remain:
         // LimitedConnectivityChecker
         // Controller#performHousekeeping
@@ -156,6 +156,5 @@ public class ControllerTest extends ControllerTestCase {
             remainingTasks.size() <= 2);
         assertFalse(
             "Tasks were not completed, but cancelled. Threadpool was likely exhausted", interrupted.get());
-        System.out.println(interrupted);
     }
 }

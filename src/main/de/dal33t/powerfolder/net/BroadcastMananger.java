@@ -33,7 +33,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -196,20 +195,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         logFine("Started");
 
         if (getController().getConnectionListener() != null) {
-            getController().scheduleAndRepeat(new TimerTask() {
-                @Override
-                public void run() {
-                    if (socket == null || socket.isClosed()) {
-                        return;
-                    }
-                    if (broadCastString == null) {
-                        logWarning("Not sending network broadcast");
-                        return;
-                    }
-                    getController().getIOProvider().startIO(
-                        new BroadcastSender());
-                }
-            }, 10L * 1000);
+            getController().scheduleAndRepeat(new BroadcastSender(),
+                10L * 1000);
         }
     }
 
@@ -583,6 +570,13 @@ public class BroadcastMananger extends PFComponent implements Runnable {
     private class BroadcastSender implements Runnable {
         @Override
         public void run() {
+            if (socket == null || socket.isClosed()) {
+                return;
+            }
+            if (broadCastString == null) {
+                logWarning("Not sending network broadcast");
+                return;
+            }
             DatagramPacket broadcast = null;
             byte[] msg = broadCastString.getBytes();
             broadcast = new DatagramPacket(msg, msg.length, group,
