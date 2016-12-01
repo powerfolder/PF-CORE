@@ -25,6 +25,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A {@link ScheduledThreadPoolExecutor} that wraps all {@link Runnable}s and
@@ -35,6 +37,9 @@ import java.util.concurrent.TimeUnit;
 public class WrappedScheduledThreadPoolExecutor extends
     ScheduledThreadPoolExecutor
 {
+    private static final Logger LOG = Logger.getLogger(WrappedScheduledThreadPoolExecutor.class
+        .getName());
+
     public WrappedScheduledThreadPoolExecutor(int corePoolSize) {
         super(corePoolSize);
     }
@@ -85,13 +90,29 @@ public class WrappedScheduledThreadPoolExecutor extends
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay,
         TimeUnit unit)
     {
+        checkBusyness();
         return super.schedule(new WrappedCallable<V>(callable), delay, unit);
+    }
+
+    private void checkBusyness() {
+        if (getActiveCount() >= getCorePoolSize()) {
+            int queueSize = getQueue().size();
+            Level l = Level.WARNING;
+            if (queueSize > getCorePoolSize() * 10) {
+                l = Level.SEVERE;
+            }
+            LOG.log(l,
+                "Threadpool is exhausted. Got " + getQueue().size()
+                    + " tasks in queue. Currently active threads: "
+                    + getActiveCount() + "/" + getCorePoolSize());
+        }
     }
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay,
         TimeUnit unit)
     {
+        checkBusyness();
         return super.schedule(new WrappedRunnable(command), delay, unit);
     }
 
@@ -99,6 +120,7 @@ public class WrappedScheduledThreadPoolExecutor extends
     public ScheduledFuture<?> scheduleAtFixedRate(Runnable command,
         long initialDelay, long period, TimeUnit unit)
     {
+        checkBusyness();
         return super.scheduleAtFixedRate(new WrappedRunnable(command),
             initialDelay, period, unit);
     }
@@ -107,6 +129,7 @@ public class WrappedScheduledThreadPoolExecutor extends
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command,
         long initialDelay, long delay, TimeUnit unit)
     {
+        checkBusyness();
         return super.scheduleWithFixedDelay(new WrappedRunnable(command),
             initialDelay, delay, unit);
     }
