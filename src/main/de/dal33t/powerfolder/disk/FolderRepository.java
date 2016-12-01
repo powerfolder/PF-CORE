@@ -642,7 +642,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }, 10L, 10L, TimeUnit.SECONDS);
 
-        // PFS-1956 -- TODO: remove after release of v12
+        // PFS-1956 -- TODO: remove after release of v14
         boolean is0byteRecoveryRun = getController().getPreferences()
             .getBoolean("is0byteRecoveryRun", false);
         if (!is0byteRecoveryRun && ConfigurationEntry.RECOVER_0BYTE_FILES
