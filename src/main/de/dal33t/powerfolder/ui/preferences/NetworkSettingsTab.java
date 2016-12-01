@@ -358,7 +358,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             wanSpeed.isAutomatic());
         if (wanSpeed.isAutomatic()) {
             //Update the automatic rates.
-            getController().getThreadPool().execute(
+            getController().getIOProvider().startIO(
                     tm.getRecalculateAutomaticRate());
         } else {
             tm.setUploadCPSForWAN(wanSpeed.getUploadSpeedKBPS());

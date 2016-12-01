@@ -504,7 +504,7 @@ public class LineSpeedSelectionPanel extends PFUIComponent {
                             getController().getTransferManager();
                     FutureTask<Object> task =
                             transferManager.getRecalculateAutomaticRate();
-                    getController().getThreadPool().execute(task);
+                    getController().getIOProvider().startIO(task);
                     Cursor cursor = CursorUtils.setWaitCursor(getUiComponent());
                     try {
                         task.get();

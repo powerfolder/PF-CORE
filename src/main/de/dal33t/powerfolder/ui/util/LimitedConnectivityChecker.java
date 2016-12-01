@@ -308,7 +308,7 @@ public class LimitedConnectivityChecker {
         }
 
         public void setNetworkingMode(NetworkingModeEvent event) {
-            controller.getThreadPool().execute(new CheckTask(controller));
+            controller.getIOProvider().startIO(new CheckTask(controller));
         }
 
         public boolean fireInEventDispatchThread() {

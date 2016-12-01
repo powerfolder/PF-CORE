@@ -19,12 +19,11 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RunnableScheduledFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -48,37 +47,63 @@ public class WrappedScheduledThreadPoolExecutor
     /**
      * The threadpool actually executing the scheduled tasks.
      */
-    private WrapperExecutorService executingThreadPool;
+    private WrapperExecutorService wrappingThreadPool;
+    private ThreadPoolExecutor executingThreadPool;
 
     public WrappedScheduledThreadPoolExecutor(int corePoolSize,
         ThreadFactory threadFactory)
     {
         super(corePoolSize, threadFactory);
-        executingThreadPool = new WrapperExecutorService(
-            Executors.newCachedThreadPool(threadFactory));
+        executingThreadPool = (ThreadPoolExecutor) Executors
+            .newCachedThreadPool(threadFactory);
+        wrappingThreadPool = new WrapperExecutorService(executingThreadPool);
     }
 
     // Overriding ************************************************************
 
-    // Not overriden because super class calls schedule(..)
+    @Override
+    public void execute(Runnable command) {
+        if (command instanceof WrappedRunnable
+            || command instanceof ScheduledRunnable)
+        {
+            super.execute(command);
+            return;
+        }
+        LOG.warning("Decorating exec: " + command);
+        super.execute(new ScheduledRunnable(command));
+    }
 
-    // @Override
-    // public void execute(Runnable command) {
-    // super.execute(new WrappedRunnable(command));
-    // }
-    //
+    @Override
+    protected <V> RunnableScheduledFuture<V> decorateTask(Runnable runnable,
+        RunnableScheduledFuture<V> task)
+    {
+        if (runnable instanceof WrappedRunnable
+            || runnable instanceof ScheduledRunnable)
+        {
+            return super.decorateTask(runnable, task);
+        }
+        LOG.warning("Decorating task: " + runnable);
+        return super.decorateTask(new ScheduledRunnable(runnable), task);
+    }
+    
+    // Not overriden because super class calls schedule(..)
+    
     // @Override
     // public Future<?> submit(Runnable task) {
+    //
+    // LOG.warning("Submitt: " + task);
     // return super.submit(new WrappedRunnable(task));
-    // }
-
-    // @Override
-    // public <T> Future<T> submit(Callable<T> task) {
-    // return super.submit(new WrappedCallable<T>(task));
     // }
     //
     // @Override
+    // public <T> Future<T> submit(Callable<T> task) {
+    // LOG.warning("Submitt: " + task);
+    // return super.submit(new WrappedCallable<T>(task));
+    // }
+    // //
+    // @Override
     // public <T> Future<T> submit(Runnable task, T result) {
+    // LOG.warning("Submitt: " + task);
     // return super.submit(new WrappedRunnable(task), result);
     // }
 
@@ -87,7 +112,7 @@ public class WrappedScheduledThreadPoolExecutor
         try {
             super.shutdown();            
         } finally {
-            executingThreadPool.shutdown();
+            wrappingThreadPool.shutdown();
         }
     }
 
@@ -97,7 +122,7 @@ public class WrappedScheduledThreadPoolExecutor
         try {
             tasks.addAll(super.shutdownNow());
         } finally {
-            tasks.addAll(executingThreadPool.shutdownNow());
+            tasks.addAll(wrappingThreadPool.shutdownNow());
         }
         return tasks;
     }
@@ -114,7 +139,7 @@ public class WrappedScheduledThreadPoolExecutor
         TimeUnit unit)
     {
         checkBusyness();
-        return super.schedule(new SchedueledRunnable(command), delay, unit);
+        return super.schedule(new ScheduledRunnable(command), delay, unit);
     }
 
     @Override
@@ -122,7 +147,7 @@ public class WrappedScheduledThreadPoolExecutor
         long initialDelay, long period, TimeUnit unit)
     {
         checkBusyness();
-        return super.scheduleAtFixedRate(new SchedueledRunnable(command),
+        return super.scheduleAtFixedRate(new ScheduledRunnable(command),
             initialDelay, period, unit);
     }
 
@@ -131,31 +156,52 @@ public class WrappedScheduledThreadPoolExecutor
         long initialDelay, long delay, TimeUnit unit)
     {
         checkBusyness();
-        return super.scheduleWithFixedDelay(new SchedueledRunnable(command),
+        return super.scheduleWithFixedDelay(new ScheduledRunnable(command),
             initialDelay, delay, unit);
     }
     
     // Internal helper ********************************************************
 
+    
     private void checkBusyness() {
-        if (getActiveCount() >= getCorePoolSize()) {
-            int queueSize = getQueue().size();
+        if (getActiveCount() >= getPoolSize()) {
+            int queueSize = getQueueSize();
             Level l = Level.WARNING;
-            if (queueSize > getCorePoolSize() * 10) {
+            if (queueSize > getPoolSize() * 3) {
                 l = Level.SEVERE;
             }
-            LOG.log(l,
-                "Scheduled threadpool is exhausted. Got " + getQueue().size()
-                    + " tasks in queue. Currently active threads: "
-                    + getActiveCount() + "/" + getCorePoolSize());
+            if (LOG.isLoggable(l)) {
+                LOG.log(l,
+                    "Scheduled threadpool is exhausted. Got " + queueSize
+                        + " tasks in queue. Currently active threads: "
+                        + getActiveCount() + "/" + getPoolSize());
+            }
         }
-        // TODO: Check busyness of executingThreadPool
     }
     
-    private class SchedueledRunnable implements Runnable {
+    @Override
+    public int getCorePoolSize() {
+        return super.getCorePoolSize() + executingThreadPool.getCorePoolSize();
+    }
+
+    @Override
+    public int getPoolSize() {
+        return super.getPoolSize() + executingThreadPool.getPoolSize();
+    }
+
+    @Override
+    public int getActiveCount() {
+        return super.getActiveCount() + executingThreadPool.getActiveCount();
+    }
+
+    private int getQueueSize() {
+       return super.getQueue().size() + executingThreadPool.getQueue().size();
+    }
+
+    private class ScheduledRunnable implements Runnable {
         private Runnable toBeExecuted;
 
-        public SchedueledRunnable(Runnable toBeExecuted) {
+        public ScheduledRunnable(Runnable toBeExecuted) {
             super();
             Reject.ifNull(toBeExecuted, "Runnable to be execute is null");
             this.toBeExecuted = toBeExecuted;
@@ -163,7 +209,8 @@ public class WrappedScheduledThreadPoolExecutor
 
         @Override
         public void run() {
-            executingThreadPool.submit(toBeExecuted);
+            checkBusyness();
+            wrappingThreadPool.submit(toBeExecuted);
         }
     }
 }
