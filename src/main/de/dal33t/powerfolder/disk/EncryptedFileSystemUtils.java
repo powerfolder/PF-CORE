@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
+import org.cryptomator.cryptofs.CryptoFileSystem;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 import org.cryptomator.cryptofs.CryptoFileSystemUris;
@@ -42,18 +43,24 @@ import java.security.NoSuchAlgorithmException;
 
 public class EncryptedFileSystemUtils {
 
-    public static Path initCryptoFS(Controller controller, Path incDir) throws IOException {
-        try {
-            URI encFolderUri = CryptoFileSystemUris.createUri(incDir, "/encDir");
-            incDir = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
+    public static Path getEncryptedFileSystem(Controller controller, Path incDir) throws IOException {
+        Reject.ifNull(controller, "Controller");
+        Reject.ifNull(incDir, "Path");
+        if (incDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
             return incDir;
-        } catch (FileSystemNotFoundException e){
-            FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
-            Path encDir = cryptoFS.getPath("/encDir");
-            if (!Files.exists(encDir)){
-                Files.createDirectories(encDir);
+        } else {
+            try {
+                URI encFolderUri = CryptoFileSystemUris.createUri(incDir, "/encDir");
+                incDir = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
+                return incDir;
+            } catch (FileSystemNotFoundException e) {
+                FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
+                Path encDir = cryptoFS.getPath("/encDir");
+                if (!Files.exists(encDir)) {
+                    Files.createDirectories(encDir);
+                }
+                return encDir;
             }
-            return encDir;
         }
     }
 
@@ -62,23 +69,44 @@ public class EncryptedFileSystemUtils {
         return ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(controller);
     }
 
-    public static boolean isEncryptedPath(Path path){
-        Reject.ifNull(path, "Path");
-        return isEncryptedPath(path.toString());
-    }
-
-    public static boolean isEncryptedPath(String path){
-        Reject.ifNull(path, "Path");
+    public static boolean isVaultPath(String path){
         return path.contains(Constants.FOLDER_ENCRYPTION_SUFFIX);
     }
 
-    public static boolean isCryptoPathInstance(Path path){
-        Reject.ifNull(path, "Path");
-        return path.getFileSystem().provider() instanceof CryptoFileSystemProvider || path.equals(Paths.get("/encDir"));
+    public static boolean isCryptoInstance(Path path){
+        return path.getFileSystem().provider() instanceof CryptoFileSystemProvider;
+    }
+
+    public static Path getPhysicalStorageLocation(Path path) {
+        CryptoFileSystem fs = (CryptoFileSystem) path.getFileSystem();
+        if (fs instanceof CryptoFileSystem) {
+            return fs.getPathToVault();
+        } else {
+            throw new IllegalArgumentException("FileSystem from " + path  + " is not a CryptoFileSystem");
+        }
+    }
+
+    /**
+     * This method returns a CryptoPath to a given String, if a CryptoPath instance exists for this String.
+     * IMPORTANT: The given String MUST be an absolute path to the vault of an CryptoFileSystem!
+     * @param pathToVault
+     * @return CryptoPath for the given String, if an active CryptoPath instance for this String is available.
+     */
+
+    public static Path getCryptoPath(String pathToVault) {
+        Reject.ifNull(pathToVault, "Path");
+        Path cryptoPath = Paths.get(pathToVault);
+        try {
+            URI encFolderUri = CryptoFileSystemUris.createUri(cryptoPath, "/encDir");
+            cryptoPath = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
+        } catch (FileSystemNotFoundException e){
+            // This could happen.
+        }
+        return cryptoPath;
     }
 
     public static void setEncryptionPassphrase(Controller controller){
-        Reject.ifNull(controller, "controller");
+        Reject.ifNull(controller, "Controller");
         if (!ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.hasValue(controller)) {
             ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.setValue(controller,
                     IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId());

@@ -208,6 +208,12 @@ public class Controller extends PFComponent {
      */
     private RemoteCommandManager rconManager;
 
+    /**
+     * Listener for authentication requests on WD NAS storages.
+     */
+
+    private WDStorageAuthenticator storageAuthenticator;
+
     /** Holds the User interface */
     private UIController uiController;
 
@@ -583,8 +589,11 @@ public class Controller extends PFComponent {
         transferManager.start();
         setLoadingCompletion(70, 75);
 
-        // Initalize rcon manager
+        // Initialize rcon manager
         startRConManager();
+
+        // Initialize WD storage authenticator.
+        startWDStorageAuthenticator();
 
         setLoadingCompletion(75, 80);
 
@@ -1295,7 +1304,7 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Starts the rcon manager
+     * Starts the rcon manager.
      */
     private void startRConManager() {
         if (RemoteCommandManager.hasRunningInstance()) {
@@ -1307,6 +1316,21 @@ public class Controller extends PFComponent {
         }
         rconManager = new RemoteCommandManager(this);
         rconManager.start();
+    }
+
+    /**
+     * Starts the WD storage authenticator.
+     */
+    private void startWDStorageAuthenticator() {
+        if (WDStorageAuthenticator.hasRunningInstance()) {
+            alreadyRunningCheck();
+        }
+        if (!ConfigurationEntry.WD_STORAGE_ENABLED.getValueBoolean(this)) {
+            logWarning("Not starting RemoteCommandManager");
+            return;
+        }
+        storageAuthenticator = new WDStorageAuthenticator(this);
+        storageAuthenticator.start();
     }
 
     /**

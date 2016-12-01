@@ -1,20 +1,15 @@
 package de.dal33t.powerfolder.test.encryptedStorage;
 
-import com.sun.corba.se.spi.activation.Repository;
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
-import javax.imageio.spi.ServiceRegistry;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 
@@ -50,7 +45,7 @@ public class EncryptedStorageTest extends ControllerTestCase {
 
         Path localBase = testFolder1.getLocalBase();
 
-        assertTrue(EncryptedFileSystemUtils.isCryptoPathInstance(localBase));
+        assertTrue(EncryptedFileSystemUtils.isCryptoInstance(localBase));
 
         // Create a test.txt file
         try {
@@ -156,7 +151,7 @@ public class EncryptedStorageTest extends ControllerTestCase {
         Path tempLocalBase = testFolder1.getLocalBase();
 
         try {
-            locaBase = EncryptedFileSystemUtils.initCryptoFS(getController(), testFolder1.getLocalBase());
+            locaBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), testFolder1.getLocalBase());
             fail("Must not succeed!");
         } catch (FileAlreadyExistsException e) {
             // Expected.
@@ -166,7 +161,7 @@ public class EncryptedStorageTest extends ControllerTestCase {
 
         repository.removeFolder(testFolder1, false, false);
 
-        locaBase = EncryptedFileSystemUtils.initCryptoFS(getController(), tempLocalBase);
+        locaBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), tempLocalBase);
 
         assertEquals(tempLocalBase.toString(), locaBase.toString());
 
@@ -174,10 +169,10 @@ public class EncryptedStorageTest extends ControllerTestCase {
         PathUtils.recursiveDelete(testPath);
         Files.createDirectories(testPath);
 
-        locaBase = EncryptedFileSystemUtils.initCryptoFS(getController(), testPath);
+        locaBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), testPath);
         assertEquals(testPath.toString(), locaBase.toString());
 
-        locaBase = EncryptedFileSystemUtils.initCryptoFS(getController(), testPath);
+        locaBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), testPath);
         assertEquals(testPath.toString(), locaBase.toString());
 
 

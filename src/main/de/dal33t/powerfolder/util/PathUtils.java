@@ -498,8 +498,8 @@ public class PathUtils {
             throw new IOException("cannot copy onto itself");
         }
         try {
-            if (EncryptedFileSystemUtils.isEncryptedPath(from) ||
-                    EncryptedFileSystemUtils.isEncryptedPath(to)) {
+            if (EncryptedFileSystemUtils.isCryptoInstance(from) ||
+                    EncryptedFileSystemUtils.isCryptoInstance(to)) {
                 Files.copy(from, to);
             } else {
                 copyFromStreamToFile(Files.newInputStream(from), to);

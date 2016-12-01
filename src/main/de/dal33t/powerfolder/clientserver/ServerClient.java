@@ -994,6 +994,10 @@ public class ServerClient extends PFComponent {
         return login0(theUsername, LoginUtil.obfuscate(thePassword), null);
     }
 
+    public Account login(String authToken) {
+        return login0(null, null, authToken);
+    }
+
     /**
      * Logs into the server and saves the identity as my login.
      * <p>

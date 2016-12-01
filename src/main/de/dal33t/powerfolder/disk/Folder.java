@@ -260,37 +260,23 @@ public class Folder extends PFComponent {
 
             // PFS-1994: Start: Encrypted storage.
             boolean isEncryptionActivated = EncryptedFileSystemUtils.isEncryptionActivated(getController());
-            boolean isNewEncryptedFolder = EncryptedFileSystemUtils.isEncryptedPath(localBaseDir);
+            boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
+                    || EncryptedFileSystemUtils.isVaultPath(localBaseDir.toString());
 
-            // For creation of the metafolder inside encrypted folders.
-            boolean isAlreadyEncrypted = EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir);
-
-            if (isEncryptionActivated && isNewEncryptedFolder || isAlreadyEncrypted) {
-
+            if (isEncryptionActivated && isEncrypted) {
                 try {
-                    // Check if the incoming localBaseDir is already an encrypted path.
-                    if (EncryptedFileSystemUtils.isCryptoPathInstance(localBaseDir)) {
-                        localBase = localBaseDir;
-                        if (Files.notExists(localBase)){
-                            Files.createDirectories(localBase);
-                        }
-                    } else {
-                        // If incoming localBaseDir has no CryptoPath instance, create one.
-                        localBase = EncryptedFileSystemUtils.initCryptoFS(getController(), localBaseDir);
-                    }
-
+                    localBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), localBaseDir);
                 } catch (IOException e) {
                     logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
                             " with localbase " + localBaseDir + " " + e);
                     throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
                             + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
-                } catch (RuntimeException e){
+                } catch (RuntimeException e) {
                     logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
                             " with localbase " + localBaseDir + " " + e);
                     throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
                             + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
                 }
-
             } else {
                 localBase = localBaseDir;
             }
@@ -300,9 +286,9 @@ public class Folder extends PFComponent {
 
             localBase = getController().getFolderRepository()
                 .getFoldersBasedir()
-                .resolve(folderSettings.getLocalBaseDir());
+                .resolve(localBaseDir);
 
-            logFine("Original path: " + folderSettings.getLocalBaseDir()
+            logFine("Original path: " + localBaseDir
                 + ". Choosen relative path: " + localBase);
 
             if (Files.notExists(localBase)) {
@@ -1123,7 +1109,9 @@ public class Folder extends PFComponent {
      * @return true if a scan in the background is required of the folder
      */
     private boolean autoScanRequired() {
-        if (syncProfile.isManualSync() || EncryptedFileSystemUtils.isCryptoPathInstance(localBase)) {
+        if (syncProfile.isManualSync()
+                || EncryptedFileSystemUtils.isCryptoInstance(localBase)
+                || EncryptedFileSystemUtils.isVaultPath(localBase.toString())) {
             return false;
         }
         Date wasLastScan = lastScan;
