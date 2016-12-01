@@ -818,13 +818,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      */
     private String getFileID() throws Error {
         if (fileID == null) {
-            String idbase = getFileInfo().getRelativeName();
-            if (getMySelf().isServer()) {
-                idbase += "-";
-                idbase += getMySelf().getId();
-            }
-            fileID = new String(
-                Util.encodeHex(Util.md5(idbase.getBytes(Convert.UTF8))));
+            fileID = new String(Util.encodeHex(Util.md5(getFileInfo()
+                .getRelativeName().getBytes(Convert.UTF8))));
         }
         return fileID;
     }
