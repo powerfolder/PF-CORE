@@ -635,12 +635,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Monitor the default directory for possible new folders.
         // ============
 
-        scanBaseDirFuture = getController().getThreadPool().scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
+        scanBaseDirFuture = getController().getThreadPool()
+            .scheduleAtFixedRate(() -> {
                 scanBasedir();
-            }
-        }, 10L, 10L, TimeUnit.SECONDS);
+            } , 10L, 10L, TimeUnit.SECONDS);
 
         // PFS-1956 -- TODO: remove after release of v14
         boolean is0byteRecoveryRun = getController().getPreferences()
