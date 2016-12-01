@@ -61,6 +61,7 @@ public class PathUtils {
 
     private static final int BYTE_CHUNK_SIZE = 8192;
 
+    public static final String DOWNLOAD_INCOMPLETE_FILE = "(incomplete) ";
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
 

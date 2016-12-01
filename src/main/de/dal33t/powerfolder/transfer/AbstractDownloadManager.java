@@ -229,8 +229,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
         if (tempFile == null) {
             try {
-                tempFile = getMetaDataBaseDir().resolve("(incomplete) "
-                    + getFileID());
+                tempFile = getMetaDataBaseDir()
+                    .resolve(PathUtils.DOWNLOAD_INCOMPLETE_FILE + getFileID());
             } catch (IOException e) {
                 logSevere("IOException", e);
                 return null;
@@ -818,8 +818,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
      */
     private String getFileID() throws Error {
         if (fileID == null) {
-            fileID = new String(Util.encodeHex(Util.md5(getFileInfo()
-                .getRelativeName().getBytes(Convert.UTF8))));
+            String idbase = getFileInfo().getRelativeName();
+            if (getMySelf().isServer()) {
+                idbase += "-";
+                idbase += getMySelf().getId();
+            }
+            fileID = new String(
+                Util.encodeHex(Util.md5(idbase.getBytes(Convert.UTF8))));
         }
         return fileID;
     }
