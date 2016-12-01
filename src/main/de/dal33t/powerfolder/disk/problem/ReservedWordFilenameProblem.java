@@ -51,6 +51,10 @@ public class ReservedWordFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_RESERVED_WORD;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return fileInfo.getFolder(controller.getFolderRepository());
+    }
+
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
@@ -64,13 +68,6 @@ public class ReservedWordFilenameProblem extends ResolvableProblem {
 
     public String getResolutionDescription() {
         return Translation.get("filename_problem.reserved_filename.soln_desc");
-    }
-
-    public void ignore(final Controller controller) {
-        final Folder folder = fileInfo.getFolder(controller.getFolderRepository());
-        if (folder != null) {
-            folder.removeProblem(this);
-        }
     }
 
 }

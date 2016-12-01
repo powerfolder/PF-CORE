@@ -50,6 +50,10 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_DUPLICATE_FILENAME;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return fileInfo.getFolder(controller.getFolderRepository());
+    }
+
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
@@ -63,13 +67,6 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
 
     public String getResolutionDescription() {
        return Translation.get("filename_problem.duplicate.soln_desc");
-    }
-
-    public void ignore(final Controller controller) {
-        final Folder folder = fileInfo.getFolder(controller.getFolderRepository());
-        if (folder != null) {
-            folder.removeProblem(this);
-        }
     }
 
 }

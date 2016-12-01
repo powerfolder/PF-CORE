@@ -51,6 +51,10 @@ public class TooLongFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_FILENAME_TOO_LONG;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return fileInfo.getFolder(controller.getFolderRepository());
+    }
+
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
@@ -64,13 +68,6 @@ public class TooLongFilenameProblem extends ResolvableProblem {
 
     public String getResolutionDescription() {
         return Translation.get("filename_problem.too_long.soln_desc");
-    }
-
-    public void ignore(final Controller controller) {
-        final Folder folder = fileInfo.getFolder(controller.getFolderRepository());
-        if (folder != null) {
-            folder.removeProblem(this);
-        }
     }
 
 }

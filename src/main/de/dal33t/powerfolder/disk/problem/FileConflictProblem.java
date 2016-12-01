@@ -57,6 +57,10 @@ public class FileConflictProblem extends ResolvableProblem {
         return true;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return fInfo.getFolder(controller.getFolderRepository());
+    }
+
     @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
@@ -72,11 +76,4 @@ public class FileConflictProblem extends ResolvableProblem {
         return Translation.get("file_conflict_problem.soln_desc");
     }
 
-    public void ignore(final Controller controller) {
-        final Folder folder = fInfo.getFolder(controller.getFolderRepository());
-        if (folder != null) {
-            folder.removeProblem(this);
-        }
-    }
-    
 }

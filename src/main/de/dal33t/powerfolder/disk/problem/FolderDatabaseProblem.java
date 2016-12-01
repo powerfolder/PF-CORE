@@ -51,6 +51,10 @@ public class FolderDatabaseProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_FOLDER_DATABASE;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return folderInfo.getFolder(controller);
+    }
+
     public String getResolutionDescription() {
         return Translation.get("folder_problem.folderdb.soln_desc");
     }
@@ -109,13 +113,6 @@ public class FolderDatabaseProblem extends ResolvableProblem {
         } else if (!folderInfo.equals(other.folderInfo))
             return false;
         return true;
-    }
-
-    public void ignore(final Controller controller) {
-        final Folder folder = folderInfo.getFolder(controller);
-        if (folder != null) {
-            folder.removeProblem(this);
-        }
     }
 
 }

@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
@@ -37,6 +38,10 @@ public class NoConflictDetectionPossible extends ResolvableProblem {
         this.fileInfo = fileInfo;
         desc = Translation.get("folder_problem.noconflictdetection",
             fileInfo.getRelativeName(), oldSource.nick);
+    }
+
+    public Folder getFolder(final Controller controller) {
+        return null;
     }
 
     @Override
@@ -72,9 +77,6 @@ public class NoConflictDetectionPossible extends ResolvableProblem {
     @Override
     public int hashCode() {
         return 37 + fileInfo.hashCode();
-    }
-
-    public void ignore(final Controller controller) {
     }
 
 }

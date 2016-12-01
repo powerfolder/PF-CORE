@@ -65,6 +65,10 @@ public class NoSpaceOnFileStoreProblem extends ResolvableProblem {
         return true;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return foInfo.getFolder(controller);
+    }
+
     @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
@@ -80,13 +84,6 @@ public class NoSpaceOnFileStoreProblem extends ResolvableProblem {
     @Override
     public String getResolutionDescription() {
         return null;
-    }
-
-    public void ignore(final Controller controller) {
-        final Folder folder = foInfo.getFolder(controller);
-        if (folder != null) {
-            folder.removeProblem(this);
-        }
     }
 
 }

@@ -71,6 +71,10 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_UNSYNCED_FOLDER;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return folderInfo.getFolder(controller);
+    }
+
     public String getResolutionDescription() {
         return Translation
             .get("folder_problem.unsynchronized.soln_desc");
@@ -94,13 +98,6 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
     @Override
     public String toString() {
         return getDescription() + ". lastSyncDate=" + lastSyncDate;
-    }
-
-    public void ignore(final Controller controller) {
-        final Folder folder = folderInfo.getFolder(controller);
-        if (folder != null) {
-            folder.removeProblem(this);
-        }
     }
 
 }

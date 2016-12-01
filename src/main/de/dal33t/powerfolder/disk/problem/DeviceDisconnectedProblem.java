@@ -25,6 +25,11 @@ public class DeviceDisconnectedProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_DEVICE_DISCONNECTED;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return folderInfo.getFolder(controller);
+    }
+
+
     @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
@@ -47,13 +52,6 @@ public class DeviceDisconnectedProblem extends ResolvableProblem {
     public String getResolutionDescription() {
         return Translation
             .get("folder_problem.device_disconnected.remove_folder");
-    }
-
-    public void ignore(final Controller controller) {
-        final Folder folder = folderInfo.getFolder(controller);
-        if (folder != null) {
-            folder.removeProblem(this);
-        }
     }
 
 }
