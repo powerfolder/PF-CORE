@@ -20,9 +20,11 @@
 package de.dal33t.powerfolder.test;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -30,6 +32,7 @@ import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class ControllerTest extends ControllerTestCase {
     private volatile boolean run;
@@ -54,6 +57,7 @@ public class ControllerTest extends ControllerTestCase {
         // GC ---------------
     }
 
+    @SuppressWarnings("serial")
     private static final class MyAction extends BaseAction {
 
         protected MyAction(Controller controller) {
@@ -102,5 +106,53 @@ public class ControllerTest extends ControllerTestCase {
         f.get();
         assertEquals(true, f.isDone());
         assertTrue(run);
+    }
+
+    /**
+     * PFS-2232 / PFC-2941
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public void testManyThreadPoolTasks()
+        throws InterruptedException, ExecutionException
+    {
+        final AtomicBoolean interrupted = new AtomicBoolean();
+        // 1) Schedule tasks and wait for execution
+        int nTasks = 50;
+        int waitMS = 1000;
+        for (int i = 0; i < nTasks; i++) {
+            getController().getThreadPool().schedule(new Runnable() {
+                public void run() {
+                    try {
+                        TestHelper.waitMilliSeconds(waitMS);
+                        System.out.print(".");
+                    } catch (RuntimeException e) {
+                        e.printStackTrace();
+                        interrupted.set(true);
+                    }
+                }
+            }, 0, TimeUnit.MILLISECONDS);
+            TestHelper.waitMilliSeconds(1);
+        }
+        TestHelper.waitMilliSeconds(500);
+
+        // 2) Terminate
+        getController().getThreadPool().shutdown();
+        getController().getThreadPool().awaitTermination(waitMS * 2,
+            TimeUnit.MILLISECONDS);
+        List<Runnable> remainingTasks = getController().getThreadPool()
+            .shutdownNow();
+        TestHelper.waitMilliSeconds(1000);
+
+        // 3) Check empty threadpool
+        // Two tasks may remain:
+        // LimitedConnectivityChecker
+        // Controller#performHousekeeping
+        assertTrue(
+            "Not two tasks remaining. Got " + remainingTasks.size()
+                + " tasks remaining: " + remainingTasks,
+            remainingTasks.size() <= 2);
+        assertFalse(
+            "Tasks were not completed, but cancelled. Threadpool was likely exhausted", interrupted.get());
     }
 }

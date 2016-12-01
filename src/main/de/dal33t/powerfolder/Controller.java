@@ -153,7 +153,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 10;
     private static final int MINOR_VERSION = 6;
-    private static final int REVISION_VERSION = 463;
+    private static final int REVISION_VERSION = 464;
 
     /**
      * Program version.
@@ -398,7 +398,7 @@ public class Controller extends PFComponent {
         threadPool = new WrappedScheduledThreadPoolExecutor(
             Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
                 "Controller-Thread-"));
-
+        
         // PFI-312
         PathUtils.setIOExceptionListener(new ExceptionListener() {
             @Override
