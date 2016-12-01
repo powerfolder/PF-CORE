@@ -58,4 +58,9 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
     public String getResolutionDescription() {
         return Translation.get("folder_problem.read_only_folder_reverted.resolution_description");
     }
+
+    public void ignore(final Controller controller) {
+        folder.removeProblem(FolderReadOnlyProblem.this);
+    }
+
 }

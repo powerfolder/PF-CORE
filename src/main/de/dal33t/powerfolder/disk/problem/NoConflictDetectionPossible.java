@@ -73,4 +73,8 @@ public class NoConflictDetectionPossible extends ResolvableProblem {
     public int hashCode() {
         return 37 + fileInfo.hashCode();
     }
+
+    public void ignore(final Controller controller) {
+    }
+
 }

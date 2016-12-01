@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
@@ -64,6 +65,13 @@ public class IllegalMacosxCharsFilenameProblem extends ResolvableProblem {
 
     public String getResolutionDescription() {
         return Translation.get("filename_problem.not_recommended_chars.soln_desc");
+    }
+
+    public void ignore(final Controller controller) {
+        final Folder folder = fileInfo.getFolder(controller.getFolderRepository());
+        if (folder != null) {
+            folder.removeProblem(this);
+        }
     }
 
 }

@@ -71,4 +71,12 @@ public class FileConflictProblem extends ResolvableProblem {
     public String getResolutionDescription() {
         return Translation.get("file_conflict_problem.soln_desc");
     }
+
+    public void ignore(final Controller controller) {
+        final Folder folder = fInfo.getFolder(controller.getFolderRepository());
+        if (folder != null) {
+            folder.removeProblem(this);
+        }
+    }
+    
 }

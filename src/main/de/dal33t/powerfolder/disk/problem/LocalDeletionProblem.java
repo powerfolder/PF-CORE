@@ -95,4 +95,12 @@ public class LocalDeletionProblem extends ResolvableProblem {
     public int hashCode() {
         return fileInfo.hashCode();
     }
+
+    public void ignore(final Controller controller) {
+        final Folder folder = folderInfo.getFolder(controller);
+        if (folder != null) {
+            folder.removeProblem(this);
+        }
+    }
+
 }

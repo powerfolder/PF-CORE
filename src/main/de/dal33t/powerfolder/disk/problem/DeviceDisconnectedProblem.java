@@ -49,4 +49,11 @@ public class DeviceDisconnectedProblem extends ResolvableProblem {
             .get("folder_problem.device_disconnected.remove_folder");
     }
 
+    public void ignore(final Controller controller) {
+        final Folder folder = folderInfo.getFolder(controller);
+        if (folder != null) {
+            folder.removeProblem(this);
+        }
+    }
+
 }

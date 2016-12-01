@@ -29,4 +29,7 @@ public abstract class ResolvableProblem extends Problem {
     public abstract Runnable resolution(Controller controller);
 
     public abstract String getResolutionDescription();
+
+    public abstract void ignore(final Controller controller);
+
 }

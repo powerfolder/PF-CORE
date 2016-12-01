@@ -110,4 +110,12 @@ public class FolderDatabaseProblem extends ResolvableProblem {
             return false;
         return true;
     }
+
+    public void ignore(final Controller controller) {
+        final Folder folder = folderInfo.getFolder(controller);
+        if (folder != null) {
+            folder.removeProblem(this);
+        }
+    }
+
 }
