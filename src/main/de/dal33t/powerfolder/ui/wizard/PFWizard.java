@@ -33,8 +33,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.swing.JDialog;
 
+import de.dal33t.powerfolder.util.os.OSUtil;
 import jwf.Wizard;
 import jwf.WizardContext;
 import jwf.WizardListener;
@@ -335,6 +339,16 @@ public class PFWizard extends PFUIComponent {
         {
             dialog.setVisible(false);
         } else {
+            // For OS X, force the application to be shown
+            if (OSUtil.isMacOS()) {
+                ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+                ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("AppleScript");
+                try {
+                    scriptEngine.eval("tell me to activate");
+                } catch (ScriptException e) {
+                    // Do nothing
+                }
+            }
             dialog.setVisible(true);
         }
     }
