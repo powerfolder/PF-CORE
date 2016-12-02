@@ -212,7 +212,7 @@ public class Controller extends PFComponent {
      * Listener for authentication requests on WD NAS storages.
      */
 
-    private WDStorageAuthenticator storageAuthenticator;
+    private WebClientLogin storageAuthenticator;
 
     /** Holds the User interface */
     private UIController uiController;
@@ -1323,15 +1323,14 @@ public class Controller extends PFComponent {
      * Starts the WD storage authenticator.
      */
     private void startWDStorageAuthenticator() {
-        if (WDStorageAuthenticator.hasRunningInstance()) {
+        if (WebClientLogin.hasRunningInstance()) {
             alreadyRunningCheck();
         }
-        if (!ConfigurationEntry.WD_STORAGE_ENABLED.getValueBoolean(this)) {
-            logWarning("Not starting RemoteCommandManager");
-            return;
+        if (ConfigurationEntry.WEB_CLIENT_PORT.hasNonBlankValue(this)
+                && ConfigurationEntry.WEB_CLIENT_PORT.getValueInt(this) > 0) {
+            storageAuthenticator = new WebClientLogin(this);
+            storageAuthenticator.start();
         }
-        storageAuthenticator = new WDStorageAuthenticator(this);
-        storageAuthenticator.start();
     }
 
     /**

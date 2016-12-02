@@ -1158,13 +1158,10 @@ public enum ConfigurationEntry {
     ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", null),
 
     /**
-     * PFS-2871: En-/Disable client authentication for WD NAS storage.
+     * PFS-2871: Port for client authentication over web requests.
      */
 
-    WD_STORAGE_WEB_PORT("wd_storage.port", 8085),
-
-    WD_STORAGE_ENABLED("wd_storage.enabled", false);
-
+    WEB_CLIENT_PORT("web.client.port", 0);
 
     // Methods/Constructors ***************************************************
 

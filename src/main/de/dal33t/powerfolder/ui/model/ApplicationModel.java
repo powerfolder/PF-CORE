@@ -584,7 +584,9 @@ public class ApplicationModel extends PFUIComponent {
                 if (!StringUtils.isBlank(client.getUsername())) {
                     getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(new SimpleNotificationNotice(Translation.get("main_frame.log_in_failed.text"), Translation.get("exp.uilock.dialog.error.wronglogin")));
                 }
-                PFWizard.openLoginWizard(getController(), client);
+                if (!client.isLoggedIn()) {
+                    PFWizard.openLoginWizard(getController(), client);
+                }
             }
         }
 

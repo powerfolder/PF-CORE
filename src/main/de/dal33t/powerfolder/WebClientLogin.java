@@ -1,58 +1,52 @@
 package de.dal33t.powerfolder;
 
 
-import com.sun.java.browser.dom.DOMUnsupportedException;
-import de.dal33t.powerfolder.clientserver.SecurityService;
+import de.dal33t.powerfolder.ui.model.ApplicationModel;
 
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.io.*;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.sun.java.browser.dom.DOMService.getService;
-
 /**
- * PFS-2871: Client authentication for WD NAS storage.
+ * PFS-2871: Client authentication with web requests.
+ * @author <a href="mailto:wiegmann@powerfolder.com>Jan Wiegmann</a>
  */
 
-public class WDStorageAuthenticator extends PFComponent implements Runnable {
+public class WebClientLogin extends PFComponent implements Runnable {
 
     private ServerSocket serverSocket;
     private Thread myThread;
 
     private static final Logger log = Logger
-            .getLogger(WDStorageAuthenticator.class.getName());
+            .getLogger(WebClientLogin.class.getName());
 
-    public WDStorageAuthenticator(Controller controller) {
+    public WebClientLogin(Controller controller) {
         super(controller);
     }
 
     public void start() {
-        Integer port = ConfigurationEntry.WD_STORAGE_WEB_PORT
+        Integer port = ConfigurationEntry.WEB_CLIENT_PORT
                 .getValueInt(getController());
         try {
             // Only bind to localhost
-            serverSocket = new ServerSocket(port, 0,
-                    InetAddress.getByName("10.0.4.122"));
+            serverSocket = new ServerSocket(port);
 
             // Start thread
-            myThread = new Thread(this, "WD Storage Authenticator");
+            myThread = new Thread(this, "Web Client Login");
             myThread.start();
+            logInfo("");
         } catch (UnknownHostException e) {
-            log.warning("Unable to open WD Storage Authenticator on port " + port
+            log.warning("Unable to open Web Client Login on port " + port
                     + ": " + e);
             log.log(Level.FINER, "UnknownHostException", e);
         } catch (IOException e) {
-            log.warning("Unable to open WD Storage Authenticator on port " + port
+            log.warning("Unable to open Web Client Login on port " + port
                     + ": " + e);
             log.log(Level.FINER, "IOException", e);
         }
+
     }
 
     public void run() {
@@ -66,24 +60,22 @@ public class WDStorageAuthenticator extends PFComponent implements Runnable {
                 log.log(Level.FINER, "Socket closed, stopping", e);
                 break;
             }
-
-            log.finer("Authentication request from " + socket);
+            log.info("Authentication request from " + socket);
             try {
-                String address = socket.getInetAddress().getHostAddress();
-                if (address.equals("10.0.4.122")) {
                     BufferedReader reader = new BufferedReader(
                             new InputStreamReader(socket.getInputStream(), "UTF-8"));
                     String line = reader.readLine();
                     if (line == null) {
                         logFine("Did not receive valid authentication request");
                     } else if (line.startsWith("GET")) {
-                        if (line.contains("wdToken")) {
-                            authenticateUser(line);
+                        if (line.contains("/login")) {
+                            sendAuthenticationRequest(socket.getOutputStream());
+                            break;
+                        } else if (line.contains(Constants.LOGIN_PARAM_OR_HEADER_TOKEN)){
+                            consumeToken(line);
                             break;
                         }
                     }
-                }
-
             } catch (Exception e) {
                 logWarning("Problems parsing authentication request from " + socket + ". " + e);
                 logFiner(e);
@@ -100,16 +92,40 @@ public class WDStorageAuthenticator extends PFComponent implements Runnable {
         }
     }
 
-    private void authenticateUser(String line) {
+    private void sendAuthenticationRequest(OutputStream os){
 
-        String tokenSecret = line.substring(line.indexOf("wdToken=") + 8, line.lastIndexOf(" "));
+        String locationURL;
+        try {
+            locationURL = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            locationURL = ConfigurationEntry.HOSTNAME.getValue(getController());
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("Location: ");
+        stringBuilder.append(ConfigurationEntry.CONFIG_URL.getValue(getController()));
+        stringBuilder.append("/login?autoLogin=1&originalURI=");
+        stringBuilder.append("http://");
+        stringBuilder.append(locationURL);
+        stringBuilder.append(":");
+        stringBuilder.append(ConfigurationEntry.WEB_CLIENT_PORT.getValue(getController()));
+
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
+        pw.println("HTTP/1.1 301 Moved Permanently");
+        pw.println(stringBuilder.toString());
+        pw.println("Connection: close");
+        pw.println("");
+    }
+
+    private void consumeToken(String line) {
+        String tokenSecret = line.substring(line.indexOf(Constants.LOGIN_PARAM_OR_HEADER_TOKEN) + 8, line.lastIndexOf(" "));
         getController().getOSClient().login(tokenSecret);
-
     }
 
     public static boolean hasRunningInstance() {
         return hasRunningInstance(Integer
-                .valueOf(ConfigurationEntry.WD_STORAGE_WEB_PORT.getDefaultValue()));
+                .valueOf(ConfigurationEntry.WEB_CLIENT_PORT.getDefaultValue()));
     }
 
     public static boolean hasRunningInstance(int port) {

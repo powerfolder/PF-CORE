@@ -1127,7 +1127,6 @@ public class ServerClient extends PFComponent {
                     + newAccountDetails);
                 if (newAccountDetails != null) {
                     accountDetails = newAccountDetails;
-
                     if (updateConfig) {
                         boolean configChanged;
                         if (accountDetails.getAccount().getServer() != null) {
