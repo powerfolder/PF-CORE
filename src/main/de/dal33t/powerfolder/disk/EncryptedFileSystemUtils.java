@@ -39,20 +39,27 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * Helper class for working with the encrypted FileSystem from Cryptomator.
+ * @author <a href="mailto:wiegmann@powerfolder.com>Jan Wiegmann</a>
  */
 
 public class EncryptedFileSystemUtils {
 
+    /**
+     * Checks if an existing CryptoFileSystem exists for the given path, if not create a new one.
+     * @param controller
+     * @param incDir must (!) be an UnixPath!
+     * @return root directory of an CryptoFileSystem as CryptoPath.
+     * @throws IOException
+     */
+
     public static Path getEncryptedFileSystem(Controller controller, Path incDir) throws IOException {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(incDir, "Path");
-        if (incDir.getFileSystem().provider() instanceof CryptoFileSystemProvider){
+        if (isCryptoInstance(incDir)){
             return incDir;
         } else {
             try {
-                URI encFolderUri = CryptoFileSystemUris.createUri(incDir, "/encDir");
-                incDir = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
-                return incDir;
+                return getCryptoPath(incDir);
             } catch (FileSystemNotFoundException e) {
                 FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
                 Path encDir = cryptoFS.getPath("/encDir");
@@ -64,18 +71,42 @@ public class EncryptedFileSystemUtils {
         }
     }
 
+    /**
+     * Checks if storage encryption is activated on this server.
+     * @param controller
+     * @return true if storage encryption is activated.
+     */
+
     public static boolean isEncryptionActivated(Controller controller){
         Reject.ifNull(controller, "controller");
         return ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(controller);
     }
 
-    public static boolean isVaultPath(String path){
+    /**
+     * Checks if the given UnixPath is a path to an encrypted folder.
+     * @param path must (!) be an UnixPath!
+     * @return true if the path contains the keyword ".crypto".
+     */
+
+    public static boolean isPhysicalStorageLocation(String path){
         return path.contains(Constants.FOLDER_ENCRYPTION_SUFFIX);
     }
+
+    /**
+     * Checks if the given path is an CryptoPath.
+     * @param path must (!) be an CryptoPath!
+     * @return true if the given path has an CryptoFileSystemProvider.
+     */
 
     public static boolean isCryptoInstance(Path path){
         return path.getFileSystem().provider() instanceof CryptoFileSystemProvider;
     }
+
+    /**
+     * Get the physical storage location of an CryptoFileSystem over the given CryptoPath.
+     * @param path must (!) be an CryptoPath!
+     * @return path leading to the physical data from the CryptoFileSystem.
+     */
 
     public static Path getPhysicalStorageLocation(Path path) {
         CryptoFileSystem fs = (CryptoFileSystem) path.getFileSystem();
@@ -87,23 +118,41 @@ public class EncryptedFileSystemUtils {
     }
 
     /**
-     * This method returns a CryptoPath to a given String, if a CryptoPath instance exists for this String.
+     * This method returns a CryptoPath to a given String, if a CryptoPath exists for this String.
      * IMPORTANT: The given String MUST be an absolute path to the vault of an CryptoFileSystem!
+     * E.g. /home/example/PowerFolders/exampleUser/example.crypto.
      * @param pathToVault
-     * @return CryptoPath for the given String, if an active CryptoPath instance for this String is available.
+     * @return CryptoPath for the given String, if an CryptoPath for this String exists.
      */
 
     public static Path getCryptoPath(String pathToVault) {
         Reject.ifNull(pathToVault, "Path");
         Path cryptoPath = Paths.get(pathToVault);
         try {
-            URI encFolderUri = CryptoFileSystemUris.createUri(cryptoPath, "/encDir");
-            cryptoPath = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
+            cryptoPath = getCryptoPath(cryptoPath);
         } catch (FileSystemNotFoundException e){
             // This could happen.
         }
         return cryptoPath;
     }
+
+    /**
+     * Returns a CryptoPath to the given UnixPath, if an CryptoPath exists.
+     * @param path must (!) be an UnixPath!
+     * @return CryptoPath
+     */
+
+    public static Path getCryptoPath(Path path) {
+        Reject.ifNull(path, "Path");
+        URI encFolderUri = CryptoFileSystemUris.createUri(path, "/encDir");
+        path = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
+        return path;
+    }
+
+    /**
+     * Sets the passphrase to encrypt the masterkeys from encrypted folders on this server.
+     * @param controller
+     */
 
     public static void setEncryptionPassphrase(Controller controller){
         Reject.ifNull(controller, "Controller");
@@ -113,6 +162,14 @@ public class EncryptedFileSystemUtils {
             controller.saveConfig();
         }
     }
+
+    /**
+     * Checks if the Java Cryptography Extension (JCE) is installed on this host.
+     * JCE is mandatory to support AES 256-bit encryption.
+     * @return true if a key length with 256-bit is possible.
+     * @throws NoSuchPaddingException
+     * @throws NoSuchAlgorithmException
+     */
 
     public static boolean checkJCEinstalled() throws NoSuchPaddingException, NoSuchAlgorithmException {
         int keyLength = Cipher.getInstance("AES/CBC/PKCS5Padding").getMaxAllowedKeyLength("AES");

@@ -168,7 +168,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String[] parts = list.split("\\$");
         for (String s : parts) {
             try {
-                if (!EncryptedFileSystemUtils.isVaultPath(s)) {
+                if (!EncryptedFileSystemUtils.isPhysicalStorageLocation(s)) {
                     Path p = Paths.get(s);
                     removedFolderDirectories.add(p);
                 }
@@ -1314,7 +1314,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Remember that we have removed this folder.
             if (!EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())
-                    || EncryptedFileSystemUtils.isVaultPath(folder.getLocalBase().toString())) {
+                    || EncryptedFileSystemUtils.isPhysicalStorageLocation(folder.getLocalBase().toString())) {
                 addToRemovedFolderDirectories(folder);
             }
 
@@ -2523,7 +2523,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // PFS-1994: If old directory is encrypted, new directory must also be encrypted.
             if (EncryptedFileSystemUtils.isCryptoInstance(originalDirectory)
-                    || EncryptedFileSystemUtils.isVaultPath(originalDirectory.toString())) {
+                    || EncryptedFileSystemUtils.isPhysicalStorageLocation(originalDirectory.toString())) {
                 newDirectory = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), newDirectory);
             }
 

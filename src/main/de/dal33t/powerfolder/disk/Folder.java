@@ -261,7 +261,7 @@ public class Folder extends PFComponent {
             // PFS-1994: Start: Encrypted storage.
             boolean isEncryptionActivated = EncryptedFileSystemUtils.isEncryptionActivated(getController());
             boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
-                    || EncryptedFileSystemUtils.isVaultPath(localBaseDir.toString());
+                    || EncryptedFileSystemUtils.isPhysicalStorageLocation(localBaseDir.toString());
 
             if (isEncryptionActivated && isEncrypted) {
                 try {
@@ -1111,7 +1111,7 @@ public class Folder extends PFComponent {
     private boolean autoScanRequired() {
         if (syncProfile.isManualSync()
                 || EncryptedFileSystemUtils.isCryptoInstance(localBase)
-                || EncryptedFileSystemUtils.isVaultPath(localBase.toString())) {
+                || EncryptedFileSystemUtils.isPhysicalStorageLocation(localBase.toString())) {
             return false;
         }
         Date wasLastScan = lastScan;

@@ -19,11 +19,11 @@
  */
 package de.dal33t.powerfolder;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * Base class for all classes, which use the Controller (most classes in
