@@ -1982,18 +1982,30 @@ public class FolderRepository extends PFComponent implements Runnable {
             SyncProfile.getDefault(getController()),
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(getController()));
-        Folder folder = createFolder0(foInfo, fs, true);
-        folder.addDefaultExcludes();
-
-        if (client.isBackupByDefault()) {
-            if (client.isConnected() && client.isLoggedIn()) {
-                boolean joined = client.joinedByCloud(folder);
-                if (!joined) {
-                    new CreateFolderOnServerTask(client.getAccountInfo(), foInfo,
-                        null).scheduleTask(getController());
+       
+        // 1) Create at cloud service
+        if (client.isBackupByDefault() && !client.joinedByCloud(foInfo)) {
+            // Make sure it is backed up by the server.
+            try {
+                // Do it synchronous. Otherwise we might get race conditions.
+                getController().getOSClient().getFolderService()
+                    .createFolder(foInfo, null);
+                if (fs != null) {
+                    getController().getOSClient().getFolderService()
+                        .setArchiveMode(foInfo, fs.getVersions());
                 }
+            } catch (Exception e) {
+                logFine("Scheduling setup of folder: " + foInfo.getName());
+                CreateFolderOnServerTask task = new CreateFolderOnServerTask(
+                    client.getAccountInfo(), foInfo, null);
+                task.setArchiveVersions(fs.getVersions());
+                getController().getTaskManager().scheduleTask(task);
             }
         }
+        
+        // 2) Sync locally
+        Folder folder = createFolder0(foInfo, fs, true);
+        folder.addDefaultExcludes();
 
         logInfo("Auto-setup " + (createdNew ? "new" : "existing") + " folder: "
             + folder.getName() + "/" + folder.getId() + " @ "
@@ -2640,9 +2652,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                         + ". Created new: " + foInfo);
                 }
 
-                Folder folder = createFolder0(foInfo, settings, true);
-                folder.addDefaultExcludes();
-
                 // Make sure it is backed up by the server.
                 try {
                     // Do it synchronous. Otherwise we might get race conditions.
@@ -2659,6 +2668,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     task.setArchiveVersions(settings.getVersions());
                     getController().getTaskManager().scheduleTask(task);
                 }
+                
+                Folder folder = createFolder0(foInfo, settings, true);
+                folder.addDefaultExcludes();
 
                 // Remove from pending entries.
                 it.remove();
