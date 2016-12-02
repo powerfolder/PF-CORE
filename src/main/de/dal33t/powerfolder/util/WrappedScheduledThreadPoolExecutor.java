@@ -69,7 +69,9 @@ public class WrappedScheduledThreadPoolExecutor
             super.execute(command);
             return;
         }
-        LOG.warning("Decorating exec: " + command);
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, "Decorating exec: " + command);            
+        }
         super.execute(new ScheduledRunnable(command));
     }
 
