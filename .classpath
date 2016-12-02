@@ -48,13 +48,14 @@
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/commons-lang3-3.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/dagger-2.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/gson-2.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/guava-19.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/javax.inject-1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/siv-mode-1.0.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/commons-codec-1.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/cryptofs-0.1.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/cryptolib-1.0.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/dagger-producers-2.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/cryptofs-0.1.7.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/cryptolib-1.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/guava-20.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/siv-mode-1.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptomator/slf4j-api-1.7.21.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
