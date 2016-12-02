@@ -87,7 +87,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 2;
-    private static final int REVISION_VERSION = 265;
+    private static final int REVISION_VERSION = 269;
 
     /**
      * Program version.
@@ -890,7 +890,7 @@ public class Controller extends PFComponent {
         started = false;
         shuttingDown = false;
         threadPool = new WrappedScheduledThreadPoolExecutor(
-            Constants.CONTROLLER_THREADS_IN_THREADPOOL, new NamedThreadFactory(
+            Constants.CONTROLLER_MIN_THREADS_IN_THREADPOOL, new NamedThreadFactory(
                 "Controller-Thread-"));
 
         // PFI-312
@@ -1001,8 +1001,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Use to schedule a lightweight short running task that gets repeated
-     * periodically.
+     * Schedules a task to be executed periodically repeated without initial
+     * delay. Until removed. ATTENTION: Tasks may be executed concurrently if
+     * long running - especially longer than the period time. Take proper action
+     * if you need to avoid concurrent runs, e.g. with AtomicBoolean.
      *
      * @param task
      *            the task to schedule
@@ -1018,8 +1020,10 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Use to schedule a lightweight short running task that gets repeated
-     * periodically.
+     * Schedules a task to be executed periodically repeated with initial
+     * delay. Until removed. ATTENTION: Tasks may be executed concurrently if
+     * long running - especially longer than the period time. Take proper action
+     * if you need to avoid concurrent runs, e.g. with AtomicBoolean.
      *
      * @param task
      *            the task to schedule
@@ -1040,7 +1044,7 @@ public class Controller extends PFComponent {
     }
 
     /**
-     * Use to schedule a lightweight short running task.
+     * Use to schedule a task to be executed ONCE after the initial delay.
      *
      * @param task
      *            the task to schedule
@@ -1128,13 +1132,10 @@ public class Controller extends PFComponent {
         }, secondsToMidnight, 60 * 60 * 24, TimeUnit.SECONDS);
 
         // Also run housekeeping one minute after start up.
-        threadPool.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                performHousekeeping(false);
-            }
-        }, 1, TimeUnit.MINUTES);
-
+        threadPool.schedule(() -> {
+            performHousekeeping(false);
+        } , 1, TimeUnit.MINUTES);
+        
         // ============
         // Do profiling
         // ============

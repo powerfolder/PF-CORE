@@ -229,8 +229,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         }
         if (tempFile == null) {
             try {
-                tempFile = getMetaDataBaseDir().resolve("(incomplete) "
-                    + getFileID());
+                tempFile = getMetaDataBaseDir()
+                    .resolve(PathUtils.DOWNLOAD_INCOMPLETE_FILE + getFileID());
             } catch (IOException e) {
                 logSevere("IOException", e);
                 return null;

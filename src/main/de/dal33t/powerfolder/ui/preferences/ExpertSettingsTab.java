@@ -342,12 +342,10 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         if (folderAutoSetupCB.isSelected()
             && getController().getOSClient().isLoggedIn())
         {
-            getController().schedule(new Runnable() {
-                public void run() {
-                    getController().getFolderRepository().updateFolders(
-                        getController().getOSClient().getAccount());
-                }
-            }, 0);
+            getController().schedule(() -> {
+                getController().getFolderRepository()
+                    .updateFolders(getController().getOSClient().getAccount());
+            } , 0);
         }
 
         boolean originalLookForFolders = ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES

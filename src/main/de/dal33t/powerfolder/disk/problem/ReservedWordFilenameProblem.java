@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
@@ -48,6 +49,10 @@ public class ReservedWordFilenameProblem extends ResolvableProblem {
 
     public String getWikiLinkKey() {
         return WikiLinks.PROBLEM_RESERVED_WORD;
+    }
+
+    public Folder getFolder(final Controller controller) {
+        return fileInfo.getFolder(controller.getFolderRepository());
     }
 
     public Runnable resolution(final Controller controller) {

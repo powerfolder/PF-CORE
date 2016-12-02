@@ -212,18 +212,16 @@ public class DirectoryFilter extends FilterModel {
     private void fireFilterEvent() {
         logFine("Firing filter even for folder " + folder);
         running.set(true);
-        getController().getThreadPool().submit(new Runnable() {
-            public void run() {
-                while (true) {
-                    doFilter();
-                    if (!pending.get()) {
-                        break;
-                    }
-                    pending.set(false);
-                    // Things changed during filter run. Go again.
+        getController().getThreadPool().execute(() -> {
+            while (true) {
+                doFilter();
+                if (!pending.get()) {
+                    break;
                 }
-                running.set(false);
+                pending.set(false);
+                // Things changed during filter run. Go again.
             }
+            running.set(false);
         });
 
     }

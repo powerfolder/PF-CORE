@@ -106,9 +106,9 @@ public class Constants {
     public static final int UPDATE_CHECK_PERIOD_MINUTES = 60;
 
     /**
-     * Threads in threadpool of {@link Controller}
+     * Minimum threads in threadpool of {@link Controller}
      */
-    public static final int CONTROLLER_THREADS_IN_THREADPOOL = 5;
+    public static final int CONTROLLER_MIN_THREADS_IN_THREADPOOL = 3;
 
     /**
      * The number of pixels to stay away from the screen border by default.

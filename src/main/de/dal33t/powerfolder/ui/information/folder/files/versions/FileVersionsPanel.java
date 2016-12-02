@@ -234,74 +234,69 @@ public class FileVersionsPanel extends PFUIComponent {
             return;
         }
         // Run this outside of EDT, in case it runs slow.
-        getController().getThreadPool().execute(new Runnable() {
-            public void run() {
-                // Loading...
-                setState(STATE_LOADING);
-                try {
-                    FileArchiver fileArchiver = folder.getFileArchiver();
+        getController().getThreadPool().execute(() -> {
+            // Loading...
+            setState(STATE_LOADING);
+            try {
+                FileArchiver fileArchiver = folder.getFileArchiver();
 
-                    // Get local versions.
-                    List<FileInfoVersionTypeHolder> consolidatedFileInfos = new ArrayList<FileInfoVersionTypeHolder>();
-                    for (FileInfo consolidatedFileInfo : fileArchiver
-                        .getArchivedFilesInfos(fileInfo))
+                // Get local versions.
+                List<FileInfoVersionTypeHolder> consolidatedFileInfos = new ArrayList<FileInfoVersionTypeHolder>();
+                for (FileInfo consolidatedFileInfo : fileArchiver
+                    .getArchivedFilesInfos(fileInfo))
+                {
+                    consolidatedFileInfos.add(new FileInfoVersionTypeHolder(
+                        consolidatedFileInfo, false));
+                }
+                logFine("Local versions " + consolidatedFileInfos.size());
+
+                // Also try getting versions from OnlineStorage.
+                boolean online = folder
+                    .hasMember(getController().getOSClient().getServer());
+                if (online) {
+                    ServerClient client = getController().getOSClient();
+                    if (client != null && client.isConnected()
+                        && client.isLoggedIn())
                     {
-                        consolidatedFileInfos
-                            .add(new FileInfoVersionTypeHolder(
-                                consolidatedFileInfo, false));
-                    }
-                    logFine("Local versions " + consolidatedFileInfos.size());
+                        FolderService service = client.getFolderService();
+                        if (service != null) {
+                            List<FileInfo> infoList = service
+                                .getArchivedFilesInfos(fileInfo);
+                            logFine("Online versions " + infoList.size());
+                            for (FileInfo info : infoList) {
 
-                    // Also try getting versions from OnlineStorage.
-                    boolean online = folder.hasMember(getController()
-                        .getOSClient().getServer());
-                    if (online) {
-                        ServerClient client = getController().getOSClient();
-                        if (client != null && client.isConnected()
-                            && client.isLoggedIn())
-                        {
-                            FolderService service = client.getFolderService();
-                            if (service != null) {
-                                List<FileInfo> infoList = service
-                                    .getArchivedFilesInfos(fileInfo);
-                                logFine("Online versions " + infoList.size());
-                                for (FileInfo info : infoList) {
-
-                                    boolean gotIt = false;
-                                    for (FileInfoVersionTypeHolder consolidatedFileInfo : consolidatedFileInfos)
+                                boolean gotIt = false;
+                                for (FileInfoVersionTypeHolder consolidatedFileInfo : consolidatedFileInfos) {
+                                    if (info.isVersionDateAndSizeIdentical(
+                                        consolidatedFileInfo.getFileInfo()))
                                     {
-                                        if (info
-                                            .isVersionDateAndSizeIdentical(consolidatedFileInfo
-                                                .getFileInfo()))
-                                        {
-                                            gotIt = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!gotIt) {
-                                        consolidatedFileInfos
-                                            .add(new FileInfoVersionTypeHolder(
-                                                info, true));
+                                        gotIt = true;
+                                        break;
                                     }
                                 }
-
-                                logFine("Consolidated versions "
-                                    + consolidatedFileInfos.size());
+                                if (!gotIt) {
+                                    consolidatedFileInfos
+                                        .add(new FileInfoVersionTypeHolder(info,
+                                            true));
+                                }
                             }
+
+                            logFine("Consolidated versions "
+                                + consolidatedFileInfos.size());
                         }
                     }
-                    if (consolidatedFileInfos.isEmpty()) {
-                        setState(STATE_EMPTY);
-                    } else {
-                        setState(STATE_RESULTS);
-                        fileVersionsTableModel
-                            .setVersionInfos(consolidatedFileInfos);
-                    }
-                } catch (Exception e) {
-                    // Huh?
-                    logWarning("Unabel to retrieve file versions for "
-                        + fileInfo.toDetailString() + "." + e);
                 }
+                if (consolidatedFileInfos.isEmpty()) {
+                    setState(STATE_EMPTY);
+                } else {
+                    setState(STATE_RESULTS);
+                    fileVersionsTableModel
+                        .setVersionInfos(consolidatedFileInfos);
+                }
+            } catch (Exception e) {
+                // Huh?
+                logWarning("Unabel to retrieve file versions for "
+                    + fileInfo.toDetailString() + "." + e);
             }
         });
     }

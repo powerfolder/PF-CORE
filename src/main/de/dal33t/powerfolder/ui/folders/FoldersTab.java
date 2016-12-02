@@ -94,17 +94,14 @@ public class FoldersTab extends PFUIComponent {
         newFolderActionLabel.setVisible(false);
         client = getApplicationModel().getServerClientModel().getClient();
 
-        controller.getThreadPool().scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateEmptyLabel();
-                    }
-                });
-            }
-        }, 0, 30, TimeUnit.SECONDS);
+        controller.getThreadPool().scheduleAtFixedRate(() -> {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateEmptyLabel();
+                }
+            });
+        } , 0, 30, TimeUnit.SECONDS);
     }
 
     public FoldersList getFoldersList() {

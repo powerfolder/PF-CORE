@@ -18,6 +18,7 @@
 package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -64,6 +65,10 @@ public class NoSpaceOnFileStoreProblem extends ResolvableProblem {
         return true;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return foInfo.getFolder(controller);
+    }
+
     @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
@@ -80,4 +85,5 @@ public class NoSpaceOnFileStoreProblem extends ResolvableProblem {
     public String getResolutionDescription() {
         return null;
     }
+
 }

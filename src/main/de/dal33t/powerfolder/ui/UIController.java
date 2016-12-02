@@ -404,12 +404,9 @@ public class UIController extends PFComponent {
         final boolean silent = getController().isPaused();
         if (silent) {
             // Resuming - nothing to ask.
-            getController().schedule(new Runnable() {
-                @Override
-                public void run() {
-                    getController().setPaused(!silent);
-                }
-            }, 0);
+            getController().schedule(() -> {
+                getController().setPaused(!silent);
+            } , 0);
         } else {
             if (PreferencesEntry.SHOW_ASK_FOR_PAUSE
                 .getValueBoolean(getController()))
@@ -417,12 +414,9 @@ public class UIController extends PFComponent {
                 PauseDialog pd = new PauseDialog(getController());
                 pd.open();
             } else {
-                getController().schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        getController().setPaused(!silent);
-                    }
-                }, 0);
+                getController().schedule(() -> {
+                    getController().setPaused(!silent);
+                } , 0);
             }
         }
 

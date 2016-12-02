@@ -51,6 +51,10 @@ public class FolderDatabaseProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_FOLDER_DATABASE;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return folderInfo.getFolder(controller);
+    }
+
     public String getResolutionDescription() {
         return Translation.get("folder_problem.folderdb.soln_desc");
     }
@@ -110,4 +114,5 @@ public class FolderDatabaseProblem extends ResolvableProblem {
             return false;
         return true;
     }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2016 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -19,87 +19,135 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RunnableScheduledFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * A {@link ScheduledThreadPoolExecutor} that wraps all {@link Runnable}s and
- * {@link Callable}s to log their exceptions and errors
+ * A {@link ScheduledThreadPoolExecutor} that wraps all {@link Runnable}s to log their exceptions and errors. Also delegates all
+ * actual execution into an unlimited threadpool. Periodically scheduled task may run concurrently!
  *
  * @author sprajc
  */
-public class WrappedScheduledThreadPoolExecutor extends
-    ScheduledThreadPoolExecutor
+public class WrappedScheduledThreadPoolExecutor
+    extends ScheduledThreadPoolExecutor
 {
-    public WrappedScheduledThreadPoolExecutor(int corePoolSize) {
-        super(corePoolSize);
-    }
+    private static final Logger LOG = Logger
+        .getLogger(WrappedScheduledThreadPoolExecutor.class.getName());
+
+    /**
+     * The threadpool actually executing the scheduled tasks.
+     */
+    private WrapperExecutorService wrappingThreadPool;
+    private ThreadPoolExecutor executingThreadPool;
 
     public WrappedScheduledThreadPoolExecutor(int corePoolSize,
         ThreadFactory threadFactory)
     {
         super(corePoolSize, threadFactory);
-    }
-
-    public WrappedScheduledThreadPoolExecutor(int corePoolSize,
-        RejectedExecutionHandler handler)
-    {
-        super(corePoolSize, handler);
-    }
-
-    public WrappedScheduledThreadPoolExecutor(int corePoolSize,
-        ThreadFactory threadFactory, RejectedExecutionHandler handler)
-    {
-        super(corePoolSize, threadFactory, handler);
+        executingThreadPool = (ThreadPoolExecutor) Executors
+            .newCachedThreadPool(threadFactory);
+        wrappingThreadPool = new WrapperExecutorService(executingThreadPool);
     }
 
     // Overriding ************************************************************
 
-    // Not overriden because super class calls schedule(..)
+    @Override
+    public void execute(Runnable command) {
+        if (command instanceof WrappedRunnable
+            || command instanceof ScheduledRunnable)
+        {
+            super.execute(command);
+            return;
+        }
+        LOG.warning("Decorating exec: " + command);
+        super.execute(new ScheduledRunnable(command));
+    }
 
-    // @Override
-    // public void execute(Runnable command) {
-    // super.execute(new WrappedRunnable(command));
-    // }
-    //
+    @Override
+    protected <V> RunnableScheduledFuture<V> decorateTask(Runnable runnable,
+        RunnableScheduledFuture<V> task)
+    {
+        if (runnable instanceof WrappedRunnable
+            || runnable instanceof ScheduledRunnable)
+        {
+            return super.decorateTask(runnable, task);
+        }
+        LOG.warning("Decorating task: " + runnable);
+        return super.decorateTask(new ScheduledRunnable(runnable), task);
+    }
+    
+    // Not overriden because super class calls schedule(..)
+    
     // @Override
     // public Future<?> submit(Runnable task) {
+    //
+    // LOG.warning("Submitt: " + task);
     // return super.submit(new WrappedRunnable(task));
-    // }
-
-    // @Override
-    // public <T> Future<T> submit(Callable<T> task) {
-    // return super.submit(new WrappedCallable<T>(task));
     // }
     //
     // @Override
+    // public <T> Future<T> submit(Callable<T> task) {
+    // LOG.warning("Submitt: " + task);
+    // return super.submit(new WrappedCallable<T>(task));
+    // }
+    // //
+    // @Override
     // public <T> Future<T> submit(Runnable task, T result) {
+    // LOG.warning("Submitt: " + task);
     // return super.submit(new WrappedRunnable(task), result);
     // }
+
+    @Override
+    public void shutdown() {
+        try {
+            super.shutdown();            
+        } finally {
+            wrappingThreadPool.shutdown();
+        }
+    }
+
+    @Override
+    public List<Runnable> shutdownNow() {
+        List<Runnable> tasks = new LinkedList<Runnable>();
+        try {
+            tasks.addAll(super.shutdownNow());
+        } finally {
+            tasks.addAll(wrappingThreadPool.shutdownNow());
+        }
+        return tasks;
+    }
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay,
         TimeUnit unit)
     {
-        return super.schedule(new WrappedCallable<V>(callable), delay, unit);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay,
         TimeUnit unit)
     {
-        return super.schedule(new WrappedRunnable(command), delay, unit);
+        checkBusyness();
+        return super.schedule(new ScheduledRunnable(command), delay, unit);
     }
 
     @Override
     public ScheduledFuture<?> scheduleAtFixedRate(Runnable command,
         long initialDelay, long period, TimeUnit unit)
     {
-        return super.scheduleAtFixedRate(new WrappedRunnable(command),
+        checkBusyness();
+        return super.scheduleAtFixedRate(new ScheduledRunnable(command),
             initialDelay, period, unit);
     }
 
@@ -107,8 +155,62 @@ public class WrappedScheduledThreadPoolExecutor extends
     public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command,
         long initialDelay, long delay, TimeUnit unit)
     {
-        return super.scheduleWithFixedDelay(new WrappedRunnable(command),
+        checkBusyness();
+        return super.scheduleWithFixedDelay(new ScheduledRunnable(command),
             initialDelay, delay, unit);
     }
+    
+    // Internal helper ********************************************************
 
+    
+    private void checkBusyness() {
+        if (getActiveCount() >= getPoolSize()) {
+            int queueSize = getQueueSize();
+            Level l = Level.WARNING;
+            if (queueSize > getPoolSize() * 3) {
+                l = Level.SEVERE;
+            }
+            if (LOG.isLoggable(l)) {
+                LOG.log(l,
+                    "Scheduled threadpool is exhausted. Got " + queueSize
+                        + " tasks in queue. Currently active threads: "
+                        + getActiveCount() + "/" + getPoolSize());
+            }
+        }
+    }
+    
+    @Override
+    public int getCorePoolSize() {
+        return super.getCorePoolSize() + executingThreadPool.getCorePoolSize();
+    }
+
+    @Override
+    public int getPoolSize() {
+        return super.getPoolSize() + executingThreadPool.getPoolSize();
+    }
+
+    @Override
+    public int getActiveCount() {
+        return super.getActiveCount() + executingThreadPool.getActiveCount();
+    }
+
+    private int getQueueSize() {
+       return super.getQueue().size() + executingThreadPool.getQueue().size();
+    }
+
+    private class ScheduledRunnable implements Runnable {
+        private Runnable toBeExecuted;
+
+        public ScheduledRunnable(Runnable toBeExecuted) {
+            super();
+            Reject.ifNull(toBeExecuted, "Runnable to be execute is null");
+            this.toBeExecuted = toBeExecuted;
+        }
+
+        @Override
+        public void run() {
+            checkBusyness();
+            wrappingThreadPool.submit(toBeExecuted);
+        }
+    }
 }

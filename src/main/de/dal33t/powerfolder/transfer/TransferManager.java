@@ -19,7 +19,49 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import de.dal33t.powerfolder.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.NoSpaceOnFileStoreProblem;
@@ -30,29 +72,28 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoKey;
 import de.dal33t.powerfolder.light.FileInfoKey.Type;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.AbortUpload;
+import de.dal33t.powerfolder.message.DownloadQueued;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.RequestDownload;
+import de.dal33t.powerfolder.message.TransferStatus;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.transfer.swarm.FileRecordProvider;
 import de.dal33t.powerfolder.transfer.swarm.VolatileFileRecordProvider;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Filter;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.NamedThreadFactory;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StreamUtils;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.TransferCounter;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.Validate;
+import de.dal33t.powerfolder.util.Visitor;
+import de.dal33t.powerfolder.util.WrapperExecutorService;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.FileStore;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 
 /**
  * Transfer manager for downloading/uploading files
@@ -855,11 +896,9 @@ public class TransferManager extends PFComponent {
             logInfo("Begin executing command: " + command);
             final Process p = Runtime.getRuntime().exec(command);
             // Auto-kill after 20 seconds
-            getController().schedule(new Runnable() {
-                public void run() {
-                    p.destroy();
-                }
-            }, 20000L);
+            getController().schedule(() -> {
+                p.destroy();
+            } , 20000L);
             byte[] out = StreamUtils.readIntoByteArray(p.getInputStream());
             String output = new String(out);
             byte[] err = StreamUtils.readIntoByteArray(p.getErrorStream());
@@ -1304,20 +1343,18 @@ public class TransferManager extends PFComponent {
         triggerTransfersCheck();
 
         // Wait 500ms to let the transfers check grab the new download
-        getController().schedule(new Runnable() {
-            public void run() {
-                // If upload is queued.
-                if (!upload.isStarted() && !upload.isCompleted()
-                    && !upload.isBroken() && !upload.isAborted())
-                {
-                    from.sendMessageAsynchron(new DownloadQueued(upload
-                        .getFile()));
-                } else if (isFiner()) {
-                    logFiner("Optimization. Did not send DownloadQueued message for "
+        getController().schedule(() -> {
+            // If upload is queued.
+            if (!upload.isStarted() && !upload.isCompleted()
+                && !upload.isBroken() && !upload.isAborted())
+            {
+                from.sendMessageAsynchron(new DownloadQueued(upload.getFile()));
+            } else if (isFiner()) {
+                logFiner(
+                    "Optimization. Did not send DownloadQueued message for "
                         + upload.getFile() + " to " + upload.getPartner());
-                }
             }
-        }, 500L);
+        } , 500L);
 
         return upload;
     }

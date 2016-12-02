@@ -35,8 +35,6 @@ import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
 
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -57,6 +55,7 @@ import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import jwf.WizardPanel;
 
 /**
  * PFC-2638: Desktop-Sync
@@ -281,10 +280,8 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         try {
             final Process p = Runtime.getRuntime().exec(cmd);
             // Auto-kill after 20 seconds
-            getController().schedule(new Runnable() {
-                public void run() {
-                    p.destroy();
-                }
+            getController().schedule(() -> {
+                p.destroy();
             }, 20000L);
             byte[] out = StreamUtils.readIntoByteArray(p.getInputStream());
             @SuppressWarnings("unused")

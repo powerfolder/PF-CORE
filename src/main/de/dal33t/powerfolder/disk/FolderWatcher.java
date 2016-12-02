@@ -269,9 +269,8 @@ public class FolderWatcher extends PFComponent {
                     if (scheduled.compareAndSet(false, true)) {
                         getController().schedule(new Runnable() {
                             public void run() {
-                                getController().getIOProvider()
-                                    .startIO(new DirtyFilesScanner());
                                 scheduled.set(false);
+                                new DirtyFilesScanner().run();
                             }
                         }, delay);
                     }
@@ -348,9 +347,8 @@ public class FolderWatcher extends PFComponent {
                     if (scheduled.compareAndSet(false, true)) {
                         getController().schedule(new Runnable() {
                             public void run() {
-                                getController().getIOProvider().startIO(
-                                    new DirtyFilesScanner());
                                 scheduled.set(false);
+                                new DirtyFilesScanner().run();
                             }
                         }, delay);
                     }

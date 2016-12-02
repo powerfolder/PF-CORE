@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
@@ -49,6 +50,10 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_DUPLICATE_FILENAME;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return fileInfo.getFolder(controller.getFolderRepository());
+    }
+
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
@@ -63,4 +68,5 @@ public class DuplicateFilenameProblem extends ResolvableProblem {
     public String getResolutionDescription() {
        return Translation.get("filename_problem.duplicate.soln_desc");
     }
+
 }

@@ -59,6 +59,7 @@ public class ProblemsTab extends PFUIComponent {
 
     private MyOpenProblemAction openProblemAction;
     private MyResolveProblemAction resolveProblemAction;
+    private MyCleanupProblemAction cleanupProblemAction;
 
     private FolderInfo folderInfo;
     private final ProblemsTable problemsTable;
@@ -93,6 +94,7 @@ public class ProblemsTab extends PFUIComponent {
     private void initialize() {
         openProblemAction = new MyOpenProblemAction(getController());
         resolveProblemAction = new MyResolveProblemAction(getController());
+        cleanupProblemAction = new MyCleanupProblemAction(getController());
 
         scrollPane = new JScrollPane(problemsTable);
 
@@ -131,8 +133,13 @@ public class ProblemsTab extends PFUIComponent {
         JButton resolveBtn = new JButton(resolveProblemAction);
         resolveBtn.setIcon(null);
         bar.addGridded(resolveBtn);
-        return bar.getPanel();
+        bar.addRelatedGap();
 
+        JButton cleanupBtn = new JButton(cleanupProblemAction);
+        cleanupBtn.setIcon(null);
+        bar.addGridded(cleanupBtn);
+
+        return bar.getPanel();
     }
 
     public void setFolderInfo(FolderInfo folderInfo) {
@@ -186,6 +193,8 @@ public class ProblemsTab extends PFUIComponent {
             openProblemAction.setEnabled(false);
             resolveProblemAction.setEnabled(false);
         }
+        // Always enable cleanup
+        cleanupProblemAction.setEnabled(true);
     }
 
     // /////////////////
@@ -221,6 +230,40 @@ public class ProblemsTab extends PFUIComponent {
                 logSevere("Tried to resolve a non-resolvable problem "
                     + (selectedProblem == null ? null : selectedProblem
                         .getClass().getName()));
+            }
+        }
+    }
+
+    private class MyCleanupProblemAction extends BaseAction {
+        MyCleanupProblemAction(Controller controller) {
+            super("action_cleanup_problem", controller);
+        }
+
+        /**
+         * Removes a problem, if it is resolvable.
+         *
+         * @param problem The problem
+         */
+        private void cleanup(Problem problem) {
+            if (problem instanceof ResolvableProblem) {
+                ResolvableProblem resolvableProblem = (ResolvableProblem) problem;
+                resolvableProblem.ignore(getController());
+            } else {
+                logSevere("Tried to clean up a non-resolvable problem " + (problem == null ? null : problem.getClass().getName()));
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // If a single problem is selected, clean it up
+            if (selectedProblem != null) {
+                cleanup(selectedProblem);
+            }
+            // If no problem is selected, clean all problems up
+            else {
+                while (problemsTableModel.getRowCount() > 0) {
+                    cleanup((Problem)problemsTableModel.getValueAt(0, 0));
+                }
             }
         }
     }

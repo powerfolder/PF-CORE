@@ -53,11 +53,9 @@ public abstract class BoundPermission extends PFComponent {
         // object gets collected - NOT earlier.
         this.listener = new MyServerClientListener();
         getController().getOSClient().addWeakListener(this.listener);
-        getController().schedule(new Runnable() {
-            public void run() {
-                checkPermission(true);
-            }
-        }, 0);
+        getController().schedule(() -> {
+            checkPermission(true);
+        } , 0);
     }
 
     public Permission getPermission() {
@@ -118,20 +116,16 @@ public abstract class BoundPermission extends PFComponent {
         }
 
         public void login(ServerClientEvent event) {
-            getController().schedule(new Runnable() {
-                public void run() {
-                    checkPermission(false);
-                }
-            }, 0);
+            getController().schedule(() -> {
+                checkPermission(false);
+            } , 0);
 
         }
 
         public void accountUpdated(ServerClientEvent event) {
-            getController().schedule(new Runnable() {
-                public void run() {
-                    checkPermission(false);
-                }
-            }, 0);
+            getController().schedule(() -> {
+                checkPermission(false);
+            } , 0);
         }
 
         public void nodeServerStatusChanged(ServerClientEvent event) {

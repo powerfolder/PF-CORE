@@ -1547,7 +1547,7 @@ public class ServerClient extends PFComponent {
                 getController().getNodeManager().start();
             }
 
-            connectHostingServers();
+            connectHostingServers(true);
         } catch (Exception e) {
             logWarning("Could not load connection infos from " + configURL
                 + ": " + e.getMessage());
@@ -2191,7 +2191,7 @@ public class ServerClient extends PFComponent {
      * another server. This method does NOT block, it instead schedules a
      * background task to retrieve and connect those servers.
      */
-    private void connectHostingServers() {
+    private void connectHostingServers(boolean background) {
         if (!(isConnected() || isLoggingIn() || isLoggedIn())) {
             findAlternativeServer();
             return;
@@ -2199,13 +2199,13 @@ public class ServerClient extends PFComponent {
         if (isFiner()) {
             logFiner("Connecting to cluster servers");
         }
-        Runnable retriever = new Runnable() {
-            @Override
-            public void run() {
+        if (background) {
+            getController().getIOProvider().startIO(() -> {
                 retrieveAndConnectoClusterServers();
-            }
-        };
-        getController().getIOProvider().startIO(retriever);
+            });
+        } else {
+            retrieveAndConnectoClusterServers();
+        }
     }
 
     private void retrieveAndConnectoClusterServers() {
@@ -2728,40 +2728,34 @@ public class ServerClient extends PFComponent {
     private class AutoLoginTask extends TimerTask {
         @Override
         public void run() {
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    if (!isConnected()) {
-                        return;
-                    }
-                    if (isLoggingIn()) {
-                        return;
-                    }
-                    if (!lastLoginSuccessful.get()) {
-                        return;
-                    }
-                    try {
-                        // PFC-2368: Verify login by server too.
-                        if (isLoggedIn() && securityService.isLoggedIn()) {
-                            return;
-                        }
-                    } catch (RemoteCallException e) {
-                        logFine("Problems with the connection to: "
-                            + getServerString() + ". " + e);
-                        return;
-                    }
-                    try {
-                        if (hasUsername() && hasCredentials()) {
-                            logInfo("Auto-Login: Logging in " + username);
-                            login0(username, passwordObf, tokenSecret);
-                        }
-                    } catch (RemoteCallException e) {
-                        logWarning("Unable to automatically login at: "
-                            + username + " @ " + getServerString() + ". " + e);
-                    }
+            if (!isConnected()) {
+                return;
+            }
+            if (isLoggingIn()) {
+                return;
+            }
+            if (!lastLoginSuccessful.get()) {
+                return;
+            }
+            try {
+                // PFC-2368: Verify login by server too.
+                if (isLoggedIn() && securityService.isLoggedIn()) {
+                    return;
                 }
-            };
-            getController().getIOProvider().startIO(r);
+            } catch (RemoteCallException e) {
+                logFine("Problems with the connection to: " + getServerString()
+                    + ". " + e);
+                return;
+            }
+            try {
+                if (hasUsername() && hasCredentials()) {
+                    logInfo("Auto-Login: Logging in " + username);
+                    login0(username, passwordObf, tokenSecret);
+                }
+            } catch (RemoteCallException e) {
+                logWarning("Unable to automatically login at: " + username
+                    + " @ " + getServerString() + ". " + e);
+            }
         }
     }
 
@@ -2771,7 +2765,7 @@ public class ServerClient extends PFComponent {
     private class HostingServersConnector extends TimerTask {
         @Override
         public void run() {
-            connectHostingServers();
+            connectHostingServers(false);
         }
     }
 

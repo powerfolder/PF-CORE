@@ -31,7 +31,6 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractAction;
@@ -1669,17 +1668,15 @@ public class ExpandableFolderView extends PFUIComponent implements
             mouseOver.set(true);
             if (PreferencesEntry.AUTO_EXPAND.getValueBoolean(getController())) {
                 if (!expanded.get()) {
-                    getController().schedule(new TimerTask() {
-                        public void run() {
-                            if (mouseOver.get()) {
-                                if (!expanded.get()) {
-                                    expand();
-                                    PreferencesEntry.AUTO_EXPAND.setValue(
-                                        getController(), Boolean.FALSE);
-                                }
+                    getController().schedule(() -> {
+                        if (mouseOver.get()) {
+                            if (!expanded.get()) {
+                                expand();
+                                PreferencesEntry.AUTO_EXPAND
+                                    .setValue(getController(), Boolean.FALSE);
                             }
                         }
-                    }, 2000);
+                    } , 2000);
                 }
             }
             retrieveAdditionalInfosFromServer();

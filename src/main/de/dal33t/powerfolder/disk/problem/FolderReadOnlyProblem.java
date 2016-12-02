@@ -42,6 +42,10 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
         return null;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return folder;
+    }
+
     @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
@@ -58,4 +62,5 @@ public class FolderReadOnlyProblem extends ResolvableProblem {
     public String getResolutionDescription() {
         return Translation.get("folder_problem.read_only_folder_reverted.resolution_description");
     }
+
 }

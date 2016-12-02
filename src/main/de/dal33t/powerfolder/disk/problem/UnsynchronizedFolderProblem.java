@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.disk.problem;
 import java.util.Date;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
@@ -70,6 +71,10 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
         return WikiLinks.PROBLEM_UNSYNCED_FOLDER;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return folderInfo.getFolder(controller);
+    }
+
     public String getResolutionDescription() {
         return Translation
             .get("folder_problem.unsynchronized.soln_desc");
@@ -94,4 +99,5 @@ public class UnsynchronizedFolderProblem extends ResolvableProblem {
     public String toString() {
         return getDescription() + ". lastSyncDate=" + lastSyncDate;
     }
+
 }

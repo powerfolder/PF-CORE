@@ -25,6 +25,10 @@ public class AccessDeniedProblem extends ResolvableProblem {
         return WikiLinks.SECURITY_PERMISSION;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return folderInfo.getFolder(controller);
+    }
+
     @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
@@ -74,4 +78,5 @@ public class AccessDeniedProblem extends ResolvableProblem {
             return false;
         return true;
     }
+
 }

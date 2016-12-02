@@ -18,6 +18,10 @@ public class LocalDeletionProblem extends ResolvableProblem {
         this.fileInfo = fileInfo;
     }
 
+    public Folder getFolder(final Controller controller) {
+        return folderInfo.getFolder(controller);
+    }
+
     @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
@@ -95,4 +99,5 @@ public class LocalDeletionProblem extends ResolvableProblem {
     public int hashCode() {
         return fileInfo.hashCode();
     }
+
 }
