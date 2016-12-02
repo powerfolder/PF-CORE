@@ -108,7 +108,16 @@ public class Constants {
     /**
      * Minimum threads in threadpool of {@link Controller}
      */
-    public static final int CONTROLLER_MIN_THREADS_IN_THREADPOOL = 3;
+    public static final int CONTROLLER_MIN_THREADS_IN_THREADPOOL;
+    static {
+        int nThread = 3;
+        try {
+            nThread = Integer.valueOf(
+                System.getProperty("pf.controller.threadpool.min.size", String.valueOf(nThread)));
+        } catch (Exception e) {
+        }
+        CONTROLLER_MIN_THREADS_IN_THREADPOOL = nThread;
+    }
 
     /**
      * The number of pixels to stay away from the screen border by default.

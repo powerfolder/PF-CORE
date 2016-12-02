@@ -165,15 +165,15 @@ public class WrappedScheduledThreadPoolExecutor
     
     private void checkBusyness() {
         if (getActiveCount() >= getPoolSize()) {
-            int queueSize = getQueueSize();
-            Level l = Level.WARNING;
-            if (queueSize > getPoolSize() * 3) {
+            Level l = Level.FINE;
+            if (getActiveCount() > 100) {
+                 l = Level.WARNING;
+            } else if (getActiveCount() > 500) {
                 l = Level.SEVERE;
             }
             if (LOG.isLoggable(l)) {
                 LOG.log(l,
-                    "Scheduled threadpool is exhausted. Got " + queueSize
-                        + " tasks in queue. Currently active threads: "
+                    "Scheduled threadpool status: Currently active threads: "
                         + getActiveCount() + "/" + getPoolSize());
             }
         }
@@ -192,10 +192,6 @@ public class WrappedScheduledThreadPoolExecutor
     @Override
     public int getActiveCount() {
         return super.getActiveCount() + executingThreadPool.getActiveCount();
-    }
-
-    private int getQueueSize() {
-       return super.getQueue().size() + executingThreadPool.getQueue().size();
     }
 
     private class ScheduledRunnable implements Runnable {
