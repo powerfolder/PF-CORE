@@ -165,10 +165,10 @@ public class WrappedScheduledThreadPoolExecutor
     
     private void checkBusyness() {
         if (getActiveCount() >= getPoolSize()) {
-            Level l = Level.FINE;
-            if (getActiveCount() > 100) {
+            Level l = Level.FINER;
+            if (getActiveCount() > 250) {
                  l = Level.WARNING;
-            } else if (getActiveCount() > 500) {
+            } else if (getActiveCount() > 1000) {
                 l = Level.SEVERE;
             }
             if (LOG.isLoggable(l)) {
