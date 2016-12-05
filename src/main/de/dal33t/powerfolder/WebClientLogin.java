@@ -1,10 +1,11 @@
 package de.dal33t.powerfolder;
 
 
-import de.dal33t.powerfolder.ui.model.ApplicationModel;
-
 import java.io.*;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,7 +15,7 @@ import java.util.logging.Logger;
  * @author <a href="mailto:wiegmann@powerfolder.com>Jan Wiegmann</a>
  */
 
-public class WebClientLogin extends PFComponent implements Runnable {
+public class WebClientLogin extends PFComponent {
 
     private ServerSocket serverSocket;
     private Thread myThread;
@@ -34,7 +35,7 @@ public class WebClientLogin extends PFComponent implements Runnable {
             serverSocket = new ServerSocket(port);
 
             // Start thread
-            myThread = new Thread(this, "Web Client Login");
+            myThread = new Thread(new Worker(), "Web Client Login");
             myThread.start();
             logInfo("");
         } catch (UnknownHostException e) {
@@ -49,19 +50,30 @@ public class WebClientLogin extends PFComponent implements Runnable {
 
     }
 
-    public void run() {
-        log.info("Listening for authentication requests on port "
-                + serverSocket.getLocalPort());
-        while (!Thread.currentThread().isInterrupted()) {
-            Socket socket;
-            try {
-                socket = serverSocket.accept();
-            } catch (IOException e) {
-                log.log(Level.FINER, "Socket closed, stopping", e);
-                break;
-            }
-            log.info("Authentication request from " + socket);
-            try {
+    public void stop(){
+        myThread.interrupt();
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            logWarning("Unable to close server socket @ " + serverSocket + " " + e);
+        }
+    }
+
+    private class Worker implements Runnable {
+
+        public void run() {
+            log.info("Listening for authentication requests on port "
+                    + serverSocket.getLocalPort());
+            while (!Thread.currentThread().isInterrupted()) {
+                Socket socket;
+                try {
+                    socket = serverSocket.accept();
+                } catch (IOException e) {
+                    log.log(Level.FINER, "Socket closed, stopping", e);
+                    break;
+                }
+                log.info("Authentication request from " + socket);
+                try {
                     BufferedReader reader = new BufferedReader(
                             new InputStreamReader(socket.getInputStream(), "UTF-8"));
                     String line = reader.readLine();
@@ -70,22 +82,22 @@ public class WebClientLogin extends PFComponent implements Runnable {
                     } else if (line.startsWith("GET")) {
                         if (line.contains("/login")) {
                             sendAuthenticationRequest(socket.getOutputStream());
-                            break;
-                        } else if (line.contains(Constants.LOGIN_PARAM_OR_HEADER_TOKEN)){
+                        } else if (line.contains(Constants.LOGIN_PARAM_OR_HEADER_TOKEN)) {
                             consumeToken(line);
-                            break;
+                            sendAuthSuccessRequest(socket.getOutputStream());
                         }
                     }
-            } catch (Exception e) {
-                logWarning("Problems parsing authentication request from " + socket + ". " + e);
-                logFiner(e);
-            } finally {
-                if (socket != null) {
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        logWarning("Unable to close socket " + socket
-                                + ". " + e);
+                } catch (Exception e) {
+                    logWarning("Problems parsing authentication request from " + socket + ". " + e);
+                    logFiner(e);
+                } finally {
+                    if (socket != null) {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            logWarning("Unable to close socket " + socket
+                                    + ". " + e);
+                        }
                     }
                 }
             }
@@ -94,11 +106,11 @@ public class WebClientLogin extends PFComponent implements Runnable {
 
     private void sendAuthenticationRequest(OutputStream os){
 
-        String locationURL;
+        String originalURI;
         try {
-            locationURL = InetAddress.getLocalHost().getHostName();
+            originalURI = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            locationURL = ConfigurationEntry.HOSTNAME.getValue(getController());
+            originalURI = ConfigurationEntry.HOSTNAME.getValue(getController());
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -107,12 +119,26 @@ public class WebClientLogin extends PFComponent implements Runnable {
         stringBuilder.append(ConfigurationEntry.CONFIG_URL.getValue(getController()));
         stringBuilder.append("/login?autoLogin=1&originalURI=");
         stringBuilder.append("http://");
-        stringBuilder.append(locationURL);
+        stringBuilder.append(originalURI);
         stringBuilder.append(":");
         stringBuilder.append(ConfigurationEntry.WEB_CLIENT_PORT.getValue(getController()));
 
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
         pw.println("HTTP/1.1 301 Moved Permanently");
+        pw.println(stringBuilder.toString());
+        pw.println("Connection: close");
+        pw.println("");
+    }
+
+    private void sendAuthSuccessRequest(OutputStream os){
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append(ConfigurationEntry.CONFIG_URL.getValue(getController()));
+        stringBuilder.append("/login?authSuccess=true");
+
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
+        pw.println("HTTP/1.1 200 OK");
         pw.println(stringBuilder.toString());
         pw.println("Connection: close");
         pw.println("");
@@ -154,6 +180,4 @@ public class WebClientLogin extends PFComponent implements Runnable {
         log.warning("Running instance found");
         return true;
     }
-
-
 }
