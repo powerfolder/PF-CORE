@@ -95,12 +95,11 @@ public class SecurityManagerClient extends PFComponent implements
 
     @Override
     public Account authenticate(String tokenSecret) {
-        throw new UnsupportedOperationException("Token authentication not supported via client yet");
-//        Account a = client.login(username, (char[])password);
-//        if (!a.isValid()) {
-//            return null;
-//        }
-//        return a;
+        Account a = client.login(tokenSecret);
+        if (!a.isValid()) {
+            return null;
+        }
+       return a;
     }
 
     @Override
