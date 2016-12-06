@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * PFS-2871: Client authentication with web requests.
+ * PFS-2871: Client authentication an with web token over HTTP.
  * @author <a href="mailto:wiegmann@powerfolder.com>Jan Wiegmann</a>
  */
 
@@ -55,7 +55,7 @@ public class WebClientLogin extends PFComponent {
         try {
             serverSocket.close();
         } catch (IOException e) {
-            logWarning("Unable to close server socket @ " + serverSocket + " " + e);
+            logWarning("Unable to close server socket @ " + serverSocket + " " + e, e);
         }
     }
 
@@ -128,24 +128,27 @@ public class WebClientLogin extends PFComponent {
         pw.println(stringBuilder.toString());
         pw.println("Connection: close");
         pw.println("");
+        pw.close();
     }
 
     private void sendAuthSuccessRequest(OutputStream os){
 
         StringBuilder stringBuilder = new StringBuilder();
 
+        stringBuilder.append("Location: ");
         stringBuilder.append(ConfigurationEntry.CONFIG_URL.getValue(getController()));
-        stringBuilder.append("/login?authSuccess=true");
+        stringBuilder.append("/authsuccess");
 
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
-        pw.println("HTTP/1.1 200 OK");
+        pw.println("HTTP/1.1 301 Moved Permanently");
         pw.println(stringBuilder.toString());
         pw.println("Connection: close");
         pw.println("");
+        pw.close();
     }
 
     private void consumeToken(String line) {
-        String tokenSecret = line.substring(line.indexOf(Constants.LOGIN_PARAM_OR_HEADER_TOKEN) + 8, line.lastIndexOf(" "));
+        String tokenSecret = line.substring(line.indexOf(Constants.LOGIN_PARAM_OR_HEADER_TOKEN) + 6, line.lastIndexOf(" "));
         getController().getOSClient().login(tokenSecret);
     }
 

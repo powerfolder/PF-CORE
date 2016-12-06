@@ -212,7 +212,7 @@ public class Controller extends PFComponent {
      * Listener for authentication requests on WD NAS storages.
      */
 
-    private WebClientLogin storageAuthenticator;
+    private WebClientLogin webClientLogin;
 
     /** Holds the User interface */
     private UIController uiController;
@@ -593,7 +593,7 @@ public class Controller extends PFComponent {
         startRConManager();
 
         // Initialize WD storage authenticator.
-        startWDStorageAuthenticator();
+        startWebClientLogin();
 
         setLoadingCompletion(75, 80);
 
@@ -1322,14 +1322,14 @@ public class Controller extends PFComponent {
     /**
      * Starts the WD storage authenticator.
      */
-    private void startWDStorageAuthenticator() {
+    private void startWebClientLogin() {
         if (WebClientLogin.hasRunningInstance()) {
             alreadyRunningCheck();
         }
         if (ConfigurationEntry.WEB_CLIENT_PORT.hasNonBlankValue(this)
                 && ConfigurationEntry.WEB_CLIENT_PORT.getValueInt(this) > 0) {
-            storageAuthenticator = new WebClientLogin(this);
-            storageAuthenticator.start();
+            webClientLogin = new WebClientLogin(this);
+            webClientLogin.start();
         }
     }
 
@@ -1984,6 +1984,10 @@ public class Controller extends PFComponent {
 
         if (MacUtils.isSupported()) {
             MacUtils.getInstance().removeAppReOpenedListener(this);
+        }
+
+        if (webClientLogin != null){
+            webClientLogin.stop();
         }
 
         if (wasStarted) {
