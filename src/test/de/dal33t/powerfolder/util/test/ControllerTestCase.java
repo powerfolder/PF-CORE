@@ -27,8 +27,6 @@ import java.util.Date;
 import java.util.UUID;
 
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.util.StringUtils;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
@@ -37,6 +35,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Format;
+import junit.framework.TestCase;
 
 /**
  * Provides basic testcase-setup with a controller.

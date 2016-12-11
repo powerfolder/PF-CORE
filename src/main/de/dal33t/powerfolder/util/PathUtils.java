@@ -20,22 +20,32 @@
 
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-import java.awt.*;
+import java.awt.Desktop;
 import java.beans.ExceptionListener;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
@@ -51,8 +61,13 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import static java.nio.file.FileVisitResult.CONTINUE;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 public class PathUtils {
 
