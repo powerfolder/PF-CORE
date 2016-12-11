@@ -392,7 +392,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean ok = false;
 
         if (OSUtil.isWindowsSystem() && winNetworkDrive || !winNetworkDrive) {
-            foldersBasedir = Paths.get(baseDir);
+            foldersBasedir = Paths.get(baseDir).toAbsolutePath();
             if (Files.notExists(foldersBasedir)) {
                 try {
                     Files.createDirectories(foldersBasedir);
@@ -1019,7 +1019,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getValueBoolean(getController()))
             {
                 Files.createDirectories(folderSettings.getLocalBaseDir());
-            } else {
+            } else
+                if (Files.notExists(folderSettings.getLocalBaseDir())
+                    || !PathUtils
+                        .isEmptyDir(folderSettings.getLocalBaseDir()))
+            {
                 Path baseDir = folderSettings.getLocalBaseDir().getParent();
                 String rawName = folderSettings.getLocalBaseDir().getFileName()
                     .toString();
@@ -1997,7 +2001,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             } catch (Exception e) {
                 logFine("Scheduling setup of folder: " + foInfo.getName());
                 CreateFolderOnServerTask task = new CreateFolderOnServerTask(
-                    client.getAccountInfo(), foInfo, null);
+                    foInfo, null);
                 task.setArchiveVersions(fs.getVersions());
                 getController().getTaskManager().scheduleTask(task);
             }
@@ -2664,7 +2668,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } catch (Exception e) {
                     logFine("Scheduling setup of folder: " + folderName);
                     CreateFolderOnServerTask task = new CreateFolderOnServerTask(
-                        a.createInfo(), foInfo, null);
+                        foInfo, null);
                     task.setArchiveVersions(settings.getVersions());
                     getController().getTaskManager().scheduleTask(task);
                 }
