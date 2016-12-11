@@ -2852,7 +2852,9 @@ public class Folder extends PFComponent {
             // folder OK!
             return true;
         }
-        logFine("Waiting to complete scan");
+        if (isFine()) {
+            logFine("Waiting to complete scan of " + getName());            
+        }
         ScanResult.ResultState resultState = lastScanResultState;
         while (isScanning() && resultState == lastScanResultState) {
             try {
