@@ -48,6 +48,8 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * PFS-779: Domain object for PFS-779: Organization wide admin role to manage
@@ -109,6 +111,12 @@ public class Organization implements Serializable {
      * PFS-1411
      */
     private String skin;
+
+    /**
+     * PFS-2188
+     */
+    @Column(length = 4096)
+    private String jsonData;
 
     public Organization() {
         // Generate unique id
@@ -201,6 +209,21 @@ public class Organization implements Serializable {
             domainsLower.add(dom);
         }
         this.domains = domainsLower;
+    }
+
+    public void setJSONData(String jsonData) {
+        this.jsonData = jsonData;
+    }
+
+    public String getJSONData() {
+        return jsonData;
+    }
+
+    public JSONObject getJSONObject() throws JSONException {
+        if (jsonData == null) {
+            return new JSONObject();
+        }
+        return new JSONObject(jsonData);
     }
 
     /**
