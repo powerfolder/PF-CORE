@@ -38,6 +38,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -369,14 +370,12 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        if (getTempFile() == null) {
+        Path tempFile = getTempFile();
+
+        if (tempFile == null) {
             throw new IOException("Couldn't create a temporary file for "
                 + fileInfo);
         }
-
-        // This has to happen here since "completed" is valid
-        assert !isDone() : "File broken/aborted before init!";
-        assert Files.exists(getTempFile().getParent()) : "Missing PowerFolder system directory";
 
         loadMetaData();
 
@@ -384,9 +383,13 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             logFiner("Init tempfile at " + getTempFile());
         }
 
-        tempFileChannel = FileChannel.open(getTempFile(),
-                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
-
+        try {
+            tempFileChannel = FileChannel.open(tempFile,
+                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+        } catch (FileAlreadyExistsException e) {
+            tempFileChannel = FileChannel.open(tempFile,
+                    StandardOpenOption.APPEND, StandardOpenOption.WRITE);
+        }
     }
 
     protected boolean isNeedingFilePartsRecord() {

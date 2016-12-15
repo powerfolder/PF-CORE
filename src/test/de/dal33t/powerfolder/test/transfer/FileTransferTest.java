@@ -1564,9 +1564,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
         // testfile
-        Path testFile = TestHelper.createRandomFile(getFolderAtBart()
+        Path fileBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 30 * 1024 * 1024);
-        Files.setLastModifiedTime(testFile,
+        Files.setLastModifiedTime(fileBart,
             FileTime.fromMillis(System.currentTimeMillis() - 1000L * 60 * 60));
 
         // Let him scan the new content
@@ -1602,7 +1602,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         FileInfo fInfo = getFolderAtLisa().getIncomingFiles().iterator().next();
-        Path file = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
+        Path fileLisa = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
         final Path incompleteFile = Files
             .newDirectoryStream(
                 getFolderAtLisa().getSystemSubDir().resolve("transfers"),
@@ -1641,13 +1641,13 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.waitMilliSeconds(100);
 
-        assertTrue(Files.size(incompleteFile) < Files.size(testFile));
+        assertTrue(Files.size(incompleteFile) < Files.size(fileBart));
 
         assertTrue(Files.exists(incompleteFile));
         assertTrue(Files.size(incompleteFile) > 0);
         assertTrue("Size inc. file: " + Files.size(incompleteFile)
-            + ", size testfile: " + Files.size(testFile),
-            Files.size(incompleteFile) < Files.size(testFile));
+            + ", size testfile: " + Files.size(fileBart),
+            Files.size(incompleteFile) < Files.size(fileBart));
 
         assertEquals(1, bartsListener.uploadRequested);
         assertEquals(1, bartsListener.uploadStarted);
@@ -1662,7 +1662,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, lisasListener.downloadBroken);
         assertEquals(0, lisasListener.downloadsCompletedRemoved);
 
-        assertFalse(Files.exists(file));
+        assertFalse(Files.exists(fileLisa));
         assertTrue(Files.exists(incompleteFile));
         assertTrue(Files.size(incompleteFile) > mbUntilBreak * 1024 * 1024);
         long bytesDownloaded = getContollerLisa().getTransferManager()
@@ -1771,7 +1771,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, lisasListener.downloadBroken);
         assertEquals(0, lisasListener.downloadsCompletedRemoved);
 
-        assertTrue(Files.exists(file));
+        assertTrue(Files.exists(fileLisa));
         // Total bytes downloaded should be == file size
         // More bytes downloaded means no resume!
         bytesDownloaded = getContollerLisa().getTransferManager()
@@ -1783,6 +1783,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtLisa().getKnownItemCount());
         // 2 physical files (1 + 1 system dir)
         assertEquals(2, getFolderAtLisa().getLocalBase().toFile().list().length);
+
+        // Compare file contents
+        assertTrue("File contents not equal.", TestHelper.compareFiles(fileBart, fileLisa));
 
         // No active downloads?
         assertEquals(0, getContollerLisa().getTransferManager()
