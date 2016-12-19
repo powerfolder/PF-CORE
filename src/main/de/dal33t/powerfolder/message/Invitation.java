@@ -94,8 +94,10 @@ public class Invitation extends FolderRelatedMessage
 
     @Column(length = 2048)
     private String suggestedLocalBasePath;
+    @Transient
+    private int relative;
     @Enumerated(EnumType.STRING)
-    private PathType relative;
+    private PathType pathtype;
     @Type(type = "permissionType")
     private FolderPermission permission;
 
@@ -196,7 +198,7 @@ public class Invitation extends FolderRelatedMessage
             while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
-            relative = PathType.RELATIVE_APP_DATA;
+            pathtype = PathType.RELATIVE_APP_DATA;
         } else if (folderBase != null
             && suggestedLocalBase.toAbsolutePath().startsWith(folderBase))
         {
@@ -209,7 +211,7 @@ public class Invitation extends FolderRelatedMessage
             while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
-            relative = PathType.RELATIVE_PF_BASE;
+            pathtype = PathType.RELATIVE_PF_BASE;
         } else if (userHomeDir != null
             && suggestedLocalBase.toAbsolutePath().startsWith(userHomeDir))
         {
@@ -220,10 +222,10 @@ public class Invitation extends FolderRelatedMessage
             while (suggestedLocalBasePath.startsWith(suggestedLocalBase.getFileSystem().getSeparator())) {
                 suggestedLocalBasePath = suggestedLocalBasePath.substring(1);
             }
-            relative = PathType.RELATIVE_USER_HOME;
+            pathtype = PathType.RELATIVE_USER_HOME;
         } else {
             suggestedLocalBasePath = suggestedLocalBase.toAbsolutePath().toString();
-            relative = PathType.ABSOLUTE;
+            pathtype = PathType.ABSOLUTE;
         }
     }
 
@@ -250,13 +252,13 @@ public class Invitation extends FolderRelatedMessage
                 FileSystems.getDefault().getSeparator());
         }
 
-        if (relative == PathType.RELATIVE_APP_DATA) {
+        if (pathtype == PathType.RELATIVE_APP_DATA) {
             return Paths.get(getAppsDir(), suggestedLocalBasePath);
-        } else if (relative == PathType.RELATIVE_PF_BASE) {
+        } else if (pathtype == PathType.RELATIVE_PF_BASE) {
             Path powerFolderBaseDir = controller.getFolderRepository()
                 .getFoldersBasedir();
             return powerFolderBaseDir.resolve(suggestedLocalBasePath);
-        } else if (relative == PathType.RELATIVE_USER_HOME) {
+        } else if (pathtype == PathType.RELATIVE_USER_HOME) {
             return Paths.get(getUserHomeDir(), suggestedLocalBasePath);
         } else {
             return Paths.get(suggestedLocalBasePath);
@@ -555,9 +557,7 @@ public class Invitation extends FolderRelatedMessage
         {
             this.recipient = this.inviteeUsername;
         }
-        ObjectInputStream.GetField fields = in.readFields();
-        int rel = fields.get("relative", 0);
-        relative = relative.getPathTypeForIndex(rel);
+        this.pathtype = PathType.ABSOLUTE.getPathTypeForIndex(this.relative);
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -571,7 +571,9 @@ public class Invitation extends FolderRelatedMessage
         {
             this.username = this.sender;
         }
-        out.putFields().put("relative", relative.getIndex());
+        if (pathtype != null) {
+            this.relative = pathtype.getIndex();
+        }
         out.defaultWriteObject();
     }
 
