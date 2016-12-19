@@ -69,7 +69,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
     protected static Path TESTFOLDER_BASEDIR_MAGGIE;
 
     // Activate encrypted storage for this test.
-    protected static final boolean isEncryptedStorageTest = true;
+    protected static final boolean isEncryptedStorageTest = false;
 
     /**
      * The test folder info.
