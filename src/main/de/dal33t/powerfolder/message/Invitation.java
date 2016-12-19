@@ -347,15 +347,40 @@ public class Invitation extends FolderRelatedMessage
         return System.getProperty("user.home");
     }
 
-    private static enum PathType {
+    private enum PathType {
         /** suggestedLocalBase is absolute. */
-        ABSOLUTE,
+        ABSOLUTE(0),
         /** suggestedLocalBase is relative to apps directory. */
-        RELATIVE_APP_DATA,
+        RELATIVE_APP_DATA(1),
         /** suggestedLocalBase is relative to PowerFolder base directory. */
-        RELATIVE_PF_BASE,
+        RELATIVE_PF_BASE(2),
         /** suggestedLocalBase is relative to user home directory. */
-        RELATIVE_USER_HOME
+        RELATIVE_USER_HOME(3);
+
+        int index;
+
+        PathType(int index) {
+            this.index = index;
+        }
+
+        PathType getPathTypeForIndex(int index) {
+            switch (index) {
+                case 0:
+                    return ABSOLUTE;
+                case 1:
+                    return RELATIVE_APP_DATA;
+                case 2:
+                    return RELATIVE_PF_BASE;
+                case 3:
+                    return RELATIVE_USER_HOME;
+                default:
+                    return ABSOLUTE;
+            }
+        }
+
+        int getIndex() {
+            return index;
+        }
     }
 
     @Override
@@ -530,6 +555,9 @@ public class Invitation extends FolderRelatedMessage
         {
             this.recipient = this.inviteeUsername;
         }
+        ObjectInputStream.GetField fields = in.readFields();
+        int rel = fields.get("relative", 0);
+        relative = relative.getPathTypeForIndex(rel);
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -543,6 +571,7 @@ public class Invitation extends FolderRelatedMessage
         {
             this.username = this.sender;
         }
+        out.putFields().put("relative", relative.getIndex());
         out.defaultWriteObject();
     }
 
