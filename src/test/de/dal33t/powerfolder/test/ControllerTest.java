@@ -134,7 +134,7 @@ public class ControllerTest extends ControllerTestCase {
             }, 0, TimeUnit.MILLISECONDS);
             TestHelper.waitMilliSeconds(1);
         }
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(3000);
 
         // 2) Terminate
         getController().getThreadPool().shutdown();
