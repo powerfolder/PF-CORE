@@ -106,8 +106,8 @@ public class ControllerTest extends ControllerTestCase {
                 }
             }, 0, TimeUnit.MILLISECONDS);
         f.get();
-        assertEquals(true, f.isDone());
-        assertTrue(run);
+        assertTrue("Future is not done yet", f.isDone());
+        assertTrue("Not run yet", run);
     }
 
     /**
