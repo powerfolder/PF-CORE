@@ -4,13 +4,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import de.dal33t.powerfolder.test.ControllerTest;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class DelayedUpdaterTest extends ControllerTest {
+public class DelayedUpdaterTest extends ControllerTestCase {
     private DelayedUpdater updater;
     private List<Date> updates;
 
