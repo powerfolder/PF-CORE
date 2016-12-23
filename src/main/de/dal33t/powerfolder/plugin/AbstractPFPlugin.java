@@ -26,7 +26,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 /**
  * For your convenience an implementation of the plugin interface that does not
- * have a options dialog and is an PFComponent. PFComoment gives you access to
+ * have a options dialog and is an PFComponent. PFComponent gives you access to
  * the Controller. The Controller is the access point for all main program
  * elelements. Overwrite the hasOptionsDialog() and showOptionsDialog(JDialog
  * parent) if you do have an options dialog.
