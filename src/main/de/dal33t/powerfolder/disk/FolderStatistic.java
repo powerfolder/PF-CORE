@@ -85,7 +85,7 @@ public class FolderStatistic extends PFComponent {
     // the "accepted" traffic. (= If the downloaded chunk was saved to a file)
     // Used to calculate ETA
     private TransferCounter downloadCounter;
-    private MyCalculatorTask calculatorTask;
+    private volatile MyCalculatorTask calculatorTask;
     private NodeManagerListener nodeManagerListener;
 
     FolderStatistic(Folder folder) {
@@ -135,29 +135,39 @@ public class FolderStatistic extends PFComponent {
             return -1L;
         }
         if (current.getAnalyzedFiles() < MAX_ITEMS) {
-            setCalculateIn(2000);
-            return 2000L;
+            return setCalculateIn(2000);
         } else {
-            setCalculateIn(delay);
-            return delay;
+            return setCalculateIn(delay);
         }
     }
 
     // Calculator timer code
     // *************************************************************
 
-    private synchronized void setCalculateIn(long timeToWait) {
-        if (calculatorTask != null) {
-            return;
-        }
-        // logWarning("Scheduled new calculation", new
-        // RuntimeException("here"));
-        calculatorTask = new MyCalculatorTask();
-        try {
-            getController().schedule(calculatorTask, timeToWait);
-        } catch (IllegalStateException ise) {
-            // ignore this happends if this shutdown in debug mode
-            logFiner("IllegalStateException", ise);
+    private Object calculatorInit = new Object();
+
+    private long setCalculateIn(long minimumWait) {
+        synchronized (calculatorInit) {
+            if (calculatorTask != null) {
+                return -1;
+            }
+            // logWarning("Scheduled new calculation", new
+            // RuntimeException("here"));
+            calculatorTask = new MyCalculatorTask();
+            try {
+                // PFC-2941: Avoid peaks in threadpool:
+                // Best effort: 1-5ms takes calculation in avg. per folder
+                double delay = Math.random()
+                    * getController().getFolderRepository().getFoldersCount()
+                    * 2;
+                long wait = minimumWait + (long) delay;
+                getController().schedule(calculatorTask, wait);
+                return wait;
+            } catch (IllegalStateException ise) {
+                // ignore this happens if this shutdown in debug mode
+                logFiner("IllegalStateException", ise);
+            }
+            return -1;
         }
     }
 
