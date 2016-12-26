@@ -740,7 +740,7 @@ public class PathUtils {
         }
         boolean wasHidden = Files.isHidden(sourceFile);
 
-        if (Files.notExists(targetFile)) {
+        if (Files.isDirectory(sourceFile) && Files.notExists(targetFile)) {
             Files.createDirectories(targetFile);
         }
 
