@@ -190,7 +190,7 @@ public class FolderWatcher extends PFComponent {
             logFine("Initialized filesystem watch(" + watchID + ") on " + path
                 + " / " + folder);
         } catch (JNotifyException e) {
-            logSevere("Unable to initialize filesystem watch for " + folder
+            logWarning("Unable to initialize filesystem watch for " + folder
                 + ". " + e);
             logFiner(e);
             watchID = -1;
