@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.plugin;
 import de.dal33t.powerfolder.ui.preferences.PreferencesDialog;
 
 /**
- * Plugin Interface to PowerFolder. We recomment extending AbstractPFPlugin.<BR>
+ * Plugin Interface to PowerFolder. We recommend extending AbstractPFPlugin.<BR>
  * add plugins by changing the plugin= setting in the config file. This should
  * be a comma ',' seperated list of classname in the classpath.<BR>
  * In the preferences dialog of PowerFolder the currently installed plugins will

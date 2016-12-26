@@ -29,6 +29,7 @@ import java.util.UUID;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -77,8 +78,7 @@ public abstract class ControllerTestCase extends TestCase {
         System.out.println("Starting controller...");
         controller = Controller.createController();
         Path source = Paths.get("src/test-resources/ControllerBart.config");
-        Path target = Controller.getMiscFilesLocation().resolve(
-            "ControllerBart.config");
+        Path target = Controller.getMiscFilesLocation().resolve("ControllerBart.config");
         source = Paths.get(target.toString()
                 .replace("build/test/home/.PowerFolder/ControllerBart.config", source.toString()));
 
@@ -109,7 +109,6 @@ public abstract class ControllerTestCase extends TestCase {
             Thread.sleep(1000);
         }
         assertFalse(controller.isStarted());
-
     }
 
     // For subtest ************************************************************

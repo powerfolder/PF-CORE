@@ -340,12 +340,7 @@ public class Folder extends PFComponent {
             deviceDisconnected = true;
         }
 
-        Filter<Path> allExceptSystemDirFilter = new Filter<Path>() {
-            @Override
-            public boolean accept(Path pathname) {
-                return !isSystemSubDir(pathname);
-            }
-        };
+        Filter<Path> allExceptSystemDirFilter = pathname -> !isSystemSubDir(pathname);
 
         if (!schemaZyncro && !deviceDisconnected
             && PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter))
