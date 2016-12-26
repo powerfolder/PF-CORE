@@ -22,15 +22,6 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.distribution.Distribution;
-import de.dal33t.powerfolder.distribution.PowerFolderBasic;
-import de.dal33t.powerfolder.distribution.PowerFolderPro;
-import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.FolderList;
-import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.message.SettingsChange;
 import de.dal33t.powerfolder.net.*;
 import de.dal33t.powerfolder.plugin.PluginManager;
@@ -38,13 +29,13 @@ import de.dal33t.powerfolder.security.SecurityManager;
 import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
-import de.dal33t.powerfolder.ui.FileBrowserIntegration;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
+import de.dal33t.powerfolder.ui.FileBrowserIntegration;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -87,7 +78,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 2;
-    private static final int REVISION_VERSION = 286;
+    private static final int REVISION_VERSION = 288;
 
     /**
      * Program version.
@@ -1158,7 +1149,7 @@ public class Controller extends PFComponent {
         // If already detected wait 10 mins before next test. Otherwise start
         // instantly.
         long initialDelay = alreadyDetected ? 600 : 5;
-        threadPool.scheduleAtFixedRate(new TimerTask() {
+        threadPool.scheduleWithFixedDelay(new TimerTask() {
             @Override
             public void run() {
                 performHourly();
@@ -1170,7 +1161,7 @@ public class Controller extends PFComponent {
         // =========
         // final Collector cpu = CollectorFactory.getFactory().createCollector(
         // CollectorID.CPU_USAGE.id);
-        threadPool.scheduleAtFixedRate(new Runnable() {
+        threadPool.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 if (!verbose) {
