@@ -45,6 +45,9 @@ public class WrappedScheduledThreadPoolExecutor
     private static final Logger LOG = Logger
         .getLogger(WrappedScheduledThreadPoolExecutor.class.getName());
 
+    public static final int WARN_NUMBER_WORKERS = 500;
+    public static final int SEVERE_NUMBER_WORKERS = 2000;
+    
     /**
      * The threadpool actually executing the scheduled tasks.
      */
@@ -169,10 +172,10 @@ public class WrappedScheduledThreadPoolExecutor
     private void checkBusyness() {
         if (getActiveCount() >= getPoolSize()) {
             Level l = Level.FINER;
-            if (getActiveCount() > 250) {
-                 l = Level.WARNING;
-            } else if (getActiveCount() > 1000) {
+            if (getActiveCount() > SEVERE_NUMBER_WORKERS) {
                 l = Level.SEVERE;
+            } else if (getActiveCount() > WARN_NUMBER_WORKERS) {
+                l = Level.WARNING;
             }
             if (LOG.isLoggable(l)) {
                 LOG.log(l,
