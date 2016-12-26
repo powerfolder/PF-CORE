@@ -23,9 +23,10 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -104,10 +105,48 @@ public class ControllerTest extends ControllerTestCase {
                     System.out.println("Completed");
                     run = true;
                 }
-            }, 0, TimeUnit.MILLISECONDS);
+            }, 100, TimeUnit.MILLISECONDS);
         f.get();
         assertTrue("Future is not done yet", f.isDone());
         assertTrue("Not run yet", run);
+    }
+
+
+    /**
+     * PFS-2232 / PFC-2941
+     * 
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public void testScheduledTasks()
+        throws InterruptedException, ExecutionException
+    {
+        final AtomicBoolean interrupted = new AtomicBoolean();
+        // 1) Schedule tasks and wait for execution
+        int nTasks = Constants.CONTROLLER_MIN_THREADS_IN_THREADPOOL * 10;
+        final AtomicInteger maxThreads = new AtomicInteger(0);
+        int waitMS = 1000;
+        for (int i = 0; i < nTasks; i++) {
+            getController().getThreadPool().scheduleWithFixedDelay(() -> {
+                try {
+                    int tCount = ((ScheduledThreadPoolExecutor) getController()
+                        .getThreadPool()).getActiveCount();
+                    if (tCount > maxThreads.get()) {
+                        maxThreads.set(tCount);
+                    }
+                    TestHelper.waitMilliSeconds(waitMS);
+                    System.out
+                        .println(((ScheduledThreadPoolExecutor) getController()
+                            .getThreadPool()).getActiveCount());
+                } catch (RuntimeException e) {
+                    interrupted.set(true);
+                }
+            } , 1, 1, TimeUnit.MILLISECONDS);
+            TestHelper.waitMilliSeconds(1);
+        }
+        TestHelper.waitMilliSeconds(5000);
+        assertTrue("Saw a too big peak in threads in pool: " + maxThreads.get(),
+            maxThreads.get() < nTasks * 2);
     }
 
     /**
@@ -120,24 +159,32 @@ public class ControllerTest extends ControllerTestCase {
     {
         final AtomicBoolean interrupted = new AtomicBoolean();
         // 1) Schedule tasks and wait for execution
-        int nTasks = Constants.CONTROLLER_MIN_THREADS_IN_THREADPOOL * 10;
+        int nTasks = Constants.CONTROLLER_MIN_THREADS_IN_THREADPOOL * 100;
+        final AtomicInteger maxThreads = new AtomicInteger(0);
         int waitMS = 1000;
         for (int i = 0; i < nTasks; i++) {
-            getController().getThreadPool().schedule(new Runnable() {
-                public void run() {
-                    try {
-                        TestHelper.waitMilliSeconds(waitMS);
-                        System.out.print(".");
-                    } catch (RuntimeException e) {
-                        e.printStackTrace();
-                        interrupted.set(true);
-                    }
+            getController().getThreadPool().schedule(() -> {
+                int tCount = ((ScheduledThreadPoolExecutor) getController()
+                    .getThreadPool()).getActiveCount();
+                if (tCount > maxThreads.get()) {
+                    maxThreads.set(tCount);
                 }
-            }, 0, TimeUnit.MILLISECONDS);
+                try {
+                    TestHelper.waitMilliSeconds(waitMS);
+                    System.out
+                        .println(((ScheduledThreadPoolExecutor) getController()
+                            .getThreadPool()).getActiveCount());
+                } catch (RuntimeException e) {
+                    e.printStackTrace();
+                    interrupted.set(true);
+                }
+            } , 1, TimeUnit.MILLISECONDS);
             TestHelper.waitMilliSeconds(1);
         }
         TestHelper.waitMilliSeconds(500);
-
+        assertTrue("Saw a too big peak in threads in pool: " + maxThreads.get(),
+            maxThreads.get() < nTasks * 2);
+        
         // 2) Terminate
         getController().getThreadPool().shutdown();
         getController().getThreadPool().awaitTermination(waitMS * 2,
