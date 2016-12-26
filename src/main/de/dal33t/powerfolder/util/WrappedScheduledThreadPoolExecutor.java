@@ -29,6 +29,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -72,7 +73,7 @@ public class WrappedScheduledThreadPoolExecutor
         if (LOG.isLoggable(Level.FINER)) {
             LOG.log(Level.FINER, "Decorating exec: " + command);            
         }
-        super.execute(new ScheduledRunnable(command));
+        super.execute(new ScheduledRunnable(command, true));
     }
 
     @Override
@@ -85,7 +86,7 @@ public class WrappedScheduledThreadPoolExecutor
             return super.decorateTask(runnable, task);
         }
         LOG.warning("Decorating task: " + runnable);
-        return super.decorateTask(new ScheduledRunnable(runnable), task);
+        return super.decorateTask(new ScheduledRunnable(runnable, true), task);
     }
     
     // Not overriden because super class calls schedule(..)
@@ -141,7 +142,7 @@ public class WrappedScheduledThreadPoolExecutor
         TimeUnit unit)
     {
         checkBusyness();
-        return super.schedule(new ScheduledRunnable(command), delay, unit);
+        return super.schedule(new ScheduledRunnable(command, true), delay, unit);
     }
 
     @Override
@@ -149,7 +150,7 @@ public class WrappedScheduledThreadPoolExecutor
         long initialDelay, long period, TimeUnit unit)
     {
         checkBusyness();
-        return super.scheduleAtFixedRate(new ScheduledRunnable(command),
+        return super.scheduleAtFixedRate(new ScheduledRunnable(command, true),
             initialDelay, period, unit);
     }
 
@@ -158,7 +159,7 @@ public class WrappedScheduledThreadPoolExecutor
         long initialDelay, long delay, TimeUnit unit)
     {
         checkBusyness();
-        return super.scheduleWithFixedDelay(new ScheduledRunnable(command),
+        return super.scheduleWithFixedDelay(new ScheduledRunnable(command, false),
             initialDelay, delay, unit);
     }
     
@@ -197,18 +198,35 @@ public class WrappedScheduledThreadPoolExecutor
     }
 
     private class ScheduledRunnable implements Runnable {
-        private Runnable toBeExecuted;
+        private Runnable task;
+        private boolean concurrentExecutionAllowed;
+        private AtomicBoolean running = new AtomicBoolean(false);
 
-        public ScheduledRunnable(Runnable toBeExecuted) {
+        public ScheduledRunnable(Runnable task,
+            boolean concurrentExecutionAllowed)
+        {
             super();
-            Reject.ifNull(toBeExecuted, "Runnable to be execute is null");
-            this.toBeExecuted = toBeExecuted;
+            Reject.ifNull(task, "Runnable to be execute is null");
+            this.task = task;
+            this.concurrentExecutionAllowed = concurrentExecutionAllowed;
         }
 
         @Override
         public void run() {
             checkBusyness();
-            wrappingThreadPool.submit(toBeExecuted);
+            wrappingThreadPool.submit(() -> {
+                if (concurrentExecutionAllowed
+                    || running.compareAndSet(false, true))
+                {
+                    try {
+                        task.run();
+                    } finally {
+                        running.set(false);
+                    }
+                } else {
+                    //LOG.warning("Skipping execution of " + task);
+                }
+            });
         }
     }
 }
