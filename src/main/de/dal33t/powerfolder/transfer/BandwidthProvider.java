@@ -54,28 +54,24 @@ public class BandwidthProvider extends Loggable {
     }
 
     public void start() {
-        task = scheduledES.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                synchronized (limits) {
-                    for (Map.Entry<BandwidthLimiter, Long> me : limits
-                        .entrySet())
-                    {
-                        BandwidthLimiter limiter = me.getKey();
-                        if (limiter == null) {
-                            continue;
-                        }
-
-                        // Set new limit and distribute the stat from the
-                        // previous period.
-                        Long value = me.getValue();
-                        BandwidthStat stat = limiter.setAvailable(value > 0
-                            ? PERIOD * value / 1000
-                            : BandwidthLimiter.UNLIMITED);
-                        statListenerSupport.handleBandwidthStat(stat);
+        task = scheduledES.scheduleWithFixedDelay(() -> {
+            synchronized (limits) {
+                for (Map.Entry<BandwidthLimiter, Long> me : limits.entrySet()) {
+                    BandwidthLimiter limiter = me.getKey();
+                    if (limiter == null) {
+                        continue;
                     }
+
+                    // Set new limit and distribute the stat from the
+                    // previous period.
+                    Long value = me.getValue();
+                    BandwidthStat stat = limiter.setAvailable(value > 0
+                        ? PERIOD * value / 1000
+                        : BandwidthLimiter.UNLIMITED);
+                    statListenerSupport.handleBandwidthStat(stat);
                 }
             }
-        }, 0, PERIOD, TimeUnit.MILLISECONDS);
+        } , 0, PERIOD, TimeUnit.MILLISECONDS);
     }
 
     public void shutdown() {
