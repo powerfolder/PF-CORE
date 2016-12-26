@@ -31,9 +31,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.WrappedScheduledThreadPoolExecutor;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -123,7 +128,65 @@ public class ControllerTest extends ControllerTestCase {
         assertTrue("Not run yet", run);
     }
 
+    /**
+     * PFS-2232 / PFC-2941
+     * 
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public void testAvoidPeaks()
+        throws InterruptedException, ExecutionException
+    {
+        ConfigurationEntry.FOLDER_WATCHER_ENABLED.setValue(getController(), false);
+        int nFolders = 2000;
+        final AtomicInteger maxThreads = new AtomicInteger(0);
+        getController().scheduleAndRepeat(() -> { 
+            int tCount = ((ScheduledThreadPoolExecutor) getController()
+                .getThreadPool()).getActiveCount();
+            if (tCount > maxThreads.get()) {
+                maxThreads.set(tCount);
+                System.out.println("New thread maximum: " + maxThreads.get());
+            }
+        }, 1);
 
+        for (int i = 0; i < nFolders; i++) {
+            FolderInfo foInfo = new FolderInfo("Test-Folder-" + i,
+                IdGenerator.makeFolderId());
+            joinFolder(foInfo,
+                getController().getFolderRepository().getFoldersBasedir()
+                    .resolve(foInfo.getName()),
+                SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+            if (i % 100 == 0) {
+                System.out.println("Created folder: " + i);
+            }
+        }
+        
+        TestHelper.waitMilliSeconds(5000);
+        System.out.println("Setup completed with " + nFolders + " folders");
+
+        for (Folder folder : getController().getFolderRepository()
+            .getFolders(true))
+        {
+            folder.getStatistic().scheduleCalculate();
+        }
+        TestHelper.waitMilliSeconds(5000);
+        for (Folder folder : getController().getFolderRepository()
+            .getFolders(true))
+        {
+            folder.getStatistic().scheduleCalculate();
+        }
+        TestHelper.waitMilliSeconds(5000);
+        for (Folder folder : getController().getFolderRepository()
+            .getFolders(true))
+        {
+            folder.getStatistic().scheduleCalculate();
+        }
+        
+        TestHelper.waitMilliSeconds(5000);
+        assertTrue("Saw a too big peak in threads in pool: " + maxThreads.get(),
+            maxThreads
+                .get() < WrappedScheduledThreadPoolExecutor.WARN_NUMBER_WORKERS);
+    }
     /**
      * PFS-2232 / PFC-2941
      * 
