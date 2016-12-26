@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Debug;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -108,6 +109,17 @@ public class ControllerTest extends ControllerTestCase {
             }, 100, TimeUnit.MILLISECONDS);
         f.get();
         assertTrue("Future is not done yet", f.isDone());
+        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return run;
+            }
+            
+            @Override
+            public String message() {
+                return "Not run yet!";
+            }
+        });
         assertTrue("Not run yet", run);
     }
 
