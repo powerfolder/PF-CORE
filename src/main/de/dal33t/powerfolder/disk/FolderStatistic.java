@@ -158,7 +158,8 @@ public class FolderStatistic extends PFComponent {
                 // PFC-2941: Avoid peaks in threadpool:
                 // Best effort: 1-5ms takes calculation in avg. per folder
                 double delay = Math.random()
-                    * getController().getFolderRepository().getFoldersCount()
+                    * (getController().getFolderRepository().getFoldersCount()
+                        + 100)
                     * 2;
                 long wait = minimumWait + (long) delay;
                 getController().schedule(calculatorTask, wait);
