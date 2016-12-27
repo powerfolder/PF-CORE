@@ -45,7 +45,7 @@ public class WrappedScheduledThreadPoolExecutor
     private static final Logger LOG = Logger
         .getLogger(WrappedScheduledThreadPoolExecutor.class.getName());
 
-    public static final int WARN_NUMBER_WORKERS = 500;
+    public static final int WARN_NUMBER_WORKERS = 750;
     public static final int SEVERE_NUMBER_WORKERS = 2000;
     
     /**
