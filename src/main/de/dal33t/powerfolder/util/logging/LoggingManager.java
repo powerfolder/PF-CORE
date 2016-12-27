@@ -119,6 +119,30 @@ public class LoggingManager {
             {
                 return false;
             }
+            // PFS-2199:
+            if (loggerName.contains("SchemaExport")
+                && record.getLevel() == Level.SEVERE
+                && record.getMessage() != null)
+            {
+                String m = record.getMessage();
+                if (m.startsWith(
+                    "Index column size too large. The maximum column size is"))
+                {
+                    return false;
+                }
+                if (m.startsWith("Unsuccessful: create index")) {
+                    if (m.contains("IDX_GROUP_LDAPDN")
+                        || m.contains("IDX_LDAPDN")
+                        || m.contains("IDX_ACC_FIRSTNAME")
+                        || m.contains("IDX_SHIB_PID")
+                        || m.contains("IDX_FIL_REL_NAME")
+                        || m.contains("IDX_ORGANIZATION_LDAPDN"))
+                    {
+                        return false;
+                    }
+                }
+            }
+
             if ((loggerName.startsWith("org.hibernate") || loggerName
                 .startsWith("com.mchange"))
                 && record.getLevel().intValue() > Level.FINE.intValue())
