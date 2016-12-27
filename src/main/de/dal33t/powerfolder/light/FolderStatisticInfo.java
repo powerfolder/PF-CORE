@@ -67,7 +67,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     private volatile int totalFilesCount;
 
     // Date at which the folder should be synchronized.
-    private volatile Date estimatedSyncDate;
+    private transient volatile Date estimatedSyncDate;
 
     // Finer values
     private volatile int incomingFilesCount;
@@ -331,13 +331,12 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         }
     }
 
+   
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + (int) (archiveSize ^ (archiveSize >>> 32));
-        result = prime * result
-            + ((estimatedSyncDate == null) ? 0 : estimatedSyncDate.hashCode());
         result = prime * result
             + ((filesCount == null) ? 0 : filesCount.hashCode());
         result = prime * result
@@ -354,51 +353,43 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (!(obj instanceof FolderStatisticInfo)) {
             return false;
+        }
         FolderStatisticInfo other = (FolderStatisticInfo) obj;
-        if (archiveSize != other.archiveSize)
+        if (archiveSize != other.archiveSize) {
             return false;
-        if (estimatedSyncDate == null) {
-            if (other.estimatedSyncDate != null)
-                return false;
-        } else if (!estimatedSyncDate.equals(other.estimatedSyncDate))
+        }
+        if (!Util.equals(filesCount, other.filesCount)) {
             return false;
-        if (filesCount == null) {
-            if (other.filesCount != null)
-                return false;
-        } else if (!filesCount.equals(other.filesCount))
+        }
+        if (!Util.equals(filesCountInSync, other.filesCountInSync)) {
             return false;
-        if (filesCountInSync == null) {
-            if (other.filesCountInSync != null)
-                return false;
-        } else if (!filesCountInSync.equals(other.filesCountInSync))
+        }
+        if (!Util.equals(folder, other.folder)) {
             return false;
-        if (folder == null) {
-            if (other.folder != null)
-                return false;
-        } else if (!folder.equals(other.folder))
+        }
+        if (incomingFilesCount != other.incomingFilesCount) {
             return false;
-        if (incomingFilesCount != other.incomingFilesCount)
+        }
+        if (!Util.equals(sizes, other.sizes)) {
             return false;
-        if (sizes == null) {
-            if (other.sizes != null)
-                return false;
-        } else if (!sizes.equals(other.sizes))
+        }
+        if (!Util.equals(sizesInSync, other.sizesInSync)) {
             return false;
-        if (sizesInSync == null) {
-            if (other.sizesInSync != null)
-                return false;
-        } else if (!sizesInSync.equals(other.sizesInSync))
+        }
+        if (totalFilesCount != other.totalFilesCount) {
             return false;
-        if (totalFilesCount != other.totalFilesCount)
+        }
+        if (totalSize != other.totalSize) {
             return false;
-        if (totalSize != other.totalSize)
-            return false;
+        }
         return true;
     }
 

@@ -224,7 +224,8 @@ public class FolderStatistic extends PFComponent {
                 Folder.FOLDER_STATISTIC + ".writing");
             Path file = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC);
-            if (current.save(tempFile)) {
+            FolderStatisticInfo existing = FolderStatisticInfo.load(file);
+            if (!current.equals(existing) && current.save(tempFile)) {
                 try {
                     Files.deleteIfExists(file);
                     Files.move(tempFile, file);
