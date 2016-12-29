@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -62,6 +63,8 @@ import org.json.JSONObject;
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Organization implements Serializable {
+
+    private static final Logger LOG = Logger.getLogger(Organization.class.getName());
     private static final long serialVersionUID = 100L;
 
     public static final int UNLIMITED_USERS = 999999999;
@@ -223,7 +226,21 @@ public class Organization implements Serializable {
         if (jsonData == null) {
             return new JSONObject();
         }
-        return new JSONObject(jsonData);
+        try {
+            return new JSONObject(jsonData);
+        } catch (JSONException e) {
+            LOG.severe("Illegal JSON data for " + name + ": " + jsonData
+                + ". " + e);
+            return new JSONObject();
+        }
+    }
+
+    public void setJSONObject(JSONObject jsonObject) {
+        if (jsonObject == null) {
+            this.jsonData = null;
+            return;
+        }
+        this.jsonData = jsonObject.toString();
     }
 
     /**
