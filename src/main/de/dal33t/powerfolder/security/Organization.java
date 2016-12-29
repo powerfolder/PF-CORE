@@ -115,7 +115,7 @@ public class Organization implements Serializable {
     /**
      * PFS-2188
      */
-    @Column(length = 4096)
+    @Column(length = 4000)
     private String jsonData;
 
     public Organization() {
