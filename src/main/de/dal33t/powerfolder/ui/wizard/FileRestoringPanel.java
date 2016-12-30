@@ -31,8 +31,6 @@ import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -42,8 +40,11 @@ import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardPanel;
 
 public class FileRestoringPanel extends PFWizardPanel {
 
@@ -194,7 +195,8 @@ public class FileRestoringPanel extends PFWizardPanel {
                     if (restored) {
                         fo.scanChangedFile(fileInfo);
                         fo.scanAllParentDirectories(fileInfo);
-                        log.info("Restored " + fileInfo.getFilenameOnly() + " from local archive");
+                        log.info("Restored " + fileInfo.getFilenameOnly()
+                            + " from local version history");
                         filesProcessedSuccessfully++;
                     }
                 }
@@ -215,20 +217,35 @@ public class FileRestoringPanel extends PFWizardPanel {
                                 targetRelativeName = relativeName;
                             }
                             FileInfo onlineRestoredFileInfo = service.restore(fileInfo, targetRelativeName);
-                            log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from OS archive");
+                            log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from cloud");
                             filesProcessedSuccessfully++;
                             restored = true;
                         }
                     }
                 }
 
-                if (!restored) {
-                    log.info("Failed to restore " + fileInfo.getFilenameOnly());
+                if (restored) {
+                    // PFC-2831:
+                    removeFileConflictProblem(fo, fileInfo);
+                } else {
+                    log.warning(
+                        "Failed to restore " + fileInfo.getFilenameOnly());
                 }
 
                 publish(fileInfo);
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Failed to restore " + fileInfo.getFilenameOnly(), e);
+            }
+        }
+
+        private void removeFileConflictProblem(Folder fo, FileInfo fileInfo) {
+            for (Problem problem : fo.getProblems()) {
+                if (problem instanceof FileConflictProblem) {
+                    FileConflictProblem fcp = (FileConflictProblem) problem;
+                    if (fcp.getFileInfo().equals(fileInfo)) {
+                        fo.removeProblem(problem);
+                    }
+                }
             }
         }
 
