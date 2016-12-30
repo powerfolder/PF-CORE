@@ -636,7 +636,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // ============
 
         scanBaseDirFuture = getController().getThreadPool()
-            .scheduleAtFixedRate(() -> {
+            .scheduleWithFixedDelay(() -> {
                 scanBasedir();
             } , 10L, 10L, TimeUnit.SECONDS);
 
@@ -1969,7 +1969,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (foInfo == null || stillPresent) {
             foInfo = new FolderInfo(file.getFileName().toString(),
                 IdGenerator.makeFolderId());
-            createdNew= true;
+            createdNew = true;
         } else {
             if (!getController().getSecurityManager().hasPermission(
                 getMySelf().getInfo(), FolderPermission.read(foInfo)))
@@ -1988,6 +1988,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getValueInt(getController()));
        
         // 1) Create at cloud service
+        boolean scheduleCreateOnServer = false;
         if (client.isBackupByDefault() && !client.joinedByCloud(foInfo)) {
             // Make sure it is backed up by the server.
             try {
@@ -1999,17 +2000,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                         .setArchiveMode(foInfo, fs.getVersions());
                 }
             } catch (Exception e) {
-                logFine("Scheduling setup of folder: " + foInfo.getName());
-                CreateFolderOnServerTask task = new CreateFolderOnServerTask(
-                    foInfo, null);
-                task.setArchiveVersions(fs.getVersions());
-                getController().getTaskManager().scheduleTask(task);
+                scheduleCreateOnServer = true;
             }
         }
         
         // 2) Sync locally
         Folder folder = createFolder0(foInfo, fs, true);
         folder.addDefaultExcludes();
+        
+        if (scheduleCreateOnServer) {
+            logWarning("Scheduling setup of folder: " + foInfo.getName());
+            CreateFolderOnServerTask task = new CreateFolderOnServerTask(foInfo,
+                null);
+            task.setArchiveVersions(fs.getVersions());
+            getController().getTaskManager().scheduleTask(task);
+        }
 
         logInfo("Auto-setup " + (createdNew ? "new" : "existing") + " folder: "
             + folder.getName() + "/" + folder.getId() + " @ "
@@ -2657,6 +2662,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 // Make sure it is backed up by the server.
+                boolean scheduleCreateOnServer = false;
                 try {
                     // Do it synchronous. Otherwise we might get race conditions.
                     getController().getOSClient().getFolderService()
@@ -2666,15 +2672,19 @@ public class FolderRepository extends PFComponent implements Runnable {
                             .setArchiveMode(foInfo, settings.getVersions());
                     }
                 } catch (Exception e) {
-                    logFine("Scheduling setup of folder: " + folderName);
-                    CreateFolderOnServerTask task = new CreateFolderOnServerTask(
-                        foInfo, null);
-                    task.setArchiveVersions(settings.getVersions());
-                    getController().getTaskManager().scheduleTask(task);
+                    scheduleCreateOnServer = true;
                 }
                 
                 Folder folder = createFolder0(foInfo, settings, true);
                 folder.addDefaultExcludes();
+                
+                if (scheduleCreateOnServer) {
+                    logFine("Scheduling setup of folder: " + foInfo.getName());
+                    CreateFolderOnServerTask task = new CreateFolderOnServerTask(foInfo,
+                        null);
+                    task.setArchiveVersions(settings.getVersions());
+                    getController().getTaskManager().scheduleTask(task);
+                }
 
                 // Remove from pending entries.
                 it.remove();

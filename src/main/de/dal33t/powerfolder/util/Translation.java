@@ -186,7 +186,7 @@ public class Translation {
                     }
                 }
                 resourceBundle = ResourceBundle.getBundle("Translation",
-                    confLang);
+                    confLang, new UTF8Control());
 
                 log.info("Default Locale '" + Locale.getDefault()
                     + "', using '" + resourceBundle.getLocale()

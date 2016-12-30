@@ -45,10 +45,11 @@ public final class RemoveComputerFromAccountTask extends ServerRemoteCallTask {
     }
 
     @Override
-    public void executeRemoteCall(ServerClient client) {
+    public boolean executeRemoteCall(ServerClient client) {
         LOG.fine("Removing computer from account: " + node);
         client.getAccountService().removeComputer(node);
         // Remove task
         remove();
+        return true;
     }
 }

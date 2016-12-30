@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -74,25 +75,34 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
     }
 
     @Override
-    public void executeRemoteCall(ServerClient client) throws Exception {
+    public boolean executeRemoteCall(ServerClient client) throws Exception {
         if (!getController().getFolderRepository().hasJoinedFolder(foInfo)) {
             LOG.warning("Not longer locally synced. "
-                + "Not setting up cloud backup for: " + foInfo);
+                + "Not setting up cloud sync for: " + foInfo);
             // Remove task
             remove();
+            return true;
         }
+
         if (client.isLoggedIn()) {
             // Only do this with security context.
-            LOG.info("Setting folder up for cloud backup: " + foInfo);
+            LOG.info("Setting folder up for cloud sync: " + foInfo);
             client.getFolderService().createFolder(foInfo, syncProfile);
 
             if (archiveVersions != null) {
-                client.getFolderService().setArchiveMode(foInfo, archiveVersions);
+                client.getFolderService().setArchiveMode(foInfo,
+                    archiveVersions);
             }
-
-            // Remove task
-            remove();
+            if (client.getSecurityService().hasPermission(
+                client.getAccountInfo(), FolderPermission.read(foInfo)))
+            {
+                // Remove task
+                remove();
+                return true;
+            } else {
+                LOG.warning("Did not receive access permission to " + foInfo);
+            }
         }
+        return false;
     }
-
 }

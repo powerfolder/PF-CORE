@@ -25,18 +25,19 @@ public class FolderObtainPermissionTask extends ServerRemoteCallTask {
     }
 
     @Override
-    public void executeRemoteCall(ServerClient client) throws Exception {
+    public boolean executeRemoteCall(ServerClient client) throws Exception {
         if (!getController().getFolderRepository().hasJoinedFolder(foInfo)) {
             remove();
-            return;
+            return true;
         }
         if (getController().getOSClient().getServer().isMySelf()) {
             remove();
-            return;
+            return true;
         }
         FolderPermission fp = client.getSecurityService()
             .obtainFolderPermission(foInfo);
         LOG.fine("Obtained permission on " + foInfo + ": " + fp);
         remove();
+        return true;
     }
 }

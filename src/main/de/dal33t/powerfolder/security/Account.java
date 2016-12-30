@@ -184,7 +184,7 @@ public class Account implements Serializable, D2DObject {
     private String custom3;
     
     // PFS-1656
-    @Column(length = 4096)
+    @Column(length = 4000)
     private String jsonData;
 
     @Column(length = 2048)

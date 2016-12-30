@@ -942,7 +942,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             } else {
                 if (lastProblem == null) {
-                    message = "Did not receive a handshake not acknownledged (or problem) by " + getNick() + " after "
+                    message = "Did not receive a handshake not acknownledged (or problem) from " + getNick() + " after "
                         + (int) (took / 1000) + 's';
                 }
             }
@@ -1166,7 +1166,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             boolean noChangeReceivedSineOneMinute = System.currentTimeMillis()
                 - lastMessageReceived.getTime() > 1000L * 60;
             if (noChangeReceivedSineOneMinute) {
-                logWarning("No message received since 1 minute while waiting for handshake complete");
+                logWarning("No message received from " + getNick()
+                    + " since 1 minute while waiting for handshake complete");
                 return false;
             }
             if (!isConnected()) {

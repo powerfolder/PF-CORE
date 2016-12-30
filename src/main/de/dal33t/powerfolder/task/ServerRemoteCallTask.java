@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.task;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
@@ -86,10 +87,14 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
             return;
         }
         ServerClient client = getController().getOSClient();
+        listener = new MyServerClientListener();
+        client.addListener(listener);
+
         if (!checkAndExecute(client)) {
             // Queue for later executing
-            listener = new MyServerClientListener();
-            client.addListener(listener);
+            getController().schedule(() -> {
+                checkAndExecute(client);
+            } , 3000);
         }
     }
 
@@ -111,12 +116,12 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
      *             if something went wrong. Task will be KEPT for later
      *             execution re-try.
      */
-    protected abstract void executeRemoteCall(ServerClient client)
+    protected abstract boolean executeRemoteCall(ServerClient client)
         throws Exception;
 
     // Internal ***************************************************************
 
-    private boolean checkAndExecute(ServerClient client) {
+    private synchronized boolean checkAndExecute(ServerClient client) {
         if (!client.isConnected()) {
             return false;
         }
@@ -132,8 +137,11 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
             }
         }
         try {
-            executeRemoteCall(client);
-            return true;
+            return executeRemoteCall(client);
+        } catch (RemoteCallException e) {
+            LOG.log(Level.WARNING,
+                "Exception while executing remote call. " + e);
+            return false;
         } catch (Exception e) {
             LOG.log(Level.SEVERE,
                 "Exception while executing remote call. " + e, e);

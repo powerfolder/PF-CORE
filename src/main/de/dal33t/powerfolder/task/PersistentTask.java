@@ -35,7 +35,7 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision$
  */
 public abstract class PersistentTask implements Serializable {
-    protected static final int DEFAULT_DAYS_TO_EXIPRE = 14;
+    protected static final int DEFAULT_DAYS_TO_EXIPRE = 30;
 
     // For backward compatibility
     private static final long serialVersionUID = -2476895105703987123L;
