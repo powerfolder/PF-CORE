@@ -24,7 +24,8 @@ public class FileConflictProblem extends ResolvableProblem {
     @Override
     public String getDescription() {
         return Translation.get("file_conflict_problem.description",
-            fInfo.getRelativeName());
+            fInfo.getFolderInfo().getLocalizedName() + '/'
+                + fInfo.getRelativeName());
     }
 
     @Override
