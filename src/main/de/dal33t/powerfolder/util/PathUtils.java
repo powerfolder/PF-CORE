@@ -130,7 +130,8 @@ public class PathUtils {
             throw new NullPointerException("File is null");
         }
         try {
-            new ZipFile(file.toAbsolutePath().toString());
+            ZipFile zipFile = new ZipFile(file.toAbsolutePath().toString());
+            zipFile.close();
         } catch (ZipException e) {
             return false;
         } catch (IOException e) {
