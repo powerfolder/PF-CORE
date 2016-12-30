@@ -1753,7 +1753,7 @@ public class PathUtils {
                             }
                             try {
                                 Files.copy(dir, targetDir);
-                            } catch (FileAlreadyExistsException e) {
+                            } catch (IOException e) {
                                 if (!Files.isDirectory(targetDir))
                                     System.out.println("Could not move file.");
                             }
@@ -1789,7 +1789,7 @@ public class PathUtils {
                             }
                             try {
                                 Files.copy(dir, targetDir);
-                            } catch (FileAlreadyExistsException e) {
+                            } catch (IOException e) {
                                 if (!Files.isDirectory(targetDir))
                                     System.out.println("Could not move file.");
                             }
