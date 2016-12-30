@@ -51,7 +51,7 @@ public class PathUtilsTest extends TestCase {
 
     public void testFileInDirectory() {
 
-        boolean okay = true;
+        boolean okay;
         Path testDir = TestHelper.getTestDir();
 
         // Test null file.
@@ -59,7 +59,7 @@ public class PathUtilsTest extends TestCase {
             PathUtils.isFileInDirectory(null, testDir);
             okay = false;
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            okay = true;
         }
         assertTrue("Process a null file", okay);
 
@@ -68,7 +68,7 @@ public class PathUtilsTest extends TestCase {
             PathUtils.isFileInDirectory(Paths.get("x"), null);
             okay = false;
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            okay = true;
         }
         assertTrue("Process a null directory", okay);
 
@@ -376,7 +376,6 @@ public class PathUtilsTest extends TestCase {
         try {
             PathUtils.recursiveCopy(baseDir, copyDir);
         } catch (IOException e) {
-            e.printStackTrace();
             success = false;
         }
 
@@ -390,7 +389,6 @@ public class PathUtilsTest extends TestCase {
         try {
             PathUtils.recursiveCopy(baseDir, copyDir);
         } catch (IOException e) {
-            e.printStackTrace();
             success = false;
         }
 
@@ -437,7 +435,6 @@ public class PathUtilsTest extends TestCase {
         try {
             PathUtils.recursiveMove(baseDir, copyDir);
         } catch (IOException e) {
-            e.printStackTrace();
             success = false;
         }
 
