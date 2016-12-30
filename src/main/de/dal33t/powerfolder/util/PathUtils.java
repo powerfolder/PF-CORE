@@ -1747,7 +1747,7 @@ public class PathUtils {
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                                 throws IOException {
                             Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
-                            if (!Files.exists(targetDir)) {
+                            if (Files.notExists(targetDir)) {
                                 Files.createDirectories(targetDir);
                             }
                             try {
@@ -1783,7 +1783,7 @@ public class PathUtils {
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                                 throws IOException {
                             Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
-                            if (!Files.exists(targetDir)) {
+                            if (Files.notExists(targetDir)) {
                                 Files.createDirectories(targetDir);
                             }
                             try {
