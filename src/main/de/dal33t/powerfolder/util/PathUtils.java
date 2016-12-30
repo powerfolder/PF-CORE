@@ -1736,8 +1736,6 @@ public class PathUtils {
                             if (Files.notExists(targetDir)) {
                                 Files.createDirectories(targetDir);
                             }
-
-                            Files.copy(dir, targetDir);
                             return CONTINUE;
                         }
 
@@ -1768,7 +1766,6 @@ public class PathUtils {
                             if (Files.notExists(targetDir)) {
                                 Files.createDirectories(targetDir);
                             }
-                            Files.copy(dir, targetDir);
                             return CONTINUE;
                         }
 
