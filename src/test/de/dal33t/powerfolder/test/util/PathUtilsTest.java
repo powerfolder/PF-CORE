@@ -797,34 +797,8 @@ public class PathUtilsTest extends TestCase {
         TestHelper.createRandomFile(dir, "c");
         TestHelper.createRandomFile(sub, "d");
 
-        // Moving from a higher directory to a lower directory should throw an IOException.
-        Path moveDir = Paths.get("build/test/sub").toAbsolutePath();
-        boolean success = true;
-        try {
-            PathUtils.recursiveMoveVisitor(baseDir, moveDir);
-        } catch (IOException e) {
-            e.printStackTrace();
-            success = false;
-        }
-
-        assertFalse(success);
-
-        // Moving from a higher directory to a lower directory should throw an IOException - also with subsubdirs.
-        moveDir = Paths.get("build/test/sub/subsub").toAbsolutePath();
-        Files.createDirectories(moveDir);
-
-        success = true;
-        try {
-            PathUtils.recursiveMoveVisitor(baseDir, moveDir);
-        } catch (IOException e) {
-            e.printStackTrace();
-            success = false;
-        }
-
-        assertFalse(success);
-
         // Now check the real move function.
-        moveDir = baseDir.resolve("moveDir");
+        Path moveDir = baseDir.resolve("moveDir");
         PathUtils.recursiveMoveVisitor(dir, moveDir);
 
         assertTrue(Files.exists(moveDir.resolve("b")));
@@ -858,34 +832,8 @@ public class PathUtilsTest extends TestCase {
         TestHelper.createRandomFile(dir, "c");
         TestHelper.createRandomFile(sub, "d");
 
-        // Copying from a higher directory to a lower directory should throw an IOException.
-        Path copyDir = Paths.get("build/test/sub").toAbsolutePath();
-        boolean success = true;
-        try {
-            PathUtils.recursiveCopyVisitor(baseDir, copyDir);
-        } catch (IOException e) {
-            e.printStackTrace();
-            success = false;
-        }
-
-        assertFalse(success);
-
-        // Copying from a higher directory to a lower directory should throw an IOException - also with subsubdirs.
-        copyDir = Paths.get("build/test/sub/subsub").toAbsolutePath();
-        Files.createDirectories(copyDir);
-
-        success = true;
-        try {
-            PathUtils.recursiveCopyVisitor(baseDir, copyDir);
-        } catch (IOException e) {
-            e.printStackTrace();
-            success = false;
-        }
-
-        assertFalse(success);
-
         // Now check the real copy function.
-        copyDir = baseDir.resolve("copyDir");
+        Path copyDir = baseDir.resolve("copyDir");
         PathUtils.recursiveCopyVisitor(dir, copyDir);
 
         assertTrue(Files.exists(copyDir.resolve("b")));
