@@ -1751,12 +1751,8 @@ public class PathUtils {
                             if (Files.notExists(targetDir)) {
                                 Files.createDirectories(targetDir);
                             }
-                            try {
-                                Files.copy(dir, targetDir);
-                            } catch (IOException e) {
-                                if (!Files.isDirectory(targetDir))
-                                    System.out.println("Could not move file.");
-                            }
+
+                            Files.copy(dir, targetDir);
                             return CONTINUE;
                         }
 
@@ -1787,12 +1783,7 @@ public class PathUtils {
                             if (Files.notExists(targetDir)) {
                                 Files.createDirectories(targetDir);
                             }
-                            try {
-                                Files.copy(dir, targetDir);
-                            } catch (IOException e) {
-                                if (!Files.isDirectory(targetDir))
-                                    System.out.println("Could not move file.");
-                            }
+                            Files.copy(dir, targetDir);
                             return CONTINUE;
                         }
 
