@@ -1,11 +1,8 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.protocol.AccountProto;
 import de.dal33t.powerfolder.protocol.LoginReplyProto;
-import de.dal33t.powerfolder.security.Account;
 
 public class LoginReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
