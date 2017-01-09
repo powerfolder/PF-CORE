@@ -87,7 +87,6 @@ public class Organization implements Serializable {
 
     private int maxUsers;
 
-    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
     @Index(name = "IDX_ORGANIZATION_LDAPDN")
     @Column(length = 512)
     private String ldapDN;

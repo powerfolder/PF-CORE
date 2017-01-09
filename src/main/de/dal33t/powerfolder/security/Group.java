@@ -78,7 +78,6 @@ public class Group implements Serializable, D2DObject {
     @Column(nullable = false)
     private String name;
 
-    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
     @Index(name = "IDX_GROUP_LDAPDN")
     @Column(length = 512)
     private String ldapDN;

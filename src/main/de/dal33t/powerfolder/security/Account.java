@@ -151,13 +151,11 @@ public class Account implements Serializable, D2DObject {
     private Map<ServerInfo, String> tokens;
     
     private String language;
-    
-    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
+
     @Index(name = "IDX_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
     
-    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
     @Index(name = "IDX_SHIB_PID")
     @Column(length = 2048)
     private String shibbolethPersistentID;
@@ -170,7 +168,6 @@ public class Account implements Serializable, D2DObject {
 
     @Column(length = 255)
     @Index(name = "IDX_ACC_FIRSTNAME")
-    // PFS-2199: FIXME: Index cannot be create on initial DB mySQL setup.
     private String firstname;
     @Column(length = 255)
     @Index(name = "IDX_ACC_SURNAME")
@@ -261,7 +258,6 @@ public class Account implements Serializable, D2DObject {
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
-    // PFS-2199: FIXME: Index is not created: IDX_AP_ELM
     private Collection<Permission> permissions;
 
     @ManyToMany
