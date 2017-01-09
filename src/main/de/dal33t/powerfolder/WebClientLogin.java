@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * PFS-2871: Client authentication an with web token over HTTP.
+ * PFS-2871: Client authentication with HTTP web token.
  * @author <a href="mailto:wiegmann@powerfolder.com>Jan Wiegmann</a>
  */
 
@@ -108,7 +108,7 @@ public class WebClientLogin extends PFComponent {
 
         String originalURI;
         try {
-            originalURI = InetAddress.getLocalHost().getHostName();
+            originalURI = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             originalURI = ConfigurationEntry.HOSTNAME.getValue(getController());
         }
