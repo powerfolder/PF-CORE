@@ -1751,29 +1751,26 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         // Get all directories
-        Filter<Path> filter = new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                String name = entry.getFileName().toString();
-                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
-                    return false;
-                }
-                if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                    .getValue(getController()))
-                    || name
-                        .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                            .getDefaultValue()))
-                {
-                    return false;
-                }
-                if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
-                    return false;
-                }
-                if (!Files.isDirectory(entry)) {
-                    return false;
-                }
-                return !containedInRemovedFolders(entry);
+        Filter<Path> filter = entry -> {
+            String name = entry.getFileName().toString();
+            if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                return false;
             }
+            if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                .getValue(getController()))
+                || name
+                    .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                        .getDefaultValue()))
+            {
+                return false;
+            }
+            if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
+                return false;
+            }
+            if (!Files.isDirectory(entry)) {
+                return false;
+            }
+            return !containedInRemovedFolders(entry);
         };
 
         try (DirectoryStream<Path> directories = Files.newDirectoryStream(
@@ -1782,19 +1779,27 @@ public class FolderRepository extends PFComponent implements Runnable {
                 boolean known = false;
                 for (Folder folder : getFolders()) {
                     if (!getMySelf().isServer()) {
-                        if (folder.getName().equals(
-                            dir.getFileName().toString()))
-                        {
+                        if (folder.getName().equals(dir.getFileName().toString())) {
                             known = true;
                             break;
                         }
                     }
                     Path localBase = folder.getLocalBase();
-                    if (localBase.equals(localBase.getFileSystem().getPath(dir.toString()))
-                            || localBase.toAbsolutePath().startsWith(localBase.getFileSystem().getPath(dir.toAbsolutePath().toString()))
-                            || localBase.toAbsolutePath().startsWith(dir.toAbsolutePath())
-                            || localBase.equals(dir))
-                    {
+
+                    // PFS-2871: Functionality to setup directories behind symlinks as folders.
+                    if (Files.isSymbolicLink(localBase)){
+                        localBase = localBase.toRealPath();
+                    }
+
+                    if (Files.isSymbolicLink(dir)){
+                        dir = dir.toRealPath();
+                    }
+
+                    if (EncryptedFileSystemUtils.isCryptoInstance(localBase)){
+                        localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
+                    }
+
+                    if (Files.isSameFile(localBase, dir) || localBase.toString().startsWith(dir.toString())) {
                         known = true;
                         break;
                     }
@@ -1808,40 +1813,37 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         if (!getMySelf().isServer() && getController().isUIEnabled()) {
-            filter = new Filter<Path>() {
-                @Override
-                public boolean accept(Path entry) {
-                    if (Files.isDirectory(entry)) {
-                        return false;
-                    }
-                    if (PathUtils.isDesktopIni(entry)) {
-                        return false;
-                    }
-                    if (entry.getFileName().toString().toLowerCase()
-                        .endsWith(".lnk"))
-                    {
-                        return false;
-                    }
-                    if (entry
-                        .getFileName()
-                        .toString()
-                        .equalsIgnoreCase(
-                            Constants.GETTING_STARTED_GUIDE_FILENAME))
-                    {
-                        return false;
-                    }
-                    try {
-                        if (Files.isHidden(entry)) {
-                            return false;
-                        }
-                    } catch (IOException e) {
-                        logFine("Could not find out if '"
-                            + entry.toAbsolutePath().toString()
-                            + "' is hidden. " + e);
-                        return false;
-                    }
-                    return true;
+            filter = entry -> {
+                if (Files.isDirectory(entry)) {
+                    return false;
                 }
+                if (PathUtils.isDesktopIni(entry)) {
+                    return false;
+                }
+                if (entry.getFileName().toString().toLowerCase()
+                    .endsWith(".lnk"))
+                {
+                    return false;
+                }
+                if (entry
+                    .getFileName()
+                    .toString()
+                    .equalsIgnoreCase(
+                        Constants.GETTING_STARTED_GUIDE_FILENAME))
+                {
+                    return false;
+                }
+                try {
+                    if (Files.isHidden(entry)) {
+                        return false;
+                    }
+                } catch (IOException e) {
+                    logFine("Could not find out if '"
+                        + entry.toAbsolutePath().toString()
+                        + "' is hidden. " + e);
+                    return false;
+                }
+                return true;
             };
 
             // Clear all FileInBasePathWarnings before generating new ones
