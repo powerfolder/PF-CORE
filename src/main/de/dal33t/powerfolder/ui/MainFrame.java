@@ -1045,8 +1045,7 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void doCloseOperation() {
-        // Disable minimization for Linux until tray icons can be displayed correctly
-        if (!OSUtil.isLinux() && OSUtil.isSystraySupported()) {
+        if (OSUtil.isSystraySupported()) {
             if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
                 handleExitFirstRequest();
             }
@@ -1128,9 +1127,16 @@ public class MainFrame extends PFUIComponent {
          * @param e
          */
         public void windowIconified(WindowEvent e) {
-            getUIController().hideChildPanels();
-            if (OSUtil.isSystraySupported()) {
-                uiComponent.setVisible(false);
+            String desk = OSUtil.getDesktopEnvironment();
+
+            // #PFC-2914: Currently plasma (KDE's window manager) lacks proper support for java
+            //            tray handling, so hiding all windows on iconification makes it impossible
+            //            to get the window back.
+            if(null == desk || !desk.equals("KDE")) {
+                getUIController().hideChildPanels();
+                if (OSUtil.isSystraySupported()) {
+                    uiComponent.setVisible(false);
+                }
             }
         }
     }
@@ -1285,9 +1291,8 @@ public class MainFrame extends PFUIComponent {
                         Translation.get("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                // Disable minimize button for Linux until tray icons can be displayed correctly
-                minusButton.setVisible(!OSUtil.isLinux() && (!OSUtil.isSystraySupported() ||
-                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController())));
+                minusButton.setVisible(OSUtil.isSystraySupported() &&
+                        !PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 checkSplitMinWidth();
                 break;
             case NORMAL :
@@ -1305,9 +1310,8 @@ public class MainFrame extends PFUIComponent {
 
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                // Disable minimize button for Linux until tray icons can be displayed correctly
-                minusButton.setVisible(!OSUtil.isLinux() && (!OSUtil.isSystraySupported() ||
-                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController())));
+                minusButton.setVisible(OSUtil.isSystraySupported() &&
+                        !PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 configureNormalSize();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
@@ -1335,9 +1339,8 @@ public class MainFrame extends PFUIComponent {
                         Translation.get("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                // Disable minimize button for Linux until tray icons can be displayed correctly
-                minusButton.setVisible(!OSUtil.isLinux() && (!OSUtil.isSystraySupported() ||
-                        PreferencesEntry.QUIT_ON_X.getValueBoolean(getController())));
+                minusButton.setVisible(OSUtil.isSystraySupported() &&
+                        !PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
                 toFront();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
