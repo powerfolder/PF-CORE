@@ -2,11 +2,10 @@ package de.dal33t.powerfolder;
 
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,9 +80,7 @@ public class WebClientLogin extends PFComponent {
 
                     if (line != null && line.startsWith("GET")) {
                         if (line.contains("/login")) {
-                            String remoteSocketAddress = socket.getRemoteSocketAddress().toString();
-                            remoteSocketAddress = remoteSocketAddress.substring(1, remoteSocketAddress.indexOf(":"));
-                            sendAuthenticationRequest(socket.getOutputStream(), remoteSocketAddress);
+                            sendAuthenticationRequest(socket.getOutputStream(), getInetAddress());
                         } else if (line.contains(Constants.LOGIN_PARAM_OR_HEADER_TOKEN)) {
                             consumeToken(line);
                             sendAuthSuccessRequest(socket.getOutputStream());
@@ -106,6 +103,24 @@ public class WebClientLogin extends PFComponent {
                 }
             }
         }
+    }
+
+    private String getInetAddress() throws SocketException {
+
+        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+
+        String inetAddress = null;
+        for (NetworkInterface netint : Collections.list(nets)) {
+            if (netint.getDisplayName().contains("bond0")) {
+                Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+                for (InetAddress address : Collections.list(inetAddresses)) {
+                    if (address instanceof Inet4Address) {
+                        inetAddress = address.toString();
+                    }
+                }
+            }
+        }
+        return inetAddress.replace("/", "");
     }
 
     private void sendAuthenticationRequest(OutputStream os, String originalURI) {
