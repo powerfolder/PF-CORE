@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 /**
  * PFS-2871: Client authentication with HTTP web token.
+ *
  * @author <a href="mailto:wiegmann@powerfolder.com>Jan Wiegmann</a>
  */
 
@@ -31,7 +32,6 @@ public class WebClientLogin extends PFComponent {
         Integer port = ConfigurationEntry.WEB_CLIENT_PORT
                 .getValueInt(getController());
         try {
-            // Only bind to localhost
             serverSocket = new ServerSocket(port);
 
             // Start thread
@@ -50,7 +50,7 @@ public class WebClientLogin extends PFComponent {
 
     }
 
-    public void stop(){
+    public void stop() {
         myThread.interrupt();
         try {
             serverSocket.close();
@@ -76,17 +76,21 @@ public class WebClientLogin extends PFComponent {
                 try {
                     BufferedReader reader = new BufferedReader(
                             new InputStreamReader(socket.getInputStream(), "UTF-8"));
+
                     String line = reader.readLine();
-                    if (line == null) {
-                        logFine("Did not receive valid authentication request");
-                    } else if (line.startsWith("GET")) {
+
+                    if (line != null && line.startsWith("GET")) {
                         if (line.contains("/login")) {
-                            sendAuthenticationRequest(socket.getOutputStream());
+                            String remoteSocketAddress = socket.getRemoteSocketAddress().toString();
+                            remoteSocketAddress = remoteSocketAddress.substring(1, remoteSocketAddress.indexOf(":"));
+                            sendAuthenticationRequest(socket.getOutputStream(), remoteSocketAddress);
                         } else if (line.contains(Constants.LOGIN_PARAM_OR_HEADER_TOKEN)) {
                             consumeToken(line);
                             sendAuthSuccessRequest(socket.getOutputStream());
                         }
                     }
+                    reader.close();
+
                 } catch (Exception e) {
                     logWarning("Problems parsing authentication request from " + socket + ". " + e);
                     logFiner(e);
@@ -104,13 +108,14 @@ public class WebClientLogin extends PFComponent {
         }
     }
 
-    private void sendAuthenticationRequest(OutputStream os){
+    private void sendAuthenticationRequest(OutputStream os, String originalURI) {
 
-        String originalURI;
-        try {
-            originalURI = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            originalURI = ConfigurationEntry.HOSTNAME.getValue(getController());
+        if (originalURI == null) {
+            try {
+                originalURI = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                originalURI = ConfigurationEntry.HOSTNAME.getValue(getController());
+            }
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -131,7 +136,7 @@ public class WebClientLogin extends PFComponent {
         pw.close();
     }
 
-    private void sendAuthSuccessRequest(OutputStream os){
+    private void sendAuthSuccessRequest(OutputStream os) {
 
         StringBuilder stringBuilder = new StringBuilder();
 
