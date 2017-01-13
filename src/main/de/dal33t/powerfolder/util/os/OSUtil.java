@@ -146,6 +146,16 @@ public class OSUtil {
     }
 
     /**
+     * Get current desktop environment based on XDG_CURRENT_DESKTOP env variable
+     *
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @return name of current desktop environment (like: Unity, KDE) or null if unset
+     */
+    public static String getDesktopEnvironment() {
+        return System.getenv("XDG_CURRENT_DESKTOP");
+    }
+
+    /**
      * Tested on Windows Vista 64 bit with 32 bit VM. This method correctly
      * returns false on this setup.
      * <P>
