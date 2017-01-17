@@ -108,6 +108,7 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.LinuxUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
 
@@ -1127,7 +1128,7 @@ public class MainFrame extends PFUIComponent {
          * @param e
          */
         public void windowIconified(WindowEvent e) {
-            String desk = OSUtil.getDesktopEnvironment();
+            String desk = LinuxUtil.getDesktopEnvironment();
 
             // #PFC-2914: Currently plasma (KDE's window manager) lacks proper support for java
             //            tray handling, so hiding all windows on iconification makes it impossible
