@@ -27,14 +27,13 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
@@ -52,6 +51,7 @@ import javax.net.ssl.TrustManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import de.dal33t.powerfolder.util.os.LinuxUtil;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -386,7 +386,7 @@ public class Util {
     }
 
     /**
-     * Creates a desktop shortcut. currently only available on windows systems
+     * Creates a desktop shortcut.
      *
      * @param shortcutName
      * @param shortcutTarget
@@ -395,25 +395,42 @@ public class Util {
     public static boolean createDesktopShortcut(String shortcutName,
         Path shortcutTarget)
     {
-        WinUtils util = WinUtils.getInstance();
-        if (util == null) {
-            return false;
-        }
-        LOG.finer("Creating desktop shortcut to "
-            + shortcutTarget.toAbsolutePath());
-        ShellLink link = new ShellLink(null, shortcutName,
-            shortcutTarget.toAbsolutePath().toString(), null);
+        LOG.finer("Creating desktop shortcut to " +
+                shortcutTarget.toAbsolutePath());
 
-        Path scut = Paths.get(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
-            false), shortcutName + Constants.LINK_EXTENSION);
         try {
-            util.createLink(link, scut.toAbsolutePath().toString());
-            return true;
-        } catch (IOException e) {
-            LOG.warning("Couldn't create shortcut " + scut.toAbsolutePath());
+            /* Handle different OSes */
+            if (OSUtil.isLinux()) {
+                Path desktopPath = LinuxUtil.getDesktopDirPath();
+                Path linkPath    = Paths.get(desktopPath.toString(), shortcutName);
+
+                if (Files.exists(desktopPath) && Files.notExists(linkPath)) {
+                        Files.createSymbolicLink(linkPath,
+                                shortcutTarget.toAbsolutePath());
+
+                    return true;
+                }
+            } else {
+                WinUtils util = WinUtils.getInstance();
+
+                if (util != null) {
+                    ShellLink link = new ShellLink(null, shortcutName,
+                            shortcutTarget.toAbsolutePath().toString(), null);
+
+                    Path scut = Paths.get(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
+                            false), shortcutName + Constants.LINK_EXTENSION);
+
+                    util.createLink(link, scut.toAbsolutePath().toString());
+
+                    return true;
+                }
+            }
+       } catch (IOException e) {
+            LOG.warning("Couldn't create shortcut " + shortcutTarget.toAbsolutePath());
             LOG.log(Level.FINER, "IOException", e);
-        }
-        return false;
+       }
+
+       return false;
     }
 
     /**
@@ -423,20 +440,38 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean removeDesktopShortcut(String shortcutName) {
-        WinUtils util = WinUtils.getInstance();
-        if (util == null) {
-            return false;
-        }
         LOG.finer("Removing desktop shortcut: " + shortcutName);
+
+        Path linkPath = null;
+
         try {
-            Path scut = Paths.get(
-                util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false),
-                shortcutName + Constants.LINK_EXTENSION);
-            Files.deleteIfExists(scut);
-            return true;
-        } catch (Exception ioe) {
-            return false;
+            /* Handle different OSes */
+            if(OSUtil.isLinux()) {
+                Path desktopPath = LinuxUtil.getDesktopDirPath();
+
+                linkPath = Paths.get(desktopPath.toString(), shortcutName);
+            } else {
+                WinUtils util = WinUtils.getInstance();
+
+                if (util != null) {
+                    linkPath = Paths.get(
+                            util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP, false),
+                            shortcutName + Constants.LINK_EXTENSION);
+                }
+            }
+
+            /* Finally delete it */
+            if(null != linkPath) {
+                Files.deleteIfExists(linkPath);
+
+                return true;
+            }
+        } catch (Exception e) {
+            LOG.warning("Couldn't create shortcut " + linkPath.toAbsolutePath());
+            LOG.log(Level.FINER, "IOException", e);
         }
+
+        return false;
     }
 
     /**
