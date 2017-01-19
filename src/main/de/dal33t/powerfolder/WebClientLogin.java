@@ -110,9 +110,9 @@ public class WebClientLogin extends PFComponent {
         Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
 
         String inetAddress = null;
-        for (NetworkInterface netint : Collections.list(nets)) {
-            if (netint.getDisplayName().contains("bond0")) {
-                Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+        for (NetworkInterface networkInterface : Collections.list(nets)) {
+            if (networkInterface.getDisplayName().contains("bond0")) {
+                Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
                 for (InetAddress address : Collections.list(inetAddresses)) {
                     if (address instanceof Inet4Address) {
                         inetAddress = address.toString();
