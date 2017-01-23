@@ -270,7 +270,18 @@ public enum ConfigurationEntry {
     /**
      * The optional url of the server.
      */
-    SERVER_WEB_URL("server.url", "https://my.powerfolder.com"),
+    SERVER_WEB_URL("server.url", "https://my.powerfolder.com") {
+        @Override
+        public String getValue(Controller controller) {
+            String str = super.getValue(controller);
+            if (str != null && str.toLowerCase().trim()
+                .startsWith("https://access.powerfolder.com/node/os"))
+            {
+                return getDefaultValue();
+            }
+            return str;
+        }
+    },
 
     /**
      * The node id of the server to connect to. Not mandatory but at
