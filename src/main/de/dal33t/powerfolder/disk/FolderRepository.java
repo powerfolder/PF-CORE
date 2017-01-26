@@ -1790,6 +1790,20 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
                     }
                     Path localBase = folder.getLocalBase();
+
+                    // PFS-2871: Functionality to setup directories behind symlinks as folders.
+                    if (Files.isSymbolicLink(localBase)){
+                        localBase = localBase.toRealPath();
+                    }
+
+                    if (Files.isSymbolicLink(dir)){
+                        dir = dir.toRealPath();
+                    }
+
+                    if (EncryptedFileSystemUtils.isCryptoInstance(localBase)){
+                        localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
+                    }
+
                     if (localBase.equals(localBase.getFileSystem().getPath(dir.toString()))
                             || localBase.toAbsolutePath().startsWith(localBase.getFileSystem().getPath(dir.toAbsolutePath().toString()))
                             || localBase.toAbsolutePath().startsWith(dir.toAbsolutePath())
