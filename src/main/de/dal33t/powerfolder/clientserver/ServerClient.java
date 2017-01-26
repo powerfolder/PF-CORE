@@ -343,7 +343,7 @@ public class ServerClient extends PFComponent {
         getController().scheduleAndRepeat(new ServerConnectTask(), 3L * 1000L,
             1000L * 20);
         getController().scheduleAndRepeat(new AutoLoginTask(), 10L * 1000L,
-            1000L * 30);
+            1000L * 60);
         // Wait 10 seconds at start
         getController().scheduleAndRepeat(new HostingServersConnector(),
             10L * 1000L, 1000L * Constants.HOSTING_FOLDERS_REQUEST_INTERVAL);
