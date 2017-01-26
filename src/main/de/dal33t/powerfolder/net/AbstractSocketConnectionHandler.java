@@ -989,7 +989,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             member.handleMessage(problem,
                                 AbstractSocketConnectionHandler.this);
                         } else {
-                            logWarning("("
+                            logFine("("
                                 + (identity != null
                                     ? identity.getMemberInfo().nick
                                     : "-") + ") Problem received: "

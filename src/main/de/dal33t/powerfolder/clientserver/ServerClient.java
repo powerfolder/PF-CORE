@@ -589,7 +589,7 @@ public class ServerClient extends PFComponent {
             return false;
         }
         return !isTokenLogin()
-            && OSUtil.isWindowsSystem()
+            && (OSUtil.isWindowsSystem() || OSUtil.isLinux())
             && ConfigurationEntry.WEB_DAV_ENABLED
                 .getValueBoolean(config);
     }

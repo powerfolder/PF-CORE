@@ -783,7 +783,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 if (member != null) {
                     member.handleMessage(problem, this);
                 } else {
-                    logWarning("("
+                    logFine("("
                         + (identity != null
                             ? identity.getMemberInfo().nick
                             : "-") + ") Problem received: " + problem.message);

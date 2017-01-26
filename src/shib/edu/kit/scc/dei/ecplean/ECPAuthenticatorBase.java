@@ -88,6 +88,8 @@ public abstract class ECPAuthenticatorBase extends Observable {
                 new UsernamePasswordCredentials(authInfo.getUsername(), authInfo.getPassword()));
         CloseableHttpClient client = HttpClientBuilder.create().setDefaultCredentialsProvider(credentialsProvider).build();
         HttpPost httpPost = new HttpPost(authInfo.getIdpEcpEndpoint().toString());
+        // PFC-2958:
+        httpPost.setHeader("Content-Type", "text/xml; charset=UTF-8");
         HttpResponse httpResponse;
         
         HttpHost targetHost = new HttpHost(authInfo.getIdpEcpEndpoint().getHost(), authInfo.getIdpEcpEndpoint().getPort(), 

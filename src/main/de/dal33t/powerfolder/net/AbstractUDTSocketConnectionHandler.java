@@ -1002,7 +1002,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
                             member.handleMessage(problem,
                                 AbstractUDTSocketConnectionHandler.this);
                         } else {
-                            logWarning("("
+                            logFine("("
                                 + (identity != null
                                     ? identity.getMemberInfo().nick
                                     : "-") + ") Problem received: "
