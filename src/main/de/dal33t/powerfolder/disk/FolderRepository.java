@@ -1799,10 +1799,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                         localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
                     }
 
-                    if (Files.isSameFile(localBase, dir) || localBase.toString().startsWith(dir.toString())) {
+                    if (localBase.equals(localBase.getFileSystem().getPath(dir.toString()))
+                            || localBase.toAbsolutePath().startsWith(localBase.getFileSystem().getPath(dir.toAbsolutePath().toString()))
+                            || localBase.toAbsolutePath().startsWith(dir.toAbsolutePath())
+                            || localBase.equals(dir)) {
                         known = true;
                         break;
                     }
+
                 }
                 if (!known) {
                     handleNewFolder(dir);
@@ -3044,7 +3048,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         Path bd = getFoldersBasedir().toAbsolutePath();
         boolean inBaseDir = false;
         if (bd != null) {
-            inBaseDir = folder.getLocalBase().toAbsolutePath().startsWith(bd);
+            if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
+                inBaseDir = EncryptedFileSystemUtils.getPhysicalStorageLocation(folder.getLocalBase()).startsWith(bd);
+            } else {
+                inBaseDir = folder.getLocalBase().toAbsolutePath().startsWith(bd);
+            }
         }
 
         if (!inBaseDir) {
