@@ -129,7 +129,7 @@ public class FolderMoveTest extends ControllerTestCase {
         Path oldLocalBase = folder.getLocalBase();
         try {
             // Move the contents.
-            PathUtils.recursiveMove(oldLocalBase, testFolder2);
+            PathUtils.recursiveMoveVisitor(oldLocalBase, testFolder2);
 
             // The new location should contain the
             // 1) .PowerFolder dir, 2) the test file, 3) sub dir and 4) emptySub
@@ -160,6 +160,9 @@ public class FolderMoveTest extends ControllerTestCase {
                 }
             }
             assertTrue(foundTest2);
+
+            // Delete old localbase
+            PathUtils.recursiveDeleteVisitor(oldLocalBase);
 
             // The old location should be gone.
             assertFalse("Old location still existing!:  " + oldLocalBase,

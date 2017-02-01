@@ -1675,14 +1675,8 @@ public class PathUtils {
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                                 throws IOException {
                             Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
-                            if (!Files.exists(targetDir)) {
+                            if (Files.notExists(targetDir)) {
                                 Files.createDirectories(targetDir);
-                            }
-                            try {
-                                Files.copy(dir, targetDir);
-                            } catch (FileAlreadyExistsException e) {
-                                if (!Files.isDirectory(targetDir))
-                                    System.out.println("Could not move file.");
                             }
                             return CONTINUE;
                         }
@@ -1711,14 +1705,8 @@ public class PathUtils {
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                                 throws IOException {
                             Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
-                            if (!Files.exists(targetDir)) {
+                            if (Files.notExists(targetDir)) {
                                 Files.createDirectories(targetDir);
-                            }
-                            try {
-                                Files.copy(dir, targetDir);
-                            } catch (FileAlreadyExistsException e) {
-                                if (!Files.isDirectory(targetDir))
-                                    System.out.println("Could not move file.");
                             }
                             return CONTINUE;
                         }
@@ -1746,7 +1734,7 @@ public class PathUtils {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                         throws IOException {
                     Files.delete(file);
-                    return CONTINUE;
+                    return FileVisitResult.CONTINUE;
                 }
 
                 @Override
@@ -1754,7 +1742,7 @@ public class PathUtils {
                         throws IOException {
                     if (e == null) {
                         Files.delete(dir);
-                        return CONTINUE;
+                        return FileVisitResult.CONTINUE;
                     } else {
                         throw e;
                     }

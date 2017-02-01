@@ -777,4 +777,105 @@ public class PathUtilsTest extends TestCase {
         assertTrue(PathUtils.isNetworkPath(Paths
             .get("\\\\server\\share\\subdir")));
     }
+
+    /**
+     * Copy build/test/a to build/test/a Should not be permitted.
+     *
+     * @throws IOException
+     */
+    public void testRecursiveMoveVisitor() throws IOException {
+        Path baseDir = Paths.get("build/test").toAbsolutePath();
+        PathUtils.recursiveDeleteVisitor(baseDir);
+
+        // Setup base dir with dirs and files.
+        Files.createDirectories(baseDir);
+        Path dir = baseDir.resolve("dir");
+        Files.createDirectories(dir);
+        Path sub = dir.resolve("sub");
+        Files.createDirectories(sub);
+        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(dir, "b");
+        TestHelper.createRandomFile(dir, "c");
+        TestHelper.createRandomFile(sub, "d");
+
+        // Now check the real move function.
+        Path moveDir = baseDir.resolve("moveDir");
+        PathUtils.recursiveMoveVisitor(dir, moveDir);
+
+        assertTrue(Files.exists(moveDir.resolve("b")));
+        assertTrue(Files.exists(moveDir.resolve("c")));
+        assertTrue(Files.exists(moveDir.resolve("sub")) && Files.isDirectory(moveDir.resolve("sub")));
+        assertTrue(Files.exists(moveDir.resolve("sub").resolve("d")));
+
+        assertFalse(Files.exists(dir.resolve("b")));
+        assertFalse(Files.exists(dir.resolve("c")));
+        assertFalse(Files.exists(dir.resolve("sub").resolve("d")));
+
+    }
+
+    /**
+     * Copy build/test/a to build/test/a Should not be permitted.
+     *
+     * @throws IOException
+     */
+    public void testRecursiveCopyVisitor() throws IOException {
+        Path baseDir = Paths.get("build/test").toAbsolutePath();
+        PathUtils.recursiveDeleteVisitor(baseDir);
+
+        // Setup base dir with dirs and files.
+        Files.createDirectories(baseDir);
+        Path dir = baseDir.resolve("dir");
+        Files.createDirectories(dir);
+        Path sub = dir.resolve("sub");
+        Files.createDirectories(sub);
+        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(dir, "b");
+        TestHelper.createRandomFile(dir, "c");
+        TestHelper.createRandomFile(sub, "d");
+
+        // Now check the real copy function.
+        Path copyDir = baseDir.resolve("copyDir");
+        PathUtils.recursiveCopyVisitor(dir, copyDir);
+
+        assertTrue(Files.exists(copyDir.resolve("b")));
+        assertTrue(Files.exists(copyDir.resolve("c")));
+        assertTrue(Files.exists(copyDir.resolve("sub")) && Files.isDirectory(copyDir.resolve("sub")));
+        assertTrue(Files.exists(copyDir.resolve("sub").resolve("d")));
+
+        assertTrue(Files.exists(dir.resolve("b")));
+        assertTrue(Files.exists(dir.resolve("c")));
+        assertTrue(Files.exists(dir.resolve("sub")) && Files.isDirectory(dir.resolve("sub")));
+        assertTrue(Files.exists(dir.resolve("sub").resolve("d")));
+
+    }
+
+    /**
+     * Copy build/test/a to build/test/a Should not be permitted.
+     *
+     * @throws IOException
+     */
+    public void testRecursiveDeleteVisitor() throws IOException {
+        Path baseDir = Paths.get("build/test").toAbsolutePath();
+        PathUtils.recursiveDeleteVisitor(baseDir);
+
+        // Setup base dir with dirs and files.
+        Files.createDirectories(baseDir);
+        Path dir = baseDir.resolve("dir");
+        Files.createDirectories(dir);
+        Path sub = dir.resolve("sub");
+        Files.createDirectories(sub);
+        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(dir, "b");
+        TestHelper.createRandomFile(dir, "c");
+        TestHelper.createRandomFile(sub, "d");
+
+        PathUtils.recursiveDeleteVisitor(dir);
+
+        assertFalse(Files.exists(dir.resolve("b")));
+        assertFalse(Files.exists(dir.resolve("c")));
+        assertFalse(Files.exists(dir.resolve("sub")));
+        assertFalse(Files.exists(dir.resolve("sub").resolve("d")));
+
+    }
+
 }

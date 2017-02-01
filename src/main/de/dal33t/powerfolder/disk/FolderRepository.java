@@ -2533,13 +2533,13 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (Files.exists(newDirectory)) {
             logSevere("Not moving folder " + folder + " to new directory "
-                    + newDirectory.toString()
-                    + ". The new directory already exists!");
+                + newDirectory.toString()
+                + ". The new directory already exists!");
             return null;
         }
 
         try {
-            Path originalDirectory = folder.getLocalBase();
+            Path originalDirectory = folder.getLocalBase().toRealPath();
             FolderSettings fs = FolderSettings.load(getController(),
                     folder.getConfigEntryId());
 
@@ -2552,7 +2552,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Move it.
             try {
                 PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
-            } catch (IOException e) {
+            } catch (IOException e){
                 PathUtils.recursiveCopyVisitor(originalDirectory, newDirectory);
                 logWarning("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " +
                         "Instead of moving, the folder has been copied to " + newDirectory + ". Please remove " +
