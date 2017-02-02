@@ -2531,7 +2531,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
 
-        if (Files.exists(newDirectory)) {
+        if (Files.exists(newDirectory) && !PathUtils.isEmptyDir(newDirectory)) {
             logSevere("Not moving folder " + folder + " to new directory "
                 + newDirectory.toString()
                 + ". The new directory already exists!");

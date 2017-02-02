@@ -76,7 +76,6 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     // The optional test folder
     private FolderInfo testFolder;
-
     protected Account lisasAccount;
 
     @Override
@@ -98,15 +97,11 @@ public abstract class TwoControllerTestCase extends TestCase {
         TestHelper.shutdownStartedController();
 
         // Default exception logger
-        Thread
-            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-            {
-                public void uncaughtException(Thread t, Throwable e) {
-                    System.err.println("Exception in " + t + ": "
-                        + e.toString());
-                    e.printStackTrace();
-                }
-            });
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            System.err.println("Exception in " + t + ": "
+                + e.toString());
+            e.printStackTrace();
+        });
 
         Feature.setupForTests();
 
@@ -260,11 +255,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @param controller
      */
     protected static void waitForStart(final Controller controller) {
-        TestHelper.waitForCondition(30, new Condition() {
-            public boolean reached() {
-                return controller.isStarted();
-            }
-        });
+        TestHelper.waitForCondition(30, () -> controller.isStarted());
     }
 
     /**
@@ -342,11 +333,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         final Member bartAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerBart().getMySelf().getId());
         bartAtLisa.shutdown();
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return !bartAtLisa.isConnected() && !lisaAtBart.isConnected();
-            }
-        });
+        TestHelper.waitForCondition(10, () -> !bartAtLisa.isConnected() && !lisaAtBart.isConnected());
         System.out.println("Both Controllers disconnected");
     }
 
@@ -414,22 +401,20 @@ public abstract class TwoControllerTestCase extends TestCase {
             }
         }
         try {
-            TestHelper.waitForCondition(10, new Condition() {
-                public boolean reached() {
-                    Member member2atCon1 = cont1.getNodeManager().getNode(
-                        cont2.getMySelf().getId());
-                    Member member1atCon2 = cont2.getNodeManager().getNode(
-                        cont1.getMySelf().getId());
-                    boolean connected = member2atCon1 != null
-                        && member1atCon2 != null
-                        && member2atCon1.isCompletelyConnected()
-                        && member1atCon2.isCompletelyConnected();
-                    boolean nodeManagersOK = cont1.getNodeManager()
-                        .getConnectedNodes().contains(member2atCon1)
-                        && cont2.getNodeManager().getConnectedNodes()
-                            .contains(member1atCon2);
-                    return connected && nodeManagersOK;
-                }
+            TestHelper.waitForCondition(10, () -> {
+                Member member2atCon1 = cont1.getNodeManager().getNode(
+                    cont2.getMySelf().getId());
+                Member member1atCon2 = cont2.getNodeManager().getNode(
+                    cont1.getMySelf().getId());
+                boolean connected = member2atCon1 != null
+                    && member1atCon2 != null
+                    && member2atCon1.isCompletelyConnected()
+                    && member1atCon2.isCompletelyConnected();
+                boolean nodeManagersOK = cont1.getNodeManager()
+                    .getConnectedNodes().contains(member2atCon1)
+                    && cont2.getNodeManager().getConnectedNodes()
+                        .contains(member1atCon2);
+                return connected && nodeManagersOK;
             });
         } catch (RuntimeException re) {
             System.err.println("Unable to connect Controllers: " + e);
@@ -524,14 +509,10 @@ public abstract class TwoControllerTestCase extends TestCase {
 
         try {
             // Give them time to join
-            TestHelper.waitForCondition(30, new Condition() {
-                public boolean reached() {
-                    return folder1.getMembersCount() >= 2
-                        && folder2.getMembersCount() >= 2
-                        && (meta1 == null || meta1.getMembersCount() >= 2)
-                        && (meta2 == null || meta2.getMembersCount() >= 2);
-                }
-            });
+            TestHelper.waitForCondition(30, () -> folder1.getMembersCount() >= 2
+                && folder2.getMembersCount() >= 2
+                && (meta1 == null || meta1.getMembersCount() >= 2)
+                && (meta2 == null || meta2.getMembersCount() >= 2));
         } catch (Exception e) {
             throw new IllegalStateException("Bart: "
                 + folder1.getMembersCount() + ", Lisa: "
@@ -576,7 +557,7 @@ public abstract class TwoControllerTestCase extends TestCase {
             .getFolderRepository()));
         boolean deleteStatusMatch = Files.exists(diskFile) == !fInfo
             .isDeleted();
-        boolean lastModifiedMatch = false;
+        boolean lastModifiedMatch;
         long lastModified = 0L;
         try {
             lastModified = Files.getLastModifiedTime(diskFile).toMillis();
