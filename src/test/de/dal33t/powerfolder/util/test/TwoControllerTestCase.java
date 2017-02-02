@@ -71,8 +71,8 @@ public abstract class TwoControllerTestCase extends TestCase {
     public static final Path TESTFOLDER_BASEDIR_LISA = TestHelper.getTestDir()
         .resolve("ControllerLisa/testFolder").toAbsolutePath();
 
-    private Controller controllerBart;
-    private Controller controllerLisa;
+    protected Controller controllerBart;
+    protected Controller controllerLisa;
 
     // The optional test folder
     private FolderInfo testFolder;
