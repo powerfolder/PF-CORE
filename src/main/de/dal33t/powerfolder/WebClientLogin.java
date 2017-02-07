@@ -108,8 +108,8 @@ public class WebClientLogin extends PFComponent {
     private String getInetAddress() throws SocketException {
 
         Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-
         String inetAddress = null;
+
         for (NetworkInterface networkInterface : Collections.list(nets)) {
             if (networkInterface.getDisplayName().contains("bond0")) {
                 Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
@@ -144,6 +144,7 @@ public class WebClientLogin extends PFComponent {
         stringBuilder.append(ConfigurationEntry.WEB_CLIENT_PORT.getValue(getController()));
 
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
+
         pw.println("HTTP/1.1 301 Moved Permanently");
         pw.println(stringBuilder.toString());
         pw.println("Connection: close");
@@ -160,6 +161,7 @@ public class WebClientLogin extends PFComponent {
         stringBuilder.append("/authsuccess");
 
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8), true);
+
         pw.println("HTTP/1.1 301 Moved Permanently");
         pw.println(stringBuilder.toString());
         pw.println("Connection: close");
