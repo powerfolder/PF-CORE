@@ -119,6 +119,9 @@ public class LinuxUtil {
     /**
      * Mount given WebDAV url at given path
      *
+     * @note In order for pkexec to work it requires a policykit authentication
+     *       agent like polkit-gnome-authentication-agent running.
+     *
      * @param username   Webdav username
      * @param password   Webdav password
      * @param webDAVURL  WebDAV url to use
