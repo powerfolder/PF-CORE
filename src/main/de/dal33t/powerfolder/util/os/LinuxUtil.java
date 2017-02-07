@@ -112,8 +112,10 @@ public class LinuxUtil {
         Path mountPath = serverClient.getController().getFolderRepository()
                 .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
 
-        return mountWebDAV(serverClient.getUsername(), serverClient.getPasswordClearText(),
-                webDAVURL, mountPath);
+        String password = (serverClient.isTokenLogin() ? serverClient.getTokenSecret() :
+                serverClient.getPasswordClearText());
+
+        return mountWebDAV(serverClient.getUsername(), password, webDAVURL, mountPath);
     }
 
     /**
@@ -161,7 +163,7 @@ public class LinuxUtil {
 
         /* Call command (DO NO MESS WITH IT UNLESS YOU KNOW WHAT YOU ARE DOING!) */
         String command = String.format("echo \"%s\" | %s %s -o users,username=%s %s",
-                password, davfsPath, webDAVURL, username, mountPath);
+                password.replace("\"", "\\\""), davfsPath, webDAVURL, username, mountPath);
 
         String[] commands = new String[] {
             pkexecPath.toString(), shPath.toString(), "-c", command
