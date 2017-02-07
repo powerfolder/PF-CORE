@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.util.Translation;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -104,8 +106,29 @@ public class LinuxUtil {
      * @return Either Y on success; otherwise N with error messages
      */
 
-    public static String mountWebDAV(ServerClient serverClient,
-        String webDAVURL)
+    public static String mountWebDAV(ServerClient serverClient, String webDAVURL)
+    {
+        /* Assemble mount path */
+        Path mountPath = serverClient.getController().getFolderRepository()
+                .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
+
+        return mountWebDAV(serverClient.getUsername(), serverClient.getPasswordClearText(),
+                webDAVURL, mountPath);
+    }
+
+    /**
+     * Mount given WebDAV url at given path
+     *
+     * @param username   Webdav username
+     * @param password   Webdav password
+     * @param webDAVURL  WebDAV url to use
+     * @param mountPath  Mount to path at
+     *
+     * @return Either Y on success; otherwise N with error messages
+     */
+
+    public static String mountWebDAV(String username, String password,
+                                     String webDAVURL, Path mountPath)
     {
         /* Check environment */
         Path pkexecPath = Paths.get("/usr/bin/pkexec");
@@ -124,12 +147,7 @@ public class LinuxUtil {
             return "N" + Translation.get("dialog.webdav.install_missing", "davfs2");
         }
 
-        /* Create mount path */
-        Path mountPath = serverClient.getController().getFolderRepository()
-                .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
-
-        System.out.println(mountPath);
-
+        /* Check mount path */
         try {
             if(Files.notExists(mountPath)) {
                 Files.createDirectory(mountPath);
@@ -140,8 +158,7 @@ public class LinuxUtil {
 
         /* Call command (DO NO MESS WITH IT UNLESS YOU KNOW WHAT YOU ARE DOING!) */
         String command = String.format("echo \"%s\" | %s %s -o users,username=%s %s",
-                serverClient.getPasswordClearText(), davfsPath, webDAVURL,
-                serverClient.getUsername(), mountPath);
+                password, davfsPath, webDAVURL, username, mountPath);
 
         String[] commands = new String[] {
             pkexecPath.toString(), shPath.toString(), "-c", command
