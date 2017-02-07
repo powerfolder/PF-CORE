@@ -42,8 +42,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import jwf.WizardPanel;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -71,6 +69,7 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardPanel;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {
@@ -88,6 +87,7 @@ public class LoginPanel extends PFWizardPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private LinkLabel recoverPasswordLabel;
+    private LinkLabel createAccountLabel;
     private JLabel connectingLabel;
     private JLabel serverLabel;
     private ActionLabel serverInfoLabel;
@@ -164,9 +164,9 @@ public class LoginPanel extends PFWizardPanel {
             || StringUtils.isBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
                 .getValue(getController())))
         {
-            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
+            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref, 3dlu, pref";
         } else {
-            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref";
+            layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 3dlu, pref, 20dlu, pref, 3dlu, pref";
         }
 
         FormLayout layout = new FormLayout("50dlu, 3dlu, 110dlu, 40dlu, pref",
@@ -209,7 +209,8 @@ public class LoginPanel extends PFWizardPanel {
         builder.add(rememberPasswordBox, cc.xyw(3, row, 2));
         row += 2;
         builder.add(recoverPasswordLabel.getUIComponent(), cc.xyw(3, row, 2));
-
+        row += 2;
+        builder.add(createAccountLabel.getUIComponent(), cc.xyw(3, row, 2));
         row += 2;
         builder.add(serverLabel, cc.xy(1, row));
         builder.add(serverInfoLabel.getUIComponent(), cc.xyw(3, row, 2));
@@ -443,6 +444,11 @@ public class LoginPanel extends PFWizardPanel {
                 .get("exp.wizard.webservice.recover_password"),
             client.getRecoverPasswordURL());
         recoverPasswordLabel.setVisible(client.supportsRecoverPassword());
+        
+        createAccountLabel = new LinkLabel(getController(),
+            Translation.get("wizard.activation.signup_account"),
+            client.getRegisterURL());
+        createAccountLabel.setVisible(client.supportsWebRegistration());
 
         useOSBox = new JCheckBox(
             Translation.get("wizard.login_online_storage.no_os")); // @todo
