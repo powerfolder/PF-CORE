@@ -19,15 +19,14 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.util.logging.Logger;
-
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.PermissionProto;
 import de.dal33t.powerfolder.protocol.StringMessageProto;
 import de.dal33t.powerfolder.util.Util;
+
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
@@ -100,10 +99,14 @@ public class OrganizationAdminPermission implements Permission, D2DObject {
         if(mesg instanceof PermissionProto.Permission) {
             PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
             try {
-                // A reference can be any message so it needs to be unpacked from com.google.protobuf.Any
-                StringMessageProto.StringMessage stringMessage = proto.getReference().unpack(StringMessageProto.StringMessage.class);
-                this.organizationOID = stringMessage.getValue();
-            } catch (InvalidProtocolBufferException e) {
+                // Objects can be any message so they need to be unpacked from com.google.protobuf.Any
+                com.google.protobuf.Any object = proto.getObjects(0);
+                String clazzName = object.getTypeUrl().split("/")[1];
+                if (clazzName.equals("StringMessage")) {
+                    StringMessageProto.StringMessage stringMessage = object.unpack(StringMessageProto.StringMessage.class);
+                    this.organizationOID = stringMessage.getValue();
+                }
+            } catch (InvalidProtocolBufferException | NullPointerException e) {
                 LOG.severe("Cannot unpack message: " + e);
             }
         }
@@ -113,11 +116,11 @@ public class OrganizationAdminPermission implements Permission, D2DObject {
     public AbstractMessage toD2D() {
         PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();
         builder.setClazzName("Permission");
-        // A reference can be any message so it needs to be packed as com.google.protobuf.Any
         StringMessageProto.StringMessage.Builder stringMessageBuilder = StringMessageProto.StringMessage.newBuilder();
         stringMessageBuilder.setClazzName("StringMessage");
         stringMessageBuilder.setValue(this.organizationOID);
-        builder.setReference(com.google.protobuf.Any.pack(stringMessageBuilder.build()));
+        // Objects can be any message so they need to be packed to com.google.protobuf.Any
+        builder.setObjects(0, com.google.protobuf.Any.pack(stringMessageBuilder.build()));
         // Set permission enum
         builder.setPermissionType(PermissionProto.Permission.PermissionType.ORGANIZATION_ADMIN);
         return builder.build();
