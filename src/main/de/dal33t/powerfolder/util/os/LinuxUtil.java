@@ -112,10 +112,8 @@ public class LinuxUtil {
         Path mountPath = serverClient.getController().getFolderRepository()
                 .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
 
-        String password = (serverClient.isTokenLogin() ? serverClient.getTokenSecret() :
-                serverClient.getPasswordClearText());
-
-        return mountWebDAV(serverClient.getUsername(), password, webDAVURL, mountPath);
+        return mountWebDAV(serverClient.getUsername(), serverClient.getPasswordClearText(),
+                webDAVURL, mountPath);
     }
 
     /**
