@@ -120,6 +120,11 @@ public class Organization implements Serializable {
     @Column(length = 4000)
     private String jsonData;
 
+    /**
+     * PFS-2176
+     */
+    private boolean isRestrictedToDomain;
+
     public Organization() {
         // Generate unique id
         this(IdGenerator.makeId());
@@ -240,6 +245,14 @@ public class Organization implements Serializable {
             return;
         }
         this.jsonData = jsonObject.toString();
+    }
+
+    public boolean isRestrictedToDomain() {
+        return isRestrictedToDomain;
+    }
+
+    public void setRestrictedToDomain(boolean restrict) {
+        isRestrictedToDomain = restrict;
     }
 
     /**
