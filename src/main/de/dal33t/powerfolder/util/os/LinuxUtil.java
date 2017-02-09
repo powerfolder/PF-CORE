@@ -20,12 +20,24 @@
 
 package de.dal33t.powerfolder.util.os;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Translation;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
  * Utilities for linux
@@ -34,6 +46,10 @@ import java.nio.file.Paths;
  * @version $Id$
  */
 public class LinuxUtil {
+
+    private LinuxUtil() {
+        /* Prevent instances of this class */
+    }
 
     /**
      * Get current desktop environment (like: Unity, KDE) based on $XDG_CURRENT_DESKTOP env variable
@@ -61,10 +77,12 @@ public class LinuxUtil {
             try {
                 Process proc = pb.start();
 
-                BufferedReader reader = new BufferedReader(
+                BufferedReader stdOut = new BufferedReader(
                         new InputStreamReader(proc.getInputStream()));
 
-                path = reader.readLine();
+                path = stdOut.readLine();
+
+                stdOut.close();
             } catch (IOException e) {
                 /* We ignore that here */
             }
@@ -72,10 +90,98 @@ public class LinuxUtil {
             if (null == path) {
                 /* 3. Fallback to educated guess */
                 path = "" + System.getProperty("user.home") + ///< Avoid NullPointerException when property is unset
-                    System.getProperty("file.separator") + "Desktop";
+                        System.getProperty("file.separator") + "Desktop";
             }
         }
 
         return (null != path ? Paths.get(path) : null);
+    }
+
+    /**
+     * Mount given WebDAV url
+     *
+     * @param serverClient Instance of our {@link ServerClient}
+     * @param webDAVURL    WebDAV url to use
+     *
+     * @return Either Y on success; otherwise N with error messages
+     */
+
+    public static String mountWebDAV(ServerClient serverClient, String webDAVURL)
+    {
+        /* Assemble mount path */
+        Path mountPath = serverClient.getController().getFolderRepository()
+                .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
+
+        return mountWebDAV(serverClient.getUsername(), serverClient.getPasswordClearText(),
+                webDAVURL, mountPath);
+    }
+
+    /**
+     * Mount given WebDAV url at given path
+     *
+     * @note In order for pkexec to work it requires a policykit authentication
+     *       agent like polkit-gnome-authentication-agent running.
+     *
+     * @param username   Webdav username
+     * @param password   Webdav password
+     * @param webDAVURL  WebDAV url to use
+     * @param mountPath  Mount to path at
+     *
+     * @return Either Y on success; otherwise N with error messages
+     */
+
+    public static String mountWebDAV(String username, String password,
+                                     String webDAVURL, Path mountPath)
+    {
+        /* Check environment */
+        Path pkexecPath = Paths.get("/usr/bin/pkexec");
+        Path shPath     = Paths.get("/bin/bash");
+        Path davfsPath  = Paths.get("/sbin/mount.davfs");
+
+        if(Files.notExists(shPath)) {
+            return "N" + Translation.get("dialog.webdav.install_missing", "bash");
+        }
+
+        if(Files.notExists(pkexecPath)) {
+            return "N" + Translation.get("dialog.webdav.install_missing", "pkexec");
+        }
+
+        if(Files.notExists(davfsPath)) {
+            return "N" + Translation.get("dialog.webdav.install_missing", "davfs2");
+        }
+
+        /* Check mount path */
+        try {
+            if(Files.notExists(mountPath)) {
+                Files.createDirectory(mountPath);
+            }
+        } catch(IOException e) {
+            return "N" + e.getMessage();
+        }
+
+        /* Call command (DO NO MESS WITH IT UNLESS YOU KNOW WHAT YOU ARE DOING!) */
+        String command = String.format("echo \"%s\" | %s %s -o users,username=%s %s",
+                password.replace("\"", "\\\""), davfsPath, webDAVURL, username, mountPath);
+
+        String[] commands = new String[] {
+            pkexecPath.toString(), shPath.toString(), "-c", command
+        };
+
+        try {
+            ProcessBuilder pb = new ProcessBuilder(commands);
+
+            Process proc = pb.start();
+
+            BufferedReader stdErr = new BufferedReader(
+                    new InputStreamReader(proc.getErrorStream()));
+
+            String err = stdErr.readLine();
+
+            stdErr.close();
+
+            return StringUtils.isBlank(err) ? "Y" : "N" + err;
+        } catch (IOException e) {
+            return "N" + e.getMessage();
+        }
     }
 }
