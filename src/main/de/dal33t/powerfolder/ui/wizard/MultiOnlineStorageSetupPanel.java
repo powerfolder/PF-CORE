@@ -45,6 +45,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import de.dal33t.powerfolder.util.os.LinuxUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -77,7 +79,6 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.UserDirectories;
 import de.dal33t.powerfolder.util.UserDirectory;
-import de.dal33t.powerfolder.util.WebDAV;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
@@ -455,7 +456,19 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             public Object construct() throws Throwable {
                 try {
                     createWebDAVURL();
-                    return WebDAV.createConnection(serverClient, webDAVURL);
+
+                    /* Handle different OSes */
+                    if(OSUtil.isLinux()) {
+                        return LinuxUtil.mountWebDAV(serverClient, webDAVURL);
+                    } else {
+                        WinUtils util = WinUtils.getInstance();
+
+                        if (util != null) {
+                            return util.mountWebDAV(serverClient, webDAVURL);
+                        }
+                    }
+
+                    return 'N';
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
                     return 'N' + e.getMessage();

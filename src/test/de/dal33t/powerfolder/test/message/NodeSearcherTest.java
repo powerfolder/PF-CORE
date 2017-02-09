@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.NodeSearcher;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -194,9 +195,12 @@ public class NodeSearcherTest extends TwoControllerTestCase {
             }
         });
         searcher.cancelSearch();
-        assertFalse(searchResultModel.isEmpty());
+        assertFalse("Expected searach results, but nothing was found 1",
+            searchResultModel.isEmpty());
         // bARt, homer and mARge, ned flenders, PowerFolder Cloud
-        assertEquals(searchResultModel.toString(), 2, searchResultModel.size());
+        assertEquals(
+            "Expected 2 results, but got: " + searchResultModel.toString(), 2,
+            searchResultModel.size());
 
         // Search for "127.0.0.1"
         searcher = new NodeSearcher(getContollerLisa(), "127.0.0.1",
@@ -206,7 +210,9 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.cancelSearch();
         assertFalse(searchResultModel.isEmpty());
         // Bart, Homer, Ned Flenders
-        assertEquals(3, searchResultModel.size());
+        
+        //System.err.println(Debug.dumpCurrentStacktraces(true));
+        assertEquals(Debug.dumpCurrentStacktraces(true), 3, searchResultModel.size());
 
         // Search for hostname (NO LONGER SUPPORTED)
         searcher = new NodeSearcher(getContollerLisa(), "localhost",
@@ -214,7 +220,8 @@ public class NodeSearcherTest extends TwoControllerTestCase {
         searcher.start();
         TestHelper.waitMilliSeconds(1000);
         searcher.cancelSearch();
-        assertTrue(searchResultModel.isEmpty());
+        assertTrue("Expected no searach results, but something was found"
+            + searchResultModel, searchResultModel.isEmpty());
         // None found = not really searched
         assertEquals(0, searchResultModel.size());
     }

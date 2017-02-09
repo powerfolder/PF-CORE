@@ -32,6 +32,8 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -440,6 +442,46 @@ public class WinUtils extends Loggable {
 
     public static boolean isMSI() {
         return Files.exists(getProgramInstallationPath().resolve(MSI_MARKER_FILE));
+    }
+
+    /**
+     * Mount given WebDAV url
+     *
+     * @param serverClient Instance of our {@link ServerClient}
+     * @param webDAVURL    WebDAV url to use
+     *
+     * @return Either Y on success; otherwise N with error messages
+     */
+
+    public static String mountWebDAV(ServerClient serverClient,
+        String webDAVURL)
+    {
+        try {
+            String cmd = "net use * \"" + webDAVURL + "\" /User:"
+                    + serverClient.getUsername() + " \""
+                    + serverClient.getPasswordClearText() + "\" /persistent:yes";
+            Process process = Runtime.getRuntime().exec(cmd);
+            byte[] out = StreamUtils
+                    .readIntoByteArray(process.getInputStream());
+            String output = new String(out);
+            byte[] err = StreamUtils
+                    .readIntoByteArray(process.getErrorStream());
+            String error = new String(err);
+            if (StringUtils.isEmpty(error)) {
+                if (!StringUtils.isEmpty(output)) {
+                    // Looks like the link succeeded :-)
+                    return 'Y' + output;
+                }
+            } else {
+                // Looks like the link failed :-(
+                return 'N' + error;
+            }
+        } catch (Exception e) {
+            // Looks like the link failed, badly :-(
+            return 'N' + e.getMessage();
+        }
+        // Huh?
+        return null;
     }
 
     /**

@@ -42,7 +42,7 @@ import java.util.prefs.Preferences;
 public class Translation {
 
     private static final Logger log = Logger.getLogger(Translation.class
-        .getName());
+            .getName());
 
     // Useful locales, which are not already included in Locale
     public static final Locale DUTCH = new Locale("nl");
@@ -55,14 +55,18 @@ public class Translation {
     public static final Locale HUNGARIAN = new Locale("hu");
     public static final Locale TURKISH = new Locale("tr");
 
-    /** List of all supported locales */
+    /**
+     * List of all supported locales
+     */
     private static List<Locale> supportedLocales;
 
     private static Map<String, String> placeHolders = new ConcurrentHashMap<String, String>();
+
     static {
         setPlaceHolder("APPNAME", "PowerFolder");
         setPlaceHolder("APPDESCRIPTION", "Sync your World");
     }
+
     // The resource bundle, initalized lazy
     private static ResourceBundle resourceBundle;
 
@@ -131,17 +135,16 @@ public class Translation {
      * initalized, it tries to gain bundle with that locale. Otherwise fallback
      * to default locale
      *
-     * @param locale
-     *            the locale, or null to reset
+     * @param locale the locale, or null to reset
      */
     public static void saveLocalSetting(Locale locale) {
         if (locale != null) {
             if (locale.getCountry().length() == 0) {
                 Preferences.userNodeForPackage(Translation.class).put("locale",
-                    locale.getLanguage());
+                        locale.getLanguage());
             } else {
                 Preferences.userNodeForPackage(Translation.class).put("locale",
-                    locale.getLanguage() + '_' + locale.getCountry());
+                        locale.getLanguage() + '_' + locale.getCountry());
             }
         } else {
             Preferences.userNodeForPackage(Translation.class).remove("locale");
@@ -168,10 +171,10 @@ public class Translation {
             try {
                 // Get language out of preferences
                 String confLangStr = Preferences.userNodeForPackage(
-                    Translation.class).get("locale", null);
+                        Translation.class).get("locale", null);
                 Locale confLang = confLangStr != null
-                    ? new Locale(confLangStr)
-                    : null;
+                        ? new Locale(confLangStr)
+                        : null;
                 // Take default locale if config is empty
                 if (confLang == null) {
                     confLang = Locale.getDefault();
@@ -186,11 +189,11 @@ public class Translation {
                     }
                 }
                 resourceBundle = ResourceBundle.getBundle("Translation",
-                    confLang, new UTF8Control());
+                        confLang, new UTF8Control());
 
                 log.info("Default Locale '" + Locale.getDefault()
-                    + "', using '" + resourceBundle.getLocale()
-                    + "', in config '" + confLang + '\'');
+                        + "', using '" + resourceBundle.getLocale()
+                        + "', in config '" + confLang + '\'');
             } catch (MissingResourceException e) {
                 log.log(Level.SEVERE, "Unable to load translation file", e);
             }
@@ -198,11 +201,33 @@ public class Translation {
         return resourceBundle;
     }
 
+    public static synchronized String getCurrentLanguage() {
+
+        Locale confLang = null;
+
+            // Intalize bundle
+            try {
+                // Get language out of preferences
+                String confLangStr = Preferences.userNodeForPackage(
+                        Translation.class).get("locale", null);
+                confLang = confLangStr != null
+                        ? new Locale(confLangStr)
+                        : null;
+                // Take default locale if config is empty
+                if (confLang == null) {
+                    confLang = Locale.getDefault();
+                }
+            } catch (MissingResourceException e) {
+                log.log(Level.SEVERE, "Unable to load translation file", e);
+            }
+
+        return confLang.toString();
+    }
+
     /**
      * Returns translation for this id
      *
-     * @param id
-     *            the id for the translation entry
+     * @param id the id for the translation entry
      * @return the localized string
      */
     public static String get(String id) {
@@ -215,12 +240,11 @@ public class Translation {
             // log.warning("Translation for '" + id + "': " + translation);
             if (translation.contains("{")) {
                 for (Entry<String, String> placeHolderEntry : placeHolders
-                    .entrySet())
-                {
+                        .entrySet()) {
                     if (translation.contains(placeHolderEntry.getKey())) {
                         translation = translation.replace(
-                            placeHolderEntry.getKey(),
-                            placeHolderEntry.getValue());
+                                placeHolderEntry.getKey(),
+                                placeHolderEntry.getValue());
                     }
                 }
             }
@@ -244,8 +268,7 @@ public class Translation {
      * files
      *
      * @param id
-     * @param params
-     *            the parameters to be included.
+     * @param params the parameters to be included.
      * @return a paramterized translation for this id.
      */
     public static String get(String id, String... params) {
@@ -256,7 +279,7 @@ public class Translation {
             String paramSymbol = "{" + paramCount++ + '}';
             while ((i = translation.indexOf(paramSymbol)) >= 0) {
                 translation = translation.substring(0, i) + param
-                    + translation.substring(i + 3, translation.length());
+                        + translation.substring(i + 3, translation.length());
             }
         }
         return translation;

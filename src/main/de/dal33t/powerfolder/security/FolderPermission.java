@@ -19,16 +19,15 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.util.logging.Logger;
-
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionProto;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.util.logging.Logger;
 
 /**
  * A generic subclass for all permissions that are related to a certain folder.
@@ -143,10 +142,14 @@ public abstract class FolderPermission
         if(mesg instanceof PermissionProto.Permission) {
             PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
             try {
-                // A reference can be any message so it needs to be unpacked from com.google.protobuf.Any
-                FolderInfoProto.FolderInfo folderInfo = proto.getReference().unpack(FolderInfoProto.FolderInfo.class);
-                this.folder = new FolderInfo(folderInfo);
-            } catch (InvalidProtocolBufferException e) {
+                // Objects can be any message so they need to be unpacked from com.google.protobuf.Any
+                com.google.protobuf.Any object = proto.getObjects(0);
+                String clazzName = object.getTypeUrl().split("/")[1];
+                if (clazzName.equals("FolderInfo")) {
+                    FolderInfoProto.FolderInfo folderInfo = object.unpack(FolderInfoProto.FolderInfo.class);
+                    this.folder = new FolderInfo(folderInfo);
+                }
+            } catch (InvalidProtocolBufferException | NullPointerException e) {
                 LOG.severe("Cannot unpack message: " + e);
             }
         }
@@ -161,8 +164,8 @@ public abstract class FolderPermission
     public AbstractMessage toD2D() {
         PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();
         builder.setClazzName("Permission");
-        // A reference can be any message so it needs to be packed as com.google.protobuf.Any
-        builder.setReference(com.google.protobuf.Any.pack((FolderInfoProto.FolderInfo)this.folder.toD2D()));
+        // Objects can be any message so they need to be packed to com.google.protobuf.Any
+        builder.addObjects(com.google.protobuf.Any.pack(this.folder.toD2D()));
         // Set permission enum
         if (this instanceof FolderAdminPermission) {
             builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_ADMIN);
@@ -178,4 +181,5 @@ public abstract class FolderPermission
         }
         return builder.build();
     }
+
 }

@@ -106,7 +106,9 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.ProUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.WebDAV;
+import de.dal33t.powerfolder.util.os.LinuxUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Class to render expandable view of a folder.
@@ -1312,7 +1314,19 @@ public class ExpandableFolderView extends PFUIComponent implements
             public Object construct() throws Throwable {
                 try {
                     retrieveWebDAVURL();
-                    return WebDAV.createConnection(serverClient, webDAVURL);
+
+                    /* Handle different OSes */
+                    if(OSUtil.isLinux()) {
+                        return LinuxUtil.mountWebDAV(serverClient, webDAVURL);
+                    } else {
+                        WinUtils util = WinUtils.getInstance();
+
+                        if (util != null) {
+                            return util.mountWebDAV(serverClient, webDAVURL);
+                        }
+                    }
+
+                    return 'N';
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
                     logSevere(e.getMessage(), e);
