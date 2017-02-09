@@ -68,6 +68,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/skins" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/shib" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library" exported="">
