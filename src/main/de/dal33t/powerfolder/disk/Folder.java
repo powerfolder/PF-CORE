@@ -4112,7 +4112,7 @@ public class Folder extends PFComponent {
     }
 
     private Path getSystemSubDir0() {
-        if (schemaZyncro) {
+        if (schemaZyncro || localBase.toString().contains(Constants.FOLDER_WEBDAV_SUFFIX)) {
             return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)
                 .resolve(PathUtils.removeInvalidFilenameChars(getId()))
                 .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);

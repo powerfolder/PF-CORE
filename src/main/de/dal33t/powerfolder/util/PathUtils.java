@@ -1646,13 +1646,8 @@ public class PathUtils {
         Reject.ifNull(base, "Base is null");
         Reject.ifFalse(Files.isDirectory(base), "Base is not folder");
 
-        Filter<Path> filter = new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) {
-                return !entry.getFileName().toString()
-                        .equals(Constants.POWERFOLDER_SYSTEM_SUBDIR);
-            }
-        };
+        Filter<Path> filter = entry -> !entry.getFileName().toString()
+                .equals(Constants.POWERFOLDER_SYSTEM_SUBDIR);
 
         try (DirectoryStream<Path> contents = Files.newDirectoryStream(base,
                 filter)) {

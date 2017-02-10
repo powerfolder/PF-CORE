@@ -43,11 +43,13 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
+import de.dal33t.powerfolder.util.os.LinuxUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.attribute.PosixFilePermission;
@@ -1019,10 +1021,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getValueBoolean(getController()))
             {
                 Files.createDirectories(folderSettings.getLocalBaseDir());
-            } else
-                if (Files.notExists(folderSettings.getLocalBaseDir())
-                    || !PathUtils
-                        .isEmptyDir(folderSettings.getLocalBaseDir()))
+            } else if (Files.notExists(folderSettings.getLocalBaseDir()) ||
+                    !PathUtils.isEmptyDir(folderSettings.getLocalBaseDir()))
             {
                 Path baseDir = folderSettings.getLocalBaseDir().getParent();
                 String rawName = folderSettings.getLocalBaseDir().getFileName()
@@ -1181,6 +1181,24 @@ public class FolderRepository extends PFComponent implements Runnable {
                 commitDir, folderSettings.getSyncWarnSeconds());
             logWarning("Auto-commit setup. temp dir: " + newBaseDir
                 + ". commit dir:" + commitDir);
+        }
+
+        //PFS-1918: Folder WebDAV support. Mount this folder as WebDAV resource.
+        if (folderSettings.getLocalBaseDir().toString().contains(Constants.FOLDER_WEBDAV_SUFFIX) && OSUtil.isLinux()){
+            try {
+                String mountMessage = LinuxUtil.mountWebDAV(folderSettings.getWebDAVURL(),
+                        folderSettings.getLocalBaseDir().toAbsolutePath());
+                if (mountMessage.startsWith("N")){
+                    logSevere("Failed to mount folder " +
+                            folderInfo.getName() + " as WebDAV resource. Error message: " + mountMessage);
+                }
+            } catch (MalformedURLException e) {
+                logSevere("Failed to mount folder " +
+                        folderInfo.getName() + " as WebDAV resource @ " + e, e);
+            }
+        } else if (folderSettings.getLocalBaseDir().toString().contains(Constants.FOLDER_WEBDAV_SUFFIX) && !OSUtil.isLinux()){
+            logSevere("WebDAV folder mounting is only supported with Linux as operating system.");
+            throw new IllegalStateException("WebDAV folder mounting is only supported with Linux as operating system.");
         }
 
         Folder folder;
@@ -1992,7 +2010,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             SyncProfile.getDefault(getController()),
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(getController()));
-       
+
         // 1) Create at cloud service
         boolean scheduleCreateOnServer = false;
         if (client.isBackupByDefault() && !client.joinedByCloud(foInfo)) {
@@ -2009,11 +2027,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 scheduleCreateOnServer = true;
             }
         }
-        
+
         // 2) Sync locally
         Folder folder = createFolder0(foInfo, fs, true);
         folder.addDefaultExcludes();
-        
+
         if (scheduleCreateOnServer) {
             logWarning("Scheduling setup of folder: " + foInfo.getName());
             CreateFolderOnServerTask task = new CreateFolderOnServerTask(foInfo,
@@ -2680,10 +2698,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } catch (Exception e) {
                     scheduleCreateOnServer = true;
                 }
-                
+
                 Folder folder = createFolder0(foInfo, settings, true);
                 folder.addDefaultExcludes();
-                
+
                 if (scheduleCreateOnServer) {
                     logFine("Scheduling setup of folder: " + foInfo.getName());
                     CreateFolderOnServerTask task = new CreateFolderOnServerTask(foInfo,

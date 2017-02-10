@@ -20,7 +20,9 @@
 
 package de.dal33t.powerfolder.util.os;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.util.Base58;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import org.apache.commons.io.FilenameUtils;
@@ -32,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -117,6 +120,38 @@ public class LinuxUtil {
     }
 
     /**
+     * Mount given WebDAV url
+     *
+     * @param webDAVURL WebDAV url to use. Url notation: webdav://<username>:<password>@<WebDAV resource>
+     *
+     * @return Either Y on success; otherwise N with error messages
+     */
+
+    public static String mountWebDAV(String webDAVURL, Path mountPath) throws MalformedURLException {
+
+        // This is inevitable because the WebDAV URL is initially a path object and path does
+        // not support '//' notations.
+        if (webDAVURL.startsWith(Constants.FOLDER_WEBDAV_PREFIX)) {
+            webDAVURL = webDAVURL.replaceFirst(Constants.FOLDER_WEBDAV_PREFIX, "http").replace(":/", "://");
+        }
+
+        String username = null;
+        String password = null;
+
+        URL wUrl = new URL(webDAVURL);
+        String authority = wUrl.getAuthority();
+
+        if (null != authority) {
+            username = authority.substring(0, authority.indexOf(":"));
+            password = authority.substring(authority.indexOf(":") + 1, authority.lastIndexOf("@"));
+        }
+
+        webDAVURL = webDAVURL.substring(webDAVURL.lastIndexOf("@") + 1, webDAVURL.length());
+
+        return mountWebDAV(username, password, webDAVURL, mountPath);
+    }
+
+    /**
      * Mount given WebDAV url at given path
      *
      * @param username   Webdav username
@@ -130,17 +165,13 @@ public class LinuxUtil {
     public static String mountWebDAV(String username, String password,
                                      String webDAVURL, Path mountPath)
     {
+
         /* Check environment */
-        Path pkexecPath = Paths.get("/usr/bin/pkexec");
         Path shPath     = Paths.get("/bin/bash");
         Path davfsPath  = Paths.get("/sbin/mount.davfs");
 
         if(Files.notExists(shPath)) {
             return "N" + Translation.get("dialog.webdav.install_missing", "bash");
-        }
-
-        if(Files.notExists(pkexecPath)) {
-            return "N" + Translation.get("dialog.webdav.install_missing", "pkexec");
         }
 
         if(Files.notExists(davfsPath)) {
@@ -157,11 +188,12 @@ public class LinuxUtil {
         }
 
         /* Call command (DO NO MESS WITH IT UNLESS YOU KNOW WHAT YOU ARE DOING!) */
-        String command = String.format("echo \"%s\" | %s %s -o users,username=%s %s",
-                password, davfsPath, webDAVURL, username, mountPath);
+        String command = String.format("echo '%s' | sudo %s %s -o users,username=%s,uid=%s %s",
+                password.replace("\'", "\\\'"), davfsPath, webDAVURL, username,
+                System.getProperty("user.name"), mountPath);
 
         String[] commands = new String[] {
-            pkexecPath.toString(), shPath.toString(), "-c", command
+            shPath.toString(), "-c", command
         };
 
         try {
@@ -172,11 +204,14 @@ public class LinuxUtil {
             BufferedReader stdErr = new BufferedReader(
                     new InputStreamReader(proc.getErrorStream()));
 
-            String err = stdErr.readLine();
+            StringBuilder err = new StringBuilder();
+            for (String line = stdErr.readLine(); line != null; line = stdErr.readLine()) {
+                err.append(line + " ");
+            }
 
             stdErr.close();
 
-            return StringUtils.isBlank(err) ? "Y" : "N" + err;
+            return StringUtils.isBlank(err.toString()) ? "Y" : "N" + err;
         } catch (IOException e) {
             return "N" + e.getMessage();
         }
