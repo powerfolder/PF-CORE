@@ -116,7 +116,7 @@ public class LinuxUtil {
                 .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
 
         return mountWebDAV(serverClient.getUsername(), serverClient.getPasswordClearText(),
-                webDAVURL, mountPath);
+                webDAVURL, mountPath, false);
     }
 
     /**
@@ -148,7 +148,7 @@ public class LinuxUtil {
 
         webDAVURL = webDAVURL.substring(webDAVURL.lastIndexOf("@") + 1, webDAVURL.length());
 
-        return mountWebDAV(username, password, webDAVURL, mountPath);
+        return mountWebDAV(username, password, webDAVURL, mountPath, true);
     }
 
     /**
@@ -158,20 +158,30 @@ public class LinuxUtil {
      * @param password   Webdav password
      * @param webDAVURL  WebDAV url to use
      * @param mountPath  Mount to path at
+     * @param useSudo    Use sudo instead of pkexec
      *
      * @return Either Y on success; otherwise N with error messages
      */
 
     public static String mountWebDAV(String username, String password,
-                                     String webDAVURL, Path mountPath)
+                                     String webDAVURL, Path mountPath, boolean useSudo)
     {
-
         /* Check environment */
         Path shPath     = Paths.get("/bin/bash");
+        Path sudoPath   = Paths.get("/usr/bin/sudo");
+        Path pkexecPath = Paths.get("/usr/bin/pkexec");
         Path davfsPath  = Paths.get("/sbin/mount.davfs");
 
         if(Files.notExists(shPath)) {
             return "N" + Translation.get("dialog.webdav.install_missing", "bash");
+        }
+
+        if(useSudo && Files.notExists(sudoPath)) {
+            return "N" + Translation.get("dialog.webdav.install_missing", "sudo");
+        }
+
+        if(!useSudo && Files.notExists(pkexecPath)) {
+            return "N" + Translation.get("dialog.webdav.install_missing", "pkexec");
         }
 
         if(Files.notExists(davfsPath)) {
@@ -188,13 +198,15 @@ public class LinuxUtil {
         }
 
         /* Call command (DO NO MESS WITH IT UNLESS YOU KNOW WHAT YOU ARE DOING!) */
-        String command = String.format("echo '%s' | sudo %s %s -o users,username=%s,uid=%s %s",
-                password.replace("\'", "\\\'"), davfsPath, webDAVURL, username,
-                System.getProperty("user.name"), mountPath);
+        String command = String.format("echo '%s' | %s %s %s -o users,username=%s,uid=%s %s",
+                password.replace("\'", "\\\'"), (useSudo ? sudoPath : pkexecPath),
+                davfsPath, webDAVURL, username, System.getProperty("user.name"), mountPath);
 
         String[] commands = new String[] {
             shPath.toString(), "-c", command
         };
+
+        System.out.println(String.join(" ", commands));
 
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
