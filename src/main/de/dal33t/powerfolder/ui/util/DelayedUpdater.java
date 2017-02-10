@@ -63,8 +63,8 @@ public class DelayedUpdater {
     private static final int NOT_SCHEDULED = -1;
 
     private long delay;
-    private long nextMandatoryEvent = NOT_SCHEDULED;
     private final ScheduledExecutorService executorService;
+    private volatile long nextMandatoryEvent = NOT_SCHEDULED;
     private volatile DelayedTimerTask currentTask;
 
     /**
