@@ -1243,7 +1243,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         if (folder != null) {
             int newCount = getController().getTransferManager()
                 .countCompletedDownloads(folder);
-            // #PFC-2497 Do not show new Files in Beginnger mode
+            // #PFC-2497 Do not show new Files in Beginner mode
             if (PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController()))
             {
