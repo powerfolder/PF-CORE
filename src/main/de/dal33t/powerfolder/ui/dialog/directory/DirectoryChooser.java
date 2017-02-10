@@ -154,6 +154,35 @@ public class DirectoryChooser extends BaseDialog {
         return okButton;
     }
 
+    /**
+     * Check whether given path is writable and show a warning dialog if not
+     *
+     * @param  path  {@link Path} to check
+     *
+     * @return Either true when writable; otherwise false
+     */
+
+    private boolean checkPathAndWarn(Path path) {
+        Path parentPath = null;
+
+        /* Check given path */
+        if (null != path) {
+            parentPath = path.getParent();
+
+            if (null != parentPath && parentPath.toFile().canWrite()) {
+                return true;
+            }
+        }
+
+        DialogFactory.genericDialog(getController(),
+                Translation.get("dialog.directorychooser.new.description"),
+                Translation.get("dialog.directorychooser.error.insufficient_permissions",
+                        (null == parentPath ? "" : parentPath.toString())),
+                GenericDialogType.WARN);
+
+        return false;
+    }
+
     private void okEvent() {
 
         // See if the user has just typed in a directory in the text area.
@@ -164,14 +193,23 @@ public class DirectoryChooser extends BaseDialog {
                 Path selectedDir = selectedDirs.get(0);
                 String selectedPath = selectedDir.toAbsolutePath().toString();
                 String enteredPath = pathField.getText();
+
                 if (!selectedPath.equals(enteredPath)) {
                     Path file = Paths.get(enteredPath);
+
+                    /* PFC-2783: Check if path is writable */
+                    if (!checkPathAndWarn(file)) return;
+
                     selectedDirs.clear();
                     selectedDirs.add(file);
                 }
             } else {
                 String enteredPath = pathField.getText();
                 Path file = Paths.get(enteredPath);
+
+                /* PFC-2783: Check if path is writable */
+                if (!checkPathAndWarn(file)) return;
+
                 selectedDirs.clear();
                 selectedDirs.add(file);
             }

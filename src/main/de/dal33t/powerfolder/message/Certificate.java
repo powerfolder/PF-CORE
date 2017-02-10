@@ -6,7 +6,6 @@ import de.dal33t.powerfolder.protocol.CertificateProto;
 
 public class Certificate extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
-    private String nodeId;
     private String certificate;
 
     /**
@@ -15,17 +14,8 @@ public class Certificate extends Message implements D2DObject {
     public Certificate() {
     }
 
-    public Certificate(String nodeId, String certificate) {
-        this.setNodeId(nodeId);
+    public Certificate(String certificate) {
         this.setCertificate(certificate);
-    }
-
-    public String getNodeId() {
-        return nodeId;
-    }
-
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
     }
 
     public String getCertificate() {
@@ -48,7 +38,6 @@ public class Certificate extends Message implements D2DObject {
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof CertificateProto.Certificate) {
             CertificateProto.Certificate proto = (CertificateProto.Certificate)mesg;
-            this.setNodeId(proto.getNodeId());
             this.setCertificate(proto.getCertificate());
         }
     }
@@ -63,7 +52,6 @@ public class Certificate extends Message implements D2DObject {
     public AbstractMessage toD2D() {
         CertificateProto.Certificate.Builder builder = CertificateProto.Certificate.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        builder.setNodeId(this.getNodeId());
         builder.setCertificate(this.getCertificate());
         return builder.build();
     }
