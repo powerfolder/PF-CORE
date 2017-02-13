@@ -519,6 +519,11 @@ public enum ConfigurationEntry {
      * PFC-2548: The token to use for authentication.
      */
     SERVER_CONNECT_TOKEN("server.connect.token"),
+
+    /**
+     * PFS-1685: Token for webdav authentication
+     */
+    SERVER_CONNECT_TOKEN_WEBDAV("server.connect.token.webdav"),
     
     /**
      * Password for connection (clear text)
