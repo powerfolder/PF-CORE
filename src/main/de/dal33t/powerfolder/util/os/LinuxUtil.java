@@ -108,14 +108,16 @@ public class LinuxUtil {
      *
      * @return Either Y on success; otherwise N with error messages
      */
-
     public static String mountWebDAV(ServerClient serverClient, String webDAVURL)
     {
         /* Assemble mount path */
         Path mountPath = serverClient.getController().getFolderRepository()
                 .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
 
-        return mountWebDAV(serverClient.getUsername(), serverClient.getPasswordClearText(),
+        String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
+                serverClient.getPasswordClearText());
+
+        return mountWebDAV(serverClient.getUsername(), password,
                 webDAVURL, mountPath, false);
     }
 
@@ -126,7 +128,6 @@ public class LinuxUtil {
      *
      * @return Either Y on success; otherwise N with error messages
      */
-
     public static String mountWebDAV(String webDAVURL, Path mountPath) throws MalformedURLException {
 
         String username = null;
@@ -158,7 +159,6 @@ public class LinuxUtil {
      *
      * @return Either Y on success; otherwise N with error messages
      */
-
     public static String mountWebDAV(String username, String password,
                                      String webDAVURL, Path mountPath, boolean useSudo)
     {
