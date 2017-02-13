@@ -125,11 +125,6 @@ public class FolderSettings {
     private String configEntryId;
 
     /**
-     * PFS-1918: Folder WebDAV support.
-     */
-    private String webDAVURL;
-
-    /**
      * Constructor. Creates a new FolderSettings object. NON preview, NO
      * download script.
      */
@@ -181,6 +176,9 @@ public class FolderSettings {
      * @return the original config entry basedir. May contain placeholder
      */
     public String getLocalBaseDirString() {
+        if (localBaseDirStr == null){
+            return localBaseDir.toString();
+        }
         return localBaseDirStr;
     }
 
@@ -510,23 +508,5 @@ public class FolderSettings {
         } catch (IllegalArgumentException iae) {
             return Paths.get(res);
         }
-    }
-
-    /**
-     * PFS-1918: Folder WebDAV support.
-     *
-     * @return WebDAV storage string.
-     */
-    public String getWebDAVURL(){
-        return webDAVURL;
-    }
-
-    /**
-     * PFS-1918: Folder WebDAV support.
-     *
-     * @return WebDAV storage string.
-     */
-    public void setWebDAVURL(String webDAVString){
-        webDAVURL = webDAVString;
     }
 }

@@ -81,7 +81,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private Thread myThread;
     private final FileRequestor fileRequestor;
     private Folder currentlyMaintainingFolder;
-    private final Set<String> onLoginFolderEntryIds;
+    private final Set<String> onLoginFolderEntryIds = new HashSet<String>();
     // Flag if the repo is started
     private boolean started;
     // The trigger to start scanning
@@ -145,9 +145,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         triggered = false;
         // Rest
-        folders = new ConcurrentHashMap<FolderInfo, Folder>();
-        metaFolders = new ConcurrentHashMap<FolderInfo, Folder>();
-        onLoginFolderEntryIds = new HashSet<String>();
+        folders = new ConcurrentHashMap<>();
+        metaFolders = new ConcurrentHashMap<>();
         fileRequestor = new FileRequestor(controller);
         started = false;
         loadRemovedFolderDirectories();
@@ -1183,15 +1182,30 @@ public class FolderRepository extends PFComponent implements Runnable {
                 + ". commit dir:" + commitDir);
         }
 
-        //PFS-1918: Folder WebDAV support. Mount this folder as WebDAV resource.
-        if (folderSettings.getLocalBaseDir().toString().contains(Constants.FOLDER_WEBDAV_SUFFIX) && OSUtil.isLinux()){
+        //PFS-1918: Start: Folder WebDAV support. Mount this folder as WebDAV resource.
+        if (folderSettings.getLocalBaseDirString().
+                toLowerCase().startsWith(Constants.FOLDER_WEBDAV_PREFIX) && OSUtil.isLinux()){
+
+            // This is inevitable because the WebDAV URL is initially a path object and path does
+            // not support '//' notations.
+            String webDAVURL = folderSettings.getLocalBaseDirString();
+            if (webDAVURL.contains(Constants.FOLDER_WEBDAV_PREFIX) && !webDAVURL.contains("://")) {
+                webDAVURL = webDAVURL.replace(":/", "://");
+            }
+
+            // Create physical mount location.
+            Path folderDirectory = this.getFoldersBasedir();
+            String folderName = folderInfo.getLocalizedName() + Constants.FOLDER_WEBDAV_SUFFIX;
+            Path folderBaseDir = folderDirectory.resolve("webdav").resolve(folderName);
+
             try {
-                String mountMessage = LinuxUtil.mountWebDAV(folderSettings.getWebDAVURL(),
-                        folderSettings.getLocalBaseDir().toAbsolutePath());
+                // Mount it.
+                String mountMessage = LinuxUtil.mountWebDAV(webDAVURL, folderBaseDir);
                 if (mountMessage.startsWith("N")){
                     logSevere("Failed to mount folder " +
                             folderInfo.getName() + " as WebDAV resource. Error message: " + mountMessage);
                 }
+                folderSettings = folderSettings.changeBaseDir(folderBaseDir);
             } catch (MalformedURLException e) {
                 logSevere("Failed to mount folder " +
                         folderInfo.getName() + " as WebDAV resource @ " + e, e);
@@ -1200,6 +1214,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logSevere("WebDAV folder mounting is only supported with Linux as operating system.");
             throw new IllegalStateException("WebDAV folder mounting is only supported with Linux as operating system.");
         }
+        //PFS-1918: End: Folder WebDAV support. Mount this folder as WebDAV resource.
 
         Folder folder;
         if (folderSettings.isPreviewOnly()) {
