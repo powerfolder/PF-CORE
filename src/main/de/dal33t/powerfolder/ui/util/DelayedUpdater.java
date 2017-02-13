@@ -104,9 +104,11 @@ public class DelayedUpdater {
      * @param task
      */
     public synchronized void schedule(Runnable task) {
-        if (currentTask != null) {
-            currentTask.cancel();
-            currentTask.canceled = true;
+        synchronized (DelayedUpdater.this) {
+            if (currentTask != null) {
+                currentTask.cancel();
+                currentTask.canceled = true;
+            }
         }
         currentTask = new DelayedTimerTask(task);
         try {
