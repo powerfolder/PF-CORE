@@ -73,13 +73,13 @@ public class DelayedUpdaterTest extends ControllerTestCase {
                 return "Got only " + updates.size() + " updates";
             }
         });
-        assertTrue("Got wrong number of updates: " + updates.size(),
+        assertTrue("Got wrong number of updates: " + updates.size() + ": " + updates,
                 updates.size() >= 10 && updates.size() <= 12);
     }
 
     private class Update implements Runnable {
         public void run() {
-            updates.add(new Date());
+            updates.add(new Date() { public String toString() { return getTime() + ""; } });
         }
     }
 }
