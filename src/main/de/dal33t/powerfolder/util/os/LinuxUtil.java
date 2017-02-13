@@ -129,16 +129,12 @@ public class LinuxUtil {
 
     public static String mountWebDAV(String webDAVURL, Path mountPath) throws MalformedURLException {
 
-        // This is inevitable because the WebDAV URL is initially a path object and path does
-        // not support '//' notations.
-        if (webDAVURL.startsWith(Constants.FOLDER_WEBDAV_PREFIX)) {
-            webDAVURL = webDAVURL.replaceFirst(Constants.FOLDER_WEBDAV_PREFIX, "http").replace(":/", "://");
-        }
-
         String username = null;
         String password = null;
 
         URL wUrl = new URL(webDAVURL);
+
+        String protocol = wUrl.getProtocol();
         String authority = wUrl.getAuthority();
 
         if (null != authority) {
@@ -146,7 +142,7 @@ public class LinuxUtil {
             password = authority.substring(authority.indexOf(":") + 1, authority.lastIndexOf("@"));
         }
 
-        webDAVURL = webDAVURL.substring(webDAVURL.lastIndexOf("@") + 1, webDAVURL.length());
+        webDAVURL = protocol + "://" + webDAVURL.substring(webDAVURL.lastIndexOf("@") + 1, webDAVURL.length());
 
         return mountWebDAV(username, password, webDAVURL, mountPath, true);
     }
@@ -191,7 +187,7 @@ public class LinuxUtil {
         /* Check mount path */
         try {
             if(Files.notExists(mountPath)) {
-                Files.createDirectory(mountPath);
+                Files.createDirectories(mountPath);
             }
         } catch(IOException e) {
             return "N" + e.getMessage();
