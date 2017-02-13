@@ -202,8 +202,6 @@ public class LinuxUtil {
             shPath.toString(), "-c", command
         };
 
-        System.out.println(String.join(" ", commands));
-
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
 
