@@ -469,7 +469,7 @@ public class ConfigurationLoader {
      *            pre config.
      * @return the number of merged entries.
      */
-    private static int mergeConfigs(Properties preConfig,
+    public static int mergeConfigs(Properties preConfig,
         Properties targetConfig, boolean overwrite)
     {
         Reject.ifNull(preConfig, "PreConfig is null");
