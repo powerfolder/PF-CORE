@@ -61,7 +61,7 @@ public class DelayedUpdaterTest extends ControllerTestCase {
         // About to discard about 90% of the events
         for (int i = 0; i < 100; i++) {
             updater.schedule(new Update());
-            TestHelper.waitMilliSeconds(101);
+            TestHelper.waitMilliSeconds(107);
         }
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
