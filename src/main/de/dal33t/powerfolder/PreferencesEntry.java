@@ -27,6 +27,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Refelects an entry setting in the preferences. Provides basic method for
@@ -163,7 +164,26 @@ public enum PreferencesEntry {
     /**
      * Flag is set true if FOLDER_BASE_PATH shall overwrite existing configuration
      */
-    FOLDER_BASE_PATH_OVERWRITE("foldersbase.overwrite", true);
+    FOLDER_BASE_PATH_OVERWRITE("foldersbase.overwrite", true),
+
+    /**
+     * PFC-2963
+     */
+    SHOW_UPDATE("show.update", true) {
+        @Override
+        public String getValueString(Controller controller) {
+            if (WinUtils.isSupported() && WinUtils.isMSI()) {
+                // Never show option at MSI installer: Auto-update not supported (yet).
+                return Boolean.FALSE.toString();
+            }
+            String value = controller.getPreferences().get(this.preferencesKey, null);
+            if (value == null) {
+                // If no value is set: show if update is enabled.
+                return ConfigurationEntry.ENABLE_UPDATE.getValue(controller);
+            }
+            return super.getValueString(controller);
+        }
+    };
 
     /** String, Boolean, Integer */
     private Class<?> type;

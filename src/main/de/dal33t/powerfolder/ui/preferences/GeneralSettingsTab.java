@@ -307,7 +307,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             row += 2;
             builder.add(verboseCB, cc.xy(3, row));
             // PFC-2461: Completely disable updates via preferences
-            if (ConfigurationEntry.ENABLE_UPDATE.getValueBoolean(getController())) {
+            if (PreferencesEntry.SHOW_UPDATE.getValueBoolean(getController())) {
                 row += 2;
                 builder.add(new JLabel(Translation.get("preferences.general.check_for_updates_text")), cc.xy(1, row));
                 builder.add(updateCheck, cc.xy(3, row));
