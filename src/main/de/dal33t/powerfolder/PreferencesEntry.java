@@ -176,7 +176,7 @@ public enum PreferencesEntry {
                 // Never show option at MSI installer: Auto-update not supported (yet).
                 return Boolean.FALSE.toString();
             }
-            String value = controller.getPreferences().get(this.preferencesKey, null);
+            String value = controller.getPreferences().get(this.getPreferencesKey(), null);
             if (value == null) {
                 // If no value is set: show if update is enabled.
                 return ConfigurationEntry.ENABLE_UPDATE.getValue(controller);
@@ -212,6 +212,10 @@ public enum PreferencesEntry {
         type = String.class;
         preferencesKey = aPreferencesKey;
         defaultValue = theDefaultValue;
+    }
+
+    String getPreferencesKey() {
+        return preferencesKey;
     }
 
     /**
@@ -254,6 +258,7 @@ public enum PreferencesEntry {
     }
 
     /**
+
      * Parses the configuration entry into a Boolen.
      *
      * @param controller
