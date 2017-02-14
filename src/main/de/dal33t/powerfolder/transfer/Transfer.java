@@ -95,9 +95,9 @@ public abstract class Transfer extends Loggable implements Serializable {
     public static class State implements Serializable, Comparable<State> {
         private static final long serialVersionUID = 100L;
 
-        private TransferState state = TransferState.NONE;
-        private double progress = -1;
-        private Date completedDate;
+        private volatile TransferState state = TransferState.NONE;
+        private volatile double progress = -1;
+        private volatile Date completedDate;
 
         public synchronized TransferState getState() {
             return state;
