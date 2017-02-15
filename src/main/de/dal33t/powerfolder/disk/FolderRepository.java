@@ -1195,7 +1195,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Create physical mount location.
             Path folderDirectory = this.getFoldersBasedir();
-            String folderName = folderInfo.getLocalizedName() + Constants.FOLDER_WEBDAV_SUFFIX;
+            String folderName = PathUtils.removeInvalidFilenameChars(folderInfo.getLocalizedName()
+                    + Constants.FOLDER_WEBDAV_SUFFIX);
             Path folderBaseDir = folderDirectory.resolve("webdav").resolve(folderName);
 
             try {
