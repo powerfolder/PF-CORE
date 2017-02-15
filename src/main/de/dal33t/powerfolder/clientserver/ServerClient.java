@@ -1801,10 +1801,11 @@ public class ServerClient extends PFComponent {
      *
      * @return Token secret
      */
-
     public String getWebDavToken() {
         return webdavToken;
     }
+
+    public String getDeviceToken() { return tokenSecret; }
 
     /**
      * ATTENTION: This password must not be used for long. It cannot be
