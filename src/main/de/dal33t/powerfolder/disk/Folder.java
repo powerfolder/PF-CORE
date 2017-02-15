@@ -2625,43 +2625,45 @@ public class Folder extends PFComponent {
      * @return true if actually joined the folder.
      */
     public boolean join(Member member) {
-        boolean memberRead = hasReadPermission(member);
-        boolean mySelfRead = hasReadPermission(getMySelf());
-        if (!memberRead || !mySelfRead) {
-            if (memberRead) {
-                if (isFine()) {
-                    String msg = getName() + ": Not joining " + member + " / "
-                        + member.getAccountInfo()
-                        + ". Myself got no read permission";
-                    if (getController().isStarted()
-                        && member.isCompletelyConnected()
-                        && getController().getOSClient().isConnected()
-                        && getController().getOSClient().isLoggedIn())
-                    {
-                        logWarning(msg);
-                    } else {
-                        logFine(msg);
+        if (!member.isServer()) {
+            boolean memberRead = hasReadPermission(member);
+            boolean mySelfRead = hasReadPermission(getMySelf());
+            if (!memberRead || !mySelfRead) {
+                if (memberRead) {
+                    if (isFine()) {
+                        String msg = getName() + ": Not joining " + member + " / "
+                            + member.getAccountInfo()
+                            + ". Myself got no read permission";
+                        if (getController().isStarted()
+                            && member.isCompletelyConnected()
+                            && getController().getOSClient().isConnected()
+                            && getController().getOSClient().isLoggedIn())
+                        {
+                            logWarning(msg);
+                        } else {
+                            logFine(msg);
+                        }
+                    }
+                } else {
+                    if (isFine()) {
+                        String msg = getName() + ": Not joining " + member + " / "
+                            + member.getAccountInfo() + " no read permission";
+                        if (getController().isStarted()
+                            && member.isCompletelyConnected()
+                            && getController().getOSClient().isConnected())
+                        {
+                            logWarning(msg);
+                        } else {
+                            logFine(msg);
+                        }
                     }
                 }
-            } else {
-                if (isFine()) {
-                    String msg = getName() + ": Not joining " + member + " / "
-                        + member.getAccountInfo() + " no read permission";
-                    if (getController().isStarted()
-                        && member.isCompletelyConnected()
-                        && getController().getOSClient().isConnected())
-                    {
-                        logWarning(msg);
-                    } else {
-                        logFine(msg);
-                    }
+                if (member.isCompletelyConnected()) {
+                    member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
+                        supportExternalizable(member)));
                 }
+                return false;
             }
-            if (member.isCompletelyConnected()) {
-                member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
-                    supportExternalizable(member)));
-            }
-            return false;
         }
         join0(member, false);
         return true;
