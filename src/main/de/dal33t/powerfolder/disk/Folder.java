@@ -4297,11 +4297,16 @@ public class Folder extends PFComponent {
         Reject.ifNull(newFileInfo, "FileInfo is null");
         FileInfo fileInfo = getFile(newFileInfo);
         if (isInfo()) {
-            logInfo("Deleting file "
+            String msg = "Deleting file "
                 + (fileInfo != null ? fileInfo.toDetailString() : newFileInfo)
                 + ((archiver.getVersionsPerFile() > 0)
-                    ? " moving to archive"
-                    : ""));
+                    ? " moving to version history"
+                    : "");
+            if (currentInfo.isMetaFolder()) {
+                logFine(msg);
+            } else {
+                logInfo(msg);
+            }
         }
         try {
             watcher.addIgnoreFile(newFileInfo);
