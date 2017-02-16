@@ -2625,43 +2625,45 @@ public class Folder extends PFComponent {
      * @return true if actually joined the folder.
      */
     public boolean join(Member member) {
-        boolean memberRead = hasReadPermission(member);
-        boolean mySelfRead = hasReadPermission(getMySelf());
-        if (!memberRead || !mySelfRead) {
-            if (memberRead) {
-                if (isFine()) {
-                    String msg = getName() + ": Not joining " + member + " / "
-                        + member.getAccountInfo()
-                        + ". Myself got no read permission";
-                    if (getController().isStarted()
-                        && member.isCompletelyConnected()
-                        && getController().getOSClient().isConnected()
-                        && getController().getOSClient().isLoggedIn())
-                    {
-                        logWarning(msg);
-                    } else {
-                        logFine(msg);
+        if (!member.isServer()) {
+            boolean memberRead = hasReadPermission(member);
+            boolean mySelfRead = hasReadPermission(getMySelf());
+            if (!memberRead || !mySelfRead) {
+                if (memberRead) {
+                    if (isFine()) {
+                        String msg = getName() + ": Not joining " + member + " / "
+                            + member.getAccountInfo()
+                            + ". Myself got no read permission";
+                        if (getController().isStarted()
+                            && member.isCompletelyConnected()
+                            && getController().getOSClient().isConnected()
+                            && getController().getOSClient().isLoggedIn())
+                        {
+                            logWarning(msg);
+                        } else {
+                            logFine(msg);
+                        }
+                    }
+                } else {
+                    if (isFine()) {
+                        String msg = getName() + ": Not joining " + member + " / "
+                            + member.getAccountInfo() + " no read permission";
+                        if (getController().isStarted()
+                            && member.isCompletelyConnected()
+                            && getController().getOSClient().isConnected())
+                        {
+                            logWarning(msg);
+                        } else {
+                            logFine(msg);
+                        }
                     }
                 }
-            } else {
-                if (isFine()) {
-                    String msg = getName() + ": Not joining " + member + " / "
-                        + member.getAccountInfo() + " no read permission";
-                    if (getController().isStarted()
-                        && member.isCompletelyConnected()
-                        && getController().getOSClient().isConnected())
-                    {
-                        logWarning(msg);
-                    } else {
-                        logFine(msg);
-                    }
+                if (member.isCompletelyConnected()) {
+                    member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
+                        supportExternalizable(member)));
                 }
+                return false;
             }
-            if (member.isCompletelyConnected()) {
-                member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
-                    supportExternalizable(member)));
-            }
-            return false;
         }
         join0(member, false);
         return true;
@@ -3203,9 +3205,14 @@ public class Folder extends PFComponent {
                     by = aInfo.getDisplayName();
                 }
             }
-            logInfo("File " + localFile.toDetailString() + " was deleted by "
+            String msg = "File " + localFile.toDetailString() + " was deleted by "
                 + by + ": " + remoteFile.toDetailString()
-                + " , deleting local at " + localCopy.toAbsolutePath());
+                + " , deleting local at " + localCopy.toAbsolutePath();
+            if (currentInfo.isMetaFolder()) {
+                logFine(msg);
+            } else {
+                logInfo(msg);
+            }
         }
 
         // Abort transfers on file.
@@ -4112,7 +4119,7 @@ public class Folder extends PFComponent {
     }
 
     private Path getSystemSubDir0() {
-        if (schemaZyncro) {
+        if (schemaZyncro || localBase.toString().contains(Constants.FOLDER_WEBDAV_SUFFIX)) {
             return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)
                 .resolve(PathUtils.removeInvalidFilenameChars(getId()))
                 .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
@@ -4297,11 +4304,16 @@ public class Folder extends PFComponent {
         Reject.ifNull(newFileInfo, "FileInfo is null");
         FileInfo fileInfo = getFile(newFileInfo);
         if (isInfo()) {
-            logInfo("Deleting file "
+            String msg = "Deleting file "
                 + (fileInfo != null ? fileInfo.toDetailString() : newFileInfo)
                 + ((archiver.getVersionsPerFile() > 0)
-                    ? " moving to archive"
-                    : ""));
+                    ? " moving to version history"
+                    : "");
+            if (currentInfo.isMetaFolder()) {
+                logFine(msg);
+            } else {
+                logInfo(msg);
+            }
         }
         try {
             watcher.addIgnoreFile(newFileInfo);

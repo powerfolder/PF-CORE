@@ -63,8 +63,8 @@ public class DelayedUpdater {
     private static final int NOT_SCHEDULED = -1;
 
     private long delay;
-    private long nextMandatoryEvent = NOT_SCHEDULED;
     private final ScheduledExecutorService executorService;
+    private volatile long nextMandatoryEvent = NOT_SCHEDULED;
     private volatile DelayedTimerTask currentTask;
 
     /**
@@ -104,9 +104,11 @@ public class DelayedUpdater {
      * @param task
      */
     public synchronized void schedule(Runnable task) {
-        if (currentTask != null) {
-            currentTask.cancel();
-            currentTask.canceled = true;
+        synchronized (DelayedUpdater.this) {
+            if (currentTask != null) {
+                currentTask.cancel();
+                currentTask.canceled = true;
+            }
         }
         currentTask = new DelayedTimerTask(task);
         try {

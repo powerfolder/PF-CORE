@@ -193,7 +193,7 @@ public enum ConfigurationEntry {
      * URL of the Online Storage features
      */
     PROVIDER_ABOUT_URL("provider.url.about",
-        "http://www.powerfolder.com/wiki/Cloud_Space"),
+        "https://wiki.powerfolder.com/display/PFC/Cloud+Guide"),
 
     /**
      * Quickstart guides to PowerFolder
@@ -204,7 +204,7 @@ public enum ConfigurationEntry {
      * URL of the PowerFolder Support
      */
     PROVIDER_SUPPORT_URL("provider.url.support",
-        "http://www.powerfolder.com/support.html"),
+        "https://wiki.powerfolder.com"),
 
     /**
      * URL where bugs or tickets can be filed.
@@ -223,13 +223,13 @@ public enum ConfigurationEntry {
      * URL where the contact form resides
      */
     PROVIDER_CONTACT_URL("provider.url.contact",
-        "http://www.powerfolder.com/contact.html"),
+        "https://www.powerfolder.com/contact"),
 
     /**
      * URL of the PowerFolder Wiki. ATTENTION: This URL gets extended by article
      * URI from many help links
      */
-    PROVIDER_WIKI_URL("provider.url.wiki", "http://www.powerfolder.com/wiki"),
+    PROVIDER_WIKI_URL("provider.url.wiki", "https://wiki.powerfolder.com/"),
 
     // Distribution infos *****************************************************
 
@@ -519,6 +519,11 @@ public enum ConfigurationEntry {
      * PFC-2548: The token to use for authentication.
      */
     SERVER_CONNECT_TOKEN("server.connect.token"),
+
+    /**
+     * PFS-1685: Token for webdav authentication
+     */
+    SERVER_CONNECT_TOKEN_WEBDAV("server.connect.token.webdav"),
     
     /**
      * Password for connection (clear text)

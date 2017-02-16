@@ -41,10 +41,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -65,6 +62,7 @@ import java.util.List;
  */
 public class DirectoryChooser extends BaseDialog {
 
+    private Path startPath;
     private List<Path> selectedDirs;
     private final DirectoryTree tree;
     private final JTextField pathField;
@@ -94,7 +92,7 @@ public class DirectoryChooser extends BaseDialog {
         super(Senior.NONE, controller, true);
         this.multiSelect = multiSelect;
         selectedDirs = new ArrayList<Path>();
-        selectedDirs.add(initialValue);
+        startPath = initialValue;
         DefaultMutableTreeNode rootTreeNode = new DefaultMutableTreeNode();
         model = new DefaultTreeModel(rootTreeNode);
         tree = new DirectoryTree(model, onlineFolders);
@@ -154,6 +152,35 @@ public class DirectoryChooser extends BaseDialog {
         return okButton;
     }
 
+    /**
+     * Check whether given path is writable and show a warning dialog if not
+     *
+     * @param  path  {@link Path} to check
+     *
+     * @return Either true when writable; otherwise false
+     */
+
+    private boolean checkPathAndWarn(Path path) {
+        Path parentPath = null;
+
+        /* Check given path */
+        if (null != path) {
+            parentPath = path.getParent();
+
+            if (null != parentPath && parentPath.toFile().canWrite()) {
+                return true;
+            }
+        }
+
+        DialogFactory.genericDialog(getController(),
+                Translation.get("dialog.directorychooser.new.description"),
+                Translation.get("dialog.directorychooser.error.insufficient_permissions",
+                        (null == parentPath ? "" : parentPath.toString())),
+                GenericDialogType.WARN);
+
+        return false;
+    }
+
     private void okEvent() {
 
         // See if the user has just typed in a directory in the text area.
@@ -164,14 +191,23 @@ public class DirectoryChooser extends BaseDialog {
                 Path selectedDir = selectedDirs.get(0);
                 String selectedPath = selectedDir.toAbsolutePath().toString();
                 String enteredPath = pathField.getText();
+
                 if (!selectedPath.equals(enteredPath)) {
                     Path file = Paths.get(enteredPath);
+
+                    /* PFC-2783: Check if path is writable */
+                    if (!checkPathAndWarn(file)) return;
+
                     selectedDirs.clear();
                     selectedDirs.add(file);
                 }
             } else {
                 String enteredPath = pathField.getText();
                 Path file = Paths.get(enteredPath);
+
+                /* PFC-2783: Check if path is writable */
+                if (!checkPathAndWarn(file)) return;
+
                 selectedDirs.clear();
                 selectedDirs.add(file);
             }
@@ -255,7 +291,7 @@ public class DirectoryChooser extends BaseDialog {
 
         // Initialize the tree path on the path supplied.
         logFine("Initializing path...");
-        tree.initializePath(selectedDirs.get(0));
+        tree.initializePath(startPath);
         logFine("Initialized path");
         return c;
     }
@@ -380,7 +416,8 @@ public class DirectoryChooser extends BaseDialog {
     }
 
     private void processTreeChange() {
-        selectedDirs.clear();
+        /* PFC-2962: Do not add the selected path to the selectedDirs list, since the
+                     Ok action already handles that */
         TreePath[] treePaths = tree.getSelectionPaths();
         if (treePaths != null && treePaths.length > 1) {
             // Multiple selection, so disable pathField.
@@ -398,7 +435,6 @@ public class DirectoryChooser extends BaseDialog {
                 if (isFine()) {
                     logFine("DirectoryTreeNode file " + f.toAbsolutePath());
                 }
-                selectedDirs.add(f);
             }
         } else {
             pathField.setEnabled(true);
@@ -418,7 +454,6 @@ public class DirectoryChooser extends BaseDialog {
                 }
                 pathField.setText(f.toAbsolutePath().toString());
                 newDirectoryAction.setEnabled(true);
-                selectedDirs.add(f);
             }
         }
     }

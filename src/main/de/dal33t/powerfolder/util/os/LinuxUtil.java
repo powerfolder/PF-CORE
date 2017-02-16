@@ -20,7 +20,9 @@
 
 package de.dal33t.powerfolder.util.os;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.util.Base58;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import org.apache.commons.io.FilenameUtils;
@@ -32,6 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -105,44 +108,75 @@ public class LinuxUtil {
      *
      * @return Either Y on success; otherwise N with error messages
      */
-
     public static String mountWebDAV(ServerClient serverClient, String webDAVURL)
     {
         /* Assemble mount path */
         Path mountPath = serverClient.getController().getFolderRepository()
                 .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
 
-        return mountWebDAV(serverClient.getUsername(), serverClient.getPasswordClearText(),
-                webDAVURL, mountPath);
+        String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
+                serverClient.getPasswordClearText());
+
+        return mountWebDAV(serverClient.getUsername(), password,
+                webDAVURL, mountPath, false);
+    }
+
+    /**
+     * Mount given WebDAV url
+     *
+     * @param webDAVURL WebDAV url to use. Url notation: webdav://<username>:<password>@<WebDAV resource>
+     *
+     * @return Either Y on success; otherwise N with error messages
+     */
+    public static String mountWebDAV(String webDAVURL, Path mountPath) throws MalformedURLException {
+
+        String username = null;
+        String password = null;
+
+        URL wUrl = new URL(webDAVURL);
+
+        String protocol = wUrl.getProtocol();
+        String authority = wUrl.getAuthority();
+
+        if (null != authority) {
+            username = authority.substring(0, authority.indexOf(":"));
+            password = authority.substring(authority.indexOf(":") + 1, authority.lastIndexOf("@"));
+        }
+
+        webDAVURL = protocol + "://" + webDAVURL.substring(webDAVURL.lastIndexOf("@") + 1, webDAVURL.length());
+
+        return mountWebDAV(username, password, webDAVURL, mountPath, true);
     }
 
     /**
      * Mount given WebDAV url at given path
      *
-     * @note In order for pkexec to work it requires a policykit authentication
-     *       agent like polkit-gnome-authentication-agent running.
-     *
      * @param username   Webdav username
      * @param password   Webdav password
      * @param webDAVURL  WebDAV url to use
      * @param mountPath  Mount to path at
+     * @param useSudo    Use sudo instead of pkexec
      *
      * @return Either Y on success; otherwise N with error messages
      */
-
     public static String mountWebDAV(String username, String password,
-                                     String webDAVURL, Path mountPath)
+                                     String webDAVURL, Path mountPath, boolean useSudo)
     {
         /* Check environment */
-        Path pkexecPath = Paths.get("/usr/bin/pkexec");
         Path shPath     = Paths.get("/bin/bash");
+        Path sudoPath   = Paths.get("/usr/bin/sudo");
+        Path pkexecPath = Paths.get("/usr/bin/pkexec");
         Path davfsPath  = Paths.get("/sbin/mount.davfs");
 
         if(Files.notExists(shPath)) {
             return "N" + Translation.get("dialog.webdav.install_missing", "bash");
         }
 
-        if(Files.notExists(pkexecPath)) {
+        if(useSudo && Files.notExists(sudoPath)) {
+            return "N" + Translation.get("dialog.webdav.install_missing", "sudo");
+        }
+
+        if(!useSudo && Files.notExists(pkexecPath)) {
             return "N" + Translation.get("dialog.webdav.install_missing", "pkexec");
         }
 
@@ -153,18 +187,19 @@ public class LinuxUtil {
         /* Check mount path */
         try {
             if(Files.notExists(mountPath)) {
-                Files.createDirectory(mountPath);
+                Files.createDirectories(mountPath);
             }
         } catch(IOException e) {
             return "N" + e.getMessage();
         }
 
         /* Call command (DO NO MESS WITH IT UNLESS YOU KNOW WHAT YOU ARE DOING!) */
-        String command = String.format("echo \"%s\" | %s %s -o users,username=%s %s",
-                password.replace("\"", "\\\""), davfsPath, webDAVURL, username, mountPath);
+        String command = String.format("echo '%s' | %s %s %s -o users,username=%s,uid=%s %s",
+                password.replace("\'", "\\\'"), (useSudo ? sudoPath : pkexecPath),
+                davfsPath, webDAVURL, username, System.getProperty("user.name"), mountPath);
 
         String[] commands = new String[] {
-            pkexecPath.toString(), shPath.toString(), "-c", command
+            shPath.toString(), "-c", command
         };
 
         try {
@@ -175,11 +210,14 @@ public class LinuxUtil {
             BufferedReader stdErr = new BufferedReader(
                     new InputStreamReader(proc.getErrorStream()));
 
-            String err = stdErr.readLine();
+            StringBuilder err = new StringBuilder();
+            for (String line = stdErr.readLine(); line != null; line = stdErr.readLine()) {
+                err.append(line + " ");
+            }
 
             stdErr.close();
 
-            return StringUtils.isBlank(err) ? "Y" : "N" + err;
+            return StringUtils.isBlank(err.toString()) ? "Y" : "N" + err;
         } catch (IOException e) {
             return "N" + e.getMessage();
         }

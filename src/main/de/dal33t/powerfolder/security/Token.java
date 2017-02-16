@@ -66,13 +66,15 @@ public class Token {
     public static final String PROPERTYNAME_ACCOUNT_INFO = "accountInfo";
     public static final String PROPERTYNAME_SERVICE_INFO = "serviceInfo";
     
-    // PFC-2455:
-    private static final long REQUEST_TOKEN_TIMEOUT = 60 * 1000L;
+    // PFC-2455: 1 Minute
+    private static final long REQUEST_TOKEN_TIMEOUT = 1000L * 60;
     // 1337 Years valid if not removed/revoked
     private static final long SERVICE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
-    // PFS-2008:
-    private static final long MERGE_TOKEN_TIMEOUT = 10 * 60 * 1000L;
-    private static final long ADD_EMAIL_TOKEN_TIMEOUT = 10 * 60 * 1000L;
+    // PFS-2008: 10 Minutes
+    private static final long MERGE_TOKEN_TIMEOUT = 1000L * 60 * 30;
+    private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 30;
+    // PFS-2296: Unlimited time
+    private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
 
     @Id
     private String id;
@@ -107,6 +109,16 @@ public class Token {
             "Not a federated service");
         Date validTo = new Date(System.currentTimeMillis() + REQUEST_TOKEN_TIMEOUT);
         return new Token(validTo, fedService, null, null);
+    }
+    
+    /**
+     * PFS-2296
+     */
+    public static Token newRegistrationToken(AccountInfo aInfo) {
+        Reject.ifNull(aInfo, "Account info null");
+        Date validTo = new Date(
+            System.currentTimeMillis() + ACCOUNT_REGISTER_TIMEOUT);
+        return new Token(validTo, null, aInfo, null);
     }
     
     public static Token newAccessToken(long validMS, AccountInfo aInfo)

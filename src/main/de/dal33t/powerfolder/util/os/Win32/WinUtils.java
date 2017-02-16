@@ -457,9 +457,13 @@ public class WinUtils extends Loggable {
         String webDAVURL)
     {
         try {
+            String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
+                    serverClient.getPasswordClearText());
+
             String cmd = "net use * \"" + webDAVURL + "\" /User:"
                     + serverClient.getUsername() + " \""
-                    + serverClient.getPasswordClearText() + "\" /persistent:yes";
+                    + password + "\" /persistent:yes";
+
             Process process = Runtime.getRuntime().exec(cmd);
             byte[] out = StreamUtils
                     .readIntoByteArray(process.getInputStream());

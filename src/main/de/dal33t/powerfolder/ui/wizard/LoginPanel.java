@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,6 +76,7 @@ import jwf.WizardPanel;
 public class LoginPanel extends PFWizardPanel {
     private static final Logger LOG = Logger.getLogger(LoginPanel.class
         .getName());
+    private static final String TOKEN_PLACEHOLDER = "_TOKEN_PLACEHOLDER_";
 
     private ServerClient client;
     private boolean showUseOS;
@@ -405,17 +407,20 @@ public class LoginPanel extends PFWizardPanel {
             .getValue(getController())))
         {
             usernameField.setText(ConfigurationEntry.SERVER_CONNECT_USERNAME
-                .getValue(getController()));
-            passwordField.setText(new String(LoginUtil
-                .deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
-                    .getValue(getController()) == null
-                    ? ""
-                    : ConfigurationEntry.SERVER_CONNECT_PASSWORD
+                    .getValue(getController()));
+            if (ConfigurationEntry.SERVER_CONNECT_PASSWORD
+                    .hasNonBlankValue(getController())) {
+                passwordField.setText(new String(LoginUtil.deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
                         .getValue(getController()))));
-       } else if (client.isConnected()) {
+            } else if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasNonBlankValue(getController())) {
+                passwordField.setText(TOKEN_PLACEHOLDER);
+            }
+        } else if (client.isConnected()) {
             usernameField.setText(client.getUsername());
             if (!client.isPasswordEmpty()) {
-                passwordField.setText(client.getPasswordClearText());                
+                passwordField.setText(client.getPasswordClearText());
+            } else if (client.isTokenLogin()) {
+                passwordField.setText(TOKEN_PLACEHOLDER);
             }
         }
 
@@ -542,7 +547,13 @@ public class LoginPanel extends PFWizardPanel {
 
                 boolean loginOk = false;
                 char[] pw = passwordField.getPassword();
-                loginOk = client.login(usernameField.getText(), pw).isValid();
+                boolean reuseToken = Arrays.equals(TOKEN_PLACEHOLDER.toCharArray(), pw);
+                if (reuseToken) {
+                    loginOk = client.login(client.getDeviceToken()).isValid();
+                } else {
+                    loginOk = client.login(usernameField.getText(), pw).isValid();
+                }
+
                 LoginUtil.clear(pw);
                 if (!loginOk) {
                     throw new SecurityException(
@@ -578,7 +589,11 @@ public class LoginPanel extends PFWizardPanel {
 
         public void serverConnected(ServerClientEvent event) {
             usernameField.setText(client.getUsername());
-            passwordField.setText(client.getPasswordClearText());
+            if (!client.isPasswordEmpty()) {
+                passwordField.setText(client.getPasswordClearText());
+            } else if (client.isTokenLogin()) {
+                passwordField.setText(TOKEN_PLACEHOLDER);
+            }
             updateOnlineStatus();
         }
 

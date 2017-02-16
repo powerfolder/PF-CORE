@@ -111,6 +111,13 @@ public interface SecurityService {
      */
     String requestToken();
 
+    /**
+     * PFS-1685
+     *
+     * @return a generic token without any reference to a specific node
+     */
+    String requestWebDAVToken();
+
     // Nodes information retrieval ********************************************
 
     /**

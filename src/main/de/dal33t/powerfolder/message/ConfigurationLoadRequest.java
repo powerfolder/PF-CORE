@@ -78,7 +78,7 @@ public class ConfigurationLoadRequest extends Message
         return configURL;
     }
 
-    public Boolean isReplaceExisting() {
+    public Boolean isOverwrite() {
         return replaceExisting;
     }
 
@@ -92,7 +92,7 @@ public class ConfigurationLoadRequest extends Message
             return "SetConfig " + key + "=" + value + " , replace existing? "
                 + replaceExisting + ", restart? " + restartRequired;
         }
-        return "ReloadConfig from " + configURL + ", replace existing? "
+        return "ReloadConfig from " + configURL + ", overwrite? "
             + replaceExisting + ", restart? " + restartRequired;
     }
 

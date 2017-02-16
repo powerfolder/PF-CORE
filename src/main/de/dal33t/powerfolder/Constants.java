@@ -373,6 +373,12 @@ public class Constants {
      */
     public static final String FOLDER_ENCRYPTION_SUFFIX = ".crypto";
 
+    /**
+     * PFS-1918: Suffix to mark a folder path as WebDAV resource.
+     */
+    public static final String FOLDER_WEBDAV_SUFFIX = ".webdav";
+    public static final String FOLDER_WEBDAV_PREFIX= "http";
+
     // Pro related ************************************************************
 
     public static final String PACKAGE_PREFIX = "de.dal33t.powerfolder.";

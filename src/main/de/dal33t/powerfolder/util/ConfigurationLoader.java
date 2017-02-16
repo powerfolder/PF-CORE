@@ -113,9 +113,9 @@ public class ConfigurationLoader {
                 if (clr.isKeyValue()) {
                     boolean hasValue = controller.getConfig().containsKey(
                         clr.getKey());
-                    if (clr.isReplaceExisting() == null
-                        || clr.isReplaceExisting()
-                        || (!hasValue && !clr.isReplaceExisting()))
+                    if (clr.isOverwrite() == null
+                        || clr.isOverwrite()
+                        || (!hasValue && !clr.isOverwrite()))
                     {
                         if (clr.getValue() == null) {
                             controller.getConfig().remove(clr.getKey());
@@ -136,8 +136,8 @@ public class ConfigurationLoader {
                     .loadPreConfiguration(clr.getConfigURL());
                 if (preConfig != null) {
                     boolean overwrite;
-                    if (clr.isReplaceExisting() != null) {
-                        overwrite = clr.isReplaceExisting();
+                    if (clr.isOverwrite() != null) {
+                        overwrite = clr.isOverwrite();
                     } else {
                         overwrite = overwriteConfigEntries(preConfig);
                     }
@@ -443,16 +443,16 @@ public class ConfigurationLoader {
      *            the config file to set the pre-configuration values into.
      * @param targetPreferences
      *            the preferences to set the pre-configuration values into.
-     * @param replaceExisting
+     * @param overwrite
      *            if existing key/value pairs will be overwritten by pairs of
      *            pre config.
      * @return the sum of merged entries.
      */
     public static int merge(Properties preConfig, Properties targetConfig,
-        Preferences targetPreferences, boolean replaceExisting)
+        Preferences targetPreferences, boolean overwrite)
     {
-        return mergeConfigs(preConfig, targetConfig, replaceExisting)
-            + mergePreferences(preConfig, targetPreferences, replaceExisting);
+        return mergeConfigs(preConfig, targetConfig, overwrite)
+            + mergePreferences(preConfig, targetPreferences, overwrite);
     }
 
     /**
@@ -464,13 +464,13 @@ public class ConfigurationLoader {
      *            the pre config
      * @param targetConfig
      *            the config file to set the pre-configuration values into.
-     * @param replaceExisting
+     * @param overwrite
      *            if existing key/value pairs will be overwritten by pairs of
      *            pre config.
      * @return the number of merged entries.
      */
-    private static int mergeConfigs(Properties preConfig,
-        Properties targetConfig, boolean replaceExisting)
+    public static int mergeConfigs(Properties preConfig,
+        Properties targetConfig, boolean overwrite)
     {
         Reject.ifNull(preConfig, "PreConfig is null");
         Reject.ifNull(targetConfig, "TargetConfig is null");
@@ -478,7 +478,18 @@ public class ConfigurationLoader {
         for (Object obj : preConfig.keySet()) {
             String key = (String) obj;
             String value = preConfig.getProperty(key);
-            if (!targetConfig.containsKey(key) || replaceExisting) {
+
+            // PFC-2747 / PFS-1574
+            try {
+                String owStr = preConfig.getProperty(key + ".overwrite");
+                if (StringUtils.isNotBlank(owStr)) {
+                    overwrite = Boolean.valueOf(owStr);
+                }
+            } catch (RuntimeException e) {
+                LOG.warning("Unable to parse entry '" + key + ".overwrite': " + e);
+            }
+
+            if (!targetConfig.containsKey(key) || overwrite) {
                 Object oldValue = targetConfig.setProperty(key, value);
                 if (!key.startsWith(PREFERENCES_PREFIX)
                     && !value.equals(oldValue))
@@ -510,13 +521,13 @@ public class ConfigurationLoader {
      *            the pre config
      * @param targetPreferences
      *            the preferences to set the pre-configuration values into.
-     * @param replaceExisting
+     * @param overwrite
      *            if existing key/value pairs will be overwritten by pairs of
      *            pre config.
      * @return the number of merged entries.
      */
     public static int mergePreferences(Properties preConfig,
-        Preferences targetPreferences, boolean replaceExisting)
+        Preferences targetPreferences, boolean overwrite)
     {
         Reject.ifNull(preConfig, "PreConfig is null");
         Reject.ifNull(targetPreferences, "TargetPreferences is null");
@@ -531,7 +542,18 @@ public class ConfigurationLoader {
             }
             boolean entryMissing = "-XXWEIRED-DEFAULT-VALUE"
                 .equals(targetPreferences.get(key, "-XXWEIRED-DEFAULT-VALUE"));
-            if (entryMissing || replaceExisting) {
+
+            // PFC-2747 / PFS-1574
+            try {
+                String owStr = preConfig.getProperty(key + ".overwrite");
+                if (StringUtils.isNotBlank(owStr)) {
+                    overwrite = Boolean.valueOf(owStr);
+                }
+            } catch (RuntimeException e) {
+                LOG.warning("Unable to parse entry '" + key + ".overwrite': " + e);
+            }
+
+            if (entryMissing || overwrite) {
                 targetPreferences.put(key, value);
                 n++;
                 LOG.finer("Preconfigured " + key + "=" + value);

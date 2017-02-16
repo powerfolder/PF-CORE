@@ -176,6 +176,9 @@ public class FolderSettings {
      * @return the original config entry basedir. May contain placeholder
      */
     public String getLocalBaseDirString() {
+        if (localBaseDirStr == null){
+            return localBaseDir.toString();
+        }
         return localBaseDirStr;
     }
 

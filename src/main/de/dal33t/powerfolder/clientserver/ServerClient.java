@@ -155,6 +155,8 @@ public class ServerClient extends PFComponent {
     private String shibUsername;
     private String shibToken;
 
+    private String webdavToken;
+
     private Member server;
     private final MyThrowableHandler throwableHandler = new MyThrowableHandler();
     private final AtomicBoolean loggingIn = new AtomicBoolean();
@@ -588,8 +590,7 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return false;
         }
-        return !isTokenLogin()
-            && (OSUtil.isWindowsSystem() || OSUtil.isLinux())
+        return (OSUtil.isWindowsSystem() || OSUtil.isLinux())
             && ConfigurationEntry.WEB_DAV_ENABLED
                 .getValueBoolean(config);
     }
@@ -914,6 +915,14 @@ public class ServerClient extends PFComponent {
             }
         }
 
+        if (ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.hasValue(config)) {
+            webdavToken = ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV
+                .getValue(config);
+            if (Token.isExpired(webdavToken)) {
+                webdavToken = null;
+            }
+        }
+
         if (StringUtils.isNotBlank(getController().getCLIUsername())) {
             un = getController().getCLIUsername();
         }
@@ -968,6 +977,7 @@ public class ServerClient extends PFComponent {
         username = null;
         passwordObf = null;
         tokenSecret = null;
+        webdavToken = null;
         try {
             securityService.logout();
         } catch (Exception e) {
@@ -1158,6 +1168,17 @@ public class ServerClient extends PFComponent {
                                 ConfigurationEntry.SERVER_CONNECT_TOKEN
                                     .removeValue(config);
                             }
+
+                            webdavToken = securityService.requestWebDAVToken();
+                            if (StringUtils.isNotBlank(webdavToken)
+                                && !Token.isExpired(webdavToken))
+                            {
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV
+                                    .setValue(config, webdavToken);
+                            } else {
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV
+                                    .removeValue(config);
+                            }
                         }
 
                         saveLastKnowLogin(username, passwordObf);
@@ -1265,7 +1286,7 @@ public class ServerClient extends PFComponent {
             || isKerberosLogin();
     }
 
-    private boolean isTokenLogin() {
+    public boolean isTokenLogin() {
         return StringUtils.isNotBlank(tokenSecret)
             && StringUtils.isBlank(passwordObf);
     }
@@ -1774,6 +1795,17 @@ public class ServerClient extends PFComponent {
     public char[] getPassword() {
         return LoginUtil.deobfuscate(passwordObf);
     }
+
+    /**
+     * Get WebDAV token
+     *
+     * @return Token secret
+     */
+    public String getWebDavToken() {
+        return webdavToken;
+    }
+
+    public String getDeviceToken() { return tokenSecret; }
 
     /**
      * ATTENTION: This password must not be used for long. It cannot be
@@ -2606,9 +2638,6 @@ public class ServerClient extends PFComponent {
                 logInfo("Discovered new server of cluster(" + servers.size()
                     + "): " + e.getNode().getNick() + " @ "
                     + e.getNode().getReconnectAddress());
-            } else if (getMySelf().isServer()) {
-                logInfo("Not longer member of cluster: " + e.getNode().getNick()
-                    + " @ " + e.getNode().getReconnectAddress());
             }
             listenerSupport.nodeServerStatusChanged(new ServerClientEvent(
                 ServerClient.this, e.getNode()));

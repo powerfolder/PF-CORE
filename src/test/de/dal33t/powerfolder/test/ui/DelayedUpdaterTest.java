@@ -61,7 +61,7 @@ public class DelayedUpdaterTest extends ControllerTestCase {
         // About to discard about 90% of the events
         for (int i = 0; i < 100; i++) {
             updater.schedule(new Update());
-            TestHelper.waitMilliSeconds(101);
+            TestHelper.waitMilliSeconds(107);
         }
 
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
@@ -73,13 +73,13 @@ public class DelayedUpdaterTest extends ControllerTestCase {
                 return "Got only " + updates.size() + " updates";
             }
         });
-        assertTrue("Got wrong number of updates: " + updates.size(),
+        assertTrue("Got wrong number of updates: " + updates.size() + ": " + updates,
                 updates.size() >= 10 && updates.size() <= 12);
     }
 
     private class Update implements Runnable {
         public void run() {
-            updates.add(new Date());
+            updates.add(new Date() { public String toString() { return getTime() + ""; } });
         }
     }
 }
