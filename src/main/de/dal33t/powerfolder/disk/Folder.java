@@ -3205,9 +3205,14 @@ public class Folder extends PFComponent {
                     by = aInfo.getDisplayName();
                 }
             }
-            logInfo("File " + localFile.toDetailString() + " was deleted by "
+            String msg = "File " + localFile.toDetailString() + " was deleted by "
                 + by + ": " + remoteFile.toDetailString()
                 + " , deleting local at " + localCopy.toAbsolutePath());
+            if (currentInfo.isMetaFolder()) {
+                logFine(msg);
+            } else {
+                logInfo(msg);
+            }
         }
 
         // Abort transfers on file.
