@@ -237,7 +237,8 @@ public class TrayIconManager extends PFComponent {
             tooltip.append(Translation
                 .get("systray.tooltip.warning_notice"));
         } else if(event.equals(SyncStatusEvent.INFORMATION)) {
-            image = Icons.getImageById(Icons.SYSTRAY_WARNING);
+            // PFC-2964: Don't change icon
+            image = trayIcon.getImage();
             tooltip.append(Translation
                 .get("systray.tooltip.info_notice"));
         } else {

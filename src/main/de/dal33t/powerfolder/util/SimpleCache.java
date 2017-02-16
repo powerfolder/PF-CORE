@@ -91,6 +91,16 @@ public class SimpleCache<K, E> extends Loggable {
         cache.remove(key);
     }
 
+    public void invalidateEntry(Visitor<E> entryFilter) {
+        Reject.ifNull(entryFilter, "Entry");
+        for (Map.Entry<K, Pair<Date, E>> candidate: cache.entrySet()) {
+            E canEntry = candidate.getValue().getSecond();
+            if (entryFilter.visit(canEntry)) {
+                invalidate(candidate.getKey());
+            }
+        }
+    }
+
     public int getCacheHits() {
         return cacheHits.get();
     }

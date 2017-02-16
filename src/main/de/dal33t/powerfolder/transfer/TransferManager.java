@@ -1275,7 +1275,7 @@ public class TransferManager extends PFComponent {
                                 + diskFile.toAbsolutePath().toString());
                         }
                     } else {
-                        logWarning("File was requested, but not found: "
+                        logFine("File was requested, but not found: "
                             + dl.file.toDetailString());
                     }
                 }
