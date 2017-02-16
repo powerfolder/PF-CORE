@@ -3207,7 +3207,7 @@ public class Folder extends PFComponent {
             }
             String msg = "File " + localFile.toDetailString() + " was deleted by "
                 + by + ": " + remoteFile.toDetailString()
-                + " , deleting local at " + localCopy.toAbsolutePath());
+                + " , deleting local at " + localCopy.toAbsolutePath();
             if (currentInfo.isMetaFolder()) {
                 logFine(msg);
             } else {
