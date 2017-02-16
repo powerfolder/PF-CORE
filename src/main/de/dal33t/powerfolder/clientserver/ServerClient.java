@@ -2638,9 +2638,6 @@ public class ServerClient extends PFComponent {
                 logInfo("Discovered new server of cluster(" + servers.size()
                     + "): " + e.getNode().getNick() + " @ "
                     + e.getNode().getReconnectAddress());
-            } else if (getMySelf().isServer()) {
-                logInfo("Not longer member of cluster: " + e.getNode().getNick()
-                    + " @ " + e.getNode().getReconnectAddress());
             }
             listenerSupport.nodeServerStatusChanged(new ServerClientEvent(
                 ServerClient.this, e.getNode()));
