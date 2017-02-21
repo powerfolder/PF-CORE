@@ -1008,6 +1008,10 @@ public class ServerClient extends PFComponent {
         return login0(null, null, authToken);
     }
 
+    public Account login(String theUsername, String authToken) {
+        return login0(theUsername, null, authToken);
+    }
+
     /**
      * Logs into the server and saves the identity as my login.
      * <p>
