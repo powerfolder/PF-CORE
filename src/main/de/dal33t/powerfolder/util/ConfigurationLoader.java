@@ -57,6 +57,7 @@ public class ConfigurationLoader {
         + DEFAULT_CONFIG_FILENAME;
     private static final String PREFERENCES_PREFIX = "pref.";
     private static final int URL_CONNECT_TIMEOUT_SECONDS = 10;
+    private static final String SUFFIX_OVERWRITE = ".overwrite";
 
     private static Logger LOG = Logger.getLogger(ConfigurationLoader.class
         .getName());
@@ -480,8 +481,11 @@ public class ConfigurationLoader {
             String value = preConfig.getProperty(key);
 
             // PFC-2747 / PFS-1574
+            if (key.endsWith(SUFFIX_OVERWRITE)) {
+                continue;
+            }
             try {
-                String owStr = preConfig.getProperty(key + ".overwrite");
+                String owStr = preConfig.getProperty(key + SUFFIX_OVERWRITE);
                 if (StringUtils.isNotBlank(owStr)) {
                     overwrite = Boolean.valueOf(owStr);
                 }
@@ -537,6 +541,9 @@ public class ConfigurationLoader {
             String value = preConfig.getProperty(key);
             if (!key.startsWith(PREFERENCES_PREFIX)) {
                 continue;
+            } else if (key.endsWith(SUFFIX_OVERWRITE)) {
+                // PFC-2747 / PFS-1574
+                continue;
             } else {
                 key = key.substring(PREFERENCES_PREFIX.length(), key.length());
             }
@@ -545,7 +552,7 @@ public class ConfigurationLoader {
 
             // PFC-2747 / PFS-1574
             try {
-                String owStr = preConfig.getProperty(key + ".overwrite");
+                String owStr = preConfig.getProperty(key + SUFFIX_OVERWRITE);
                 if (StringUtils.isNotBlank(owStr)) {
                     overwrite = Boolean.valueOf(owStr);
                 }

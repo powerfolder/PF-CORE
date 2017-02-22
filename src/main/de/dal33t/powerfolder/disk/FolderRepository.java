@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.FolderService;
+import de.dal33t.powerfolder.clientserver.SecurityService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
@@ -31,6 +32,7 @@ import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
@@ -38,6 +40,7 @@ import de.dal33t.powerfolder.task.FolderObtainPermissionTask;
 import de.dal33t.powerfolder.transfer.FileRequestor;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.notices.Notice;
 import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.*;
@@ -2736,7 +2739,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                 scanBasedirLock.unlock();
             }
         }
-
+        // If a UI client is running and AUTO_SETUP_ACCOUNT_FOLDERS is enabled, check if there is enough disk space for all folders.
+        // If there is not enough disk space, disable AUTO_SETUP_ACCOUNT_FOLDERS and send a notification
+        if (getController().isUIEnabled() && ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController()) && !checkDiskSpace(a)) {
+            ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(), false);
+            getController().saveConfig();
+            Notice notice = new WarningNotice(Translation.get("disc_space_warning.title"), Translation.get("disc_space_warning.summary"), null);
+            getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(notice);
+        }
         if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
             .getValueBoolean(getController()))
         {
@@ -3120,4 +3130,25 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         return true;
     }
+
+
+    /**
+     * Checks if there is enough space on the disk to store all folders of an account
+     *
+     * @param account The account
+     * @return True if there is enough space on the disk to store all folders
+     */
+    private boolean checkDiskSpace(Account account) {
+        AccountDetails accountDetails = getController().getOSClient().getSecurityService().getAccountDetails();
+        long dataSize = accountDetails.getSpaceUsed();
+        long freeDiskSpace = 0;
+        try {
+            freeDiskSpace = Files.getFileStore(getFoldersBasedir()).getUsableSpace();
+        } catch (IOException e) {
+            logSevere("Cannot get file store: " + e);
+            return true;
+        }
+        return dataSize < freeDiskSpace;
+    }
+
 }
