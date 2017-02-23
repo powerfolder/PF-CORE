@@ -126,6 +126,11 @@ public enum ConfigurationEntry {
         "security.permissions.show_folder_admin", true),
 
     /**
+     * PFS-1040
+     */
+    FOLDER_OWNERSHIP_CHANGEABLE("folder.change_owner.allowed", true),
+
+    /**
      * Required permission to access/use the archive of a folder.
      * <p>
      * PFS-1336
