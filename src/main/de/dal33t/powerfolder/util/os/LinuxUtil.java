@@ -222,4 +222,34 @@ public class LinuxUtil {
             return "N" + e.getMessage();
         }
     }
+
+    public static String checkRequirementsForWebDAV(){
+
+        if (!OSUtil.isLinux()){
+            return Translation.get("dialog.webdav.install_missing");
+        }
+
+        Path shPath     = Paths.get("/bin/bash");
+        Path sudoPath   = Paths.get("/usr/bin/sudo");
+        Path pkexecPath = Paths.get("/usr/bin/pkexec");
+        Path davfsPath  = Paths.get("/sbin/mount.davfs");
+
+        if(Files.notExists(shPath)) {
+            return Translation.get("dialog.webdav.install_missing", "bash");
+        }
+
+        if(Files.notExists(sudoPath)) {
+            return Translation.get("dialog.webdav.install_missing", "sudo");
+        }
+
+        if(Files.notExists(pkexecPath)) {
+            return Translation.get("dialog.webdav.install_missing", "pkexec");
+        }
+
+        if(Files.notExists(davfsPath)) {
+            return Translation.get("dialog.webdav.install_missing", "davfs2");
+        }
+
+        return null;
+    }
 }

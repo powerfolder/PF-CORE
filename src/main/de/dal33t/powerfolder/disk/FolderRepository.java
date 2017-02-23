@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.FolderService;
+import de.dal33t.powerfolder.clientserver.SecurityService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
@@ -31,6 +32,7 @@ import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
@@ -3137,13 +3139,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return True if there is enough space on the disk to store all folders
      */
     private boolean checkDiskSpace(Account account) {
-        long dataSize = 0;
+        AccountDetails accountDetails = getController().getOSClient().getSecurityService().getAccountDetails();
+        long dataSize = accountDetails.getSpaceUsed();
         long freeDiskSpace = 0;
-        for (FolderInfo folderInfo: account.getFolders()) {
-            for (FileInfo fileInfo: folderInfo.getFolder(getController()).getKnownFiles()) {
-                dataSize += fileInfo.getSize();
-            }
-        }
         try {
             freeDiskSpace = Files.getFileStore(getFoldersBasedir()).getUsableSpace();
         } catch (IOException e) {
