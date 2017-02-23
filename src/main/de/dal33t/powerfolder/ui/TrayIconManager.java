@@ -228,7 +228,11 @@ public class TrayIconManager extends PFComponent {
             image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
             tooltip.append(Translation
                 .get("systray.tooltip.not_connected"));
-        } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN) || event.equals(SyncStatusEvent.LOGGING_IN)) {
+        } else if (event.equals(SyncStatusEvent.LOGGING_IN)) {
+            image = Icons.getImageById(Icons.SYSTRAY_SYNC_INCOMPLETE);
+            tooltip.append(Translation
+                    .get("systray.tooltip.not_logged_in"));
+        } else if (event.equals(SyncStatusEvent.NOT_LOGGED_IN)) {
             image = Icons.getImageById(Icons.SYSTRAY_WARNING);
             tooltip.append(Translation
                 .get("systray.tooltip.not_logged_in"));
@@ -237,8 +241,7 @@ public class TrayIconManager extends PFComponent {
             tooltip.append(Translation
                 .get("systray.tooltip.warning_notice"));
         } else if(event.equals(SyncStatusEvent.INFORMATION)) {
-            // PFC-2964: Don't change icon
-            image = trayIcon.getImage();
+            image = Icons.getImageById(Icons.SYSTRAY_SYNC_COMPLETE);
             tooltip.append(Translation
                 .get("systray.tooltip.info_notice"));
         } else {
