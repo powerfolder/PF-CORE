@@ -655,8 +655,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 }
 
             };
-            logout.execute();
-
             PFWizard.openLoginWizard(getController(), getController()
                 .getOSClient());
         }
