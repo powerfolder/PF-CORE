@@ -595,11 +595,12 @@ public class MembersSimpleTableModel extends PFUIComponent implements
                 permissionsListModel.getList().add(
                     FolderPermission.admin(folder.getInfo()));
             }
-            if (getController().getOSClient().getAccount()
-                .hasOwnerPermission(folder.getInfo()))
+            if (ConfigurationEntry.FOLDER_OWNERSHIP_CHANGEABLE.getValueBoolean(getController()) &&
+                    getController().getOSClient().getAccount().hasOwnerPermission(
+                            folder.getInfo()))
             {
                 permissionsListModel.getList().add(
-                    FolderPermission.owner(folder.getInfo()));
+                        FolderPermission.owner(folder.getInfo()));
             }
         }
 
