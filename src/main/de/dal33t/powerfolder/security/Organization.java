@@ -32,6 +32,7 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import de.dal33t.powerfolder.util.*;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -45,10 +46,6 @@ import org.hibernate.annotations.IndexColumn;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -119,6 +116,11 @@ public class Organization implements Serializable {
      */
     @Column(length = 4000)
     private String jsonData;
+
+    /**
+     * PFS-2176
+     */
+    private boolean isRestrictedToDomain;
 
     public Organization() {
         // Generate unique id
@@ -242,6 +244,30 @@ public class Organization implements Serializable {
         this.jsonData = jsonObject.toString();
     }
 
+    public boolean isRestrictedToDomain() {
+        return isRestrictedToDomain;
+    }
+
+    public void setRestrictedToDomain(boolean restrict) {
+        isRestrictedToDomain = restrict;
+    }
+
+    /**
+     *
+     *
+     * @param email
+     * @return {@code True} if
+     */
+    public boolean isInDomainList(String email) {
+        email = email.substring(email.indexOf("@") + 1);
+        for (String host : prepareDomains(email)) {
+            if (domains.contains(host)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Adds a line of info with the current date to the notes of that account.
      *
@@ -261,6 +287,27 @@ public class Organization implements Serializable {
             newNotes = notes + "\n" + infoLine;
         }
         setNotes(newNotes);
+    }
+
+    public static List<String> prepareDomains(String domain) {
+        List<String> domains = new ArrayList<>();
+        if (StringUtils.countChar(domain, '.') > 1) {
+            domains.add(domain);
+            while (StringUtils.countChar(domain, '.') > 1) {
+
+                int subIdx = domain.indexOf(".");
+
+                String hostWithoutLastSubDomain = domain.substring(subIdx + 1);
+                String lastSubDomain = domain.replace(hostWithoutLastSubDomain, "");
+
+                domains.add(hostWithoutLastSubDomain);
+                domain = domain.replaceFirst(lastSubDomain, "");
+            }
+        } else {
+            domains.add(domain);
+        }
+
+        return domains;
     }
 
     @Override
