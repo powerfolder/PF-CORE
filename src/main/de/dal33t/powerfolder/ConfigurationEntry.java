@@ -38,9 +38,7 @@ import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.AccessMode;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
@@ -192,49 +190,45 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder homepage
      */
-    PROVIDER_URL("provider.url.main", "http://www.powerfolder.com"),
+    PROVIDER_URL("provider.url.main", "https://www.powerfolder.com"),
 
     /**
      * URL of the Online Storage features
      */
-    PROVIDER_ABOUT_URL("provider.url.about",
-        "https://wiki.powerfolder.com/display/PFC/Cloud+Guide"),
+    PROVIDER_ABOUT_URL("provider.url.about", "https://www.powerfolder.com/about-us-2/"),
 
     /**
      * Quickstart guides to PowerFolder
      */
-    PROVIDER_QUICKSTART_URL("provider.url.quickstart"),
+    PROVIDER_QUICKSTART_URL("provider.url.quickstart", "https://wiki.powerfolder.com/display/PFC/Getting+started"),
 
     /**
      * URL of the PowerFolder Support
      */
-    PROVIDER_SUPPORT_URL("provider.url.support",
-        "https://wiki.powerfolder.com"),
+    PROVIDER_SUPPORT_URL("provider.url.support", "https://wiki.powerfolder.com"),
 
     /**
      * URL where bugs or tickets can be filed.
      */
-    PROVIDER_SUPPORT_FILE_TICKET_URL("provider.url.ticket",
-        "https://www.powerfolder.com/support/index.php?/Tickets/Submit"),
+    PROVIDER_SUPPORT_FILE_TICKET_URL("provider.url.ticket", "https://www.powerfolder.com/support/index.php?/Tickets/Submit"),
 
     /**
      * URL of the PowerFolder Pro page.
      * <p>
      * Recommended use: {@link ProUtil#getBuyNowURL(Controller)}
      */
-    PROVIDER_BUY_URL("provider.url.buy"),
+    PROVIDER_BUY_URL("provider.url.buy", "https://powerfolder.com/buynow.html"),
 
     /**
      * URL where the contact form resides
      */
-    PROVIDER_CONTACT_URL("provider.url.contact",
-        "https://www.powerfolder.com/contact"),
+    PROVIDER_CONTACT_URL("provider.url.contact", "https://www.powerfolder.com/contact"),
 
     /**
      * URL of the PowerFolder Wiki. ATTENTION: This URL gets extended by article
      * URI from many help links
      */
-    PROVIDER_WIKI_URL("provider.url.wiki", "https://wiki.powerfolder.com/"),
+    PROVIDER_WIKI_URL("provider.url.wiki", "https://wiki.powerfolder.com"),
 
     // Distribution infos *****************************************************
 
@@ -1448,12 +1442,56 @@ public enum ConfigurationEntry {
     /**
      * Removes the entry from the configuration.
      *
-     * @param controller
-     *            the controller to use
+     * @param config
+     *            the config to remove from
      */
     public void removeValue(Properties config) {
         Reject.ifNull(config, "config is null");
         config.remove(configKey);
+    }
+
+    /**
+     * PFC-2969
+     * @param config
+     * @param overwrite
+     */
+    public void setOverwrite(Properties config, Boolean overwrite) {
+        if (overwrite != null) {
+            config.setProperty(getConfigKey() + ConfigurationLoader.SUFFIX_OVERWRITE, String.valueOf(overwrite));
+        } else {
+            config.remove(getConfigKey() + ConfigurationLoader.SUFFIX_OVERWRITE);
+        }
+    }
+
+    /**
+     * PFC-2969: Copies the value from the current configuration to the target config.
+     *
+     * @param fromController
+     * @param toConfig
+     */
+    public void copy(Controller fromController, Properties toConfig) {
+        String val = this.getValue(fromController);
+        if (val != null) {
+            toConfig.setProperty(getConfigKey(), val);
+        } else {
+            toConfig.remove(getConfigKey());
+        }
+    }
+
+    /**
+     * PFC-2969: Copies the value from the current configuration to the target config if controller config is not default.
+     *
+     * @param fromController
+     * @param toConfig
+     */
+    public void copyIfNotDefault(Controller fromController, Properties toConfig) {
+        String val = getValue(fromController);
+        if (!Util.equals(val, getDefaultValue())) {
+            copy(fromController, toConfig);
+        } else {
+            // Default. Remove value.
+            removeValue(toConfig);
+        }
     }
 
     /**

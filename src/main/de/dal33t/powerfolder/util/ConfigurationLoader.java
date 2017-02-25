@@ -57,7 +57,7 @@ public class ConfigurationLoader {
         + DEFAULT_CONFIG_FILENAME;
     private static final String PREFERENCES_PREFIX = "pref.";
     private static final int URL_CONNECT_TIMEOUT_SECONDS = 10;
-    private static final String SUFFIX_OVERWRITE = ".overwrite";
+    public static final String SUFFIX_OVERWRITE = ".overwrite";
 
     private static Logger LOG = Logger.getLogger(ConfigurationLoader.class
         .getName());
