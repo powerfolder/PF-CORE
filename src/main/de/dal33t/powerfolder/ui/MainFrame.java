@@ -1240,7 +1240,7 @@ public class MainFrame extends PFUIComponent {
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
                 // loginActionLabel.setText(Translation
                 // .getTranslation("main_frame.logging_in.text"));
-                loginActionLabel.setText("");
+                loginActionLabel.setText(" ");
             } else {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
@@ -1253,7 +1253,7 @@ public class MainFrame extends PFUIComponent {
         } else {
             // loginActionLabel.setText(Translation
             // .getTranslation("main_frame.connecting.text"));
-            loginActionLabel.setText("");
+            loginActionLabel.setText(" ");
         }
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
