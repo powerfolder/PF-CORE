@@ -1173,7 +1173,7 @@ public class ServerClient extends PFComponent {
                                     .removeValue(config);
                             }
 
-                            webdavToken = securityService.requestWebDAVToken();
+                            webdavToken = requestWebDAVToken();
                             if (StringUtils.isNotBlank(webdavToken)
                                 && !Token.isExpired(webdavToken))
                             {
@@ -1198,7 +1198,7 @@ public class ServerClient extends PFComponent {
                         @Override
                         public void run() {
                             // Also switches server
-                            updateLocalSettings(accountDetails.getAccount());
+                            updateLocalSettings(accountDetails);
                         }
                     });
                 } else {
@@ -1229,7 +1229,11 @@ public class ServerClient extends PFComponent {
                     }
                 }
                 catch (RemoteCallException e) {
-                    logWarning("Cannot retrieve skin from server: " + e);
+                    if (e.getCause() instanceof NoSuchMethodException) {
+                        logWarning("Client skinning not supported by server");
+                    } else {
+                        logWarning("Cannot retrieve skin from server: " + e);
+                    }
                 }
                 return accountDetails.getAccount();
             } catch (Exception e) {
@@ -1252,8 +1256,6 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * ATTENTION: Does NOT save the config.
-     * 
      * @return the token or null if not possible/supported
      */
     private String requestAndSaveToken() {
@@ -1273,6 +1275,30 @@ public class ServerClient extends PFComponent {
             }
         } catch (Exception e) {
             logWarning("Unable to retrieve token for this device: " + e);
+        }
+        return null;
+    }
+
+    /**
+     * @return the WebDAV token or null if not possible/supported
+     */
+    private String requestWebDAVToken() {
+        try {
+            String tokenSecret = securityService.requestWebDAVToken();
+            if (StringUtils.isNotBlank(tokenSecret)) {
+                logInfo("Received WebDAV token for client");
+                return tokenSecret;
+            } else {
+                logWarning("WebDAV token generation disabled by server");
+            }
+        } catch (RemoteCallException e) {
+            if (e.getCause() instanceof NoSuchMethodException) {
+                logWarning("WebDAV token generation not supported by server");
+            } else {
+                logWarning("Unable to retrieve WebDAV token for this device: " + e);
+            }
+        } catch (Exception e) {
+            logWarning("Unable to retrieve WebDAV token for this device: " + e);
         }
         return null;
     }
@@ -1632,7 +1658,7 @@ public class ServerClient extends PFComponent {
             NodeList nodeList = new NodeList();
             nodeList.load(url);
 
-            logInfo("I know " + nodeList.getServersSet().size()
+            logFine("I know " + nodeList.getServersSet().size()
                 + " servers from cluster @ " + url + " : "
                 + nodeList.getServersSet());
 
@@ -1860,7 +1886,7 @@ public class ServerClient extends PFComponent {
         if (newDetails != null) {
             accountDetails = newDetails;
             fireAccountUpdates(accountDetails);
-            updateLocalSettings(accountDetails.getAccount());
+            updateLocalSettings(accountDetails);
         } else {
             setAnonAccount();
             fireLogin(accountDetails, false);
@@ -1871,10 +1897,11 @@ public class ServerClient extends PFComponent {
         return accountDetails;
     }
 
-    private void updateLocalSettings(Account a) {
+    private void updateLocalSettings(AccountDetails ad) {
+        Account a = ad.getAccount();
         updateServer(a);
         updateFriendsList(a);
-        getController().getFolderRepository().updateFolders(a);
+        getController().getFolderRepository().updateFolders(ad);
         scheduleConnectHostingServers();
 
         // PFC-2455 / PFC-2745: Spawn additional Clients

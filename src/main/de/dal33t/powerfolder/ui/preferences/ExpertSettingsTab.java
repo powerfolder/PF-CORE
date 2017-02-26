@@ -344,7 +344,7 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
         {
             getController().schedule(() -> {
                 getController().getFolderRepository()
-                    .updateFolders(getController().getOSClient().getAccount());
+                    .updateFolders(getController().getOSClient().getAccountDetails());
             } , 0);
         }
 
