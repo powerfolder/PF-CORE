@@ -83,11 +83,9 @@ public abstract class ECPAuthenticatorBase extends Observable {
         }
 
         // PFS-2070
-        BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials(authInfo.getUsername(), authInfo.getPassword()));
-        CloseableHttpClient client = HttpClientBuilder.create().setDefaultCredentialsProvider(credentialsProvider).build();
         HttpPost httpPost = new HttpPost(authInfo.getIdpEcpEndpoint().toString());
+        HttpClient client = getHttpClient();
+
         // PFC-2958:
         httpPost.setHeader("Content-Type", "text/xml; charset=UTF-8");
         HttpResponse httpResponse;
@@ -100,7 +98,6 @@ public abstract class ECPAuthenticatorBase extends Observable {
 
         // Add AuthCache to the execution context
         HttpClientContext context = HttpClientContext.create();
-        context.setCredentialsProvider(credentialsProvider);
         context.setAuthCache(authCache);
         
         try {
@@ -164,13 +161,14 @@ public abstract class ECPAuthenticatorBase extends Observable {
      */
     protected synchronized HttpClient getHttpClient() {
         if (client == null && authInfo != null) {
-
             CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(new AuthScope(authInfo
-                .getIdpEcpEndpoint().getHost(), authInfo.getIdpEcpEndpoint()
-                .getPort()),
-                new UsernamePasswordCredentials(authInfo.getUsername(),
-                    authInfo.getPassword()));
+
+            HttpHost idpHost = new HttpHost(authInfo
+                    .getIdpEcpEndpoint().getHost(), authInfo.getIdpEcpEndpoint()
+                    .getPort());
+            credentialsProvider.setCredentials(new AuthScope(idpHost),
+                    new UsernamePasswordCredentials(authInfo.getUsername(),
+                            authInfo.getPassword()));
 
             String proxyHost = System.getProperty("http.proxyHost");
             if (proxyHost != null && !proxyHost.trim().isEmpty()) {
@@ -185,7 +183,7 @@ public abstract class ECPAuthenticatorBase extends Observable {
                     Credentials credentials = new UsernamePasswordCredentials(
                         authInfo.getProxyUsername(),
                         authInfo.getProxyPassword());
-                    AuthScope authScope = new AuthScope(proxyHost, proxyPort);
+                    AuthScope authScope = new AuthScope(proxy);
                     credentialsProvider.setCredentials(authScope, credentials);
                 }
             }
