@@ -1807,6 +1807,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (!Files.isDirectory(entry)) {
                 return false;
             }
+
+            /* PFC-1905: Ignore folders with webdav suffix */
+            if (name.endsWith(Constants.FOLDER_WEBDAV_SUFFIX)) {
+                return false;
+            }
+
             return !containedInRemovedFolders(entry);
         };
 
