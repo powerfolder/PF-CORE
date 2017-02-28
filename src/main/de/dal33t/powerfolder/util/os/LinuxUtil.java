@@ -110,9 +110,16 @@ public class LinuxUtil {
      */
     public static String mountWebDAV(ServerClient serverClient, String webDAVURL)
     {
+        /* Check suffix */
+        String name = FilenameUtils.getBaseName(webDAVURL);
+
+        if (!name.endsWith(Constants.FOLDER_WEBDAV_SUFFIX)) {
+            name += Constants.FOLDER_WEBDAV_SUFFIX;
+        }
+
         /* Assemble mount path */
         Path mountPath = serverClient.getController().getFolderRepository()
-                .getFoldersBasedir().resolve(FilenameUtils.getBaseName(webDAVURL));
+                .getFoldersBasedir().resolve(name);
 
         String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
                 serverClient.getPasswordClearText());
