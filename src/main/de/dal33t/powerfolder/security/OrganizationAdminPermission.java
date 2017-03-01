@@ -98,16 +98,18 @@ public class OrganizationAdminPermission implements Permission, D2DObject {
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof PermissionProto.Permission) {
             PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
-            try {
-                // Objects can be any message so they need to be unpacked from com.google.protobuf.Any
-                com.google.protobuf.Any object = proto.getObjects(0);
-                String clazzName = object.getTypeUrl().split("/")[1];
-                if (clazzName.equals("StringMessage")) {
-                    StringMessageProto.StringMessage stringMessage = object.unpack(StringMessageProto.StringMessage.class);
-                    this.organizationOID = stringMessage.getValue();
+            if (proto.getObjectsList().size() == 1) {
+                try {
+                    // Objects can be any message so they need to be unpacked from com.google.protobuf.Any
+                    com.google.protobuf.Any object = proto.getObjects(0);
+                    String clazzName = object.getTypeUrl().split("/")[1];
+                    if (clazzName.equals("StringMessage")) {
+                        StringMessageProto.StringMessage stringMessage = object.unpack(StringMessageProto.StringMessage.class);
+                        this.organizationOID = stringMessage.getValue();
+                    }
+                } catch (InvalidProtocolBufferException | NullPointerException e) {
+                    LOG.severe("Cannot unpack message: " + e);
                 }
-            } catch (InvalidProtocolBufferException | NullPointerException e) {
-                LOG.severe("Cannot unpack message: " + e);
             }
         }
     }

@@ -1,7 +1,8 @@
-package de.dal33t.powerfolder.message;
+package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.LoginReplyProto;
 
 public class LoginReply extends Message implements D2DObject {
@@ -28,17 +29,23 @@ public class LoginReply extends Message implements D2DObject {
         initFromD2D(mesg);
     }
 
+    public LoginReplyProto.LoginReply.StatusCode getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(LoginReplyProto.LoginReply.StatusCode statusCode) {
+        this.statusCode = statusCode;
+    }
+
     /** initFromD2DMessage
      * Init from D2D message
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  mesg  Message to use data from
      **/
-
     @Override
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof LoginReplyProto.LoginReply) {
             LoginReplyProto.LoginReply proto = (LoginReplyProto.LoginReply)mesg;
-            
             this.statusCode = proto.getStatusCode();
         }
     }
@@ -48,14 +55,11 @@ public class LoginReply extends Message implements D2DObject {
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
      **/
-
     @Override
     public AbstractMessage toD2D() {
         LoginReplyProto.LoginReply.Builder builder = LoginReplyProto.LoginReply.newBuilder();
-
         builder.setClazzName(this.getClass().getSimpleName());
         builder.setStatusCode(this.statusCode);
-
         return builder.build();
     }
 }
