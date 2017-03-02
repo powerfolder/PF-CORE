@@ -144,13 +144,14 @@ public class LinuxUtil {
 
         String protocol = wUrl.getProtocol();
         String authority = wUrl.getAuthority();
+        String webDAVHost = webDAVURL.substring(webDAVURL.lastIndexOf("@") + 1, webDAVURL.length());
 
         if (null != authority) {
             username = authority.substring(0, authority.indexOf(":"));
             password = authority.substring(authority.indexOf(":") + 1, authority.lastIndexOf("@"));
         }
 
-        webDAVURL = protocol + "://" + webDAVURL.substring(webDAVURL.lastIndexOf("@") + 1, webDAVURL.length());
+        webDAVURL = !webDAVHost.contains(Constants.FOLDER_WEBDAV_PREFIX) ? protocol + "://" + webDAVHost : webDAVHost;
 
         return mountWebDAV(username, password, webDAVURL, mountPath, true);
     }
