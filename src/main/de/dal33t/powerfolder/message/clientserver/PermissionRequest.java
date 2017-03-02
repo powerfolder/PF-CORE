@@ -41,7 +41,6 @@ public class PermissionRequest extends Message implements D2DObject {
      *
      * @param mesg Message to use data from
      **/
-
     public PermissionRequest(AbstractMessage mesg) {
         initFromD2D(mesg);
     }

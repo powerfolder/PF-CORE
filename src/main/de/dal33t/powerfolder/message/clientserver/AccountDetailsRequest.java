@@ -10,6 +10,8 @@ import de.dal33t.powerfolder.protocol.MemberInfoProto;
 public class AccountDetailsRequest extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
+    private int requestCode;
+
     /**
      * Serialization constructor
      */
@@ -18,26 +20,48 @@ public class AccountDetailsRequest extends Message implements D2DObject {
 
     /**
      * Init from D2D message
+     *
      * @param mesg Message to use data from
      **/
     public AccountDetailsRequest(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
 
-    @Override
-    public void initFromD2D(AbstractMessage mesg) {
+    public int getRequestCode() {
+        return requestCode;
     }
 
-    /** toD2D
-     * Convert to D2D message
-     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
-     * @return Converted D2D message
-     **/
+    public void setRequestCode(int requestCode) {
+        this.requestCode = requestCode;
+    }
 
+    /**
+     * initFromD2DMessage
+     * Init from D2D message
+     *
+     * @param mesg Message to use data from
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     **/
+    @Override
+    public void initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof AccountDetailsRequestProto.AccountDetailsRequest) {
+            AccountDetailsRequestProto.AccountDetailsRequest proto = (AccountDetailsRequestProto.AccountDetailsRequest) mesg;
+            this.requestCode = proto.getRequestCode();
+        }
+    }
+
+    /**
+     * toD2D
+     * Convert to D2D message
+     *
+     * @return Converted D2D message
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     **/
     @Override
     public AbstractMessage toD2D() {
         AccountDetailsRequestProto.AccountDetailsRequest.Builder builder = AccountDetailsRequestProto.AccountDetailsRequest.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
+        builder.setRequestCode(this.requestCode);
         return builder.build();
     }
 }

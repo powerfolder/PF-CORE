@@ -32,7 +32,6 @@ public class PermissionReply extends Message implements D2DObject {
      *
      * @param mesg Message to use data from
      **/
-
     public PermissionReply(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
