@@ -2,10 +2,8 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.AccountDetailsRequestProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
 
 public class AccountDetailsRequest extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;

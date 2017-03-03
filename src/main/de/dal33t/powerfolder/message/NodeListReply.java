@@ -3,8 +3,9 @@ package de.dal33t.powerfolder.message;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.message.clientserver.ReplyStatusCode;
-import de.dal33t.powerfolder.protocol.*;
-import de.dal33t.powerfolder.security.*;
+import de.dal33t.powerfolder.protocol.NodeListProto;
+import de.dal33t.powerfolder.protocol.NodeListReplyProto;
+import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
 public class NodeListReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
