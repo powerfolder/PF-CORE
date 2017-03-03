@@ -4,11 +4,13 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.LoginReplyProto;
+import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
 public class LoginReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
-    private LoginReplyProto.LoginReply.StatusCode statusCode;
+    private String replyCode;
+    private ReplyStatusCode replyStatusCode;
 
     /**
      * Serialization constructor
@@ -16,25 +18,33 @@ public class LoginReply extends Message implements D2DObject {
     public LoginReply() {
     }
 
-    public LoginReply(LoginReplyProto.LoginReply.StatusCode statusCode) {
-        this.statusCode = statusCode;
+    public LoginReply(String replyCode, ReplyStatusCode replyStatusCode) {
+        this.replyCode = replyCode;
+        this.replyStatusCode = replyStatusCode;
     }
 
     /**
      * Init from D2D message
      * @param mesg Message to use data from
      **/
-
     public LoginReply(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
 
-    public LoginReplyProto.LoginReply.StatusCode getStatusCode() {
-        return statusCode;
+    public String getReplyCode() {
+        return replyCode;
     }
 
-    public void setStatusCode(LoginReplyProto.LoginReply.StatusCode statusCode) {
-        this.statusCode = statusCode;
+    public void setReplyCode(String replyCode) {
+        this.replyCode = replyCode;
+    }
+
+    public ReplyStatusCode getReplyStatusCode() {
+        return replyStatusCode;
+    }
+
+    public void setReplyStatusCode(ReplyStatusCode replyStatusCode) {
+        this.replyStatusCode = replyStatusCode;
     }
 
     /** initFromD2DMessage
@@ -46,7 +56,8 @@ public class LoginReply extends Message implements D2DObject {
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof LoginReplyProto.LoginReply) {
             LoginReplyProto.LoginReply proto = (LoginReplyProto.LoginReply)mesg;
-            this.statusCode = proto.getStatusCode();
+            this.replyCode = proto.getReplyCode();
+            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
         }
     }
 
@@ -59,7 +70,8 @@ public class LoginReply extends Message implements D2DObject {
     public AbstractMessage toD2D() {
         LoginReplyProto.LoginReply.Builder builder = LoginReplyProto.LoginReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        builder.setStatusCode(this.statusCode);
+        if (this.replyCode != null) builder.setReplyCode(this.replyCode);
+        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode)this.replyStatusCode.toD2D());
         return builder.build();
     }
 }

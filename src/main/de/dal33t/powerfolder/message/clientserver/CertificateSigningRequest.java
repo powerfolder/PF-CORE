@@ -41,6 +41,13 @@ public class CertificateSigningRequest extends Message implements D2DObject {
         initFromD2D(mesg);
     }
 
+    /**
+     * initFromD2DMessage
+     * Init from D2D message
+     *
+     * @param mesg Message to use data from
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     **/
     @Override
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof CertificateSigningRequestProto.CertificateSigningRequest) {
@@ -55,7 +62,6 @@ public class CertificateSigningRequest extends Message implements D2DObject {
      * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
      * @return Converted D2D message
      **/
-    
     @Override
     public AbstractMessage toD2D() {
         CertificateSigningRequestProto.CertificateSigningRequest.Builder builder = CertificateSigningRequestProto.CertificateSigningRequest.newBuilder();
