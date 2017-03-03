@@ -17,7 +17,7 @@ public class PermissionRequest extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
     private static final Logger LOG = Logger.getLogger(PermissionRequest.class.getName());
 
-    private int requestCode;
+    private String requestCode;
     /*
     The Permission protocol object stores subjects and objects for a single permission type.
     The Permission message cannot be changed easily,
@@ -42,11 +42,11 @@ public class PermissionRequest extends Message implements D2DObject {
         initFromD2D(mesg);
     }
 
-    public int getRequestCode() {
+    public String getRequestCode() {
         return requestCode;
     }
 
-    public void setRequestCode(int replyCode) {
+    public void setRequestCode(String replyCode) {
         this.requestCode = replyCode;
     }
 

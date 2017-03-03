@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.protocol.AccountDetailsRequestProto;
 public class AccountDetailsRequest extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
-    private int requestCode;
+    private String requestCode;
 
     /**
      * Serialization constructor
@@ -25,11 +25,11 @@ public class AccountDetailsRequest extends Message implements D2DObject {
         initFromD2D(mesg);
     }
 
-    public int getRequestCode() {
+    public String getRequestCode() {
         return requestCode;
     }
 
-    public void setRequestCode(int requestCode) {
+    public void setRequestCode(String requestCode) {
         this.requestCode = requestCode;
     }
 

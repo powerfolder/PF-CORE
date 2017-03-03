@@ -10,7 +10,7 @@ import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 public class NodeListReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
-    private int replyCode;
+    private String replyCode;
     private ReplyStatusCode replyStatusCode;
     private KnownNodes nodeList;
 
@@ -20,7 +20,7 @@ public class NodeListReply extends Message implements D2DObject {
     public NodeListReply() {
     }
 
-    public NodeListReply(int replyCode, ReplyStatusCode replyStatusCode, KnownNodes nodeList) {
+    public NodeListReply(String replyCode, ReplyStatusCode replyStatusCode, KnownNodes nodeList) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.nodeList = nodeList;
@@ -35,11 +35,11 @@ public class NodeListReply extends Message implements D2DObject {
         initFromD2D(mesg);
     }
 
-    public int getReplyCode() {
+    public String getReplyCode() {
         return replyCode;
     }
 
-    public void setReplyCode(int replyCode) {
+    public void setReplyCode(String replyCode) {
         this.replyCode = replyCode;
     }
 

@@ -11,7 +11,7 @@ import de.dal33t.powerfolder.security.*;
 public class PermissionReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
-    private int replyCode;
+    private String replyCode;
     private ReplyStatusCode replyStatusCode;
     private Permission permission;
 
@@ -21,7 +21,7 @@ public class PermissionReply extends Message implements D2DObject {
     public PermissionReply() {
     }
 
-    public PermissionReply(int replyCode, ReplyStatusCode replyStatusCode, Permission permission) {
+    public PermissionReply(String replyCode, ReplyStatusCode replyStatusCode, Permission permission) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.permission = permission;
@@ -36,11 +36,11 @@ public class PermissionReply extends Message implements D2DObject {
         initFromD2D(mesg);
     }
 
-    public int getReplyCode() {
+    public String getReplyCode() {
         return replyCode;
     }
 
-    public void setReplyCode(int replyCode) {
+    public void setReplyCode(String replyCode) {
         this.replyCode = replyCode;
     }
 

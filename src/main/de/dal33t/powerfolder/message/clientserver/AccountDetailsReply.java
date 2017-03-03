@@ -3,13 +3,15 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.protocol.*;
-import de.dal33t.powerfolder.security.*;
+import de.dal33t.powerfolder.protocol.AccountDetailsReplyProto;
+import de.dal33t.powerfolder.protocol.AccountProto;
+import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
+import de.dal33t.powerfolder.security.Account;
 
 public class AccountDetailsReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
-    private int replyCode;
+    private String replyCode;
     private ReplyStatusCode replyStatusCode;
     private Account user;
     private long spaceUsed;
@@ -22,7 +24,7 @@ public class AccountDetailsReply extends Message implements D2DObject {
     public AccountDetailsReply() {
     }
 
-    public AccountDetailsReply(int replyCode, ReplyStatusCode replyStatusCode, AccountDetails accountDetails) {
+    public AccountDetailsReply(String replyCode, ReplyStatusCode replyStatusCode, AccountDetails accountDetails) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.user = accountDetails.getAccount();
@@ -39,11 +41,11 @@ public class AccountDetailsReply extends Message implements D2DObject {
         initFromD2D(mesg);
     }
 
-    public int getReplyCode() {
+    public String getReplyCode() {
         return replyCode;
     }
 
-    public void setReplyCode(int replyCode) {
+    public void setReplyCode(String replyCode) {
         this.replyCode = replyCode;
     }
 
