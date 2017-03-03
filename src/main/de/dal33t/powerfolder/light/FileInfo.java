@@ -30,7 +30,7 @@ import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
+import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -1118,8 +1118,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
           this.hashes            = finfo.getFileHashes();
           this.tags              = finfo.getTags();
           this.size              = finfo.getSize();
-          this.modifiedBy        = new MemberInfo(finfo.getModifiedby());
-          this.modifiedByAccount = new AccountInfo(finfo.getModifiedByAccount());
+          this.modifiedBy        = new MemberInfo(finfo.getModifiedByNodeInfo());
+          this.modifiedByAccount = new AccountInfo(finfo.getModifiedByAccountInfo());
           this.lastModifiedDate  = new Date(finfo.getLastModifiedDate());
           this.version           = finfo.getVersion();
           this.deleted           = finfo.getDeleted();
@@ -1148,9 +1148,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
       if (this.tags != null) builder.setTags(this.tags);
       if (this.size != null) builder.setSize(this.size);
 
-      if (this.modifiedBy != null) builder.setModifiedby(
-        (MemberInfoProto.MemberInfo)this.modifiedBy.toD2D());
-      if (this.modifiedByAccount != null) builder.setModifiedByAccount(
+      if (this.modifiedBy != null) builder.setModifiedByNodeInfo(
+        (NodeInfoProto.NodeInfo)this.modifiedBy.toD2D());
+      if (this.modifiedByAccount != null) builder.setModifiedByAccountInfo(
         (AccountInfoProto.AccountInfo)this.modifiedByAccount.toD2D());
 
       if (this.lastModifiedDate != null) builder.setLastModifiedDate(this.lastModifiedDate.getTime());

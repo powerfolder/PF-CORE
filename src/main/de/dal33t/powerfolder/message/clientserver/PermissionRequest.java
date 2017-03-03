@@ -6,10 +6,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.protocol.AccountInfoProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
-import de.dal33t.powerfolder.protocol.PermissionProto;
-import de.dal33t.powerfolder.protocol.PermissionRequestProto;
+import de.dal33t.powerfolder.protocol.*;
 import de.dal33t.powerfolder.security.*;
 
 import java.util.Collection;
@@ -145,9 +142,9 @@ public class PermissionRequest extends Message implements D2DObject {
                         AccountInfoProto.AccountInfo accountInfo = subject.unpack(AccountInfoProto.AccountInfo.class);
                         this.subjects.add(new AccountInfo(accountInfo));
                     }
-                    else if (clazzName.equals("MemberInfo")) {
-                        MemberInfoProto.MemberInfo memberInfo = subject.unpack(MemberInfoProto.MemberInfo.class);
-                        this.subjects.add(new MemberInfo(memberInfo));
+                    else if (clazzName.equals("NodeInfo")) {
+                        NodeInfoProto.NodeInfo nodeInfo = subject.unpack(NodeInfoProto.NodeInfo.class);
+                        this.subjects.add(new MemberInfo(nodeInfo));
                     }
                 } catch (InvalidProtocolBufferException | NullPointerException e) {
                     LOG.severe("Cannot unpack message: " + e);

@@ -19,19 +19,18 @@
  */
 package de.dal33t.powerfolder.message;
 
+import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.protocol.NodeInfoProto;
+import de.dal33t.powerfolder.protocol.NodeListProto;
+import de.dal33t.powerfolder.util.Reject;
+
 import java.io.Externalizable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.google.protobuf.AbstractMessage;
-
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.protocol.KnownNodesProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Contains information about nodes. This message is a answer message for
@@ -79,6 +78,15 @@ public class KnownNodes extends Message
         if (nodes.length > Constants.NODES_LIST_MAX_NODES_PER_MESSAGE) {
             log.warning("Nodelist longer than max size: " + this);
         }
+    }
+
+    /**
+     * Init from D2D message
+     *
+     * @param mesg Message to use data from
+     **/
+    public KnownNodes(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     /**
@@ -186,16 +194,16 @@ public class KnownNodes extends Message
     public void
     initFromD2D(AbstractMessage mesg)
     {
-      if(mesg instanceof KnownNodesProto.KnownNodes)
+      if(mesg instanceof NodeListProto.NodeList)
         {
-          KnownNodesProto.KnownNodes proto = (KnownNodesProto.KnownNodes)mesg;
+          NodeListProto.NodeList proto = (NodeListProto.NodeList)mesg;
 
           /* Convert list back to array */
           int i = 0;
 
-          this.nodes = new MemberInfo[proto.getNodesCount()];
+          this.nodes = new MemberInfo[proto.getNodeInfosCount()];
 
-          for(MemberInfoProto.MemberInfo minfo : proto.getNodesList())
+          for(NodeInfoProto.NodeInfo minfo : proto.getNodeInfosList())
             {
               this.nodes[i++] = new MemberInfo(minfo);
             }
@@ -212,14 +220,15 @@ public class KnownNodes extends Message
     public AbstractMessage
     toD2D()
     {
-      KnownNodesProto.KnownNodes.Builder builder = KnownNodesProto.KnownNodes.newBuilder();
+      NodeListProto.NodeList.Builder builder = NodeListProto.NodeList.newBuilder();
 
-      builder.setClazzName("KnownNodes");
+        // Translate old message name to new name defined in protocol file
+        builder.setClazzName("NodeList");
 
       /* Convert array to list */
       for(MemberInfo minfo : this.nodes)
         {
-          builder.addNodes((MemberInfoProto.MemberInfo)minfo.toD2D());
+          builder.addNodeInfos((NodeInfoProto.NodeInfo)minfo.toD2D());
         }
 
       return builder.build();

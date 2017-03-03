@@ -100,6 +100,16 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
 
             /* Assemble name and package */
             klassName = anyMessage.getClazzName();
+            // Translate new names defined in protocol files to old message names
+            if (klassName.equals("NodeInfo")) {
+                klassName = "MemberInfo";
+            }
+            if (klassName.equals("NodeList")) {
+                klassName = "KnownNodes";
+            }
+            if (klassName.equals("NodeListRequest")) {
+                klassName = "RequestNodeList";
+            }
             String klassPkg = String.format(
                 "de.dal33t.powerfolder.protocol.%sProto$%s", klassName,
                 klassName);

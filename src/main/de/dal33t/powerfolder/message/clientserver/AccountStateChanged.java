@@ -20,12 +20,11 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.AccountStateChangedProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
+import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 
 
@@ -86,7 +85,7 @@ public class AccountStateChanged extends Message implements D2DObject {
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof AccountStateChangedProto.AccountStateChanged) {
             AccountStateChangedProto.AccountStateChanged proto = (AccountStateChangedProto.AccountStateChanged)mesg;
-            this.node = new MemberInfo(proto.getMemberInfo());
+            this.node = new MemberInfo(proto.getNodeInfo());
           }
     }
 
@@ -100,7 +99,7 @@ public class AccountStateChanged extends Message implements D2DObject {
     public AbstractMessage toD2D() {
         AccountStateChangedProto.AccountStateChanged.Builder builder = AccountStateChangedProto.AccountStateChanged.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        builder.setMemberInfo((MemberInfoProto.MemberInfo)this.node.toD2D());
+        builder.setNodeInfo((NodeInfoProto.NodeInfo)this.node.toD2D());
         return builder.build();
     }
 
