@@ -19,19 +19,18 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.Externalizable;
-import java.util.Calendar;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.IdentityProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
+import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.Externalizable;
+import java.util.Calendar;
 
 /**
  * Message which contains information about me.
@@ -299,7 +298,7 @@ public class Identity extends Message
       if(mesg instanceof IdentityProto.Identity) {
           IdentityProto.Identity proto = (IdentityProto.Identity)mesg;
 
-          this.member                = new MemberInfo(proto.getMemberInfo());
+          this.member                = new MemberInfo(proto.getNodeInfo());
           this.magicId               = proto.getMagicId();
           this.protocolVersion       = proto.getProtocolVersion();
           this.requestFullFolderlist = proto.getRequestFullFolderlist();
@@ -318,7 +317,7 @@ public class Identity extends Message
       IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setMemberInfo((MemberInfoProto.MemberInfo)this.member.toD2D());
+      builder.setNodeInfo((NodeInfoProto.NodeInfo)this.member.toD2D());
       builder.setMagicId(this.magicId);
       builder.setProtocolVersion(this.protocolVersion);
       builder.setRequestFullFolderlist(this.requestFullFolderlist);

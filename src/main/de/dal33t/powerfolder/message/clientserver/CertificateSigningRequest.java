@@ -8,6 +8,7 @@ import de.dal33t.powerfolder.protocol.CertificateSigningRequestProto;
 public class CertificateSigningRequest extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
+    private String requestCode;
     private String certificateSigningRequest;
 
     /**
@@ -16,8 +17,12 @@ public class CertificateSigningRequest extends Message implements D2DObject {
     public CertificateSigningRequest() {
     }
 
-    public CertificateSigningRequest(String certificateSigningRequest) {
-        this.setCertificateSigningRequest(certificateSigningRequest);
+    public String getRequestCode() {
+        return requestCode;
+    }
+
+    public void setRequestCode(String requestCode) {
+        this.requestCode = requestCode;
     }
 
     public String getCertificateSigningRequest() {
@@ -36,10 +41,18 @@ public class CertificateSigningRequest extends Message implements D2DObject {
         initFromD2D(mesg);
     }
 
+    /**
+     * initFromD2DMessage
+     * Init from D2D message
+     *
+     * @param mesg Message to use data from
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     **/
     @Override
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof CertificateSigningRequestProto.CertificateSigningRequest) {
             CertificateSigningRequestProto.CertificateSigningRequest proto = (CertificateSigningRequestProto.CertificateSigningRequest)mesg;
+            this.requestCode = proto.getRequestCode();
             this.setCertificateSigningRequest(proto.getCertificateSigningRequest());
         }
     }
@@ -49,12 +62,12 @@ public class CertificateSigningRequest extends Message implements D2DObject {
      * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
      * @return Converted D2D message
      **/
-    
     @Override
     public AbstractMessage toD2D() {
         CertificateSigningRequestProto.CertificateSigningRequest.Builder builder = CertificateSigningRequestProto.CertificateSigningRequest.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        builder.setCertificateSigningRequest(this.getCertificateSigningRequest());
+        if (this.requestCode != null) builder.setRequestCode(this.requestCode);
+        if (this.certificateSigningRequest != null) builder.setCertificateSigningRequest(this.certificateSigningRequest);
         return builder.build();
     }
 }

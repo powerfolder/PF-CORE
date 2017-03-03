@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.FolderService;
-import de.dal33t.powerfolder.clientserver.SecurityService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
@@ -1425,7 +1424,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     logSevere("Failed to delete: " + folder.getSystemSubDir(), e);
                 }
 
-                if (!PathUtils.isZyncroPath(folder.getLocalBase())) {
+                if (!PathUtils.isZyncroPath(folder.getLocalBase()) && !PathUtils.isWebDAVFolder(folder.getLocalBase())) {
                     // Remove the folder if totally empty.
                     try {
                         Files.delete(folder.getLocalBase());
@@ -1807,6 +1806,12 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (!Files.isDirectory(entry)) {
                 return false;
             }
+
+            /* PFC-1905: Ignore folders with webdav suffix */
+            if (name.endsWith(Constants.FOLDER_WEBDAV_SUFFIX)) {
+                return false;
+            }
+
             return !containedInRemovedFolders(entry);
         };
 

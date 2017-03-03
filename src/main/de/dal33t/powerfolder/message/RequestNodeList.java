@@ -19,21 +19,16 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.protocol.NodeListRequestProto;
 import de.dal33t.powerfolder.protocol.NodesCriteriaProto;
-import de.dal33t.powerfolder.protocol.RequestNodeListProto;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.util.*;
 
 /**
  * A request to send the nodelist. Expected answer is a <code>KnownNodes</code>
@@ -211,10 +206,10 @@ public class RequestNodeList extends Message
     public void
     initFromD2D(AbstractMessage mesg)
     {
-      if(mesg instanceof RequestNodeListProto.RequestNodeList)
+      if(mesg instanceof NodeListRequestProto.NodeListRequest)
         {
-          RequestNodeListProto.RequestNodeList proto =
-            (RequestNodeListProto.RequestNodeList)mesg;
+            NodeListRequestProto.NodeListRequest proto =
+            (NodeListRequestProto.NodeListRequest)mesg;
 
           /* Fill in enum values */
           for(NodesCriteria crit : NodesCriteria.values())
@@ -246,10 +241,11 @@ public class RequestNodeList extends Message
     public AbstractMessage
     toD2D()
     {
-      RequestNodeListProto.RequestNodeList.Builder builder =
-        RequestNodeListProto.RequestNodeList.newBuilder();
+        NodeListRequestProto.NodeListRequest.Builder builder =
+                NodeListRequestProto.NodeListRequest.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
+        // Translate old message name to new name defined in protocol file
+        builder.setClazzName("NodeListRequest");
 
       /* Handle enum stuff */
       NodesCriteriaProto.NodesCriteria.Builder nodeBuilder =

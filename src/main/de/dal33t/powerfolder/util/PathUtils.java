@@ -1806,4 +1806,9 @@ public class PathUtils {
             throw ioe;
         }
     }
+
+    public static boolean isWebDAVFolder(Path path){
+        String folderName = path.getFileName().toString();
+        return folderName.contains(Constants.FOLDER_WEBDAV_SUFFIX);
+    }
 }

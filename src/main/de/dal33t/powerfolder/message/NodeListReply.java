@@ -3,30 +3,35 @@ package de.dal33t.powerfolder.message;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.message.clientserver.ReplyStatusCode;
-import de.dal33t.powerfolder.protocol.CreateAccountReplyProto;
+import de.dal33t.powerfolder.protocol.NodeListProto;
+import de.dal33t.powerfolder.protocol.NodeListReplyProto;
 import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
-public class CreateAccountReply extends Message implements D2DObject {
+public class NodeListReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
     private String replyCode;
     private ReplyStatusCode replyStatusCode;
+    private KnownNodes nodeList;
+
     /**
      * Serialization constructor
      */
-    public CreateAccountReply() {
+    public NodeListReply() {
     }
 
-    public CreateAccountReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public NodeListReply(String replyCode, ReplyStatusCode replyStatusCode, KnownNodes nodeList) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
+        this.nodeList = nodeList;
     }
 
     /**
      * Init from D2D message
+     *
      * @param mesg Message to use data from
      **/
-    public CreateAccountReply(AbstractMessage mesg) {
+    public NodeListReply(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
 
@@ -46,31 +51,45 @@ public class CreateAccountReply extends Message implements D2DObject {
         this.replyStatusCode = replyStatusCode;
     }
 
-    /** initFromD2DMessage
+    public KnownNodes getNodeList() {
+        return nodeList;
+    }
+
+    public void setNodeList(KnownNodes nodeList) {
+        this.nodeList = nodeList;
+    }
+
+    /**
+     * initFromD2DMessage
      * Init from D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
+     *
+     * @param mesg Message to use data from
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
      **/
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if(mesg instanceof CreateAccountReplyProto.CreateAccountReply) {
-            CreateAccountReplyProto.CreateAccountReply proto = (CreateAccountReplyProto.CreateAccountReply)mesg;
+        if (mesg instanceof NodeListReplyProto.NodeListReply) {
+            NodeListReplyProto.NodeListReply proto = (NodeListReplyProto.NodeListReply) mesg;
             this.replyCode = proto.getReplyCode();
             this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.nodeList = new KnownNodes(proto.getNodeList());
         }
     }
 
-    /** toD2D
+    /**
+     * toD2D
      * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
+     *
      * @return Converted D2D message
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
      **/
     @Override
     public AbstractMessage toD2D() {
-        CreateAccountReplyProto.CreateAccountReply.Builder builder = CreateAccountReplyProto.CreateAccountReply.newBuilder();
+        NodeListReplyProto.NodeListReply.Builder builder = NodeListReplyProto.NodeListReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        if (this.replyCode != null) builder.setReplyCode(this.replyCode);
+        builder.setReplyCode(this.replyCode);
         if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode)this.replyStatusCode.toD2D());
+        if (this.nodeList != null) builder.setNodeList((NodeListProto.NodeList)this.nodeList.toD2D());
         return builder.build();
     }
 }

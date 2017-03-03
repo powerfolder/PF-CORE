@@ -28,26 +28,15 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.InvitationProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
+import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -506,7 +495,7 @@ public class Invitation extends FolderRelatedMessage
         {
           InvitationProto.Invitation proto = (InvitationProto.Invitation)mesg;
 
-          this.senderDevice = new MemberInfo(proto.getInvitor());
+          this.senderDevice = new MemberInfo(proto.getInvitorNodeInfo());
           this.invitationText = proto.getInvitationText();
           this.username = proto.getUsername();
           this.oid = proto.getOid();
@@ -529,8 +518,8 @@ public class Invitation extends FolderRelatedMessage
         InvitationProto.Invitation.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setInvitor(
-        (MemberInfoProto.MemberInfo)this.senderDevice.toD2D());
+      builder.setInvitorNodeInfo(
+        (NodeInfoProto.NodeInfo)this.senderDevice.toD2D());
       builder.setInvitationText(this.invitationText);
       builder.setUsername(this.username);
       builder.setOid(this.oid);

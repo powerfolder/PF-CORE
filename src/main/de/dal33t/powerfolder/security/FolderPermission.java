@@ -141,16 +141,18 @@ public abstract class FolderPermission
     public void initFromD2D(AbstractMessage mesg) {
         if(mesg instanceof PermissionProto.Permission) {
             PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
-            try {
-                // Objects can be any message so they need to be unpacked from com.google.protobuf.Any
-                com.google.protobuf.Any object = proto.getObjects(0);
-                String clazzName = object.getTypeUrl().split("/")[1];
-                if (clazzName.equals("FolderInfo")) {
-                    FolderInfoProto.FolderInfo folderInfo = object.unpack(FolderInfoProto.FolderInfo.class);
-                    this.folder = new FolderInfo(folderInfo);
+            if (proto.getObjectsList().size() == 1) {
+                try {
+                    // Objects can be any message so they need to be unpacked from com.google.protobuf.Any
+                    com.google.protobuf.Any object = proto.getObjects(0);
+                    String clazzName = object.getTypeUrl().split("/")[1];
+                    if (clazzName.equals("FolderInfo")) {
+                        FolderInfoProto.FolderInfo folderInfo = object.unpack(FolderInfoProto.FolderInfo.class);
+                        this.folder = new FolderInfo(folderInfo);
+                    }
+                } catch (InvalidProtocolBufferException | NullPointerException e) {
+                    LOG.severe("Cannot unpack message: " + e);
                 }
-            } catch (InvalidProtocolBufferException | NullPointerException e) {
-                LOG.severe("Cannot unpack message: " + e);
             }
         }
     }

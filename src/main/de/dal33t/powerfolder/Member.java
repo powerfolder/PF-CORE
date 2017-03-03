@@ -1556,7 +1556,27 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // Queue arrived node list at nodemanager
                 getController().getNodeManager().queueNewNodes(newNodes.nodes);
                 expectedTime = 200;
+            } else if (message instanceof NodeListReply) {
+                NodeListReply nodeListReply = (NodeListReply) message;
+                // TODO Move this code into NodeManager.receivedKnownNodes(....)
+                // TODO This code should be done in NodeManager
+                // This might also just be a search result and thus not include
+                // us
+                for (int i = 0; i < nodeListReply.getNodeList().nodes.length; i++) {
+                    MemberInfo remoteNodeInfo = nodeListReply.getNodeList().nodes[i];
+                    if (remoteNodeInfo == null) {
+                        continue;
+                    }
 
+                    if (getInfo().equals(remoteNodeInfo)) {
+                        // Take his info
+                        updateInfo(remoteNodeInfo);
+                    }
+                }
+
+                // Queue arrived node list at nodemanager
+                getController().getNodeManager().queueNewNodes(nodeListReply.getNodeList().nodes);
+                expectedTime = 200;
             } else if (message instanceof RequestNodeInformation) {
                 if (getController().isDebugReports()) {
                     // send him our node information, if allowed/set

@@ -19,37 +19,29 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.net.InetSocketAddress;
-import java.util.Date;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
+import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.db.InetSocketAddressUserType;
 import de.dal33t.powerfolder.util.intern.Internalizer;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.util.Date;
 
 /**
  * Member information class. contains all important informations about a member
@@ -408,9 +400,9 @@ public class MemberInfo implements Serializable, D2DObject {
     public void
     initFromD2D(AbstractMessage mesg)
     {
-      if(mesg instanceof MemberInfoProto.MemberInfo)
+      if(mesg instanceof NodeInfoProto.NodeInfo)
         {
-          MemberInfoProto.MemberInfo proto = (MemberInfoProto.MemberInfo)mesg;
+            NodeInfoProto.NodeInfo proto = (NodeInfoProto.NodeInfo)mesg;
 
           this.nick            = proto.getNick();
           this.id              = proto.getId();
@@ -443,9 +435,9 @@ public class MemberInfo implements Serializable, D2DObject {
     public AbstractMessage
     toD2D()
     {
-      MemberInfoProto.MemberInfo.Builder builder = MemberInfoProto.MemberInfo.newBuilder();
-
-      builder.setClazzName(this.getClass().getSimpleName());
+      NodeInfoProto.NodeInfo.Builder builder = NodeInfoProto.NodeInfo.newBuilder();
+      // Translate old message name to new name defined in protocol file
+      builder.setClazzName("NodeInfo");
       builder.setNick(this.nick);
       builder.setId(this.id);
       builder.setNetworkId(this.networkId);

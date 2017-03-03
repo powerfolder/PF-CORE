@@ -19,51 +19,7 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
-
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
-import org.hibernate.annotations.CollectionOfElements;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Index;
-import org.hibernate.annotations.IndexColumn;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
-import org.hibernate.annotations.MapKeyManyToMany;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
@@ -72,19 +28,23 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
-import de.dal33t.powerfolder.protocol.AccountProto;
-import de.dal33t.powerfolder.protocol.FolderInfoProto;
-import de.dal33t.powerfolder.protocol.GroupProto;
-import de.dal33t.powerfolder.protocol.MemberInfoProto;
-import de.dal33t.powerfolder.protocol.OnlineStorageSubscriptionProto;
-import de.dal33t.powerfolder.protocol.PermissionProto;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.LoginUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.protocol.*;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.CascadeType;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import javax.persistence.*;
+import javax.persistence.Entity;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Domain class of an user account.
@@ -1634,7 +1594,7 @@ public class Account implements Serializable, D2DObject {
             this.shibbolethPersistentID     = proto.getShibbolethPersistentId();
             this.registerDate               = new Date(proto.getRegisterDate());
             this.lastLoginDate              = new Date(proto.getLastLoginDate());
-            this.lastLoginFrom              = new MemberInfo(proto.getLastLoginFrom());
+            this.lastLoginFrom              = new MemberInfo(proto.getLastLoginFromNodeInfo());
             this.proUser                    = proto.getProUser();
             this.firstname                  = proto.getFirstname();
             this.surname                    = proto.getSurname();
@@ -1646,8 +1606,8 @@ public class Account implements Serializable, D2DObject {
             this.basePath                   = proto.getBasePath();
             this.organizationOID            = proto.getOrganizationOid();
             this.computers                  = new CopyOnWriteArrayList<MemberInfo>();
-            for(MemberInfoProto.MemberInfo memberInfoProto: proto.getComputersList()) {
-                this.computers.add(new MemberInfo(memberInfoProto));
+            for(NodeInfoProto.NodeInfo nodeInfoProto: proto.getNodeInfosList()) {
+                this.computers.add(new MemberInfo(nodeInfoProto));
             }
             this.serverStatic               = proto.getServerStatic();
             this.licenseKeyFileList         = proto.getLicenseKeyFileListList();
@@ -1739,7 +1699,7 @@ public class Account implements Serializable, D2DObject {
         if (this.shibbolethPersistentID != null) builder.setShibbolethPersistentId(this.shibbolethPersistentID);
         if (this.registerDate != null) builder.setRegisterDate(this.registerDate.getTime());
         if (this.lastLoginDate != null) builder.setLastLoginDate(this.lastLoginDate.getTime());
-        if (this.lastLoginFrom != null) builder.setLastLoginFrom((MemberInfoProto.MemberInfo)this.lastLoginFrom.toD2D());
+        if (this.lastLoginFrom != null) builder.setLastLoginFromNodeInfo((NodeInfoProto.NodeInfo)this.lastLoginFrom.toD2D());
         builder.setProUser(this.proUser);
         if (this.firstname != null) builder.setFirstname(this.firstname);
         if (this.surname != null) builder.setSurname(this.surname);
@@ -1751,7 +1711,7 @@ public class Account implements Serializable, D2DObject {
         if (this.basePath != null) builder.setBasePath(this.basePath);
         if (this.organizationOID != null) builder.setOrganizationOid(this.organizationOID);
         for (MemberInfo computer: this.computers) {
-            builder.addComputers((MemberInfoProto.MemberInfo) computer.toD2D());
+            builder.addNodeInfos((NodeInfoProto.NodeInfo) computer.toD2D());
         }
         builder.setServerStatic(this.serverStatic);
         for (String licenseKeyFile: this.licenseKeyFileList) {
