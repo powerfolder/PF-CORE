@@ -448,7 +448,9 @@ public class Folder extends PFComponent {
         problems.add(problem);
         problemListenerSupport.problemAdded(problem);
         // FIXME: HACK (tm)
-        getController().setPaused(getController().isPaused());
+        if (!getController().isShuttingDown()) {
+            getController().setPaused(getController().isPaused());
+        }
         logFiner("Added problem");
     }
 
