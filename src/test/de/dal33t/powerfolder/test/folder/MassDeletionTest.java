@@ -19,11 +19,13 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
+import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -144,11 +146,14 @@ public class MassDeletionTest extends TwoControllerTestCase {
         assertEquals(nFiles, getFolderAtLisa().getKnownFiles().size());
 
         // Delete all Bart's files
-        DirectoryStream<Path> files = Files.newDirectoryStream(getFolderAtBart().getLocalBase());
-        for (final Path file : files) {
-            if (Files.notExists(file)) {
-                Files.delete(file);
+        DirectoryStream<Path> files = Files.newDirectoryStream(getFolderAtBart().getLocalBase(), new DirectoryStream.Filter<Path>() {
+            @Override
+            public boolean accept(Path entry) throws IOException {
+                return !entry.getFileName().toString().equals(Constants.POWERFOLDER_SYSTEM_SUBDIR);
             }
+        });
+        for (final Path file : files) {
+            PathUtils.recursiveDeleteVisitor(file);
         }
 
         scanFolder(getFolderAtBart());
@@ -186,7 +191,12 @@ public class MassDeletionTest extends TwoControllerTestCase {
                 SyncProfile.HOST_FILES);
         } else {
             // Files should have been deleted and profile remains same.
-            TestHelper.waitForCondition(40, new Condition() {
+            TestHelper.waitForCondition(40, new ConditionWithMessage() {
+                @Override
+                public String message() {
+                    return "Got at lisa: " + PathUtils.getNumberOfSiblings(getFolderAtLisa().getLocalBase()) + ". Expected: 1";
+                }
+
                 public boolean reached() {
                     return PathUtils.getNumberOfSiblings(getFolderAtLisa().getLocalBase()) == 1;
                     // The .PowerFolder dir
@@ -210,7 +220,5 @@ public class MassDeletionTest extends TwoControllerTestCase {
             assertEquals(getFolderAtLisa().getSyncProfile(),
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         }
-
     }
-
 }
