@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.problem.*;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.api.DeletedFile;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.security.FolderPermission;
@@ -4317,6 +4318,7 @@ public class Folder extends PFComponent {
                 logInfo(msg);
             }
         }
+        boolean success = false;
         try {
             watcher.addIgnoreFile(newFileInfo);
             synchronized (scanLock) {
@@ -4331,6 +4333,7 @@ public class Folder extends PFComponent {
                 }
                 try {
                     Files.deleteIfExists(file);
+                    success = true;
                 } catch (IOException ioe) {
                     // PFC-2706: Improved handling of exception.
                     if (isFine()) {
@@ -4350,6 +4353,10 @@ public class Folder extends PFComponent {
             return true;
         } finally {
             watcher.removeIgnoreFile(newFileInfo);
+            // PFS-1766:
+            if (success && ConfigurationEntry.EVENT_API_URL_DELETED_FILE.hasNonBlankValue(getController())) {
+                new DeletedFile(getController()).of(newFileInfo).happened(true);
+            }
         }
     }
 

@@ -68,6 +68,8 @@ import de.dal33t.powerfolder.disk.problem.NoSpaceOnFileStoreProblem;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.api.DownloadedFile;
+import de.dal33t.powerfolder.event.api.UploadedFile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoKey;
 import de.dal33t.powerfolder.light.FileInfoKey.Type;
@@ -811,6 +813,10 @@ public class TransferManager extends PFComponent {
                 if (StringUtils.isNotBlank(folder.getDownloadScript())) {
                     Runnable scriptRunner = new Runnable() {
                         public void run() {
+                            // PFS-1766
+                            if (ConfigurationEntry.EVENT_API_URL_DOWNLOADED_FILE_CLIENT.hasNonBlankValue(getController())) {
+                                new DownloadedFile(getController()).of(fInfo).happened(false);
+                            }
                             executeDownloadScript(fInfo, folder, dlManager);
                         }
                     };
@@ -1029,8 +1035,12 @@ public class TransferManager extends PFComponent {
 
             if (transferFound) {
                 // Fire event
-                fireUploadCompleted(new TransferManagerEvent(this,
-                    (Upload) transfer));
+                fireUploadCompleted(new TransferManagerEvent(this, (Upload) transfer));
+
+                // PFS-1766
+                if (ConfigurationEntry.EVENT_API_URL_UPLOADED_FILE_CLIENT.hasNonBlankValue(getController())) {
+                    new UploadedFile(getController()).of(transfer.getFile()).happened(true);
+                }
             }
 
             // Auto cleanup of uploads
