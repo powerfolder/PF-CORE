@@ -1176,7 +1176,19 @@ public enum ConfigurationEntry {
      * PFS-2871: Port for client authentication over web requests.
      */
 
-    WEB_CLIENT_PORT("web.client.port", 0);
+    WEB_CLIENT_PORT("web.client.port", 0),
+
+    /**
+     * PFS-1766: Event API to trigger WebHooks.
+     */
+    EVENT_API_URL_UPLOADED_FILE_CLIENT("event.api.file.uploaded.client"),
+    EVENT_API_URL_DOWNLOADED_FILE_CLIENT("event.api.file.downloaded.client"),
+
+    EVENT_API_URL_UPLOADED_FILE_WEB("event.api.file.uploaded.web"),
+    EVENT_API_URL_DOWNLOADED_FILE_WEB("event.api.file.downloaded.web"),
+    EVENT_API_URL_DOWNLOADED_FILE_LINK("event.api.file.downloaded.link"),
+
+    EVENT_API_URL_DELETED_FILE("event.api.file.deleted");
 
     // Methods/Constructors ***************************************************
 
