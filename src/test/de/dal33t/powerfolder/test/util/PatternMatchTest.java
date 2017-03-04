@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.test.util;
 
+import de.dal33t.powerfolder.Constants;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
@@ -282,15 +283,8 @@ public class PatternMatchTest extends TestCase {
         }
         Profiling.end(pe);
 
-        pe = Profiling.start("OfficeTempMatchPatternThumbsDB");
-        pattern = new OfficeTempFilesMatchPattern("~", "*.tmp");
-        for (int i = 0; i < nPatterns; i++) {
-            assertFalse(pattern.isMatch("Programme\\test\\Thumbs.db"));
-            assertTrue(pattern.isMatch("Users\\test\\~W8833453.tmp"));
-        }
-
         pe = Profiling.start("OfficeXTempMatchPatternThumbsDB");
-        pattern = new OfficeTempFilesMatchPattern("~$", "*");
+        pattern = new OfficeTempFilesMatchPattern(Constants.MS_OFFICE_FILENAME_PREFIX, "*");
         for (int i = 0; i < nPatterns; i++) {
             assertFalse(pattern.isMatch("Programme\\test\\Thumbs.db"));
             assertTrue(pattern.isMatch("Users\\test\\~$LAST Quotation.xlsx"));
