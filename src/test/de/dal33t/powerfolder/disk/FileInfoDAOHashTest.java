@@ -26,12 +26,6 @@ public class FileInfoDAOHashTest extends FileInfoDAOTestCase {
         super.tearDown();
     }
 
-    public void testStats() {
-        testStats(dao, filter, 1);
-        testStats(dao, filter, 1000);
-        testStats(dao, filter, 5000);
-    }
-
     public void testIndexFileInfo() {
         testIndexFileInfo(dao);
     }
