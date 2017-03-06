@@ -2450,10 +2450,10 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private ReentrantLock accountSyncLock = new ReentrantLock();
 
-    public void updateFolders(AccountDetails ad) {
-        Reject.ifNull(ad, "AccountDetails");
-        Account a = ad.getAccount();
-        if (getMySelf().isServer()) {
+    public void updateFolders(Account a) {
+        // TODO: Called too often
+        Reject.ifNull(a, "Account");
+        if (getController().getMySelf().isServer()) {
             return;
         }
         if (!a.isValid()) {
@@ -2502,7 +2502,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             logInfo("Syncing folder setup with account permissions("
                 + a.getFolders().size() + "): " + a.getUsername());
-            Collection<FolderInfo> created = createLocalFolders(ad);
+            Collection<FolderInfo> created = createLocalFolders(a);
             if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                 .getValueBoolean(getController()))
             {
@@ -2630,8 +2630,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private synchronized Collection<FolderInfo> createLocalFolders(AccountDetails ad) {
-        Account a = ad.getAccount();
+    private synchronized Collection<FolderInfo> createLocalFolders(Account a) {
         if (!a.isValid()) {
             return Collections.emptyList();
         }
