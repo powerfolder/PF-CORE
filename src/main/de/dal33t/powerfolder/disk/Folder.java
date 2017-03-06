@@ -4168,7 +4168,11 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(true);
         } catch (FolderException e) {
-            logSevere("invalid local base: " + getLocalBase() + " " + e, e);
+            if (currentInfo.isMetaFolder()) {
+                logFine("invalid local base: " + getLocalBase() + " " + e, e);
+            } else {
+                logWarning("invalid local base: " + getLocalBase() + " " + e, e);
+            }
             return setDeviceDisconnected(true);
         }
 
