@@ -20,10 +20,9 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.protocol.AbortDownloadProto;
+import de.dal33t.powerfolder.protocol.DownloadAbortProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 
 /**
@@ -58,9 +57,9 @@ public class AbortDownload extends Message
     public void
     initFromD2D(AbstractMessage mesg)
     {
-      if(mesg instanceof AbortDownloadProto.AbortDownload)
+      if(mesg instanceof DownloadAbortProto.DownloadAbort)
         {
-          AbortDownloadProto.AbortDownload proto = (AbortDownloadProto.AbortDownload)mesg;
+          DownloadAbortProto.DownloadAbort proto = (DownloadAbortProto.DownloadAbort)mesg;
 
           this.file = new FileInfo(proto.getFileInfo());
         }
@@ -76,9 +75,10 @@ public class AbortDownload extends Message
     public AbstractMessage
     toD2D()
     {
-      AbortDownloadProto.AbortDownload.Builder builder = AbortDownloadProto.AbortDownload.newBuilder();
+      DownloadAbortProto.DownloadAbort.Builder builder = DownloadAbortProto.DownloadAbort.newBuilder();
 
-      builder.setClazzName(this.getClass().getSimpleName());
+      // Translate old message name to new name defined in protocol file
+      builder.setClazzName("DownloadAbort");
       builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();

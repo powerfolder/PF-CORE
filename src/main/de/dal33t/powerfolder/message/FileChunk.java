@@ -19,18 +19,17 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.IOException;
-
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.protocol.FileChunkProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.FilePartReplyProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Validate;
+
+import java.io.IOException;
 
 /**
  * A file chunk, part of a upload / donwload
@@ -92,9 +91,9 @@ public class FileChunk extends Message
     public void
     initFromD2D(AbstractMessage mesg)
     {
-      if(mesg instanceof FileChunkProto.FileChunk)
+      if(mesg instanceof FilePartReplyProto.FilePartReply)
         {
-          FileChunkProto.FileChunk proto = (FileChunkProto.FileChunk)mesg;
+          FilePartReplyProto.FilePartReply proto = (FilePartReplyProto.FilePartReply)mesg;
 
           this.file   = new FileInfo(proto.getFileInfo());
           this.offset = proto.getOffset();
@@ -112,9 +111,10 @@ public class FileChunk extends Message
     public AbstractMessage
     toD2D()
     {
-      FileChunkProto.FileChunk.Builder builder = FileChunkProto.FileChunk.newBuilder();
+      FilePartReplyProto.FilePartReply.Builder builder = FilePartReplyProto.FilePartReply.newBuilder();
 
-      builder.setClazzName("FileChunk");
+      // Translate old message name to new name defined in protocol file
+      builder.setClazzName("FilePartReply");
       builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setOffset(this.offset);
       builder.setData(ByteString.copyFrom(this.data));
