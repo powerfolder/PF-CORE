@@ -40,8 +40,6 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
-import org.cryptomator.cryptofs.CryptoFileSystemProvider;
-import sun.nio.fs.UnixFileSystemProvider;
 
 import java.io.*;
 import java.nio.file.*;
