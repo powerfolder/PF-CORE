@@ -31,7 +31,6 @@ import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
-import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
@@ -1773,6 +1772,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
                         .getDefaultValue()))
             {
+                return false;
+            }
+            // PFS-2319: Remove after major version 14.
+            if (name.equals("RECOVERED")) {
                 return false;
             }
             if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
