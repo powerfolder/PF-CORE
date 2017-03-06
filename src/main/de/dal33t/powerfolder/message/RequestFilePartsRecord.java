@@ -20,11 +20,10 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
-import de.dal33t.powerfolder.protocol.RequestFilePartsRecordProto;
+import de.dal33t.powerfolder.protocol.FilePartInfoListRequestProto;
 
 /**
  * Requests a FilePartsRecord for a given file.
@@ -59,9 +58,9 @@ public class RequestFilePartsRecord extends Message implements D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof RequestFilePartsRecordProto.RequestFilePartsRecord) {
-            RequestFilePartsRecordProto.RequestFilePartsRecord proto = 
-                (RequestFilePartsRecordProto.RequestFilePartsRecord) mesg;
+        if (mesg instanceof FilePartInfoListRequestProto.FilePartInfoListRequest) {
+            FilePartInfoListRequestProto.FilePartInfoListRequest proto = 
+                (FilePartInfoListRequestProto.FilePartInfoListRequest) mesg;
 
             this.file = new FileInfo(proto.getFileInfo());
         }
@@ -76,10 +75,11 @@ public class RequestFilePartsRecord extends Message implements D2DObject {
 
     @Override
     public AbstractMessage toD2D() {
-        RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder =
-            RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
+        FilePartInfoListRequestProto.FilePartInfoListRequest.Builder builder =
+            FilePartInfoListRequestProto.FilePartInfoListRequest.newBuilder();
 
-        builder.setClazzName(this.getClass().getSimpleName());
+        // Translate old message name to new name defined in protocol file
+        builder.setClazzName("FilePartInfoListRequest");
         builder.setFileInfo((FileInfoProto.FileInfo) this.file.toD2D());
 
         return builder.build();

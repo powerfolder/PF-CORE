@@ -20,11 +20,10 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
-import de.dal33t.powerfolder.protocol.StopUploadProto;
+import de.dal33t.powerfolder.protocol.UploadStopProto;
 
 /**
  * Tells the uploader to stop uploading.
@@ -55,8 +54,8 @@ public class StopUpload extends Message implements D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof StopUploadProto.StopUpload) {
-            StopUploadProto.StopUpload proto = (StopUploadProto.StopUpload)mesg;
+        if (mesg instanceof UploadStopProto.UploadStop) {
+            UploadStopProto.UploadStop proto = (UploadStopProto.UploadStop)mesg;
             this.fileInfo = new FileInfo(proto.getFileInfo());
         }
     }
@@ -69,9 +68,10 @@ public class StopUpload extends Message implements D2DObject {
 
     @Override
     public AbstractMessage toD2D() {
-        StopUploadProto.StopUpload.Builder builder = StopUploadProto.StopUpload.newBuilder();
+        UploadStopProto.UploadStop.Builder builder = UploadStopProto.UploadStop.newBuilder();
 
-        builder.setClazzName("StopUpload");
+        // Translate old message name to new name defined in protocol file
+        builder.setClazzName("UploadStop");
         builder.setFileInfo((FileInfoProto.FileInfo)this.fileInfo.toD2D());
 
         return builder.build();

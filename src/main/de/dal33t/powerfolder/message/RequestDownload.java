@@ -20,11 +20,10 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.protocol.DownloadRequestProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
-import de.dal33t.powerfolder.protocol.RequestDownloadProto;
 
 /**
  * Request to start download a file
@@ -81,10 +80,10 @@ public class RequestDownload extends Message
     public void
     initFromD2D(AbstractMessage mesg)
     {
-      if(mesg instanceof RequestDownloadProto.RequestDownload)
+      if(mesg instanceof DownloadRequestProto.DownloadRequest)
         {
-          RequestDownloadProto.RequestDownload proto =
-            (RequestDownloadProto.RequestDownload)mesg;
+          DownloadRequestProto.DownloadRequest proto =
+            (DownloadRequestProto.DownloadRequest)mesg;
 
           this.file        = new FileInfo(proto.getFileInfo());
           this.startOffset = proto.getStartOffset();
@@ -101,10 +100,11 @@ public class RequestDownload extends Message
     public AbstractMessage
     toD2D()
     {
-      RequestDownloadProto.RequestDownload.Builder builder =
-        RequestDownloadProto.RequestDownload.newBuilder();
+      DownloadRequestProto.DownloadRequest.Builder builder =
+        DownloadRequestProto.DownloadRequest.newBuilder();
 
-      builder.setClazzName("RequestDownload");
+      // Translate old message name to new name defined in protocol file
+      builder.setClazzName("DownloadRequest");
       builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
 
       return builder.build();

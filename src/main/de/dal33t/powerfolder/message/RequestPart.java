@@ -19,17 +19,16 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.IOException;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.DataRangeProto;
-import de.dal33t.powerfolder.protocol.RequestPartProto;
+import de.dal33t.powerfolder.protocol.FileInfoProto;
+import de.dal33t.powerfolder.protocol.FilePartRequestProto;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.IOException;
 
 public class RequestPart extends Message
   implements D2DObject
@@ -144,10 +143,10 @@ public class RequestPart extends Message
     public void
     initFromD2D(AbstractMessage mesg)
     {
-      if(mesg instanceof RequestPartProto.RequestPart)
+      if(mesg instanceof FilePartRequestProto.FilePartRequest)
         {
-          RequestPartProto.RequestPart proto =
-            (RequestPartProto.RequestPart)mesg;
+          FilePartRequestProto.FilePartRequest proto =
+            (FilePartRequestProto.FilePartRequest)mesg;
 
           this.file     = new FileInfo(proto.getFileInfo());
           this.range    = new Range(proto.getDataRange());
@@ -165,10 +164,11 @@ public class RequestPart extends Message
     public AbstractMessage
     toD2D()
     {
-      RequestPartProto.RequestPart.Builder builder =
-        RequestPartProto.RequestPart.newBuilder();
+      FilePartRequestProto.FilePartRequest.Builder builder =
+        FilePartRequestProto.FilePartRequest.newBuilder();
 
-      builder.setClazzName("RequestPart");
+      // Translate old message name to new name defined in protocol file
+      builder.setClazzName("FilePartRequest");
       builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setDataRange((DataRangeProto.DataRange)this.range.toD2D());
       builder.setProgress(this.progress);

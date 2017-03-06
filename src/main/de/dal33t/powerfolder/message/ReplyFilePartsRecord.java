@@ -19,16 +19,15 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.IOException;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
-import de.dal33t.powerfolder.protocol.RequestFilePartsRecordProto;
+import de.dal33t.powerfolder.protocol.FilePartInfoListReplyProto;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+
+import java.io.IOException;
 
 /**
  * Reply to a RequestFilePartsRecord message.
@@ -82,9 +81,9 @@ public class ReplyFilePartsRecord extends Message implements D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof RequestFilePartsRecordProto.RequestFilePartsRecord) {
-            RequestFilePartsRecordProto.RequestFilePartsRecord proto = 
-                (RequestFilePartsRecordProto.RequestFilePartsRecord) mesg;
+        if (mesg instanceof FilePartInfoListReplyProto.FilePartInfoListReply) {
+            FilePartInfoListReplyProto.FilePartInfoListReply proto =
+                (FilePartInfoListReplyProto.FilePartInfoListReply) mesg;
 
             this.file = new FileInfo(proto.getFileInfo());
         }
@@ -92,17 +91,18 @@ public class ReplyFilePartsRecord extends Message implements D2DObject {
 
     /**
      * Convert to D2D message
-     * 
+     *
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @return Converted D2D message
      **/
 
     @Override
     public AbstractMessage toD2D() {
-        RequestFilePartsRecordProto.RequestFilePartsRecord.Builder builder = 
-            RequestFilePartsRecordProto.RequestFilePartsRecord.newBuilder();
+        FilePartInfoListReplyProto.FilePartInfoListReply.Builder builder =
+            FilePartInfoListReplyProto.FilePartInfoListReply.newBuilder();
 
-        builder.setClazzName(this.getClass().getSimpleName());
+        // Translate old message name to new name defined in protocol file
+        builder.setClazzName("FilePartInfoListReply");
         builder.setFileInfo((FileInfoProto.FileInfo) this.file.toD2D());
 
         return builder.build();

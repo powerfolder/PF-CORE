@@ -100,16 +100,6 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
 
             /* Assemble name and package */
             klassName = anyMessage.getClazzName();
-            // Translate new names defined in protocol files to old message names
-            if (klassName.equals("NodeInfo")) {
-                klassName = "MemberInfo";
-            }
-            if (klassName.equals("NodeList")) {
-                klassName = "KnownNodes";
-            }
-            if (klassName.equals("NodeListRequest")) {
-                klassName = "RequestNodeList";
-            }
             String klassPkg = String.format(
                 "de.dal33t.powerfolder.protocol.%sProto$%s", klassName,
                 klassName);
@@ -130,6 +120,33 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
             Class<?> klass = Class.forName(klassPkg);
             Method meth = klass.getMethod("parseFrom", byte[].class);
             AbstractMessage amesg = (AbstractMessage) meth.invoke(null, data);
+
+            // Translate new names defined in protocol files to old message names
+            if (klassName.equals("DownloadAbort")) {
+                klassName = "AbortDownload";
+            } else if (klassName.equals("DownloadRequest")) {
+                klassName = "RequestDownload";
+            } else if (klassName.equals("FilePartInfoListReply")) {
+                klassName = "ReplyFilePartsRecord";
+            } else if (klassName.equals("FilePartInfoListRequest")) {
+                klassName = "RequestFilePartsRecord";
+            } else if (klassName.equals("FilePartReply")) {
+                klassName = "FileChunk";
+            } else if (klassName.equals("FilePartRequest")) {
+                klassName = "RequestPart";
+            } else if (klassName.equals("NodeInfo")) {
+                klassName = "MemberInfo";
+            } else if (klassName.equals("NodeList")) {
+                klassName = "KnownNodes";
+            } else if (klassName.equals("NodeListRequest")) {
+                klassName = "RequestNodeList";
+            } else if (klassName.equals("UploadAbort")) {
+                klassName = "AbortUpload";
+            } else if (klassName.equals("UploadStart")) {
+                klassName = "StartUpload";
+            } else if (klassName.equals("UploadStop")) {
+                klassName = "StopUpload";
+            }
 
             /* Try to find klass in package list and might
              * cause a NPE when no matching class can be found */
