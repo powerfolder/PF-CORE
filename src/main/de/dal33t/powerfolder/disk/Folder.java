@@ -41,6 +41,8 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
+import org.cryptomator.cryptofs.CryptoFileSystemProvider;
+import sun.nio.fs.UnixFileSystemProvider;
 
 import java.io.*;
 import java.nio.file.*;
@@ -271,12 +273,12 @@ public class Folder extends PFComponent {
                     logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
                             " with localbase " + localBaseDir + " " + e);
                     throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
-                            + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
+                            + fInfo.getName() + " with localBase " + localBaseDir + " ", e);
                 } catch (RuntimeException e) {
                     logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
-                            " with localbase " + localBaseDir + " " + e);
+                            " with localBase " + localBaseDir + " " + e);
                     throw new IllegalStateException("Could not initialize CryptoFileSystem for folder "
-                            + fInfo.getName() + " with localbase " + localBaseDir + " ", e);
+                            + fInfo.getName() + " with localBase " + localBaseDir + " ", e);
                 }
             } else {
                 localBase = localBaseDir;
@@ -284,7 +286,6 @@ public class Folder extends PFComponent {
             // PFS-1994: End: Encrypted storage.
 
         } else {
-
             localBase = getController().getFolderRepository()
                 .getFoldersBasedir()
                 .resolve(localBaseDir);
@@ -306,6 +307,13 @@ public class Folder extends PFComponent {
         Reject.ifTrue(localBase.equals(getController().getFolderRepository()
             .getFoldersBasedir()),
             "Folder cannot be located at base directory for all folders");
+
+        if (localBase.toString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR) &&
+                !EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
+            logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
+                    " with localBase " + localBaseDir);
+            throw new IllegalStateException("localBase of encrypted folder " + fInfo.getName() + " invalid!");
+        }
 
         if (folderSettings.getCommitDir() != null) {
             if (folderSettings.getCommitDir().isAbsolute()) {

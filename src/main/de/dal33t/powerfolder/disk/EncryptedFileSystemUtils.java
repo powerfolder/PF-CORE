@@ -62,7 +62,7 @@ public class EncryptedFileSystemUtils {
                 return getCryptoPath(incDir);
             } catch (FileSystemNotFoundException e) {
                 FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
-                Path encDir = cryptoFS.getPath("/encDir");
+                Path encDir = cryptoFS.getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
                 if (!Files.exists(encDir)) {
                     Files.createDirectories(encDir);
                 }
@@ -144,7 +144,7 @@ public class EncryptedFileSystemUtils {
 
     public static Path getCryptoPath(Path path) {
         Reject.ifNull(path, "Path");
-        URI encFolderUri = CryptoFileSystemUris.createUri(path, "/encDir");
+        URI encFolderUri = CryptoFileSystemUris.createUri(path, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
         path = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
         return path;
     }

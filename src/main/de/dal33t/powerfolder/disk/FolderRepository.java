@@ -563,6 +563,21 @@ public class FolderRepository extends PFComponent implements Runnable {
                         FolderSettings folderSettings = FolderSettings.load(
                             getController(), folderEntryId);
 
+                        String foo = folderSettings.getLocalBaseDirString();
+
+                        // Fix for PFS-2319: Repair broken encrypted folders
+                        if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)){
+
+                            // Construct temporary basePath
+                            folderName = folderName + Constants.FOLDER_ENCRYPTION_SUFFIX;
+                            Path folderDirectoryForRecoveredFolders = getFoldersBasedir().resolve("RECOVERED").resolve(folderName);
+                            Path temporaryBasePath = PathUtils.createEmptyDirectory(folderDirectoryForRecoveredFolders);
+
+                            folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
+                            logWarning("Repaired broken encrypted Folder " + folderName + "/" + foInfo.getId() +
+                                    ". New storage path: " + temporaryBasePath);
+                        }
+
                         if (folderSettings == null) {
                             logWarning("Unable to load folder settings."
                                 + "Removed folder config entry: " + folderName
@@ -1798,6 +1813,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
                         .getDefaultValue()))
             {
+                return false;
+            }
+            // PFS-2319: Remove after major version 14.
+            if (name.equals("RECOVERED")) {
                 return false;
             }
             if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
