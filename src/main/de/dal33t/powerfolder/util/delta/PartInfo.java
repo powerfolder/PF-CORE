@@ -19,14 +19,13 @@
 */
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.Serializable;
-import java.util.Arrays;
-
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.protocol.PartInfoProto;
+import de.dal33t.powerfolder.protocol.FilePartInfoProto;
+
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Info for a frame of bytes.
@@ -120,8 +119,8 @@ public final class PartInfo implements Serializable, D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof PartInfoProto.PartInfo) {
-            PartInfoProto.PartInfo proto = (PartInfoProto.PartInfo) mesg;
+        if (mesg instanceof FilePartInfoProto.FilePartInfo) {
+            FilePartInfoProto.FilePartInfo proto = (FilePartInfoProto.FilePartInfo) mesg;
 
             this.index    = proto.getIndex();
             this.checksum = proto.getChecksum();
@@ -138,9 +137,10 @@ public final class PartInfo implements Serializable, D2DObject {
 
     @Override
     public AbstractMessage toD2D() {
-        PartInfoProto.PartInfo.Builder builder = PartInfoProto.PartInfo.newBuilder();
+        FilePartInfoProto.FilePartInfo.Builder builder = FilePartInfoProto.FilePartInfo.newBuilder();
 
-        builder.setClazzName(this.getClass().getSimpleName());
+		// Translate old message name to new name defined in protocol file
+		builder.setClazzName("FilePartInfo");
         builder.setIndex(this.index);
         builder.setChecksum(this.checksum);
         builder.setDigest(ByteString.copyFrom(this.digest));

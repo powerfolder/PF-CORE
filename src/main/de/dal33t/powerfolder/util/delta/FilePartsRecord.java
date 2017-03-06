@@ -19,15 +19,14 @@
 */
 package de.dal33t.powerfolder.util.delta;
 
-import java.io.Serializable;
-import java.util.Arrays;
-
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.protocol.FilePartsRecordProto;
-import de.dal33t.powerfolder.protocol.PartInfoProto;
+import de.dal33t.powerfolder.protocol.FilePartInfoListProto;
+import de.dal33t.powerfolder.protocol.FilePartInfoProto;
+
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Holds the info of one set of PartInfos.
@@ -123,20 +122,20 @@ public final class FilePartsRecord implements Serializable, D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof FilePartsRecordProto.FilePartsRecord) {
-            FilePartsRecordProto.FilePartsRecord proto = 
-                (FilePartsRecordProto.FilePartsRecord) mesg;
+        if (mesg instanceof FilePartInfoListProto.FilePartInfoList) {
+            FilePartInfoListProto.FilePartInfoList proto = 
+                (FilePartInfoListProto.FilePartInfoList) mesg;
 
             /* Convert list back to array */
             int i = 0;
 
-            this.infos = new PartInfo[proto.getPartInfosCount()];
+            this.infos = new PartInfo[proto.getFilePartInfosCount()];
 
-            for(PartInfoProto.PartInfo pinfo : proto.getPartInfosList()) {
+            for(FilePartInfoProto.FilePartInfo pinfo : proto.getFilePartInfosList()) {
                 this.infos[i++] = new PartInfo(pinfo);
               }
 
-            this.partLength = proto.getPartLength();
+            this.partLength = proto.getFilePartLength();
             this.fileLength = proto.getFileLength();
             this.fileDigest = proto.getFileDigest().toByteArray();
         }
@@ -151,19 +150,20 @@ public final class FilePartsRecord implements Serializable, D2DObject {
 
     @Override
     public AbstractMessage toD2D() {
-        FilePartsRecordProto.FilePartsRecord.Builder builder =
-            FilePartsRecordProto.FilePartsRecord.newBuilder();
+        FilePartInfoListProto.FilePartInfoList.Builder builder =
+            FilePartInfoListProto.FilePartInfoList.newBuilder();
 
-        builder.setClazzName(this.getClass().getSimpleName());
+        // Translate old message name to new name defined in protocol file
+        builder.setClazzName("FilePartInfoList");
 
         /* Convert array to list */
         if (null != this.infos) {
             for(PartInfo pinfo : this.infos) {
-               builder.addPartInfos((PartInfoProto.PartInfo)pinfo.toD2D());
+               builder.addFilePartInfos((FilePartInfoProto.FilePartInfo)pinfo.toD2D());
             }
          }
 
-        builder.setPartLength(this.partLength);
+        builder.setFilePartLength(this.partLength);
         builder.setFileLength(this.fileLength);
         builder.setFileDigest(ByteString.copyFrom(this.fileDigest));
 
