@@ -96,7 +96,7 @@ public void testGetCryptoPathString() throws Exception {
 
 @Test
 public void testGetCryptoPath() throws Exception {
-    URI encFolderUri = CryptoFileSystemUris.createUri(UNENCRYPTED_TESTDIR, "/encDir");
+    URI encFolderUri = CryptoFileSystemUris.createUri(UNENCRYPTED_TESTDIR, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
     Path ENCRYPTED_TESTFOLDER_2 = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
     assertTrue(ENCRYPTED_TESTFOLDER.equals(ENCRYPTED_TESTFOLDER_2));
 }
@@ -132,7 +132,7 @@ public void testCheckJCEinstalled() throws Exception {
                 return getCryptoPath(incDir);
             } catch (FileSystemNotFoundException e) {
                 FileSystem cryptoFS = initCryptoFileSystem(incDir);
-                Path encDir = cryptoFS.getPath("/encDir");
+                Path encDir = cryptoFS.getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
                 if (!Files.exists(encDir)) {
                     Files.createDirectories(encDir);
                 }

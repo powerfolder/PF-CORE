@@ -19,20 +19,11 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
 import de.dal33t.powerfolder.disk.FolderSettings;
+
+import java.io.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * PFC-2444

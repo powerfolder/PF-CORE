@@ -396,7 +396,8 @@ public class FolderSettings {
         FolderSettings settings = new FolderSettings(baseDir, syncProfile,
             downloadScript, versions, syncPatterns, commitDir, syncWarnSeconds);
         settings.configEntryId = configEntryId;
-        settings.localBaseDirStr = baseDir.toString();
+        settings.localBaseDirStr = EncryptedFileSystemUtils.isCryptoInstance(baseDir) ?
+                EncryptedFileSystemUtils.getPhysicalStorageLocation(baseDir).toString() : baseDir.toString();
         settings.excludes = excludes;
         return settings;
     }

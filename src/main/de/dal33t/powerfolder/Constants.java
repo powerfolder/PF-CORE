@@ -372,6 +372,7 @@ public class Constants {
      * PFS-1994: Suffix to mark a folder path as encrypted.
      */
     public static final String FOLDER_ENCRYPTION_SUFFIX = ".crypto";
+    public static final String FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR = "/encDir";
 
     // Pro related ************************************************************
 

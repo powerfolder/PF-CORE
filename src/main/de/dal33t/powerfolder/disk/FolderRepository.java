@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
@@ -79,7 +80,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     private Thread myThread;
     private final FileRequestor fileRequestor;
     private Folder currentlyMaintainingFolder;
-    private final Set<String> onLoginFolderEntryIds;
+    private final Set<String> onLoginFolderEntryIds = new HashSet<String>();
     // Flag if the repo is started
     private boolean started;
     // The trigger to start scanning
@@ -143,9 +144,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         triggered = false;
         // Rest
-        folders = new ConcurrentHashMap<FolderInfo, Folder>();
-        metaFolders = new ConcurrentHashMap<FolderInfo, Folder>();
-        onLoginFolderEntryIds = new HashSet<String>();
+        folders = new ConcurrentHashMap<>();
+        metaFolders = new ConcurrentHashMap<>();
         fileRequestor = new FileRequestor(controller);
         started = false;
         loadRemovedFolderDirectories();
@@ -559,6 +559,19 @@ public class FolderRepository extends PFComponent implements Runnable {
                             .intern();
                         FolderSettings folderSettings = FolderSettings.load(
                             getController(), folderEntryId);
+
+                        // Fix for PFS-2319: Repair broken encrypted folders
+                        if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)){
+
+                            // Construct temporary basePath
+                            folderName = folderName + Constants.FOLDER_ENCRYPTION_SUFFIX;
+                            Path folderDirectoryForRecoveredFolders = getFoldersBasedir().resolve("RECOVERED").resolve(folderName);
+                            Path temporaryBasePath = PathUtils.createEmptyDirectory(folderDirectoryForRecoveredFolders);
+
+                            folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
+                            logWarning("Repaired broken encrypted Folder " + folderName + "/" + foInfo.getId() +
+                                    ". New storage path: " + temporaryBasePath);
+                        }
 
                         if (folderSettings == null) {
                             logWarning("Unable to load folder settings."
@@ -1019,10 +1032,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .getValueBoolean(getController()))
             {
                 Files.createDirectories(folderSettings.getLocalBaseDir());
-            } else
-                if (Files.notExists(folderSettings.getLocalBaseDir())
-                    || !PathUtils
-                        .isEmptyDir(folderSettings.getLocalBaseDir()))
+            } else if (Files.notExists(folderSettings.getLocalBaseDir()) ||
+                    !PathUtils.isEmptyDir(folderSettings.getLocalBaseDir()))
             {
                 Path baseDir = folderSettings.getLocalBaseDir().getParent();
                 String rawName = folderSettings.getLocalBaseDir().getFileName()
@@ -1751,29 +1762,27 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         // Get all directories
-        Filter<Path> filter = new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                String name = entry.getFileName().toString();
-                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
-                    return false;
-                }
-                if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                    .getValue(getController()))
-                    || name
-                        .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                            .getDefaultValue()))
-                {
-                    return false;
-                }
-                if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
-                    return false;
-                }
-                if (!Files.isDirectory(entry)) {
-                    return false;
-                }
-                return !containedInRemovedFolders(entry);
+        Filter<Path> filter = entry -> {
+            String name = entry.getFileName().toString();
+            if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                return false;
             }
+            if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                .getValue(getController()))
+                || name
+                    .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                        .getDefaultValue()))
+            {
+                return false;
+            }
+            if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
+                return false;
+            }
+            if (!Files.isDirectory(entry)) {
+                return false;
+            }
+
+            return !containedInRemovedFolders(entry);
         };
 
         try (DirectoryStream<Path> directories = Files.newDirectoryStream(
@@ -1782,9 +1791,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 boolean known = false;
                 for (Folder folder : getFolders()) {
                     if (!getMySelf().isServer()) {
-                        if (folder.getName().equals(
-                            dir.getFileName().toString()))
-                        {
+                        if (folder.getName().equals(dir.getFileName().toString())) {
                             known = true;
                             break;
                         }
@@ -1807,11 +1814,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                     if (localBase.equals(localBase.getFileSystem().getPath(dir.toString()))
                             || localBase.toAbsolutePath().startsWith(localBase.getFileSystem().getPath(dir.toAbsolutePath().toString()))
                             || localBase.toAbsolutePath().startsWith(dir.toAbsolutePath())
-                            || localBase.equals(dir))
-                    {
+                            || localBase.equals(dir)) {
                         known = true;
                         break;
                     }
+
                 }
                 if (!known) {
                     handleNewFolder(dir);
@@ -1822,40 +1829,37 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         if (!getMySelf().isServer() && getController().isUIEnabled()) {
-            filter = new Filter<Path>() {
-                @Override
-                public boolean accept(Path entry) {
-                    if (Files.isDirectory(entry)) {
-                        return false;
-                    }
-                    if (PathUtils.isDesktopIni(entry)) {
-                        return false;
-                    }
-                    if (entry.getFileName().toString().toLowerCase()
-                        .endsWith(".lnk"))
-                    {
-                        return false;
-                    }
-                    if (entry
-                        .getFileName()
-                        .toString()
-                        .equalsIgnoreCase(
-                            Constants.GETTING_STARTED_GUIDE_FILENAME))
-                    {
-                        return false;
-                    }
-                    try {
-                        if (Files.isHidden(entry)) {
-                            return false;
-                        }
-                    } catch (IOException e) {
-                        logFine("Could not find out if '"
-                            + entry.toAbsolutePath().toString()
-                            + "' is hidden. " + e);
-                        return false;
-                    }
-                    return true;
+            filter = entry -> {
+                if (Files.isDirectory(entry)) {
+                    return false;
                 }
+                if (PathUtils.isDesktopIni(entry)) {
+                    return false;
+                }
+                if (entry.getFileName().toString().toLowerCase()
+                    .endsWith(".lnk"))
+                {
+                    return false;
+                }
+                if (entry
+                    .getFileName()
+                    .toString()
+                    .equalsIgnoreCase(
+                        Constants.GETTING_STARTED_GUIDE_FILENAME))
+                {
+                    return false;
+                }
+                try {
+                    if (Files.isHidden(entry)) {
+                        return false;
+                    }
+                } catch (IOException e) {
+                    logFine("Could not find out if '"
+                        + entry.toAbsolutePath().toString()
+                        + "' is hidden. " + e);
+                    return false;
+                }
+                return true;
             };
 
             // Clear all FileInBasePathWarnings before generating new ones
@@ -2000,7 +2004,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             SyncProfile.getDefault(getController()),
             ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                 .getValueInt(getController()));
-       
+
         // 1) Create at cloud service
         boolean scheduleCreateOnServer = false;
         if (client.isBackupByDefault() && !client.joinedByCloud(foInfo)) {
@@ -2017,11 +2021,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 scheduleCreateOnServer = true;
             }
         }
-        
+
         // 2) Sync locally
         Folder folder = createFolder0(foInfo, fs, true);
         folder.addDefaultExcludes();
-        
+
         if (scheduleCreateOnServer) {
             logWarning("Scheduling setup of folder: " + foInfo.getName());
             CreateFolderOnServerTask task = new CreateFolderOnServerTask(foInfo,
@@ -2446,9 +2450,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private ReentrantLock accountSyncLock = new ReentrantLock();
 
-    public void updateFolders(Account a) {
-        // TODO: Called too often
-        Reject.ifNull(a, "Account");
+    public void updateFolders(AccountDetails ad) {
+        Reject.ifNull(ad, "AccountDetails");
+        Account a = ad.getAccount();
         if (getMySelf().isServer()) {
             return;
         }
@@ -2498,7 +2502,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             logInfo("Syncing folder setup with account permissions("
                 + a.getFolders().size() + "): " + a.getUsername());
-            Collection<FolderInfo> created = createLocalFolders(a);
+            Collection<FolderInfo> created = createLocalFolders(ad);
             if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                 .getValueBoolean(getController()))
             {
@@ -2626,7 +2630,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private synchronized Collection<FolderInfo> createLocalFolders(Account a) {
+    private synchronized Collection<FolderInfo> createLocalFolders(AccountDetails ad) {
+        Account a = ad.getAccount();
         if (!a.isValid()) {
             return Collections.emptyList();
         }
@@ -2688,10 +2693,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } catch (Exception e) {
                     scheduleCreateOnServer = true;
                 }
-                
+
                 Folder folder = createFolder0(foInfo, settings, true);
                 folder.addDefaultExcludes();
-                
+
                 if (scheduleCreateOnServer) {
                     logFine("Scheduling setup of folder: " + foInfo.getName());
                     CreateFolderOnServerTask task = new CreateFolderOnServerTask(foInfo,
@@ -3056,7 +3061,11 @@ public class FolderRepository extends PFComponent implements Runnable {
         Path bd = getFoldersBasedir().toAbsolutePath();
         boolean inBaseDir = false;
         if (bd != null) {
-            inBaseDir = folder.getLocalBase().toAbsolutePath().startsWith(bd);
+            if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
+                inBaseDir = EncryptedFileSystemUtils.getPhysicalStorageLocation(folder.getLocalBase()).startsWith(bd);
+            } else {
+                inBaseDir = folder.getLocalBase().toAbsolutePath().startsWith(bd);
+            }
         }
 
         if (!inBaseDir) {
