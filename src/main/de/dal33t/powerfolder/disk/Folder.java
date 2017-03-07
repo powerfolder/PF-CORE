@@ -260,11 +260,10 @@ public class Folder extends PFComponent {
         if (localBaseDir.isAbsolute()) {
 
             // PFS-1994: Start: Encrypted storage.
-            boolean isEncryptionActivated = EncryptedFileSystemUtils.isEncryptionActivated(getController());
             boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
                     || EncryptedFileSystemUtils.isPhysicalStorageLocation(localBaseDir.toString());
 
-            if (isEncryptionActivated && isEncrypted) {
+            if (isEncrypted) {
                 try {
                     localBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), localBaseDir);
                 } catch (IOException e) {
@@ -4178,7 +4177,7 @@ public class Folder extends PFComponent {
 
         // #1249
         if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux())) {
-            if (!schemaZyncro)
+            if (!schemaZyncro && !PathUtils.isWebDAVFolder(localBase))
             {
                 boolean inaccessible = Files.notExists(localBase)
                     || PathUtils.getNumberOfSiblings(localBase) == 0;

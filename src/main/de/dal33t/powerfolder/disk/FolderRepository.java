@@ -563,6 +563,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                         FolderSettings folderSettings = FolderSettings.load(
                             getController(), folderEntryId);
 
+                        if (folderSettings == null) {
+                            logWarning("Unable to load folder settings."
+                                    + "Removed folder config entry: " + folderName
+                                    + '/' + folderEntryId);
+                            removeConfigEntries(folderEntryId);
+                            return;
+                        }
+
                         // Fix for PFS-2319: Repair broken encrypted folders
                         if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)){
 
@@ -574,14 +582,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                             folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
                             logWarning("Repaired broken encrypted Folder " + folderName + "/" + foInfo.getId() +
                                     ". New storage path: " + temporaryBasePath);
-                        }
-
-                        if (folderSettings == null) {
-                            logWarning("Unable to load folder settings."
-                                + "Removed folder config entry: " + folderName
-                                + '/' + folderEntryId);
-                            removeConfigEntries(folderEntryId);
-                            return;
                         }
 
                         // Do not add0 if already added
