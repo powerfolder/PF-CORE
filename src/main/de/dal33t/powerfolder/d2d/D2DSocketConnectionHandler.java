@@ -197,8 +197,11 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
 
     @Override
     protected byte[] serialize(Message mesg) throws ConnectionException {
-        // Block the AddFriendNotification message
+        // Block unsupported messages
         if (mesg instanceof AddFriendNotification) {
+            mesg = new Ping();
+        }
+        else if (mesg instanceof RelayedMessageExt) {
             mesg = new Ping();
         }
 
