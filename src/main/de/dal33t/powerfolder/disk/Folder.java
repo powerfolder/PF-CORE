@@ -4178,7 +4178,7 @@ public class Folder extends PFComponent {
 
         // #1249
         if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux())) {
-            if (!schemaZyncro)
+            if (!schemaZyncro && !PathUtils.isWebDAVFolder(localBase))
             {
                 boolean inaccessible = Files.notExists(localBase)
                     || PathUtils.getNumberOfSiblings(localBase) == 0;
