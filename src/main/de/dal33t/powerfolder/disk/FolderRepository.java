@@ -563,8 +563,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                         FolderSettings folderSettings = FolderSettings.load(
                             getController(), folderEntryId);
 
-                        String foo = folderSettings.getLocalBaseDirString();
-
                         // Fix for PFS-2319: Repair broken encrypted folders
                         if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)){
 
