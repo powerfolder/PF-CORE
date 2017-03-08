@@ -1194,12 +1194,9 @@ public class ServerClient extends PFComponent {
                     loggingIn.set(false);
                     fireLogin(accountDetails);
 
-                    getController().getIOProvider().startIO(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Also switches server
-                            updateLocalSettings(accountDetails);
-                        }
+                    getController().getIOProvider().startIO(() -> {
+                        // Also switches server
+                        updateLocalSettings(accountDetails);
                     });
                 } else {
                     setAnonAccount();

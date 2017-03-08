@@ -2544,7 +2544,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 Path newDirectory = folder.getLocalBase().getParent()
                         .resolve(PathUtils
                                 .removeInvalidFilenameChars(foInfo.getLocalizedName()));
-                moveLocalFolder(folder, newDirectory);
+                folder = moveLocalFolder(folder, newDirectory);
+                if (folder == null) {
+                    logWarning("Failed to move folder " + folder.getName() + "/" + folder.getId()
+                            + " to new directory " + newDirectory);
+                }
             }
 
             logInfo("Syncing folder setup with account permissions("
@@ -2639,6 +2643,19 @@ public class FolderRepository extends PFComponent implements Runnable {
             PathUtils.setAttributesOnWindows(newDirectory, true, true);
 
             logInfo("Successfully moved folder from " + originalDirectory + " to " + newDirectory + ".");
+
+            // After renaming, delete the old folder physically if still existing
+            try {
+                if (EncryptedFileSystemUtils.isCryptoInstance(originalDirectory)) {
+                    originalDirectory = EncryptedFileSystemUtils.getPhysicalStorageLocation(originalDirectory);
+                }
+                if (Files.exists(originalDirectory)) {
+                    PathUtils.recursiveDeleteVisitor(originalDirectory);
+                }
+            } catch (IOException e) {
+                logWarning("Failed to delete basePath " + originalDirectory
+                        + " after renaming folder " + folder.getName(), e);
+            }
 
         } catch (IOException e) {
             logSevere("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " + e);
