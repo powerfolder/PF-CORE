@@ -2198,21 +2198,16 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                     if (getController().getUIController().isStarted()) {
                         // FIXME: Use Notifications instead of in-your-face dialog:
-                        UIUtil.invokeLaterInEDT(new Runnable() {
-                            @Override
-                            public void run() {
-                                DialogFactory.genericDialog(
-                                    getController(),
-                                    Translation
-                                        .get("notice.rename_folder_failed.title"),
-                                    Translation
-                                        .get(
-                                            "notice.rename_folder_failed.summary",
-                                            copyNewName,
-                                            copyOldName),
-                                    GenericDialogType.WARN);
-                            }
-                        });
+                        UIUtil.invokeLaterInEDT(() -> DialogFactory.genericDialog(
+                            getController(),
+                            Translation
+                                .get("notice.rename_folder_failed.title"),
+                            Translation
+                                .get(
+                                    "notice.rename_folder_failed.summary",
+                                    copyNewName,
+                                    copyOldName),
+                            GenericDialogType.WARN));
                     }
 
                     // change the name back to the old name
@@ -2606,6 +2601,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         try {
+            suspendNewFolderSearch.incrementAndGet();
+
             Path originalDirectory = folder.getLocalBase().toRealPath();
             FolderSettings fs = FolderSettings.load(getController(),
                     folder.getConfigEntryId());
@@ -2662,6 +2659,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             logSevere("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " + e);
             logFine(e);
             return null;
+        } finally {
+            suspendNewFolderSearch.decrementAndGet();
         }
 
         return folder;
