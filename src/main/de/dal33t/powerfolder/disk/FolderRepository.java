@@ -2151,6 +2151,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     private FolderInfo tryRenaming(ServerClient client, Path file,
         FolderInfo fi, boolean stillPresent) throws FolderRenameException
     {
+
+        Folder folder = fi.getFolder(getController());
+        if (folder == null) {
+            throw new FolderRenameException(file, fi);
+        }
+
         FolderInfo knownFolderWithSameName = null;
 
         for (FolderInfo folderInfo : client.getAccountFolders()) {
@@ -2167,12 +2173,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         String oldName = fi.getName();
-        Folder folder = fi.getFolder(getController());
-        if (folder == null) {
-            throw new FolderRenameException(file, fi);
-        }
         Path oldPath = folder.getLocalBase();
-
         String newName = file.getFileName().toString();
 
         if (knownFolderWithSameName == null
@@ -3165,6 +3166,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 } finally {
                     scanBasedirLock.unlock();
                 }
+
+                getController().getFolderRepository().scanBasedir();
             }
         }, 5000L);
 

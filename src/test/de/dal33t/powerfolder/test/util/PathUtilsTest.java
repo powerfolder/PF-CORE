@@ -780,8 +780,11 @@ public class PathUtilsTest extends TestCase {
      * @throws IOException
      */
     public void testRecursiveMoveVisitor() throws IOException {
+
         Path baseDir = Paths.get("build/test").toAbsolutePath();
-        PathUtils.recursiveDeleteVisitor(baseDir);
+        if (Files.exists(baseDir)) {
+            PathUtils.recursiveDeleteVisitor(baseDir);
+        }
 
         // Setup base dir with dirs and files.
         Files.createDirectories(baseDir);
@@ -797,6 +800,8 @@ public class PathUtilsTest extends TestCase {
         // Now check the real move function.
         Path moveDir = baseDir.resolve("moveDir");
         PathUtils.recursiveMoveVisitor(dir, moveDir);
+
+        assertTrue(Files.notExists(dir));
 
         assertTrue(Files.exists(moveDir.resolve("b")));
         assertTrue(Files.exists(moveDir.resolve("c")));

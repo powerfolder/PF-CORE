@@ -1753,7 +1753,6 @@ public class PathUtils {
             Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 
                     new SimpleFileVisitor<Path>() {
-
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                                 throws IOException {
@@ -1769,6 +1768,17 @@ public class PathUtils {
                                 throws IOException {
                             Files.move(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
                             return CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                                throws IOException {
+                            if (e == null) {
+                                Files.delete(dir);
+                                return FileVisitResult.CONTINUE;
+                            } else {
+                                throw e;
+                            }
                         }
                     });
         } catch (IOException ioe) {
