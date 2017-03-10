@@ -17,11 +17,6 @@ public class PathUtilsTest extends TestCase {
 
     private Path baseDir = Paths.get("build/test").toAbsolutePath();
 
-    @Override
-    public void setUp() throws IOException {
-        PathUtils.recursiveDeleteVisitor(baseDir);
-    }
-
     public void testURLEncoding() {
         String filename = "PowerFolder.exe";
         String url = "https://www.my-server.com:8822";
