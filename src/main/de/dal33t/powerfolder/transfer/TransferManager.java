@@ -1772,6 +1772,9 @@ public class TransferManager extends PFComponent {
                 logInfo(
                     "Could not get the usable space for " + folder.toString()
                         + " located at " + folder.getLocalBase().toString());
+                if (folder.checkIfDeviceDisconnected()) {
+                    return null;
+                }
             }
 
             // If no FileStore could be accessed, don't check the file sizes.
