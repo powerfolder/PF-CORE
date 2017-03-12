@@ -2213,7 +2213,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             logInfo("Renaming Folder '" + oldName + "' to '" + newName + "'");
 
             if (folder != null && folder.checkIfDeviceDisconnected()) {
-            if (folder != null && folder.checkIfDeviceDisconnected()) {
                 removeFolder(folder, false, false);
                 removedFolderDirectories.remove(folder.getLocalBase());
             }
