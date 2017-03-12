@@ -388,7 +388,7 @@ public class Folder extends PFComponent {
         // put myself in membership
         members.put(controller.getMySelf(), controller.getMySelf());
 
-        // Now calc.
+        // Stats
         statistic = new FolderStatistic(this);
 
         // Check desktop ini in Windows environments
@@ -429,6 +429,12 @@ public class Folder extends PFComponent {
         List<String> newPatterns = diskItemFilter.getPatterns();
         if (!newPatterns.equals(oldPatterns)) {
             triggerPersist();
+        }
+
+        // PFS-2227:
+        Path file = getSystemSubDir().resolve(Folder.FOLDER_STATISTIC);
+        if (Files.notExists(file)) {
+            statistic.calculate0();
         }
     }
 
@@ -4167,10 +4173,12 @@ public class Folder extends PFComponent {
         try {
             checkBaseDir(true);
         } catch (FolderException e) {
-            if (currentInfo.isMetaFolder()) {
-                logFine("invalid local base: " + getLocalBase() + " " + e, e);
-            } else {
-                logWarning("invalid local base: " + getLocalBase() + " " + e, e);
+            if (isFine()) {
+                if (currentInfo.isMetaFolder()) {
+                    logFiner("invalid local base: " + getLocalBase() + " " + e);
+                } else {
+                    logFine("invalid local base: " + getLocalBase() + " " + e);
+                }
             }
             return setDeviceDisconnected(true);
         }
