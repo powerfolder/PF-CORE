@@ -25,4 +25,17 @@ public enum DocumentType {
     public Collection<String> getExtensions() {
         return extensions;
     }
+
+    public String toRegExp() {
+        String s = "";
+        for (String ext:
+             extensions) {
+            s += ext;
+            s += "|";
+        }
+        if (s.length() > 0) {
+            s = s.substring(0, s.length() - 1);
+        }
+        return s;
+    }
 }

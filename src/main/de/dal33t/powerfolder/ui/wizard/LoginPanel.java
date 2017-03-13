@@ -508,6 +508,7 @@ public class LoginPanel extends PFWizardPanel {
         rememberPasswordBox.setVisible(connected && changeLoginAllowed
             && rememberPasswordAllowed);
         recoverPasswordLabel.setVisible(connected && client.supportsRecoverPassword());
+        createAccountLabel.setVisible(client.supportsWebRegistration());
 
         connectingLabel.setVisible(!connected);
         workingBar.setVisible(!connected);

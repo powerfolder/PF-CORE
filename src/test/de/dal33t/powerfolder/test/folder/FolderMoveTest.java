@@ -166,8 +166,8 @@ public class FolderMoveTest extends ControllerTestCase {
                     .filter(p -> p.getFileName().toString().equals("sub") && Files.isDirectory(p))
                     .forEach(p -> assertEquals(1, PathUtils.getNumberOfSiblings(p)));
 
-            // Since moveFolder method is NOT removing the old directory, this has to be true:
-            assertTrue("Old location still existing!:  " + oldLocalBase, Files.exists(oldLocalBase));
+            // PFS-2227: moveLocalFolder should actually move all contents on filesystem:
+            assertTrue("Old location still existing!:  " + oldLocalBase, Files.notExists(oldLocalBase));
 
         } catch (IOException e) {
             e.printStackTrace();

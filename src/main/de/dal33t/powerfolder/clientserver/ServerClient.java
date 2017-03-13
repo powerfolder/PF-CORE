@@ -1919,7 +1919,7 @@ public class ServerClient extends PFComponent {
                 continue;
             }
             logInfo("Starting connect to federated service: " + fedService);
-            ServerClient client = createNew(fedService, token);
+            ServerClient client = createNewFederatedConnection(fedService, token);
             client.loadServerNodes();
             client.start();
             client.loginWithLastKnown();
@@ -1927,7 +1927,7 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    private ServerClient createNew(ServerInfo serviceInfo, String token) {
+    private ServerClient createNewFederatedConnection(ServerInfo serviceInfo, String token) {
         String defaultConfigURL = serviceInfo.getWebUrl()
             + ConfigurationLoader.DEFAULT_PROPERTIES_URI;
         try {

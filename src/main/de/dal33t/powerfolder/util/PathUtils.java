@@ -37,6 +37,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
 import java.util.EnumSet;
@@ -52,6 +53,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
+import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class PathUtils {
@@ -1717,28 +1720,60 @@ public class PathUtils {
         }
     }
 
-    public static void recursiveCopyVisitor(Path oldDirectory, Path newDirectory) throws IOException {
+    /**
+     * Copies everything from a given directory ONLY if the target directory doesn't exists.
+     * Copies also all file and directory attributes.
+     *
+     * @param sourceDirectory
+     * @param targetDirectory
+     * @throws IOException
+     */
+
+    public static void recursiveCopyVisitor(Path sourceDirectory, Path targetDirectory) throws IOException {
 
         try {
-            Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+            Files.walkFileTree(sourceDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 
                     new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                            CopyOption[] options = new CopyOption[]{COPY_ATTRIBUTES};
+                            Path newdir = targetDirectory.resolve(sourceDirectory.relativize(dir));
+                            Files.copy(dir, newdir, options);
+                            return CONTINUE;
+                        }
 
                         @Override
-                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                                throws IOException {
-                            Path targetDir = newDirectory.resolve(oldDirectory.relativize(dir).toString());
-                            if (Files.notExists(targetDir)) {
-                                Files.createDirectories(targetDir);
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            CopyOption[] options = new CopyOption[]{COPY_ATTRIBUTES};
+                            Path newfile = targetDirectory.resolve(sourceDirectory.relativize(file));
+                            Files.copy(file, newfile, options);
+
+                            // Check if actually necessary
+                            FileTime time = Files.getLastModifiedTime(file);
+                            FileTime newdirTime = Files.getLastModifiedTime(newfile);
+                            if (!time.equals(newdirTime)) {
+                               Files.setLastModifiedTime(newfile, time);
                             }
                             return CONTINUE;
                         }
 
                         @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                                throws IOException {
-                            Files.copy(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
+                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                            if (exc == null) {
+                                Path newdir = targetDirectory.resolve(sourceDirectory.relativize(dir));
+                                FileTime time = Files.getLastModifiedTime(dir);
+                                FileTime newdirTime = Files.getLastModifiedTime(newdir);
+                                if (!time.equals(newdirTime)) {
+                                    Files.setLastModifiedTime(newdir, time);
+                                }
+                            }
                             return CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                            throw exc;
                         }
                     });
         } catch (IOException ioe) {
@@ -1753,7 +1788,6 @@ public class PathUtils {
             Files.walkFileTree(oldDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 
                     new SimpleFileVisitor<Path>() {
-
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
                                 throws IOException {
@@ -1769,6 +1803,17 @@ public class PathUtils {
                                 throws IOException {
                             Files.move(file, newDirectory.resolve(oldDirectory.relativize(file).toString()), REPLACE_EXISTING);
                             return CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                                throws IOException {
+                            if (e == null) {
+                                Files.delete(dir);
+                                return FileVisitResult.CONTINUE;
+                            } else {
+                                throw e;
+                            }
                         }
                     });
         } catch (IOException ioe) {

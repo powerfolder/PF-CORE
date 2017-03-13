@@ -1101,7 +1101,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folderSettings, "FolderSettings is null");
 
         if (hasJoinedFolder(folderInfo)) {
-            return folders.get(folderInfo);
+            Folder existingFolder = folders.get(folderInfo);
+            if (!existingFolder.getLocalBase().equals(folderSettings.getLocalBaseDir())) {
+                logWarning("Tried to create new folder " + folderInfo.getName() + " @ " +
+                        folderSettings.getLocalBaseDirString() + ", but already existing @ " +
+                        existingFolder.getLocalBase());
+            }
+            return existingFolder;
         }
 
         // If non-preview folder and already have this folder as preview,
@@ -1358,7 +1364,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folder, "Folder is null");
 
         try {
-            suspendNewFolderSearch.incrementAndGet();
+            scanBasedirLock.lock();
 
             // Remove link if it exists.
             removeLink(folder);
@@ -1452,7 +1458,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
         } finally {
-            suspendNewFolderSearch.decrementAndGet();
+            scanBasedirLock.unlock();
         }
 
         // Fire event
@@ -1725,46 +1731,50 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <br />
      * This method is synchronized with
      * {@link #handleDeviceDisconnected(Folder)}.
+     * @return true if executed, false if skipped, e.g. pause
      */
-    public void scanBasedir() {
+    public boolean scanBasedir() {
         if (suspendNewFolderSearch.get() > 0) {
-            return;
+            return false;
         }
         // sync with #handleDeviceDisconnectd(Folder)
         scanBasedirLock.lock();
+        boolean ok = false;
         try {
             if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
                 .getValueBoolean(getController()))
             {
-                lookForNewFolders();
+                ok = lookForNewFolders();
             }
             if (ConfigurationEntry.LOOK_FOR_FOLDERS_TO_BE_REMOVED
                 .getValueBoolean(getController()))
             {
-                lookForFoldersToBeRemoved();
+                ok = lookForFoldersToBeRemoved() && ok;
             }
         } finally {
             scanBasedirLock.unlock();
         }
+        return ok;
     }
 
     /**
      * Scan the PowerFolder base directory for new directories that might be new
      * folders.
+     * @return true if successfully checked for new folders. false is skipped/failed
      */
-    private void lookForNewFolders() {
+    private boolean lookForNewFolders() {
         if (!getMySelf().isServer()) {
             if (!getController().getOSClient().isLoggedIn()) {
                 if (isFine()) {
                     logFine("Skipping searching for new folders...");
                 }
-                return;
+                return false;
             }
             if (!getController().getOSClient().isAllowedToCreateFolders()) {
                 if (isFine()) {
                     logFine("Skipping searching for new folders (no permission)...");
                 }
-                return;
+                return false;
             }
             Account a = getController().getOSClient().getAccount();
             if (!a.hasOwnStorage()) {
@@ -1783,12 +1793,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                     getController().getUIController().getApplicationModel()
                         .getNoticesModel().handleNotice(notice);
                 }
-                return;
+                return false;
             }
         }
         if (getController().isPaused()) {
             logFine("Skipping searching for new folders (paused)...");
-            return;
+            return false;
         }
 
         if (isFine()) {
@@ -1797,7 +1807,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
         Path baseDir = getFoldersBasedir();
         if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
-            return;
+            return false;
         }
         // Get all directories
         Filter<Path> filter = entry -> {
@@ -1873,6 +1883,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         } catch (IOException ioe) {
             logWarning("Could not access base dir while looking for new folders @ " + baseDir.toString() + ". " + ioe.toString());
+            return false;
         }
 
         if (!getMySelf().isServer() && getController().isUIEnabled()) {
@@ -1927,6 +1938,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logWarning(ioe);
             }
         }
+        return true;
     }
 
     /**
@@ -2001,7 +2013,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         FolderInfo foInfo = null;
-        boolean renamed = false;
+        boolean renamedOnServer = false;
         boolean stillPresent = false;
         boolean createdNew = false;
         ServerClient client = getController().getOSClient();
@@ -2011,25 +2023,29 @@ public class FolderRepository extends PFComponent implements Runnable {
             stillPresent = folderStillExists(foInfo);
 
             try {
-                if (foInfo != null && foInfo.getFolder(getController()) != null) {
-                    // FIXME: Don't send rename request, if not Admin Permission
+                if (foInfo != null) {
                     FolderInfo renamedFI = tryRenaming(client, file, foInfo, stillPresent);
-
                     if (renamedFI != null && foInfo != null && renamedFI.equals(foInfo)
-                        && !renamedFI.getName().equals(foInfo.getName()))
-                    {
+                            && !renamedFI.getName().equals(foInfo.getName())) {
                         foInfo = renamedFI;
-                        renamed = true;
+                        renamedOnServer = true;
                     }
                 }
             } catch (FolderRenameException fre) {
-                logInfo("Could not rename Folder " + fre, fre);
-                return;
+                logInfo("Could not rename Folder on server " + fre);
+                logFine(fre);
             }
         } else if (getMySelf().isServer()) {
             foInfo = checkSystemSubdirForFolder(file);
             stillPresent = folderStillExists(foInfo);
         }
+
+        logInfo("handleNewFolder.p1 of " + file);
+        logInfo(" Folder name: " + foInfo.getLocalizedName());
+        logInfo(" Folder ID: " + foInfo.getId());
+        logInfo(" renamedOnServer: " + renamedOnServer);
+        logInfo(" stillPresent: " + stillPresent);
+        logInfo(" createdNew: " + createdNew);
 
         if (foInfo == null || stillPresent) {
             foInfo = new FolderInfo(file.getFileName().toString(),
@@ -2085,10 +2101,18 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folder.getName() + "/" + folder.getId() + " @ "
             + folder.getLocalBase());
 
-        if (!renamed) {
+        if (!renamedOnServer) {
             folderAutoCreateListener
                 .folderAutoCreated(new FolderAutoCreateEvent(foInfo));
         }
+
+        logInfo("handleNewFolder.p2 of " + file);
+        logInfo(" Folder name: " + foInfo.getLocalizedName());
+        logInfo(" Folder ID: " + foInfo.getId());
+        logInfo(" renamedOnServer: " + renamedOnServer);
+        logInfo(" stillPresent: " + stillPresent);
+        logInfo(" createdNew: " + createdNew);
+
     }
 
     /**
@@ -2138,7 +2162,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      *            The client to check for the currently logged in users folders.
      * @param file
      *            The file that is to be handled as a new folder
-     * @param fi
+     * @param foInfo
      *            A Folder that might be the one found at {@code file}
      * @param stillPresent
      *            Is the Folder {@code fi} still present?
@@ -2149,8 +2173,9 @@ public class FolderRepository extends PFComponent implements Runnable {
      *             exception occured during the renameing process
      */
     private FolderInfo tryRenaming(ServerClient client, Path file,
-        FolderInfo fi, boolean stillPresent) throws FolderRenameException
+        FolderInfo foInfo, boolean stillPresent) throws FolderRenameException
     {
+        Folder folder = foInfo.getFolder(getController());
         FolderInfo knownFolderWithSameName = null;
 
         for (FolderInfo folderInfo : client.getAccountFolders()) {
@@ -2162,18 +2187,19 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        if (fi == null) {
+        if (foInfo == null) {
             return knownFolderWithSameName;
         }
 
-        String oldName = fi.getName();
-        Folder folder = fi.getFolder(getController());
-        if (folder == null) {
-            throw new FolderRenameException(file, fi);
-        }
-        Path oldPath = folder.getLocalBase();
-
+        String oldName = foInfo.getName();
         String newName = file.getFileName().toString();
+
+        logInfo("tryRenaming");
+        logInfo(" file: " + file);
+        logInfo(" name: " + foInfo.getName());
+        logInfo(" ID: " + foInfo.getId());
+        logInfo(" knownFolderWithSameName: " + knownFolderWithSameName);
+        logInfo(" stillPresent: " + stillPresent);
 
         if (knownFolderWithSameName == null
             && !PathUtils.isSameName(oldName, newName) && !stillPresent)
@@ -2186,53 +2212,49 @@ public class FolderRepository extends PFComponent implements Runnable {
              */
             logInfo("Renaming Folder '" + oldName + "' to '" + newName + "'");
 
+            if (folder != null && folder.checkIfDeviceDisconnected()) {
+                removeFolder(folder, false, false);
+                removedFolderDirectories.remove(folder.getLocalBase());
+            }
+
             FolderService foServ = client.getFolderService();
             try {
-
-                if (!foServ.renameFolder(fi, newName)) {
+                boolean isFolderAdmin = getController().getSecurityManager().hasPermission(
+                        getMySelf().getInfo(), FolderPermission.admin(foInfo));
+                if (isFolderAdmin && foServ.renameFolder(foInfo, newName)) {
+                    foInfo = new FolderInfo(newName, foInfo.getId());
+                    foInfo.intern(true);
+                } else {
                     logWarning("Could not rename the Folder " + oldName
-                        + " on the server to " + fi.getName());
+                            + " on the server to " + foInfo.getName());
                     final String copyNewName = newName;
                     final String copyOldName = oldName;
 
-                    if (getController().getUIController().isStarted()) {
+                    if (getController().isUIEnabled() && getController().getUIController().isStarted()) {
                         // FIXME: Use Notifications instead of in-your-face dialog:
-                        UIUtil.invokeLaterInEDT(new Runnable() {
-                            @Override
-                            public void run() {
-                                DialogFactory.genericDialog(
-                                    getController(),
-                                    Translation
+                        UIUtil.invokeLaterInEDT(() -> DialogFactory.genericDialog(
+                                getController(),
+                                Translation
                                         .get("notice.rename_folder_failed.title"),
-                                    Translation
+                                Translation
                                         .get(
-                                            "notice.rename_folder_failed.summary",
-                                            copyNewName,
-                                            copyOldName),
-                                    GenericDialogType.WARN);
-                            }
-                        });
+                                                "notice.rename_folder_failed.summary",
+                                                copyNewName,
+                                                copyOldName),
+                                GenericDialogType.WARN));
                     }
-
-                    // change the name back to the old name
-                    fi = new FolderInfo(oldName, fi.getId());
-                    fi.intern(true);
-
-                    throw new FolderRenameException(file, fi);
+                    throw new FolderRenameException(file, foInfo);
                 }
-
-                fi = new FolderInfo(newName, fi.getId());
-                fi.intern(true);
-
-                removeFolder(folder, false, false);
-                removedFolderDirectories.remove(oldPath);
+            } catch (de.dal33t.powerfolder.security.SecurityException e) {
+                logWarning(e.getMessage());
+                throw new FolderRenameException(file, foInfo, e);
             } catch (RuntimeException e) {
                 logSevere("Unable to rename folder: " + oldName + ": " + e, e);
-                throw new FolderRenameException(file, fi, e);
+                throw new FolderRenameException(file, foInfo, e);
             }
         }
 
-        return fi;
+        return foInfo;
     }
 
     /**
@@ -2241,7 +2263,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param fi
      * @return {@code True} if the folder is known to PowerFolder, its base
-     *         directory exists and the statistic subdirectory exists.
+     *         directory exists and the statistic subdirectory exists and is connected to storage.
      *         {@code False} otherwise.
      */
     private boolean folderStillExists(FolderInfo fi) {
@@ -2264,6 +2286,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             Folder.FOLDER_STATISTIC);
 
         if (Files.notExists(systemSubDir)) {
+            return false;
+        }
+
+        if (fo.checkIfDeviceDisconnected()) {
             return false;
         }
 
@@ -2296,14 +2322,15 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * Scan the PowerFolder base directory for directories that should be
      * deleted.
+     * @return true if executed. false if not executed, e.g. not logged in, paused, etcs
      */
-    private void lookForFoldersToBeRemoved() {
+    private boolean lookForFoldersToBeRemoved() {
         if (!getMySelf().isServer()) {
             if (!getController().getOSClient().isLoggedIn()) {
                 if (isFine()) {
                     logFine("Skipping searching for folders to be removed...");
                 }
-                return;
+                return false;
             }
             if (!ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                 .getValueBoolean(getController()))
@@ -2311,7 +2338,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (isFine()) {
                     logFine("Skipping searching for folders to be deleted (no strict security)...");
                 }
-                return;
+                return false;
             }
         }
         if (isFine()) {
@@ -2320,7 +2347,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // TODO BOTTLENECK: Takes much CPU -> Implement via jnotify
         Path baseDir = getFoldersBasedir();
         if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
-            return;
+            return false;
         }
         final Set<String> ignoredFoldersLC = new HashSet<>();
         Account a = getController().getOSClient().getAccount();
@@ -2390,9 +2417,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         } catch (IOException ioe) {
-            ioe.printStackTrace();
             logWarning(ioe.getMessage());
+            return false;
         }
+        return true;
     }
 
     /**
@@ -2507,23 +2535,27 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         if (!accountSyncLock.tryLock()) {
+
             // Skip if currently setting up folders.
             // Especially not to remove recently created local folders.
             // Usecase: Client Backup / Personal folders.
             logFine("Skip syncing folder setup with account permissions("
-                + a.getFolders().size() + "): " + a.getUsername());
+                + a.getFolders() + "): " + a.getUsername());
             return;
         }
+        logInfo("accountSyncLock.locked");
         try {
             for (FolderInfo foInfo : a.getFolders()) {
-                FolderInfo localFolder = foInfo.intern();
-                if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
-                    // Same name, not renamed.
-                    continue;
-                }
                 Folder folder = folders.get(foInfo);
                 if (folder == null) {
                     // Not synced locally
+                    continue;
+                }
+                FolderInfo localFolder = folder.getInfo();
+                logInfo("localFolder: " + localFolder);
+                logInfo("remoteFolder: " + foInfo);
+                if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
+                    // Same name, not renamed.
                     continue;
                 }
                 Path currentDirectory = folder.getLocalBase();
@@ -2590,6 +2622,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         } finally {
             accountSyncLock.unlock();
+            logInfo("accountSyncLock.unlock");
         }
     }
 
@@ -2605,6 +2638,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         try {
+            scanBasedirLock.lock();
+
             Path originalDirectory = folder.getLocalBase().toRealPath();
             FolderSettings fs = FolderSettings.load(getController(),
                     folder.getConfigEntryId());
@@ -2661,6 +2696,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             logSevere("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " + e);
             logFine(e);
             return null;
+        } finally {
+            scanBasedirLock.unlock();
         }
 
         return folder;
@@ -3158,13 +3195,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 logFine("Removing " + folder.toString());
-                // sync with #scanBasedir()
-                scanBasedirLock.lock();
-                try {
-                    removeFolder(folder, false);
-                } finally {
-                    scanBasedirLock.unlock();
-                }
+                removeFolder(folder, false);
+                getController().getFolderRepository().scanBasedir();
             }
         }, 5000L);
 
