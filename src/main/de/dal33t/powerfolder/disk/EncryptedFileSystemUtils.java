@@ -164,6 +164,23 @@ public class EncryptedFileSystemUtils {
     }
 
     /**
+     * Checks if a given path is a CryptoPath. If yes, the method also checks if it is the root dir of the CryptoContainer.
+     *
+     * @path the path to check.
+     */
+
+    public static boolean isCryptoContainerRootDir(Path path) {
+        Reject.ifNull(path, "Path");
+        if (!isCryptoInstance(path)) {
+            return false;
+        }
+        if (isCryptoInstance(path) && path.endsWith(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Checks if the Java Cryptography Extension (JCE) is installed on this host.
      * JCE is mandatory to support AES 256-bit encryption.
      * @return true if a key length with 256-bit is possible.

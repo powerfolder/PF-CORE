@@ -1,21 +1,26 @@
 package de.dal33t.powerfolder.test.util;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.DirectoryStream.Filter;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import junit.framework.TestCase;
+
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.attribute.FileTime;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PathUtilsTest extends TestCase {
 
     private Path baseDir = Paths.get("build/test").toAbsolutePath();
+
+    @Override
+    public void tearDown() throws IOException {
+        PathUtils.recursiveDeleteVisitor(baseDir);
+        Files.createDirectories(baseDir);
+    }
 
     public void testURLEncoding() {
         String filename = "PowerFolder.exe";
@@ -183,15 +188,11 @@ public class PathUtilsTest extends TestCase {
 
     /**
      * Move of ... build/test/a build/test/dir/b build/test/dir/c
-     * build/test/dir/sub/d ... to ... build/move/
+     * build/test/dir/sub/d ... to ... build/test/move/
      * 
      * @throws IOException
      */
     public void testFileMove() throws IOException {
-        Path baseDir = Paths.get("build/test").toAbsolutePath();
-        PathUtils.recursiveDelete(baseDir);
-        PathUtils.recursiveDelete(Paths.get("build/move").toAbsolutePath());
-
         // Setup base dir with dirs and files.
         try {
             Files.createDirectories(baseDir);
@@ -210,54 +211,44 @@ public class PathUtilsTest extends TestCase {
         } catch (IOException ioe) {
             fail(ioe.getMessage());
         }
-        TestHelper.createRandomFile(baseDir, "a");
+        TestHelper.createRandomFile(dir, "a");
         TestHelper.createRandomFile(dir, "b");
         TestHelper.createRandomFile(dir, "c");
         TestHelper.createRandomFile(sub, "d");
 
+        Long[] sourceDirectorySizeBeforeMove = PathUtils.calculateDirectorySizeAndCount(dir);
+        long sourceSizeBytesBeforeMove = sourceDirectorySizeBeforeMove[0];
+        long sourceSizeCountBeforeMove = sourceDirectorySizeBeforeMove[1];
+
         // Move it.
-        Path moveDir = Paths.get("build/move").toAbsolutePath();
-        Files.move(baseDir, moveDir);
-        // PathUtils.recursiveMove(baseDir, moveDir);
+        Path moveDir = Paths.get("build/test/move").toAbsolutePath();
+        Files.move(dir, moveDir);
 
         // Check move.
         assertTrue(Files.exists(moveDir));
-        int count = 0;
-        try (DirectoryStream<Path> moveStream = Files
-            .newDirectoryStream(moveDir)) {
-            boolean foundDir = false;
-            boolean foundSub = false;
-            for (Path dirFile : moveStream) {
-                count++;
-                if (Files.isDirectory(dirFile)) {
-                    foundDir = true;
-                    try (DirectoryStream<Path> dirStream = Files
-                        .newDirectoryStream(dirFile)) {
-                        int dirCount = 0;
-                        for (Path subFile : dirStream) {
-                            dirCount++;
-                            if (Files.isDirectory(subFile)) {
-                                foundSub = true;
-                                try (DirectoryStream<Path> subStream = Files
-                                    .newDirectoryStream(subFile)) {
-                                    Iterator<Path> it = subStream.iterator();
-                                    it.next(); // d
-                                    assertTrue(!it.hasNext()); // d
-                                }
-                            }
-                        }
-                        assertTrue(dirCount == 3); // b, c, and sub
-                    }
-                }
-            }
-            System.out.println(count);
-            assertTrue(count == 2); // dir and a
-            assertTrue(foundDir);
-            assertTrue(foundSub);
-        }
+
+        // After move check
+        Long[] sourceDirectorySizeAfterMove = PathUtils.calculateDirectorySizeAndCount(moveDir);
+        long sourceSizeBytesAfterMove = sourceDirectorySizeAfterMove[0];
+        long sourceSizeCountAfterMove = sourceDirectorySizeAfterMove[1];
+
+        assertTrue(sourceSizeBytesBeforeMove == sourceSizeBytesAfterMove);
+        assertTrue(sourceSizeCountBeforeMove == sourceSizeCountAfterMove);
+
+        assertTrue(Files.exists(moveDir.resolve("a")));
+        assertTrue(Files.exists(moveDir.resolve("b")));
+        assertTrue(Files.exists(moveDir.resolve("c")));
+        assertTrue(Files.exists(moveDir.resolve("sub")));
+        assertTrue(Files.exists(moveDir.resolve("sub").resolve("d")));
+
+        assertTrue(Files.notExists(dir.resolve("a")));
+        assertTrue(Files.notExists(dir.resolve("b")));
+        assertTrue(Files.notExists(dir.resolve("c")));
+        assertTrue(Files.notExists(dir.resolve("sub")));
+        assertTrue(Files.notExists(dir.resolve("sub").resolve("d")));
 
         // Check the original is gone.
-        assertTrue(Files.notExists(baseDir));
+        assertTrue(Files.notExists(dir));
     }
 
     /**
@@ -774,44 +765,183 @@ public class PathUtilsTest extends TestCase {
             .get("\\\\server\\share\\subdir")));
     }
 
-    /**
-     * Copy build/test/a to build/test/a Should not be permitted.
-     *
-     * @throws IOException
-     */
     public void testRecursiveMoveVisitor() throws IOException {
 
-        Path baseDir = Paths.get("build/test").toAbsolutePath();
-        if (Files.exists(baseDir)) {
-            PathUtils.recursiveDeleteVisitor(baseDir);
-        }
+        Path testDir = Paths.get("build/test").toAbsolutePath();
 
         // Setup base dir with dirs and files.
-        Files.createDirectories(baseDir);
-        Path dir = baseDir.resolve("dir");
-        Files.createDirectories(dir);
-        Path sub = dir.resolve("sub");
+        Files.createDirectories(testDir);
+        Path source = testDir.resolve("source");
+        Files.createDirectories(source);
+        Path sub = source.resolve("sub");
         Files.createDirectories(sub);
-        TestHelper.createRandomFile(baseDir, "a");
-        TestHelper.createRandomFile(dir, "b");
-        TestHelper.createRandomFile(dir, "c");
+        TestHelper.createRandomFile(testDir, "a");
+        TestHelper.createRandomFile(source, "b");
+        TestHelper.createRandomFile(source, "c");
+
+        FileTime timeFromFileBBeforeMove = Files.getLastModifiedTime(source.resolve("b"));
+
+        assertTrue(Files.exists(TestHelper.createRandomFile(sub, "d")));
+
+        TestHelper.waitMilliSeconds(200);
+
+        Long[] sourceDirectorySizeBeforeMove = PathUtils.calculateDirectorySizeAndCount(source);
+        long sourceSizeBytesBeforeMove = sourceDirectorySizeBeforeMove[0];
+        long sourceSizeCountBeforeMove = sourceDirectorySizeBeforeMove[1];
+
+        // Test 1
+        Path target = testDir.resolve("target");
+
+        try {
+            PathUtils.recursiveMoveVisitor(source, target);
+        } catch (FileAlreadyExistsException e) {
+            fail();
+        }
+
+        Long[] targetDirectorySizeAfterMove = PathUtils.calculateDirectorySizeAndCount(target);
+        long targetSizeBytesAfterMove = targetDirectorySizeAfterMove[0];
+        long targetSizeCountBeforeMove = targetDirectorySizeAfterMove[1];
+
+        assertTrue(sourceSizeBytesBeforeMove == targetSizeBytesAfterMove);
+        assertTrue(sourceSizeCountBeforeMove == targetSizeCountBeforeMove);
+        assertTrue(Files.notExists(source));
+
+        // Test 2
+        TestHelper.createRandomFile(source, "f");
+        TestHelper.createRandomFile(source, "b");
+
+        Long[] sourceDirectorySizeBeforeMove2 = PathUtils.calculateDirectorySizeAndCount(source);
+        long sourceSizeBytesBeforeMove2 = sourceDirectorySizeBeforeMove2[0];
+        long sourceSizeCountBeforeMove2 = sourceDirectorySizeBeforeMove2[1];
+
+        Path target2 = testDir.resolve("target2");
+
+        try {
+            PathUtils.recursiveMoveVisitor(source, target2);
+        } catch (FileAlreadyExistsException e) {
+            fail("Copy failed.");
+        }
+
+        Long[] targetDirectorySizeAfterMove2 = PathUtils.calculateDirectorySizeAndCount(target2);
+        long targetSizeBytesAfterMove2 = targetDirectorySizeAfterMove2[0];
+        long targetSizeCountBeforeMove2 = targetDirectorySizeAfterMove2[1];
+
+        assertTrue(sourceSizeBytesBeforeMove2 == targetSizeBytesAfterMove2);
+        assertTrue(sourceSizeCountBeforeMove2 == targetSizeCountBeforeMove2);
+        assertTrue(Files.notExists(source));
+
+        // After test check
+        assertTrue(Files.exists(target.resolve("b")));
+        assertEquals(timeFromFileBBeforeMove, Files.getLastModifiedTime(target.resolve("b")));
+
+        assertTrue(Files.exists(target.resolve("c")));
+        assertTrue(Files.exists(target.resolve("sub")) && Files.isDirectory(target.resolve("sub")));
+        assertTrue(Files.exists(target.resolve("sub").resolve("d")));
+
+        assertTrue(Files.exists(target2.resolve("b")));
+        assertTrue(Files.exists(target2.resolve("f")));
+
+        assertTrue(Files.notExists(source.resolve("b")));
+        assertTrue(Files.notExists(source.resolve("c")));
+        assertTrue(Files.notExists(source.resolve("sub")));
+        assertTrue(Files.notExists(source.resolve("sub").resolve("d")));
+    }
+
+    public void testRecursiveMoveVisitorFail() throws IOException {
+        Path testDir = Paths.get("build/test").toAbsolutePath();
+
+        // Setup base dir with dirs and files.
+        Files.createDirectories(testDir);
+        Path source = testDir.resolve("source");
+        Files.createDirectories(source);
+        Path sub = source.resolve("sub");
+        Files.createDirectories(sub);
+        TestHelper.createRandomFile(testDir, "a");
+        TestHelper.createRandomFile(source, "b");
+        TestHelper.createRandomFile(source, "c");
         TestHelper.createRandomFile(sub, "d");
 
-        // Now check the real move function.
-        Path moveDir = baseDir.resolve("moveDir");
-        PathUtils.recursiveMoveVisitor(dir, moveDir);
+        Long[] sourceDirectorySizeBeforeMove = PathUtils.calculateDirectorySizeAndCount(source);
+        long sourceSizeBytesBeforeMove = sourceDirectorySizeBeforeMove[0];
+        long sourceSizeCountBeforeMove = sourceDirectorySizeBeforeMove[1];
 
-        assertTrue(Files.notExists(dir));
+        long targetSizeBytesBeforeMove = 0;
+        long targetSizeCountBeforeMove = 0;
 
-        assertTrue(Files.exists(moveDir.resolve("b")));
-        assertTrue(Files.exists(moveDir.resolve("c")));
-        assertTrue(Files.exists(moveDir.resolve("sub")) && Files.isDirectory(moveDir.resolve("sub")));
-        assertTrue(Files.exists(moveDir.resolve("sub").resolve("d")));
+        // Test 1
+        Path target = testDir.resolve("target");
+        Files.createDirectories(target);
 
-        assertFalse(Files.exists(dir.resolve("b")));
-        assertFalse(Files.exists(dir.resolve("c")));
-        assertFalse(Files.exists(dir.resolve("sub").resolve("d")));
+        try {
+            Long[] targetDirectorySizeBeforeMove = PathUtils.calculateDirectorySizeAndCount(target);
+            targetSizeBytesBeforeMove = targetDirectorySizeBeforeMove[0];
+            targetSizeCountBeforeMove = targetDirectorySizeBeforeMove[1];
 
+            PathUtils.recursiveMoveVisitor(source, target);
+            fail("Target already exists but FileAlreadyExists not thrown!");
+        } catch (FileAlreadyExistsException e) {
+            assertTrue("Source file does not exists: " + source, Files.exists(source));
+            assertTrue("Target file does not exists: " + source, Files.exists(target));
+
+            Long[] targetDirectorySizeAfterMove = PathUtils.calculateDirectorySizeAndCount(target);
+            long targetSizeBytesAfterMove = targetDirectorySizeAfterMove[0];
+            long targetSizeCountAfterMove = targetDirectorySizeAfterMove[1];
+
+            assertTrue(targetSizeBytesBeforeMove == targetSizeBytesAfterMove);
+            assertTrue(targetSizeCountBeforeMove == targetSizeCountAfterMove);
+        }
+
+        Long[] sourceDirectorySizeAfterMove = PathUtils.calculateDirectorySizeAndCount(source);
+        long sourceSizeBytesAfterMove = sourceDirectorySizeAfterMove[0];
+        long sourceSizeCountAfterMove = sourceDirectorySizeAfterMove[1];
+
+        assertTrue(sourceSizeBytesBeforeMove == sourceSizeBytesAfterMove);
+        assertTrue(sourceSizeCountBeforeMove == sourceSizeCountAfterMove);
+
+        // Test 2
+        TestHelper.createRandomFile(target, "f");
+        TestHelper.createRandomFile(target, "g");
+
+        try {
+            Long[] targetDirectorySizeBeforeMove = PathUtils.calculateDirectorySizeAndCount(target);
+            targetSizeBytesBeforeMove = targetDirectorySizeBeforeMove[0];
+            targetSizeCountBeforeMove = targetDirectorySizeBeforeMove[1];
+
+            PathUtils.recursiveMoveVisitor(source, target);
+            fail("File in target already exists but FileAlreadyExists not thrown!");
+        } catch (FileAlreadyExistsException e) {
+            // Expected
+            assertTrue("Source file does not exists: " + source, Files.exists(source));
+            assertTrue("Target file does not exists: " + source, Files.exists(target));
+
+            Long[] targetDirectorySizeAfterMove = PathUtils.calculateDirectorySizeAndCount(target);
+            long targetSizeBytesAfterMove = targetDirectorySizeAfterMove[0];
+            long targetSizeCountAfterMove = targetDirectorySizeAfterMove[1];
+
+            assertTrue(targetSizeBytesBeforeMove == targetSizeBytesAfterMove);
+            assertTrue(targetSizeCountBeforeMove == targetSizeCountAfterMove);
+        }
+
+        Long[] sourceDirectorySizeAfterMove2 = PathUtils.calculateDirectorySizeAndCount(source);
+        long sourceSizeBytesAfterMove2 = sourceDirectorySizeAfterMove2[0];
+        long sourceSizeCountAfterMove2 = sourceDirectorySizeAfterMove2[1];
+
+        assertTrue(sourceSizeBytesAfterMove2 == sourceSizeBytesAfterMove);
+        assertTrue(sourceSizeCountAfterMove2 == sourceSizeCountAfterMove);
+
+        // After test check
+        assertTrue(Files.notExists(target.resolve("b")));
+        assertTrue(Files.notExists(target.resolve("c")));
+        assertTrue(Files.notExists(target.resolve("sub")));
+        assertTrue(Files.notExists(target.resolve("sub").resolve("d")));
+
+        assertTrue(Files.exists(target.resolve("f")));
+        assertTrue(Files.exists(target.resolve("g")));
+
+        assertTrue(Files.exists(source.resolve("b")));
+        assertTrue(Files.exists(source.resolve("c")));
+        assertTrue(Files.exists(source.resolve("sub")) && Files.isDirectory(source.resolve("sub")));
+        assertTrue(Files.exists(source.resolve("sub").resolve("d")));
     }
 
     /**
@@ -993,8 +1123,6 @@ public class PathUtilsTest extends TestCase {
      * @throws IOException
      */
     public void testRecursiveDeleteVisitor() throws IOException {
-        Path baseDir = Paths.get("build/test").toAbsolutePath();
-        PathUtils.recursiveDeleteVisitor(baseDir);
 
         // Setup base dir with dirs and files.
         Files.createDirectories(baseDir);
