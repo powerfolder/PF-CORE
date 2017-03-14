@@ -19,98 +19,42 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.PrivilegedExceptionAction;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TimerTask;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
-
 import com.sun.security.auth.callback.TextCallbackHandler;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.NodeList;
-import de.dal33t.powerfolder.security.Account;
-import de.dal33t.powerfolder.security.AdminPermission;
-import de.dal33t.powerfolder.security.AnonymousAccount;
-import de.dal33t.powerfolder.security.FolderCreatePermission;
-import de.dal33t.powerfolder.security.FolderRemovePermission;
-import de.dal33t.powerfolder.security.NotLoggedInException;
+import de.dal33t.powerfolder.security.*;
 import de.dal33t.powerfolder.security.SecurityException;
-import de.dal33t.powerfolder.security.Token;
 import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.ConfigurationLoader;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.LoginUtil;
-import de.dal33t.powerfolder.util.Pair;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.SimpleCache;
-import de.dal33t.powerfolder.util.StackDump;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.ietf.jgss.*;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
+import java.io.*;
+import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.PrivilegedExceptionAction;
+import java.security.PublicKey;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Client to a server.
@@ -206,6 +150,11 @@ public class ServerClient extends PFComponent {
 
     private ServerClientListener listenerSupport;
 
+    /**
+     * True if client shall download skin
+     */
+    private boolean shallDownloadClientSkin;
+
     // Construction ***********************************************************
 
     /**
@@ -271,6 +220,7 @@ public class ServerClient extends PFComponent {
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
         this.supportsQuickLogin = true;
+        this.shallDownloadClientSkin = true;
 
         // Custom server
         String theName = StringUtils.isBlank(name) ? Translation
@@ -865,6 +815,18 @@ public class ServerClient extends PFComponent {
             || !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
     }
 
+    public Map<ServerInfo, ServerClient> getChildClients() {
+        return childClients;
+    }
+
+    public boolean getShallDownloadClientSkin() {
+        return shallDownloadClientSkin;
+    }
+
+    public void setShallDownloadClientSkin(boolean shallDownloadClientSkin) {
+        this.shallDownloadClientSkin = shallDownloadClientSkin;
+    }
+
     // Login ******************************************************************
 
     /**
@@ -1203,33 +1165,34 @@ public class ServerClient extends PFComponent {
                     fireLogin(accountDetails, false);
                 }
                 // Retrieve skin from server
-                try {
-                    String skin = this.userService.getClientSkinName(this.getAccountInfo());
-                    if (this.downloadClientSkin(skin)) {
-                        // Update folder skin
-                        PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
-                        for (Folder folder: getController().getFolderRepository().getFolders()) {
-                            PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
+                if (this.shallDownloadClientSkin) {
+                    try {
+                        String skin = this.userService.getClientSkinName(this.getAccountInfo());
+                        if (this.downloadClientSkin(skin)) {
+                            // Update folder skin
+                            PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
+                            for (Folder folder : getController().getFolderRepository().getFolders()) {
+                                PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
+                            }
+                            // Update shortcut skin
+                            FolderRepository repo = getController().getFolderRepository();
+                            Path oldBase = repo.getFoldersBasedir();
+                            String oldBaseDirName;
+                            if (oldBase.getFileName() != null) {
+                                oldBaseDirName = oldBase.getFileName().toString();
+                            } else {
+                                oldBaseDirName = oldBase.toString();
+                            }
+                            repo.updateShortcuts(oldBaseDirName);
+                            // Update client skin
+                            getController().shutdownAndRequestRestart();
                         }
-                        // Update shortcut skin
-                        FolderRepository repo = getController().getFolderRepository();
-                        Path oldBase = repo.getFoldersBasedir();
-                        String oldBaseDirName;
-                        if (oldBase.getFileName() != null) {
-                            oldBaseDirName = oldBase.getFileName().toString();
+                    } catch (RemoteCallException e) {
+                        if (e.getCause() instanceof NoSuchMethodException) {
+                            logWarning("Client skinning not supported by server");
                         } else {
-                            oldBaseDirName = oldBase.toString();
+                            logWarning("Cannot retrieve skin from server: " + e);
                         }
-                        repo.updateShortcuts(oldBaseDirName);
-                        // Update client skin
-                        getController().shutdownAndRequestRestart();
-                    }
-                }
-                catch (RemoteCallException e) {
-                    if (e.getCause() instanceof NoSuchMethodException) {
-                        logWarning("Client skinning not supported by server");
-                    } else {
-                        logWarning("Cannot retrieve skin from server: " + e);
                     }
                 }
                 return accountDetails.getAccount();
@@ -1905,11 +1868,11 @@ public class ServerClient extends PFComponent {
         if (!a.getTokens().isEmpty()) {
             getController().getNodeManager()
                 .setNetworkId(Constants.NETWORK_ID_ANY);
-            spawnChildClients(a);
+            spawnFedClients(a);
         }
     }
 
-    private void spawnChildClients(Account a) {
+    private void spawnFedClients(Account a) {
         for (ServerInfo fedService : a.getTokens().keySet()) {
             String token = a.getToken(fedService);
             if (Token.isExpired(token)) {
@@ -1919,7 +1882,7 @@ public class ServerClient extends PFComponent {
                 continue;
             }
             logInfo("Starting connect to federated service: " + fedService);
-            ServerClient client = createNewFederatedConnection(fedService, token);
+            ServerClient client = createNewFedClient(fedService, token);
             client.loadServerNodes();
             client.start();
             client.loginWithLastKnown();
@@ -1927,7 +1890,7 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    private ServerClient createNewFederatedConnection(ServerInfo serviceInfo, String token) {
+    private ServerClient createNewFedClient(ServerInfo serviceInfo, String token) {
         String defaultConfigURL = serviceInfo.getWebUrl()
             + ConfigurationLoader.DEFAULT_PROPERTIES_URI;
         try {
@@ -1935,7 +1898,10 @@ public class ServerClient extends PFComponent {
                 .loadPreConfiguration(defaultConfigURL);
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, getUsername());
             ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, token);
-            return new ServerClient(getController(), config);
+            ServerClient serverClient = new ServerClient(getController(), config);
+            // Disable skin download for child clients
+            serverClient.setShallDownloadClientSkin(false);
+            return serverClient;
         } catch (IOException e) {
             logWarning("Unable to connect to " + serviceInfo + ". " + e);
             return null;

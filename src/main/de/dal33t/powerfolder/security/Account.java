@@ -949,7 +949,7 @@ public class Account implements Serializable, D2DObject {
         return serverStatic;
     }
 
-    public void setServerServer(boolean serverStatic) {
+    public void setServerStatic(boolean serverStatic) {
         this.serverStatic = serverStatic;
     }
 

@@ -168,7 +168,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
      *
      * @return
      */
-    private boolean isServerSocketOpen() {
+    public boolean isServerSocketOpen() {
         return serverSocket != null && !serverSocket.isClosed();
     }
 
