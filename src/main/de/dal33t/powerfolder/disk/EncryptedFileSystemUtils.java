@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import org.cryptomator.cryptofs.CryptoFileSystem;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
@@ -161,6 +162,25 @@ public class EncryptedFileSystemUtils {
                     IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId());
             controller.saveConfig();
         }
+    }
+
+    /**
+     * Checks if a given path is a CryptoPath. If yes, the method also checks if it is the root dir of the CryptoContainer.
+     *
+     * @path the path to check.
+     */
+
+    public static boolean isCryptoContainerEmptyRootDir(Path path) {
+        Reject.ifNull(path, "Path");
+        if (!isCryptoInstance(path)) {
+            return false;
+        }
+        if (isCryptoInstance(path)
+                && path.endsWith(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)
+                && PathUtils.isEmptyDir(path)) {
+            return true;
+        }
+        return false;
     }
 
     /**

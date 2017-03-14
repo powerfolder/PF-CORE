@@ -1834,6 +1834,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return false;
             }
 
+            if (name.contains(Constants.FOLDER_ENCRYPTION_SUFFIX)) {
+                return false;
+            }
+
             /* PFC-1905: Ignore folders with webdav suffix */
             if (name.endsWith(Constants.FOLDER_WEBDAV_SUFFIX)) {
                 return false;
@@ -2308,6 +2312,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      *         {@code null}, if the file does not point to a Folder.
      */
     private FolderInfo checkSystemSubdirForFolder(Path file) {
+
         Path meta = file.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve(
             Folder.FOLDER_STATISTIC);
         FolderStatisticInfo info = FolderStatisticInfo.load(meta);

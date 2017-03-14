@@ -87,7 +87,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 381;
+    private static final int REVISION_VERSION = 385;
 
     /**
      * Program version.
@@ -2425,7 +2425,7 @@ public class Controller extends PFComponent {
             try {
                 ConnectionListener newListener = new ConnectionListener(this,
                     port, bind, useD2D);
-                if (connectionListener == null) {
+                if (connectionListener == null || !connectionListener.isServerSocketOpen()) {
                     // its our primary listener
                     connectionListener = newListener;
                 } else {
