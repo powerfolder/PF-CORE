@@ -2425,7 +2425,7 @@ public class Controller extends PFComponent {
             try {
                 ConnectionListener newListener = new ConnectionListener(this,
                     port, bind, useD2D);
-                if (connectionListener == null) {
+                if (connectionListener == null || !connectionListener.isServerSocketOpen()) {
                     // its our primary listener
                     connectionListener = newListener;
                 } else {

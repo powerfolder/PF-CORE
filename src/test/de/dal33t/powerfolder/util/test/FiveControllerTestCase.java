@@ -136,6 +136,16 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         startController(id, "build/test/Controller" + id + "/PowerFolder");
     }
 
+    /**
+     * Restarts the controller
+     *
+     * @param id Controller ID
+     * @throws IOException
+     */
+    protected void restartController(String id) throws IOException {
+        restartController(id, "build/test/Controller" + id + "/PowerFolder");
+    }
+
     protected void prepareTestFolderBaseDirs() {
 
         if (isEncryptedStorageTest){

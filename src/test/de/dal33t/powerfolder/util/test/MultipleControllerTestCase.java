@@ -138,6 +138,24 @@ public abstract class MultipleControllerTestCase extends TestCase {
         return controller;
     }
 
+    /**
+     * Restarts the controller
+     *
+     * @param id
+     *            the internal id of the controller.
+     * @param config
+     *            the config to load.
+     * @return
+     */
+    protected Controller restartController(String id, String config) throws IOException {
+        Controller controller = controllers.get(id);
+        Reject.ifNull(controller, "Cannot get controller with id '" + id + "'");
+        controller.shutdown();
+        waitForShutdown(controller);
+        controllers.remove(id);
+        return startController(id, "build/test/Controller" + id + "/PowerFolder");
+    }
+
     protected Controller startControllerWithDefaultConfig(String id)
         throws IOException
     {
@@ -432,6 +450,28 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 return controller.isStarted();
             }
         });
+    }
+
+    /**
+     * Waits for the controller to shutdown
+     *
+     * @param controller
+     */
+    private static void waitForShutdown(final Controller controller) {
+        int i = 0;
+        while (controller.isShuttingDown()) {
+            i++;
+            if (i > 1000) {
+                System.out.println("Shutdown failed: " + controller);
+                break;
+            }
+            TestHelper.waitMilliSeconds(100);
+        }
+        assertFalse(controller.isStarted());
+        // Add a pause to make sure files can be cleaned before next test.
+        TestHelper.waitMilliSeconds(500);
+        assertFalse("Shutdown of controller(" + controller.toString() + ") failed", controller.isShuttingDown());
+        assertFalse("Shutdown of controller(" + controller.toString() + ")  failed", controller.isStarted());
     }
 
     private void stopControllers() {
