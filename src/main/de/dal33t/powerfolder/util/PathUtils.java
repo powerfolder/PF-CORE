@@ -52,7 +52,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import static de.dal33t.powerfolder.disk.EncryptedFileSystemUtils.isCryptoContainerRootDir;
+import static de.dal33t.powerfolder.disk.EncryptedFileSystemUtils.isCryptoContainerEmptyRootDir;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 
@@ -1730,7 +1730,7 @@ public class PathUtils {
 
     public static void recursiveCopyVisitor(Path sourceDirectory, Path targetDirectory) throws IOException {
 
-        if (Files.exists(targetDirectory) && !isCryptoContainerRootDir(targetDirectory)) {
+        if (Files.exists(targetDirectory) && !isCryptoContainerEmptyRootDir(targetDirectory)) {
             throw new FileAlreadyExistsException("Copy from " + sourceDirectory + " to " + targetDirectory
                     + " failed! Target directory already exists " + targetDirectory);
         }
@@ -1797,7 +1797,7 @@ public class PathUtils {
 
     public static void recursiveMoveVisitor(Path sourceDirectory, Path targetDirectory) throws IOException {
 
-        if (Files.exists(targetDirectory) && !isCryptoContainerRootDir(targetDirectory)) {
+        if (Files.exists(targetDirectory) && !isCryptoContainerEmptyRootDir(targetDirectory)) {
             throw new FileAlreadyExistsException("Move from " + sourceDirectory + " to " + targetDirectory
                     + " failed! Target directory already exists " + targetDirectory);
         }

@@ -109,7 +109,7 @@ public void testGetCryptoPath() throws Exception {
     public void testIsCryptoContainerRootDir() throws Exception {
         URI encFolderUri = CryptoFileSystemUris.createUri(UNENCRYPTED_TESTDIR, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
         Path ENCRYPTED_TESTFOLDER_2 = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
-        assertTrue(EncryptedFileSystemUtils.isCryptoContainerRootDir(ENCRYPTED_TESTFOLDER_2));
+        assertTrue(EncryptedFileSystemUtils.isCryptoContainerEmptyRootDir(ENCRYPTED_TESTFOLDER_2));
     }
 
 /**
