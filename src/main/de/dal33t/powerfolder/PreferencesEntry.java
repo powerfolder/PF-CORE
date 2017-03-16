@@ -171,17 +171,17 @@ public enum PreferencesEntry {
      */
     SHOW_UPDATE("show.update", true) {
         @Override
-        public String getValueString(Controller controller) {
+        public Boolean getValueBoolean(Controller controller) {
+            // Never show option at MSI installer: Auto-update not supported (yet)
             if (WinUtils.isSupported() && WinUtils.isMSI()) {
-                // Never show option at MSI installer: Auto-update not supported (yet).
-                return Boolean.FALSE.toString();
+                return Boolean.FALSE;
             }
+            // If no value is set: Show if update is enabled.
             String value = controller.getPreferences().get(this.getPreferencesKey(), null);
             if (value == null) {
-                // If no value is set: show if update is enabled.
-                return ConfigurationEntry.ENABLE_UPDATE.getValue(controller);
+                return ConfigurationEntry.ENABLE_UPDATE.getValueBoolean(controller);
             }
-            return super.getValueString(controller);
+            return super.getValueBoolean(controller);
         }
     };
 
