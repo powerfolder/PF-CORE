@@ -298,13 +298,6 @@ public class Invitation extends FolderRelatedMessage
         return permission;
     }
 
-    public void setPermission(FolderPermission permission) {
-        if (permission != null) {
-            this.folder = permission.getFolder();
-        }
-        this.permission = permission;
-    }
-
     /**
      * Storing Invitation to the database does not store the {@link FolderInfo}
      * from {@link FolderRelatedMessage}. So when an Invitation is loaded from
