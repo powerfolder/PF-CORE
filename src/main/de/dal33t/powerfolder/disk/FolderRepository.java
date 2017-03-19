@@ -2045,8 +2045,10 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         logInfo("handleNewFolder.p1 of " + file);
-        logInfo(" Folder name: " + foInfo.getLocalizedName());
-        logInfo(" Folder ID: " + foInfo.getId());
+        if (foInfo != null) {
+            logInfo(" Folder name: " + foInfo.getLocalizedName());
+            logInfo(" Folder ID: " + foInfo.getId());
+        }
         logInfo(" renamedOnServer: " + renamedOnServer);
         logInfo(" stillPresent: " + stillPresent);
         logInfo(" createdNew: " + createdNew);
