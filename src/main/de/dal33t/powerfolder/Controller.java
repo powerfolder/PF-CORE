@@ -932,7 +932,7 @@ public class Controller extends PFComponent {
         BufferedInputStream bis = null;
         try {
             if (Files.exists(configFile)) {
-                logInfo("Loading configfile " + configFile.toString());
+                logFine("Loading configfile " + configFile.toString());
             } else {
                 logFine("Config file does not exist. " + configFile.toString());
                 throw new FileNotFoundException();
@@ -1012,7 +1012,7 @@ public class Controller extends PFComponent {
      *            the time in ms between executions
      */
     public ScheduledFuture<?> scheduleAndRepeat(Runnable task, long period) {
-        if (!shuttingDown) {
+        if (!shuttingDown && !threadPool.isShutdown()) {
             return threadPool.scheduleWithFixedDelay(task, 0, period,
                 TimeUnit.MILLISECONDS);
         }
@@ -1036,7 +1036,7 @@ public class Controller extends PFComponent {
     public ScheduledFuture<?> scheduleAndRepeat(Runnable task,
         long initialDelay, long period)
     {
-        if (!shuttingDown) {
+        if (!shuttingDown && !threadPool.isShutdown()) {
             return threadPool.scheduleWithFixedDelay(task, initialDelay,
                 period, TimeUnit.MILLISECONDS);
         }
@@ -1052,7 +1052,7 @@ public class Controller extends PFComponent {
      *            the initial delay in ms
      */
     public ScheduledFuture<?> schedule(Runnable task, long delay) {
-        if (!shuttingDown) {
+        if (!shuttingDown && !threadPool.isShutdown()) {
             return threadPool.schedule(task, delay, TimeUnit.MILLISECONDS);
         }
         return null;
@@ -1064,7 +1064,7 @@ public class Controller extends PFComponent {
      * @param task
      */
     public void removeScheduled(Runnable task) {
-        if (!shuttingDown) {
+        if (!shuttingDown && !threadPool.isShutdown()) {
             if (threadPool instanceof ScheduledThreadPoolExecutor) {
                 ((ScheduledThreadPoolExecutor) threadPool).remove(task);
                 ((ScheduledThreadPoolExecutor) threadPool).purge();
@@ -1081,7 +1081,7 @@ public class Controller extends PFComponent {
      * @param future
      */
     public boolean removeScheduled(ScheduledFuture<?> future) {
-        if (!shuttingDown) {
+        if (!shuttingDown && !threadPool.isShutdown()) {
             if (threadPool instanceof ScheduledThreadPoolExecutor) {
                 return ((ScheduledThreadPoolExecutor) threadPool)
                     .remove((Runnable) future);
