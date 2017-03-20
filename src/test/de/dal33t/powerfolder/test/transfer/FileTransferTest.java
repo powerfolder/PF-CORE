@@ -2028,7 +2028,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // FileUtils.copyFile(fbart, tmpCopy);
 
         int modSize = (int) (1024 + Math.random() * 8192);
-        long seek = (long) (Math.random() * (Files.size(fbart) - modSize));
+        long seek = (long) (Math.random() * (Files.size(fbart) - modSize)) + chunkSize;
 
         byte[] buf = new byte[(int) seek];
         try (InputStream in = Files.newInputStream(tmpCopy);
