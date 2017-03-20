@@ -31,7 +31,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.logging.Level;
 
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
@@ -98,13 +100,13 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
         // Cleanup
         TestHelper.cleanTestDir();
-        PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve(
-            "build"));
+        PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve("build"));
+        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     @Override
     protected void tearDown() throws Exception {
-//        LoggingManager.setConsoleLogging(Level.OFF);
+        LoggingManager.setConsoleLogging(Level.OFF);
         System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         stopControllers();
