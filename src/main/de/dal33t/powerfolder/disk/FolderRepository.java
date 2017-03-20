@@ -1370,8 +1370,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             removeLink(folder);
 
             // Remember that we have removed this folder.
-            if (!EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())
-                    || EncryptedFileSystemUtils.isPhysicalStorageLocation(folder.getLocalBase().toString())) {
+            if (EncryptedFileSystemUtils.isPhysicalStorageLocation(folder.getLocalBase().toString())
+                    || !EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
                 addToRemovedFolderDirectories(folder);
             }
 

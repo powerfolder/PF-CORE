@@ -144,7 +144,8 @@ public class FolderWatcher extends PFComponent {
             try {
                 JNotify.removeWatch(watchID);
             } catch (JNotifyException e) {
-                logWarning(e);
+                logWarning("Failed to remove watch from folder " + folder.getName()
+                        + " at path " + folder.getLocalBase() + e);
             } finally {
                 watchID = -1;
             }
@@ -153,6 +154,9 @@ public class FolderWatcher extends PFComponent {
 
     synchronized void reconfigure(SyncProfile syncProfile) {
         if (!isSupported()) {
+            return;
+        }
+        if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
             return;
         }
         if (!syncProfile.isInstantSync()) {
