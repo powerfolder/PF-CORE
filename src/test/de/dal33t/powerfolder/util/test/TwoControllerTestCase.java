@@ -19,16 +19,6 @@
  */
 package de.dal33t.powerfolder.util.test;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Date;
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -47,6 +37,16 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import junit.framework.TestCase;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 /**
  * Provides basic testcase-setup with two controllers. Bart and Lisa
@@ -138,6 +138,7 @@ public abstract class TwoControllerTestCase extends TestCase {
 
         System.out
             .println("-------------- Controllers started -----------------");
+        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     @Override
@@ -400,9 +401,9 @@ public abstract class TwoControllerTestCase extends TestCase {
         Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet: " + cont2);
 
         // Connect
-        System.out.println("Connecting controllers...");
-        System.out.println("Con to: "
-            + cont2.getConnectionListener().getAddress());
+        System.out.print("Connecting controllers " +
+                cont1.getMySelf().getNick() + " (" + cont1.getConnectionListener().getAddress() + ") and " +
+                cont2.getMySelf().getNick() + " (" + cont2.getConnectionListener().getAddress() + ")");
 
         Exception e = null;
         try {
@@ -436,10 +437,10 @@ public abstract class TwoControllerTestCase extends TestCase {
                 }
             });
         } catch (RuntimeException re) {
-            System.err.println("Unable to connect Controllers: " + e);
+            System.err.println(" ... FAILED: " + e);
             return false;
         }
-        System.out.println("Both Controller connected");
+        System.out.println(" ... SUCCESS");
         return true;
     }
 
