@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.util.StackDump;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
@@ -114,7 +115,7 @@ public class PermissionUserType extends Loggable implements UserType {
 
             if (fdInfo == null) {
                 logSevere("FolderInfo with ID " + fiId + " not found!",
-                    new RuntimeException());
+                    new StackDump());
                 fdInfo = new FolderInfo(null, fiId);
             } else {
                 fdInfo = fdInfo.intern();
