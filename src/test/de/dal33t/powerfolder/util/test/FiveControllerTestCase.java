@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
@@ -34,6 +35,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -97,10 +99,12 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
 
         System.out
             .println("-------------- Controllers started -----------------");
+        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     @Override
     protected void tearDown() throws Exception {
+        LoggingManager.setConsoleLogging(Level.OFF);
         super.tearDown();
         testFolder = null;
     }
