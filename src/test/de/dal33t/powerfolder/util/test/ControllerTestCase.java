@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -36,6 +37,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import junit.framework.TestCase;
 
 /**
@@ -79,8 +81,9 @@ public abstract class ControllerTestCase extends TestCase {
         controller = Controller.createController();
         Path source = Paths.get("src/test-resources/ControllerBart.config");
         Path target = Controller.getMiscFilesLocation().resolve("ControllerBart.config");
-        source = Paths.get(target.toString()
-                .replace("build/test/home/.PowerFolder/ControllerBart.config", source.toString()));
+        // Removed: Does not work under Windows:
+        // source = Paths.get(target.toString()
+        //        .replace("build/test/home/.PowerFolder/ControllerBart.config", source.toString()));
 
         Files.copy(source, target);
         assertTrue(Files.exists(target));
@@ -89,6 +92,7 @@ public abstract class ControllerTestCase extends TestCase {
         waitForStart(controller);
 
         System.out.println("Controller started");
+        LoggingManager.setConsoleLogging(Level.INFO);
         
         // Let the start settle down.
         TestHelper.waitMilliSeconds(250);
@@ -96,6 +100,7 @@ public abstract class ControllerTestCase extends TestCase {
 
     @Override
     protected void tearDown() throws Exception {
+        LoggingManager.setConsoleLogging(Level.OFF);
         super.tearDown();
         controller.shutdown();
 
