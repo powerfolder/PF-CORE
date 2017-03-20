@@ -2550,7 +2550,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 + a.getFolders() + "): " + a.getUsername());
             return;
         }
-        logInfo("accountSyncLock.locked");
         try {
             for (FolderInfo foInfo : a.getFolders()) {
                 Folder folder = folders.get(foInfo);
@@ -2559,11 +2558,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                     continue;
                 }
                 FolderInfo localFolder = folder.getInfo();
-                logInfo("localFolder: " + localFolder);
-                logInfo("remoteFolder: " + foInfo);
                 if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
                     // Same name, not renamed.
                     continue;
+                }
+                if (isFine()) {
+                    logFine("localFolder: " + localFolder);
+                    logFine("remoteFolder: " + foInfo);
                 }
                 Path currentDirectory = folder.getLocalBase();
                 String currentDirectoryName = currentDirectory.getFileName().toString();
@@ -2629,7 +2630,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         } finally {
             accountSyncLock.unlock();
-            logInfo("accountSyncLock.unlock");
         }
     }
 
