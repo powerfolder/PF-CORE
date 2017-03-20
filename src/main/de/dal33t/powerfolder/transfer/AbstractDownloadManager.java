@@ -25,10 +25,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -1262,11 +1259,14 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     private void updateTempFile() {
-        if (getTempFile() != null) {
+        Path tempFile = getTempFile();
+        if (tempFile != null) {
             try {
-                Files.setLastModifiedTime(getTempFile(), FileTime
-                    .fromMillis(getFileInfo().getModifiedDate().getTime()));
+                Files.setLastModifiedTime(tempFile, FileTime
+                        .fromMillis(getFileInfo().getModifiedDate().getTime()));
                 return;
+            } catch (NoSuchFileException nsfe) {
+                // Ignore if not existing
             } catch (IOException ioe) {
                 logWarning("Unable to update modification date! "
                     + getTempFile() + ". " + ioe);

@@ -586,7 +586,7 @@ public class Folder extends PFComponent {
         hasOwnDatabase = true;
 
         if (isInfo() || isFine()) {
-            String msg = "Scanned " + scanResult.getTotalFilesCount() + " total, "
+            String msg = "Scanned " + getLocalizedName() + ": " + scanResult.getTotalFilesCount() + " total, "
                 + scanResult.getChangedFiles().size() + " changed, "
                 + scanResult.getNewFiles().size() + " new, "
                 + scanResult.getRestoredFiles().size() + " restored, "
