@@ -1969,12 +1969,21 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.assertIncompleteFilesGone(this);
     }
+    public void testDeltaFileChangedMultiple() throws Exception {
+        for (int i = 0; i < 10; i++) {
+            testDeltaFileChanged();
+            tearDown();
+            setUp();
+        }
+    }
 
     public void testDeltaFileChanged() throws IOException {
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(),
             Boolean.TRUE.toString());
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(),
             Boolean.TRUE.toString());
+        long chunkSize = ConfigurationEntry.TRANSFERS_MAX_FILE_CHUNK_SIZE
+                .getValueInt(getContollerLisa());
 
         // Register listeners
         final MyTransferManagerListener bartListener = new MyTransferManagerListener();
@@ -1986,6 +1995,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         Path fbart = TestHelper
             .createRandomFile(getFolderAtBart().getLocalBase(),
                 (long) (1024 * 1024 + Math.random() * 1024 * 1024));
+
+        assertTrue("Testfile is smaller than max chunk size: " + chunkSize + ". File: " +
+                Files.size(fbart), Files.size(fbart) > chunkSize);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -2029,13 +2041,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         }
 
         Files.delete(tmpCopy);
-
-        // RandomAccessFile rbart = new RandomAccessFile(fbart, "rw");
-        // rbart.seek(seek);
-        // for (int i = 0; i < modSize; i++) {
-        // rbart.write((int) (Math.random() * 256));
-        // }
-        // rbart.close();
+        assertTrue("Testfile is smaller than max chunk size: " + chunkSize + ". File: " +
+                Files.size(fbart), Files.size(fbart) > chunkSize);
 
         long oldByteCount = getFolderAtLisa().getStatistic()
             .getDownloadCounter().getBytesTransferred();
@@ -2084,14 +2091,18 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
+        // TestHelper.waitMilliSeconds(500);
         assertTrue(TestHelper.compareFiles(fbart, flisa));
+        assertEquals("Expected 2 completed downloads at lisa. Got: " +
+                getContollerLisa().getTransferManager().getCompletedDownloadsCollection(),2, lisaListener.downloadCompleted);
+        long bytesDLatLisa = getFolderAtLisa().getStatistic()
+                .getDownloadCounter().getBytesTransferred();
+        long addBytesDLatLisa = bytesDLatLisa - oldByteCount;
+        long halfFileSizeAtBart = Files.size(fbart) / 2;
         assertTrue(
-            "Expected "
-                + getFolderAtLisa().getStatistic().getDownloadCounter()
-                    .getBytesTransferred() + " - " + oldByteCount + " < "
-                + Files.size(fbart) / 2, getFolderAtLisa().getStatistic()
-                .getDownloadCounter().getBytesTransferred()
-                - oldByteCount < Files.size(fbart) / 2);
+            "Expected. Downloaded bytes at Lisa: "
+                + bytesDLatLisa + " - Already transferred bytes: " + oldByteCount + " = additionally downloaded at lisa: " + addBytesDLatLisa + " < Half the size of barts file: "
+                + halfFileSizeAtBart, addBytesDLatLisa < halfFileSizeAtBart);
 
         TestHelper.assertIncompleteFilesGone(this);
     }
