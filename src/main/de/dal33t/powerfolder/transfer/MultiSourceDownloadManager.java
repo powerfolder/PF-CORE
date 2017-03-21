@@ -248,30 +248,6 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
         if (isFiner()) {
             logFiner("X Sending part requests over");
         }
-
-        long p = filePartsState.countPartStates(filePartsState.getRange(),
-            PartState.PENDING);
-        if (p > 0) {
-            for (Download d : downloads.values()) {
-                if (d.isStarted() && !d.isBroken()) {
-                    for (RequestPart rp : d.getPendingRequests()) {
-                        p -= rp.getRange().getLength();
-                    }
-                }
-            }
-            assert p == 0;
-        }
-        assert filePartsState.isCompleted()
-            || filePartsState.countPartStates(filePartsState.getRange(),
-                PartState.PENDING) > 0 || hasNoAvailableSources() : "AVAIL: "
-            + filePartsState.countPartStates(filePartsState.getRange(),
-                PartState.AVAILABLE)
-            + ", NEED : "
-            + filePartsState.countPartStates(filePartsState.getRange(),
-                PartState.NEEDED)
-            + ", PEND : "
-            + filePartsState.countPartStates(filePartsState.getRange(),
-                PartState.PENDING);
     }
 
     /**
