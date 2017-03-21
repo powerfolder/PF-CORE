@@ -43,6 +43,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import de.dal33t.powerfolder.util.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -64,12 +65,6 @@ import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.LoginUtil;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
 @SuppressWarnings("serial")
@@ -132,6 +127,7 @@ public class LoginPanel extends PFWizardPanel {
         this.nextPanel = nextPanel;
         this.client = client;
         this.showUseOS = showUseOS;
+        LOG.log(Level.INFO, "Opening login wizard" , new StackDump());
     }
 
     public boolean hasNext() {
