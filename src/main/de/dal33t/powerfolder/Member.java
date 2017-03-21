@@ -96,14 +96,12 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     private final ReentrantLock folderJoinLock = new ReentrantLock();
 
-    /**
-     * The last message indicating that the handshake was completed
-     */
-    private volatile HandshakeCompleted lastHandshakeCompleted;
-
     /** Folder memberships received? */
+    // Next folder list to be processed
+    private volatile FolderList nextFolderList;
     private volatile boolean folderListReceived;
-    private FolderList lastFolderList;
+    // Last succesffully processed folder list
+    private volatile FolderList lastFolderList;
 
     /**
      * The number of expected deltas to receive to have the filelist completed
@@ -112,6 +110,11 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     private final Map<FolderInfo, Integer> expectedListMessages = Util
         .createConcurrentHashMap();
+
+    /**
+     * The last message indicating that the handshake was completed
+     */
+    private volatile HandshakeCompleted lastHandshakeCompleted;
 
     /** Last trasferstatus */
     private TransferStatus lastTransferStatus;
@@ -1355,56 +1358,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 {
                     logWarning("Received large " + fList);
                 }
-                Runnable r = new Runnable() {
-                    @Override
-                    public void run() {
-                        folderJoinLock.lock();
-                        try {
-                            lastFolderList = fList;
-                            // fList.store(Member.this);
-                            folderListReceived = true;
-                            // Send filelist only during handshake
-                            joinToLocalFolders(fList, fromPeer);
-
-                            // #2569: Send only "filtered" client specific
-                            // folder list. Send renewed list.
-                            ConnectionHandler thisPeer = peer;
-                            Identity identity = thisPeer != null ? thisPeer
-                                .getIdentity() : null;
-                            boolean fullList = identity != null
-                                && identity.isRequestFullFolderlist();
-                            if (getMySelf().isServer() && !fullList
-                                && thisPeer != null)
-                            {
-                                String remoteMagicId = thisPeer
-                                    .getRemoteMagicId();
-                                Collection<FolderInfo> folders2node = getFilteredFolderList(
-                                    fList, fullList);
-                                FolderList myFolderList;
-                                if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
-                                    myFolderList = new FolderListExt(
-                                        folders2node, remoteMagicId);
-                                } else {
-                                    myFolderList = new FolderList(folders2node,
-                                        remoteMagicId);
-                                }
-                                if (isFine()) {
-                                    logFine("Sending HM " + myFolderList);
-                                }
-                                sendMessageAsynchron(myFolderList);
-                            }
-
-                        } finally {
-                            folderJoinLock.unlock();
-                        }
-                        // Notify waiting ppl
-                        synchronized (folderListWaiter) {
-                            folderListWaiter.notifyAll();
-                        }
-                    }
-                };
-                getController().getIOProvider().startIO(r);
-
+                getController().getIOProvider().startIO(() -> {
+                    processFolderList(fList, fromPeer);
+                });
                 expectedTime = 300;
             } else if (message instanceof ScanCommand) {
                 if (targetFolder != null) {
@@ -1940,6 +1896,58 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (took > 60000) {
                 logWarning("Handling took " + (took/1000) + "s: " + message);
             }
+        }
+    }
+
+    private void processFolderList(FolderList fList, ConnectionHandler fromPeer) {
+        try {
+            nextFolderList = fList;
+            folderJoinLock.lock();
+            if (fList != nextFolderList) {
+                if (isFine()) {
+                    logFine("Skipping: " + fList + " for newer list: " + nextFolderList);
+                }
+                return;
+            }
+            lastFolderList = fList;
+            // fList.store(Member.this);
+            folderListReceived = true;
+            // Send filelist only during handshake
+            joinToLocalFolders(fList, fromPeer);
+
+            // #2569: Send only "filtered" client specific
+            // folder list. Send renewed list.
+            ConnectionHandler thisPeer = peer;
+            Identity identity = thisPeer != null ? thisPeer
+                    .getIdentity() : null;
+            boolean fullList = identity != null
+                    && identity.isRequestFullFolderlist();
+            if (getMySelf().isServer() && !fullList
+                    && thisPeer != null) {
+                String remoteMagicId = thisPeer
+                        .getRemoteMagicId();
+                Collection<FolderInfo> folders2node = getFilteredFolderList(
+                        fList, fullList);
+                FolderList myFolderList;
+                if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
+                    myFolderList = new FolderListExt(
+                            folders2node, remoteMagicId);
+                } else {
+                    myFolderList = new FolderList(folders2node,
+                            remoteMagicId);
+                }
+                if (isFine()) {
+                    logFine("Sending HM " + myFolderList);
+                }
+                sendMessageAsynchron(myFolderList);
+            }
+
+        } finally {
+            folderJoinLock.unlock();
+        }
+        // Notify waiting ppl
+        synchronized (folderListWaiter) {
+            folderListWaiter.notifyAll();
         }
     }
 
