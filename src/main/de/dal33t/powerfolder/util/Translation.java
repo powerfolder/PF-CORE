@@ -190,8 +190,8 @@ public class Translation {
                 }
                 resourceBundle = ResourceBundle.getBundle("Translation",
                         confLang, new UTF8Control());
-
-                log.info("Default Locale '" + Locale.getDefault()
+                
+                log.fine("Default Locale '" + Locale.getDefault()
                         + "', using '" + resourceBundle.getLocale()
                         + "', in config '" + confLang + '\'');
             } catch (MissingResourceException e) {
