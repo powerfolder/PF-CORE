@@ -62,6 +62,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        LoggingManager.setConsoleLogging(Level.OFF);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerLisa(), true);
         PreferencesEntry.EXPERT_MODE.setValue(getContollerBart(), true);
         deleteTestFolderContents();
@@ -73,6 +74,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         
         // Let startup settle down.
         TestHelper.waitMilliSeconds(500);
+        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     /**
@@ -1969,6 +1971,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         TestHelper.assertIncompleteFilesGone(this);
     }
+
     public void testDeltaFileChangedMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
             testDeltaFileChanged();
@@ -2027,7 +2030,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         Files.copy(fbart, tmpCopy);
         // FileUtils.copyFile(fbart, tmpCopy);
 
-        int modSize = (int) (1024 + Math.random() * 8192);
+        int modSize = (int) (1024 + 7777);
         long seek = (long) (Math.random() * (Files.size(fbart) - modSize)) + chunkSize;
 
         byte[] buf = new byte[(int) seek];
@@ -2051,21 +2054,27 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertTrue(Files.getLastModifiedTime(fbart).toMillis() > Files
             .getLastModifiedTime(flisa).toMillis());
         scanFolder(getFolderAtBart());
-        assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
-            .isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
         FileInfo binfo = getFolderAtBart().getKnownFiles().iterator().next();
+        assertEquals(1, getFolderAtLisa().getKnownItemCount());
+        assertTrue(binfo.isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
+
         assertFileMatch(fbart, binfo, getContollerBart());
         assertEquals("Bart version: " + binfo.getVersion(), 1,
             binfo.getVersion());
         assertEquals(0, linfo.getVersion());
-        assertTrue(getFolderAtBart().getKnownFiles().iterator().next()
-            .isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
+        assertEquals(1, getFolderAtBart().getKnownItemCount());
+        binfo = getFolderAtBart().getKnownFiles().iterator().next();
+        assertTrue(binfo.isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
         connectBartAndLisa();
         scanFolder(getFolderAtLisa());
 
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
+                if (getFolderAtBart().getKnownItemCount() == 0 || getFolderAtLisa().getKnownItemCount() == 0) {
+                    return false;
+                }
                 FileInfo linfo = getFolderAtLisa().getKnownFiles().iterator().next();
                 FileInfo binfo = getFolderAtBart().getKnownFiles().iterator().next();
                 return lisaListener.downloadCompleted >= 2
