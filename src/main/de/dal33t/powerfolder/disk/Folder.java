@@ -55,6 +55,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
@@ -4981,37 +4982,36 @@ public class Folder extends PFComponent {
 
     // Security methods *******************************************************
 
+    // PFS-638
+    private static final long HAS_PERMISSION_CACHE_TIMEOUT = 987L;
+    private final SimpleCache<Member, Boolean> hasReadCache = new SimpleCache<>(Util.createConcurrentHashMap(), HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+    private final SimpleCache<Member, Boolean> hasWriteCache = new SimpleCache<>(Util.createConcurrentHashMap(), HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+
     public boolean hasReadPermission(Member member) {
-        return hasFolderPermission(member,
+        Boolean hasRead = hasReadCache.getValidEntry(member);
+        if (hasRead != null) {
+            if (hasReadCache.getCacheHits() % 100000 == 0 && isFine()) {
+                logFine("Permission read: " + hasReadCache);
+            }
+            return hasRead;
+        }
+        hasRead = hasFolderPermission(member,
             FolderPermission.read(getParentFolderInfo()));
+        hasReadCache.put(member, hasRead);
+        return hasRead;
     }
 
-    // PFS-638
-    private final Map<Member, Date> hasWriteCache = Util.createConcurrentHashMap();
-    private static final long HAS_WRITE_CACHE_TIMEOUT = 987L;
-    private static volatile int CACHE_HITS;
-
     public boolean hasWritePermission(Member member) {
-        Date lastTimeHadWrite = hasWriteCache.get(member);
-        if (lastTimeHadWrite != null) {
-            long lastHasWriteAgo = System.currentTimeMillis()
-                - lastTimeHadWrite.getTime();
-            if (lastHasWriteAgo < HAS_WRITE_CACHE_TIMEOUT) {
-                CACHE_HITS++;
-                if (CACHE_HITS % 100000 == 0 && isFine()) {
-                    logFine("Permission write cache hit count: " + CACHE_HITS
-                        + " (last: " + lastHasWriteAgo + "ms ago)");
-                }
-                return true;
+        Boolean hasWrite = hasWriteCache.getValidEntry(member);
+        if (hasWrite != null) {
+            if (hasWriteCache.getCacheHits() % 100000 == 0 && isFine()) {
+                logFine("Permission write: " + hasWriteCache);
             }
+            return hasWrite;
         }
-        boolean hasWrite = hasFolderPermission(member,
-            FolderPermission.readWrite(getParentFolderInfo()));
-        if (hasWrite) {
-            hasWriteCache.put(member, new Date());
-        } else {
-            hasWriteCache.remove(member);
-        }
+        hasWrite = hasFolderPermission(member,
+                FolderPermission.readWrite(getParentFolderInfo()));
+        hasWriteCache.put(member, hasWrite);
         return hasWrite;
     }
 
