@@ -67,9 +67,9 @@ import java.util.prefs.Preferences;
 public abstract class TwoControllerTestCase extends TestCase {
     // For the optional test folder.
     public static final Path TESTFOLDER_BASEDIR_BART = TestHelper.getTestDir()
-        .resolve("ControllerBart/testFolder").toAbsolutePath();
+            .resolve("ControllerBart/PowerFolders/bart/testFolder").toAbsolutePath();
     public static final Path TESTFOLDER_BASEDIR_LISA = TestHelper.getTestDir()
-        .resolve("ControllerLisa/testFolder").toAbsolutePath();
+            .resolve("ControllerLisa/PowerFolders/lisa/testFolder").toAbsolutePath();
 
     protected Controller controllerBart;
     protected Controller controllerLisa;
@@ -485,6 +485,23 @@ public abstract class TwoControllerTestCase extends TestCase {
     {
         testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
         joinFolder(testFolder, baseDir1, baseDir2, profile);
+    }
+
+    /**
+     * Let the controller join the specified folder.
+     * <p>
+     * After the method is invoked, it is ensured that the controller joined the
+     * folder.
+     *
+     * @param foInfo  the folder to join
+     * @param baseDir the local base dir for the controller
+     * @param profile the profile to use
+     */
+    protected static Folder joinFolder(FolderInfo foInfo, Path baseDir,
+                                       Controller controller, SyncProfile profile) {
+        FolderSettings folderSettings = new FolderSettings(baseDir, profile, 5);
+        return controller.getFolderRepository().createFolder(foInfo,
+                folderSettings);
     }
 
     /**

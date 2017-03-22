@@ -182,7 +182,6 @@ For creation of the installer:
 			<include name="powerfolder-protobuf-0.1.jar"/>
 
 			<!-- Encrypted storage - cryptolib/fs -->
-
 			<include name="cryptomator/commons-codec-1.10.jar" />
 			<include name="cryptomator/commons-lang3-3.5.jar" />
 			<include name="cryptomator/cryptofs-1.2.0.jar" />
