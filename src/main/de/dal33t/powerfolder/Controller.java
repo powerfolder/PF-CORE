@@ -248,7 +248,7 @@ public class Controller extends PFComponent {
 
     private ScheduledFuture<?> pauseResumeFuture;
 
-    private Controller() {
+    public Controller() {
         // Do some TTL fixing for dyndns resolving
         Security.setProperty("networkaddress.cache.ttl", "0");
         Security.setProperty("networkaddress.cache.negative.ttl", "0");

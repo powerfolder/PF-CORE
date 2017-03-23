@@ -205,6 +205,7 @@ For creation of the installer:
 			<include name="jmock/jmock-junit4-2.4.0.jar" />
 			<include name="jmock/jmock-legacy-2.4.0.jar" />
 			<include name="jmock/objenesis-1.0.jar" />
+			<include name="mockito-all-2.0.2-beta.jar" />
 		</fileset>
 
 		<!-- Output dirs -->
