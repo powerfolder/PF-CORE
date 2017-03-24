@@ -2106,6 +2106,7 @@ public class Controller extends PFComponent {
         preferences.putBoolean("openwizard2", bool);
     }
 
+
     /**
      * @return the distribution of this client.
      */

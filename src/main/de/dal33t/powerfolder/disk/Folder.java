@@ -437,6 +437,7 @@ public class Folder extends PFComponent {
         if (Files.notExists(file)) {
             statistic.calculate0();
         }
+
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -1962,7 +1963,9 @@ public class Folder extends PFComponent {
             logFine("Shutting down " + this);
         }
         shutdown = true;
-        watcher.remove();
+        if (ConfigurationEntry.FOLDER_WATCHER_ENABLED.getValueBoolean(getController())) {
+            watcher.remove();
+        }
         if (dirty) {
             persist();
         }

@@ -88,13 +88,10 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
         // Default exception logger
         Thread
-            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-            {
-                public void uncaughtException(Thread t, Throwable e) {
+                .setDefaultUncaughtExceptionHandler((t, e) -> {
                     System.err.println("Exception in " + t + ": "
-                        + e.toString());
+                            + e.toString());
                     e.printStackTrace();
-                }
             });
         Feature.setupForTests();
 
