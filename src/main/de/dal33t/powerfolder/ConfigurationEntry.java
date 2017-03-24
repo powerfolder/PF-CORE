@@ -1126,9 +1126,9 @@ public enum ConfigurationEntry {
     AUTO_SETUP_ACCOUNT_FOLDERS("auto.setup.account.folders", true),
 
     /**
-     * List of paths to removed folders
+     * PFS-2227: List of paths not to be automatically setup as folders.
      */
-    REMOVED_FOLDER_FILES("removed.folder.files", ""),
+    AUTO_SETUP_FOLDERS_IGNORED("auto.setup.folders.ignored", ""),
 
     /**
      * #2485: {@link Integer#MAX_VALUE} for never resume. 0 for adaptive resume
