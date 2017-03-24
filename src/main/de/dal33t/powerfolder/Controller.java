@@ -87,7 +87,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 395;
+    private static final int REVISION_VERSION = 396;
 
     /**
      * Program version.
@@ -1489,6 +1489,8 @@ public class Controller extends PFComponent {
         }
         logFine("Saving config (" + getConfigName() + ".config)");
 
+        // PFS-2227
+        config.remove("removed.folder.files");
         Path file;
         Path tempFile;
         Path folderFile;
