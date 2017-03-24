@@ -323,6 +323,10 @@ public class FolderRemoveDialog extends BaseDialog {
 
         Folder f = foInfo.getFolder(getController());
         if (f != null) {
+            if (!removeCompletely) {
+                // PFS-2227
+                folderRepository.addToIgnoredFolders(f);
+            }
             folderRepository.removeFolder(f, deleteSystemSubFolder);
         }
 
