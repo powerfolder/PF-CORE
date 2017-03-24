@@ -151,7 +151,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         metaFolders = new ConcurrentHashMap<>();
         fileRequestor = new FileRequestor(controller);
         started = false;
-        loadRemovedFolderDirectories();
+        loadIgnoredFolders();
 
         folderScanner = new FolderScanner(getController());
         locking = new Locking(getController());
@@ -165,8 +165,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .createListenerSupport(FolderAutoCreateListener.class);
     }
 
-    private void loadRemovedFolderDirectories() {
-        String list = ConfigurationEntry.REMOVED_FOLDER_FILES
+    private void loadIgnoredFolders() {
+        String list = ConfigurationEntry.AUTO_SETUP_FOLDERS_IGNORED
             .getValue(getController());
         String[] parts = list.split("\\$");
         for (String s : parts) {
@@ -179,11 +179,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logFine("Unable to check removed dir: " + s + ". " + e);
             }
         }
-    }
-
-    public void clearRemovedFolderDirectories() {
-        ConfigurationEntry.REMOVED_FOLDER_FILES.removeValue(getController());
-        removedFolderDirectories.clear();
     }
 
     public void addProblemListenerToAllFolders(ProblemListener listener) {
@@ -1167,7 +1162,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getValueBoolean(getController()))
         {
             if (PathUtils.isNetworkPath(folderSettings.getLocalBaseDir())) {
-                addToRemovedFolderDirectories(folderSettings.getLocalBaseDir());
                 if (saveConfig) {
                     getController().saveConfig();
                 }
@@ -1316,7 +1310,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFine(message);
         }
 
-        removeFromRemovedFolderDirectories(folder);
+        removeFromIgnoredFolders(folder);
 
         return folder;
     }
@@ -1368,12 +1362,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Remove link if it exists.
             removeLink(folder);
-
-            // Remember that we have removed this folder.
-            if (EncryptedFileSystemUtils.isPhysicalStorageLocation(folder.getLocalBase().toString())
-                    || !EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
-                addToRemovedFolderDirectories(folder);
-            }
 
             // Remove the desktop shortcut
             folder.removeDesktopShortcut();
@@ -1494,11 +1482,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private void addToRemovedFolderDirectories(Folder folder) {
-        addToRemovedFolderDirectories(folder.getLocalBase());
-    }
-
-    private void addToRemovedFolderDirectories(Path path) {
+    public void addToIgnoredFolders(Folder folder) {
+        Path path = folder.getLocalBase();
         if (removedFolderDirectories.add(path)) {
             StringBuilder sb = new StringBuilder();
             Iterator<Path> iterator = removedFolderDirectories.iterator();
@@ -1509,12 +1494,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                     sb.append('$');
                 }
             }
-            ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
+            ConfigurationEntry.AUTO_SETUP_FOLDERS_IGNORED.setValue(getController(),
                 sb.toString());
         }
     }
 
-    private void removeFromRemovedFolderDirectories(Folder folder) {
+    private void removeFromIgnoredFolders(Folder folder) {
         if (removedFolderDirectories.remove(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
             Iterator<Path> iterator = removedFolderDirectories.iterator();
@@ -1525,7 +1510,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     sb.append('$');
                 }
             }
-            ConfigurationEntry.REMOVED_FOLDER_FILES.setValue(getController(),
+            ConfigurationEntry.AUTO_SETUP_FOLDERS_IGNORED.setValue(getController(),
                 sb.toString());
         }
     }
@@ -2096,7 +2081,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.addDefaultExcludes();
 
         if (scheduleCreateOnServer) {
-            logWarning("Scheduling setup of folder: " + foInfo.getName());
+            logFine("Scheduling setup of folder: " + foInfo.getName());
             CreateFolderOnServerTask task = new CreateFolderOnServerTask(foInfo,
                 null);
             task.setArchiveVersions(fs.getVersions());
