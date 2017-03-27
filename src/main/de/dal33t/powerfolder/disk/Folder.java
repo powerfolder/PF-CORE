@@ -306,11 +306,15 @@ public class Folder extends PFComponent {
             .getFoldersBasedir()),
             "Folder cannot be located at base directory for all folders");
 
-        if (localBase.toString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR) &&
-                !EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
-            logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
-                    " with localBase " + localBaseDir);
-            throw new IllegalStateException("localBase of encrypted folder " + fInfo.getName() + " invalid!");
+        // PFS-2319 / PFS-2227
+        if (!EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
+            String filename = localBase.getFileName().toString();
+            if (filename.equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR.substring(1)) ||
+                    localBase.toString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
+                logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
+                        " with localBase " + localBaseDir);
+                throw new IllegalStateException("localBase of encrypted folder " + fInfo.getName() + " invalid!");
+            }
         }
 
         if (folderSettings.getCommitDir() != null) {
