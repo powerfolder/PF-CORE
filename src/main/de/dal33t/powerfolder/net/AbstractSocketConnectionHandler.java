@@ -235,7 +235,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         if (!isConnected()) {
             shutdown();
             throw new ConnectionException(
-                "Remote peer disconnected while waiting for his identity")
+                "Remote peer " + socket.getRemoteSocketAddress() +" disconnected while waiting for his identity")
                 .with(this);
         }
         if (identity == null || identity.getMemberInfo() == null) {
