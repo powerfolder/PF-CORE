@@ -2625,7 +2625,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Files.exists(newDirectory) && !PathUtils.isEmptyDir(newDirectory)) {
             logSevere("Not moving folder " + folder + " to new directory "
                 + newDirectory.toString()
-                + ". The new directory already exists!");
+                    + ". The new directory already exists! "
+                    + "Keeping the old directory " + folder.getLocalBase());
             return null;
         }
 
