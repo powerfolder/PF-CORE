@@ -154,15 +154,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="objenesis-1.0.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/jmock/objenesis-1.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
       <library name="jcalendar.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/jcalendar.jar!/" />
@@ -441,12 +432,11 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/mockito-all-2.0.2-beta.jar!/" />
+          <root url="file://$MODULE_DIR$/lib/mockito" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/lib/mockito-all-2.0.2-beta.jar!/" />
-        </SOURCES>
+        <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/lib/mockito" recursive="false" />
       </library>
     </orderEntry>
   </component>

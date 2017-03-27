@@ -204,8 +204,10 @@ For creation of the installer:
 			<include name="jmock/jmock-junit3-2.4.0.jar" />
 			<include name="jmock/jmock-junit4-2.4.0.jar" />
 			<include name="jmock/jmock-legacy-2.4.0.jar" />
-			<include name="jmock/objenesis-1.0.jar" />
-			<include name="mockito-all-2.0.2-beta.jar" />
+			<include name="mockito/byte-buddy-1.6.12.jar" />
+			<include name="mockito/byte-buddy-agent-1.6.12.jar" />
+			<include name="mockito/mockito-core-2.7.19.jar" />
+			<include name="mockito/objenesis-2.5.1.jar" />
 		</fileset>
 
 		<!-- Output dirs -->
