@@ -2649,20 +2649,24 @@ public class FolderRepository extends PFComponent implements Runnable {
             removeFolder(folder, false);
 
             // Move it.
+            boolean deleteOriginalDirectory = false;
             try {
                 PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
-            } catch (IOException e){
-                PathUtils.recursiveCopyVisitor(originalDirectory, newDirectory);
-                logWarning("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " +
-                        "Instead of moving, the folder has been copied to " + newDirectory + ". Please remove " +
-                        "duplicate contents from " + originalDirectory + " manually!");
+                fs = fs.changeBaseDir(newDirectory);
+            } catch (IOException e) {
+                try {
+                    PathUtils.recursiveCopyVisitor(originalDirectory, newDirectory);
+                    fs = fs.changeBaseDir(newDirectory);
+                    deleteOriginalDirectory = true;
+                } catch (IOException ex) {
+                    logWarning("Unable to move/copy folder " + folder.getName() + " to " + newDirectory + ". @" + ex);
+                }
             }
 
             // Create the new Folder in the repository.
-            fs = fs.changeBaseDir(newDirectory);
             folder = createFolder0(folder.getInfo().intern(), fs, true);
 
-            // Restore patterns if content not moved.
+            // Restore patterns
             for (String pattern : patterns) {
                 folder.addPattern(pattern);
             }
@@ -2671,17 +2675,19 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             logInfo("Successfully moved folder from " + originalDirectory + " to " + newDirectory + ".");
 
-            // After renaming, delete the old folder physically if still existing
-            try {
-                if (EncryptedFileSystemUtils.isCryptoInstance(originalDirectory)) {
-                    originalDirectory = EncryptedFileSystemUtils.getPhysicalStorageLocation(originalDirectory);
+            // If the folder just has been copied, delete the old directory
+            if (deleteOriginalDirectory) {
+                try {
+                    if (EncryptedFileSystemUtils.isCryptoInstance(originalDirectory)) {
+                        originalDirectory = EncryptedFileSystemUtils.getPhysicalStorageLocation(originalDirectory);
+                    }
+                    if (Files.exists(originalDirectory)) {
+                        PathUtils.recursiveDeleteVisitor(originalDirectory);
+                    }
+                } catch (IOException e) {
+                    logWarning("Failed to delete basePath " + originalDirectory
+                            + " after renaming folder " + folder.getName(), e);
                 }
-                if (Files.exists(originalDirectory)) {
-                    PathUtils.recursiveDeleteVisitor(originalDirectory);
-                }
-            } catch (IOException e) {
-                logWarning("Failed to delete basePath " + originalDirectory
-                        + " after renaming folder " + folder.getName(), e);
             }
 
         } catch (IOException e) {
