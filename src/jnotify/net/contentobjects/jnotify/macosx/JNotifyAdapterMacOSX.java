@@ -1,6 +1,7 @@
 package net.contentobjects.jnotify.macosx;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Hashtable;
@@ -438,6 +439,9 @@ public class JNotifyAdapterMacOSX implements IJNotify
 						{
 							scan(files[i], recurse, events);
 						}
+					}
+					catch (FileNotFoundException e) {
+						// File gone in the meanwhile, keep quiet
 					}
 					catch(IOException e)
 					{
