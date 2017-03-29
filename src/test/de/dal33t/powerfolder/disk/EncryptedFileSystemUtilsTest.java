@@ -52,7 +52,7 @@ public void before() throws Exception {
 }
 
 /**
-* Method: isPhysicalStorageLocation(String path)
+ * Method: endsWithEncryptionSuffix(String path)
 */
 
 @Test

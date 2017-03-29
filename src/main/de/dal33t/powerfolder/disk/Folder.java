@@ -262,7 +262,7 @@ public class Folder extends PFComponent {
 
             // PFS-1994: Start: Encrypted storage.
             boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
-                    || EncryptedFileSystemUtils.isPhysicalStorageLocation(localBaseDir.toString());
+                    || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBaseDir.toString());
 
             if (isEncrypted) {
                 try {
@@ -706,19 +706,28 @@ public class Folder extends PFComponent {
     private void checkBaseDir(boolean quiet) throws FolderException {
         // Basic checks
         if (Files.notExists(localBase)) {
-            // TRAC #1249
-            if ((OSUtil.isMacOS() || OSUtil.isLinux())
-                && localBase.toAbsolutePath().toString().toLowerCase()
-                    .startsWith("/volumes"))
-            {
+            if (EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
+                try {
+                    Files.createDirectories(localBase);
+                } catch (IOException e) {
+                    logSevere("Failed to reconstruct local base " + localBase.toAbsolutePath()
+                            + " of encrypted folder " + getName());
+                    throw new FolderException(currentInfo,
+                            "Local base dir not available " + localBase.toAbsolutePath());
+                }
+            } else {
+                // TRAC #1249
+                if ((OSUtil.isMacOS() || OSUtil.isLinux())
+                        && localBase.toAbsolutePath().toString().toLowerCase()
+                        .startsWith("/volumes")) {
+                    throw new FolderException(currentInfo,
+                            "Unmounted volume not available at "
+                                    + localBase.toAbsolutePath());
+                }
+                // #2329
                 throw new FolderException(currentInfo,
-                    "Unmounted volume not available at "
-                        + localBase.toAbsolutePath());
+                        "Local base dir not available " + localBase.toAbsolutePath());
             }
-
-            // #2329
-            throw new FolderException(currentInfo,
-                "Local base dir not available " + localBase.toAbsolutePath());
         } else if (!Files.isDirectory(localBase)) {
             if (!quiet) {
                 logSevere(" not able to create folder(" + getName()
@@ -1126,7 +1135,7 @@ public class Folder extends PFComponent {
     private boolean autoScanRequired() {
         if (syncProfile.isManualSync()
                 || EncryptedFileSystemUtils.isCryptoInstance(localBase)
-                || EncryptedFileSystemUtils.isPhysicalStorageLocation(localBase.toString())) {
+                || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBase.toString())) {
             return false;
         }
         Date wasLastScan = lastScan;

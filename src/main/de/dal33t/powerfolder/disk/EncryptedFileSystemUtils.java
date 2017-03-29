@@ -89,7 +89,7 @@ public class EncryptedFileSystemUtils {
      * @return true if the path contains the keyword ".crypto".
      */
 
-    public static boolean isPhysicalStorageLocation(String path){
+    public static boolean endsWithEncryptionSuffix(String path) {
         return path.contains(Constants.FOLDER_ENCRYPTION_SUFFIX);
     }
 
