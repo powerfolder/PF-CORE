@@ -267,6 +267,10 @@ public class Folder extends PFComponent {
             if (isEncrypted) {
                 try {
                     localBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), localBaseDir);
+                    // PFS-2334:
+                    if (Files.notExists(localBase)) {
+                        Files.createDirectories(localBase);
+                    }
                 } catch (IOException e) {
                     logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
                             " with localbase " + localBaseDir + " " + e);
@@ -281,6 +285,7 @@ public class Folder extends PFComponent {
             } else {
                 localBase = localBaseDir;
             }
+
             // PFS-1994: End: Encrypted storage.
 
         } else {
@@ -706,28 +711,17 @@ public class Folder extends PFComponent {
     private void checkBaseDir(boolean quiet) throws FolderException {
         // Basic checks
         if (Files.notExists(localBase)) {
-            if (EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
-                try {
-                    Files.createDirectories(localBase);
-                } catch (IOException e) {
-                    logSevere("Failed to reconstruct local base " + localBase.toAbsolutePath()
-                            + " of encrypted folder " + getName());
-                    throw new FolderException(currentInfo,
-                            "Local base dir not available " + localBase.toAbsolutePath());
-                }
-            } else {
-                // TRAC #1249
-                if ((OSUtil.isMacOS() || OSUtil.isLinux())
-                        && localBase.toAbsolutePath().toString().toLowerCase()
-                        .startsWith("/volumes")) {
-                    throw new FolderException(currentInfo,
-                            "Unmounted volume not available at "
-                                    + localBase.toAbsolutePath());
-                }
-                // #2329
+            // TRAC #1249
+            if ((OSUtil.isMacOS() || OSUtil.isLinux())
+                    && localBase.toAbsolutePath().toString().toLowerCase()
+                    .startsWith("/volumes")) {
                 throw new FolderException(currentInfo,
-                        "Local base dir not available " + localBase.toAbsolutePath());
+                        "Unmounted volume not available at "
+                                + localBase.toAbsolutePath());
             }
+            // #2329
+            throw new FolderException(currentInfo,
+                    "Local base dir not available " + localBase.toAbsolutePath());
         } else if (!Files.isDirectory(localBase)) {
             if (!quiet) {
                 logSevere(" not able to create folder(" + getName()
