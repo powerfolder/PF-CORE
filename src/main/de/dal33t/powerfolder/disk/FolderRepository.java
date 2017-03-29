@@ -2638,9 +2638,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folder.getConfigEntryId());
 
             // PFS-1994: If old directory is encrypted, new directory must also be encrypted.
+            boolean deleteOriginalDirectory = false;
             if (EncryptedFileSystemUtils.isCryptoInstance(originalDirectory)
                     || EncryptedFileSystemUtils.isPhysicalStorageLocation(originalDirectory.toString())) {
                 newDirectory = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), newDirectory);
+                deleteOriginalDirectory = true;
             }
 
             // Remember patterns if content not moving.
@@ -2650,7 +2652,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             removeFolder(folder, false);
 
             // Move it.
-            boolean deleteOriginalDirectory = false;
             try {
                 PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
                 fs = fs.changeBaseDir(newDirectory);
