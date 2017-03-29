@@ -1305,6 +1305,7 @@ public class PathUtils {
             return path;
         }
 
+        // TODO: Check this method with encrypted paths
         String filename = path.getFileName().toString();
         String cleared = PathUtils.removeInvalidFilenameChars(filename);
 
