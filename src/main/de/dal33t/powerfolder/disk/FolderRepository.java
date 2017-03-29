@@ -131,7 +131,6 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @see #scanBasedir()
      * @see #handleDeviceDisconnected(Folder)
-     * @see #createLocalFolders(Account)
      * @author krickl@powerfolder.com
      */
     private final ReentrantLock scanBasedirLock = new ReentrantLock();
@@ -2618,13 +2617,19 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    public Folder moveLocalFolder(Folder folder, Path newDirectory) {
+    public Folder moveLocalFolder(Folder folder, Path targetPath) {
+        Reject.ifTrue(EncryptedFileSystemUtils.isCryptoInstance(targetPath), "Only physical paths supported aas new directory");
 
-        newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
+        boolean sourceEncrypted = EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase());
+        boolean targetEncrypted = targetPath.getFileName().toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
+        if (sourceEncrypted && !targetEncrypted) {
+            logWarning("Trying to move encrypted folder to unencrypted target directory. From: " + folder.getLocalBase() + " to " + targetPath);
+        }
 
-        if (Files.exists(newDirectory) && !PathUtils.isEmptyDir(newDirectory)) {
+        targetPath = PathUtils.removeInvalidFilenameChars(targetPath);
+        if (Files.exists(targetPath) && !PathUtils.isEmptyDir(targetPath)) {
             logSevere("Not moving folder " + folder + " to new directory "
-                + newDirectory.toString()
+                + targetPath.toString()
                     + ". The new directory already exists! "
                     + "Keeping the old directory " + folder.getLocalBase());
             return null;
@@ -2633,17 +2638,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         try {
             scanBasedirLock.lock();
 
-            Path originalDirectory = folder.getLocalBase().toRealPath();
+            Path sourceDirectory = folder.getLocalBase().toRealPath();
+            if (EncryptedFileSystemUtils.isCryptoInstance(sourceDirectory)) {
+                sourceDirectory = EncryptedFileSystemUtils.getPhysicalStorageLocation(sourceDirectory);
+            }
             FolderSettings fs = FolderSettings.load(getController(),
                     folder.getConfigEntryId());
 
-            // PFS-1994: If old directory is encrypted, new directory must also be encrypted.
             boolean deleteOriginalDirectory = false;
-            if (EncryptedFileSystemUtils.isCryptoInstance(originalDirectory)
-                    || EncryptedFileSystemUtils.isPhysicalStorageLocation(originalDirectory.toString())) {
-                newDirectory = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), newDirectory);
-                deleteOriginalDirectory = true;
-            }
+            boolean moved = false;
 
             // Remember patterns if content not moving.
             List<String> patterns = folder.getDiskItemFilter().getPatterns();
@@ -2653,15 +2656,18 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Move it.
             try {
-                PathUtils.recursiveMoveVisitor(originalDirectory, newDirectory);
-                fs = fs.changeBaseDir(newDirectory);
+                PathUtils.recursiveMoveVisitor(sourceDirectory, targetPath);
+                fs = fs.changeBaseDir(targetPath);
+                moved = true;
             } catch (IOException e) {
                 try {
-                    PathUtils.recursiveCopyVisitor(originalDirectory, newDirectory);
-                    fs = fs.changeBaseDir(newDirectory);
+                    PathUtils.recursiveCopyVisitor(sourceDirectory, targetPath);
+                    fs = fs.changeBaseDir(targetPath);
+                    moved = true;
                     deleteOriginalDirectory = true;
                 } catch (IOException ex) {
-                    logWarning("Unable to move/copy folder " + folder.getName() + " to " + newDirectory + ". @" + ex);
+                    logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex);
+                    deleteOriginalDirectory = false;
                 }
             }
 
@@ -2673,27 +2679,28 @@ public class FolderRepository extends PFComponent implements Runnable {
                 folder.addPattern(pattern);
             }
 
-            PathUtils.setAttributesOnWindows(newDirectory, true, true);
+            PathUtils.setAttributesOnWindows(targetPath, true, true);
 
-            logInfo("Successfully moved folder from " + originalDirectory + " to " + newDirectory + ".");
+            if (moved) {
+                logInfo("Successfully moved folder from " + sourceDirectory + " to " + targetPath + ".");
+            } else {
+                logInfo("Not moved folder from " + sourceDirectory + " to " + targetPath + ". Using old directory");
+            }
 
             // If the folder just has been copied, delete the old directory
             if (deleteOriginalDirectory) {
                 try {
-                    if (EncryptedFileSystemUtils.isCryptoInstance(originalDirectory)) {
-                        originalDirectory = EncryptedFileSystemUtils.getPhysicalStorageLocation(originalDirectory);
-                    }
-                    if (Files.exists(originalDirectory)) {
-                        PathUtils.recursiveDeleteVisitor(originalDirectory);
+                    if (Files.exists(sourceDirectory)) {
+                        PathUtils.recursiveDeleteVisitor(sourceDirectory);
                     }
                 } catch (IOException e) {
-                    logWarning("Failed to delete basePath " + originalDirectory
-                            + " after renaming folder " + folder.getName(), e);
+                    logWarning("Failed to delete source directory " + sourceDirectory
+                            + " after moving folder " + folder.getName() + " to " + targetPath, e);
                 }
             }
 
         } catch (IOException e) {
-            logSevere("Unable to move folder " + folder.getName() + " to " + newDirectory + ". " + e);
+            logSevere("Unable to move folder " + folder.getName() + " to " + targetPath + ". " + e);
             logFine(e);
             return null;
         } finally {
