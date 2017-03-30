@@ -315,7 +315,6 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                         public void progressReached(double percentageReached) {
                             setTransferState(percentageReached / 100.0);
                         }
-
                     });
             }
             // If we don't have a record, no hashing was performed and the file
@@ -326,8 +325,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             {
                 return true;
             }
-            logFine("Checksum test FAILED on " + fileInfo.toDetailString()
-                + ". MD5 found: " + Base64.encodeBytes(tempFileHash)
+            logFine("MD5 Checksum check FAILED on " + fileInfo.toDetailString()
+                + ". found: " + Base64.encodeBytes(tempFileHash)
                 + " expected: "
                 + Base64.encodeBytes(thisRemotePartRecord.getFileDigest()));
             counter = new TransferCounter(0, fileInfo.getSize());
@@ -505,7 +504,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
                     getController().getFolderRepository());
                 if (folder != null) {
                     logInfo("Auto-recover from MD5_ERROR: Re-download of "
-                        + getFileInfo() + " started.");
+                        + getFileInfo() + " started. Message: " + message);
                     if (folder.erase(getFileInfo())) {
                         // PFC-2752: Move into separate thread to avoid deadlock.
                         tm.doWork(new Runnable() {
