@@ -2100,7 +2100,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             + folder.getName() + "/" + folder.getId() + " @ "
             + folder.getLocalBase());
 
-        if (!renamedOnServer) {
+        if (!renamedOnServer && createdNew) {
             folderAutoCreateListener
                 .folderAutoCreated(new FolderAutoCreateEvent(foInfo));
         }
