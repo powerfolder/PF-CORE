@@ -2017,6 +2017,10 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             try {
                 if (foInfo != null) {
+                    Folder existingFolder = foInfo.getFolder(getController());
+                    if (existingFolder != null && existingFolder.checkIfDeviceDisconnected()) {
+                        removeFolder(existingFolder, false, false);
+                    }
                     FolderInfo renamedFI = tryRenaming(client, file, foInfo, stillPresent);
                     if (renamedFI != null && foInfo != null && renamedFI.equals(foInfo)
                             && !renamedFI.getName().equals(foInfo.getName())) {
