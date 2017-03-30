@@ -2635,10 +2635,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         targetPath = PathUtils.removeInvalidFilenameChars(targetPath);
 
         if (Files.exists(targetPath) && !PathUtils.isEmptyDir(targetPath)) {
+            Path localBase = folder.getLocalBase();
+            if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
+                localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
+            }
             logSevere("Not moving folder " + folder + " to new directory "
                 + targetPath.toString()
                     + ". The new directory already exists! "
-                    + "Keeping the old directory " + folder.getLocalBase());
+                    + "Keeping the old directory " + localBase);
             return null;
         }
 
