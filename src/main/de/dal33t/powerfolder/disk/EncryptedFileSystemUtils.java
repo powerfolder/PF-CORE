@@ -56,7 +56,11 @@ public class EncryptedFileSystemUtils {
     public static Path getEncryptedFileSystem(Controller controller, Path incDir) throws IOException {
         Reject.ifNull(controller, "Controller");
         Reject.ifNull(incDir, "Path");
-        if (isCryptoInstance(incDir)){
+        if (isCryptoInstance(incDir)) {
+            Path encDir = incDir.getFileSystem().getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
+            if (Files.notExists(encDir)) {
+                Files.createDirectories(encDir);
+            }
             return incDir;
         } else {
             try {
@@ -64,7 +68,7 @@ public class EncryptedFileSystemUtils {
             } catch (FileSystemNotFoundException e) {
                 FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
                 Path encDir = cryptoFS.getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
-                if (!Files.exists(encDir)) {
+                if (Files.notExists(encDir)) {
                     Files.createDirectories(encDir);
                 }
                 return encDir;

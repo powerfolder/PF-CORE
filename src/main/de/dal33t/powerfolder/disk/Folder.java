@@ -267,10 +267,6 @@ public class Folder extends PFComponent {
             if (isEncrypted) {
                 try {
                     localBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), localBaseDir);
-                    // PFS-2334:
-                    if (Files.notExists(localBase)) {
-                        Files.createDirectories(localBase);
-                    }
                 } catch (IOException e) {
                     logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
                             " with localbase " + localBaseDir + " " + e);

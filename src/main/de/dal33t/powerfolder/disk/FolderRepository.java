@@ -126,7 +126,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Mutex for the periodical looking for new folders / removing folders not
-     * present on the server any more and the spontanious event of a
+     * present on the server any more and the spontaneous event of a
      * "disconnected device". Also mutex all folder creation processes.
      *
      * @see #scanBasedir()
@@ -1432,13 +1432,18 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 if (!PathUtils.isZyncroPath(folder.getLocalBase()) && !PathUtils.isWebDAVFolder(folder.getLocalBase())) {
                     // Remove the folder if totally empty.
+                    Path localBase = folder.getLocalBase();
                     try {
-                        Files.delete(folder.getLocalBase());
+                        if (EncryptedFileSystemUtils.isCryptoInstance(localBase) && PathUtils.isEmptyDir(localBase)) {
+                            PathUtils.recursiveDeleteVisitor(EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase));
+                        } else {
+                            Files.delete(localBase);
+                        }
                     } catch (DirectoryNotEmptyException | NoSuchFileException e) {
                         // this can happen, and is just fine
                     } catch (IOException ioe) {
                         logSevere("Failed to delete local base: "
-                                + folder.getLocalBase().toAbsolutePath() + ": "
+                                + localBase.toAbsolutePath() + ": "
                                 + ioe);
                     }
                 }
