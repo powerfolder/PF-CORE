@@ -122,7 +122,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     /**
      * A list of folder base directories that have been removed in the past.
      */
-    private final Set<Path> removedFolderDirectories = new CopyOnWriteArraySet<Path>();
+    private final Set<Path> ignoredFolderDirectories = new CopyOnWriteArraySet<Path>();
 
     /**
      * Mutex for the periodical looking for new folders / removing folders not
@@ -172,7 +172,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             try {
                 if (!EncryptedFileSystemUtils.endsWithEncryptionSuffix(s)) {
                     Path p = Paths.get(s);
-                    removedFolderDirectories.add(p);
+                    ignoredFolderDirectories.add(p);
                 }
             } catch (Exception e) {
                 logFine("Unable to check removed dir: " + s + ". " + e);
@@ -1488,9 +1488,9 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public void addToIgnoredFolders(Folder folder) {
         Path path = folder.getLocalBase();
-        if (removedFolderDirectories.add(path)) {
+        if (ignoredFolderDirectories.add(path)) {
             StringBuilder sb = new StringBuilder();
-            Iterator<Path> iterator = removedFolderDirectories.iterator();
+            Iterator<Path> iterator = ignoredFolderDirectories.iterator();
             while (iterator.hasNext()) {
                 String s = iterator.next().toAbsolutePath().toString();
                 sb.append(s);
@@ -1504,9 +1504,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private void removeFromIgnoredFolders(Folder folder) {
-        if (removedFolderDirectories.remove(folder.getLocalBase())) {
+        if (ignoredFolderDirectories.remove(folder.getLocalBase())) {
             StringBuilder sb = new StringBuilder();
-            Iterator<Path> iterator = removedFolderDirectories.iterator();
+            Iterator<Path> iterator = ignoredFolderDirectories.iterator();
             while (iterator.hasNext()) {
                 String s = iterator.next().toAbsolutePath().toString();
                 sb.append(s);
@@ -1832,7 +1832,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return false;
             }
 
-            return !containedInRemovedFolders(entry);
+            return !isIgnoredFolderDirectory(entry);
         };
 
         try (DirectoryStream<Path> directories = Files.newDirectoryStream(
@@ -1942,15 +1942,15 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return {@code True} if the path or file name is in the removed
      *         folders list, {@code false} otherwise.
      */
-    private boolean containedInRemovedFolders(Path entry) {
-        boolean isMarkedAsRemoved = removedFolderDirectories
+    private boolean isIgnoredFolderDirectory(Path entry) {
+        boolean ignored = ignoredFolderDirectories
             .contains(entry);
         boolean isRenamedFolder = checkSystemSubdirForFolder(entry) != null && isFolderRenamed(entry);
 
         // return early, don't iterate the whole list again.
-        if (isMarkedAsRemoved) {
+        if (ignored) {
             if (isRenamedFolder) {
-                removedFolderDirectories.remove(entry);
+                ignoredFolderDirectories.remove(entry);
                 return false;
             }
             return true;
@@ -1960,15 +1960,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             return false;
         }
 
-        for (Path removed : removedFolderDirectories) {
-            if (removed.getFileName() == null) {
+        for (Path ignoredPath : ignoredFolderDirectories) {
+            if (ignoredPath.getFileName() == null) {
                 continue;
             }
-            if (removed.getFileName().equals(entry.getFileName())) {
-                isMarkedAsRemoved = true;
+            if (ignoredPath.getFileName().equals(entry.getFileName())) {
+                ignored = true;
             }
         }
-        return isMarkedAsRemoved;
+        return ignored;
     }
 
     /**
@@ -2209,7 +2209,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             if (folder != null && folder.checkIfDeviceDisconnected()) {
                 removeFolder(folder, false, false);
-                removedFolderDirectories.remove(folder.getLocalBase());
+                ignoredFolderDirectories.remove(folder.getLocalBase());
             }
 
             FolderService foServ = client.getFolderService();
@@ -2855,7 +2855,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 SyncProfile profile = SyncProfile.getDefault(getController());
                 Path suggestedLocalBase = getController().getFolderRepository()
                     .getFoldersBasedir().resolve(folderName);
-                if (containedInRemovedFolders(suggestedLocalBase)) {
+                if (isIgnoredFolderDirectory(suggestedLocalBase)) {
                     continue;
                 }
 
@@ -2863,7 +2863,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     .getUserDirectories(getController()).get(folderName);
 
                 if (userDir != null) {
-                    if (containedInRemovedFolders(userDir
+                    if (isIgnoredFolderDirectory(userDir
                         .getDirectory()))
                     {
                         continue;
