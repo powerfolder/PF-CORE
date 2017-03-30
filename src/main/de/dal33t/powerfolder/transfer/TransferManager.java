@@ -602,8 +602,9 @@ public class TransferManager extends PFComponent {
     {
         Level l = Level.WARNING;
         if (problem == TransferProblem.NODE_DISCONNECTED
-            || problem == TransferProblem.PAUSED
-            || problem == TransferProblem.OLD_UPLOAD)
+                || problem == TransferProblem.PAUSED
+                || problem == TransferProblem.OLD_UPLOAD
+                || problem == TransferProblem.BROKEN_DOWNLOAD)
         {
             l = Level.FINE;
         }
