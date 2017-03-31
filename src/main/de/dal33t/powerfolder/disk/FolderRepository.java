@@ -2698,8 +2698,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                 folder.addPattern(pattern);
             }
 
-            PathUtils.setAttributesOnWindows(targetPath, true, true);
-
             if (moved) {
                 logInfo("Successfully moved folder from " + sourceDirectory + " to " + targetPath + ".");
             } else {
