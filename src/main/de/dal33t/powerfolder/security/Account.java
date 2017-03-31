@@ -1541,11 +1541,23 @@ public class Account implements Serializable, D2DObject {
     }
 
     public void migrate() {
-        if (licenseKeyFileList == null) {
-            licenseKeyFileList = new CopyOnWriteArrayList<String>();
+        if (permissions == null){
+            permissions = new CopyOnWriteArrayList<>();
         }
         if (groups == null) {
-            groups = new CopyOnWriteArrayList<Group>();
+            groups = new CopyOnWriteArrayList<>();
+        }
+        if (computers == null) {
+            computers = new CopyOnWriteArrayList<>();
+        }
+        if (licenseKeyFileList == null) {
+            licenseKeyFileList = new CopyOnWriteArrayList<>();
+        }
+        if (licenseKeyFiles == null) {
+            licenseKeyFiles = new CopyOnWriteArrayList<>();
+        }
+        if (emails == null) {
+            emails = new CopyOnWriteArrayList<>();
         }
         if (tokens == null) {
             tokens = new ConcurrentHashMap<>();
