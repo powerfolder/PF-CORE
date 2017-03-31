@@ -175,4 +175,49 @@ public class FolderMoveTest extends ControllerTestCase {
 
     }
 
+    /**
+     * Tests that a valid move is passed by canMoveFiles. Test move goes okay.
+     * Tests old dir emptied.
+     */
+    public void testFolderMoveToEmptyDir() {
+
+        FolderRepository repository = getController().getFolderRepository();
+
+        testFolder2 = PathUtils.createEmptyDirectory(testFolder2);
+
+        try {
+
+            System.out.println("Before moving:");
+
+            Files.walk(testFolder.getLocalBase())
+                    .forEach(p -> System.out.println(p));
+
+            Path oldLocalBase = testFolder.getLocalBase();
+
+            testFolder = repository.moveLocalFolder(testFolder, testFolder2);
+
+            scanFolder(testFolder);
+
+            System.out.println("After moving:");
+
+            Files.walk(testFolder.getLocalBase())
+                    .forEach(p -> System.out.println(p));
+
+            // The testFolder should have the test files plus 2 subdirs
+            assertEquals(4, testFolder.getKnownItemCount());
+
+            // Sub dir should contain one file; test2.txt
+            Files.walk(testFolder2)
+                    .filter(p -> p.getFileName().toString().equals("sub") && Files.isDirectory(p))
+                    .forEach(p -> assertEquals(1, PathUtils.getNumberOfSiblings(p)));
+
+            // PFS-2227: moveLocalFolder should actually move all contents on filesystem:
+            assertTrue("Old location still existing!:  " + oldLocalBase, Files.notExists(oldLocalBase));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }

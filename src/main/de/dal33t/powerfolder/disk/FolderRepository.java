@@ -2671,6 +2671,10 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Move it.
             try {
+                if (Files.exists(targetPath) && PathUtils.isEmptyDir(targetPath)) {
+                    // Delete empty target target path. Might have been created through resolveTargetDirectory
+                    PathUtils.recursiveDelete(targetPath);
+                }
                 PathUtils.recursiveMoveVisitor(sourceDirectory, targetPath);
                 fs = fs.changeBaseDir(targetPath);
                 moved = true;
