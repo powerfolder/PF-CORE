@@ -45,7 +45,7 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(nFiles, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
-                    .getCompletedDownloadsCollection().size() == nFiles;
+                    .getCompletedDownloadsCollection().size() >= nFiles;
             }
 
             public String message() {
