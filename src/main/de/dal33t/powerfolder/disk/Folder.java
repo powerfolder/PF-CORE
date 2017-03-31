@@ -599,7 +599,7 @@ public class Folder extends PFComponent {
                 + scanResult.getRestoredFiles().size() + " restored, "
                 + scanResult.getDeletedFiles().size() + " removed, "
                 + scanResult.getProblemFiles().size() + " problems";
-            if (scanResult.isChangeDetected()) {
+            if (scanResult.isChangeDetected() && !currentInfo.isMetaFolder()) {
                 logInfo(msg);
             } else {
                 logFine(msg);
