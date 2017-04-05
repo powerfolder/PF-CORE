@@ -2630,8 +2630,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean sourceEncrypted = EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase());
         boolean targetEncrypted = targetPath.getFileName().toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
         if (sourceEncrypted && !targetEncrypted) {
-            logWarning("Trying to move encrypted folder to unencrypted target directory. From: "
+            logWarning("Not allowed to move encrypted folder to unencrypted target directory. From: "
                     + folder.getLocalBase() + " to " + targetPath);
+            return null;
+        } else if (!sourceEncrypted && targetEncrypted) {
+            logWarning("Not allowed to move unencrypted folder to encrypted target directory. From: "
+                    + folder.getLocalBase() + " to " + targetPath);
+            return null;
         }
 
         targetPath = PathUtils.removeInvalidFilenameChars(targetPath);
@@ -2641,9 +2646,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
                 localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
             }
-            logSevere("Not moving folder " + folder + " to new directory "
+            logInfo("Not moving folder " + folder + " to new directory "
                 + targetPath.toString()
-                    + ". The new directory already exists! "
+                    + ". The new directory is not empty. "
                     + "Keeping the old directory " + localBase);
             return null;
         }
