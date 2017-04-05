@@ -1799,14 +1799,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             return false;
         }
 
-        // Check for folders with deactivated sync if their physical directory still exists. If not remove the folder path from
-        // ignored folders list, so the folder can be setup again on the client filesystem.
-        for (Path ignoredDir : ignoredFolderDirectories){
-            if (Files.notExists(ignoredDir)){
-                ignoredFolderDirectories.remove(ignoredDir);
-            }
-        }
-
         // Get all directories
         Filter<Path> filter = entry -> {
             String name = entry.getFileName().toString();
