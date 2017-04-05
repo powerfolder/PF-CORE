@@ -1798,6 +1798,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
             return false;
         }
+
+        // Check for folders with deactivated sync if their physical directory still exists. If not remove the folder path from
+        // ignored folders list, so the folder can be setup again on the client filesystem.
+        for (Path ignoredDir : ignoredFolderDirectories){
+            if (Files.notExists(ignoredDir)){
+                ignoredFolderDirectories.remove(ignoredDir);
+            }
+        }
+
         // Get all directories
         Filter<Path> filter = entry -> {
             String name = entry.getFileName().toString();
@@ -2357,32 +2366,29 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Get all directories
-        Filter<Path> filter = new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                String name = entry.getFileName().toString();
-                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
-                    return false;
-                }
-                if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                    .getValue(getController()))
-                    || name
-                        .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                            .getDefaultValue()))
-                {
-                    return false;
-                }
-                if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
-                    return false;
-                }
-                if (ignoredFoldersLC.contains(name.toLowerCase())) {
-                    return false;
-                }
-                if (!Files.isDirectory(entry)) {
-                    return false;
-                }
-                return true;
+        Filter<Path> filter = entry -> {
+            String name = entry.getFileName().toString();
+            if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                return false;
             }
+            if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                .getValue(getController()))
+                || name
+                    .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                        .getDefaultValue()))
+            {
+                return false;
+            }
+            if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
+                return false;
+            }
+            if (ignoredFoldersLC.contains(name.toLowerCase())) {
+                return false;
+            }
+            if (!Files.isDirectory(entry)) {
+                return false;
+            }
+            return true;
         };
 
         try (DirectoryStream<Path> directories = Files.newDirectoryStream(
