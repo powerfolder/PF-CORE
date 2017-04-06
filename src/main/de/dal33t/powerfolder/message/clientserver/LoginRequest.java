@@ -76,9 +76,9 @@ public class LoginRequest extends Message implements D2DObject {
     public AbstractMessage toD2D() {
         LoginRequestProto.LoginRequest.Builder builder = LoginRequestProto.LoginRequest.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
+        if (this.requestCode != null) builder.setRequestCode(this.getRequestCode());
         if (this.username != null) builder.setUsername(this.getUsername());
         if (this.password != null) builder.setPassword(this.getPassword());
-        if (this.requestCode != null) builder.setPassword(this.getRequestCode());
         return builder.build();
     }
 }
