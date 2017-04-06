@@ -1798,6 +1798,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Files.notExists(baseDir) || !Files.isReadable(baseDir)) {
             return false;
         }
+
         // Get all directories
         Filter<Path> filter = entry -> {
             String name = entry.getFileName().toString();
@@ -2357,32 +2358,29 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Get all directories
-        Filter<Path> filter = new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) throws IOException {
-                String name = entry.getFileName().toString();
-                if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
-                    return false;
-                }
-                if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                    .getValue(getController()))
-                    || name
-                        .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                            .getDefaultValue()))
-                {
-                    return false;
-                }
-                if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
-                    return false;
-                }
-                if (ignoredFoldersLC.contains(name.toLowerCase())) {
-                    return false;
-                }
-                if (!Files.isDirectory(entry)) {
-                    return false;
-                }
-                return true;
+        Filter<Path> filter = entry -> {
+            String name = entry.getFileName().toString();
+            if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
+                return false;
             }
+            if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                .getValue(getController()))
+                || name
+                    .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
+                        .getDefaultValue()))
+            {
+                return false;
+            }
+            if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {
+                return false;
+            }
+            if (ignoredFoldersLC.contains(name.toLowerCase())) {
+                return false;
+            }
+            if (!Files.isDirectory(entry)) {
+                return false;
+            }
+            return true;
         };
 
         try (DirectoryStream<Path> directories = Files.newDirectoryStream(
@@ -2579,7 +2577,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 .removeInvalidFilenameChars(foInfo.getLocalizedName()));
                 folder = moveLocalFolder(folder, newDirectory);
                 if (folder == null) {
-                    logWarning("Failed to move folder " + folder.getName() + "/" + folder.getId()
+                    logWarning("Failed to move folder " + foInfo.getName() + "/" + foInfo.getId()
                             + " to new directory " + newDirectory);
                 }
             }
@@ -2632,8 +2630,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean sourceEncrypted = EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase());
         boolean targetEncrypted = targetPath.getFileName().toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
         if (sourceEncrypted && !targetEncrypted) {
-            logWarning("Trying to move encrypted folder to unencrypted target directory. From: "
+            logWarning("Not allowed to move encrypted folder to unencrypted target directory. From: "
                     + folder.getLocalBase() + " to " + targetPath);
+            return null;
+        } else if (!sourceEncrypted && targetEncrypted) {
+            logWarning("Not allowed to move unencrypted folder to encrypted target directory. From: "
+                    + folder.getLocalBase() + " to " + targetPath);
+            return null;
         }
 
         targetPath = PathUtils.removeInvalidFilenameChars(targetPath);
@@ -2643,9 +2646,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
                 localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
             }
-            logSevere("Not moving folder " + folder + " to new directory "
+            logInfo("Not moving folder " + folder + " to new directory "
                 + targetPath.toString()
-                    + ". The new directory already exists! "
+                    + ". The new directory is not empty. "
                     + "Keeping the old directory " + localBase);
             return null;
         }

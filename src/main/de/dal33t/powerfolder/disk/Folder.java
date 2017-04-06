@@ -313,7 +313,7 @@ public class Folder extends PFComponent {
             if (filename.equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR.substring(1)) ||
                     localBase.toString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
                 logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
-                        " with localBase " + localBaseDir);
+                        " with PHYSICAL localBase " + localBaseDir);
                 throw new IllegalStateException("localBase of encrypted folder " + fInfo.getName() + " invalid!");
             }
         }
