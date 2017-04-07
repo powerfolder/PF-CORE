@@ -38,6 +38,7 @@ public class AccessDeniedProblem extends ResolvableProblem {
                 if (folder != null) {
                     controller.getIOProvider().startIO(new Runnable() {
                         public void run() {
+                            controller.getFolderRepository().addToIgnoredFolders(folder);
                             controller.getFolderRepository().removeFolder(
                                 folder, false);
                         }
