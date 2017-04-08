@@ -1342,8 +1342,10 @@ public class TransferManager extends PFComponent {
         fireUploadRequested(new TransferManagerEvent(this, upload));
 
         if (oldUpload != null) {
-            logWarning("Received already known download request for " + dl.file
-                + " from " + from.getNick() + ", overwriting old request");
+            if (isFine()) {
+                logFine("Received already known download request for " + dl.file
+                        + " from " + from.getNick() + ", overwriting old request");
+            }
             // Stop former upload request
             oldUpload.abort();
             oldUpload.shutdown();
