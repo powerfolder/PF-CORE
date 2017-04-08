@@ -772,7 +772,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             connectionRetries = 0;
         } else {
             if (isUnableToConnect() && isConnectedToNetwork) {
-                logWarning("Unable to connect directly to "
+                logFine("Unable to connect directly to "
                     + getReconnectAddress());
                 // FIXME: Find a better ways
                 setConnectedToNetwork(false);
