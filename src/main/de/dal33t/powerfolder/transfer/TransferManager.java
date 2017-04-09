@@ -208,7 +208,7 @@ public class TransferManager extends PFComponent {
         listenerSupport = ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
 
-        bandwidthProvider = new BandwidthProvider();
+        bandwidthProvider = new BandwidthProvider(getController().getThreadPool());
 
         statsRecorder = new BandwidthStatsRecorder(getController());
         bandwidthProvider.addBandwidthStatListener(statsRecorder);

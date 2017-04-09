@@ -19,27 +19,38 @@
  */
 package de.dal33t.powerfolder.test.transfer;
 
+import de.dal33t.powerfolder.transfer.*;
+import junit.framework.TestCase;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import junit.framework.TestCase;
+public class BandwidthLimitTest extends TestCase {
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
+    private BandwidthProvider provider;
+    private ScheduledExecutorService scheduledES;
+    private BandwidthLimiter bl;
 
-import de.dal33t.powerfolder.transfer.BandwidthLimiter;
-import de.dal33t.powerfolder.transfer.BandwidthProvider;
-import de.dal33t.powerfolder.transfer.BandwidthStat;
-import de.dal33t.powerfolder.transfer.BandwidthStatsListener;
-import de.dal33t.powerfolder.transfer.LimitedInputStream;
-import de.dal33t.powerfolder.transfer.LimitedOutputStream;
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        scheduledES = Executors.newScheduledThreadPool(1);
+        provider = new BandwidthProvider(scheduledES);
+        bl = new BandwidthLimiter(BandwidthLimiterInfo.LAN_INPUT);
+    }
 
-public class BandwidthLimitText extends TestCase {
-    BandwidthProvider provider = new BandwidthProvider();
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        scheduledES.shutdownNow();
+    }
 
     public void testUnlimited() {
-        BandwidthLimiter bl = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
         try {
             assertEquals(bl.requestBandwidth(Long.MAX_VALUE), Long.MAX_VALUE);
         } catch (InterruptedException e) {
@@ -62,9 +73,8 @@ public class BandwidthLimitText extends TestCase {
 
     public void testLimiter() {
         System.out.println("BandwidthLimitTest.testLimiter");
-        BandwidthLimiter bl = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
         try {
-            assertEquals(bl.requestBandwidth(Long.MAX_VALUE), Long.MAX_VALUE);
+            assertEquals(Long.MAX_VALUE, bl.requestBandwidth(Long.MAX_VALUE));
         } catch (InterruptedException e) {
             fail(e.toString());
         }
@@ -84,7 +94,6 @@ public class BandwidthLimitText extends TestCase {
     }
 
     public void testLimiteds() {
-        BandwidthLimiter bl = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
         bl.setAvailable(10000);
         byte b[] = new byte[1000];
 
@@ -110,7 +119,6 @@ public class BandwidthLimitText extends TestCase {
     }
 
     public void testProvider() {
-        BandwidthLimiter bl = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
         bl.setAvailable(0);
         provider.start();
         provider.setLimitBPS(bl, 1000);
@@ -146,7 +154,6 @@ public class BandwidthLimitText extends TestCase {
     }
 
     public void testHeavyLoad() {
-        BandwidthLimiter bl = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
         bl.setAvailable(0);
         provider.start();
         provider.setLimitBPS(bl, 1024 * 100);
@@ -183,7 +190,6 @@ public class BandwidthLimitText extends TestCase {
     }
 
     public void testBandwidthStats() {
-        BandwidthLimiter bl = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
         bl.setAvailable(0);
         provider.start();
         provider.setLimitBPS(bl, 1000);

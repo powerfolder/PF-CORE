@@ -28,6 +28,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
@@ -49,8 +50,9 @@ public class BandwidthProvider extends Loggable {
     private final BandwidthStatsListener statListenerSupport = ListenerSupportFactory
         .createListenerSupport(BandwidthStatsListener.class);
 
-    public BandwidthProvider() {
-        scheduledES = Executors.newScheduledThreadPool(1);
+    public BandwidthProvider(ScheduledExecutorService scheduledES ) {
+        Reject.ifNull(scheduledES, "scheduledES");
+        this.scheduledES = scheduledES;
     }
 
     public void start() {
@@ -78,7 +80,6 @@ public class BandwidthProvider extends Loggable {
         if (task != null) {
             task.cancel(true);
         }
-        scheduledES.shutdownNow();
     }
 
     /**
