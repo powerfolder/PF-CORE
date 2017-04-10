@@ -224,13 +224,13 @@ public class Organization implements Serializable {
     }
 
     public JSONObject getJSONObject() {
-        if (jsonData == null) {
+        if (StringUtils.isBlank(jsonData)) {
             return new JSONObject();
         }
         try {
             return new JSONObject(jsonData);
         } catch (JSONException e) {
-            LOG.severe("Illegal JSON data for " + name + ": " + jsonData
+            LOG.warning("Illegal JSON data for " + name + ": " + jsonData
                 + ". " + e);
             return new JSONObject();
         }
