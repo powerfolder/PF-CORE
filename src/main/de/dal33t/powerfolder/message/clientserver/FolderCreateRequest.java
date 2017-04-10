@@ -16,6 +16,8 @@ public class FolderCreateRequest extends Message implements D2DObject {
     private String requestCode;
     private FolderInfo folderInfo;
 
+    public FolderCreateRequest() {}
+
     /**
      * Init from D2D message
      *
