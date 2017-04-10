@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 public class InetSocketAddressUserType extends Loggable implements UserType {
+    private static final boolean RESOLVE_HOSTNAMES = false;
     private static final int[] SQL_TYPES = {Types.VARCHAR};
 
     public InetSocketAddressUserType() {
@@ -90,8 +91,13 @@ public class InetSocketAddressUserType extends Loggable implements UserType {
         if (addAndPort.length != 2) {
             return null;
         } else {
-            return new InetSocketAddress(addAndPort[0], Integer.valueOf(
-                addAndPort[1]).intValue());
+            String host = addAndPort[0];
+            int port = Integer.valueOf(addAndPort[1]).intValue();
+            if (RESOLVE_HOSTNAMES) {
+                return new InetSocketAddress(host, port);
+            } else {
+                return InetSocketAddress.createUnresolved(host, port);
+            }
         }
     }
 
