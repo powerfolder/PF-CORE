@@ -2912,7 +2912,7 @@ public class TransferManager extends PFComponent {
                         // Enqueue upload to friends and lan members first
 
                         if (upload.isAborted()) {
-                            logWarning("Not starting aborted: " + upload);
+                            logFine("Not starting aborted: " + upload);
                         } else {
                             if (upload.getPartner().isOnLAN()
                                 || !isUploadActive(upload.getFile(), true))
