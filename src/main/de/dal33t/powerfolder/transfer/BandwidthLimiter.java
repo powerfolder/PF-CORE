@@ -145,6 +145,9 @@ public class BandwidthLimiter {
         if (isUnlimited()) {
             return;
         }
+        if (amount == 0) {
+            return;
+        }
     	synchronized (monitor) {
             if (available >= 0) {
                 available += amount;
