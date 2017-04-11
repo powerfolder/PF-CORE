@@ -27,10 +27,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.Lock;
-import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
-import de.dal33t.powerfolder.protocol.FolderInfoProto;
-import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -1104,62 +1101,43 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  mesg  Message to use data from
      **/
-
     @Override
     public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof FileInfoProto.FileInfo)
-        {
-          FileInfoProto.FileInfo finfo = (FileInfoProto.FileInfo)mesg;
-
-          this.fileName          = finfo.getFileName();
-          this.oid               = finfo.getOid();
-          this.hashes            = finfo.getFileHashes();
-          this.tags              = finfo.getTags();
-          this.size              = finfo.getSize();
-          this.modifiedBy        = new MemberInfo(finfo.getModifiedByNodeInfo());
-          this.modifiedByAccount = new AccountInfo(finfo.getModifiedByAccountInfo());
-          this.lastModifiedDate  = new Date(finfo.getLastModifiedDate());
-          this.version           = finfo.getVersion();
-          this.deleted           = finfo.getDeleted();
-          this.folderInfo        = new FolderInfo(finfo.getFolderInfo());
-
-          validate();
+    initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof FileInfoProto.FileInfo) {
+            FileInfoProto.FileInfo fileInfo = (FileInfoProto.FileInfo) mesg;
+            this.deleted = fileInfo.getDeleted();
+            this.fileName = fileInfo.getFileName();
+            // Todo: Hacky
+            this.folderInfo = new FolderInfo("", fileInfo.getFolderId());
+            this.lastModifiedDate = new Date(fileInfo.getLastModifiedDate());
+            // Todo: Hacky
+            this.modifiedBy = new MemberInfo("", fileInfo.getModifiedByNodeId(), "");
+            this.version = (int) fileInfo.getVersion();
+            this.size = fileInfo.getSize();
+            validate();
         }
     }
 
-    /** toD2D
+    /**
+     * toD2D
      * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
+     *
      * @return Converted D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
      **/
-
     @Override
     public AbstractMessage
-    toD2D()
-    {
-      FileInfoProto.FileInfo.Builder builder = FileInfoProto.FileInfo.newBuilder();
-
-      builder.setClazzName(this.getClass().getSimpleName());
-      if (this.fileName != null) builder.setFileName(this.fileName);
-      if (this.oid != null) builder.setOid(this.oid);
-      if (this.hashes != null) builder.setFileHashes(this.hashes);
-      if (this.tags != null) builder.setTags(this.tags);
-      if (this.size != null) builder.setSize(this.size);
-
-      if (this.modifiedBy != null) builder.setModifiedByNodeInfo(
-        (NodeInfoProto.NodeInfo)this.modifiedBy.toD2D());
-      if (this.modifiedByAccount != null) builder.setModifiedByAccountInfo(
-        (AccountInfoProto.AccountInfo)this.modifiedByAccount.toD2D());
-
-      if (this.lastModifiedDate != null) builder.setLastModifiedDate(this.lastModifiedDate.getTime());
-      builder.setVersion(this.version);
-      builder.setDeleted(this.deleted);
-
-      if (this.folderInfo != null) builder.setFolderInfo(
-        (FolderInfoProto.FolderInfo)this.folderInfo.toD2D());
-
-      return builder.build();
+    toD2D() {
+        FileInfoProto.FileInfo.Builder builder = FileInfoProto.FileInfo.newBuilder();
+        builder.setClazzName(this.getClass().getSimpleName());
+        builder.setDeleted(this.deleted);
+        if (this.fileName != null) builder.setFileName(this.fileName);
+        if (this.folderInfo != null) builder.setFolderId(this.folderInfo.getId());
+        if (this.lastModifiedDate != null) builder.setLastModifiedDate(this.lastModifiedDate.getTime());
+        if (this.modifiedBy != null) builder.setModifiedByNodeId(modifiedBy.getId());
+        builder.setVersion(this.version);
+        if (this.size != null) builder.setSize(this.size);
+        return builder.build();
     }
 }
