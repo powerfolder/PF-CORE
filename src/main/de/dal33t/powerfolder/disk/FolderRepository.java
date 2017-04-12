@@ -2579,7 +2579,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 .removeInvalidFilenameChars(foInfo.getLocalizedName()));
                 folder = moveLocalFolder(folder, newDirectory);
                 if (folder == null) {
-                    logWarning("Failed to move folder " + folder.getName() + "/" + folder.getId()
+                    logWarning("Failed to move folder " + foInfo.getName() + "/" + folder.getId()
                             + " to new directory " + newDirectory);
                 }
             }
