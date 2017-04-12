@@ -67,7 +67,7 @@ public interface SecurityService {
      * @return {@code True} if login succeeded, {@code false} if the credentials
      *         were wrong
      */
-    boolean login(String username, Serializable credentials);
+    boolean login(String username, byte[] credentials);
 
     /**
      * PFC-2548: Logs in by a token secret (device specific token).
@@ -77,14 +77,6 @@ public interface SecurityService {
      *         invalid or token based authentication is disabled.
      */
     boolean login(String tokenSecret);
-
-    /**
-     *
-     * @return
-     * @deprecated since v 10.3 - remove at v 13
-     */
-    @Deprecated
-    AccountDetails loginAndGetAccountDetails(String username, Serializable credentials);
 
     /**
      * @return true if a user is logged in currently = has open session.
