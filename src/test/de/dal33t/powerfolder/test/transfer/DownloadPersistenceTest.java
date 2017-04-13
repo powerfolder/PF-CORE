@@ -25,7 +25,7 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
         super.setUp();
 
         connectBartAndLisa();
-        joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
     }
 
     public void testStoreCompletedDownloadsMultiple() throws Exception {

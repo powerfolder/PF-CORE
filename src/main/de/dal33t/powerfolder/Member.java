@@ -1099,7 +1099,9 @@ public class Member extends PFComponent implements Comparable<Member> {
             boolean noChangeReceivedSineOneMinute = System.currentTimeMillis()
                 - lastMessageReceived.getTime() > 1000L * 60;
             if (noChangeReceivedSineOneMinute) {
-                logWarning("No message received since 1 minute while waiting for filelist from " + getNick());
+                if (isFine()) {
+                    logFine("No message received since 1 minute while waiting for filelist from " + getNick());
+                }
                 return false;
             }
 
@@ -1169,8 +1171,10 @@ public class Member extends PFComponent implements Comparable<Member> {
             boolean noChangeReceivedSineOneMinute = System.currentTimeMillis()
                 - lastMessageReceived.getTime() > 1000L * 60;
             if (noChangeReceivedSineOneMinute) {
-                logWarning("No message received from " + getNick()
-                    + " since 1 minute while waiting for handshake complete");
+                if (isFine()) {
+                    logFine("No message received from " + getNick()
+                            + " since 1 minute while waiting for handshake complete");
+                }
                 return false;
             }
             if (!isConnected()) {

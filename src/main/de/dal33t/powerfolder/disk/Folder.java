@@ -1676,6 +1676,9 @@ public class Folder extends PFComponent {
                     }
                 }
                 FileInfo localFile = getFile(fInfo);
+                if (localFile == null) {
+                    return null;
+                }
                 FileInfo synced = localFile.syncFromDiskIfRequired(this,
                     diskFile);
                 folderChanged = synced != null;

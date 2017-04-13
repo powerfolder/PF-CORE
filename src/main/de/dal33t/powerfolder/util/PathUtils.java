@@ -1752,13 +1752,16 @@ public class PathUtils {
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                             CopyOption[] options = new CopyOption[]{COPY_ATTRIBUTES};
                             Path newFile = targetDirectory.resolve(sourceDirectory.relativize(file));
-                            Files.copy(file, newFile, options);
-
-                            // Check if actually necessary
-                            FileTime time = Files.getLastModifiedTime(file);
-                            FileTime newDirTime = Files.getLastModifiedTime(newFile);
-                            if (!time.equals(newDirTime)) {
-                                Files.setLastModifiedTime(newFile, time);
+                            try {
+                                Files.copy(file, newFile, options);
+                                // Check if actually necessary
+                                FileTime time = Files.getLastModifiedTime(file);
+                                FileTime newDirTime = Files.getLastModifiedTime(newFile);
+                                if (!time.equals(newDirTime)) {
+                                    Files.setLastModifiedTime(newFile, time);
+                                }
+                            } catch (NoSuchFileException e) {
+                                log.warning("Source file not available while copy: " + file + " to " + newFile + ": " + e);
                             }
                             return CONTINUE;
                         }
@@ -1819,14 +1822,22 @@ public class PathUtils {
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                             Path newFile = targetDirectory.resolve(sourceDirectory.relativize(file));
-                            Files.move(file, newFile);
+                            try {
+                                Files.move(file, newFile);
+                            } catch (NoSuchFileException e) {
+                                log.warning("Source file not available while move: " + file + " to " + newFile + ": " + e);
+                            }
                             return CONTINUE;
                         }
 
                         @Override
                         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                             if (exc == null) {
-                                Files.delete(dir);
+                                try {
+                                    Files.delete(dir);
+                                } catch (DirectoryNotEmptyException e) {
+                                    log.warning("Source directory not empty while move: " + dir + ": " + e);
+                                }
                                 return FileVisitResult.CONTINUE;
                             } else {
                                 throw exc;

@@ -2579,7 +2579,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 .removeInvalidFilenameChars(foInfo.getLocalizedName()));
                 folder = moveLocalFolder(folder, newDirectory);
                 if (folder == null) {
-                    logWarning("Failed to move folder " + folder.getName() + "/" + folder.getId()
+                    logWarning("Failed to move folder " + foInfo.getName() + "/" + foInfo.getId()
                             + " to new directory " + newDirectory);
                 }
             }
@@ -2695,7 +2695,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     moved = true;
                     deleteOriginalDirectory = true;
                 } catch (IOException ex) {
-                    logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex);
+                    logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex + " and " + e);
                     deleteOriginalDirectory = false;
                 }
             }
