@@ -2659,20 +2659,59 @@ public class FolderRepository extends PFComponent implements Runnable {
                 fs = fs.changeBaseDir(targetPath);
                 moved = true;
             } catch (IOException e) {
+                if (Files.exists(targetPath) && PathUtils.isEmptyDir(targetPath)) {
+                    // Delete empty target target path. Might have been created through resolveTargetDirectory
+                    try {
+                        PathUtils.recursiveDelete(targetPath);
+                    } catch (IOException ex) {
+                        logWarning("Unable to cleanup empty target path while moving folder " + folder.getName() + " to " + targetPath + ": " + e);
+                    }
+                }
+                if (Files.notExists(targetPath)) {
+                    try {
+                        PathUtils.recursiveCopyVisitor(sourceDirectory, targetPath);
+                        fs = fs.changeBaseDir(targetPath);
+                        moved = true;
+                        deleteOriginalDirectory = true;
+                    } catch (IOException ex) {
+                        logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex + " and " + e);
+                        deleteOriginalDirectory = false;
+                    }
+                }
+
                 try {
-                    PathUtils.recursiveCopyVisitor(sourceDirectory, targetPath);
-                    fs = fs.changeBaseDir(targetPath);
-                    moved = true;
-                    deleteOriginalDirectory = true;
-                } catch (IOException ex) {
-                    logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex + " and " + e);
-                    deleteOriginalDirectory = false;
+                    Long[] sizes = PathUtils.calculateDirectorySizeAndCount(targetPath);
+                    long targetSizeBytes = 0;
+                    long targetNFiles = 0;
+                    if (sizes != null && sizes.length >= 2) {
+                        targetSizeBytes = sizes[0];
+                        targetNFiles = sizes[1];
+                    }
+                    sizes = PathUtils.calculateDirectorySizeAndCount(sourceDirectory);
+                    long sourceSizeBytes = 0;
+                    long sourceNFiles = 0;
+                    if (sizes != null && sizes.length >= 2) {
+                        sourceSizeBytes = sizes[0];
+                        sourceNFiles = sizes[1];
+                    }
+                    if (targetNFiles > sourceNFiles && targetSizeBytes > sourceSizeBytes) {
+                        if (sourceNFiles > 0 || sourceSizeBytes > 0) {
+                            logSevere("Possible incomplete folder move from " + sourceDirectory + " to " + targetPath +
+                                    ". Files in source: " + sourceNFiles + " (" + Format.formatBytesShort(sourceSizeBytes) + "), " +
+                                    "target: " + targetNFiles + " (" + Format.formatBytesShort(targetSizeBytes) + "). " +
+                                    "Using target path: " + targetPath);
+                        }
+                        fs = fs.changeBaseDir(targetPath);
+                    }
+                } catch (RuntimeException rte) {
+                    logSevere("Possible incomplete folder move: Error on folder " + folder.getName() + " from " + sourceDirectory + " to " + targetPath + ": " + rte, rte);
                 }
             }
 
             // Create the new Folder in the repository.
             Folder oldFolder = folder;
             folder = createFolder(folder.getInfo().intern(), fs, true, false);
+            PathUtils.setAttributesOnWindows(folder.getLocalBase(), null, true);
             fireFolderMoved(folder, oldFolder);
 
             // Restore patterns
@@ -2699,7 +2738,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
         } catch (IOException e) {
-            logSevere("Unable to move folder " + folder.getName() + " to " + targetPath + ". " + e);
+            logWarning("Unable to move folder " + folder.getName() + " to " + targetPath + ". " + e);
             logFine(e);
             return null;
         } finally {
