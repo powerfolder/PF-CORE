@@ -42,6 +42,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.security.Account;
@@ -358,7 +359,7 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         }
     }
 
-    private class FolderCreatePostProcessor implements FolderRepositoryListener
+    private class FolderCreatePostProcessor extends FolderRepositoryAdapter
     {
         @Override
         public boolean fireInEventDispatchThread() {
@@ -381,24 +382,8 @@ public class DesktopSyncSetupPanel extends PFWizardPanel {
         }
 
         @Override
-        public void folderRemoved(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupFinished(FolderRepositoryEvent e) {
-            // ignore
+        public void folderMoved(FolderRepositoryEvent e) {
+            folderCreated(e);
         }
     }
 }
