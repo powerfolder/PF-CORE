@@ -920,11 +920,6 @@ public enum ConfigurationEntry {
     FOLDER_REPOSITORY_ENABLED("folderepository.enabled", true),
 
     /**
-     * Whether to show preview folders in nav / folders panles.
-     */
-    HIDE_PREVIEW_FOLDERS("show.preview.folders", false),
-
-    /**
      * The number of seconds to wait to recalc a {@link FolderStatistic} when a
      * change to the folder happened. Applies to large folders only, that host
      * more files than {@link FolderStatistic#MAX_ITEMS}
