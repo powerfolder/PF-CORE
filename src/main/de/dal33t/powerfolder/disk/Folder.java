@@ -187,11 +187,6 @@ public class Folder extends PFComponent {
 
     private final FolderListener folderListenerSupport;
     private final FolderMembershipListener folderMembershipListenerSupport;
-    /**
-     * If the folder is only preview then the files do not actually download and
-     * the folder displays in the Available Folders group.
-     */
-    private boolean previewOnly;
 
     /**
      * True if the base dir is inaccessible.
@@ -331,7 +326,6 @@ public class Folder extends PFComponent {
         downloadScript = folderSettings.getDownloadScript();
         syncPatterns = folderSettings.isSyncPatterns();
         syncWarnSeconds = folderSettings.getSyncWarnSeconds();
-        previewOnly = folderSettings.isPreviewOnly();
         configEntryId = folderSettings.getConfigEntryId();
 
         // Check base dir
@@ -552,6 +546,10 @@ public class Folder extends PFComponent {
     private void commitScanResult(ScanResult scanResult,
         boolean ignoreLocalMassDeletions)
     {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not commitScanResult: " + scanResult);
+            return;
+        }
 
         // See if everything has been deleted.
         if (!ignoreLocalMassDeletions
@@ -751,6 +749,10 @@ public class Folder extends PFComponent {
      *         false if any problem happend.
      */
     public boolean scanDownloadFile(FileInfo fInfo, Path tempFile) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not scanDownloadFile: " + fInfo.toDetailString() + " from " + tempFile);
+            return false;
+        }
         UserPrincipal fileOwner = null;
         try {
             watcher.addIgnoreFile(fInfo);
@@ -1063,6 +1065,10 @@ public class Folder extends PFComponent {
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles(boolean ignoreLocalMassDeletion) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not scanLocalFiles");
+            return false;
+        }
         checkIfDeviceDisconnected();
         ScanResult result;
         FolderScanner scanner = getController().getFolderRepository()
@@ -1095,7 +1101,7 @@ public class Folder extends PFComponent {
         }
 
         try {
-            if (result.getResultState() == ScanResult.ResultState.SCANNED) {
+            if (!shutdown && result.getResultState() == ScanResult.ResultState.SCANNED) {
 
                 // Push any file problems into the Folder's problems.
                 Map<FileInfo, List<Problem>> filenameProblems = result
@@ -1282,6 +1288,10 @@ public class Folder extends PFComponent {
      */
     public FileInfo scanChangedFile(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not scanChangedFile: " + fileInfo);
+            return null;
+        }
         FileInfo localFileInfo = scanChangedFile0(fileInfo, true);
         if (localFileInfo != null) {
             FileInfo existinfFInfo = findSameFile(localFileInfo);
@@ -1300,6 +1310,10 @@ public class Folder extends PFComponent {
      * @param fileInfo
      */
     public void scanAllParentDirectories(FileInfo fileInfo) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not scanAllParentDirectories: " + fileInfo.toDetailString());
+            return;
+        }
         FileInfo dirInfo = fileInfo.getDirectory();
         dirInfo = getFile(dirInfo);
         if (dirInfo == null || !dirInfo.isDeleted()) {
@@ -1329,11 +1343,18 @@ public class Folder extends PFComponent {
      */
     void scanChangedFiles(final List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo collection is null");
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not scanChangedFiles (" + fileInfos.size() + "): " + fileInfos);
+            return;
+        }
         boolean checkRevert = isRevertLocalChanges();
         int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fileInfo = it.next();
-
+            if (shutdown) {
+                logFine(getName() + ": Already shutdown: Not scanChangedFiles (" + fileInfos.size() + "): " + fileInfos);
+                return;
+            }
             FileInfo localFileInfo = scanChangedFile0(fileInfo,
                 !ConfigurationEntry.MASS_DELETE_PROTECTION
                     .getValueBoolean(getController()));
@@ -1383,6 +1404,10 @@ public class Folder extends PFComponent {
      * @return null, if the file hasn't changed, the new FileInfo otherwise
      */
     private FileInfo scanChangedFile0(FileInfo fInfo, boolean ignoreDeleteProtection) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not scanChangedFile0: " + fInfo.toDetailString());
+            return null;
+        }
         if (isFiner()) {
             logFiner("Scanning file: " + fInfo + ", folderId: " + fInfo);
         }
@@ -1540,6 +1565,10 @@ public class Folder extends PFComponent {
      */
     public void scanDirectory(FileInfo dirInfo, Path dir) {
         Reject.ifNull(dirInfo, "DirInfo is null");
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not scanDirectory: " + dirInfo.toDetailString() + " at " + dir);
+            return;
+        }
         if (isFiner()) {
             logFiner("Scanning dir: " + dirInfo.toDetailString());
         }
@@ -1633,6 +1662,10 @@ public class Folder extends PFComponent {
      * @return The new deleted FileInfo, null if unchanged.
      */
     private FileInfo removeFileLocal(FileInfo fInfo) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not removeFileLocal: " + fInfo.toDetailString());
+            return null;
+        }
         if (isFiner()) {
             logFiner("Remove file local: " + fInfo + ", Folder equal ? "
                 + Util.equals(fInfo.getFolderInfo(), currentInfo));
@@ -1711,6 +1744,10 @@ public class Folder extends PFComponent {
         if (fInfos.isEmpty()) {
             return;
         }
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not removeFilesLocal (" + fInfos.size() + "): " + fInfos);
+            return;
+        }
         final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
         Comparator<FileInfo> comparator = new ReverseComparator<FileInfo>(
             FileInfoComparator
@@ -1764,6 +1801,10 @@ public class Folder extends PFComponent {
      */
     public boolean erase(FileInfo fInfo) {
         Reject.ifNull(fInfo, "fInfo");
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not erase: " + fInfo.toDetailString());
+            return false;
+        }
         Path diskFile = getDiskFile(fInfo);
         // 1) Archive local
         synchronized (scanLock) {
@@ -2136,6 +2177,10 @@ public class Folder extends PFComponent {
      * @param removeBefore
      */
     public void maintainFolderDB(long removeBefore) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not maintainFolderDB: " + removeBefore);
+            return;
+        }
         Date removeBeforeDate = new Date(removeBefore);
         int nFilesBefore = getKnownItemCount();
         if (isFiner()) {
@@ -2282,6 +2327,10 @@ public class Folder extends PFComponent {
     }
 
     private boolean checkRevertLocalChanges(FileInfo fileInfo) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not checkRevertLocalChanges: " + fileInfo.toDetailString());
+            return false;
+        }
         FileInfo newestVersion = fileInfo.getNewestVersion(getController()
             .getFolderRepository());
         if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
@@ -2504,8 +2553,6 @@ public class Folder extends PFComponent {
             return;
         }
         logFine("Setting " + aSyncProfile.getName());
-        Reject.ifTrue(previewOnly,
-            "Can not change Sync Profile in Preview mode.");
         syncProfile = aSyncProfile;
 
         if (!currentInfo.isMetaFolder()) {
@@ -2740,6 +2787,10 @@ public class Folder extends PFComponent {
     public void updateMetaFolderMembers() {
         // Only do this for parent folders.
         if (currentInfo.isMetaFolder()) {
+            return;
+        }
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not updateMetaFolderMembers");
             return;
         }
         FolderRepository folderRepository = getController()
@@ -3026,6 +3077,10 @@ public class Folder extends PFComponent {
             // Skip.
             return;
         }
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not syncRemoteDeletedFiles (" + collection.size() + "): " + collection);
+            return;
+        }
         if (isFine()) {
             logFine("Deleting files, which are deleted by friends. con-members: "
                 + Arrays.asList(getConnectedMembers()));
@@ -3064,6 +3119,11 @@ public class Folder extends PFComponent {
                         logWarning("Device " + member.getNick()
                             + " disconnected while syncing deletions.");
                         break;
+                    }
+                    // PFS-2227
+                    if (shutdown) {
+                        logFine(getName() + ": Already shutdown: Not syncRemoteDeletedFiles (" + collection.size() + "): " + remoteFile.toDetailString());
+                        return;
                     }
                 }
             }
@@ -3120,7 +3180,10 @@ public class Folder extends PFComponent {
             // Not interesting...
             return;
         }
-
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not handleFileDeletion: " + remoteFile.toDetailString() + " received from " + member);
+            return;
+        }
         boolean syncFromMemberAllowed = syncProfile.isSyncDeletion() || force;
         if (!syncFromMemberAllowed) {
             // Not allowed to sync
@@ -3431,6 +3494,11 @@ public class Folder extends PFComponent {
      */
     public void broadcastMessages(Message... message) {
         for (Member member : getMembersAsCollection()) {
+            if (shutdown) {
+                // PFS-2227: Never broadcast messages after shutdown
+                logFine(getName() + ": Already shutdown: Not broadcastMessages: " + message);
+                return;
+            }
             // Connected?
             if (member.isCompletelyConnected()) {
                 // sending all nodes my knows nodes
@@ -3450,6 +3518,11 @@ public class Folder extends PFComponent {
         Message[] msgs = null;
         Message[] msgsExt = null;
         for (Member member : getMembersAsCollection()) {
+            if (shutdown) {
+                // PFS-2227: Never broadcast messages after shutdown
+                logFine(getName() + ": Already shutdown: Not broadcastMessages: " + msgProvider);
+                return;
+            }
             // Connected?
             if (member.isCompletelyConnected()) {
                 if (supportExternalizable(member)) {
@@ -3480,7 +3553,6 @@ public class Folder extends PFComponent {
      */
 
     public void handleMetaFolderSyncPatterns(FileInfo fileInfo) {
-
         if (!syncPatterns) {
             logFine("Not syncing patterns: " + getName());
             return;
@@ -3582,6 +3654,7 @@ public class Folder extends PFComponent {
      */
     public void fileListChanged(Member from, FileList newList) {
         if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not fileListChanged: " + newList + " received from " + from);
             return;
         }
 
@@ -3647,6 +3720,7 @@ public class Folder extends PFComponent {
      */
     public void fileListChanged(Member from, FolderFilesChanged changes) {
         if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not fileListChanged: " + changes + " received from " + from);
             return;
         }
 
@@ -4295,14 +4369,6 @@ public class Folder extends PFComponent {
         return dao.count(null, true, false);
     }
 
-    public boolean isPreviewOnly() {
-        return previewOnly;
-    }
-
-    public void setPreviewOnly(boolean previewOnly) {
-        this.previewOnly = previewOnly;
-    }
-
     /**
      * WARNING: Contents may change after getting the collection.
      *
@@ -4332,6 +4398,11 @@ public class Folder extends PFComponent {
      */
     private boolean deleteFile(FileInfo newFileInfo, Path file) {
         Reject.ifNull(newFileInfo, "FileInfo is null");
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not deleteFile: " + newFileInfo.toDetailString() + " at " + file);
+            return false;
+        }
+
         FileInfo fileInfo = getFile(newFileInfo);
         if (isInfo()) {
             String msg = "Deleting file "
@@ -5200,9 +5271,6 @@ public class Folder extends PFComponent {
             .getValueBoolean(getController()))
         {
             removeUnsyncedProblem();
-            return;
-        }
-        if (previewOnly) {
             return;
         }
         // Calculate the date that folders should be synced by.
