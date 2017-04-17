@@ -19,28 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_PERMISSION_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.logging.Logger;
-
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -50,6 +31,11 @@ import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.util.logging.Logger;
+
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 
 /**
  * Class to do folder creation for a specified invite.
@@ -73,7 +59,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     private JTextField invitationMessageLabel;
     private JLabel syncProfileHintLabel;
     private SyncProfileSelectorPanel syncProfileSelectorPanel;
-    private JCheckBox previewOnlyCB;
 
     public ReceivedInvitationPanel(Controller controller, Invitation invitation)
     {
@@ -87,11 +72,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     @Override
     public boolean hasNext() {
         return invitation != null;
-    }
-
-    @Override
-    public boolean validateNext() {
-        return !previewOnlyCB.isSelected();
     }
 
     @Override
@@ -115,10 +95,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         // Do not prompt for send invitation afterwards
         getWizardContext().setAttribute(FOLDER_IS_INVITE, true);
 
-        // Whether to open as preview
-        getWizardContext().setAttribute(PREVIEW_FOLDER_ATTIRBUTE,
-            previewOnlyCB.isSelected());
-
         // Setup choose disk location panel
         getWizardContext()
             .setAttribute(
@@ -132,20 +108,12 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             Translation.get("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
-        WizardPanel next = null;
-
-        // If preview, validateNext has created the folder, so all done.
-        if (previewOnlyCB.isSelected()) {
-            next = (WizardPanel) getWizardContext().getAttribute(
-                PFWizard.SUCCESS_PANEL);
-        } else {
-            getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
+        getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
                 invitation.getSenderDevice());
 
-            next = new ChooseDiskLocationPanel(getController(), invitation
+        WizardPanel next = new ChooseDiskLocationPanel(getController(), invitation
                 .getSuggestedLocalBase(getController()).toAbsolutePath().toString(),
                 new FolderCreatePanel(getController()));
-        }
 
         if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
             .getValueBoolean(getController()))
@@ -194,10 +162,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         }
         row += 2;
 
-        // Preview
-        builder.add(previewOnlyCB, cc.xy(3, row));
-        row += 2;
-
         return builder.getPanel();
     }
 
@@ -232,22 +196,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
         syncProfileSelectorPanel = new SyncProfileSelectorPanel(getController());
         syncProfileSelectorPanel.setEnabled(false);
 
-        // Preview
-        previewOnlyCB = SimpleComponentFactory.createCheckBox(Translation
-            .get("general.preview_folder"));
-        previewOnlyCB.setOpaque(false);
-        previewOnlyCB.setEnabled(false);
-        previewOnlyCB.setVisible(PreferencesEntry.EXPERT_MODE
-            .getValueBoolean(getController()));
-
-        // Do not let user select profile if preview.
-        previewOnlyCB.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                syncProfileSelectorPanel.setEnabled(!previewOnlyCB.isSelected());
-            }
-        });
-
         loadInvitation();
     }
 
@@ -275,8 +223,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             syncProfileSelectorPanel.setEnabled(true);
             SyncProfile suggestedProfile = invitation.getSuggestedSyncProfile();
             syncProfileSelectorPanel.setSyncProfile(suggestedProfile, false);
-
-            previewOnlyCB.setEnabled(true);
         } else {
             folderHintLabel.setEnabled(false);
             folderNameLabel.setText("");
@@ -286,7 +232,6 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
             invitationMessageLabel.setText("");
             syncProfileHintLabel.setEnabled(false);
             syncProfileSelectorPanel.setEnabled(false);
-            previewOnlyCB.setEnabled(false);
         }
     }
 
