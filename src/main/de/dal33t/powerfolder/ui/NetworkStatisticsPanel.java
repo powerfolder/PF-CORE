@@ -36,10 +36,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Translation;
@@ -250,63 +246,5 @@ public class NetworkStatisticsPanel extends PFUIComponent {
 
         publicFolderCount.setText("n/a");
         localFolderCount.setText(localFolders + "");
-    }
-
-    private class MyNodeManagerListener extends NodeManagerAdapter {
-
-        public void nodeAdded(NodeManagerEvent e) {
-            update();
-        }
-
-        public void nodeConnected(NodeManagerEvent e) {
-            update();
-        }
-
-        public void nodeDisconnected(NodeManagerEvent e) {
-            update();
-        }
-
-        public void nodeRemoved(NodeManagerEvent e) {
-            update();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
-    }
-
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
-
-        public void folderCreated(FolderRepositoryEvent e) {
-            update();
-        }
-
-        public void folderRemoved(FolderRepositoryEvent e) {
-            update();
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            update();
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-            update();
-        }
-
-        @Override
-        public void cleanupStarted(FolderRepositoryEvent e) {
-            update();
-        }
-
-        @Override
-        public void cleanupFinished(FolderRepositoryEvent e) {
-            update();
-        }
-
-        public boolean fireInEventDispatchThread() {
-            return true;
-        }
     }
 }
