@@ -25,7 +25,6 @@ import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CRE
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PREVIEW_FOLDER_ATTIRBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
@@ -127,12 +126,8 @@ public class FolderCreatePanel extends SwingWorkerPanel {
             Map<FolderInfo, FolderSettings> configurations = new HashMap<FolderInfo, FolderSettings>();
             Map<FolderInfo, String> joinFolders = new HashMap<FolderInfo, String>();
 
-            // Preview folder
-            Object attribute = getWizardContext().getAttribute(
-                PREVIEW_FOLDER_ATTIRBUTE);
-
             // Online storage
-            attribute = getWizardContext().getAttribute(BACKUP_ONLINE_STOARGE);
+            Object attribute = getWizardContext().getAttribute(BACKUP_ONLINE_STOARGE);
             boolean backupByOS = false;
             if (attribute != null && attribute instanceof Boolean) {
                 backupByOS = (Boolean) attribute;
