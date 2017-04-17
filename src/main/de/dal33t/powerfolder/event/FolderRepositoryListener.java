@@ -34,6 +34,12 @@ public interface FolderRepositoryListener extends CoreListener {
     public void folderCreated(FolderRepositoryEvent e);
 
     /**
+     * PFS-2227 Event
+     * @param e
+     */
+    public void folderMoved(FolderRepositoryEvent e);
+
+    /**
      * Fired by the FolderRepository when the scans are started
      */
     public void maintenanceStarted(FolderRepositoryEvent e);
