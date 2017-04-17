@@ -56,6 +56,7 @@ public class FolderRepositoryEvent extends EventObject {
      */
     public FolderRepositoryEvent(FolderRepository source, Folder folder) {
         this(source, folder.getInfo());
+        this.folder = folder;
     }
 
     /**
