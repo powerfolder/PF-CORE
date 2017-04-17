@@ -125,8 +125,7 @@ public class FolderSettings {
     private String configEntryId;
 
     /**
-     * Constructor. Creates a new FolderSettings object. NON preview, NO
-     * download script.
+     * Constructor. Creates a new FolderSettings object. NO download script.
      */
     public FolderSettings(Path localBaseDir, SyncProfile syncProfile,
         int versions)
@@ -192,10 +191,6 @@ public class FolderSettings {
 
     public int getVersions() {
         return versions;
-    }
-
-    public boolean isPreviewOnly() {
-        return false;
     }
 
     public String getDownloadScript() {
