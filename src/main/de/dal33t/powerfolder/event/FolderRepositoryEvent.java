@@ -29,6 +29,8 @@ import de.dal33t.powerfolder.light.FolderInfo;
 public class FolderRepositoryEvent extends EventObject {
     private Folder folder;
     private FolderInfo folderInfo;
+    // PFS-2227
+    private Folder oldFolder;
 
     /** create a FolderRepositoryEvent */
     public FolderRepositoryEvent(FolderRepository source) {
@@ -41,10 +43,19 @@ public class FolderRepositoryEvent extends EventObject {
      * @param folder
      *            the folder this event is about
      */
+    public FolderRepositoryEvent(FolderRepository source, Folder folder, Folder oldFolder) {
+        this(source, folder);
+        this.oldFolder = oldFolder;
+    }
+
+    /**
+     * create a FolderRepositoryEvent about a Folder
+     *
+     * @param folder
+     *            the folder this event is about
+     */
     public FolderRepositoryEvent(FolderRepository source, Folder folder) {
-        super(source);
-        this.folder = folder;
-        this.folderInfo = folder.getInfo();
+        this(source, folder.getInfo());
     }
 
     /**
@@ -57,6 +68,7 @@ public class FolderRepositoryEvent extends EventObject {
     {
         super(source);
         this.folderInfo = folderInfo;
+
     }
 
     /**
@@ -73,4 +85,7 @@ public class FolderRepositoryEvent extends EventObject {
         return folderInfo;
     }
 
+    public Folder getOldFolder() {
+        return oldFolder;
+    }
 }
