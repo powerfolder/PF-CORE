@@ -19,34 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
-import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
-
-import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -57,17 +33,7 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
@@ -83,32 +49,35 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.ui.folders.ExpandableFolderModel.Type;
-import de.dal33t.powerfolder.ui.information.folder.settings.SettingsTab;
-import de.dal33t.powerfolder.ui.util.CursorUtils;
-import de.dal33t.powerfolder.ui.util.DelayedUpdater;
-import de.dal33t.powerfolder.ui.util.Help;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
+import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.widget.ResizingJLabel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.LinuxUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+
+import javax.swing.*;
+import javax.swing.SwingWorker;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static de.dal33t.powerfolder.disk.FolderStatistic.UNKNOWN_SYNC_STATUS;
 
 /**
  * Class to render expandable view of a folder.
@@ -1076,11 +1045,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 primaryButton.setIcon(Icons.getIconById(Icons.PROBLEMS));
                 primaryButton.setToolTipText(Translation
                     .get("exp_folder_view.folder_problem_text"));
-            } else if (folder != null && folder.isPreviewOnly()) {
-                // It's a preview.
-                primaryButton.setIcon(Icons.getIconById(Icons.PREVIEW_FOLDER));
-                primaryButton.setToolTipText(Translation
-                    .get("exp_folder_view.folder_preview_text"));
             } else if (getController().isPaused()
                 && Double.compare(sync, 100.0d) < 0
                 && sync != FolderStatistic.UNKNOWN_SYNC_STATUS)
@@ -1120,21 +1084,17 @@ public class ExpandableFolderView extends PFUIComponent implements
             osComponent.getUIComponent().setVisible(osComponentVisible);
         }
 
-        if (folder != null && folder.isPreviewOnly()) {
-            osComponent.getUIComponent().setVisible(false);
-        } else {
-            osComponent.getUIComponent().setVisible(osComponentVisible);
-            if (osComponentVisible) {
-                double sync = 0;
-                if (folder != null) {
-                    sync = folder.getStatistic().getServerSyncPercentage();
-                }
-                boolean warned = serverClient.getAccountDetails().getAccount()
-                    .getOSSubscription().isDisabledUsage();
-                boolean joined = folder != null
-                    && serverClient.joinedByCloud(folder);
-                osComponent.setSyncPercentage(sync, warned, joined);
+        osComponent.getUIComponent().setVisible(osComponentVisible);
+        if (osComponentVisible) {
+            double sync = 0;
+            if (folder != null) {
+                sync = folder.getStatistic().getServerSyncPercentage();
             }
+            boolean warned = serverClient.getAccountDetails().getAccount()
+                    .getOSSubscription().isDisabledUsage();
+            boolean joined = folder != null
+                    && serverClient.joinedByCloud(folder);
+            osComponent.setSyncPercentage(sync, warned, joined);
         }
     }
 
@@ -1512,9 +1472,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
     }
 
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
+    private class MyFolderRepositoryListener extends FolderRepositoryAdapter {
 
         private void updateIfRequired(FolderRepositoryEvent e) {
             if (folder == null || !folder.equals(e.getFolder())) {
@@ -1522,12 +1480,6 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
             updateSyncButton();
             updateIconAndOS();
-        }
-
-        public void folderCreated(FolderRepositoryEvent e) {
-        }
-
-        public void folderRemoved(FolderRepositoryEvent e) {
         }
 
         public void maintenanceFinished(FolderRepositoryEvent e) {
@@ -1538,19 +1490,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             updateIfRequired(e);
         }
 
-        @Override
-        public void cleanupStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupFinished(FolderRepositoryEvent e) {
-            // ignore
-        }
-
         public boolean fireInEventDispatchThread() {
             return true;
         }
-
     }
 
     private class MyTransferManagerListener extends TransferManagerAdapter {
@@ -1841,17 +1783,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (folder.isPreviewOnly()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        PreviewToJoinDialog panel = new PreviewToJoinDialog(
-                            getController(), folder);
-                        panel.open();
-                    }
-                });
-            } else {
-                getApplicationModel().syncFolder(folder);
-            }
+            getApplicationModel().syncFolder(folder);
         }
     }
 
@@ -2024,11 +1956,6 @@ public class ExpandableFolderView extends PFUIComponent implements
                 // Join the folder locally.
                 PFWizard.openOnlineStorageJoinWizard(getController(),
                     Collections.singletonList(folderInfo));
-            } else if (type == Type.Local && folder != null
-                && folder.isPreviewOnly())
-            {
-                // Local Preview - want to change?
-                SettingsTab.doPreviewChange(getController(), folder);
             } else if (type == Type.Local) {
                 // Local - open it
                 openExplorer();
