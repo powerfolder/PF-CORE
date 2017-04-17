@@ -59,9 +59,6 @@ public interface WizardContextAttributes {
     /** Count of files in directory */
     String FILE_COUNT = "file_count";
 
-    /** Determines if folder should be created as preview */
-    String PREVIEW_FOLDER_ATTIRBUTE = "disklocation.preview_folder";
-
     /** Determines if to set the configured folder as default synced folder */
     String SET_DEFAULT_SYNCHRONIZED_FOLDER = "set_default_synced_folder";
 
