@@ -87,7 +87,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 417;
+    private static final int REVISION_VERSION = 418;
 
     /**
      * Program version.
@@ -729,19 +729,14 @@ public class Controller extends PFComponent {
         // Force scan on all folders, of repository was selected
         Collection<Folder> folders = folderRepository.getFolders();
         for (Folder folder : folders) {
-
-            // Never sync preview folders
-            if (folder != null && !folder.isPreviewOnly()) {
-                // Ask for more sync options on that folder if on project sync
-                if (Util.isAwtAvailable()
+            // Ask for more sync options on that folder if on project sync
+            if (Util.isAwtAvailable()
                     && folder.getSyncProfile().equals(
-                        SyncProfile.MANUAL_SYNCHRONIZATION))
-                {
-                    new SyncFolderDialog(this, folder).open();
-                } else {
-                    // Recommend scan on this folder
-                    folder.recommendScanOnNextMaintenance();
-                }
+                    SyncProfile.MANUAL_SYNCHRONIZATION)) {
+                new SyncFolderDialog(this, folder).open();
+            } else {
+                // Recommend scan on this folder
+                folder.recommendScanOnNextMaintenance();
             }
         }
 
