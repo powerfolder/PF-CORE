@@ -276,7 +276,6 @@ public class Folder extends PFComponent {
             } else {
                 localBase = localBaseDir;
             }
-
             // PFS-1994: End: Encrypted storage.
 
         } else {
