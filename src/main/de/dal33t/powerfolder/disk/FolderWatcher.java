@@ -51,7 +51,7 @@ public class FolderWatcher extends PFComponent {
     private static Boolean LIB_LOADED;
 
     private Folder folder;
-    private int watchID = -1;
+    private volatile int watchID = -1;
     private NotifyListener listener;
     private Map<String, FileInfo> dirtyFiles = Util.createConcurrentHashMap();
     private volatile boolean ignoreAll;
@@ -211,6 +211,10 @@ public class FolderWatcher extends PFComponent {
     private class DirtyFilesScanner implements Runnable {
 
         public void run() {
+            if (watchID < 0) {
+                // Illegal / Useless
+                return;
+            }
             if (!scannerLock.tryLock()) {
                 // Already locked
                 return;
@@ -311,6 +315,9 @@ public class FolderWatcher extends PFComponent {
             }
             if (!isSupported()) {
                 // No supported
+                return;
+            }
+            if (!folder.isStarted()) {
                 return;
             }
             if (!folder.scanAllowedNow()) {

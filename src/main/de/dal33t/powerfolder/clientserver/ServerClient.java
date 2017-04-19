@@ -2671,17 +2671,10 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
-
+    private class MyFolderRepositoryListener extends FolderRepositoryAdapter {
         @Override
         public boolean fireInEventDispatchThread() {
             return false;
-        }
-
-        @Override
-        public void folderRemoved(FolderRepositoryEvent e) {
         }
 
         @Override
@@ -2693,20 +2686,8 @@ public class ServerClient extends PFComponent {
         }
 
         @Override
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupFinished(FolderRepositoryEvent e) {
-            // ignore
+        public void folderMoved(FolderRepositoryEvent e) {
+            folderCreated(e);
         }
     }
 

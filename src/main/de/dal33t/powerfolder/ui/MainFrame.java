@@ -76,10 +76,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.PausedModeEvent;
-import de.dal33t.powerfolder.event.PausedModeListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
@@ -1142,9 +1139,7 @@ public class MainFrame extends PFUIComponent {
         }
     }
 
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
+    private class MyFolderRepositoryListener extends FolderRepositoryAdapter {
 
         // If showing the inline panel and the folder has been removed,
         // close the inline panel.
@@ -1154,24 +1149,10 @@ public class MainFrame extends PFUIComponent {
             }
         }
 
-        public void folderCreated(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-            // Don't care.
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            // Don't care.
-        }
-
-        @Override
-        public void cleanupStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupFinished(FolderRepositoryEvent e) {
-            // ignore
+        public void folderMoved(FolderRepositoryEvent e) {
+            if (isShowingInfoInline()) {
+                closeInlineInfoPanel();
+            }
         }
 
         public boolean fireInEventDispatchThread() {

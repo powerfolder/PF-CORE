@@ -40,6 +40,7 @@ public class RedownloadTest extends TwoControllerTestCase {
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_DOWNLOAD);
+        getFolderAtBart().getFolderWatcher().setIngoreAll(true);
     }
 
     public void testRedownload() throws IOException {

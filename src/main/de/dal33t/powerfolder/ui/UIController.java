@@ -77,21 +77,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.problem.LocalDeletionProblem;
-import de.dal33t.powerfolder.event.FolderAdapter;
-import de.dal33t.powerfolder.event.FolderAutoCreateEvent;
-import de.dal33t.powerfolder.event.FolderAutoCreateListener;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.InvitationHandler;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.PausedModeEvent;
-import de.dal33t.powerfolder.event.PausedModeListener;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
-import de.dal33t.powerfolder.event.TransferManagerAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -1392,8 +1378,7 @@ public class UIController extends PFComponent {
     // Inner Classes //
     // ////////////////
 
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
+    private class MyFolderRepositoryListener extends FolderRepositoryAdapter
     {
         @Override
         public void folderRemoved(FolderRepositoryEvent e) {
@@ -1410,20 +1395,13 @@ public class UIController extends PFComponent {
         }
 
         @Override
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
+        public void folderMoved(FolderRepositoryEvent e) {
+            removeFolderFromSysTray(e.getOldFolder());
+            e.getOldFolder().removeFolderListener(folderListener);
 
-        @Override
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupFinished(FolderRepositoryEvent e) {
-            // ignore
+            addFolderToSysTray(e.getFolder());
+            e.getFolder().addFolderListener(folderListener);
+            checkStatus();
         }
 
         @Override

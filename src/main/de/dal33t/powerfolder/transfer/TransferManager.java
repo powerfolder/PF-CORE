@@ -208,7 +208,7 @@ public class TransferManager extends PFComponent {
         listenerSupport = ListenerSupportFactory
             .createListenerSupport(TransferManagerListener.class);
 
-        bandwidthProvider = new BandwidthProvider();
+        bandwidthProvider = new BandwidthProvider(getController().getThreadPool());
 
         statsRecorder = new BandwidthStatsRecorder(getController());
         bandwidthProvider.addBandwidthStatListener(statsRecorder);
@@ -1342,8 +1342,10 @@ public class TransferManager extends PFComponent {
         fireUploadRequested(new TransferManagerEvent(this, upload));
 
         if (oldUpload != null) {
-            logWarning("Received already known download request for " + dl.file
-                + " from " + from.getNick() + ", overwriting old request");
+            if (isFine()) {
+                logFine("Received already known download request for " + dl.file
+                        + " from " + from.getNick() + ", overwriting old request");
+            }
             // Stop former upload request
             oldUpload.abort();
             oldUpload.shutdown();
@@ -2910,7 +2912,7 @@ public class TransferManager extends PFComponent {
                         // Enqueue upload to friends and lan members first
 
                         if (upload.isAborted()) {
-                            logWarning("Not starting aborted: " + upload);
+                            logFine("Not starting aborted: " + upload);
                         } else {
                             if (upload.getPartner().isOnLAN()
                                 || !isUploadActive(upload.getFile(), true))

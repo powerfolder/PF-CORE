@@ -1772,11 +1772,11 @@ public class NodeManager extends PFComponent {
             }
             for (AbstractAcceptor acceptor : acceptors) {
                 if (acceptor.hasTimeout()) {
-                    logWarning("Acceptor has timeout: " + acceptor);
+                    logFine("Acceptor has timeout: " + acceptor);
                     acceptor.shutdown();
                     acceptors.remove(acceptor);
                 } else if (acceptor.isShutdown()) {
-                    logWarning("Acceptor has been shutdown: " + acceptor);
+                    logFine("Acceptor has been shutdown: " + acceptor);
                     acceptors.remove(acceptor);
                 }
             }

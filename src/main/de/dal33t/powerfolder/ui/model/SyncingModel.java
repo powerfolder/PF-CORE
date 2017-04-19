@@ -9,16 +9,7 @@ import javax.swing.SwingUtilities;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.event.FolderAdapter;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.OverallFolderStatListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.PFUIComponent;
@@ -171,20 +162,22 @@ public class SyncingModel extends PFUIComponent {
         }
     }
 
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
+    private class MyFolderRepositoryListener extends FolderRepositoryAdapter {
 
         public void folderCreated(FolderRepositoryEvent e) {
             e.getFolder().addFolderListener(folderListener);
-
         }
 
         public void folderRemoved(FolderRepositoryEvent e) {
             e.getFolder().removeFolderListener(folderListener);
         }
 
-        // START FIXME: Maybe remove those two methods? Left in because of uncertenty if the spinning icon may not get changed back -> PFC-2796
+        @Override
+        public void folderMoved(FolderRepositoryEvent e) {
+            e.getOldFolder().removeFolderListener(folderListener);
+            e.getFolder().addFolderListener(folderListener);
+        }
+
         public void maintenanceFinished(FolderRepositoryEvent e) {
             calculateOverallStats();
         }
@@ -202,7 +195,6 @@ public class SyncingModel extends PFUIComponent {
         public void cleanupFinished(FolderRepositoryEvent e) {
             calculateOverallStats();
         }
-        // END
 
         public boolean fireInEventDispatchThread() {
             return false;

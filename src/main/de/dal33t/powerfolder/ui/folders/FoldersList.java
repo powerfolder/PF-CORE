@@ -43,12 +43,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.event.FolderMembershipEvent;
-import de.dal33t.powerfolder.event.FolderMembershipListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.TransferManagerAdapter;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
@@ -412,9 +407,7 @@ public class FoldersList extends PFUIComponent {
     /**
      * Listener for changes to folder repository folder set.
      */
-    private class MyFolderRepositoryListener implements
-        FolderRepositoryListener
-    {
+    private class MyFolderRepositoryListener extends FolderRepositoryAdapter {
 
         public void folderRemoved(FolderRepositoryEvent e) {
             updateFolders();
@@ -426,19 +419,11 @@ public class FoldersList extends PFUIComponent {
             e.getFolder().addMembershipListener(membershipListener);
         }
 
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-        }
-
         @Override
-        public void cleanupStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupFinished(FolderRepositoryEvent e) {
-            // ignore
+        public void folderMoved(FolderRepositoryEvent e) {
+            updateFolders();
+            e.getOldFolder().removeMembershipListener(membershipListener);
+            e.getFolder().addMembershipListener(membershipListener);
         }
 
         public boolean fireInEventDispatchThread() {

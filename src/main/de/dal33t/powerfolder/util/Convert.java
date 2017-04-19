@@ -180,7 +180,6 @@ public class Convert {
                     .warning("Unable to cleanup file info instance. Folder not joined: "
                         + fileFoInfo);
                 // FIXME: For list of folders that are not joined!
-                // Currently not used because no preview/public mode exists
                 continue;
             }
             if (fileFoInfo == folder.getInfo()) {

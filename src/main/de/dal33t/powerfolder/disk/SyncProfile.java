@@ -126,7 +126,7 @@ public class SyncProfile implements Serializable {
         AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,
         BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
 
-    /** Special no-sync profile for preview folders. Same config as PROJECT_WORK */
+    /** Special no-sync profile. Same config as PROJECT_WORK */
     public static final SyncProfile NO_SYNC = new SyncProfile("no_sync", false,
         new SyncProfileConfiguration(false, false, false, false, 0));
 

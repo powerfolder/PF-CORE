@@ -19,36 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
@@ -56,7 +26,6 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.FolderService;
@@ -64,7 +33,6 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderPreviewHelper;
 import de.dal33t.powerfolder.event.DiskItemFilterListener;
 import de.dal33t.powerfolder.event.FolderMembershipEvent;
 import de.dal33t.powerfolder.event.FolderMembershipListener;
@@ -79,7 +47,6 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.FolderRemoveDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.dialog.PreviewToJoinDialog;
 import de.dal33t.powerfolder.ui.event.SelectionChangeEvent;
 import de.dal33t.powerfolder.ui.event.SelectionChangeListener;
 import de.dal33t.powerfolder.ui.event.SelectionModel;
@@ -96,6 +63,20 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * UI component for the information settings tab
@@ -131,7 +112,6 @@ public class SettingsTab extends PFUIComponent {
     private ActionLabel confOSActionLabel;
     private BaseAction confOSAction;
     private Action maintainDBAction;
-    private ActionLabel previewFolderActionLabel;
     private JButtonMini editButton;
     private JButtonMini removeButton;
     private boolean settingFolder;
@@ -219,7 +199,6 @@ public class SettingsTab extends PFUIComponent {
         settingFolder = false;
         update();
         enableConfigOSAction();
-        enablePreviewFolderAction();
         loadOnlineArchiveMode();
     }
 
@@ -312,11 +291,6 @@ public class SettingsTab extends PFUIComponent {
             row += 2;
         }
 
-        // Disabled. Not used anymore.
-        createPreviewPanel();
-        // row += 2;
-        // builder.add(createPreviewPanel(), cc.xy(4, row));
-
         row += 2;
         builder.add(createDeletePanel(), cc.xy(4, row));
 
@@ -375,19 +349,6 @@ public class SettingsTab extends PFUIComponent {
         confOSActionLabel = new ActionLabel(getController(), confOSAction);
         confOSActionLabel.convertToBigLabel();
         builder.add(confOSActionLabel.getUIComponent(), cc.xy(1, 1));
-        return builder.getPanel();
-    }
-
-    private JPanel createPreviewPanel() {
-        FormLayout layout = new FormLayout("pref", "pref");
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-        BaseAction previewAction = new PreviewFolderAction(getController());
-        previewAction.allowWith(FolderRemovePermission.INSTANCE);
-        previewFolderActionLabel = new ActionLabel(getController(),
-            previewAction);
-        previewFolderActionLabel.convertToBigLabel();
-        builder.add(previewFolderActionLabel.getUIComponent(), cc.xy(1, 1));
         return builder.getPanel();
     }
 
@@ -455,7 +416,7 @@ public class SettingsTab extends PFUIComponent {
         rebuildPatterns();
         localFolderField
             .setText(folder.getCommitOrLocalDir().toAbsolutePath().toString());
-        localFolderButton.setEnabled(!folder.isPreviewOnly());
+        localFolderButton.setEnabled(true);
     }
 
     private void rebuildPatterns() {
@@ -624,29 +585,6 @@ public class SettingsTab extends PFUIComponent {
         confOSActionLabel.getUIComponent().setVisible(enabled);
     }
 
-    /**
-     * Listen to changes in onlineStorage / folder and enable the configOS
-     * button as required. Also config action on whether already joined OS.
-     */
-    private void enablePreviewFolderAction() {
-        boolean enabled = false;
-        if (folder != null) {
-            enabled = true;
-            if (folder.isPreviewOnly()) {
-                previewFolderActionLabel.setText(Translation
-                    .get("exp.action_stop_preview_folder.name"));
-                previewFolderActionLabel.setToolTipText(Translation
-                    .get("exp.action_stop_preview_folder.description"));
-            } else {
-                previewFolderActionLabel.setText(Translation
-                    .get("exp.action_preview_folder.name"));
-                previewFolderActionLabel.setToolTipText(Translation
-                    .get("exp.action_preview_folder.description"));
-            }
-        }
-        previewFolderActionLabel.getUIComponent().setVisible(enabled);
-    }
-
     private void updateLocalArchiveMode(Object oldValue, final Object newValue) {
             Integer versions = (Integer) localVersionModel.getValue();
             folder.setArchiveVersions(versions);
@@ -677,36 +615,6 @@ public class SettingsTab extends PFUIComponent {
                     }
                 });
             }
-    }
-
-    public static void doPreviewChange(Controller controller, Folder fldr) {
-        if (fldr.isPreviewOnly()) {
-
-            // Join preview folder.
-            PreviewToJoinDialog panel = new PreviewToJoinDialog(controller, fldr);
-            panel.open();
-
-        } else {
-
-            int result = DialogFactory
-                .genericDialog(
-                    controller,
-                    Translation
-                        .get("exp.settings_tab.preview_warning_title"),
-                    Translation
-                        .get("exp.settings_tab.preview_warning_message"),
-                    new String[]{
-                        Translation
-                            .get("exp.settings_tab.preview_warning_convert"),
-                        Translation.get("general.cancel")}, 0,
-                    GenericDialogType.WARN);
-
-            if (result == 0) { // Convert to preview
-
-                // Convert folder to preview.
-                FolderPreviewHelper.convertFolderToPreview(controller, fldr);
-            }
-        }
     }
 
     private void purgeLocalArchive() {
@@ -808,17 +716,6 @@ public class SettingsTab extends PFUIComponent {
             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
                 folder.getInfo());
             panel.open();
-        }
-    }
-
-    private class PreviewFolderAction extends BaseAction {
-
-        private PreviewFolderAction(Controller controller) {
-            super("exp.action_preview_folder", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            doPreviewChange(getController(), folder);
         }
     }
 

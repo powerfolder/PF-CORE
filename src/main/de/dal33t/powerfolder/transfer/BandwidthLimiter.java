@@ -58,7 +58,7 @@ public class BandwidthLimiter {
     private final Object monitor = new Object();
     private final BandwidthLimiterInfo id;
 
-    private BandwidthLimiter(BandwidthLimiterInfo id) {
+    public BandwidthLimiter(BandwidthLimiterInfo id) {
         this.id = id;
     }
 
@@ -76,6 +76,9 @@ public class BandwidthLimiter {
     public long requestBandwidth(long size)
         throws InterruptedException
     {
+        if (isUnlimited()) {
+            return size;
+        }
     	synchronized (monitor) {
             while (available == 0) {
                 monitor.wait();
@@ -139,11 +142,21 @@ public class BandwidthLimiter {
      * @param amount
      */
     public void returnAvailable(int amount) {
+        if (isUnlimited()) {
+            return;
+        }
+        if (amount == 0) {
+            return;
+        }
     	synchronized (monitor) {
             if (available >= 0) {
                 available += amount;
             }
 		}
+    }
+
+    private boolean isUnlimited() {
+        return available == UNLIMITED;
     }
 
     @Override

@@ -582,7 +582,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         if (!hasJoinedFolder(foInfo) && folderId != null
                             && folderSettings != null)
                         {
-                            createFolder0(foInfo, folderSettings, false);
+                            createFolder(foInfo, folderSettings, false, true);
                         }
                     } catch (Exception e) {
                         logSevere("Problem loading/creating folder #"
@@ -1044,7 +1044,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning("Unable to create Folder: " + folderInfo.getName() + " @ " +
                     folderSettings.getLocalBaseDir() + " : " + ioe.getMessage());
         }
-        Folder folder = createFolder0(folderInfo, folderSettings, true);
+        Folder folder = createFolder(folderInfo, folderSettings, true, true);
 
         // Obtain permission. Don't do this on startup (createFolder0)
         if (getController().getOSClient().isLoggedIn()
@@ -1060,21 +1060,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Used when creating a preview folder. FolderSettings should be as required
-     * for the preview folder. Note that settings are not stored and the caller
-     * is responsible for setting the preview config.
-     *
-     * @param folderInfo
-     * @param folderSettings
-     * @return the preview folder.
-     */
-    public Folder createPreviewFolder(FolderInfo folderInfo,
-        FolderSettings folderSettings)
-    {
-        return createFolder0(folderInfo, folderSettings, false);
-    }
-
-    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores an invitation file for the folder in the local directory if
@@ -1086,10 +1071,11 @@ public class FolderRepository extends PFComponent implements Runnable {
      *            the settings for the folder
      * @param saveConfig
      *            true if the configuration file should be saved after creation.
+     * @param fireEvent if the methd should fire
      * @return the freshly created folder
      */
-    private Folder createFolder0(FolderInfo folderInfo,
-        FolderSettings folderSettings, boolean saveConfig)
+    private Folder createFolder(FolderInfo folderInfo,
+        FolderSettings folderSettings, boolean saveConfig, boolean fireEvent)
     {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
@@ -1104,31 +1090,19 @@ public class FolderRepository extends PFComponent implements Runnable {
             return existingFolder;
         }
 
-        // If non-preview folder and already have this folder as preview,
-        // silently remove the preview.
-        if (!folderSettings.isPreviewOnly()) {
-            for (Folder folder : folders.values()) {
-                if (folder.isPreviewOnly()
-                    && folder.getInfo().equals(folderInfo))
-                {
-                    logInfo("Removed preview folder " + folder.getName());
-                    removeFolder(folder, true);
-                    break;
-                }
-                if (folder.getCommitOrLocalDir().equals(
-                    folderSettings.getLocalBaseDir()))
-                {
-                    logWarning("Tried to create duplicate folder "
+        for (Folder folder : folders.values()) {
+            if (folder.getCommitOrLocalDir().equals(
+                    folderSettings.getLocalBaseDir())) {
+                logWarning("Tried to create duplicate folder "
                         + folder.getName() + ". at "
                         + folder.getCommitOrLocalDir()
                         + ". Existing folder ID: " + folder.getId()
                         + ". Requested folder ID: " + folderInfo.getId());
-                    throw new IllegalStateException(
+                throw new IllegalStateException(
                         "Tried to create duplicate folder " + folder.getName()
-                            + ". at " + folder.getCommitOrLocalDir()
-                            + ". Existing folder ID: " + folder.getId()
-                            + ". Requested folder ID: " + folderInfo.getId());
-                }
+                                + ". at " + folder.getCommitOrLocalDir()
+                                + ". Existing folder ID: " + folder.getId()
+                                + ". Requested folder ID: " + folderInfo.getId());
             }
         }
 
@@ -1231,16 +1205,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         //PFS-1918: End: Folder WebDAV support. Mount this folder as WebDAV resource.
 
-        Folder folder;
-        if (folderSettings.isPreviewOnly()) {
-            // Need to use preview folder settings.
-            FolderSettings previewFolderSettings = FolderPreviewHelper
-                .createPreviewFolderSettings(folderInfo.getName());
-            folder = new Folder(getController(), folderInfo,
-                previewFolderSettings);
-        } else {
-            folder = new Folder(getController(), folderInfo, folderSettings);
-        }
+        Folder folder = new Folder(getController(), folderInfo, folderSettings);
         folder.addProblemListener(valveProblemListenerSupport);
 
         // Now create metaFolder and map to the same FolderInfo key.
@@ -1301,7 +1266,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         fileRequestor.triggerFileRequesting(folder.getInfo());
 
         // Fire event
-        fireFolderCreated(folder);
+        if (fireEvent) {
+            fireFolderCreated(folder);
+        }
 
         if (isFine()) {
             String message = "Setup folder " + folderInfo.getLocalizedName()
@@ -1341,7 +1308,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param deleteSystemSubDir
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
-        removeFolder(folder, deleteSystemSubDir, true);
+        removeFolder(folder, deleteSystemSubDir, true, true);
     }
 
     /**
@@ -1352,7 +1319,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param saveConfig
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir,
-        boolean saveConfig)
+        boolean saveConfig, boolean fireEvent)
     {
         Reject.ifNull(folder, "Folder is null");
 
@@ -1453,8 +1420,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             scanBasedirLock.unlock();
         }
 
-        // Fire event
-        fireFolderRemoved(folder);
+        if (fireEvent) {
+            // Fire event
+            fireFolderRemoved(folder);
+        }
 
         // Trigger sync on other folders.
         fileRequestor.triggerFileRequesting();
@@ -2020,7 +1989,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (foInfo != null) {
                     Folder existingFolder = foInfo.getFolder(getController());
                     if (existingFolder != null && existingFolder.checkIfDeviceDisconnected()) {
-                        removeFolder(existingFolder, false, false);
+                        removeFolder(existingFolder, false, false, true);
                     }
                     FolderInfo renamedFI = tryRenaming(client, file, foInfo, stillPresent);
                     if (renamedFI != null && foInfo != null && renamedFI.equals(foInfo)
@@ -2086,7 +2055,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // 2) Sync locally
-        Folder folder = createFolder0(foInfo, fs, true);
+        Folder folder = createFolder(foInfo, fs, true, true);
         folder.addDefaultExcludes();
 
         if (scheduleCreateOnServer) {
@@ -2213,7 +2182,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logInfo("Renaming Folder '" + oldName + "' to '" + newName + "'");
 
             if (folder != null && folder.checkIfDeviceDisconnected()) {
-                removeFolder(folder, false, false);
+                removeFolder(folder, false, false, true);
                 ignoredFolderDirectories.remove(folder.getLocalBase());
             }
 
@@ -2675,7 +2644,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             List<String> patterns = folder.getDiskItemFilter().getPatterns();
 
             // Remove the old folder from the repository.
-            removeFolder(folder, false);
+            removeFolder(folder, false, false, false);
 
             // Move it.
             try {
@@ -2687,19 +2656,60 @@ public class FolderRepository extends PFComponent implements Runnable {
                 fs = fs.changeBaseDir(targetPath);
                 moved = true;
             } catch (IOException e) {
+                if (Files.exists(targetPath) && PathUtils.isEmptyDir(targetPath)) {
+                    // Delete empty target target path. Might have been created through resolveTargetDirectory
+                    try {
+                        PathUtils.recursiveDelete(targetPath);
+                    } catch (IOException ex) {
+                        logWarning("Unable to cleanup empty target path while moving folder " + folder.getName() + " to " + targetPath + ": " + e);
+                    }
+                }
+                if (Files.notExists(targetPath)) {
+                    try {
+                        PathUtils.recursiveCopyVisitor(sourceDirectory, targetPath);
+                        fs = fs.changeBaseDir(targetPath);
+                        moved = true;
+                        deleteOriginalDirectory = true;
+                    } catch (IOException ex) {
+                        logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex + " and " + e);
+                        deleteOriginalDirectory = false;
+                    }
+                }
+
                 try {
-                    PathUtils.recursiveCopyVisitor(sourceDirectory, targetPath);
-                    fs = fs.changeBaseDir(targetPath);
-                    moved = true;
-                    deleteOriginalDirectory = true;
-                } catch (IOException ex) {
-                    logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex);
-                    deleteOriginalDirectory = false;
+                    Long[] sizes = PathUtils.calculateDirectorySizeAndCount(targetPath);
+                    long targetSizeBytes = 0;
+                    long targetNFiles = 0;
+                    if (sizes != null && sizes.length >= 2) {
+                        targetSizeBytes = sizes[0];
+                        targetNFiles = sizes[1];
+                    }
+                    sizes = PathUtils.calculateDirectorySizeAndCount(sourceDirectory);
+                    long sourceSizeBytes = 0;
+                    long sourceNFiles = 0;
+                    if (sizes != null && sizes.length >= 2) {
+                        sourceSizeBytes = sizes[0];
+                        sourceNFiles = sizes[1];
+                    }
+                    if (targetNFiles > sourceNFiles && targetSizeBytes > sourceSizeBytes) {
+                        if (sourceNFiles > 0 || sourceSizeBytes > 0) {
+                            logSevere("Possible incomplete folder move from " + sourceDirectory + " to " + targetPath +
+                                    ". Files in source: " + sourceNFiles + " (" + Format.formatBytesShort(sourceSizeBytes) + "), " +
+                                    "target: " + targetNFiles + " (" + Format.formatBytesShort(targetSizeBytes) + "). " +
+                                    "Using target path: " + targetPath);
+                        }
+                        fs = fs.changeBaseDir(targetPath);
+                    }
+                } catch (RuntimeException rte) {
+                    logSevere("Possible incomplete folder move: Error on folder " + folder.getName() + " from " + sourceDirectory + " to " + targetPath + ": " + rte, rte);
                 }
             }
 
             // Create the new Folder in the repository.
-            folder = createFolder0(folder.getInfo().intern(), fs, true);
+            Folder oldFolder = folder;
+            folder = createFolder(folder.getInfo().intern(), fs, true, false);
+            PathUtils.setAttributesOnWindows(folder.getLocalBase(), null, true);
+            fireFolderMoved(folder, oldFolder);
 
             // Restore patterns
             for (String pattern : patterns) {
@@ -2725,7 +2735,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
         } catch (IOException e) {
-            logSevere("Unable to move folder " + folder.getName() + " to " + targetPath + ". " + e);
+            logWarning("Unable to move folder " + folder.getName() + " to " + targetPath + ". " + e);
             logFine(e);
             return null;
         } finally {
@@ -2827,7 +2837,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     scheduleCreateOnServer = true;
                 }
 
-                Folder folder = createFolder0(foInfo, settings, true);
+                Folder folder = createFolder(foInfo, settings, true, true);
                 folder.addDefaultExcludes();
 
                 if (scheduleCreateOnServer) {
@@ -2913,7 +2923,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     scanBasedirLock.lock();
                     Files.createDirectories(settings.getLocalBaseDir());
 
-                    Folder folder = createFolder0(folderInfo, settings, true);
+                    Folder folder = createFolder(folderInfo, settings, true, true);
                     folder.addDefaultExcludes();
                     folderInfos.put(folderInfo, settings);
                 } catch (IOException ioe) {
@@ -2943,6 +2953,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void fireFolderRemoved(Folder folder) {
         folderRepositoryListenerSupport
             .folderRemoved(new FolderRepositoryEvent(this, folder));
+    }
+
+    private void fireFolderMoved(Folder newFolder, Folder oldFolder) {
+        folderRepositoryListenerSupport
+                .folderMoved(new FolderRepositoryEvent(this, newFolder, oldFolder));
     }
 
     private void fireMaintanceStarted(Folder folder) {
@@ -3054,9 +3069,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folder.getStatistic().scheduleCalculate();
                 }
                 // PFS-1800: End
-                if (folder.isPreviewOnly()) {
-                    continue;
-                }
                 folder.checkSync();
 
                 if (folder.getStatistic().getHarmonizedSyncPercentage() == 100.0d)

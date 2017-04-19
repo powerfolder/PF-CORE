@@ -24,6 +24,7 @@ import javax.swing.JTabbedPane;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
 import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.event.FolderRepositoryListener;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -311,8 +312,7 @@ public class InformationFrame extends PFUIComponent {
     // Inner classes //
     // /////////////////
 
-    private class MyFolderRepositoryListener
-            implements FolderRepositoryListener {
+    private class MyFolderRepositoryListener extends FolderRepositoryAdapter {
 
         public void folderRemoved(FolderRepositoryEvent e) {
             removedFolder(e.getFolderInfo());
@@ -328,21 +328,10 @@ public class InformationFrame extends PFUIComponent {
             }
         }
 
-        public void maintenanceStarted(FolderRepositoryEvent e) {
-            // Don't care.
-        }
-
-        public void maintenanceFinished(FolderRepositoryEvent e) {
-            // Don't care.
-        }
-
         @Override
-        public void cleanupStarted(FolderRepositoryEvent e) {
-        }
-
-        @Override
-        public void cleanupFinished(FolderRepositoryEvent e) {
-            // ignore
+        public void folderMoved(FolderRepositoryEvent e) {
+            removedFolder(e.getOldFolder().getInfo());
+            folderCreated(e);
         }
 
         public boolean fireInEventDispatchThread() {
