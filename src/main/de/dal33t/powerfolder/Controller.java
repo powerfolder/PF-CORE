@@ -108,6 +108,7 @@ public class Controller extends PFComponent {
      */
     private Path configFile;
     private Path configFolderFile;
+    private Path trustStoreFile;
 
     /** The config properties */
     private SplitConfig config;
@@ -962,6 +963,14 @@ public class Controller extends PFComponent {
             configFolderFile = Paths.get(folderfilename).toAbsolutePath();
         } else {
             configFolderFile = configFolderFile.resolve(folderfilename);
+        }
+
+        String trustStoreFileName = filename.replace(".config", ".ssl.jks");
+        trustStoreFile = getConfigLocationBase();
+        if (trustStoreFile == null) {
+            trustStoreFile = Paths.get(trustStoreFileName).toAbsolutePath();
+        } else {
+            trustStoreFile = trustStoreFile.resolve(trustStoreFileName);
         }
 
         if (Files.exists(configFolderFile)) {
@@ -2054,6 +2063,10 @@ public class Controller extends PFComponent {
 
     public Path getConfigFolderFile() {
         return configFolderFile;
+    }
+
+    public Path getTrustStoreFile() {
+        return trustStoreFile;
     }
 
     /**
