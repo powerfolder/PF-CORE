@@ -1324,6 +1324,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     {
         Reject.ifNull(folder, "Folder is null");
 
+        boolean isZyncro = PathUtils.isZyncroPath(folder.getLocalBase());
+        boolean isWebDAV = PathUtils.isWebDAVFolder(folder.getLocalBase());
+
         try {
             scanBasedirLock.lock();
 
@@ -1398,7 +1401,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     logSevere("Failed to delete: " + folder.getSystemSubDir(), e);
                 }
 
-                if (!PathUtils.isZyncroPath(folder.getLocalBase()) && !PathUtils.isWebDAVFolder(folder.getLocalBase())) {
+                if (!isZyncro && !isWebDAV) {
                     // Remove the folder if totally empty.
                     Path localBase = folder.getLocalBase();
                     try {
@@ -1433,6 +1436,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFine(folder + " removed");
         }
 
+        // If the removed folder was an encrypted folder close the filesystem:
+        if (deleteSystemSubDir && !isWebDAV && !isZyncro
+                && EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
+            try {
+                folder.getLocalBase().getFileSystem().close();
+            } catch (IOException | FileSystemNotFoundException ex) {
+                logWarning("Failed to close FileSystem for encrypted folder " + folder);
+            }
+        }
     }
 
     /**
