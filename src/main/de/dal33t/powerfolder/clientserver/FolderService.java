@@ -169,7 +169,6 @@ public interface FolderService {
      *            if the file should be restored under the same location and
      *            name. otherwise server stores file under a different name.
      *            Check returned FileInfo at any case.
-     * @param target
      * @return the fileInfo of the restored file. Can be used for automatic
      *         downloading this file from the server after restoring.
      * @throws IOException
@@ -188,7 +187,6 @@ public interface FolderService {
      *            the FileInfo of the archived file.
      * @param newRelativeName
      *            the new relative name. Leave null for same location
-     * @param target
      * @return the fileInfo of the restored file. Can be used for automatic
      *         downloading this file from the server after restoring.
      * @throws IOException
@@ -256,7 +254,6 @@ public interface FolderService {
      * Create a file link.
      *
      * @param fInfo
-     * @param folder
      * @return the URL to the file link
      */
     String getFileLink(FileInfo fInfo);
