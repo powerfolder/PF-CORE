@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
 

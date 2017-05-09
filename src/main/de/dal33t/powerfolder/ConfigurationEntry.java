@@ -1183,7 +1183,15 @@ public enum ConfigurationEntry {
     EVENT_API_URL_DOWNLOADED_FILE_WEB("event.api.file.downloaded.web"),
     EVENT_API_URL_DOWNLOADED_FILE_LINK("event.api.file.downloaded.link"),
 
-    EVENT_API_URL_DELETED_FILE("event.api.file.deleted");
+    EVENT_API_URL_DELETED_FILE("event.api.file.deleted"),
+
+    /**
+     * PFS-869: Prepare Filelink for public upload.
+     */
+
+    PREPARE_FILELINK_TITLE("web.prepare_filelink.title"),
+    PREPARE_FILELINK_DESCRIPTION("web.prepare_filelink.description"),
+    PREPARE_FILELINK_FOLDER_ID("web.prepare_filelink.folder_id");
 
     // Methods/Constructors ***************************************************
 
