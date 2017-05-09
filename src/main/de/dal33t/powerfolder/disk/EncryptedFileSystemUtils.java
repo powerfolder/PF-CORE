@@ -104,7 +104,7 @@ public class EncryptedFileSystemUtils {
      */
 
     public static boolean isCryptoInstance(Path path){
-        return path.getFileSystem().provider().getScheme() == "cryptomator";
+        return path.getFileSystem() instanceof CryptoFileSystem;
     }
 
     /**
@@ -115,7 +115,7 @@ public class EncryptedFileSystemUtils {
 
     public static Path getPhysicalStorageLocation(Path path) {
         CryptoFileSystem fs = (CryptoFileSystem) path.getFileSystem();
-        if (fs.provider().getScheme() == "cryptomator") {
+        if (fs instanceof CryptoFileSystem) {
             return fs.getPathToVault();
         } else {
             throw new IllegalArgumentException("FileSystem from " + path  + " is not a CryptoFileSystem");

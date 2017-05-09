@@ -19,12 +19,6 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -32,6 +26,12 @@ import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.util.ArchiveMode;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Access/Control over folders of a server.
@@ -304,6 +304,8 @@ public interface FolderService {
     Map<FolderInfo, FolderStatisticInfo> getLocalStatisticInfo(
         Collection<FolderInfo> foInfos);
 
-
-
+    /**
+     * PFS-869: Creating a FileLink for unregistered user uploads.
+     */
+    String prepareFileLink(String userName, String mailAddress);
 }

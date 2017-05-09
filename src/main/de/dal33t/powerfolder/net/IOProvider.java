@@ -19,6 +19,13 @@
  */
 package de.dal33t.powerfolder.net;
 
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.message.Ping;
+import de.dal33t.powerfolder.util.*;
+
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -28,17 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.message.Ping;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.NamedThreadFactory;
-import de.dal33t.powerfolder.util.Range;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.WrapperExecutorService;
 
 /**
  * Provides basic IO stuff.
