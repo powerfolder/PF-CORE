@@ -44,7 +44,7 @@ public class HTTPProxySettings {
     private HTTPProxySettings() {
     }
 
-    public static void setProxyProperties(String proxyHost, int proxyPort) {
+    private static void setProxyProperties(String proxyHost, int proxyPort) {
         if (!StringUtils.isBlank(proxyHost)) {
             System.setProperty("http.proxyHost", proxyHost);
             System.setProperty("http.proxyPort", "" + proxyPort);
@@ -58,7 +58,7 @@ public class HTTPProxySettings {
         }
     }
 
-    public static void setCredentials(final String proxyUsername,
+    private static void setCredentials(final String proxyUsername,
         final String proxyPassword)
     {
         if (StringUtils.isBlank(proxyUsername)) {
@@ -161,9 +161,7 @@ public class HTTPProxySettings {
         }
     }
 
-    public static final boolean useProxy() {
-        return StringUtils.isNotBlank(System.getProperty("http.proxyHost"))
-            || "true".equalsIgnoreCase(
-                System.getProperty("java.net.useSystemProxies"));
+    public static final boolean useProxy(Controller c) {
+        return StringUtils.isNotBlank(ConfigurationEntry.HTTP_PROXY_HOST.getValue(c));
     }
 }

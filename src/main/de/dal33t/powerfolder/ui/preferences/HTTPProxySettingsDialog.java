@@ -250,8 +250,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
                 ? proxyUsernameField.getText()
                 : null;
             String proxyPassword = withAuth
-                ? new String(
-                    LoginUtil.obfuscate(proxyPasswordField.getPassword()))
+                ? new String(proxyPasswordField.getPassword())
                 : "";
             HTTPProxySettings.saveToConfig(getController(), proxyHostField
                 .getText(), (Integer) proxyPortField.getValue(), proxyUsername,

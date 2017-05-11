@@ -961,12 +961,30 @@ public enum ConfigurationEntry {
     /**
      * The http proxy to use for HTTP tunneled connections
      */
-    HTTP_PROXY_HOST("http.proxy.host"),
+    HTTP_PROXY_HOST("http.proxy.host") {
+        @Override
+        public String getDefaultValue() {
+            String host = System.getProperty("https.proxyHost");
+            if (StringUtils.isBlank(host)) {
+                host = System.getProperty("http.proxyHost");
+            }
+            return host;
+        }
+    },
 
     /**
      * The http proxy port to use for HTTP tunneled connections
      */
-    HTTP_PROXY_PORT("http.proxy.port", 80),
+    HTTP_PROXY_PORT("http.proxy.port", 80) {
+        @Override
+        public String getDefaultValue() {
+            String port = System.getProperty("https.proxyPort");
+            if (StringUtils.isBlank(port)) {
+                port = System.getProperty("http.proxyPort");
+            }
+            return port;
+        }
+    },
 
     /**
      * The http proxy username to use for HTTP tunneled connections
