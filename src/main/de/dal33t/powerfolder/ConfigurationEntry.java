@@ -1000,8 +1000,12 @@ public enum ConfigurationEntry {
      * PFC-1937
      * Enable to use system proxy settings
      */
-    HTTP_PROXY_SYSTEMPROXY("http.proxy.systemproxy", false),
-
+    HTTP_PROXY_SYSTEMPROXY("http.proxy.systemproxy", false) {
+        @Override
+        public String getDefaultValue() {
+            return System.getProperty("java.net.useSystemProxies");
+        }
+    },
     /**
      * Days until auto cleanup of uploads. Zero = cleanup on completion. NOTE -
      * true cleanup days dereferenced through Constants.CLEANUP_VALUES
