@@ -982,6 +982,9 @@ public enum ConfigurationEntry {
             if (StringUtils.isBlank(port)) {
                 port = System.getProperty("http.proxyPort");
             }
+            if (StringUtils.isBlank(port)) {
+                port = "80";
+            }
             return port;
         }
     },
@@ -996,16 +999,6 @@ public enum ConfigurationEntry {
      */
     HTTP_PROXY_PASSWORD("http.proxy.password"),
 
-    /**
-     * PFC-1937
-     * Enable to use system proxy settings
-     */
-    HTTP_PROXY_SYSTEMPROXY("http.proxy.systemproxy") {
-        @Override
-        public String getDefaultValue() {
-            return System.getProperty("java.net.useSystemProxies");
-        }
-    },
     /**
      * Days until auto cleanup of uploads. Zero = cleanup on completion. NOTE -
      * true cleanup days dereferenced through Constants.CLEANUP_VALUES

@@ -42,6 +42,7 @@ public class HTTPProxySettings {
         .getName());
 
     private HTTPProxySettings() {
+        System.setProperty("java.net.useSystemProxies", "true");
     }
 
     private static void setProxyProperties(String proxyHost, int proxyPort) {
@@ -78,21 +79,8 @@ public class HTTPProxySettings {
     public static void loadFromConfig(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
 
-        if (ConfigurationEntry.HTTP_PROXY_SYSTEMPROXY
-            .getValueBoolean(controller))
-        {
-            LOG.fine("Use system proxy settings");
-            System.setProperty("java.net.useSystemProxies", "true");
-            return;
-        }
-
         String proxyHost = ConfigurationEntry.HTTP_PROXY_HOST
             .getValue(controller);
-        if (StringUtils.isBlank(proxyHost)) {
-            LOG.finer("No proxy");
-            System.setProperty("java.net.useSystemProxies", "false");
-            return;
-        }
         int proxyPort = ConfigurationEntry.HTTP_PROXY_PORT
             .getValueInt(controller);
         setProxyProperties(proxyHost, proxyPort);
@@ -107,8 +95,6 @@ public class HTTPProxySettings {
         } catch (IllegalArgumentException iae) {
             LOG.info("Could not set credentials for http proxy: " + iae.getMessage());
         }
-
-        System.setProperty("java.net.useSystemProxies", "false");
 
         if (LOG.isLoggable(Level.WARNING)) {
             String auth = StringUtils.isBlank(proxyUsername)
