@@ -19,13 +19,13 @@
  */
 package de.dal33t.powerfolder.test;
 
-import java.util.logging.Level;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.util.logging.Level;
 
 public class D2DControllerTest extends TwoControllerTestCase
 {
@@ -84,11 +84,11 @@ public class D2DControllerTest extends TwoControllerTestCase
                     controllerLisa.connect(cl.getAddress(), true);
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         Thread.sleep(5000);
 
-        disconnectBartAndLisa();
+        //disconnectBartAndLisa();
     }
 }
