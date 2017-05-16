@@ -19,12 +19,14 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.ArchiveMode;
 
 import java.io.IOException;
@@ -308,4 +310,39 @@ public interface FolderService {
      * PFS-869: Creating a FileLink for unregistered user uploads.
      */
     String prepareFileLink(String userName, String mailAddress);
+
+    /**
+     * Returns the folder service responsible for a folder.
+     * Also tries to mount this folder.
+     *
+     * @param folderInfo The folder info of the folder
+     * @return The folder service
+     */
+    FolderService getFolderService(FolderInfo folderInfo);
+
+    /**
+     * Checks if the storage path of a folder is incorrect
+     *
+     * @param folderInfo The folder info
+     * @param account    The account owning the folder
+     * @return True if storage path is incorrect
+     */
+    boolean storagePathIsIncorrect(FolderInfo folderInfo, Account account);
+
+    /**
+     * Corrects the storage path of a folder
+     *
+     * @param folderInfo The folder info
+     * @param account    The account owning the folder
+     */
+    void correctStoragePath(FolderInfo folderInfo, Account account);
+
+    /**
+     * Moves a folder to a path
+     *
+     * @param folder The folder
+     * @param path   The target path
+     */
+    void moveFolder(Folder folder, Path path);
+
 }
