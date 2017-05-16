@@ -19,33 +19,30 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.KnownNodes;
-import de.dal33t.powerfolder.message.KnownNodesExt;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.SingleMessageProducer;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
+
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocketFactory;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.*;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 /**
  * Listens on a local port for incoming connections
@@ -149,8 +146,24 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     bind = null;
                 }
             }
-            serverSocket = new ServerSocket(port,
-                Constants.MAX_INCOMING_CONNECTIONS, bAddress);
+            if (useD2D) {
+                // Load truststore
+                KeyStore keyStore = KeyStore.getInstance("JKS");
+                keyStore.load(new FileInputStream(getController().getTrustStoreFile().toString()), new char[0]);
+                // Create keymanager
+                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                keyManagerFactory.init(keyStore, new char[0]);
+                KeyManager keyManager[] = keyManagerFactory.getKeyManagers();
+                // Create SSL context
+                SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+                sslContext.init(keyManager, null, new SecureRandom());
+                // Create SSl socket factory
+                SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
+                serverSocket = serverSocketFactory.createServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
+            }
+            else {
+                serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
+            }
         } catch (Exception e) {
             throw new ConnectionException(Translation.get(
                 "dialog.unable_to_open_port", port + ""), e);
