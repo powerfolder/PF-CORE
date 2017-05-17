@@ -20,6 +20,9 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Central constants holder for all important constants in PowerFolder.
  *
@@ -381,6 +384,17 @@ public class Constants {
     public static final String FOLDER_WEBDAV_PREFIX = "http";
     public static final String POWERFOLDER_SERVER_ID_HEADER = "PF-Server-ID";
     public static final String POWERFOLDER_SERVER_NAME_HEADER = "PF-Server-Name";
+
+    /**
+     * PFS-2293: WDNAS system directories. These directories may not be transferred or synced!
+     */
+    public static final String WDNAS_SYSTEM_DIRECTORY_1 = "NAS_Prog";
+    public static final String WDNAS_SYSTEM_DIRECTORY_2 = ".systemfiles";
+    public static final String WDNAS_SYSTEM_DIRECTORY_3 = ".wdmc";
+    public static final String WDNAS_SYSTEM_DIRECTORY_4 = ".wdphotos";
+    public static final String WDNAS_SYSTEM_DIRECTORY_5 = "lost+found";
+    public static final String WDNAS_SYSTEM_DIRECTORY_6 = ".!@#\\$recycle.";
+
 
     // Pro related ************************************************************
 
