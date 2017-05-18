@@ -46,7 +46,7 @@ public class Identity extends Message
 
     private MemberInfo member;
 
-    // A random magic id, valud for the connection
+    // A random magic id, value for the connection
     private String magicId;
 
     /** Flag which indicates that encryption is supported. */
