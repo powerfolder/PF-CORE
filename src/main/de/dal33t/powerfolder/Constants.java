@@ -388,12 +388,12 @@ public class Constants {
     /**
      * PFS-2293: WDNAS system directories. These directories may not be transferred or synced!
      */
-    public static final String WDNAS_SYSTEM_DIRECTORY_1 = "NAS_Prog";
-    public static final String WDNAS_SYSTEM_DIRECTORY_2 = ".systemfiles";
-    public static final String WDNAS_SYSTEM_DIRECTORY_3 = ".wdmc";
-    public static final String WDNAS_SYSTEM_DIRECTORY_4 = ".wdphotos";
+    public static final String WDNAS_SYSTEM_DIRECTORY_1 = "Nas_Prog";
+    public static final String WDNAS_SYSTEM_DIRECTORY_2 = "systemfiles";
+    public static final String WDNAS_SYSTEM_DIRECTORY_3 = "wdmc";
+    public static final String WDNAS_SYSTEM_DIRECTORY_4 = "wdphotos";
     public static final String WDNAS_SYSTEM_DIRECTORY_5 = "lost+found";
-    public static final String WDNAS_SYSTEM_DIRECTORY_6 = ".!@#\\$recycle.";
+    public static final String WDNAS_SYSTEM_DIRECTORY_6 = "recycle.";
 
 
     // Pro related ************************************************************
