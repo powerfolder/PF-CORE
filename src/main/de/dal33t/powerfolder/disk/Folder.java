@@ -285,13 +285,13 @@ public class Folder extends PFComponent {
 
             logFine("Original path: " + localBaseDir
                 + ". Choosen relative path: " + localBase);
+        }
 
-            if (Files.notExists(localBase)) {
-                try {
-                    Files.createDirectories(localBase);
-                } catch (IOException ioe) {
-                    // Ignore.
-                }
+        if (Files.notExists(localBase)) {
+            try {
+                Files.createDirectories(localBase);
+            } catch (IOException ioe) {
+                // Ignore.
             }
         }
 
