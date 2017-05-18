@@ -1815,12 +1815,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
             /* Start: PFS-2293: WDNAS system directories. These directories may not be transferred or synced! */
-            if (name.contains(Constants.WDNAS_SYSTEM_DIRECTORY_1)
-                    || name.contains(Constants.WDNAS_SYSTEM_DIRECTORY_2)
-                    || name.contains(Constants.WDNAS_SYSTEM_DIRECTORY_3)
-                    || name.contains(Constants.WDNAS_SYSTEM_DIRECTORY_4)
-                    || name.contains(Constants.WDNAS_SYSTEM_DIRECTORY_5)
-                    || name.contains(Constants.WDNAS_SYSTEM_DIRECTORY_6)) {
+            if (ConfigurationEntry.AUTO_SETUP_FOLDERS_IGNORED.getValue(getController()).contains(name)) {
                 return false;
             }
             /* End: PFS-2293 */
