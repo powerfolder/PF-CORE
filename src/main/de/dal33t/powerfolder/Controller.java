@@ -108,7 +108,9 @@ public class Controller extends PFComponent {
      */
     private Path configFile;
     private Path configFolderFile;
-    private Path trustStoreFile;
+    private Path sslTrustStoreFile;
+    private Path sslCaTrustStoreFile;
+    private Path sslCaCertificateFile;
 
     /** The config properties */
     private SplitConfig config;
@@ -965,12 +967,28 @@ public class Controller extends PFComponent {
             configFolderFile = configFolderFile.resolve(folderfilename);
         }
 
-        String trustStoreFileName = filename.replace(".config", ".ssl.jks");
-        trustStoreFile = getConfigLocationBase();
-        if (trustStoreFile == null) {
-            trustStoreFile = Paths.get(trustStoreFileName).toAbsolutePath();
+        String sslTrustStoreFileName = filename.replace(".config", ".ssl.jks");
+        sslTrustStoreFile = getConfigLocationBase();
+        if (sslTrustStoreFile == null) {
+            sslTrustStoreFile = Paths.get(sslTrustStoreFileName).toAbsolutePath();
         } else {
-            trustStoreFile = trustStoreFile.resolve(trustStoreFileName);
+            sslTrustStoreFile = sslTrustStoreFile.resolve(sslTrustStoreFileName);
+        }
+
+        String sslCaTrustStoreFileName = filename.replace(".config", ".sslca.jks");
+        sslCaTrustStoreFile = getConfigLocationBase();
+        if (sslCaTrustStoreFile == null) {
+            sslCaTrustStoreFile = Paths.get(sslCaTrustStoreFileName).toAbsolutePath();
+        } else {
+            sslCaTrustStoreFile = sslCaTrustStoreFile.resolve(sslCaTrustStoreFileName);
+        }
+
+        String sslCaCertificateFileName = filename.replace(".config", ".sslca.pem");
+        sslCaCertificateFile = getConfigLocationBase();
+        if (sslCaCertificateFile == null) {
+            sslCaCertificateFile = Paths.get(sslCaCertificateFileName).toAbsolutePath();
+        } else {
+            sslCaCertificateFile = sslCaCertificateFile.resolve(sslCaCertificateFileName);
         }
 
         if (Files.exists(configFolderFile)) {
@@ -2065,8 +2083,16 @@ public class Controller extends PFComponent {
         return configFolderFile;
     }
 
-    public Path getTrustStoreFile() {
-        return trustStoreFile;
+    public Path getSslTrustStoreFile() {
+        return sslTrustStoreFile;
+    }
+
+    public Path getSslCaTrustStoreFile() {
+        return sslCaTrustStoreFile;
+    }
+
+    public Path getSslCaCertificateFile() {
+        return sslCaCertificateFile;
     }
 
     /**

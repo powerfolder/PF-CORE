@@ -149,7 +149,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             if (useD2D) {
                 // Load truststore
                 KeyStore keyStore = KeyStore.getInstance("JKS");
-                keyStore.load(new FileInputStream(getController().getTrustStoreFile().toString()), new char[0]);
+                keyStore.load(new FileInputStream(getController().getSslTrustStoreFile().toString()), new char[0]);
                 // Create keymanager
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 keyManagerFactory.init(keyStore, new char[0]);
