@@ -87,7 +87,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 432;
+    private static final int REVISION_VERSION = 433;
 
     /**
      * Program version.
@@ -687,10 +687,14 @@ public class Controller extends PFComponent {
     }
 
     private void enableFileBrowserIntegration(Controller controller) {
-        // PFC-2395: Start
-        fbIntegration = new FileBrowserIntegration(getController());
-        fbIntegration.start();
-        // PFC-2395: End
+        try {
+            // PFC-2395: Start
+            fbIntegration = new FileBrowserIntegration(getController());
+            fbIntegration.start();
+            // PFC-2395: End
+        } catch (Throwable t) {
+            logWarning("Unable to initialize File browser integration. " + t.getMessage(), t);
+        }
     }
 
     private void clearPreferencesOnConfigSwitch() {
