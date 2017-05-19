@@ -1814,6 +1814,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return false;
             }
 
+            /* Start: PFS-2293: WDNAS system directories. These directories may not be transferred or synced! */
+            if (ConfigurationEntry.AUTO_SETUP_FOLDERS_IGNORED.getValue(getController()).contains(name)) {
+                return false;
+            }
+            /* End: PFS-2293 */
+
             return !isIgnoredFolderDirectory(entry);
         };
 

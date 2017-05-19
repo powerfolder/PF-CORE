@@ -20,6 +20,9 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Central constants holder for all important constants in PowerFolder.
  *
