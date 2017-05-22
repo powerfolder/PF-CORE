@@ -114,6 +114,6 @@ public class D2DControllerTest extends TwoControllerTestCase
 
         Thread.sleep(5000);
 
-        disconnectBartAndLisa();
+        //disconnectBartAndLisa();
     }
 }
