@@ -266,6 +266,7 @@ public class DateUtil {
             // ISO-8601 timeformat: 2015-09-22T13:32:32.084Z
             Calendar cal = javax.xml.bind.DatatypeConverter
                 .parseDateTime(stringDate);
+            cal.setLenient(false);
             newDate = cal.getTime();
         } catch (RuntimeException rte) {
             try {
