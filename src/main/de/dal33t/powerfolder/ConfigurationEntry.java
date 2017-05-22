@@ -208,6 +208,12 @@ public enum ConfigurationEntry {
     PROVIDER_SUPPORT_URL("provider.url.support", "https://wiki.powerfolder.com"),
 
     /**
+     * Whether to show support url in application menu
+     */
+
+    PROVIDER_SUPPORT_URL_SHOW_IN_MENU("provider.url.support.show_in_menu", false),
+
+    /**
      * URL where bugs or tickets can be filed.
      */
     PROVIDER_SUPPORT_FILE_TICKET_URL("provider.url.ticket", "https://www.powerfolder.com/support/index.php?/Tickets/Submit"),
