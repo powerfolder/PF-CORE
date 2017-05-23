@@ -387,13 +387,19 @@ public final class FileInfoFactory {
         int start = 0;
         while ((start = output.indexOf("$%", start)) >= 0) {
             int end = output.indexOf("%$", start);
-            if (end < 0) {
+            if (end < 0 || end < start + 2) {
                 break;
             }
             String encoded = output.substring(start + 2, end);
-            String decoded = Base64.decodeString(encoded + "==");
-            output = output.substring(0, start) + decoded
-                + output.substring(end + 2);
+            try {
+                String decoded = Base64.decodeString(encoded + "==");
+                output = output.substring(0, start) + decoded + output.substring(end + 2);
+            } catch (IllegalArgumentException e) {
+                break;
+            } catch (RuntimeException e) {
+                LOG.log(Level.WARNING, "Exception while decoding filename: " + relativeFilename + ". " + e, e);
+                break;
+            }
         }
         return output;
     }
