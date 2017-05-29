@@ -19,17 +19,15 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.LoginUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 
 /**
  * Helper to set/load the general HTTP proxy settings of this VM.
@@ -40,6 +38,14 @@ import de.dal33t.powerfolder.util.Util;
 public class HTTPProxySettings {
     private static final Logger LOG = Logger.getLogger(HTTPProxySettings.class
         .getName());
+
+    private static boolean SYSTEM_PROXY_ENABLED = false;
+
+    static {
+        if ("true".equalsIgnoreCase(System.getProperty("java.net.useSystemProxies"))) {
+            SYSTEM_PROXY_ENABLED = StringUtils.isNotBlank(System.getProperty("http.proxyHost", ""));
+        }
+    }
 
     private HTTPProxySettings() {
         System.setProperty("java.net.useSystemProxies", "true");
@@ -149,5 +155,43 @@ public class HTTPProxySettings {
 
     public static final boolean useProxy(Controller c) {
         return StringUtils.isNotBlank(ConfigurationEntry.HTTP_PROXY_HOST.getValue(c));
+    }
+
+    public static final boolean requiresProxyAuthorization(Controller c) {
+        String u;
+        if (StringUtils.isNotBlank(c.getUpdateSettings().versionCheckURL)) {
+            u = c.getUpdateSettings().versionCheckURL;
+        } else
+        if (ConfigurationEntry.SERVER_WEB_URL.hasNonBlankValue(c)) {
+           u = ConfigurationEntry.SERVER_WEB_URL.getValue(c);
+        } else if (ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL.hasNonBlankValue(c)) {
+            u = ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL.getValue(c);
+        } else {
+            u = ConfigurationEntry.PROVIDER_URL.getValue(c);
+        }
+        InputStream in = null;
+        try {
+            URL testURL = new URL(u);
+            URLConnection con = testURL.openConnection();
+            con.setConnectTimeout(1000 * 5);
+            con.setReadTimeout(1000 * 5);
+            con.connect();
+            in = con.getInputStream();
+            in.close();
+            return false;
+        } catch (MalformedURLException e) {
+            LOG.warning("Unable to test for proxy authorization: " + u + ". " + e.getMessage());
+            return false;
+        } catch (IOException e) {
+            LOG.warning("Proxy authorization required for: " + u + ". " + e.getMessage());
+            return (e.getMessage().contains("407") || e.getMessage().contains("Proxy Authorization Required"));
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (Exception e) {
+            }
+        }
     }
 }

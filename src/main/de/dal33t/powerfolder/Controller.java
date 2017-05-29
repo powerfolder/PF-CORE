@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -87,7 +88,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 441;
+    private static final int REVISION_VERSION = 442;
 
     /**
      * Program version.
@@ -647,6 +648,15 @@ public class Controller extends PFComponent {
 
         // Load anything that was not handled last time.
         loadPersistentObjects();
+
+
+        if (HTTPProxySettings.requiresProxyAuthorization(this)) {
+            if (isUIEnabled()) {
+                new HTTPProxySettingsDialog(this).open();
+            } else {
+                logWarning("Proxy authorization required. Please setup credentials in config.");
+            }
+        }
 
         setLoadingCompletion(100, 100);
         if (!isConsoleMode()) {

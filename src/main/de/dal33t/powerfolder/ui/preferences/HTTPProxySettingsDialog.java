@@ -1,21 +1,12 @@
 package de.dal33t.powerfolder.ui.preferences;
 
+import java.awt.*;
 import java.awt.Dialog.ModalityType;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -31,6 +22,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.net.HTTPProxySettings;
 import de.dal33t.powerfolder.ui.PFUIComponent;
+import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -41,6 +33,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
     private JDialog dialog;
     private JPanel panel;
 
+    private JLabel messageField;
     private JTextField proxyHostField;
     private JSpinner proxyPortField;
     private JCheckBox useUserAndPasswordBox;
@@ -89,13 +82,15 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             initComponents();
 
             FormLayout layout = new FormLayout("r:p:grow, 3dlu, 80dlu",
-                "p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 14dlu, p");
+                "p, 7dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 21dlu, p");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setDefaultDialogBorder();
             CellConstraints cc = new CellConstraints();
 
             int row = 1;
+            builder.add(messageField, cc.xywh(1, row, 3, 1));
+            row += 2;
             builder.addLabel(Translation
                 .get("http.options.host"), cc.xy(1, row));
             builder.add(proxyHostField, cc.xy(3, row));
@@ -123,6 +118,13 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
     }
 
     private void initComponents() {
+        boolean requiresProxyAuth = HTTPProxySettings.requiresProxyAuthorization(getController());
+        messageField = SimpleComponentFactory.createLabel("");
+        messageField.setForeground(Color.RED);
+        if (requiresProxyAuth) {
+            messageField.setText(Translation.get("http.options.authrequired"));
+        }
+
         tempProxyHostModel = new ValueHolder(ConfigurationEntry.HTTP_PROXY_HOST
             .getValue(getController()), true);
         int proxyPort = ConfigurationEntry.HTTP_PROXY_PORT
@@ -148,7 +150,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             .get("http.options.withauth"));
         useUserAndPasswordBox.setOpaque(false);
         useUserAndPasswordBox
-            .setSelected(tempProxyUsernameModel.getValue() != null);
+            .setSelected(tempProxyUsernameModel.getValue() != null || requiresProxyAuth);
 
         proxyUsernameField = BasicComponentFactory
             .createTextField(tempProxyUsernameModel);
@@ -207,10 +209,14 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
     private class OkAction extends AbstractAction {
         public void actionPerformed(ActionEvent e) {
             saveSettings();
-            dialog.setVisible(false);
-            dialog.dispose();
-        }
 
+            if (!HTTPProxySettings.requiresProxyAuthorization(getController())) {
+                dialog.setVisible(false);
+                dialog.dispose();
+            } else {
+                messageField.setText(Translation.get("http.options.authfailed"));
+            }
+        }
     }
 
     private class CancelAction extends AbstractAction {
