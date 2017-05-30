@@ -393,7 +393,7 @@ public class TestHelper {
      * @param directory
      *            the dir to place the file
      * @param size
-     *            the size of the file
+     *            the size of the file in byte
      * @return the file that was created
      * @throws RuntimeException
      *             if something went wrong
