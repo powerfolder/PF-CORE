@@ -626,6 +626,11 @@ public enum ConfigurationEntry {
     NET_BROADCAST("net.broadcast", true),
 
     /**
+     * PFC-3001: Reduce network UDP broadcast from 10 to 60 seconds (configurable)
+     */
+    NET_BROADCAST_INTERVAL_SECONDS("net.broadcast.interval.seconds", 60),
+
+    /**
      * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
      */
     NET_BIND_RANDOM_PORT("random-port", true),

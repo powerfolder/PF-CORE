@@ -196,7 +196,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
         if (getController().getConnectionListener() != null) {
             getController().scheduleAndRepeat(new BroadcastSender(),
-                10L * 1000);
+                1000L * ConfigurationEntry.NET_BROADCAST_INTERVAL_SECONDS.getValueInt(getController()));
         }
     }
 
