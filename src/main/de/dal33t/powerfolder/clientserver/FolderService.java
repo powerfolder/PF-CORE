@@ -315,15 +315,6 @@ public interface FolderService {
     String prepareFileLink(String userName, String mailAddress);
 
     /**
-     * Returns the folder service responsible for a folder.
-     * Also tries to mount this folder.
-     *
-     * @param folderInfo The folder info of the folder
-     * @return The folder service
-     */
-    FolderService getFolderService(FolderInfo folderInfo);
-
-    /**
      * Checks if the storage path of a folder is incorrect
      *
      * @param folderInfo The folder info
@@ -339,13 +330,5 @@ public interface FolderService {
      * @param account    The account owning the folder
      */
     void correctStoragePath(FolderInfo folderInfo, Account account);
-
-    /**
-     * Moves a folder to a path
-     *
-     * @param folder The folder
-     * @param path   The target path
-     */
-    void moveFolder(Folder folder, Path path);
 
 }
