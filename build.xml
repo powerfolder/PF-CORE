@@ -184,12 +184,12 @@ For creation of the installer:
 			<!-- Encrypted storage - cryptolib/fs -->
 			<include name="cryptomator/commons-codec-1.10.jar" />
 			<include name="cryptomator/commons-lang3-3.5.jar" />
-            <include name="cryptomator/cryptofs-1.2.2.jar"/>
-			<include name="cryptomator/cryptolib-1.1.1.jar"/>
-			<include name="cryptomator/dagger-2.10.jar"/>
-			<include name="cryptomator/dagger-producers-2.9.jar" />
+            <include name="cryptomator/cryptofs-1.3.0.jar"/>
+            <include name="cryptomator/cryptolib-1.1.2.jar"/>
+            <include name="cryptomator/dagger-2.11.jar"/>
+            <include name="cryptomator/dagger-producers-2.11.jar"/>
 			<include name="cryptomator/gson-2.8.0.jar" />
-			<include name="cryptomator/guava-21.0.jar" />
+            <include name="cryptomator/guava-22.0.jar"/>
 			<include name="cryptomator/javax.inject-1.jar" />
 			<include name="cryptomator/slf4j-api-1.7.25.jar"/>
 			<include name="cryptomator/siv-mode-1.2.1.jar"/>
