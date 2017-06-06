@@ -51,17 +51,21 @@ public class HTTPProxySettings {
         System.setProperty("java.net.useSystemProxies", "true");
     }
 
-    private static void setProxyProperties(String proxyHost, int proxyPort) {
+    private static void setProxyProperties(String proxyHost, int proxyPort, String nonProxyHosts) {
         if (!StringUtils.isBlank(proxyHost)) {
             System.setProperty("http.proxyHost", proxyHost);
             System.setProperty("http.proxyPort", "" + proxyPort);
+            System.setProperty("http.nonProxyHosts", nonProxyHosts);
             System.setProperty("https.proxyHost", proxyHost);
             System.setProperty("https.proxyPort", "" + proxyPort);
+            System.setProperty("https.nonProxyHosts", nonProxyHosts);
         } else {
             System.clearProperty("http.proxyHost");
             System.clearProperty("http.proxyPort");
+            System.clearProperty("http.nonProxyHosts");
             System.clearProperty("https.proxyHost");
             System.clearProperty("https.proxyPort");
+            System.clearProperty("https.nonProxyHosts");
         }
     }
 
@@ -89,7 +93,8 @@ public class HTTPProxySettings {
             .getValue(controller);
         int proxyPort = ConfigurationEntry.HTTP_PROXY_PORT
             .getValueInt(controller);
-        setProxyProperties(proxyHost, proxyPort);
+        String nonProxyHosts = ConfigurationEntry.HTTP_PROXY_NON_PROXY_HOSTS.getValue(controller);
+        setProxyProperties(proxyHost, proxyPort, nonProxyHosts);
 
         // Username / Password
         String proxyUsername = ConfigurationEntry.HTTP_PROXY_USERNAME
@@ -114,10 +119,10 @@ public class HTTPProxySettings {
     }
 
     public static void saveToConfig(Controller controller, String proxyHost,
-        int proxyPort, String proxyUsername, String proxyPassword)
+        int proxyPort, String proxyUsername, String proxyPassword, String nonProxyHosts)
     {
         Reject.ifNull(controller, "Controller is null");
-        if (!StringUtils.isBlank(proxyHost)) {
+        if (StringUtils.isNotBlank(proxyHost)) {
             ConfigurationEntry.HTTP_PROXY_HOST.setValue(controller, proxyHost);
         } else {
             ConfigurationEntry.HTTP_PROXY_HOST.removeValue(controller);
@@ -128,19 +133,24 @@ public class HTTPProxySettings {
         } else {
             ConfigurationEntry.HTTP_PROXY_PORT.removeValue(controller);
         }
-        if (!StringUtils.isBlank(proxyUsername)) {
+        if (StringUtils.isNotBlank(proxyUsername)) {
             ConfigurationEntry.HTTP_PROXY_USERNAME.setValue(controller,
                 proxyUsername);
         } else {
             ConfigurationEntry.HTTP_PROXY_USERNAME.removeValue(controller);
         }
-        if (!StringUtils.isBlank(proxyPassword)) {
+        if (StringUtils.isNotBlank(proxyPassword)) {
             ConfigurationEntry.HTTP_PROXY_PASSWORD.setValue(controller,
                 LoginUtil.obfuscate(Util.toCharArray(proxyPassword)));
         } else {
             ConfigurationEntry.HTTP_PROXY_PASSWORD.removeValue(controller);
         }
-        setProxyProperties(proxyHost, proxyPort);
+        if (StringUtils.isNotBlank(nonProxyHosts)) {
+            ConfigurationEntry.HTTP_PROXY_NON_PROXY_HOSTS.setValue(controller, nonProxyHosts);
+        } else {
+            ConfigurationEntry.HTTP_PROXY_NON_PROXY_HOSTS.removeValue(controller);
+        }
+        setProxyProperties(proxyHost, proxyPort, nonProxyHosts);
         setCredentials(proxyUsername, proxyPassword);
 
         if (StringUtils.isBlank(proxyHost)) {
@@ -183,8 +193,13 @@ public class HTTPProxySettings {
             LOG.warning("Unable to test for proxy authorization: " + u + ". " + e.getMessage());
             return false;
         } catch (IOException e) {
-            LOG.warning("Proxy authorization required for: " + u + ". " + e.getMessage());
-            return (e.getMessage().contains("407") || e.getMessage().contains("Proxy Authorization Required"));
+            boolean proxyAuth =  (e.getMessage().contains("407") || e.getMessage().contains("Proxy Authorization Required"));
+            if (proxyAuth) {
+                LOG.warning("Proxy authorization required for: " + u + ". " + e.getMessage());
+            } else {
+                LOG.warning(u + ". " + e);
+            }
+            return proxyAuth;
         } finally {
             try {
                 if (in != null) {

@@ -1005,6 +1005,17 @@ public enum ConfigurationEntry {
      */
     HTTP_PROXY_PASSWORD("http.proxy.password"),
 
+    HTTP_PROXY_NON_PROXY_HOSTS("http.proxy.nonproxyhosts") {
+        @Override
+        public String getDefaultValue() {
+            String hosts = System.getProperty("https.nonProxyHosts");
+            if (StringUtils.isBlank(hosts)) {
+                hosts = System.getProperty("http.nonProxyHosts");
+            }
+            return hosts;
+        }
+    },
+
     /**
      * Days until auto cleanup of uploads. Zero = cleanup on completion. NOTE -
      * true cleanup days dereferenced through Constants.CLEANUP_VALUES

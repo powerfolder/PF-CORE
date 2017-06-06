@@ -39,6 +39,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
     private JCheckBox useUserAndPasswordBox;
     private JTextField proxyUsernameField;
     private JPasswordField proxyPasswordField;
+    private JTextArea nonProxyHosts;
 
     private JButton okButton;
     private JButton cancelButton;
@@ -47,6 +48,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
     private ValueModel tempProxyHostModel;
     private ValueModel tempProxyUsernameModel;
     private ValueModel tempProxyPasswordModel;
+    private ValueModel tempNonProxyHostsModel;
 
     public HTTPProxySettingsDialog(Controller controller) {
         this(controller, controller.getUIController().getMainFrame()
@@ -82,7 +84,7 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             initComponents();
 
             FormLayout layout = new FormLayout("r:p:grow, 3dlu, 80dlu",
-                "p, 7dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 21dlu, p");
+                "p, 7dlu, p, 3dlu, p, 7dlu, p, 3dlu, p, 3dlu, p, 14dlu, p, 3dlu, fill:42dlu:grow, 21dlu, p");
 
             PanelBuilder builder = new PanelBuilder(layout);
             builder.setDefaultDialogBorder();
@@ -108,6 +110,11 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             builder.addLabel(Translation
                 .get("http.options.password"), cc.xy(1, row));
             builder.add(proxyPasswordField, cc.xy(3, row));
+            row += 2;
+            builder.addLabel(Translation
+                    .get("http.options.nonproxyhosts"), cc.xywh(1, row, 3, 1));
+            row += 2;
+            builder.add(new JScrollPane(nonProxyHosts), cc.xywh(1, row, 3, 1));
             row += 2;
             builder.add(buttonBar, cc.xyw(1, row, 3));
 
@@ -157,6 +164,11 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
         proxyPasswordField = BasicComponentFactory
             .createPasswordField(tempProxyPasswordModel);
 
+        String str = ConfigurationEntry.HTTP_PROXY_NON_PROXY_HOSTS
+                .getValue(getController());
+        tempNonProxyHostsModel = new ValueHolder(str, true);
+        nonProxyHosts = BasicComponentFactory.createTextArea(tempNonProxyHostsModel);
+
         okButton = new JButton(Translation.get("general.ok"));
         okButton.setMnemonic(Translation.get("general.ok.key")
             .charAt(0));
@@ -196,12 +208,13 @@ public class HTTPProxySettingsDialog extends PFUIComponent {
             String proxyPassword = withAuth
                 ? new String(proxyPasswordField.getPassword())
                 : "";
+            String nonProxyHosts = (String) tempNonProxyHostsModel.getValue();
             HTTPProxySettings.saveToConfig(getController(), proxyHostField
                 .getText(), (Integer) proxyPortField.getValue(), proxyUsername,
-                proxyPassword);
+                proxyPassword, nonProxyHosts);
         } else {
             HTTPProxySettings
-                .saveToConfig(getController(), null, 0, null, null);
+                .saveToConfig(getController(), null, 0, null, null, null);
         }
         getController().saveConfig();
     }
