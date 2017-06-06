@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.util.Reject;
 import org.cryptomator.cryptofs.CryptoFileSystem;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
-import org.cryptomator.cryptofs.CryptoFileSystemUris;
+import org.cryptomator.cryptofs.CryptoFileSystemUri;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
@@ -149,7 +149,7 @@ public class EncryptedFileSystemUtils {
 
     public static Path getCryptoPath(Path path) {
         Reject.ifNull(path, "Path");
-        URI encFolderUri = CryptoFileSystemUris.createUri(path, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
+        URI encFolderUri = CryptoFileSystemUri.create(path, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
         path = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
         return path;
     }

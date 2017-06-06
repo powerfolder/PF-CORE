@@ -8,7 +8,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import org.cryptomator.cryptofs.CryptoFileSystem;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
-import org.cryptomator.cryptofs.CryptoFileSystemUris;
+import org.cryptomator.cryptofs.CryptoFileSystemUri;
 import org.junit.Test;
 import org.junit.Before;
 
@@ -96,7 +96,7 @@ public void testGetCryptoPathString() throws Exception {
 
 @Test
 public void testGetCryptoPath() throws Exception {
-    URI encFolderUri = CryptoFileSystemUris.createUri(UNENCRYPTED_TESTDIR, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
+    URI encFolderUri = CryptoFileSystemUri.create(UNENCRYPTED_TESTDIR, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
     Path ENCRYPTED_TESTFOLDER_2 = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
     assertTrue(ENCRYPTED_TESTFOLDER.equals(ENCRYPTED_TESTFOLDER_2));
 }
@@ -107,7 +107,7 @@ public void testGetCryptoPath() throws Exception {
 
     @Test
     public void testIsCryptoContainerRootDir() throws Exception {
-        URI encFolderUri = CryptoFileSystemUris.createUri(UNENCRYPTED_TESTDIR, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
+        URI encFolderUri = CryptoFileSystemUri.create(UNENCRYPTED_TESTDIR, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
         Path ENCRYPTED_TESTFOLDER_2 = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
         assertTrue(EncryptedFileSystemUtils.isCryptoContainerEmptyRootDir(ENCRYPTED_TESTFOLDER_2));
     }
