@@ -19,16 +19,7 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.Externalizable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
@@ -40,6 +31,14 @@ import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.FileListProto;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.Externalizable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Files of a folder.
@@ -71,7 +70,7 @@ public class FileList extends FolderRelatedMessage
         // Serialization
     }
 
-    protected FileList(FolderInfo folderInfo, FileInfo[] files,
+    public FileList(FolderInfo folderInfo, FileInfo[] files,
         int nDetlas2Follow)
     {
         Reject.ifNull(folderInfo, "FolderInfo is null");

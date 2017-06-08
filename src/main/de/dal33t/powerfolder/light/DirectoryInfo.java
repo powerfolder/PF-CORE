@@ -19,10 +19,11 @@
  */
 package de.dal33t.powerfolder.light;
 
+import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.util.Reject;
+
 import java.nio.file.Path;
 import java.util.Date;
-
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * A lightweight object representing an actual directory in the PowerFolder.
@@ -36,6 +37,18 @@ public class DirectoryInfo extends FileInfo {
 
     DirectoryInfo() {
         super();
+    }
+
+    /** FileInfo
+     * Init from D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
+     * @param  mesg  Message to use data from
+     **/
+
+    public
+    DirectoryInfo(AbstractMessage mesg)
+    {
+        super(mesg);
     }
 
     DirectoryInfo(String fileName, String oid, MemberInfo modifiedBy,

@@ -19,24 +19,24 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.Externalizable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.Externalizable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A message which contains only the deltas of the folders list
@@ -278,7 +278,12 @@ public class FolderFilesChanged extends FolderRelatedMessage
 
           for(FileInfoProto.FileInfo finfo : proto.getFileInfosList())
             {
-              this.added[i++] = new FileInfo(finfo);
+                if (finfo.getClazzName().equals("DirectoryInfo")) {
+                    this.added[i++] = new DirectoryInfo(finfo);
+                }
+                else {
+                    this.added[i++] = new FileInfo(finfo);
+                }
             }
 
           this.folder = new FolderInfo(proto.getFolderInfo());
