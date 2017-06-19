@@ -55,6 +55,7 @@ import java.util.zip.ZipOutputStream;
 import static de.dal33t.powerfolder.disk.EncryptedFileSystemUtils.isCryptoContainerEmptyRootDir;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class PathUtils {
 
@@ -504,7 +505,7 @@ public class PathUtils {
         try {
             if (EncryptedFileSystemUtils.isCryptoInstance(from) ||
                     EncryptedFileSystemUtils.isCryptoInstance(to)) {
-                Files.copy(from, to);
+                Files.copy(from, to, REPLACE_EXISTING);
             } else {
                 copyFromStreamToFile(Files.newInputStream(from), to);
             }
