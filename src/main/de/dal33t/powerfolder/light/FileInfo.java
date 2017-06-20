@@ -241,7 +241,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
 
         // Check if files match
-        if (!nameMatch) {
+        if (!nameMatch && !isBaseDirectory()) {
             throw new IllegalArgumentException(
                 "Diskfile does not match fileinfo name '" + getFilenameOnly()
                     + "', details: " + toDetailString() + ", diskfile name '"
