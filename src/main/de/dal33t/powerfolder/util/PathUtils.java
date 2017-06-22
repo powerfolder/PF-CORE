@@ -52,7 +52,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import static de.dal33t.powerfolder.disk.EncryptedFileSystemUtils.isCryptoContainerEmptyRootDir;
+import static de.dal33t.powerfolder.disk.EncryptedFileSystemUtils.isEmptyCryptoContainerRootDir;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -1732,7 +1732,7 @@ public class PathUtils {
 
     public static void recursiveCopyVisitor(Path sourceDirectory, Path targetDirectory) throws IOException {
 
-        if (Files.exists(targetDirectory) && !isCryptoContainerEmptyRootDir(targetDirectory)) {
+        if (Files.exists(targetDirectory) && !isEmptyCryptoContainerRootDir(targetDirectory)) {
             throw new FileAlreadyExistsException("Copy from " + sourceDirectory + " to " + targetDirectory
                     + " failed! Target directory already exists " + targetDirectory);
         }
@@ -1802,7 +1802,7 @@ public class PathUtils {
 
     public static void recursiveMoveVisitor(Path sourceDirectory, Path targetDirectory) throws IOException {
 
-        if (Files.exists(targetDirectory) && !isCryptoContainerEmptyRootDir(targetDirectory)) {
+        if (Files.exists(targetDirectory) && !isEmptyCryptoContainerRootDir(targetDirectory)) {
             throw new FileAlreadyExistsException("Move from " + sourceDirectory + " to " + targetDirectory
                     + " failed! Target directory already exists " + targetDirectory);
         }
@@ -1813,7 +1813,7 @@ public class PathUtils {
                     new SimpleFileVisitor<Path>() {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                            Path newDir = targetDirectory.resolve(sourceDirectory.relativize(dir));
+                            Path newDir = targetDirectory.resolve(sourceDirectory.relativize(dir).toString());
                             if (Files.notExists(newDir)) {
                                 Files.createDirectories(newDir);
                             }
@@ -1822,7 +1822,7 @@ public class PathUtils {
 
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                            Path newFile = targetDirectory.resolve(sourceDirectory.relativize(file));
+                            Path newFile = targetDirectory.resolve(sourceDirectory.relativize(file).toString());
                             try {
                                 Files.move(file, newFile);
                             } catch (NoSuchFileException e) {

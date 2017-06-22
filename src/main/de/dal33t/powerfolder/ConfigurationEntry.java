@@ -1171,12 +1171,11 @@ public enum ConfigurationEntry {
     D2D_ENABLED("d2d.enabled", false),
 
     /**
-     * PFS-1994: En-/Disable encrypted storage for this server.
+     * PFS-1994/PFS-2343: En-/Disable encrypted storage for this server.
      */
-
     ENCRYPTED_STORAGE("encrypted_storage.enabled", false),
-
     ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", null),
+    ENCRYPTED_STORAGE_RECOMMENDED("encrypted_storage.recommended", true),
 
     /**
      * PFS-2871: Port for client authentication over web requests.

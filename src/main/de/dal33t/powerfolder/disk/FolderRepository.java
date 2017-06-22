@@ -2612,16 +2612,19 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public Folder moveLocalFolder(Folder folder, Path targetPath) {
-        Reject.ifTrue(EncryptedFileSystemUtils.isCryptoInstance(targetPath), "Only physical paths supported aas new directory");
 
         boolean sourceEncrypted = EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase());
         boolean targetEncrypted = targetPath.getFileName().toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
+
+        /**
+         * Allowed moving constellations:
+         * 1. encrypted Folder -> encrypted Folder
+         * 2. unencrypted Folder -> unencrypted Folder
+         * 3. unencrypted Folder -> encrypted Folder
+         */
+
         if (sourceEncrypted && !targetEncrypted) {
             logWarning("Not allowed to move encrypted folder to unencrypted target directory. From: "
-                    + folder.getLocalBase() + " to " + targetPath);
-            return null;
-        } else if (!sourceEncrypted && targetEncrypted) {
-            logWarning("Not allowed to move unencrypted folder to encrypted target directory. From: "
                     + folder.getLocalBase() + " to " + targetPath);
             return null;
         }
@@ -2644,9 +2647,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             scanBasedirLock.lock();
 
             Path sourceDirectory = folder.getLocalBase().toRealPath();
-            if (EncryptedFileSystemUtils.isCryptoInstance(sourceDirectory)) {
+
+            // PFS-2343
+            if (EncryptedFileSystemUtils.isCryptoInstance(sourceDirectory))
                 sourceDirectory = EncryptedFileSystemUtils.getPhysicalStorageLocation(sourceDirectory);
-            }
 
             if (sourceDirectory.equals(targetPath)) {
                 logFine("Not required to move folder from/to " + targetPath);
@@ -2670,7 +2674,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     // Delete empty target target path. Might have been created through resolveTargetDirectory
                     PathUtils.recursiveDelete(targetPath);
                 }
+
                 PathUtils.recursiveMoveVisitor(sourceDirectory, targetPath);
+
                 fs = fs.changeBaseDir(targetPath);
                 moved = true;
             } catch (IOException e) {

@@ -174,7 +174,7 @@ public class EncryptedFileSystemUtils {
      * @path the path to check.
      */
 
-    public static boolean isCryptoContainerEmptyRootDir(Path path) {
+    public static boolean isEmptyCryptoContainerRootDir(Path path) {
         Reject.ifNull(path, "Path");
         if (!isCryptoInstance(path)) {
             return false;

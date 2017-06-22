@@ -328,4 +328,11 @@ public interface FolderService {
      */
     void correctStoragePath(FolderInfo folderInfo, Account account);
 
+    /**
+     * Moves a folder to the given path.
+     *
+     * @param folder
+     * @param path
+     */
+    void moveFolder(Folder folder, Path path);
 }
