@@ -40,10 +40,7 @@ import de.dal33t.powerfolder.light.FileHistory.Conflict;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileHistoryReply;
-import de.dal33t.powerfolder.util.ProblemUtil;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.*;
 
 /**
  * The filerequestor handles all stuff about requesting new downloads
@@ -52,6 +49,8 @@ import de.dal33t.powerfolder.util.Reject;
  * @version $Revision: 1.18 $
  */
 public class FileRequestor extends PFComponent {
+    // 60 seconds
+    private static final long PERIODIC_REQUEST_MS = Controller.getWaitTime() * 12;
     private Thread myThread;
     private Date workerLastActivity = new Date();
     private final Queue<Folder> folderQueue;
@@ -73,18 +72,18 @@ public class FileRequestor extends PFComponent {
 
         logFine("Started");
 
-        long waitTime = Controller.getWaitTime() * 12;
         getController()
-            .scheduleAndRepeat(new PeriodicalTriggerTask(), waitTime);
+            .scheduleAndRepeat(new PeriodicalTriggerTask(), PERIODIC_REQUEST_MS);
     }
 
     /**
-     * @return if the worker is busy/unavailable since 5 minutes.
+     * @return if the worker is busy/unavailable since 30 minutes.
      */
     private boolean isWorkerTimeout() {
-        long secondsSinceLastActivity = (System.currentTimeMillis() - workerLastActivity
-            .getTime()) / 1000;
-        return secondsSinceLastActivity > Controller.getWaitTime() * 12 * 5;
+        long msSinceLastActivity = System.currentTimeMillis() - workerLastActivity.getTime();
+        // logWarning("last activity: " + workerLastActivity + " inactive since " + msSinceLastActivity + "ms. timeout time: " + PERIODIC_REQUEST_MS * 30);
+        // 5 Minutes
+        return msSinceLastActivity > PERIODIC_REQUEST_MS * 5;
     }
 
     private void restartWorker() {
@@ -250,6 +249,7 @@ public class FileRequestor extends PFComponent {
             return;
         }
 
+
         retrieveNewestVersions(folder, incomingFiles, true);
     }
 
@@ -266,6 +266,7 @@ public class FileRequestor extends PFComponent {
     {
         TransferManager tm = getController().getTransferManager();
         List<FileInfo> filesToDownload = new ArrayList<FileInfo>(fInfos.size());
+        int i = 0;
         for (FileInfo fInfo : fInfos) {
             if (myThread.isInterrupted()) {
                 return;
@@ -289,6 +290,9 @@ public class FileRequestor extends PFComponent {
             } else if (fInfo.isDiretory()) {
                 createDirectory((DirectoryInfo) fInfo);
             }
+            if (autoDownload && i++ % 100 == 0) {
+                workerLastActivity = new Date();
+            }
         }
         if (filesToDownload.isEmpty()) {
             // Quit here.
@@ -307,6 +311,9 @@ public class FileRequestor extends PFComponent {
                     continue;
                 }
                 prepareDownload(newestVersion, autoDownload);
+                if (autoDownload && i++ % 100 == 0) {
+                    workerLastActivity = new Date();
+                }
             } catch (RuntimeException e) {
                 logWarning("Unable to download: " + fInfo.toDetailString()
                     + ": " + e);
@@ -426,6 +433,7 @@ public class FileRequestor extends PFComponent {
                             folderQueue.remove(folder);
                             // Give CPU a bit time.
                             if (nFolders % 5 == 0) {
+                                workerLastActivity = new Date();
                                 Thread.sleep(1);
                             }
                             requestMissingFilesForAutodownload(folder);
@@ -457,7 +465,8 @@ public class FileRequestor extends PFComponent {
         public void run() {
             triggerFileRequesting();
             if (isWorkerTimeout()) {
-                logWarning("Worker has timed out. Restarting...");
+                logWarning("Worker timed out detected. Restarting...");
+                logInfo(Debug.dumpCurrentStacktraces(false));
                 restartWorker();
             }
         }
