@@ -52,19 +52,24 @@ public class HTTPProxySettings {
     }
 
     private static void setProxyProperties(String proxyHost, int proxyPort, String nonProxyHosts) {
-        if (!StringUtils.isBlank(proxyHost)) {
+        if (StringUtils.isNotBlank(proxyHost)) {
             System.setProperty("http.proxyHost", proxyHost);
             System.setProperty("http.proxyPort", "" + proxyPort);
-            System.setProperty("http.nonProxyHosts", nonProxyHosts);
             System.setProperty("https.proxyHost", proxyHost);
             System.setProperty("https.proxyPort", "" + proxyPort);
-            System.setProperty("https.nonProxyHosts", nonProxyHosts);
         } else {
             System.clearProperty("http.proxyHost");
             System.clearProperty("http.proxyPort");
             System.clearProperty("http.nonProxyHosts");
             System.clearProperty("https.proxyHost");
             System.clearProperty("https.proxyPort");
+            System.clearProperty("https.nonProxyHosts");
+        }
+        if (StringUtils.isNotBlank(nonProxyHosts)) {
+            System.setProperty("http.nonProxyHosts", nonProxyHosts);
+            System.setProperty("https.nonProxyHosts", "" + nonProxyHosts);
+        } else {
+            System.clearProperty("http.nonProxyHosts");
             System.clearProperty("https.nonProxyHosts");
         }
     }
