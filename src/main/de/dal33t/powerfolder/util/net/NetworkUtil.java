@@ -31,6 +31,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.net.ssl.HostnameVerifier;
@@ -112,9 +113,11 @@ public class NetworkUtil {
             }
         }
         // socket.setTcpNoDelay(true);
-        LOG.finer("Socket setup: (" + socket.getSendBufferSize() + "/"
-            + socket.getReceiveBufferSize() + "/" + socket.getSoLinger()
-            + "ms) " + socket);
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("Socket setup: (" + socket.getSendBufferSize() + "/"
+                    + socket.getReceiveBufferSize() + "/" + socket.getSoLinger()
+                    + "ms) " + socket);
+        }
     }
 
     /**
