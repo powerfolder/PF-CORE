@@ -151,6 +151,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             }
             serverSocket = new ServerSocket(port,
                 Constants.MAX_INCOMING_CONNECTIONS, bAddress);
+            serverSocket.setReuseAddress(true);
         } catch (Exception e) {
             throw new ConnectionException(Translation.get(
                 "dialog.unable_to_open_port", port + ""), e);
