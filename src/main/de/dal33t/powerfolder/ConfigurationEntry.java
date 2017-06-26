@@ -1175,7 +1175,7 @@ public enum ConfigurationEntry {
      */
     ENCRYPTED_STORAGE("encrypted_storage.enabled", false),
     ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", null),
-    ENCRYPTED_STORAGE_RECOMMENDED("encrypted_storage.recommended", true),
+    ENCRYPTED_FOLDER_CHECK("encrypted_storage.check_folders", false),
 
     /**
      * PFS-2871: Port for client authentication over web requests.

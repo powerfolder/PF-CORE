@@ -329,10 +329,20 @@ public interface FolderService {
     void correctStoragePath(FolderInfo folderInfo, Account account);
 
     /**
-     * Moves a folder to the given path.
+     * PFS-2343: Encrypt a single folder for the given account.
      *
-     * @param folder
-     * @param path
+     * @param folderInfo
+     * @param account
+     * @return
+     * @throws IOException
      */
-    void moveFolder(Folder folder, Path path);
+    void encryptFolder(FolderInfo folderInfo, Account account);
+
+    /**
+     * PFS-2343: Checks if a folder is unencrypted.
+     *
+     * @param folderInfo
+     * @return
+     */
+    boolean folderIsUnencrypted(FolderInfo folderInfo);
 }
