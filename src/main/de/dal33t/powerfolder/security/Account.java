@@ -702,7 +702,7 @@ public class Account implements Serializable, D2DObject {
     // PFS-2455: End
 
     /**
-     * setLanguage Set account language
+     * getLanguage Get account language
      *
      * @return Selected language
      */
