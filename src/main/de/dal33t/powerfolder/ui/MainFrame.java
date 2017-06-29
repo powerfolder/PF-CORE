@@ -1226,7 +1226,7 @@ public class MainFrame extends PFUIComponent {
                 // Not logged in and not logging in? Looks like it has failed.
                 loginActionLabel.setText(Translation
                     .get("main_frame.log_in_failed.text_click"));
-                if (!PFWizard.isWizardOpen()) {
+                if (!PFWizard.isWizardOpen() && client.isPasswordRequired()) {
                     getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(new SimpleNotificationNotice(Translation.get("main_frame.log_in_failed.text"), Translation.get("exp.uilock.dialog.error.wronglogin")));
                     PFWizard.openLoginWizard(getController(), client);
                 }
