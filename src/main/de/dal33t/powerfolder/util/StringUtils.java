@@ -323,5 +323,4 @@ public class StringUtils {
         List<String> seperated = Arrays.asList(string.replaceAll("\\r", "").split("\\n"));
         return seperated;
     }
-
 }
