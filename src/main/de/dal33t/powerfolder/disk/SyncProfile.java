@@ -121,10 +121,20 @@ public class SyncProfile implements Serializable {
         "manual_synchronization", false, new SyncProfileConfiguration(false,
             false, false, false, 0));
 
+    /**
+     * Sync every 24 hours
+     */
+    public static final SyncProfile SCAN_EVERY_24_HOURS = new SyncProfile(
+        "sync_every_24_hours", false, new SyncProfileConfiguration(
+        true, true, true,
+        true, 24, false, 12, 1,
+        SyncProfileConfiguration.REGULAR_TIME_TYPE_HOURS,
+        false));
+
     // All preset sync profiles
     private static final SyncProfile[] PRESET_SYNC_PROFILES = {
         AUTOMATIC_SYNCHRONIZATION, MANUAL_SYNCHRONIZATION, BACKUP_SOURCE,
-        BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES};
+        BACKUP_TARGET, AUTOMATIC_DOWNLOAD, HOST_FILES, SCAN_EVERY_24_HOURS};
 
     /** Special no-sync profile. Same config as PROJECT_WORK */
     public static final SyncProfile NO_SYNC = new SyncProfile("no_sync", false,
