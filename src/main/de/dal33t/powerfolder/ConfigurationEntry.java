@@ -1180,7 +1180,6 @@ public enum ConfigurationEntry {
     /**
      * PFS-2871: Port for client authentication over web requests.
      */
-
     WEB_CLIENT_PORT("web.client.port", 0),
 
     /**
@@ -1198,10 +1197,16 @@ public enum ConfigurationEntry {
     /**
      * PFS-869: Prepare Filelink for public upload.
      */
-
     PREPARE_FILELINK_TITLE("web.prepare_filelink.title"),
     PREPARE_FILELINK_DESCRIPTION("web.prepare_filelink.description"),
-    PREPARE_FILELINK_FOLDER_ID("web.prepare_filelink.folder_id");
+    PREPARE_FILELINK_FOLDER_ID("web.prepare_filelink.folder_id"),
+
+    /**
+     * PFS-2427: Check if the client runs on a WDNAS device. Therefore setting POSIX file
+     * permissions after sync is mandatory.
+     */
+    WDNAS_CLIENT("wdnas.client", false);
+
 
     // Methods/Constructors ***************************************************
 

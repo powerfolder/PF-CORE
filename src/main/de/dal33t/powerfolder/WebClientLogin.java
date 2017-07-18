@@ -62,9 +62,11 @@ public class WebClientLogin extends PFComponent {
 
         public void run() {
             log.info("Listening for authentication requests on port "
-                    + serverSocket.getLocalPort());
+                    + serverSocket.getInetAddress() + ":" + serverSocket.getLocalPort());
             while (!Thread.currentThread().isInterrupted()) {
                 Socket socket;
+                BufferedReader reader = null;
+
                 try {
                     socket = serverSocket.accept();
                 } catch (IOException e) {
@@ -72,33 +74,46 @@ public class WebClientLogin extends PFComponent {
                     break;
                 }
                 log.info("Authentication request from " + socket);
+
                 try {
-                    BufferedReader reader = new BufferedReader(
+                    reader = new BufferedReader(
                             new InputStreamReader(socket.getInputStream(), "UTF-8"));
 
                     String line = reader.readLine();
 
                     if (line != null && line.startsWith("GET")) {
                         if (line.contains("/login")) {
-                            sendAuthenticationRequest(socket.getOutputStream(), getInetAddress());
+                            String inetAddress = getInetAddress();
+                            if (inetAddress != null) {
+                                sendAuthenticationRequest(socket.getOutputStream(), inetAddress);
+
+                                if (!ConfigurationEntry.WDNAS_CLIENT.getValueBoolean(getController())) {
+                                    ConfigurationEntry.WDNAS_CLIENT.setValue(getController(), true);
+                                    getController().saveConfig();
+                                }
+                            } else {
+                                logWarning("Process authentication request failed. " +
+                                        "Client authentication request only supported from WDNAS devices. Are you an a WDNAS device?");
+                            }
                         } else if (line.contains(Constants.LOGIN_PARAM_OR_HEADER_TOKEN)) {
                             consumeToken(line);
                             sendAuthSuccessRequest(socket.getOutputStream());
                         }
                     }
-                    reader.close();
-
                 } catch (Exception e) {
-                    logWarning("Problems parsing authentication request from " + socket + ". " + e);
+                    logWarning("Problems parsing authentication request from " + socket + ". " + e, e);
                     logFiner(e);
                 } finally {
-                    if (socket != null) {
-                        try {
+                    try {
+                        if (reader != null)
+                            reader.close();
+
+                        if (socket != null)
                             socket.close();
-                        } catch (IOException e) {
-                            logWarning("Unable to close socket " + socket
-                                    + ". " + e);
-                        }
+
+                    } catch (IOException e) {
+                        logWarning("Unable to close socket " + socket
+                                + ". " + e);
                     }
                 }
             }
@@ -120,7 +135,7 @@ public class WebClientLogin extends PFComponent {
                 }
             }
         }
-        return inetAddress.replace("/", "");
+        return inetAddress != null ? inetAddress.replace("/", "") : null;
     }
 
     private void sendAuthenticationRequest(OutputStream os, String originalURI) {

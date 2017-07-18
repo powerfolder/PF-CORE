@@ -812,14 +812,12 @@ public class TransferManager extends PFComponent {
 
             if (folder.scanDownloadFile(fInfo, dlManager.getTempFile())) {
                 if (StringUtils.isNotBlank(folder.getDownloadScript())) {
-                    Runnable scriptRunner = new Runnable() {
-                        public void run() {
-                            // PFS-1766
-                            if (ConfigurationEntry.EVENT_API_URL_DOWNLOADED_FILE_CLIENT.hasNonBlankValue(getController())) {
-                                new DownloadedFile(getController()).of(fInfo).happened(false);
-                            }
-                            executeDownloadScript(fInfo, folder, dlManager);
+                    Runnable scriptRunner = () -> {
+                        // PFS-1766
+                        if (ConfigurationEntry.EVENT_API_URL_DOWNLOADED_FILE_CLIENT.hasNonBlankValue(getController())) {
+                            new DownloadedFile(getController()).of(fInfo).happened(false);
                         }
+                        executeDownloadScript(fInfo, folder, dlManager);
                     };
                     doWork(scriptRunner);
                 }
@@ -875,8 +873,8 @@ public class TransferManager extends PFComponent {
     private void executeDownloadScript(FileInfo fInfo, Folder folder,
         DownloadManager dlManager)
     {
-        Reject
-            .ifBlank(folder.getDownloadScript(), "Download script is not set");
+        Reject.ifBlank(folder.getDownloadScript(), "Download script is not set");
+
         Path dlFile = fInfo.getDiskFile(getController().getFolderRepository());
         String command = folder.getDownloadScript();
         command = command.replace("$file", dlFile.toAbsolutePath().toString());
@@ -902,17 +900,19 @@ public class TransferManager extends PFComponent {
             scriptLock.lock();
             logInfo("Begin executing command: " + command);
             final Process p = Runtime.getRuntime().exec(command);
+
             // Auto-kill after 20 seconds
-            getController().schedule(() -> {
-                p.destroy();
-            } , 20000L);
+            getController().schedule(() -> p.destroy(), 20000L);
+
             byte[] out = StreamUtils.readIntoByteArray(p.getInputStream());
             String output = new String(out);
             byte[] err = StreamUtils.readIntoByteArray(p.getErrorStream());
             String error = new String(err);
+
             int res = p.waitFor();
             logInfo("Executed command finished (exit value: " + res + "): "
                 + command + " | stdout: " + output + ", stderr: " + error);
+
         } catch (IOException e) {
             logSevere(
                 "Unable to execute script after download. '"
