@@ -47,6 +47,7 @@ import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileSystem;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.text.DateFormat;
@@ -949,10 +950,32 @@ public class Folder extends PFComponent {
                     return false;
                 }
 
-                // Set modified date of remote
+                // Set modified date of remote and POSIX file permissions if necessary
                 try {
                     Files.setLastModifiedTime(targetFile,
                         FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
+
+                    // Start: PFS-2427: Setting POSIX file permissions after sync if the client runs on a WDNAS device.
+                    if (ConfigurationEntry.WDNAS_CLIENT.getValueBoolean(getController())) {
+
+                        //using PosixFilePermission to set file permissions 777
+                        Set<PosixFilePermission> perms = new HashSet<>();
+                        //add owners permission
+                        perms.add(PosixFilePermission.OWNER_READ);
+                        perms.add(PosixFilePermission.OWNER_WRITE);
+                        perms.add(PosixFilePermission.OWNER_EXECUTE);
+                        //add group permissions
+                        perms.add(PosixFilePermission.GROUP_READ);
+                        perms.add(PosixFilePermission.GROUP_WRITE);
+                        perms.add(PosixFilePermission.GROUP_EXECUTE);
+                        //add others permissions
+                        perms.add(PosixFilePermission.OTHERS_READ);
+                        perms.add(PosixFilePermission.OTHERS_WRITE);
+                        perms.add(PosixFilePermission.OTHERS_EXECUTE);
+
+                        Files.setPosixFilePermissions(targetFile, perms);
+                    }
+                    // End: PFS-2427
                 } catch (IOException e) {
                     // PFS-1794: DOES NOT happen
                     logWarning("Failed to set modified date on targetfile "
