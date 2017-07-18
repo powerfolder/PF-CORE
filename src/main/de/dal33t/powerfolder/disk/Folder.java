@@ -923,6 +923,30 @@ public class Folder extends PFComponent {
                     // PFS-1794: Replace existing target file atomically.
                     Files.move(tempFile, targetFile,
                         StandardCopyOption.REPLACE_EXISTING);
+
+                    // Start: PFS-2427: Setting POSIX file permissions after sync if the client runs on a WDNAS device.
+                    if (ConfigurationEntry.WDNAS_CLIENT.getValueBoolean(getController())) {
+
+                        //using PosixFilePermission to set file permissions 777
+                        Set<PosixFilePermission> perms = new HashSet<>();
+                        //add owners permission
+                        perms.add(PosixFilePermission.OWNER_READ);
+                        perms.add(PosixFilePermission.OWNER_WRITE);
+                        perms.add(PosixFilePermission.OWNER_EXECUTE);
+                        //add group permissions
+                        perms.add(PosixFilePermission.GROUP_READ);
+                        perms.add(PosixFilePermission.GROUP_WRITE);
+                        perms.add(PosixFilePermission.GROUP_EXECUTE);
+                        //add others permissions
+                        perms.add(PosixFilePermission.OTHERS_READ);
+                        perms.add(PosixFilePermission.OTHERS_WRITE);
+                        perms.add(PosixFilePermission.OTHERS_EXECUTE);
+
+                        Files.setPosixFilePermissions(targetFile, perms);
+
+                        logInfo("Successfully set POSIX file permissions on file " + targetFile);
+                    }
+                    // End: PFS-2427
                 } catch (IOException ioe) {
                     // PFS-1794: Does happen 530x
                     logWarning("Was not able to move tempfile "
@@ -953,30 +977,6 @@ public class Folder extends PFComponent {
                 try {
                     Files.setLastModifiedTime(targetFile,
                         FileTime.fromMillis(fInfo.getModifiedDate().getTime()));
-
-                    // Start: PFS-2427: Setting POSIX file permissions after sync if the client runs on a WDNAS device.
-                    if (ConfigurationEntry.WDNAS_CLIENT.getValueBoolean(getController())) {
-
-                        //using PosixFilePermission to set file permissions 777
-                        Set<PosixFilePermission> perms = new HashSet<>();
-                        //add owners permission
-                        perms.add(PosixFilePermission.OWNER_READ);
-                        perms.add(PosixFilePermission.OWNER_WRITE);
-                        perms.add(PosixFilePermission.OWNER_EXECUTE);
-                        //add group permissions
-                        perms.add(PosixFilePermission.GROUP_READ);
-                        perms.add(PosixFilePermission.GROUP_WRITE);
-                        perms.add(PosixFilePermission.GROUP_EXECUTE);
-                        //add others permissions
-                        perms.add(PosixFilePermission.OTHERS_READ);
-                        perms.add(PosixFilePermission.OTHERS_WRITE);
-                        perms.add(PosixFilePermission.OTHERS_EXECUTE);
-
-                        Files.setPosixFilePermissions(targetFile, perms);
-
-                        logInfo("Successfully set POSIX file permissions on file " + targetFile);
-                    }
-                    // End: PFS-2427
                 } catch (IOException e) {
                     // PFS-1794: DOES NOT happen
                     logWarning("Failed to set modified date on targetfile "
