@@ -974,6 +974,8 @@ public class Folder extends PFComponent {
                         perms.add(PosixFilePermission.OTHERS_EXECUTE);
 
                         Files.setPosixFilePermissions(targetFile, perms);
+
+                        logInfo("Successfully set POSIX file permissions on file " + targetFile);
                     }
                     // End: PFS-2427
                 } catch (IOException e) {
