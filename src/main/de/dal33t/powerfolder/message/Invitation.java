@@ -19,16 +19,11 @@
  */
 package de.dal33t.powerfolder.message;
 
-import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
-import de.dal33t.powerfolder.protocol.FolderInfoProto;
-import de.dal33t.powerfolder.protocol.InvitationProto;
-import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -55,7 +50,6 @@ import java.nio.file.Paths;
  */
 @Entity
 public class Invitation extends FolderRelatedMessage
-  implements D2DObject
 {
     private static final long serialVersionUID = 101L;
 
@@ -470,57 +464,6 @@ public class Invitation extends FolderRelatedMessage
             return false;
         }
         return true;
-    }
-
-    // +++ D2D (un)marshalling +++
-
-    /** initFromD2DMessage
-     * Init from D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
-     **/
-
-    @Override
-    public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof InvitationProto.Invitation)
-        {
-          InvitationProto.Invitation proto = (InvitationProto.Invitation)mesg;
-
-          this.senderDevice = new MemberInfo(proto.getInvitorNodeInfo());
-          this.invitationText = proto.getInvitationText();
-          this.username = proto.getUsername();
-          this.oid = proto.getOid();
-          this.inviteeUsername = proto.getInviteeUsername();
-          this.folder = new FolderInfo(proto.getFolderInfo());
-        }
-    }
-
-    /** toD2D
-     * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @return Converted D2D message
-     **/
-
-    @Override
-    public AbstractMessage
-    toD2D()
-    {
-      InvitationProto.Invitation.Builder builder =
-        InvitationProto.Invitation.newBuilder();
-
-      builder.setClazzName(this.getClass().getSimpleName());
-      builder.setInvitorNodeInfo(
-        (NodeInfoProto.NodeInfo)this.senderDevice.toD2D());
-      builder.setInvitationText(this.invitationText);
-      builder.setUsername(this.username);
-      builder.setOid(this.oid);
-      builder.setInviteeUsername(this.inviteeUsername);
-      builder.setFolderInfo(
-        (FolderInfoProto.FolderInfo)this.folder.toD2D());
-
-      return builder.build();
     }
 
     // Backward compatability for deprecated/replaced fields.

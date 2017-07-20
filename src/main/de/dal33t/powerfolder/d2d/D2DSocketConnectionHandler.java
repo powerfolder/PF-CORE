@@ -204,6 +204,9 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
         else if (mesg instanceof RelayedMessageExt) {
             mesg = new Ping();
         }
+        else if (mesg instanceof Invitation) {
+            mesg = new Ping();
+        }
 
         byte[] data = null;
 
