@@ -234,8 +234,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                         for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
                             // PFC-2562
                             if (onlineFolderInfo.getName().equals(
-                                folderInfo.getName())
-                                && !ProUtil.isZyncro(getController()))
+                                folderInfo.getName()))
                             {
                                 if (!onlineFolderInfo.equals(folderInfo)) {
                                     log.info("Found online folder with same name: "

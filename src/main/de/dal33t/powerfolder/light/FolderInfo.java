@@ -287,12 +287,6 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     public String getLocalizedName() {
         return name
-            .replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
-                Translation.get("general.group"))
-            .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
-                Translation.get("general.department"))
-            .replace(Constants.ZYNCRO_COMPANY_TOKEN.trim(),
-                Translation.get("general.company"))
             .replace(Constants.FOLDER_PUBLIC_SHARED_FILES,
                 Translation.get("general.public_shared_files"))
             .replace(Constants.FOLDER_PERSONAL_FILES,

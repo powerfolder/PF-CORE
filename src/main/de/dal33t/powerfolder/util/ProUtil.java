@@ -46,11 +46,6 @@ public class ProUtil {
      * @param controller
      * @return
      */
-    public static final boolean isZyncro(Controller controller) {
-        return controller.getDistribution().getBinaryName().contains("yncro")
-            || controller.getDistribution().getName().contains("yncro");
-    }
-
     public static final boolean isSwitchData(Controller controller) {
         return controller.getDistribution().getBinaryName().toLowerCase().trim().contains("switchdata")
             || controller.getDistribution().getName().toLowerCase().trim().contains("switchdata");

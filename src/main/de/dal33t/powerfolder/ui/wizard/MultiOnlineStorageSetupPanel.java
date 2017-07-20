@@ -322,13 +322,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             localFolderField.setText(folderLocalBaseMap
                 .get(selectedFolderInfo)
                 .toAbsolutePath()
-                .toString()
-                .replace(Constants.ZYNCRO_GROUP_TOKEN.trim(),
-                    Translation.get("general.group"))
-                .replace(Constants.ZYNCRO_DEPARTMENT_TOKEN.trim(),
-                    Translation.get("general.department"))
-                .replace(Constants.ZYNCRO_COMPANY_TOKEN,
-                    Translation.get("general.company")));
+                .toString());
             syncProfileSelectorPanel.setSyncProfile(
                 folderProfileMap.get(selectedFolderInfo), false);
         }

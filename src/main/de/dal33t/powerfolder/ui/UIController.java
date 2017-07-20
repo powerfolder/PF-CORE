@@ -1510,11 +1510,6 @@ public class UIController extends PFComponent {
     private class MyMassDeletionHandler implements MassDeletionHandler {
         @Override
         public void localMassDeletion(LocalMassDeletionEvent event) {
-            if (ProUtil.isZyncro(getController())) {
-                LocalDeletionProblem ldp = new LocalDeletionProblem(event
-                    .getFolder().getInfo(), event.getFile());
-                event.getFolder().addProblem(ldp);
-            }
         }
 
         @Override

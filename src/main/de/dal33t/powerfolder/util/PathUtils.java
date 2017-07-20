@@ -130,17 +130,6 @@ public class PathUtils {
     }
 
     /**
-     * Check the path if it is a zyncro backend.
-     *
-     * @param path
-     * @return true if path is a zyncro path, false otherwise.
-     */
-    public static boolean isZyncroPath(Path path) {
-        return path.getFileSystem().provider().getScheme()
-                .equals(Constants.ZYNCRO_SCHEME);
-    }
-
-    /**
      * The paths have the same name, if the condition of
      * {@link #isSameName(String, String)} applies to only their file names.
      *
