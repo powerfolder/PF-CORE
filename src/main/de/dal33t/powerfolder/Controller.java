@@ -87,7 +87,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 487;
+    private static final int REVISION_VERSION = 490;
 
     /**
      * Program version.
@@ -524,7 +524,8 @@ public class Controller extends PFComponent {
 
         if (isUIEnabled()) {
             uiController = new UIController(this);
-            if (ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(this))
+            if (ConfigurationEntry.USER_INTERFACE_LOCKED.getValueBoolean(this)
+                && !ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.hasValue(this))
             {
                 // Don't let the user pass this step.
                 new UIUnLockDialog(this).openAndWait();
