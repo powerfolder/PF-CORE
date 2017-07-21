@@ -222,7 +222,7 @@ public class AccountInfo implements Serializable, D2DObject {
         {
           AccountInfoProto.AccountInfo ainfo = (AccountInfoProto.AccountInfo)mesg;
 
-          this.oid         = ainfo.getOid();
+          this.oid         = ainfo.getId();
           this.username    = ainfo.getUsername();
           this.displayName = ainfo.getDisplayName();
         }
@@ -241,7 +241,7 @@ public class AccountInfo implements Serializable, D2DObject {
       AccountInfoProto.AccountInfo.Builder builder = AccountInfoProto.AccountInfo.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setOid(this.oid);
+      builder.setId(this.oid);
       builder.setUsername(this.username);
       if(null != this.displayName) builder.setDisplayName(this.displayName);
 

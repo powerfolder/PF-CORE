@@ -28,7 +28,9 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
-import de.dal33t.powerfolder.protocol.*;
+import de.dal33t.powerfolder.protocol.AccountInfoProto;
+import de.dal33t.powerfolder.protocol.OnlineStorageSubscriptionProto;
+import de.dal33t.powerfolder.protocol.PermissionProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
 import org.hibernate.annotations.*;
@@ -1595,37 +1597,16 @@ public class Account implements Serializable, D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if(mesg instanceof AccountProto.Account) {
-            AccountProto.Account proto = (AccountProto.Account)mesg;
-            this.oid                        = proto.getOid();
+        if(mesg instanceof AccountInfoProto.AccountInfo) {
+            AccountInfoProto.AccountInfo proto = (AccountInfoProto.AccountInfo)mesg;
+            this.oid                        = proto.getId();
             this.username                   = proto.getUsername();
-            this.password                   = proto.getPassword();
-            this.otp                        = proto.getOtp();
-            this.language                   = proto.getLanguage();
-            this.ldapDN                     = proto.getLdapDn();
-            this.shibbolethPersistentID     = proto.getShibbolethPersistentId();
-            this.registerDate               = new Date(proto.getRegisterDate());
-            this.lastLoginDate              = new Date(proto.getLastLoginDate());
-            this.lastLoginFrom              = new MemberInfo(proto.getLastLoginFromNodeInfo());
-            this.proUser                    = proto.getProUser();
             this.firstname                  = proto.getFirstname();
             this.surname                    = proto.getSurname();
             this.telephone                  = proto.getTelephone();
-            this.custom1                    = proto.getCustom1();
-            this.custom2                    = proto.getCustom2();
-            this.custom3                    = proto.getCustom3();
-            this.notes                      = proto.getNotes();
-            this.basePath                   = proto.getBasePath();
-            this.organizationOID            = proto.getOrganizationOid();
-            this.computers                  = new CopyOnWriteArrayList<MemberInfo>();
-            for(NodeInfoProto.NodeInfo nodeInfoProto: proto.getNodeInfosList()) {
-                this.computers.add(new MemberInfo(nodeInfoProto));
-            }
-            this.serverStatic               = proto.getServerStatic();
-            this.licenseKeyFileList         = proto.getLicenseKeyFileListList();
-            this.autoRenewDevices           = proto.getAutoRenewDevices();
-            this.autoRenewTill              = new Date(proto.getAutoRenewTill());
-            this.defaultSynchronizedFolder  = new FolderInfo(proto.getDefaultSynchronizedFolder());
+            this.emails                     = new CopyOnWriteArrayList<String>();
+            this.emails.addAll(proto.getEmailsList());
+            this.organizationOID            = proto.getOrganizationId();
             this.permissions                = new CopyOnWriteArrayList<Permission>();
             for (PermissionProto.Permission permissionProto: proto.getPermissionsList()) {
                 switch(permissionProto.getPermissionType()) {
@@ -1680,16 +1661,7 @@ public class Account implements Serializable, D2DObject {
                         break;
                 }
             }
-            this.groups                     = new CopyOnWriteArrayList<Group>();
-            for(GroupProto.Group groupProto: proto.getGroupsList()) {
-                this.groups.add(new Group(groupProto));
-            }
-            this.emails                     = new CopyOnWriteArrayList<String>();
-            for(String email: proto.getEmailsList()) {
-                this.emails.add(new String(email));
-            }
             this.osSubscription             = new OnlineStorageSubscription(proto.getOsSubscription());
-            this.agreedToSVersion           = proto.getAgreedToSversion();
         }
     }
     /** toD2D
@@ -1700,38 +1672,18 @@ public class Account implements Serializable, D2DObject {
 
     @Override
     public AbstractMessage toD2D() {
-        AccountProto.Account.Builder builder = AccountProto.Account.newBuilder();
-        builder.setClazzName(this.getClass().getSimpleName());
-        if (this.oid != null) builder.setOid(this.oid);
+        AccountInfoProto.AccountInfo.Builder builder = AccountInfoProto.AccountInfo.newBuilder();
+        builder.setClazzName("AccountInfo");
+        if (this.oid != null) builder.setId(this.oid);
         if (this.username != null) builder.setUsername(this.username);
-        if (this.password != null) builder.setPassword(this.password);
-        if (this.otp != null) builder.setOtp(this.otp);
-        if (this.language != null) builder.setLanguage(this.language);
-        if (this.ldapDN != null) builder.setLdapDn(this.ldapDN);
-        if (this.shibbolethPersistentID != null) builder.setShibbolethPersistentId(this.shibbolethPersistentID);
-        if (this.registerDate != null) builder.setRegisterDate(this.registerDate.getTime());
-        if (this.lastLoginDate != null) builder.setLastLoginDate(this.lastLoginDate.getTime());
-        if (this.lastLoginFrom != null) builder.setLastLoginFromNodeInfo((NodeInfoProto.NodeInfo)this.lastLoginFrom.toD2D());
-        builder.setProUser(this.proUser);
+        builder.setDisplayName(this.getDisplayName());
         if (this.firstname != null) builder.setFirstname(this.firstname);
         if (this.surname != null) builder.setSurname(this.surname);
         if (this.telephone != null) builder.setTelephone(this.telephone);
-        if (this.custom1 != null) builder.setCustom1(this.custom1);
-        if (this.custom2 != null) builder.setCustom2(this.custom2);
-        if (this.custom3 != null) builder.setCustom3(this.custom3);
-        if (this.notes != null) builder.setNotes(this.notes);
-        if (this.basePath != null) builder.setBasePath(this.basePath);
-        if (this.organizationOID != null) builder.setOrganizationOid(this.organizationOID);
-        for (MemberInfo computer: this.computers) {
-            builder.addNodeInfos((NodeInfoProto.NodeInfo) computer.toD2D());
+        for (String email: this.emails) {
+            builder.addEmails(email);
         }
-        builder.setServerStatic(this.serverStatic);
-        for (String licenseKeyFile: this.licenseKeyFileList) {
-            builder.addLicenseKeyFileList(licenseKeyFile);
-        }
-        builder.setAutoRenewDevices(this.autoRenewDevices);
-        if (this.autoRenewTill != null) builder.setAutoRenewTill(this.autoRenewTill.getTime());
-        if (this.defaultSynchronizedFolder != null) builder.setDefaultSynchronizedFolder((FolderInfoProto.FolderInfo)this.defaultSynchronizedFolder.toD2D());
+        if (this.organizationOID != null) builder.setOrganizationId(this.organizationOID);
         for (Permission permission: this.permissions) {
             // Since the different permission classes do not have one common superclass we have to decide for each class separately
             if (permission instanceof FolderPermission) {
@@ -1747,14 +1699,7 @@ public class Account implements Serializable, D2DObject {
                 builder.addPermissions((PermissionProto.Permission)((SingletonPermission)permission).toD2D());
             }
         }
-        for (Group group: this.groups) {
-            builder.addGroups((GroupProto.Group) group.toD2D());
-        }
-        for (String email: this.emails) {
-            builder.addEmails(email);
-        }
         if (this.osSubscription != null) builder.setOsSubscription((OnlineStorageSubscriptionProto.OnlineStorageSubscription) this.osSubscription.toD2D());
-        builder.setAgreedToSversion(this.agreedToSVersion);
         return builder.build();
     }
 }

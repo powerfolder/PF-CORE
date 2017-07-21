@@ -3,17 +3,19 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.protocol.AccountDetailsRequestProto;
+import de.dal33t.powerfolder.protocol.AccountInfoRequestProto;
 
-public class AccountDetailsRequest extends Message implements D2DObject {
+public class AccountInfoRequest extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
     private String requestCode;
+    private String accountId;
+    private String nodeId;
 
     /**
      * Serialization constructor
      */
-    public AccountDetailsRequest() {
+    public AccountInfoRequest() {
     }
 
     /**
@@ -21,7 +23,7 @@ public class AccountDetailsRequest extends Message implements D2DObject {
      *
      * @param mesg Message to use data from
      **/
-    public AccountDetailsRequest(AbstractMessage mesg) {
+    public AccountInfoRequest(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
 
@@ -33,6 +35,22 @@ public class AccountDetailsRequest extends Message implements D2DObject {
         this.requestCode = requestCode;
     }
 
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+
     /**
      * initFromD2DMessage
      * Init from D2D message
@@ -42,8 +60,8 @@ public class AccountDetailsRequest extends Message implements D2DObject {
      **/
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof AccountDetailsRequestProto.AccountDetailsRequest) {
-            AccountDetailsRequestProto.AccountDetailsRequest proto = (AccountDetailsRequestProto.AccountDetailsRequest) mesg;
+        if (mesg instanceof AccountInfoRequestProto.AccountInfoRequest) {
+            AccountInfoRequestProto.AccountInfoRequest proto = (AccountInfoRequestProto.AccountInfoRequest) mesg;
             this.requestCode = proto.getRequestCode();
         }
     }
@@ -57,7 +75,7 @@ public class AccountDetailsRequest extends Message implements D2DObject {
      **/
     @Override
     public AbstractMessage toD2D() {
-        AccountDetailsRequestProto.AccountDetailsRequest.Builder builder = AccountDetailsRequestProto.AccountDetailsRequest.newBuilder();
+        AccountInfoRequestProto.AccountInfoRequest.Builder builder = AccountInfoRequestProto.AccountInfoRequest.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         builder.setRequestCode(this.requestCode);
         return builder.build();
