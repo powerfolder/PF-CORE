@@ -24,7 +24,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
-import de.dal33t.powerfolder.protocol.PermissionProto;
+import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.util.logging.Logger;
@@ -139,8 +139,8 @@ public abstract class FolderPermission
      **/
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if(mesg instanceof PermissionProto.Permission) {
-            PermissionProto.Permission proto = (PermissionProto.Permission)mesg;
+        if(mesg instanceof PermissionInfoProto.PermissionInfo) {
+            PermissionInfoProto.PermissionInfo proto = (PermissionInfoProto.PermissionInfo)mesg;
             if (proto.getObjectsList().size() == 1) {
                 try {
                     // Objects can be any message so they need to be unpacked from com.google.protobuf.Any
@@ -164,22 +164,22 @@ public abstract class FolderPermission
      **/
     @Override
     public AbstractMessage toD2D() {
-        PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();
-        builder.setClazzName("Permission");
+        PermissionInfoProto.PermissionInfo.Builder builder = PermissionInfoProto.PermissionInfo.newBuilder();
+        builder.setClazzName("PermissionInfo");
         // Objects can be any message so they need to be packed to com.google.protobuf.Any
         builder.addObjects(com.google.protobuf.Any.pack(this.folder.toD2D()));
         // Set permission enum
         if (this instanceof FolderAdminPermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_ADMIN);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_ADMIN);
         }
         else if (this instanceof FolderOwnerPermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_OWNER);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_OWNER);
         }
         else if (this instanceof FolderReadPermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_READ);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ);
         }
         else if (this instanceof FolderReadWritePermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_READ_WRITE);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ_WRITE);
         }
         return builder.build();
     }

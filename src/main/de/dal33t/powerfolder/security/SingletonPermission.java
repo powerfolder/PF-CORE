@@ -19,13 +19,12 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.lang.reflect.Field;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.protocol.PermissionProto;
+import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.util.StringUtils;
+
+import java.lang.reflect.Field;
 
 /**
  * Permission for simple yes/no rights on actions without resources such as
@@ -96,35 +95,35 @@ public class SingletonPermission implements Permission, D2DObject {
 
     @Override
     public AbstractMessage toD2D() {
-        PermissionProto.Permission.Builder builder = PermissionProto.Permission.newBuilder();
-        builder.setClazzName("Permission");
+        PermissionInfoProto.PermissionInfo.Builder builder = PermissionInfoProto.PermissionInfo.newBuilder();
+        builder.setClazzName("PermissionInfo");
         // Set permission enum
         if (this instanceof AdminPermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.ADMIN);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.ADMIN);
         }
         else if (this instanceof ChangePreferencesPermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.CHANGE_PREFERENCES);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.CHANGE_PREFERENCES);
         }
         else if (this instanceof ChangeTransferModePermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.CHANGE_TRANSFER_MODE);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.CHANGE_TRANSFER_MODE);
         }
         else if (this instanceof ComputersAppPermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.COMPUTERS_APP);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.COMPUTERS_APP);
         }
         else if (this instanceof ConfigAppPermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.CONFIG_APP);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.CONFIG_APP);
         }
         else if (this instanceof FolderCreatePermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_CREATE);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_CREATE);
         }
         else if (this instanceof FolderRemovePermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.FOLDER_REMOVE);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_REMOVE);
         }
         else if (this instanceof OrganizationCreatePermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.ORGANIZATION_CREATE);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.ORGANIZATION_CREATE);
         }
         else if (this instanceof SystemSettingsPermission) {
-            builder.setPermissionType(PermissionProto.Permission.PermissionType.SYSTEM_SETTINGS);
+            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.SYSTEM_SETTINGS);
         }
         return builder.build();
     }

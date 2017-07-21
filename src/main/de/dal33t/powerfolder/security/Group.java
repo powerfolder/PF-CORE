@@ -19,6 +19,21 @@
  */
 package de.dal33t.powerfolder.security;
 
+import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.GroupInfo;
+import de.dal33t.powerfolder.protocol.GroupProto;
+import de.dal33t.powerfolder.protocol.PermissionInfoProto;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import org.hibernate.annotations.*;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,30 +41,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.CollectionOfElements;
-import org.hibernate.annotations.Index;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
-import org.hibernate.annotations.Type;
-
-import com.google.protobuf.AbstractMessage;
-
-import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.GroupInfo;
-import de.dal33t.powerfolder.protocol.GroupProto;
-import de.dal33t.powerfolder.protocol.PermissionProto;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
 
 /**
  * A group of accounts.
@@ -328,52 +319,52 @@ public class Group implements Serializable, D2DObject {
             this.notes              = proto.getNotes();
             this.organizationOID    = proto.getOrganizationOid();
             this.permissions        = new CopyOnWriteArrayList<Permission>();
-            for (PermissionProto.Permission permissionProto: proto.getPermissionsList()) {
-                switch(permissionProto.getPermissionType()) {
+            for (PermissionInfoProto.PermissionInfo permissionInfoProto: proto.getPermissionInfosList()) {
+                switch(permissionInfoProto.getPermissionType()) {
                     case ADMIN :
-                        this.permissions.add(new AdminPermission(permissionProto));
+                        this.permissions.add(new AdminPermission(permissionInfoProto));
                         break;
                     case CHANGE_PREFERENCES :
-                        this.permissions.add(new ChangePreferencesPermission(permissionProto));
+                        this.permissions.add(new ChangePreferencesPermission(permissionInfoProto));
                         break;
                     case CHANGE_TRANSFER_MODE :
-                        this.permissions.add(new ChangeTransferModePermission(permissionProto));
+                        this.permissions.add(new ChangeTransferModePermission(permissionInfoProto));
                         break;
                     case COMPUTERS_APP :
-                        this.permissions.add(new ComputersAppPermission(permissionProto));
+                        this.permissions.add(new ComputersAppPermission(permissionInfoProto));
                         break;
                     case CONFIG_APP :
-                        this.permissions.add(new ConfigAppPermission(permissionProto));
+                        this.permissions.add(new ConfigAppPermission(permissionInfoProto));
                         break;
                     case FOLDER_ADMIN :
-                        this.permissions.add(new FolderAdminPermission(permissionProto));
+                        this.permissions.add(new FolderAdminPermission(permissionInfoProto));
                         break;
                     case FOLDER_CREATE :
-                        this.permissions.add(new FolderCreatePermission(permissionProto));
+                        this.permissions.add(new FolderCreatePermission(permissionInfoProto));
                         break;
                     case FOLDER_OWNER :
-                        this.permissions.add(new FolderOwnerPermission(permissionProto));
+                        this.permissions.add(new FolderOwnerPermission(permissionInfoProto));
                         break;
                     case FOLDER_READ :
-                        this.permissions.add(new FolderReadPermission(permissionProto));
+                        this.permissions.add(new FolderReadPermission(permissionInfoProto));
                         break;
                     case FOLDER_READ_WRITE :
-                        this.permissions.add(new FolderReadWritePermission(permissionProto));
+                        this.permissions.add(new FolderReadWritePermission(permissionInfoProto));
                         break;
                     case FOLDER_REMOVE :
-                        this.permissions.add(new FolderRemovePermission(permissionProto));
+                        this.permissions.add(new FolderRemovePermission(permissionInfoProto));
                         break;
                     case GROUP_ADMIN :
-                        this.permissions.add(new GroupAdminPermission(permissionProto));
+                        this.permissions.add(new GroupAdminPermission(permissionInfoProto));
                         break;
                     case ORGANIZATION_ADMIN :
-                        this.permissions.add(new OrganizationAdminPermission(permissionProto));
+                        this.permissions.add(new OrganizationAdminPermission(permissionInfoProto));
                         break;
                     case ORGANIZATION_CREATE :
-                        this.permissions.add(new OrganizationCreatePermission(permissionProto));
+                        this.permissions.add(new OrganizationCreatePermission(permissionInfoProto));
                         break;
                     case SYSTEM_SETTINGS :
-                        this.permissions.add(new SystemSettingsPermission(permissionProto));
+                        this.permissions.add(new SystemSettingsPermission(permissionInfoProto));
                         break;
                     case UNRECOGNIZED :
                         break;
@@ -401,16 +392,16 @@ public class Group implements Serializable, D2DObject {
         for (Permission permission: this.permissions) {
             // Since the different permission classes do not have one common superclass we have to decide for each class separately
             if (permission instanceof FolderPermission) {
-                builder.addPermissions((PermissionProto.Permission)((FolderPermission)permission).toD2D());
+                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((FolderPermission)permission).toD2D());
             }
             else if (permission instanceof GroupAdminPermission) {
-                builder.addPermissions((PermissionProto.Permission)((GroupAdminPermission)permission).toD2D());
+                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((GroupAdminPermission)permission).toD2D());
             }
             else if (permission instanceof OrganizationAdminPermission) {
-                builder.addPermissions((PermissionProto.Permission)((OrganizationAdminPermission)permission).toD2D());
+                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((OrganizationAdminPermission)permission).toD2D());
             }
             else if (permission instanceof SingletonPermission) {
-                builder.addPermissions((PermissionProto.Permission)((SingletonPermission)permission).toD2D());
+                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((SingletonPermission)permission).toD2D());
             }
         }
         return builder.build();
