@@ -8,7 +8,8 @@ import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.protocol.AccountInfoReplyProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
-import de.dal33t.powerfolder.security.*;
+import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.FolderPermission;
 
 import java.util.Collection;
 
@@ -123,14 +124,15 @@ public class AccountInfoReply extends Message implements D2DObject {
         AccountInfoReplyProto.AccountInfoReply.Builder builder = AccountInfoReplyProto.AccountInfoReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        if (this.replyStatusCode != null)
+            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
         // Send account as account info
         // Create AccountInfo message from Account
         AccountInfoProto.AccountInfo accountInfo = (AccountInfoProto.AccountInfo) this.account.toD2D();
         // Inject invitations into account info object
         AccountInfoProto.AccountInfo.Builder accountInfoBuilder = accountInfo.toBuilder();
-        for (FolderPermission folderPermission: this.invitations) {
-            PermissionInfoProto.PermissionInfo.Builder permissionInfoBuilder = ((PermissionInfoProto.PermissionInfo)folderPermission.toD2D()).toBuilder();
+        for (FolderPermission folderPermission : this.invitations) {
+            PermissionInfoProto.PermissionInfo.Builder permissionInfoBuilder = ((PermissionInfoProto.PermissionInfo) folderPermission.toD2D()).toBuilder();
             permissionInfoBuilder.setIsInvitation(true);
             accountInfoBuilder.addPermissionInfos(permissionInfoBuilder.build());
         }
