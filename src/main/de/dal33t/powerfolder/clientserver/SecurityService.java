@@ -219,6 +219,22 @@ public interface SecurityService {
         FolderPermission newPermission);
 
     /**
+     * Returns all invitations for the logged in user
+     *
+     * @return the invitations
+     */
+    Collection<FolderPermission> getInvitations();
+
+    /**
+     * Returns all invitations to the folder
+     *
+     * @param folderInfo
+     * @return the invitations on the folder.
+     */
+    Map<AccountInfo, FolderPermission> getInvitations(FolderInfo folderInfo);
+
+
+    /**
      * Accept an invitation to a folder.
      *
      * @param invitation
