@@ -143,7 +143,6 @@ public class MainFrame extends PFUIComponent {
     private ActionLabel upperMainTextActionLabel;
     private ActionLabel lowerMainTextActionLabel;
     private ActionLabel setupLabel;
-    private JLabel zyncroLabel;
 
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
@@ -234,13 +233,7 @@ public class MainFrame extends PFUIComponent {
         {
             builderUpper.add(setupLabel.getUIComponent(), cc.xy(3, 2));
         } else {
-            // TODO: this is just a quick and dirty fix. Do something reasonable
-            // here.
-            if (ProUtil.isZyncro(getController())) {
-                builderUpper.add(zyncroLabel, cc.xy(3, 2));
-            } else {
-                builderUpper.add(new JLabel(" "), cc.xy(3, 2));
-            }
+            builderUpper.add(new JLabel(" "), cc.xy(3, 2));
         }
         // UPPER PART END
 
@@ -483,10 +476,6 @@ public class MainFrame extends PFUIComponent {
         upperMainTextActionLabel.setNeverUnderline(true);
         lowerMainTextActionLabel.setNeverUnderline(true);
 
-        if (ProUtil.isZyncro(getController())) {
-            lowerMainTextActionLabel.setToolTipText("");
-        }
-
         if (!PreferencesEntry.EXPERT_MODE
             .getValueBoolean(getController()))
         {
@@ -501,7 +490,6 @@ public class MainFrame extends PFUIComponent {
             setupLabel = new ActionLabel(getController(), mySetupAction);
         }
 
-        zyncroLabel = new JLabel();
         loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
             getController()));
         noticesActionLabel = new ActionLabel(getController(),
@@ -509,7 +497,6 @@ public class MainFrame extends PFUIComponent {
         updateNoticesLabel();
 
         usagePB = new JProgressBar();
-        usagePB.setVisible(!ProUtil.isZyncro(getController()));
         usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         usagePB.addMouseListener(new MouseAdapter() {
             @Override
@@ -657,10 +644,6 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void handleSyncTextClick() {
-        if (ProUtil.isZyncro(getController())) {
-            return;
-        }
-
         if (noticeWarningButton.isVisible() || noticeInfoButton.isVisible()) {
             setFrameMode(FrameMode.NORMAL);
 
@@ -724,7 +707,6 @@ public class MainFrame extends PFUIComponent {
             .getOverallSyncPercentage();
         String upperText = " ";
         String setupText = " ";
-        zyncroLabel.setText(" ");
 
         if (event.equals(SyncStatusEvent.PAUSED)) {
             String pausedTemp = overallSyncPercentage >= 0
@@ -745,8 +727,6 @@ public class MainFrame extends PFUIComponent {
             }
             setupText = getApplicationModel().getActionModel()
                 .getNewFolderAction().getName();
-            zyncroLabel
-                .setText(Translation.get("main_frame.choose_folders"));
             upperMainTextActionLabel.setNeverUnderline(true);
         } else if (event.equals(SyncStatusEvent.SYNCING)
             || event.equals(SyncStatusEvent.SYNC_INCOMPLETE))
@@ -1385,12 +1365,6 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void setLinkTooltips() {
-        // SYNC-197
-        if (ProUtil.isZyncro(getController())) {
-            upperMainTextActionLabel.setToolTipText("");
-            lowerMainTextActionLabel.setToolTipText("");
-            return;
-        }
         if (getController().isPaused()) {
             upperMainTextActionLabel.setToolTipText(Translation
                 .get("action_resume_sync.description"));
