@@ -23,7 +23,7 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.GroupInfo;
-import de.dal33t.powerfolder.protocol.GroupProto;
+import de.dal33t.powerfolder.protocol.GroupInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -312,12 +312,11 @@ public class Group implements Serializable, D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if(mesg instanceof GroupProto.Group) {
-            GroupProto.Group proto  = (GroupProto.Group)mesg;
-            this.name               = proto.getName();
-            this.ldapDN             = proto.getLdapDn();
-            this.notes              = proto.getNotes();
-            this.organizationOID    = proto.getOrganizationOid();
+        if(mesg instanceof GroupInfoProto.GroupInfo) {
+            GroupInfoProto.GroupInfo proto  = (GroupInfoProto.GroupInfo)mesg;
+            this.oid                = proto.getId();
+            this.name               = proto.getDisplayName();
+            this.organizationOID    = proto.getOrganizationId();
             this.permissions        = new CopyOnWriteArrayList<Permission>();
             for (PermissionInfoProto.PermissionInfo permissionInfoProto: proto.getPermissionInfosList()) {
                 switch(permissionInfoProto.getPermissionType()) {
@@ -383,12 +382,11 @@ public class Group implements Serializable, D2DObject {
     
     @Override
     public AbstractMessage toD2D() {
-        GroupProto.Group.Builder builder = GroupProto.Group.newBuilder();
+        GroupInfoProto.GroupInfo.Builder builder = GroupInfoProto.GroupInfo.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        if (this.name != null) builder.setName(this.name);
-        if (this.ldapDN != null) builder.setLdapDn(this.ldapDN);
-        if (this.notes != null) builder.setNotes(this.notes);
-        if (this.organizationOID != null) builder.setOrganizationOid(this.organizationOID);
+        if (this.oid != null) builder.setId(this.oid);
+        if (this.getDisplayName() != null) builder.setDisplayName(this.getDisplayName());
+        if (this.organizationOID != null) builder.setOrganizationId(this.organizationOID);
         for (Permission permission: this.permissions) {
             // Since the different permission classes do not have one common superclass we have to decide for each class separately
             if (permission instanceof FolderPermission) {

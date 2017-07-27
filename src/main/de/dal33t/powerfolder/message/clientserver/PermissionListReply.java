@@ -10,6 +10,7 @@ import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 
+import java.io.Serializable;
 import java.util.Map;
 
 public class PermissionListReply extends Message implements D2DObject {
@@ -17,7 +18,7 @@ public class PermissionListReply extends Message implements D2DObject {
 
     private String replyCode;
     private ReplyStatusCode replyStatusCode;
-    private Map<AccountInfo, FolderPermission> permissions;
+    private Map<Serializable, FolderPermission> permissions;
     private Map<AccountInfo, FolderPermission> invitations;
 
     /**
@@ -36,7 +37,7 @@ public class PermissionListReply extends Message implements D2DObject {
         this.replyStatusCode = replyStatusCode;
     }
 
-    public PermissionListReply(String replyCode, ReplyStatusCode replyStatusCode, Map<AccountInfo, FolderPermission> permissions, Map<AccountInfo, FolderPermission> invitations) {
+    public PermissionListReply(String replyCode, ReplyStatusCode replyStatusCode, Map<Serializable, FolderPermission> permissions, Map<AccountInfo, FolderPermission> invitations) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.permissions = permissions;
@@ -113,19 +114,19 @@ public class PermissionListReply extends Message implements D2DObject {
             folderReadWritePermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ_WRITE);
             folderReadPermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ);
             // Iterate over permission map and sort each permission into the correct permission info object
-            for (Map.Entry<AccountInfo, FolderPermission> entry : this.permissions.entrySet()) {
+            for (Map.Entry<Serializable, FolderPermission> entry : this.permissions.entrySet()) {
                 switch (entry.getValue().getClass().getSimpleName()) {
                     case "FolderAdminPermission":
-                        folderAdminPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(entry.getKey().toD2D()));
+                        folderAdminPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject)entry.getKey()).toD2D()));
                         break;
                     case "FolderOwnerPermission":
-                        folderOwnerPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(entry.getKey().toD2D()));
+                        folderOwnerPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject)entry.getKey()).toD2D()));
                         break;
                     case "FolderReadWritePermission":
-                        folderReadWritePermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(entry.getKey().toD2D()));
+                        folderReadWritePermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject)entry.getKey()).toD2D()));
                         break;
                     case "FolderReadPermission":
-                        folderReadPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(entry.getKey().toD2D()));
+                        folderReadPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject)entry.getKey()).toD2D()));
                         break;
                 }
             }
