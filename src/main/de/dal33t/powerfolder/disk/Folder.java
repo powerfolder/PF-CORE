@@ -194,8 +194,6 @@ public class Folder extends PFComponent {
      */
     private boolean deviceDisconnected;
 
-    private boolean schemaZyncro;
-
     /**
      * #1538: Script that gets executed after a download has been completed
      * successfully.
@@ -296,8 +294,6 @@ public class Folder extends PFComponent {
             }
         }
 
-        schemaZyncro = PathUtils.isZyncroPath(localBase);
-
         Reject.ifTrue(localBase.equals(getController().getFolderRepository()
             .getFoldersBasedir()),
             "Folder cannot be located at base directory for all folders");
@@ -348,7 +344,7 @@ public class Folder extends PFComponent {
 
         Filter<Path> allExceptSystemDirFilter = pathname -> !isSystemSubDir(pathname);
 
-        if (!schemaZyncro && !deviceDisconnected
+        if (!deviceDisconnected
             && PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter))
         {
             // Empty folder... no scan required for database
@@ -758,8 +754,7 @@ public class Folder extends PFComponent {
             watcher.addIgnoreFile(fInfo);
 
             // PFS-981: Start
-            if (Feature.NTFS_PRESERVE_FILE_OWNER.isEnabled()
-                && !schemaZyncro)
+            if (Feature.NTFS_PRESERVE_FILE_OWNER.isEnabled())
             {
                 Path diskFile = fInfo.getDiskFile(getController()
                     .getFolderRepository());
@@ -859,9 +854,7 @@ public class Folder extends PFComponent {
                 return false;
             }
 
-            updateFileOwnerIfNecessary(targetFile, fInfo);
-
-            if (Files.exists(targetFile) && !schemaZyncro) {
+            if (Files.exists(targetFile)) {
                 // if file was a "newer file" the file already exists here
                 // Using local var because of possible race condition!!
                 FileArchiver arch = archiver;
@@ -914,11 +907,8 @@ public class Folder extends PFComponent {
                 // }
             }
 
-            boolean copyAfterTransfer = schemaZyncro
-                || ConfigurationEntry.FOLDER_COPY_AFTER_TRANSFER
-                    .getValueBoolean(getController());
-
-            if (!copyAfterTransfer) {
+            if (!ConfigurationEntry.FOLDER_COPY_AFTER_TRANSFER
+                .getValueBoolean(getController())) {
                 try {
                     // PFS-1794: Replace existing target file atomically.
                     Files.move(tempFile, targetFile,
@@ -957,13 +947,9 @@ public class Folder extends PFComponent {
                 }
             } else {
                 try {
-                    if (schemaZyncro) {
-                        PathUtils.rawCopy(tempFile, targetFile);
-                    } else {
-                        // PFS-1794: Replace existing target file atomically.
-                        Files.copy(tempFile, targetFile,
-                            StandardCopyOption.REPLACE_EXISTING);
-                    }
+                    // PFS-1794: Replace existing target file atomically.
+                    Files.copy(tempFile, targetFile,
+                        StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     // PFS-1794: Does happen 525x
                     logWarning("Unable to store completed download "
@@ -1029,43 +1015,6 @@ public class Folder extends PFComponent {
             addProblem(new FileConflictProblem(fInfo));
         }
         return null;
-    }
-
-    /**
-     * Set a new owner, if necessary (e. g. on Zyncro system).
-     *
-     * @param targetFile
-     * @param fInfo
-     */
-    private void updateFileOwnerIfNecessary(Path targetFile, FileInfo fInfo) {
-        if (!schemaZyncro) {
-            return;
-        }
-        try {
-            AccountInfo aInfo = fInfo.getModifiedBy()
-                .getNode(getController(), true).getAccountInfo();
-
-            if (aInfo != null) {
-                String username = aInfo.getUsername();
-                FileSystem fs = targetFile.getFileSystem();
-                UserPrincipalLookupService upls = fs
-                    .getUserPrincipalLookupService();
-                UserPrincipal up = upls.lookupPrincipalByName(username);
-
-                if (up != null) {
-                    Files.setOwner(targetFile, up);
-                } else {
-                    logInfo("Could not find user '" + username
-                        + "' to set as owner");
-                }
-            } else {
-                logWarning("Could not find an account for file '"
-                    + fInfo.toString() + "'");
-            }
-        } catch (Exception e) {
-            logWarning("Could not set owner to " + targetFile.toString()
-                + ": " + e);
-        }
     }
 
     /**
@@ -1611,7 +1560,6 @@ public class Folder extends PFComponent {
         watcher.addIgnoreFile(dirInfo);
         try {
             synchronized (scanLock) {
-                updateFileOwnerIfNecessary(dir, dirInfo);
                 if (dirInfo.isDeleted()) {
                     try {
                         Files.deleteIfExists(dir);
@@ -2413,14 +2361,6 @@ public class Folder extends PFComponent {
                     try {
                         Path problemPath = archiver.getArchiveDir().resolve(
                             fileInfo.getRelativeName());
-                        // PFS-1361 Start
-                        if (ProUtil.isZyncro(getController())
-                            && !currentInfo.isMetaFolder())
-                        {
-                            createTimestampedCopy(file);
-                            problemPath = file;
-                        }
-                        // PFS-1361 End
                         watcher.addIgnoreFile(fileInfo);
                         archiver.archive(fileInfo, file, false);
 
@@ -2645,7 +2585,7 @@ public class Folder extends PFComponent {
      */
     public boolean scanAllowedNow() {
         return (!syncProfile.isManualSync() && !syncProfile.isDailySync() && !getController()
-            .isPaused()) || schemaZyncro || currentInfo.isMetaFolder();
+            .isPaused()) || currentInfo.isMetaFolder();
     }
 
     /**
@@ -3295,17 +3235,6 @@ public class Folder extends PFComponent {
             return;
         }
 
-        if (schemaZyncro) {
-            AccountInfo aInfo = remoteFile.getModifiedBy()
-                .getNode(getController(), true).getAccountInfo();
-            if (aInfo == null) {
-                logSevere("Ignoring illegal delete request for file "
-                    + localFile + ". Missing deleting user: "
-                    + remoteFile.toDetailString());
-                return;
-            }
-        }
-
         if (isInfo()) {
             // PFC-2434
             String by = "n/a";
@@ -3341,22 +3270,6 @@ public class Folder extends PFComponent {
                     watcher.addIgnoreFile(localFile);
 
                     UserPrincipal owner = null;
-
-                    if (schemaZyncro) {
-                        try {
-                            String username = remoteFile.getModifiedBy()
-                                .getNode(getController(), true)
-                                .getAccountInfo().getUsername();
-                            owner = localCopy.getFileSystem()
-                                .getUserPrincipalLookupService()
-                                .lookupPrincipalByName(username);
-
-                            localCopy = Files.setOwner(localCopy, owner);
-                        } catch (Exception e) {
-                            logInfo("Could not set Owner on '"
-                                + localCopy.toString() + ": " + e.getMessage(), e);
-                        }
-                    }
 
                     try {
                         Files.delete(localCopy);
@@ -3452,43 +3365,10 @@ public class Folder extends PFComponent {
                         logWarning("Unable to delete local file "
                             + localCopy.toAbsolutePath() + ". "
                             + localFile.toDetailString());
-                        if (!schemaZyncro) {
-                            if (nTried < 10) {
-                                // Re-try again, at least 10 times.
-                                handleFileDeletion(remoteFile, force, member,
-                                    removedFiles, ++nTried);
-                            }
-                        } else {
-
-                            // SPECIAL HANDLING FOR ZYNCRO
-
-                            // Revert delete, increase version number.
-                            // PFC-2352: TODO: Calc new hashes?
-                            String newHashes = null;
-                            final FileInfo revertedFileInfo = FileInfoFactory
-                                .modifiedFile(remoteFile, this, localCopy,
-                                    remoteFile.getModifiedBy(),
-                                    member.getAccountInfo(), newHashes);
-                            store(getMySelf(), revertedFileInfo);
-                            broadcastMessages(new MessageProducer() {
-                                @Override
-                                public Message[] getMessages(boolean useExt) {
-                                    return new Message[]{FolderFilesChanged
-                                        .create(revertedFileInfo, useExt)};
-                                }
-                            });
-
-                            // Get recipient/target
-                            String nodeID = remoteFile.getModifiedBy()
-                                .getNode(getController(), false).getId();
-                            // Build the message
-                            // HERE FIXME HERE
-                            RevertedFile rf = new RevertedFile(revertedFileInfo);
-                            // Plan a task
-                            SendMessageTask smt = new SendMessageTask(rf,
-                                nodeID);
-                            // schedule the task
-                            getController().getTaskManager().scheduleTask(smt);
+                        if (nTried < 10) {
+                            // Re-try again, at least 10 times.
+                            handleFileDeletion(remoteFile, force, member,
+                                removedFiles, ++nTried);
                         }
                         return;
                     } else {
@@ -3866,11 +3746,6 @@ public class Folder extends PFComponent {
     }
 
     private void checkForMassDeletion(Member from, FileInfo[] fileInfos) {
-        if (ProUtil.isZyncro(getController())) {
-            // SYNC-234
-            return;
-        }
-
         int delsCount = 0;
         for (FileInfo remoteFile : fileInfos) {
             if (!remoteFile.isDeleted()) {
@@ -4241,7 +4116,7 @@ public class Folder extends PFComponent {
     }
 
     private Path getSystemSubDir0() {
-        if (schemaZyncro || localBase.toString().contains(Constants.FOLDER_WEBDAV_SUFFIX)) {
+        if (localBase.toString().contains(Constants.FOLDER_WEBDAV_SUFFIX)) {
             return Controller.getMiscFilesLocation().resolve(Constants.SYSTEM_SUBDIR)
                 .resolve(PathUtils.removeInvalidFilenameChars(getId()))
                 .resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
@@ -4293,7 +4168,7 @@ public class Folder extends PFComponent {
 
         // #1249
         if (getKnownItemCount() > 0 && (OSUtil.isMacOS() || OSUtil.isLinux())) {
-            if (!schemaZyncro && !PathUtils.isWebDAVFolder(localBase))
+            if (!PathUtils.isWebDAVFolder(localBase))
             {
                 boolean inaccessible = Files.notExists(localBase)
                     || PathUtils.getNumberOfSiblings(localBase) == 0;

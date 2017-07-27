@@ -19,7 +19,6 @@ public class GroupInfo implements Serializable, D2DObject {
 
     private String oid;
 
-    @Index(name = "IDX_GROUP_NAME")
     private String displayName;
 
     /**

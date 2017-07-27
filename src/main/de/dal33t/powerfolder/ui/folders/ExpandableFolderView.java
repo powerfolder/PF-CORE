@@ -1680,13 +1680,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                         boolean openedTab = getController().getUIController()
                             .openFilesInformation(folderInfo);
                         if (!openedTab) {
-                            if (!ProUtil.isZyncro(getController())) {
-                                openExplorer();
-                            } else {
-                                FolderRemoveDialog panel = new FolderRemoveDialog(
-                                    getController(), folderInfo);
-                                panel.open();
-                            }
+                            openExplorer();
                         }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
