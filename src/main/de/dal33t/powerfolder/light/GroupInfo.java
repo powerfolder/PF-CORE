@@ -17,7 +17,6 @@ public class GroupInfo implements Serializable {
 
     private String oid;
 
-    @Index(name = "IDX_GROUP_NAME")
     private String displayName;
 
     public GroupInfo(String oid, String displayName) {
