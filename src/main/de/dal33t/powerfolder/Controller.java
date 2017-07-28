@@ -1024,6 +1024,34 @@ public class Controller extends PFComponent {
     }
 
     /**
+     * PFC-2846: Config reload via command line while running
+     */
+    public void reloadConfigFile() {
+        BufferedInputStream bis = null;
+        try {
+            if (Files.exists(configFile)) {
+                logInfo("Reloading configfile " + configFile.toString());
+            } else {
+                logWarning("Config file does not exist. " + configFile.toString());
+                return;
+            }
+            bis = new BufferedInputStream(Files.newInputStream(configFile));
+            config.load(bis);
+        } catch (IOException e) {
+            logWarning("Unable to reload config file " + configFile
+                    + ". " + e);
+        } finally {
+            try {
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (Exception e) {
+                // Ignore.
+            }
+        }
+    }
+
+    /**
      * Schedules a task to be executed periodically repeated without initial
      * delay. Until removed. ATTENTION: Tasks may be executed concurrently if
      * long running - especially longer than the period time. Take proper action
