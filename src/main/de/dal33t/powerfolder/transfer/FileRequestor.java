@@ -367,24 +367,26 @@ public class FileRequestor extends PFComponent {
     }
 
     private void addWorker() {
-        // Now do the actual resizing.
-        int nWorkers = workerPool.size();
-        // Calculate required workers. check min / max bounds.
-        int reqWorkers = Math.max(1, Math.min(
-                Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS, (folderQueue
-                        .size() / Constants.FOLDERS_PER_FILEREQUESTOR_WORKER)));
-        int diff = reqWorkers - nWorkers;
+        synchronized (workerPool) {
+            // Now do the actual resizing.
+            int nWorkers = workerPool.size();
+            // Calculate required workers. check min / max bounds.
+            int reqWorkers = Math.max(1, Math.min(
+                    Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS, (folderQueue
+                            .size() / Constants.FOLDERS_PER_FILEREQUESTOR_WORKER)));
+            int diff = reqWorkers - nWorkers;
 
-        if (isFine() && diff != 0) {
-            logFine("nWorkers: " + nWorkers + ", required: " + reqWorkers + ". Diff: " + diff);
-        }
-        if (reqWorkers == Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS) {
-            logWarning("Maximum number of workers reached: " + Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS);
-        }
-        for (int i = 0; i < diff; i++) {
-            Worker worker = new Worker();
-            workerPool.add(worker);
-            getController().schedule(worker, 100L * i);
+            if (isFine() && diff != 0) {
+                logFine("nWorkers: " + nWorkers + ", required: " + reqWorkers + ". Diff: " + diff);
+            }
+            if (reqWorkers == Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS) {
+                logWarning("Maximum number of workers reached: " + Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS);
+            }
+            for (int i = 0; i < diff; i++) {
+                Worker worker = new Worker();
+                workerPool.add(worker);
+                getController().schedule(worker, 100L * i);
+            }
         }
     }
 
