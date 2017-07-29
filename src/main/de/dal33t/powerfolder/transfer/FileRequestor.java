@@ -20,16 +20,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Queue;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -40,7 +30,14 @@ import de.dal33t.powerfolder.light.FileHistory.Conflict;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileHistoryReply;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.ProblemUtil;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Reject;
+
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * The filerequestor handles all stuff about requesting new downloads
@@ -51,8 +48,9 @@ import de.dal33t.powerfolder.util.*;
 public class FileRequestor extends PFComponent {
     // 60 seconds
     private static final long PERIODIC_REQUEST_MS = Controller.getWaitTime() * 12;
-    private Thread myThread;
-    private Date workerLastActivity = new Date();
+    // 30 minutes
+    private static final long WORKER_TIMEOUT = PERIODIC_REQUEST_MS * 30;
+    private final Collection<Worker> workerPool;
     private final Queue<Folder> folderQueue;
     private final Queue<FileInfo> pendingRequests;
 
@@ -60,39 +58,16 @@ public class FileRequestor extends PFComponent {
         super(controller);
         folderQueue = new ConcurrentLinkedQueue<Folder>();
         pendingRequests = new ConcurrentLinkedQueue<FileInfo>();
+        workerPool = new ConcurrentLinkedQueue<Worker>();
     }
 
     /**
      * Starts the file requestor
      */
     public void start() {
-        myThread = new Thread(new Worker(), "FileRequestor");
-        myThread.setPriority(Thread.MIN_PRIORITY);
-        myThread.start();
-
         logFine("Started");
-
         getController()
             .scheduleAndRepeat(new PeriodicalTriggerTask(), PERIODIC_REQUEST_MS);
-    }
-
-    /**
-     * @return if the worker is busy/unavailable since 30 minutes.
-     */
-    private boolean isWorkerTimeout() {
-        long msSinceLastActivity = System.currentTimeMillis() - workerLastActivity.getTime();
-        // logWarning("last activity: " + workerLastActivity + " inactive since " + msSinceLastActivity + "ms. timeout time: " + PERIODIC_REQUEST_MS * 30);
-        // 5 Minutes
-        return msSinceLastActivity > PERIODIC_REQUEST_MS * 5;
-    }
-
-    private void restartWorker() {
-        if (myThread != null) {
-            myThread.interrupt();
-        }
-        myThread = new Thread(new Worker(), "FileRequestor");
-        myThread.setPriority(Thread.MIN_PRIORITY);
-        myThread.start();
     }
 
     /**
@@ -114,7 +89,7 @@ public class FileRequestor extends PFComponent {
                 return;
             }
             folderQueue.offer(folder);
-            folderQueue.notify();
+            addWorker();
         }
     }
 
@@ -134,8 +109,8 @@ public class FileRequestor extends PFComponent {
                     continue;
                 }
                 folderQueue.offer(folder);
+                addWorker();
             }
-            folderQueue.notifyAll();
         }
         Profiling.end(pe, 100);
     }
@@ -144,8 +119,8 @@ public class FileRequestor extends PFComponent {
      * Stops file requsting
      */
     public void shutdown() {
-        if (myThread != null) {
-            myThread.interrupt();
+        for (Worker worker : workerPool) {
+            worker.stopped = true;
         }
         synchronized (folderQueue) {
             folderQueue.notifyAll();
@@ -213,7 +188,7 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (!folder.hasOwnDatabase()) {
-            if (folder.isScanning()) {
+            if (folder.isScanning() || folder.isDeviceDisconnected()) {
                 if (isFine()) {
                     logFine("Not requesting files. No own database for "
                         + folder);
@@ -249,7 +224,6 @@ public class FileRequestor extends PFComponent {
             return;
         }
 
-
         retrieveNewestVersions(folder, incomingFiles, true);
     }
 
@@ -268,7 +242,7 @@ public class FileRequestor extends PFComponent {
         List<FileInfo> filesToDownload = new ArrayList<FileInfo>(fInfos.size());
         int i = 0;
         for (FileInfo fInfo : fInfos) {
-            if (myThread.isInterrupted()) {
+            if (Thread.currentThread().isInterrupted()) {
                 return;
             }
             if (fInfo.isDeleted()) {
@@ -290,9 +264,6 @@ public class FileRequestor extends PFComponent {
             } else if (fInfo.isDiretory()) {
                 createDirectory((DirectoryInfo) fInfo);
             }
-            if (autoDownload && i++ % 100 == 0) {
-                workerLastActivity = new Date();
-            }
         }
         if (filesToDownload.isEmpty()) {
             // Quit here.
@@ -311,9 +282,6 @@ public class FileRequestor extends PFComponent {
                     continue;
                 }
                 prepareDownload(newestVersion, autoDownload);
-                if (autoDownload && i++ % 100 == 0) {
-                    workerLastActivity = new Date();
-                }
             } catch (RuntimeException e) {
                 logWarning("Unable to download: " + fInfo.toDetailString()
                     + ": " + e);
@@ -398,6 +366,28 @@ public class FileRequestor extends PFComponent {
         }
     }
 
+    private void addWorker() {
+        // Now do the actual resizing.
+        int nWorkers = workerPool.size();
+        // Calculate required workers. check min / max bounds.
+        int reqWorkers = Math.max(1, Math.min(
+                Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS, (folderQueue
+                        .size() / Constants.FOLDERS_PER_FILEREQUESTOR_WORKER)));
+        int diff = reqWorkers - nWorkers;
+
+        if (isFine() && diff != 0) {
+            logFine("nWorkers: " + nWorkers + ", required: " + reqWorkers + ". Diff: " + diff);
+        }
+        if (reqWorkers == Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS) {
+            logWarning("Maximum number of workers reached: " + Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS);
+        }
+        for (int i = 0; i < diff; i++) {
+            Worker worker = new Worker();
+            workerPool.add(worker);
+            getController().schedule(worker, 100L * i);
+        }
+    }
+
     /**
      * Requests periodically new files from the folders
      * 
@@ -405,53 +395,71 @@ public class FileRequestor extends PFComponent {
      * @version $Revision: 1.18 $
      */
     private class Worker implements Runnable {
+        private Date lastActivity = new Date();
+        private volatile boolean stopped;
+
+        /**
+         * @return if the worker is busy/unavailable since 30 minutes.
+         */
+        private boolean isTimeout() {
+            long msSinceLastActivity = System.currentTimeMillis() - lastActivity.getTime();
+            return msSinceLastActivity > WORKER_TIMEOUT;
+        }
+
         public void run() {
-            while (!myThread.isInterrupted()) {
-                try {
-                    synchronized (folderQueue) {
-                        if (folderQueue.isEmpty()) {
-                            folderQueue.wait();
-                        }
+            try {
+                if (folderQueue.isEmpty()) {
+                    return;
+                }
+                if (stopped) {
+                    return;
+                }
+                int nFolders = 0;
+                if (isFiner()) {
+                    logFiner("Started requesting files");
+                }
+                long start = System.currentTimeMillis();
+                for (Folder folder : folderQueue) {
+                    if (stopped) {
+                        return;
                     }
-                    int nFolders = 0;
-                    if (isFiner()) {
-                        logFiner("Started requesting files");
-                    }
-                    workerLastActivity = new Date();
-                    long start = System.currentTimeMillis();
-                    for (Folder folder : folderQueue) {
-                        // if (i % 100 == 0) {
-                        // if (folderQueue.size() < 5) {
-                        // logWarning("Still in queue: " + folderQueue);
-                        // } else {
-                        // logWarning("Still in queue: "
-                        // + folderQueue.size());
-                        // }
-                        // }
+                    /*
+                    if (folderQueue.size() < 5) {
+                        logWarning("Still in queue: " + folderQueue);
+                    } else {
+                        logWarning("Still in queue: "
+                                + folderQueue.size());
+                    }*/
+
+                    try {
+                        folderQueue.remove(folder);
                         nFolders++;
-                        try {
-                            folderQueue.remove(folder);
-                            // Give CPU a bit time.
-                            if (nFolders % 5 == 0) {
-                                workerLastActivity = new Date();
-                                Thread.sleep(1);
-                            }
-                            requestMissingFilesForAutodownload(folder);
-                        } catch (RuntimeException e) {
-                            logSevere("RuntimeException: " + e.toString(), e);
+                        requestMissingFilesForAutodownload(folder);
+
+                        // Give CPU a bit time.
+                        if (nFolders % 5 == 0 && !stopped) {
+                            lastActivity = new Date();
+                            Thread.sleep(1);
                         }
+                    } catch (RuntimeException e) {
+                        logSevere("RuntimeException: " + e.toString(), e);
                     }
-                    if (isFine()) {
-                        long took = System.currentTimeMillis() - start;
-                        logFine("Requesting files for " + nFolders
-                            + " folder(s) took " + took + "ms.");
+                }
+                if (isFine()) {
+                    long took = System.currentTimeMillis() - start;
+                    logFine("Requesting files for " + nFolders + " folder(s) took " + took + "ms.");
+                    if (took > PERIODIC_REQUEST_MS) {
+                        logWarning("Requesting files for " + nFolders + " folder(s) took " + took + "ms.");
                     }
-                    // Sleep a bit to avoid spamming
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    logFine("Stopped");
-                    logFiner(e);
-                    break;
+                }
+            } catch (InterruptedException e) {
+                logFine("Stopped");
+                logFiner(e);
+            } finally {
+                stopped = true;
+                workerPool.remove(this);
+                if (!folderQueue.isEmpty()) {
+                    addWorker();
                 }
             }
         }
@@ -464,10 +472,12 @@ public class FileRequestor extends PFComponent {
         @Override
         public void run() {
             triggerFileRequesting();
-            if (isWorkerTimeout()) {
-                logWarning("Worker timed out detected. Restarting...");
-                logInfo(Debug.dumpCurrentStacktraces(false));
-                restartWorker();
+
+            for (Worker worker : workerPool) {
+                if (worker.isTimeout()) {
+                    logWarning("Worker timed out detected. Restarting... " + worker);
+                    worker.stopped = true;
+                }
             }
         }
     }
