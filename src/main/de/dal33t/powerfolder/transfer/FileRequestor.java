@@ -50,7 +50,7 @@ public class FileRequestor extends PFComponent {
     private static final long PERIODIC_REQUEST_MS = Controller.getWaitTime() * 12;
     // 30 minutes
     private static final long WORKER_TIMEOUT = PERIODIC_REQUEST_MS * 30;
-    private final Collection<Worker> workerPool;
+    private final Queue<Worker> workerPool;
     private final Queue<Folder> folderQueue;
     private final Queue<FileInfo> pendingRequests;
 
