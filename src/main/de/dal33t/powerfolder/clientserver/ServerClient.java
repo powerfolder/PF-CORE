@@ -668,6 +668,30 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * PFC-3015
+     *
+     * @param fInfo
+     * @return the direct URL to the folder including login if necessary
+     */
+    public String getFileLinkURLWithCredentials(FileInfo fInfo) {
+        if (!supportsWebLogin()) {
+            return null;
+        }
+        String linkURI = getFileLinkURL(fInfo);
+        linkURI = linkURI.replace(getWebURL(), "");
+        String loginURL = getLoginURLWithCredentials();
+        if (loginURL.contains("?")) {
+            loginURL += "&";
+        } else {
+            loginURL += "?";
+        }
+        loginURL += Constants.LOGIN_PARAM_ORIGINAL_URI;
+        loginURL += "=";
+        loginURL += linkURI;
+        return loginURL;
+    }
+
+    /**
      * Generate a URL that directs to a web colaboration tool.
      * 
      * @param fInfo

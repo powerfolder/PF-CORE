@@ -877,7 +877,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     BrowserLauncher.open(getController(), new URLProducer() {
                         public String url() {
                             return getController().getOSClient()
-                                .getFileLinkURL(fileInfo);
+                                .getFileLinkURLWithCredentials(fileInfo);
                         }
                     });
                 }

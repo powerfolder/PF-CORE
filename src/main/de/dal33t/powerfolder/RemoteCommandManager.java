@@ -505,7 +505,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
                 BrowserLauncher.open(getController(), new URLProducer() {
                     public String url() {
-                        return client.getFileLinkURL(fInfo);
+                        return client.getFileLinkURLWithCredentials(fInfo);
                     }
                 });
 
