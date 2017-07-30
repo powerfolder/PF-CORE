@@ -292,7 +292,7 @@ public class FolderStatistic extends PFComponent {
             && !fileInfo.getFolderInfo().isMetaFolder()
             && LOG.isLoggable(Level.WARNING))
         {
-            LOG.warning("File in sync, but size differs.\n" + "Newest: "
+            LOG.warning("File in sync, but size differs. " + "Newest: "
                 + newestFileInfo.toDetailString() + "\n@" + member.getNick()
                 + ":" + fileInfo.toDetailString());
         }
