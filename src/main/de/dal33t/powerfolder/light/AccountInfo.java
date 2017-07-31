@@ -19,23 +19,17 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-
-import javax.persistence.Embeddable;
-import javax.persistence.Transient;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.intern.AccountInfoInternalizer;
 import de.dal33t.powerfolder.util.intern.Internalizer;
+
+import javax.persistence.Embeddable;
+import javax.persistence.Transient;
+import java.io.*;
 
 /**
  * Leightweight reference/info object to an {@link Account}
@@ -54,6 +48,8 @@ public class AccountInfo implements Serializable, D2DObject {
     private String username;
     @Transient
     private String displayName;
+    @Transient
+    private long avatarLastModifiedDate;
 
     private AccountInfo() {
         // For hibernate.
@@ -132,6 +128,14 @@ public class AccountInfo implements Serializable, D2DObject {
         } else {
             return intern();
         }
+    }
+
+    public long getAvatarLastModifiedDate() {
+        return avatarLastModifiedDate;
+    }
+
+    public void setAvatarLastModifiedDate(long avatarLastModifiedDate) {
+        this.avatarLastModifiedDate = avatarLastModifiedDate;
     }
 
     public AccountInfo intern() {
@@ -225,6 +229,7 @@ public class AccountInfo implements Serializable, D2DObject {
           this.oid         = ainfo.getId();
           this.username    = ainfo.getUsername();
           this.displayName = ainfo.getDisplayName();
+          this.avatarLastModifiedDate = ainfo.getAvatarLastModifiedDate();
         }
     }
 
@@ -244,7 +249,7 @@ public class AccountInfo implements Serializable, D2DObject {
       builder.setId(this.oid);
       builder.setUsername(this.username);
       if(null != this.displayName) builder.setDisplayName(this.displayName);
-
+      builder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);
       return builder.build();
     }
 }
