@@ -187,6 +187,9 @@ public class WebClientLogin extends PFComponent {
     private void consumeToken(String line) {
         String tokenSecret = line.substring(line.indexOf(Constants.LOGIN_PARAM_OR_HEADER_TOKEN) + 6, line.lastIndexOf(" "));
         getController().getOSClient().login(tokenSecret);
+
+        ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController().getConfig(), tokenSecret);
+        getController().saveConfig();
     }
 
     public static boolean hasRunningInstance() {
