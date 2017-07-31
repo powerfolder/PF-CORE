@@ -87,7 +87,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 494;
+    private static final int REVISION_VERSION = 498;
 
     /**
      * Program version.
@@ -1021,6 +1021,34 @@ public class Controller extends PFComponent {
                 + configFolderFile.toString());
         }
         return true;
+    }
+
+    /**
+     * PFC-2846: Config reload via command line while running
+     */
+    public void reloadConfigFile() {
+        BufferedInputStream bis = null;
+        try {
+            if (Files.exists(configFile)) {
+                logInfo("Reloading configfile " + configFile.toString());
+            } else {
+                logWarning("Config file does not exist. " + configFile.toString());
+                return;
+            }
+            bis = new BufferedInputStream(Files.newInputStream(configFile));
+            config.load(bis);
+        } catch (IOException e) {
+            logWarning("Unable to reload config file " + configFile
+                    + ". " + e);
+        } finally {
+            try {
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (Exception e) {
+                // Ignore.
+            }
+        }
     }
 
     /**

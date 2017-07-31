@@ -126,6 +126,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     public static final String MAKEFOLDER = "MAKEFOLDER;";
     public static final String REMOVEFOLDER = "REMOVEFOLDER;";
     public static final String COPYLINK = "COPYLINK;";
+    public static final String RELOAD_CONFIG = "RELOADCONFIG;";
 
     // Private vars
     private ServerSocket serverSocket;
@@ -402,6 +403,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
         if (QUIT.equalsIgnoreCase(command)) {
             getController().exit(0);
+        }if (RELOAD_CONFIG.equalsIgnoreCase(command)) {
+            getController().reloadConfigFile();
         } else if (command.startsWith(OPEN)) {
             // Open files
             String fileStr = command.substring(OPEN.length());
@@ -502,7 +505,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
                 BrowserLauncher.open(getController(), new URLProducer() {
                     public String url() {
-                        return client.getFileLinkURL(fInfo);
+                        return client.getFileLinkURLWithCredentials(fInfo);
                     }
                 });
 

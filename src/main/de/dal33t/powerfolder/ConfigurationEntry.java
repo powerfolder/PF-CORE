@@ -906,9 +906,9 @@ public enum ConfigurationEntry {
     CONNECT_WAIT("connect.wait.seconds", 120),
 
     /**
-     * Enable/Disable relayed connections.
+     * PFC-2982: Disabled relayed connections by default.
      */
-    RELAYED_CONNECTIONS_ENABLED("connections.relayed", true),
+    RELAYED_CONNECTIONS_ENABLED("connections.relayed", false),
 
     /**
      * Enable/Disable relayed connections.

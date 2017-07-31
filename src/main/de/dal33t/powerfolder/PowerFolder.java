@@ -82,7 +82,7 @@ public class PowerFolder {
                 "Starts in console mode. Graphical user interface will be disabled");
         options
             .addOption("d", "dns", true,
-                "<ip/dns>. Sets the dns/ip to listen to. May also be a dyndns address");
+                "<ip/dns>. Sets the hostname to listen to. May also be a dynamic DNS hostname");
         options.addOption("h", "help", false, "Displays this help");
         options.addOption("n", "name", true,
             "<Name> Sets the name of this machine");
@@ -119,6 +119,8 @@ public class PowerFolder {
                 "Show notification at left of screen");
         options.addOption("z", "nowarn", false,
                 "Do not warn if already running");
+        options.addOption("o", "nowarn", false,
+                "Reloads the configuration file (some config entries may require a restart)");
         COMMAND_LINE_OPTIONS = options;
     }
 
@@ -194,6 +196,20 @@ public class PowerFolder {
                 // Send quit command
                 RemoteCommandManager.sendCommand(rconPort,
                     RemoteCommandManager.QUIT);
+            } else {
+                System.err.println("Process not running");
+            }
+            // stop
+            return;
+        }
+
+        // PFC-2846
+        if (commandLine.hasOption("o")) {
+            if (runningInstanceFound) {
+                System.out.println("Reloading config " + NAME);
+                // Send quit command
+                RemoteCommandManager.sendCommand(rconPort,
+                        RemoteCommandManager.RELOAD_CONFIG);
             } else {
                 System.err.println("Process not running");
             }

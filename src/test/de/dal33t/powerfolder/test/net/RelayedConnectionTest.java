@@ -49,6 +49,10 @@ public class RelayedConnectionTest extends FiveControllerTestCase {
         getContollerBart().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        
+        ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(getContollerMarge(), true);
+        ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(getContollerBart(), true);
+        ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.setValue(getContollerLisa(), true);
     }
 
     public void testRelayedConnection() throws ConnectionException {

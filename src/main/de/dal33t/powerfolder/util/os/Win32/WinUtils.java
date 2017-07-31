@@ -376,7 +376,7 @@ public class WinUtils extends Loggable {
             String appDataAllUsers = System.getenv("ProgramData");
             Path dir = Paths.get(appDataAllUsers);
             if (Files.exists(dir)) {
-                LOG.warning("Retrieved APPDATA (all users) via ENV(ProgramData): "
+                LOG.fine("Retrieved APPDATA (all users) via ENV(ProgramData): "
                     + appDataAllUsers);
                 return appDataAllUsers;
             }
