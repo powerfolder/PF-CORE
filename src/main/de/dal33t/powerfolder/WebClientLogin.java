@@ -86,11 +86,6 @@ public class WebClientLogin extends PFComponent {
                             String inetAddress = getInetAddress();
                             if (inetAddress != null) {
                                 sendAuthenticationRequest(socket.getOutputStream(), inetAddress);
-
-                                if (!ConfigurationEntry.WDNAS_CLIENT.getValueBoolean(getController())) {
-                                    ConfigurationEntry.WDNAS_CLIENT.setValue(getController(), true);
-                                    getController().saveConfig();
-                                }
                             } else {
                                 logWarning("Process authentication request failed. " +
                                         "Client authentication request only supported from WDNAS devices. Are you an a WDNAS device?");
@@ -126,7 +121,7 @@ public class WebClientLogin extends PFComponent {
         String inetAddress = null;
 
         for (NetworkInterface networkInterface : Collections.list(nets)) {
-            if (networkInterface.getDisplayName().contains("bond0")) {
+            if (networkInterface.getDisplayName().contains("bond0") || networkInterface.getDisplayName().contains("eth0")) {
                 Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
                 for (InetAddress address : Collections.list(inetAddresses)) {
                     if (address instanceof Inet4Address) {
@@ -189,7 +184,11 @@ public class WebClientLogin extends PFComponent {
         getController().getOSClient().login(tokenSecret);
 
         ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController().getConfig(), tokenSecret);
+        ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(getController().getConfig(), "WDMyCloud");
         getController().saveConfig();
+
+        log.log(Level.INFO,
+                "Successfully logged in to server.");
     }
 
     public static boolean hasRunningInstance() {
