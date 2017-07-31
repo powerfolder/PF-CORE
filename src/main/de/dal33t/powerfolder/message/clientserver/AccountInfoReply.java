@@ -19,7 +19,8 @@ public class AccountInfoReply extends Message implements D2DObject {
     private String replyCode;
     private ReplyStatusCode replyStatusCode;
     private Account account;
-    Collection<FolderPermission> invitations;
+    private Collection<FolderPermission> invitations;
+    private long avatarLastModifiedDate;
     private AccountInfo accountInfo;
 
     /**
@@ -33,17 +34,19 @@ public class AccountInfoReply extends Message implements D2DObject {
         this.replyStatusCode = replyStatusCode;
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations) {
+    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, long avatarLastModifiedDate) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.account = account;
         this.invitations = invitations;
+        this.avatarLastModifiedDate = avatarLastModifiedDate;
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, AccountInfo accountInfo) {
+    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, AccountInfo accountInfo, long avatarLastModifiedDate) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.accountInfo = accountInfo;
+        this.avatarLastModifiedDate = avatarLastModifiedDate;
     }
 
     /**
@@ -85,6 +88,14 @@ public class AccountInfoReply extends Message implements D2DObject {
 
     public void setInvitations(Collection<FolderPermission> invitations) {
         this.invitations = invitations;
+    }
+
+    public long getAvatarLastModifiedDate() {
+        return avatarLastModifiedDate;
+    }
+
+    public void setAvatarLastModifiedDate(long avatarLastModifiedDate) {
+        this.avatarLastModifiedDate = avatarLastModifiedDate;
     }
 
     public AccountInfo getAccountInfo() {
@@ -136,6 +147,8 @@ public class AccountInfoReply extends Message implements D2DObject {
             permissionInfoBuilder.setIsInvitation(true);
             accountInfoBuilder.addPermissionInfos(permissionInfoBuilder.build());
         }
+        // Inject avatarLastModifiedDate into account info object
+        accountInfoBuilder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);
         accountInfo = accountInfoBuilder.build();
         if (this.account != null) builder.setAccountInfo(accountInfo);
         else if (this.accountInfo != null)
