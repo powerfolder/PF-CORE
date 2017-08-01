@@ -932,6 +932,7 @@ public class Folder extends PFComponent {
                         perms.add(PosixFilePermission.OTHERS_WRITE);
                         perms.add(PosixFilePermission.OTHERS_EXECUTE);
 
+                        Files.setPosixFilePermissions(targetFile.getParent(), perms);
                         Files.setPosixFilePermissions(targetFile, perms);
 
                         logInfo("Successfully set POSIX file permissions on file " + targetFile);
