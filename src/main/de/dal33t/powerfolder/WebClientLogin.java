@@ -121,7 +121,7 @@ public class WebClientLogin extends PFComponent {
         String inetAddress = null;
 
         for (NetworkInterface networkInterface : Collections.list(nets)) {
-            if (networkInterface.getDisplayName().contains("bond0") || networkInterface.getDisplayName().contains("eth0")) {
+            if (networkInterface.getDisplayName().contains("bond0")) {
                 Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
                 for (InetAddress address : Collections.list(inetAddresses)) {
                     if (address instanceof Inet4Address) {
@@ -181,10 +181,9 @@ public class WebClientLogin extends PFComponent {
 
     private void consumeToken(String line) {
         String tokenSecret = line.substring(line.indexOf(Constants.LOGIN_PARAM_OR_HEADER_TOKEN) + 6, line.lastIndexOf(" "));
-        getController().getOSClient().login(tokenSecret);
+        getController().getOSClient().login("WDMyCloud", tokenSecret);
 
         ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController().getConfig(), tokenSecret);
-        ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(getController().getConfig(), "WDMyCloud");
         getController().saveConfig();
 
         log.log(Level.INFO,
