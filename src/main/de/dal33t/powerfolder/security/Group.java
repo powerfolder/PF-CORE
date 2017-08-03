@@ -315,7 +315,7 @@ public class Group implements Serializable, D2DObject {
         if(mesg instanceof GroupInfoProto.GroupInfo) {
             GroupInfoProto.GroupInfo proto  = (GroupInfoProto.GroupInfo)mesg;
             this.oid                = proto.getId();
-            this.name               = proto.getDisplayName();
+            this.name               = proto.getName();
             this.organizationOID    = proto.getOrganizationId();
             this.permissions        = new CopyOnWriteArrayList<Permission>();
             for (PermissionInfoProto.PermissionInfo permissionInfoProto: proto.getPermissionInfosList()) {
@@ -385,7 +385,7 @@ public class Group implements Serializable, D2DObject {
         GroupInfoProto.GroupInfo.Builder builder = GroupInfoProto.GroupInfo.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.oid != null) builder.setId(this.oid);
-        if (this.getDisplayName() != null) builder.setDisplayName(this.getDisplayName());
+        if (this.getDisplayName() != null) builder.setName(this.getDisplayName());
         if (this.organizationOID != null) builder.setOrganizationId(this.organizationOID);
         for (Permission permission: this.permissions) {
             // Since the different permission classes do not have one common superclass we have to decide for each class separately
