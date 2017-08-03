@@ -4,7 +4,6 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.GroupInfoProto;
 import de.dal33t.powerfolder.security.Group;
-import org.hibernate.annotations.Index;
 
 import java.io.Serializable;
 
@@ -61,7 +60,7 @@ public class GroupInfo implements Serializable, D2DObject {
         if(mesg instanceof GroupInfoProto.GroupInfo) {
             GroupInfoProto.GroupInfo proto  = (GroupInfoProto.GroupInfo)mesg;
             this.oid                = proto.getId();
-            this.displayName        = proto.getDisplayName();
+            this.displayName        = proto.getName();
         }
     }
 
@@ -76,7 +75,7 @@ public class GroupInfo implements Serializable, D2DObject {
         GroupInfoProto.GroupInfo.Builder builder = GroupInfoProto.GroupInfo.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.oid != null) builder.setId(this.oid);
-        if (this.getDisplayName() != null) builder.setDisplayName(this.getDisplayName());
+        if (this.getDisplayName() != null) builder.setName(this.getDisplayName());
         return builder.build();
     }
 }
