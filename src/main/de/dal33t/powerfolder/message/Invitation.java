@@ -154,6 +154,10 @@ public class Invitation extends FolderRelatedMessage
         suggestedSyncProfileConfig = suggestedSyncProfile.getFieldList();
     }
 
+    public void setPermission(FolderPermission permission) {
+        this.permission = permission;
+    }
+
     /**
      * Sets the suggested local base. Parses to get relative paths from apps dir
      * and PowerFolder local base. For subdirs of the PowerFolder base directory

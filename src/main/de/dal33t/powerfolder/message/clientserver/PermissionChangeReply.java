@@ -3,10 +3,10 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.protocol.InvitationAcceptReplyProto;
+import de.dal33t.powerfolder.protocol.PermissionChangeReplyProto;
 import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
-public class InvitationAcceptReply extends Message implements D2DObject {
+public class PermissionChangeReply extends Message implements D2DObject {
     private static final long serialVersionUID = 100L;
 
     private String replyCode;
@@ -15,10 +15,10 @@ public class InvitationAcceptReply extends Message implements D2DObject {
     /**
      * Serialization constructor
      */
-    public InvitationAcceptReply() {
+    public PermissionChangeReply() {
     }
 
-    public InvitationAcceptReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public PermissionChangeReply(String replyCode, ReplyStatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
@@ -28,7 +28,7 @@ public class InvitationAcceptReply extends Message implements D2DObject {
      *
      * @param mesg Message to use data from
      **/
-    public InvitationAcceptReply(AbstractMessage mesg) {
+    public PermissionChangeReply(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
 
@@ -57,8 +57,8 @@ public class InvitationAcceptReply extends Message implements D2DObject {
      **/
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof InvitationAcceptReplyProto.InvitationAcceptReply) {
-            InvitationAcceptReplyProto.InvitationAcceptReply proto = (InvitationAcceptReplyProto.InvitationAcceptReply) mesg;
+        if (mesg instanceof PermissionChangeReplyProto.PermissionChangeReply) {
+            PermissionChangeReplyProto.PermissionChangeReply proto = (PermissionChangeReplyProto.PermissionChangeReply) mesg;
             this.replyCode = proto.getReplyCode();
             this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
         }
@@ -73,9 +73,9 @@ public class InvitationAcceptReply extends Message implements D2DObject {
      **/
     @Override
     public AbstractMessage toD2D() {
-        InvitationAcceptReplyProto.InvitationAcceptReply.Builder builder = InvitationAcceptReplyProto.InvitationAcceptReply.newBuilder();
+        PermissionChangeReplyProto.PermissionChangeReply.Builder builder = PermissionChangeReplyProto.PermissionChangeReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
-        if(this.replyCode != null) builder.setReplyCode(this.replyCode);
+        if (this.replyCode != null) builder.setReplyCode(this.replyCode);
         if (this.replyStatusCode != null)
             builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
         return builder.build();
