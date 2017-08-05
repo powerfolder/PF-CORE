@@ -311,13 +311,13 @@ public interface FolderService {
     String prepareFileLink(String userName, String mailAddress, String folderID);
 
     /**
-     * Checks if the storage path of a folder is incorrect
+     * Checks if the storage path of a folder is correct (default)
      *
      * @param folderInfo The folder info
      * @param account    The account owning the folder
      * @return True if storage path is incorrect
      */
-    boolean storagePathIsIncorrect(FolderInfo folderInfo, Account account);
+    boolean isStoragePathCorrect(FolderInfo folderInfo, Account account);
 
     /**
      * Corrects the storage path of a folder
@@ -328,6 +328,14 @@ public interface FolderService {
     void correctStoragePath(FolderInfo folderInfo, Account account);
 
     /**
+     * PFS-2343: Checks if a folder is encrypted.
+     *
+     * @param folderInfo
+     * @return
+     */
+    boolean isEncrypted(FolderInfo folderInfo);
+
+    /**
      * PFS-2343: Encrypt a single folder for the given account.
      *
      * @param folderInfo
@@ -335,13 +343,5 @@ public interface FolderService {
      * @return
      * @throws IOException
      */
-    void encryptFolder(FolderInfo folderInfo, Account account);
-
-    /**
-     * PFS-2343: Checks if a folder is unencrypted.
-     *
-     * @param folderInfo
-     * @return
-     */
-    boolean folderIsUnencrypted(FolderInfo folderInfo);
+    void encrypt(FolderInfo folderInfo, Account account);
 }
