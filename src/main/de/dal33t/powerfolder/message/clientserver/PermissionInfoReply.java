@@ -1,24 +1,18 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
-import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoReplyProto;
 import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 import de.dal33t.powerfolder.security.*;
 
-public class PermissionInfoReply extends Message implements D2DObject {
-    private static final long serialVersionUID = 100L;
+public class PermissionInfoReply extends InvitationCreateReply {
 
-    private String replyCode;
-    private ReplyStatusCode replyStatusCode;
     private Permission permission;
 
-    /**
-     * Serialization constructor
-     */
-    public PermissionInfoReply() {
+    public PermissionInfoReply(String replyCode, ReplyStatusCode replyStatusCode) {
+        this.replyCode = replyCode;
+        this.replyStatusCode = replyStatusCode;
     }
 
     public PermissionInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Permission permission) {
@@ -27,50 +21,19 @@ public class PermissionInfoReply extends Message implements D2DObject {
         this.permission = permission;
     }
 
-    /**
-     * Init from D2D message
-     *
-     * @param mesg Message to use data from
-     **/
-    public PermissionInfoReply(AbstractMessage mesg) {
-        initFromD2D(mesg);
-    }
-
-    public String getReplyCode() {
-        return replyCode;
-    }
-
-    public void setReplyCode(String replyCode) {
-        this.replyCode = replyCode;
-    }
-
-    public ReplyStatusCode getReplyStatusCode() {
-        return replyStatusCode;
-    }
-
-    public void setReplyStatusCode(ReplyStatusCode replyStatusCode) {
-        this.replyStatusCode = replyStatusCode;
-    }
-
     public Permission getPermission() {
         return permission;
     }
 
-    public void setPermission(Permission permission) {
-        this.permission = permission;
-    }
-
     /**
-     * initFromD2DMessage
      * Init from D2D message
      *
-     * @param mesg Message to use data from
-     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     * @param message Message to use data from
      **/
     @Override
-    public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof PermissionInfoReplyProto.PermissionInfoReply) {
-            PermissionInfoReplyProto.PermissionInfoReply proto = (PermissionInfoReplyProto.PermissionInfoReply) mesg;
+    public void initFromD2D(AbstractMessage message) {
+        if (message instanceof PermissionInfoReplyProto.PermissionInfoReply) {
+            PermissionInfoReplyProto.PermissionInfoReply proto = (PermissionInfoReplyProto.PermissionInfoReply) message;
             this.replyCode = proto.getReplyCode();
             this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
             PermissionInfoProto.PermissionInfo permissionInfoProto = proto.getPermissionInfo();
@@ -129,18 +92,16 @@ public class PermissionInfoReply extends Message implements D2DObject {
     }
 
     /**
-     * toD2D
      * Convert to D2D message
      *
      * @return Converted D2D message
-     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
      **/
     @Override
     public AbstractMessage toD2D() {
         PermissionInfoReplyProto.PermissionInfoReply.Builder builder = PermissionInfoReplyProto.PermissionInfoReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode)this.replyStatusCode.toD2D());
+        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
         if (this.permission != null) {
             Permission permission = this.permission;
             // Since the different permission classes do not have one common superclass we have to decide for each class separately
@@ -156,4 +117,5 @@ public class PermissionInfoReply extends Message implements D2DObject {
         }
         return builder.build();
     }
+
 }

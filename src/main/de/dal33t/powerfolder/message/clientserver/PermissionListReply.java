@@ -2,8 +2,8 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionListReplyProto;
 import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
@@ -13,17 +13,11 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import java.io.Serializable;
 import java.util.Map;
 
-public class PermissionListReply extends Message implements D2DObject {
-    private static final long serialVersionUID = 100L;
+public class PermissionListReply extends D2DReplyMessage {
 
-    private String replyCode;
-    private ReplyStatusCode replyStatusCode;
     private Map<Serializable, FolderPermission> permissions;
     private Map<AccountInfo, FolderPermission> invitations;
 
-    /**
-     * Serialization constructor
-     */
     public PermissionListReply() {
     }
 
@@ -47,50 +41,39 @@ public class PermissionListReply extends Message implements D2DObject {
     /**
      * Init from D2D message
      *
-     * @param mesg Message to use data from
+     * @param message Message to use data from
      **/
-    public PermissionListReply(AbstractMessage mesg) {
-        initFromD2D(mesg);
+    public PermissionListReply(AbstractMessage message) {
+        initFromD2D(message);
     }
 
-    public String getReplyCode() {
-        return replyCode;
+
+    public Map<Serializable, FolderPermission> getPermissions() {
+        return permissions;
     }
 
-    public void setReplyCode(String replyCode) {
-        this.replyCode = replyCode;
-    }
-
-    public ReplyStatusCode getReplyStatusCode() {
-        return replyStatusCode;
-    }
-
-    public void setReplyStatusCode(ReplyStatusCode replyStatusCode) {
-        this.replyStatusCode = replyStatusCode;
+    public Map<AccountInfo, FolderPermission> getInvitations() {
+        return invitations;
     }
 
     /**
-     * initFromD2DMessage
      * Init from D2D message
      *
-     * @param mesg Message to use data from
-     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     * @param message Message to use data from
      **/
     @Override
-    public void initFromD2D(AbstractMessage mesg) {
-        if (mesg instanceof PermissionListReplyProto.PermissionListReply) {
-            PermissionListReplyProto.PermissionListReply proto = (PermissionListReplyProto.PermissionListReply) mesg;
+    public void initFromD2D(AbstractMessage message) {
+        if (message instanceof PermissionListReplyProto.PermissionListReply) {
+            PermissionListReplyProto.PermissionListReply proto = (PermissionListReplyProto.PermissionListReply) message;
             this.replyCode = proto.getReplyCode();
             this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
         }
     }
 
     /**
-     * toD2D
      * Convert to D2D message
      *
      * @return Converted D2D message
-     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
      **/
     @Override
     public AbstractMessage toD2D() {
@@ -117,16 +100,16 @@ public class PermissionListReply extends Message implements D2DObject {
             for (Map.Entry<Serializable, FolderPermission> entry : this.permissions.entrySet()) {
                 switch (entry.getValue().getClass().getSimpleName()) {
                     case "FolderAdminPermission":
-                        folderAdminPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject)entry.getKey()).toD2D()));
+                        folderAdminPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject) entry.getKey()).toD2D()));
                         break;
                     case "FolderOwnerPermission":
-                        folderOwnerPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject)entry.getKey()).toD2D()));
+                        folderOwnerPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject) entry.getKey()).toD2D()));
                         break;
                     case "FolderReadWritePermission":
-                        folderReadWritePermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject)entry.getKey()).toD2D()));
+                        folderReadWritePermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject) entry.getKey()).toD2D()));
                         break;
                     case "FolderReadPermission":
-                        folderReadPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject)entry.getKey()).toD2D()));
+                        folderReadPermissionInfoBuilder.addSubjects(com.google.protobuf.Any.pack(((D2DObject) entry.getKey()).toD2D()));
                         break;
                 }
             }
@@ -187,4 +170,5 @@ public class PermissionListReply extends Message implements D2DObject {
         }
         return builder.build();
     }
+
 }

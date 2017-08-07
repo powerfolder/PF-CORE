@@ -1,65 +1,46 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
-import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.d2d.D2DRequestMessage;
 import de.dal33t.powerfolder.protocol.CertificateSigningRequestProto;
 
-public class CertificateSigningRequest extends Message implements D2DObject {
-    private static final long serialVersionUID = 100L;
+public class CertificateSigningRequest extends D2DRequestMessage {
 
-    private String requestCode;
     private String certificateSigningRequest;
 
-    /**
-     * Serialization constructor
-     */
     public CertificateSigningRequest() {
     }
 
-    public String getRequestCode() {
-        return requestCode;
-    }
-
-    public void setRequestCode(String requestCode) {
-        this.requestCode = requestCode;
+    /**
+     * Init from D2D message
+     *
+     * @param message Message to use data from
+     **/
+    public CertificateSigningRequest(AbstractMessage message) {
+        initFromD2D(message);
     }
 
     public String getCertificateSigningRequest() {
         return certificateSigningRequest;
     }
 
-    public void setCertificateSigningRequest(String certificateSigningRequest) {
-        this.certificateSigningRequest = certificateSigningRequest;
-    }
-
     /**
-     * Init from D2D message
-     * @param mesg Message to use data from
-     **/
-    public CertificateSigningRequest(AbstractMessage mesg) {
-        initFromD2D(mesg);
-    }
-
-    /**
-     * initFromD2DMessage
      * Init from D2D message
      *
-     * @param mesg Message to use data from
-     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     * @param message Message to use data from
      **/
     @Override
-    public void initFromD2D(AbstractMessage mesg) {
-        if(mesg instanceof CertificateSigningRequestProto.CertificateSigningRequest) {
-            CertificateSigningRequestProto.CertificateSigningRequest proto = (CertificateSigningRequestProto.CertificateSigningRequest)mesg;
+    public void initFromD2D(AbstractMessage message) {
+        if (message instanceof CertificateSigningRequestProto.CertificateSigningRequest) {
+            CertificateSigningRequestProto.CertificateSigningRequest proto = (CertificateSigningRequestProto.CertificateSigningRequest) message;
             this.requestCode = proto.getRequestCode();
-            this.setCertificateSigningRequest(proto.getCertificateSigningRequest());
+            this.certificateSigningRequest = proto.getCertificateSigningRequest();
         }
     }
-    
-    /** toD2D
+
+    /**
      * Convert to D2D message
-     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     *
      * @return Converted D2D message
      **/
     @Override
@@ -70,4 +51,10 @@ public class CertificateSigningRequest extends Message implements D2DObject {
         if (this.certificateSigningRequest != null) builder.setCertificateSigningRequest(this.certificateSigningRequest);
         return builder.build();
     }
+
+    @Override
+    public boolean isValid() {
+        return super.isValid() && this.certificateSigningRequest != null;
+    }
+
 }

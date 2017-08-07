@@ -21,25 +21,22 @@
 
 package de.dal33t.powerfolder.d2d;
 
-import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.message.Message;
 
-public interface
-D2DObject {
+public abstract class D2DRequestMessage extends Message implements D2DObject {
 
-    /**
-     * initFromD2D
-     * Init from D2D message
-     *
-     * @param mesg {@link Message} to use data from
-     **/
-    public void initFromD2D(AbstractMessage mesg);
+    protected String requestCode;
 
-    /**
-     * toD2DMessage
-     * Convert to D2D message
-     *
-     * @return Converted {@link AbstractMessage D2D message}
-     **/
-    public AbstractMessage toD2D();
+    public String getRequestCode() {
+        return requestCode;
+    }
+
+    public void setRequestCode(String requestCode) {
+        this.requestCode = requestCode;
+    }
+
+    public boolean isValid() {
+        return this.requestCode != null;
+    }
 
 }
