@@ -19,14 +19,10 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Collection;
-
 import de.dal33t.powerfolder.light.FolderInfo;
+
+import java.io.*;
+import java.util.Collection;
 
 /**
  * EXT version of: List of available folders
@@ -34,18 +30,17 @@ import de.dal33t.powerfolder.light.FolderInfo;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
-@Deprecated
-public class FolderListExt extends FolderList implements Externalizable {
-    private static final long serialVersionUID = -3861676003458215175L;
+public class FolderListExt2 extends FolderList implements Externalizable {
+    private static final long serialVersionUID = -3622760757971389419L;
     private static final long extVersionUID = 100L;
 
-    public FolderListExt() {
+    public FolderListExt2() {
         super();
     }
 
-    public FolderListExt(Collection<FolderInfo> allFolders, String remoteMagicId)
+    public FolderListExt2(Collection<FolderInfo> folderInfos)
     {
-        super(allFolders, remoteMagicId);
+        super(folderInfos);
     }
 
     public void readExternal(ObjectInput in) throws IOException,
@@ -60,10 +55,10 @@ public class FolderListExt extends FolderList implements Externalizable {
         joinedMetaFolders = in.readBoolean();
         if (in.readBoolean()) {
             int len = in.readInt();
-            secretFolders = new FolderInfo[len];
-            for (int i = 0; i < secretFolders.length; i++) {
+            folders = new FolderInfo[len];
+            for (int i = 0; i < folders.length; i++) {
                 // Dummy objects. Name must never be used.
-                secretFolders[i] = new FolderInfo(null, in.readUTF());
+                folders[i] = new FolderInfo(null, in.readUTF());
             }
         }
     }
@@ -71,10 +66,10 @@ public class FolderListExt extends FolderList implements Externalizable {
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeLong(extVersionUID);
         out.writeBoolean(joinedMetaFolders);
-        out.writeBoolean(secretFolders != null);
-        if (secretFolders != null) {
-            out.writeInt(secretFolders.length);
-            for (FolderInfo foInfo : secretFolders) {
+        out.writeBoolean(folders != null);
+        if (folders != null) {
+            out.writeInt(folders.length);
+            for (FolderInfo foInfo : folders) {
                 out.writeUTF(foInfo.id);
             }
         }

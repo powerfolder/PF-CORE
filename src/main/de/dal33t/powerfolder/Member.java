@@ -823,12 +823,12 @@ public class Member extends PFComponent implements Comparable<Member> {
             Collection<FolderInfo> folders2node = getFilteredFolderList(
                 remoteFolderList, identity.isRequestFullFolderlist());
             FolderList folderList;
-            if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
-                folderList = new FolderListExt(folders2node,
-                    peer.getRemoteMagicId());
+            if (getProtocolVersion() < Identity.PROTOCOL_VERSION_106) {
+                folderList = new FolderList(folders2node, peer.getRemoteMagicId());
+            } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+                folderList = new FolderListExt(folders2node, peer.getRemoteMagicId());
             } else {
-                folderList = new FolderList(folders2node,
-                    peer.getRemoteMagicId());
+                folderList = new FolderListExt2(folders2node);
             }
             if (isFiner()) {
                 logFiner("Sending CH " + folderList);
@@ -1356,8 +1356,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // #2569
                 if (isWarning()
                     && !isServer()
-                    && fList.secretFolders != null
-                    && fList.secretFolders.length > 100
+                    && ((fList.folders != null && fList.folders.length > 100) || (fList.secretFolders != null && fList.secretFolders.length > 100))
                     && getController().getFolderRepository().getFoldersCount() < 100)
                 {
                     logWarning("Received large " + fList);
@@ -1933,12 +1932,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                 Collection<FolderInfo> folders2node = getFilteredFolderList(
                         fList, fullList);
                 FolderList myFolderList;
-                if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
-                    myFolderList = new FolderListExt(
-                            folders2node, remoteMagicId);
+                if (getProtocolVersion() < Identity.PROTOCOL_VERSION_106) {
+                    myFolderList = new FolderList(folders2node, remoteMagicId);
+                } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+                    myFolderList = new FolderListExt(folders2node, remoteMagicId);
                 } else {
-                    myFolderList = new FolderList(folders2node,
-                            remoteMagicId);
+                    myFolderList = new FolderListExt2(folders2node);
                 }
                 if (isFine()) {
                     logFine("Sending HM " + myFolderList);
@@ -2078,10 +2077,12 @@ public class Member extends PFComponent implements Comparable<Member> {
             Collection<FolderInfo> folders2node = getFilteredFolderList(
                 folderList, fullList);
             FolderList myFolderList;
-            if (getProtocolVersion() >= Identity.PROTOCOL_VERSION_106) {
+            if (getProtocolVersion() < Identity.PROTOCOL_VERSION_106) {
+                myFolderList = new FolderList(folders2node, remoteMagicId);
+            } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
             } else {
-                myFolderList = new FolderList(folders2node, remoteMagicId);
+                myFolderList = new FolderListExt2(folders2node);
             }
             if (isFiner()) {
                 logFiner("Sending SFM " + myFolderList);
@@ -2114,11 +2115,19 @@ public class Member extends PFComponent implements Comparable<Member> {
             && thisPeer != null
             && StringUtils.isNotBlank(thisPeer.getMyMagicId()))
         {
-            String magicId = thisPeer.getMyMagicId();
             folders2node = new LinkedList<FolderInfo>();
-            for (FolderInfo folderInfo : allFolders) {
-                if (remoteFolderList.contains(folderInfo, magicId)) {
-                    folders2node.add(folderInfo);
+            if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+                String magicId = thisPeer.getMyMagicId();
+                for (FolderInfo folderInfo : allFolders) {
+                    if (remoteFolderList.contains(folderInfo, magicId)) {
+                        folders2node.add(folderInfo);
+                    }
+                }
+            } else {
+                for (FolderInfo folderInfo : allFolders) {
+                    if (remoteFolderList.contains(folderInfo)) {
+                        folders2node.add(folderInfo);
+                    }
                 }
             }
             if (isFiner() && allFolders.size() != folders2node.size()) {
@@ -2135,49 +2144,76 @@ public class Member extends PFComponent implements Comparable<Member> {
      *
      * @throws ConnectionException
      */
-    private void joinToLocalFolders(FolderList folderList,
-        ConnectionHandler fromPeer)
-    {
-        // logWarning("joinToLocalFolders: " + folderList);
+    private void joinToLocalFolders(FolderList folderList, ConnectionHandler fromPeer) {
         folderJoinLock.lock();
         try {
             FolderRepository repo = getController().getFolderRepository();
             Set<FolderInfo> joinedFolders = new HashSet<FolderInfo>();
             Collection<Folder> localFolders = repo.getFolders();
-
-            String myMagicId = fromPeer != null
-                ? fromPeer.getMyMagicId()
-                : null;
             if (fromPeer == null) {
                 logWarning("Unable to join to local folders. peer is null/disconnected");
                 return;
             }
-            if (StringUtils.isBlank(myMagicId)) {
-                logSevere("Unable to join to local folders. Own magic id of peer is blank: "
-                    + peer);
-                return;
-            }
-
-            // Process secret folders now
-            if (folderList.secretFolders != null
-                && folderList.secretFolders.length > 0)
-            {
-                // Step 1: Calculate secure folder ids for local secret folders
-                Map<String, Folder> localSecretFolders = new HashMap<String, Folder>();
-                for (Folder folder : localFolders) {
-                    // Calculate id with my magic id
-                    String secureId = folder.getInfo().calculateSecureId(
-                        myMagicId);
-                    // Add to local secret folder list
-                    localSecretFolders.put(secureId, folder);
+            // Use secret folders only in old clients with protocol version below 112
+            if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+                String myMagicId = fromPeer.getMyMagicId();
+                if (StringUtils.isBlank(myMagicId)) {
+                    logSevere("Unable to join to local folders. Own magic id of peer is blank: " + peer);
+                    return;
                 }
-
-                // Step 2: Check if remote side has joined one of our secret
-                // folders
-                for (int i = 0; i < folderList.secretFolders.length; i++) {
-                    FolderInfo secretFolder = folderList.secretFolders[i];
-                    if (localSecretFolders.containsKey(secretFolder.id)) {
-                        Folder folder = localSecretFolders.get(secretFolder.id);
+                // Process secret folders now
+                if (folderList.secretFolders != null && folderList.secretFolders.length > 0) {
+                    // Step 1: Calculate secure folder ids for local secret folders
+                    Map<String, Folder> localSecretFolders = new HashMap<String, Folder>();
+                    for (Folder folder : localFolders) {
+                        // Calculate id with my magic id
+                        String secureId = folder.getInfo().calculateSecureId(myMagicId);
+                        // Add to local secret folder list
+                        localSecretFolders.put(secureId, folder);
+                    }
+                    // Step 2: Check if remote side has joined one of our secret folders
+                    for (FolderInfo secretFolder : folderList.secretFolders) {
+                        if (localSecretFolders.containsKey(secretFolder.id)) {
+                            Folder folder = localSecretFolders.get(secretFolder.id);
+                            // Join him into our folder if possible.
+                            if (folder.join(this)) {
+                                if (isFiner()) {
+                                    logFiner("Joined " + folder);
+                                }
+                                joinedFolders.add(folder.getInfo());
+                                if (folderList.joinedMetaFolders) {
+                                    Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
+                                    if (metaFolder != null) {
+                                        if (metaFolder.join(this)) {
+                                            joinedFolders.add(metaFolder.getInfo());
+                                            if (isFiner()) {
+                                                logFiner("Joined meta folder: " + metaFolder);
+                                            }
+                                        } else {
+                                            logFine("Unable to join meta folder of " + folder);
+                                        }
+                                    } else {
+                                        logFine("Unable to join meta folder. Not found " + folder);
+                                    }
+                                }
+                            } else {
+                                if (isFine()) {
+                                    logFine(this + " did not join into: " + folder);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Build lookup structure for folders
+                Map<String, Folder> localFoldersMap = new HashMap<>();
+                for (Folder folder : localFolders) {
+                    localFoldersMap.put(folder.getId(), folder);
+                }
+                // Check if remote side has joined one of our folders
+                for (FolderInfo folderInfo : folderList.folders) {
+                    if (localFoldersMap.containsKey(folderInfo.id)) {
+                        Folder folder = localFoldersMap.get(folderInfo.id);
                         // Join him into our folder if possible.
                         if (folder.join(this)) {
                             if (isFiner()) {
@@ -2185,23 +2221,18 @@ public class Member extends PFComponent implements Comparable<Member> {
                             }
                             joinedFolders.add(folder.getInfo());
                             if (folderList.joinedMetaFolders) {
-                                Folder metaFolder = repo
-                                    .getMetaFolderForParent(folder.getInfo());
+                                Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
                                 if (metaFolder != null) {
                                     if (metaFolder.join(this)) {
                                         joinedFolders.add(metaFolder.getInfo());
                                         if (isFiner()) {
-                                            logFiner("Joined meta folder: "
-                                                + metaFolder);
-
+                                            logFiner("Joined meta folder: " + metaFolder);
                                         }
                                     } else {
-                                        logFine("Unable to join meta folder of "
-                                            + folder);
+                                        logFine("Unable to join meta folder of " + folder);
                                     }
                                 } else {
-                                    logFine("Unable to join meta folder. Not found "
-                                        + folder);
+                                    logFine("Unable to join meta folder. Not found " + folder);
                                 }
                             }
                         } else {
@@ -2212,7 +2243,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                     }
                 }
             }
-
             // ok now remove member from no longer joined folders
             for (Folder folder : repo.getFolders(true)) {
                 if (!joinedFolders.contains(folder.getInfo())) {
@@ -2220,11 +2250,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                     folder.remove(this);
                 }
             }
-
             if (!joinedFolders.isEmpty()) {
                 if (isFine()) {
-                    logFine(getNick() + " joined " + joinedFolders.size()
-                        + " folder(s)");
+                    logFine(getNick() + " joined " + joinedFolders.size() + " folder(s)");
                 }
                 if (!isFriend() && !server) {
                     getController().makeFriendship(getInfo());
@@ -2317,7 +2345,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             logWarning("Node disconnected while getting folders");
             return Collections.emptyList();
         }
-        String magicId = thisPeer.getMyMagicId();
         // TODO Think about a better way
         FolderList fList = getLastFolderList();
         if (fList == null) {
@@ -2337,9 +2364,15 @@ public class Member extends PFComponent implements Comparable<Member> {
                     foInfo = parentFolder.getInfo();
                 }
             }
-
-            if (fList.contains(foInfo, magicId)) {
-                requestedFolders.add(folder);
+            if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+                String magicId = thisPeer.getMyMagicId();
+                if (fList.contains(foInfo, magicId)) {
+                    requestedFolders.add(folder);
+                }
+            } else {
+                if (fList.contains(foInfo)) {
+                    requestedFolders.add(folder);
+                }
             }
         }
         return requestedFolders;

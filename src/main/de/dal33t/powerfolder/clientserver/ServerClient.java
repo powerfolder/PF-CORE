@@ -2218,7 +2218,11 @@ public class ServerClient extends PFComponent {
         FolderList fList = server.getLastFolderList();
         ConnectionHandler conHan = server.getPeer();
         if (conHan != null && fList != null) {
-            folderInCloud = fList.contains(foInfo, conHan.getMyMagicId());
+            if (server.getPeer().getMember().getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+                folderInCloud = fList.contains(foInfo, conHan.getMyMagicId());
+            } else {
+                folderInCloud = fList.contains(foInfo);
+            }
         }
         // TODO: #2435
         return folderInCloud;

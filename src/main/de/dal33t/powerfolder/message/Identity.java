@@ -129,9 +129,10 @@ public class Identity extends Message
     public static final int PROTOCOL_VERSION_109 = 109;
     public static final int PROTOCOL_VERSION_110 = 110;
     public static final int PROTOCOL_VERSION_111 = 111;
+    public static final int PROTOCOL_VERSION_112 = 112;
 
     // Never make this static
-    private int protocolVersion = PROTOCOL_VERSION_111;
+    private int protocolVersion = PROTOCOL_VERSION_112;
 
     private boolean requestFullFolderlist;
 
@@ -287,45 +288,38 @@ public class Identity extends Message
         return "Identity: " + member;
     }
 
-    /** initFromD2DMessage
+    /**
      * Init from D2D message
+     *
+     * @param message Message to use data from
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
      **/
-
     @Override
-    public void initFromD2D(AbstractMessage mesg) {
-      if(mesg instanceof IdentityProto.Identity) {
-          IdentityProto.Identity proto = (IdentityProto.Identity)mesg;
-
-          this.member                = new MemberInfo(proto.getNodeInfo());
-          this.magicId               = proto.getMagicId();
-          this.protocolVersion       = proto.getProtocolVersion();
-          this.requestFullFolderlist = proto.getRequestFullFolderlist();
-          this.configurationURL      = proto.getConfigurationUrl();
+    public void initFromD2D(AbstractMessage message) {
+        if (message instanceof IdentityProto.Identity) {
+            IdentityProto.Identity proto = (IdentityProto.Identity) message;
+            this.member = new MemberInfo(proto.getNodeInfo());
+            this.protocolVersion = proto.getProtocolVersion();
+            this.requestFullFolderlist = proto.getRequestFullFolderlist();
+            this.configurationURL = proto.getConfigurationUrl();
         }
     }
 
-    /** toD2D
+    /**
      * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
+     *
      * @return Converted D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
      **/
-
     @Override
     public AbstractMessage toD2D() {
-      IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
-
-      builder.setClazzName(this.getClass().getSimpleName());
-      builder.setNodeInfo((NodeInfoProto.NodeInfo)this.member.toD2D());
-      builder.setMagicId(this.magicId);
-      builder.setProtocolVersion(this.protocolVersion);
-      builder.setRequestFullFolderlist(this.requestFullFolderlist);
-      
-      if(null != this.configurationURL) {
-          builder.setConfigurationUrl(this.configurationURL);
-      }
-
-      return builder.build();
+        IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
+        builder.setClazzName(this.getClass().getSimpleName());
+        if (this.member != null) builder.setNodeInfo((NodeInfoProto.NodeInfo) this.member.toD2D());
+        builder.setProtocolVersion(this.protocolVersion);
+        builder.setRequestFullFolderlist(this.requestFullFolderlist);
+        if (this.configurationURL != null) builder.setConfigurationUrl(this.configurationURL);
+        return builder.build();
     }
+
 }

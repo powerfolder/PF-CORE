@@ -32,12 +32,12 @@ public class FolderListTest extends TestCase {
     public void testStoreLoad() {
         FolderList list = new FolderList();
         list.joinedMetaFolders = true;
-        list.secretFolders = new FolderInfo[10];
+        list.folders = new FolderInfo[10];
 
-        for (int i = 0; i < list.secretFolders.length; i++) {
+        for (int i = 0; i < list.folders.length; i++) {
             FolderInfo foInfo = new FolderInfo("Na" + IdGenerator.makeId(),
                 IdGenerator.makeFolderId());
-            list.secretFolders[i] = foInfo;
+            list.folders[i] = foInfo;
         }
 
         Path file = TestHelper.getTestDir().resolve("subdir/FolderList");

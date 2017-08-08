@@ -19,21 +19,7 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.d2d.D2DObject;
@@ -41,13 +27,16 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.FolderListProto;
-import de.dal33t.powerfolder.util.ByteSerializer;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StreamUtils;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * List of available folders
@@ -61,10 +50,11 @@ public class FolderList extends Message
     private static final long serialVersionUID = 101L;
     private static Logger LOG = Logger.getLogger(FolderList.class.getName());
 
-    /** List of public folders. LEFT for backward compatibility */
+    /** List of public folders. */
     public FolderInfo[] folders = new FolderInfo[0];
 
     /** Secret folders, Folder IDs are encrypted with magic Id */
+    @Deprecated
     public FolderInfo[] secretFolders;
 
     /**
@@ -77,6 +67,12 @@ public class FolderList extends Message
         // Serialisation constructor
     }
 
+    public FolderList(Collection<FolderInfo> folderInfos) {
+        this.folders = folderInfos.toArray(new FolderInfo[folderInfos.size()]);
+        this.secretFolders = new FolderInfo[0];
+        this.joinedMetaFolders = true;
+    }
+
     /**
      * Constructor which splits up public and secret folder into own array.
      * Folder Ids of secret folders will be encrypted with magic Id sent by
@@ -86,6 +82,7 @@ public class FolderList extends Message
      * @param remoteMagicId
      *            the magic id which was sent by the remote side
      */
+    @Deprecated
     public FolderList(Collection<FolderInfo> allFolders, String remoteMagicId) {
         Reject.ifBlank(remoteMagicId, "Remote magic id is blank");
         // Split folderlist into secret and public list
@@ -112,13 +109,22 @@ public class FolderList extends Message
         if (peer == null) {
             return false;
         }
-        String magicId = peer.getMyMagicId();
-        if (StringUtils.isBlank(magicId)) {
-            return false;
+        if (peer.getMember().getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+            String magicId = peer.getMyMagicId();
+            if (StringUtils.isBlank(magicId)) {
+                return false;
+            }
+            return contains(foInfo, magicId);
+        } else {
+            return contains(foInfo);
         }
-        return contains(foInfo, magicId);
     }
 
+    public boolean contains(FolderInfo folderInfo) {
+        return Arrays.stream(this.folders).anyMatch(f -> f.id.equals(folderInfo.id));
+    }
+
+    @Deprecated
     public boolean contains(FolderInfo foInfo, String magicId) {
         String secureId = foInfo.calculateSecureId(magicId);
         for (FolderInfo folder : secretFolders) {
@@ -146,7 +152,7 @@ public class FolderList extends Message
      * @param file
      *            the file to store this {@link FolderList} in.
      * @return true if this {@link FolderList} could be stored to that file.
-     * @see #load(File)
+     * @see #load(Path)
      * @deprecated #2569
      */
     @Deprecated
@@ -180,7 +186,7 @@ public class FolderList extends Message
     /**
      * @param file
      *            the file to load a {@link FolderList} previously stored with
-     *            {@link #store(File)} from
+     *            {@link #store(Path)} from
      * @return the loaded {@link FolderList} or null if failed or not existing.
      * @deprecated #2569
      */
@@ -224,6 +230,7 @@ public class FolderList extends Message
         final int prime = 31;
         int result = 1;
         result = prime * result + (joinedMetaFolders ? 1231 : 1237);
+        result = prime * result + Arrays.hashCode(folders);
         result = prime * result + Arrays.hashCode(secretFolders);
         return result;
     }
@@ -239,6 +246,8 @@ public class FolderList extends Message
         FolderList other = (FolderList) obj;
         if (joinedMetaFolders != other.joinedMetaFolders)
             return false;
+        if (!Arrays.equals(folders, other.folders))
+            return false;
         if (!Arrays.equals(secretFolders, other.secretFolders))
             return false;
         return true;
@@ -246,60 +255,45 @@ public class FolderList extends Message
 
     @Override
     public String toString() {
-        return "FolderList: " + secretFolders.length + " folders";
+        return "FolderList: " + folders.length + secretFolders.length + " folders";
     }
 
-    /** initFromD2DMessage
+    /**
      * Init from D2D message
+     *
+     * @param message Message to use data from
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
      **/
-
     @Override
     public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof FolderListProto.FolderList)
-        {
-          FolderListProto.FolderList proto = (FolderListProto.FolderList)mesg;
-
-          /* Convert list back to array */
-          int i = 0;
-
-          this.secretFolders = new FolderInfo[proto.getFolderInfosCount()];
-
-          for(FolderInfoProto.FolderInfo finfo : proto.getFolderInfosList())
-            {
-              this.secretFolders[i++] = new FolderInfo(finfo);
+    initFromD2D(AbstractMessage message) {
+        if (message instanceof FolderListProto.FolderList) {
+            FolderListProto.FolderList proto = (FolderListProto.FolderList) message;
+            int i = 0;
+            this.folders = new FolderInfo[proto.getFolderInfosCount()];
+            for (FolderInfoProto.FolderInfo folderInfo : proto.getFolderInfosList()) {
+                this.folders[i++] = new FolderInfo(folderInfo);
             }
-
-          this.joinedMetaFolders = proto.getJoinedMetaFolders();
-
+            this.joinedMetaFolders = proto.getJoinedMetaFolders();
         }
     }
 
-    /** toD2D
+    /**
      * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
+     *
      * @return Converted D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
      **/
-
     @Override
     public AbstractMessage
-    toD2D()
-    {
-      FolderListProto.FolderList.Builder builder = FolderListProto.FolderList.newBuilder();
-
-      builder.setClazzName("FolderList");
-
-      /* Convert array to list */
-      for(FolderInfo finfo : this.secretFolders)
-        {
-          builder.addFolderInfos((FolderInfoProto.FolderInfo)finfo.toD2D());
+    toD2D() {
+        FolderListProto.FolderList.Builder builder = FolderListProto.FolderList.newBuilder();
+        builder.setClazzName("FolderList");
+        for (FolderInfo folderInfo : this.folders) {
+            builder.addFolderInfos((FolderInfoProto.FolderInfo) folderInfo.toD2D());
         }
-
-      builder.setJoinedMetaFolders(this.joinedMetaFolders);
-
-      return builder.build();
+        builder.setJoinedMetaFolders(this.joinedMetaFolders);
+        return builder.build();
     }
+
 }
