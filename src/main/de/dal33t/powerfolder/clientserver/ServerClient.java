@@ -2056,13 +2056,21 @@ public class ServerClient extends PFComponent {
             }
             // Download skin version
             url = new URL(baseUrl + "version" + skinQuery);
-            PathUtils.copyFromStreamToFile(url.openStream(), versionPath);
+            try {
+                PathUtils.copyFromStreamToFile(url.openStream(), versionPath);
+            } catch (IOException e) {
+                logWarning("Cannot read remote skin version:" + e, e);
+                return false;
+            }
             // Load remote skin version
             try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
                 if ((remoteSkinVersion = bufferedReader.readLine()) == null) {
                     logWarning("Cannot read remote skin version");
                     return false;
                 }
+            } catch (IOException e) {
+                logWarning("Cannot read remote skin version:" + e, e);
+                return false;
             }
             // If local and remote skin have the same version, skip the rest
             if (localSkinVersion.equals(remoteSkinVersion)) {
