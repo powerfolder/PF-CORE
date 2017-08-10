@@ -142,6 +142,26 @@ public class Invitation extends FolderRelatedMessage
         this.folder = permission.getFolder();
     }
 
+    /**
+     * Copy Constructor
+     *
+     * @param invitation The invitation to be copied
+     */
+    public Invitation(Invitation invitation) {
+        oid = IdGenerator.makeId();
+        this.folder = invitation.folder;
+        this.invitationText = invitation.invitationText;
+        this.pathtype = invitation.pathtype;
+        this.permission = invitation.permission;
+        this.recipient = invitation.recipient;
+        this.relative = invitation.relative;
+        this.sender = invitation.sender;
+        this.senderDevice = invitation.senderDevice;
+        this.server = invitation.server;
+        this.suggestedLocalBasePath = invitation.suggestedLocalBasePath;
+        this.suggestedSyncProfileConfig = invitation.suggestedSyncProfileConfig;
+    }
+
     private Invitation() {
         // NOP - Hibernate
     }
