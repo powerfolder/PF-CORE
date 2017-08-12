@@ -20,6 +20,7 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -424,8 +425,8 @@ public class Constants {
     /** Cleanup immediately, 1, 10, 30, never days. */
     public static final int[] CLEANUP_VALUES = {0, 1, 10, 30, Integer.MAX_VALUE};
 
-    public static final int DEFAULT_NORMAL_DOCKED_WIDTH = 1100;
-    public static final int DEFAULT_NORMAL_HEIGHT = 600;
+    public static final int DEFAULT_NORMAL_DOCKED_WIDTH = (int) 1100f * Toolkit.getDefaultToolkit().getScreenResolution() / 96;
+    public static final int DEFAULT_NORMAL_HEIGHT = (int) 600f * Toolkit.getDefaultToolkit().getScreenResolution() / 96;
 
     public static final String LINK_EXTENSION = ".lnk";
 
