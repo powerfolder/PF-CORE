@@ -363,7 +363,7 @@ public class PFWizard extends PFUIComponent {
     private void buildUI() {
         // Build the wizard
         dialog = new JDialog((Dialog)null); // Wizard
-        dialog.setResizable(false);
+        dialog.setResizable(true);
         dialog.setTitle(title);
         dialog.setModal(true);
         dialog.setIconImage(Icons.getImageById(Icons.SMALL_LOGO));
