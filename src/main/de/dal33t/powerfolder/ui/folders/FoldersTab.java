@@ -123,23 +123,22 @@ public class FoldersTab extends PFUIComponent {
     private void buildUI() {
         // Build ui
         FormLayout layout = new FormLayout("pref:grow",
-            "3dlu, pref, 3dlu, pref, 3dlu, fill:0:grow");
+            "pref, 3dlu, fill:0:grow");
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
-        JPanel toolbar = createToolBar();
-        builder.add(toolbar, cc.xy(1, 2));
-        builder.addSeparator(null, cc.xy(1, 4));
+        int row = 1;
+        builder.addSeparator(null, cc.xy(1, row));
         scrollPane = new JScrollPane(foldersList.getUIComponent());
         scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         foldersList.setScroller(scrollPane);
         UIUtil.removeBorder(scrollPane);
 
         // emptyLabel and scrollPane occupy the same slot.
+        row += 2;
         buildEmptyPanel();
-        builder.add(emptyPanelOuter, cc.xywh(1, 6, 1, 1));
-        builder.add(scrollPane, cc.xywh(1, 6, 1, 1));
-        int row = 6;
+        builder.add(emptyPanelOuter, cc.xywh(1,  row, 1, 1));
+        builder.add(scrollPane, cc.xywh(1,  row, 1, 1));
 
         if (!PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.appendRow("3dlu");
@@ -264,30 +263,6 @@ public class FoldersTab extends PFUIComponent {
         if (scrollPane != null) {
             scrollPane.setVisible(!foldersList.isEmpty());
         }
-    }
-
-    /**
-     * @return the toolbar
-     */
-    private JPanel createToolBar() {
-        newFolderLink = new ActionLabel(getController(), getApplicationModel()
-            .getActionModel().getNewFolderAction());
-        getController().getOSClient().addListener(
-            new MyServerClientListener(newFolderLink));
-        newFolderLink.convertToBigLabel();
-        newFolderLink.setEnabled(getController().getOSClient()
-            .isAllowedToCreateFolders());
-        FormLayout layout = new FormLayout("3dlu, pref, 3dlu:grow", "pref");
-
-        PanelBuilder builder = new PanelBuilder(layout);
-        CellConstraints cc = new CellConstraints();
-
-        if (ConfigurationEntry.SHOW_CREATE_FOLDER
-            .getValueBoolean(getController()))
-        {
-            builder.add(newFolderLink.getUIComponent(), cc.xy(2, 1));
-        }
-        return builder.getPanel();
     }
 
     /**

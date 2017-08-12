@@ -19,9 +19,13 @@
  */
 package de.dal33t.powerfolder.ui.action;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.clientserver.ServerClientEvent;
+import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
+import javax.swing.*;
 
 /**
  * Holder of all simple singleton actions.
@@ -40,6 +44,17 @@ public class ActionModel extends PFComponent {
         if (newFolderAction == null) {
             newFolderAction = new NewFolderAction(getController());
             newFolderAction.allowWith(FolderCreatePermission.INSTANCE);
+            newFolderAction.setEnabled(getController().getOSClient()
+                    .isAllowedToCreateFolders());
+
+            getController().getOSClient().addListener(
+                    new MyServerClientListener(newFolderAction));
+
+            if (!ConfigurationEntry.SHOW_CREATE_FOLDER
+                    .getValueBoolean(getController()))
+            {
+                newFolderAction.setEnabled(false);
+            }
         }
         return newFolderAction;
     }
@@ -57,5 +72,42 @@ public class ActionModel extends PFComponent {
             findComputersAction = new FindComputersAction(getController());
         }
         return findComputersAction;
+    }
+
+    private class MyServerClientListener implements ServerClientListener {
+        private Action label;
+
+        MyServerClientListener(Action label) {
+            this.label = label;
+        }
+
+        public void accountUpdated(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                    .isAllowedToCreateFolders());
+        }
+
+        public void login(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                    .isAllowedToCreateFolders());
+        }
+
+        public void nodeServerStatusChanged(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                    .isAllowedToCreateFolders());
+        }
+
+        public void serverConnected(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                    .isAllowedToCreateFolders());
+        }
+
+        public void serverDisconnected(ServerClientEvent event) {
+            label.setEnabled(getController().getOSClient()
+                    .isAllowedToCreateFolders());
+        }
+
+        public boolean fireInEventDispatchThread() {
+            return true;
+        }
     }
 }

@@ -152,8 +152,7 @@ public class MainFrame extends PFUIComponent {
     private DelayedUpdater osStatusUpdater;
 
     // Right mini panel
-    private ActionLabel expandCollapseActionLabel;
-    private MyExpandCollapseAction expandCollapseAction;
+    private ActionLabel createFolderActionLabel;
     private ActionLabel openWebInterfaceActionLabel;
     private ActionLabel openFoldersBaseActionLabel;
     private ActionLabel pauseResumeActionLabel;
@@ -186,12 +185,7 @@ public class MainFrame extends PFUIComponent {
         configureUi();
         updateOnlineStorageDetails();
 
-        // Start COMPACT for basic users, and NORMAL for experts.
-        if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
-            frameMode = FrameMode.NORMAL;
-        } else {
-            frameMode = FrameMode.COMPACT;
-        }
+        frameMode = FrameMode.NORMAL;
         setFrameMode(frameMode, true);
     }
 
@@ -286,7 +280,7 @@ public class MainFrame extends PFUIComponent {
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6, "right, top"));
         }
-        builder.add(expandCollapseActionLabel.getUIComponent(), cc.xy(1, 7, "right, top"));
+        builder.add(createFolderActionLabel.getUIComponent(), cc.xy(1, 7, "right, top"));
 
         return builder.getPanel();
     }
@@ -519,9 +513,8 @@ public class MainFrame extends PFUIComponent {
             }
         });
 
-        expandCollapseAction = new MyExpandCollapseAction(getController());
-        expandCollapseActionLabel = new ActionLabel(getController(),
-            expandCollapseAction);
+        createFolderActionLabel = new ActionLabel(getController(),
+                getApplicationModel().getActionModel().getNewFolderAction());
         openWebInterfaceActionLabel = new ActionLabel(getController(),
             new MyOpenWebInterfaceAction(getController()));
         openFoldersBaseActionLabel = new ActionLabel(getController(),
@@ -1053,7 +1046,7 @@ public class MainFrame extends PFUIComponent {
     private void doPlusOperation() {
         if (frameMode == FrameMode.MAXIMIZED) {
             // To NORMAL mode.
-            setFrameMode(FrameMode.COMPACT);
+            setFrameMode(FrameMode.NORMAL);
             // } else if (frameMode == FrameMode.NORMAL) {
             // // To MAXIMIZED mode.
             // setFrameMode(FrameMode.MAXIMIZED);
@@ -1230,7 +1223,6 @@ public class MainFrame extends PFUIComponent {
     }
 
     private void setFrameMode(FrameMode frameMode, boolean init) {
-        expandCollapseAction.setShowExpand(frameMode == FrameMode.COMPACT);
         this.frameMode = frameMode;
         // PFC-2417:
         centralPanel.setVisible(true);
@@ -1415,29 +1407,6 @@ public class MainFrame extends PFUIComponent {
                     return client.getLoginURLWithCredentials();
                 }
             });
-        }
-    }
-
-    private class MyExpandCollapseAction extends BaseAction {
-
-        private MyExpandCollapseAction(Controller controller) {
-            super("action_expand_interface", controller);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (frameMode == FrameMode.MAXIMIZED || frameMode == FrameMode.NORMAL) {
-                setFrameMode(FrameMode.COMPACT);
-            } else {
-                setFrameMode(FrameMode.NORMAL);
-            }
-        }
-
-        public void setShowExpand(boolean expand) {
-            if (expand) {
-                configureFromActionId("action_expand_interface");
-            } else {
-                configureFromActionId("action_collapse_interface");
-            }
         }
     }
 
