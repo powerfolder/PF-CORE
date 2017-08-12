@@ -1,41 +1,23 @@
 package jwf;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.ui.util.CursorUtils;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 /**
  * This class controls a wizard.
@@ -50,16 +32,22 @@ import de.dal33t.powerfolder.util.os.OSUtil;
  */
 public class Wizard extends JPanel implements ActionListener {
 
+    // PFC-2931
+    private static final int SCALE_PERCENT = (int) ((100d * Toolkit.getDefaultToolkit().getScreenResolution()) / 96);
     // Wizard sizes
-    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(430,
-        355);
-    public static final Dimension WIZARD_TINY_MAC_WINDOW_SIZE = new Dimension(450,
-        355);
+    public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(
+            430 * SCALE_PERCENT / 100,
+            355 * SCALE_PERCENT / 100);
+    public static final Dimension WIZARD_TINY_MAC_WINDOW_SIZE = new Dimension(
+            450 * SCALE_PERCENT / 100,
+            355 * SCALE_PERCENT / 100);
 
     public static final Dimension WIZARD_BIG_WINDOW_SIZE = new Dimension(
-        650, 480);
-    public static final Dimension WIZARD_BIG_MAC_WINDOW_SIZE = new Dimension(750,
-        540);
+            650 * SCALE_PERCENT / 100,
+            480 * SCALE_PERCENT / 100);
+    public static final Dimension WIZARD_BIG_MAC_WINDOW_SIZE = new Dimension(
+            750 * SCALE_PERCENT / 100,
+            540 * SCALE_PERCENT / 100);
 
     public static final String BACK_I18N = "BACK_I18N";
     public static final String NEXT_I18N = "NEXT_I18N";
