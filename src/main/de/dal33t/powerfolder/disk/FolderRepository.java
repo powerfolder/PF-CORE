@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.FolderService;
+import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
@@ -2905,13 +2906,28 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (isIgnoredFolderDirectory(suggestedLocalBase)) {
                     continue;
                 }
+                UserDirectory userDir = null;
 
-                UserDirectory userDir = UserDirectories
-                    .getUserDirectories(getController()).get(folderName);
+                // PFS-2412:
+                if (!a.hasOwnerPermission(folderInfo)) {
+                    try {
+                        String ownerDisplayname = getController().getOSClient().getFolderService().getOwnerDisplayname(folderInfo);
+                        if (StringUtils.isNotBlank(ownerDisplayname)) {
+                            folderName += " (";
+                            folderName += PathUtils.removeInvalidFilenameChars(ownerDisplayname);
+                            folderName += ")";
+                        }
+                    } catch (RemoteCallException e) {
+                       log.warning("Unable to retrieve owner name of " + folderInfo.getName() + ". " + e);
+                        folderName += " (shared)";
+                    }
+                } else {
+                    // Allow to sync user directories only for folders user is owner of.
+                    userDir = UserDirectories.getUserDirectories(getController()).get(folderName);
+                }
 
                 if (userDir != null) {
-                    if (isIgnoredFolderDirectory(userDir
-                        .getDirectory()))
+                    if (isIgnoredFolderDirectory(userDir.getDirectory()))
                     {
                         continue;
                     }
