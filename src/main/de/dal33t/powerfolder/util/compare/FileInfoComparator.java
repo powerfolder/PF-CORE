@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.util.compare;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import de.dal33t.powerfolder.light.DirectoryInfo;
@@ -32,9 +33,10 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.15 $
  */
-public class FileInfoComparator extends Loggable implements
-    Comparator<FileInfo>
+public class FileInfoComparator implements
+    Comparator<FileInfo>, Serializable
 {
+    private static final long serialVersionUID = 100L;
 
     // All the available file comparators
     public static final int BY_FILE_TYPE = 0;
