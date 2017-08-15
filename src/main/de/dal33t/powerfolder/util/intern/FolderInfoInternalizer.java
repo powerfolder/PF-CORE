@@ -37,7 +37,10 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         if (folderInfo == null) {
             return null;
         }
-        FolderInfo internInstance = INSTANCES.get(folderInfo);
+        FolderInfo internInstance = null;
+        synchronized (INSTANCES) {
+            internInstance = INSTANCES.get(folderInfo);
+        }
         if (internInstance != null) {
             return internInstance;
         }
@@ -67,15 +70,18 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
             return null;
         }
 
-        FolderInfo oldInstance = INSTANCES.get(foInfo);
+        FolderInfo oldInstance = null;
+        synchronized (INSTANCES) {
+            oldInstance = INSTANCES.get(foInfo);
 
-        if (oldInstance != null
-            && oldInstance.getName().equals(foInfo.getName()))
-        {
-            return oldInstance;
+            if (oldInstance != null
+                    && oldInstance.getName().equals(foInfo.getName()))
+            {
+                return oldInstance;
+            }
+
+            INSTANCES.put(foInfo, foInfo);
         }
-
-        INSTANCES.put(foInfo, foInfo);
 
         return foInfo;
     }

@@ -47,7 +47,6 @@ import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileSystem;
 import java.nio.file.attribute.FileTime;
-import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.text.DateFormat;
@@ -304,7 +303,7 @@ public class Folder extends PFComponent {
             if (filename.equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR.substring(1)) ||
                     localBase.toString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
                 logSevere("Could not initialize CryptoFileSystem for folder " + fInfo.getName() +
-                        " with PHYSICAL localBase " + localBaseDir);
+                        " with physical localBase " + localBaseDir);
                 throw new IllegalStateException("localBase of encrypted folder " + fInfo.getName() + " invalid!");
             }
         }
@@ -960,7 +959,7 @@ public class Folder extends PFComponent {
                     return false;
                 }
 
-                // Set modified date of remote and POSIX file permissions if necessary
+                // Set modified date of remote
                 try {
                     Files.setLastModifiedTime(targetFile,
                         FileTime.fromMillis(fInfo.getModifiedDate().getTime()));

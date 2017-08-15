@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.util.os;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Base58;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -123,9 +124,14 @@ public class LinuxUtil {
 
         String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
                 serverClient.getPasswordClearText());
-
-        return mountWebDAV(serverClient.getUsername(), password,
-                webDAVURL, mountPath, false);
+        String username;
+        Account account = serverClient.getAccount();
+        if (account.isValid()) {
+            username = account.getUsername();
+        } else {
+            username = serverClient.getUsername();
+        }
+        return mountWebDAV(username, password, webDAVURL, mountPath, false);
     }
 
     /**

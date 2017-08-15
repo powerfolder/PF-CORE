@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -460,8 +461,16 @@ public class WinUtils extends Loggable {
             String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
                     serverClient.getPasswordClearText());
 
+            String username;
+            Account account = serverClient.getAccount();
+            if (account.isValid()) {
+                username = account.getUsername();
+            } else {
+                username = serverClient.getUsername();
+            }
+
             String cmd = "net use * \"" + webDAVURL + "\" /User:"
-                    + serverClient.getUsername() + " \""
+                    + username + " \""
                     + password + "\" /persistent:yes";
 
             Process process = Runtime.getRuntime().exec(cmd);

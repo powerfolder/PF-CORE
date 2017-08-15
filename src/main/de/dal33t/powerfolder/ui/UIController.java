@@ -1603,7 +1603,7 @@ public class UIController extends PFComponent {
                 folderCollection.size());
             for (Folder folder : folderCollection) {
                 if (folder.isTransferring()) {
-                    logWarning("Close warning on folder: " + folder);
+                    logFine("Close warning on folder: " + folder);
                     foldersToWarn.add(folder);
                 }
             }

@@ -3,6 +3,9 @@ package edu.kit.scc.dei.ecplean;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.util.List;
 import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,12 +106,12 @@ public abstract class ECPAuthenticatorBase extends Observable {
         try {
             String idpRequestString = documentToString(idpRequest);
             httpPost.setEntity(new StringEntity(idpRequestString));
-            httpResponse = client.execute(targetHost, httpPost, context);
+            httpResponse = getHttpClientForIDP().execute(targetHost, httpPost, context);
             
             if (httpResponse.getStatusLine()
                 .getStatusCode() != HttpStatus.SC_OK)
             {
-                throw new ECPUnauthorizedException("User not authorized");
+                throw new ECPUnauthorizedException("User not authorized: " + httpResponse);
             }
         } catch (IOException | TransformerException e) {
             LOG.warning("Could not submit PAOS request to IdP. " + e);
@@ -193,6 +196,53 @@ public abstract class ECPAuthenticatorBase extends Observable {
         }
         return client;
     }
+
+    /**
+     * The http client to use against hostname
+     * @return the http client to use
+     */
+    protected HttpClient getHttpClientForIDP() {
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+
+        HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+        clientBuilder.useSystemProperties();
+
+        String proxyHost = System.getProperty("https.proxyHost");
+        List<Proxy> proxies = ProxySelector.getDefault().select(authInfo
+                .getIdpEcpEndpoint());
+        if (proxies.isEmpty() || proxies.get(0).type() == Proxy.Type.DIRECT) {
+            proxyHost = null;
+        }
+
+        HttpHost idpHost = new HttpHost(authInfo
+                .getIdpEcpEndpoint().getHost(), authInfo.getIdpEcpEndpoint()
+                .getPort());
+        credentialsProvider.setCredentials(new AuthScope(idpHost),
+                new UsernamePasswordCredentials(authInfo.getUsername(),
+                        authInfo.getPassword()));
+
+        if (proxyHost != null && !proxyHost.trim().isEmpty()) {
+            int proxyPort = Integer.parseInt(System.getProperty("http.proxyPort"));
+
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+            clientBuilder.setProxy(proxy);
+
+            if (authInfo.getProxyUsername() != null
+                    && !authInfo.getProxyUsername().isEmpty()) {
+                Credentials credentials = new UsernamePasswordCredentials(
+                        authInfo.getProxyUsername(),
+                        authInfo.getProxyPassword());
+                AuthScope authScope = new AuthScope(proxy);
+                credentialsProvider.setCredentials(authScope, credentials);
+            }
+        } else {
+            clientBuilder.setProxy(null);
+        }
+
+        clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+        return clientBuilder.build();
+    }
+
 
     protected boolean isFine() {
         return LOG.isLoggable(Level.FINE);
