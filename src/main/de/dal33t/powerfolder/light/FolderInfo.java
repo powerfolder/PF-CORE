@@ -177,13 +177,13 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     // Security ****************************************************************
 
     /**
-     * Calculates the secure Id for this folder with magicid from remote
+     * Calculates the secure Id for this folder with magicid from remote. Deprecated and security is handled differently.
      *
      * @param magicId
      * @return the secure Id for this folder with magicid from remote
      */
+    @Deprecated
     public String calculateSecureId(String magicId) {
-        // Do the magic...
         try {
             byte[] mId = magicId.getBytes("UTF-8");
             byte[] fId = id.getBytes("UTF-8");
