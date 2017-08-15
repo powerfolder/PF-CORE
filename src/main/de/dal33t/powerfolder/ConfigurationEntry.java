@@ -1195,13 +1195,6 @@ public enum ConfigurationEntry {
     EVENT_API_URL_DELETED_FILE("event.api.file.deleted"),
 
     /**
-     * PFS-869: Prepare Filelink for public upload.
-     */
-    PREPARE_FILELINK_TITLE("web.prepare_filelink.title"),
-    PREPARE_FILELINK_DESCRIPTION("web.prepare_filelink.description"),
-    PREPARE_FILELINK_FOLDER_ID("web.prepare_filelink.folder_id"),
-
-    /**
      * PFS-2427: Check if the client runs on a WDNAS device. Therefore setting POSIX file
      * permissions after sync is mandatory.
      */
