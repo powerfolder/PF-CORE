@@ -972,12 +972,33 @@ public enum ConfigurationEntry {
     /**
      * The http proxy to use for HTTP tunneled connections
      */
-    HTTP_PROXY_HOST("http.proxy.host"),
+    HTTP_PROXY_HOST("http.proxy.host") {
+        @Override
+        public String getDefaultValue() {
+            String host = System.getProperty("https.proxyHost");
+            if (StringUtils.isBlank(host)) {
+                host = System.getProperty("http.proxyHost");
+            }
+            return host;
+        }
+    },
 
     /**
      * The http proxy port to use for HTTP tunneled connections
      */
-    HTTP_PROXY_PORT("http.proxy.port", 80),
+    HTTP_PROXY_PORT("http.proxy.port", 80) {
+        @Override
+        public String getDefaultValue() {
+            String port = System.getProperty("https.proxyPort");
+            if (StringUtils.isBlank(port)) {
+                port = System.getProperty("http.proxyPort");
+            }
+            if (StringUtils.isBlank(port)) {
+                port = "80";
+            }
+            return port;
+        }
+    },
 
     /**
      * The http proxy username to use for HTTP tunneled connections
@@ -989,11 +1010,16 @@ public enum ConfigurationEntry {
      */
     HTTP_PROXY_PASSWORD("http.proxy.password"),
 
-    /**
-     * PFC-1937
-     * Enable to use system proxy settings
-     */
-    HTTP_PROXY_SYSTEMPROXY("http.proxy.systemproxy", false),
+    HTTP_PROXY_NON_PROXY_HOSTS("http.proxy.nonproxyhosts") {
+        @Override
+        public String getDefaultValue() {
+            String hosts = System.getProperty("https.nonProxyHosts");
+            if (StringUtils.isBlank(hosts)) {
+                hosts = System.getProperty("http.nonProxyHosts");
+            }
+            return hosts;
+        }
+    },
 
     /**
      * Days until auto cleanup of uploads. Zero = cleanup on completion. NOTE -
@@ -1171,11 +1197,10 @@ public enum ConfigurationEntry {
     D2D_ENABLED("d2d.enabled", false),
 
     /**
-     * PFS-1994/PFS-2343: En-/Disable encrypted storage for this server.
+     * PFS-1994: En-/Disable encrypted storage for this server.
      */
     ENCRYPTED_STORAGE("encrypted_storage.enabled", false),
     ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", null),
-    ENCRYPTED_FOLDER_CHECK("encrypted_storage.check_folders", false),
 
     /**
      * PFS-2871: Port for client authentication over web requests.
