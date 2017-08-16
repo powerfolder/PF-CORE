@@ -19,23 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.dialog;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.SwingWorker;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -47,6 +34,12 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 
 /**
  * Panel displayed when wanting to remove a folder
@@ -323,10 +316,8 @@ public class FolderRemoveDialog extends BaseDialog {
 
         Folder f = foInfo.getFolder(getController());
         if (f != null) {
-            if (!removeCompletely) {
-                // PFS-2227
-                folderRepository.addToIgnoredFolders(f);
-            }
+            // PFS-2227 / PFC-3028
+            folderRepository.addToIgnoredFolders(f);
             folderRepository.removeFolder(f, deleteSystemSubFolder);
         }
 
