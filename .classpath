@@ -9,32 +9,29 @@
 	<classpathentry kind="src" path="src/shib"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-1.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/liferay-nativity-1.0.6.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/liferay-nativity-1.0.6.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="lib/looks-2.1.4.jar"/>
-	<classpathentry kind="lib" path="lib/jmock/cglib-nodep-2.1_3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmock/cglib-nodep-2.1_3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jmock/hamcrest-core-1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jmock/hamcrest-library-1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jmock/jmock-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/jmock/jmock-junit3-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/jmock/jmock-junit4-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/jmock/jmock-legacy-2.4.0.jar"/>
-    <classpathentry exported="true" kind="lib" path="lib/mockito/byte-buddy-1.6.12.jar"/>
-    <classpathentry exported="true" kind="lib" path="lib/byte-buddy-agent-1.6.12.jar"/>
-    <classpathentry exported="true" kind="lib" path="lib/mockito-core-2.7.19.jar"/>
-    <classpathentry exported="true" kind="lib" path="lib/objenesis-2.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/jcalendar.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmock/jmock-junit3-2.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmock/jmock-junit4-2.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jmock/jmock-legacy-2.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mockito/byte-buddy-1.6.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jcalendar.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/forms-1.2.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/validation-2.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/binding-2.0.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/synthetica.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/synthetica/syntheticaAddons.jar"/>
-	<classpathentry kind="lib" path="lib/ejb3-persistence.jar"/>
-	<classpathentry kind="lib" path="src/distribution/PowerFolderBasic"/>
-	<classpathentry kind="lib" path="lib/jfreechart/jcommon-1.0.16.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate3-stripped.jar"/>
-	<classpathentry kind="lib" path="lib/annotations-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-compress-1.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/ejb3-persistence.jar"/>
+	<classpathentry exported="true" kind="lib" path="src/distribution/PowerFolderBasic"/>
+	<classpathentry exported="true" kind="lib" path="lib/jfreechart/jcommon-1.0.16.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hibernate3-stripped.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/annotations-1.0.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-compress-1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/junit.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/json-20090306.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.3.2.jar"/>
@@ -47,18 +44,20 @@
 	<classpathentry exported="true" kind="lib" path="lib/bcpg-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcpkix-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-ext-jdk15on-152.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/powerfolder-protobuf-0.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/commons-lang3-3.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/dagger-2.6.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/gson-2.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/javax.inject-1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/commons-codec-1.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/dagger-producers-2.6.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/cryptofs-0.1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/cryptomator/cryptolib-1.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/cryptomator/guava-20.0.jar"/>
-	<classpathentry kind="lib" path="lib/cryptomator/siv-mode-1.2.0.jar"/>
-	<classpathentry kind="lib" path="lib/cryptomator/slf4j-api-1.7.21.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/commons-lang3-3.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/cryptofs-1.3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/cryptolib-1.1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/dagger-2.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/dagger-producers-2.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/gson-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/guava-22.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/siv-mode-1.2.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/cryptomator/slf4j-api-1.7.25.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mockito/mockito-core-2.7.19.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mockito/objenesis-2.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/powerfolder-protobuf-0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
