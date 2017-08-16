@@ -134,7 +134,7 @@ public class Folder extends PFComponent {
      * the folder info, contains important information about
      * id/hash/name/filescount
      */
-    private final FolderInfo currentInfo;
+    private FolderInfo currentInfo;
 
     /**
      * Folders sync profile Always access using getSyncProfile (#76 - preview
@@ -4788,6 +4788,12 @@ public class Folder extends PFComponent {
      */
     public FolderInfo getInfo() {
         return currentInfo;
+    }
+
+    public void updateInfo(FolderInfo folderInfo) {
+        Reject.ifNull(folderInfo, "folderInfo");
+        Reject.ifFalse(currentInfo.getId().equals(folderInfo.getId()), "Unable to update meta data. Folder ID mismatch");
+        this.currentInfo = folderInfo.intern();
     }
 
     /**
