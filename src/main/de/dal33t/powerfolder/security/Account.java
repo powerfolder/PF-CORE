@@ -1483,6 +1483,20 @@ public class Account implements Serializable, D2DObject {
         return hasPermission(FolderPermission.owner(foInfo));
     }
 
+    /**
+     * @return true if the account is on federated remote service.
+     */
+    public boolean isFederatedAccount() {
+        return getServer().isFederatedService();
+    }
+
+    /**
+     * @return true if the account is used in a cluster environment.
+     */
+    public boolean isClusterAccount() {
+        return getServer().isClusterServer();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
