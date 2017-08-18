@@ -407,6 +407,7 @@ public abstract class TwoControllerTestCase extends TestCase {
 
         Exception e = null;
         try {
+            LoggingManager.setConsoleLogging(Level.FINER);
             cont1.connect(cont2.getConnectionListener().getAddress());
         } catch (Exception ex) {
             e = ex;
