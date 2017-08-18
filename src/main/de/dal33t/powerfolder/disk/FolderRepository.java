@@ -2204,7 +2204,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 ignoredFolderDirectories.remove(folder.getLocalBase());
             }
 
-            FolderService foServ = client.getFolderService();
+            FolderService foServ = client.getFolderService(foInfo);
             try {
                 boolean isFolderAdmin = getController().getSecurityManager().hasPermission(
                         getMySelf().getInfo(), FolderPermission.admin(foInfo));

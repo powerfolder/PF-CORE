@@ -258,7 +258,7 @@ public class FileVersionsPanel extends PFUIComponent {
                     if (client != null && client.isConnected()
                         && client.isLoggedIn())
                     {
-                        FolderService service = client.getFolderService();
+                        FolderService service = client.getFolderService(folder.getInfo());
                         if (service != null) {
                             List<FileInfo> infoList = service
                                 .getArchivedFilesInfos(fileInfo);

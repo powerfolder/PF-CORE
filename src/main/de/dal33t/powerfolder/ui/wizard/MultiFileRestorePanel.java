@@ -162,7 +162,7 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                         ServerClient client = getController().getOSClient();
                         if (client != null && client.isConnected() && client.isLoggedIn())
                         {
-                            folderService = client.getFolderService();
+                            folderService = client.getFolderService(fo.getInfo());
                         }
                     }
 

@@ -222,7 +222,7 @@ public class FolderAutoCreatePanel extends PFWizardPanel {
                                     false);
                             ServerClient client = getController().getOSClient();
                             if (client.isConnected()) {
-                                client.getFolderService().removeFolder(folderInfo, true,
+                                client.getFolderService(folderInfo).removeFolder(folderInfo, true,
                                         true);
                             }
                             CursorUtils.returnToOriginal(diag, c);

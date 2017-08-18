@@ -206,7 +206,7 @@ public class FileRestoringPanel extends PFWizardPanel {
                     if (fo.hasMember(getController().getOSClient().getServer())) {
                         ServerClient client = getController().getOSClient();
                         if (client.isConnected() && client.isLoggedIn()) {
-                            FolderService service = client.getFolderService();
+                            FolderService service = client.getFolderService(fileInfo.getFolderInfo());
                             String relativeName = fileInfo.getRelativeName();
                             String targetRelativeName;
                             if (restoreServerToAlternateName) {

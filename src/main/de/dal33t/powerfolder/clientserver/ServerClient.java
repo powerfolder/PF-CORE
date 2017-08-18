@@ -2157,6 +2157,21 @@ public class ServerClient extends PFComponent {
         return folderService;
     }
 
+    public FolderService getFolderService(FolderInfo folderInfo) {
+        for (Member serverNode: getServersInCluster()) {
+            if (!serverNode.isCompletelyConnected()) {
+                continue;
+            }
+            Folder folder = folderInfo.getFolder(getController());
+            boolean serverOnFolder = folder != null && folder.hasMember(serverNode);
+            if (serverOnFolder || serverNode.hasCompleteFileListFor(folderInfo)) {
+                return RemoteServiceStubFactory.createRemoteStub(getController(), FolderService.class, serverNode, throwableHandler);
+            }
+        }
+        // Fallback:
+        return folderService;
+    }
+
     // Conviniece *************************************************************
 
     /**

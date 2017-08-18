@@ -384,7 +384,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
                 // REMOVE FROM CLOUD
                 getController().getIOProvider().startIO(new Runnable() {
                     public void run() {
-                        getController().getOSClient().getFolderService()
+                        getController().getOSClient().getFolderService(folder.getInfo())
                             .removeFolder(folder.getInfo(), true, false);
                     }
                 });

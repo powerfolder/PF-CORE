@@ -328,7 +328,7 @@ public class FolderRemoveDialog extends BaseDialog {
                 @Override
                 protected Void doInBackground() throws Exception {
                     ServerClient client = getController().getOSClient();
-                    client.getFolderService().removeFolder(foInfo, true,
+                    client.getFolderService(foInfo).removeFolder(foInfo, true,
                         true);
                     return null;
                 }

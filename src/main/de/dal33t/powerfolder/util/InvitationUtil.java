@@ -208,7 +208,7 @@ public class InvitationUtil {
         Reject.ifNull(controller, "Controller is null");
         Reject.ifNull(invitation, "Invitation is null");
 
-        controller.getOSClient().getFolderService().sendInvitationEmail(
+        controller.getOSClient().getFolderService(invitation.folder).sendInvitationEmail(
                 new SendInvitationEmail(invitation, to, ccMe));
     }
 

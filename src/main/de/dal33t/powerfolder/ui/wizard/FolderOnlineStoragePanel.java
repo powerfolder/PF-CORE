@@ -103,7 +103,7 @@ public class FolderOnlineStoragePanel extends PFWizardPanel {
             task = new Runnable() {
                 public void run() {
                     // Keep folder permission
-                    getController().getOSClient().getFolderService()
+                    getController().getOSClient().getFolderService(foInfo)
                         .removeFolder(foInfo, true, false);
                 }
 
