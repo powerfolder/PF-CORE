@@ -130,6 +130,13 @@ public interface FolderService {
     void setSyncProfile(FolderInfo foInfo, SyncProfile profile);
 
     /**
+     * Changes the sync profile of all folders on this server (Except maintenance folder). Server-Admin
+     *
+     * @param profile
+     */
+    void setSyncProfile(SyncProfile profile);
+
+    /**
      * TRAC #991
      * <p>
      * To get the default synchronized folder use

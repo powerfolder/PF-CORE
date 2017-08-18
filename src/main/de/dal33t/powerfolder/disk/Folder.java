@@ -2504,11 +2504,21 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Sets the synchronisation profile for this folder.
+     * Sets the synchronisation profile for this folder. Saves the config
      *
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
+        setSyncProfile(aSyncProfile, true);
+    }
+
+    /**
+     * Sets the synchronisation profile for this folder.
+     *
+     * @param aSyncProfile
+     * @param saveConfig store config?
+     */
+    public void setSyncProfile(SyncProfile aSyncProfile, boolean saveConfig) {
         Reject.ifNull(aSyncProfile, "Unable to set null sync profile");
         if (syncProfile.equals(aSyncProfile)) {
             // Skip.
@@ -2522,7 +2532,9 @@ public class Folder extends PFComponent {
                 + FolderSettings.SYNC_PROFILE;
             getController().getConfig().put(syncProfKey,
                 syncProfile.getFieldList());
-            getController().saveConfig();
+            if (saveConfig) {
+                getController().saveConfig();
+            }
         }
 
         if (!syncProfile.isAutodownload()) {
