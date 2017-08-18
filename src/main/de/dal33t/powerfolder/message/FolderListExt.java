@@ -34,28 +34,37 @@ import de.dal33t.powerfolder.light.FolderInfo;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
-@Deprecated
 public class FolderListExt extends FolderList implements Externalizable {
     private static final long serialVersionUID = -3861676003458215175L;
-    private static final long extVersionUID = 100L;
+    private static final long extVersionUID = 101L;
+
+    private final boolean writeFolders;
 
     public FolderListExt() {
         super();
+        writeFolders = false;
     }
 
     public FolderListExt(Collection<FolderInfo> allFolders, String remoteMagicId)
     {
         super(allFolders, remoteMagicId);
+        writeFolders = false;
+    }
+
+    public FolderListExt(Collection<FolderInfo> allFolders)
+    {
+        super(allFolders);
+        writeFolders = true;
     }
 
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != extVersionUID) {
+        if (extUID != extVersionUID && extUID != 100) {
             throw new InvalidClassException(this.getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
-                    + ", expected: " + extVersionUID);
+                    + ", supported: " + extVersionUID + " and 100");
         }
         joinedMetaFolders = in.readBoolean();
         if (in.readBoolean()) {
@@ -64,6 +73,16 @@ public class FolderListExt extends FolderList implements Externalizable {
             for (int i = 0; i < secretFolders.length; i++) {
                 // Dummy objects. Name must never be used.
                 secretFolders[i] = new FolderInfo(null, in.readUTF());
+            }
+        }
+
+        if (extUID == extVersionUID) {
+            if (in.readBoolean()) {
+                int len = in.readInt();
+                folders = new FolderInfo[len];
+                for (int i = 0; i < folders.length; i++) {
+                    folders[i] = FolderInfo.readExt(in);
+                }
             }
         }
     }
@@ -78,6 +97,15 @@ public class FolderListExt extends FolderList implements Externalizable {
                 out.writeUTF(foInfo.id);
             }
         }
-    }
 
+        if (writeFolders) {
+            out.writeBoolean(folders != null);
+            if (folders != null) {
+                out.writeInt(folders.length);
+                for (FolderInfo foInfo : folders) {
+                    foInfo.writeExternal(out);
+                }
+            }
+        }
+    }
 }

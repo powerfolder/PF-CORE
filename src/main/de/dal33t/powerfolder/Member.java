@@ -828,7 +828,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 folderList = new FolderListExt(folders2node, peer.getRemoteMagicId());
             } else {
-                folderList = new FolderListExt2(folders2node);
+                folderList = new FolderListExt(folders2node);
             }
             if (isFiner()) {
                 logFiner("Sending CH " + folderList);
@@ -1937,7 +1937,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                     myFolderList = new FolderListExt(folders2node, remoteMagicId);
                 } else {
-                    myFolderList = new FolderListExt2(folders2node);
+                    myFolderList = new FolderListExt(folders2node);
                 }
                 if (isFine()) {
                     logFine("Sending HM " + myFolderList);
@@ -2082,7 +2082,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
             } else {
-                myFolderList = new FolderListExt2(folders2node);
+                myFolderList = new FolderListExt(folders2node);
             }
             if (isFiner()) {
                 logFiner("Sending SFM " + myFolderList);
