@@ -35,10 +35,9 @@ public interface NewsService {
 
     /**
      * @param filterAccountOID only show news of the given account, null for any
-     * @param localFoldersOnly consider only folders, which are currently mounted, false to also ask other cluster nodes
      * @param maxResults the number of maximum results
      *
      * @return the log according to the current filter settings.
      */
-     Collection<NewsItem> getNews(String filterAccountOID, boolean localFoldersOnly, long maxResults);
+     Collection<NewsItem> getNews(String filterAccountOID, long maxResults);
 }
