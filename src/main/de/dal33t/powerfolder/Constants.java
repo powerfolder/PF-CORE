@@ -218,11 +218,6 @@ public class Constants {
     /** The max number of reconnectors to spawn */
     public static final int MAX_NUMBER_RECONNECTORS = 5;
 
-    /** PFC-3018: The max number of file requesting workers to spawn */
-    public static final int MAX_NUMBER_FILEREQUESTOR_WORKERS = 50;
-    /** PFC-3018: Including meta folders */
-    public static final int FOLDERS_PER_FILEREQUESTOR_WORKER = 1000 * 2;
-
     /**
      * PFC-2742: Maximum numbers of message in send queue. Will disconnect node
      * if maximum is reached.

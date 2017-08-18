@@ -20,6 +20,7 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -371,16 +372,16 @@ public class FileRequestor extends PFComponent {
             // Now do the actual resizing.
             int nWorkers = workerPool.size();
             // Calculate required workers. check min / max bounds.
-            int reqWorkers = Math.max(1, Math.min(
-                    Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS, (folderQueue
-                            .size() / Constants.FOLDERS_PER_FILEREQUESTOR_WORKER)));
+            int maxWorkers = ConfigurationEntry.FOLDER_FILE_REQUESTOR_MAX_WORKERS.getValueInt(getController());
+            int foldersPerWorker = 2* ConfigurationEntry.FOLDER_FOLDERS_PER_FILE_REQUESTOR.getValueInt(getController());
+            int reqWorkers = Math.max(1, Math.min(maxWorkers, folderQueue.size() / foldersPerWorker));
             int diff = reqWorkers - nWorkers;
 
             if (isFine() && diff != 0) {
                 logFine("nWorkers: " + nWorkers + ", required: " + reqWorkers + ". Diff: " + diff);
             }
-            if (reqWorkers == Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS) {
-                logWarning("Maximum number of workers reached: " + Constants.MAX_NUMBER_FILEREQUESTOR_WORKERS);
+            if (reqWorkers == maxWorkers) {
+                logWarning("Maximum number of workers reached: " + maxWorkers + ". Try to increase this value by configuration");
             }
             for (int i = 0; i < diff; i++) {
                 Worker worker = new Worker();

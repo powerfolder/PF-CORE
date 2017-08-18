@@ -1151,6 +1151,12 @@ public enum ConfigurationEntry {
      */
     FOLDER_SCANNER_MAX_CRAWLERS("sync.folder.max_crawlers", 3),
 
+    /** PFC-3018: The max number of file requesting workers to spawn */
+    FOLDER_FILE_REQUESTOR_MAX_WORKERS("sync.folder.max_filerequestors", 300),
+
+    /** PFC-3018: Including meta folders */
+    FOLDER_FOLDERS_PER_FILE_REQUESTOR("sync.folder.folders_per_filerequestors", 300),
+
     /**
      * Automatically setup all folders the user has access to and also
      * automatically accept folder invites.
