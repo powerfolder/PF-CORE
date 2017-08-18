@@ -255,7 +255,7 @@ public class FolderList extends Message
 
     @Override
     public String toString() {
-        return "FolderList: " + folders.length + secretFolders.length + " folders";
+        return "FolderList: " + (folders != null ? folders.length : 0) + (secretFolders != null ? secretFolders.length : 0) + " folders";
     }
 
     /**
