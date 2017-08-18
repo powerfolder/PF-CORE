@@ -1154,7 +1154,7 @@ public enum ConfigurationEntry {
     /** PFC-3018: The max number of file requesting workers to spawn */
     FOLDER_FILE_REQUESTOR_MAX_WORKERS("sync.folder.max_filerequestors", 300),
 
-    /** PFC-3018: Including meta folders */
+    /** PFC-3018: The number of folders one requestor should handle */
     FOLDER_FOLDERS_PER_FILE_REQUESTOR("sync.folder.folders_per_filerequestors", 300),
 
     /**
