@@ -19,14 +19,10 @@
  */
 package de.dal33t.powerfolder.message;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Collection;
-
 import de.dal33t.powerfolder.light.FolderInfo;
+
+import java.io.*;
+import java.util.Collection;
 
 /**
  * EXT version of: List of available folders
@@ -38,23 +34,23 @@ public class FolderListExt extends FolderList implements Externalizable {
     private static final long serialVersionUID = -3861676003458215175L;
     private static final long extVersionUID = 101L;
 
-    private final boolean writeFolders;
+    private final long writeExtVersionUID;
 
     public FolderListExt() {
         super();
-        writeFolders = false;
+        writeExtVersionUID = 100L;
     }
 
     public FolderListExt(Collection<FolderInfo> allFolders, String remoteMagicId)
     {
         super(allFolders, remoteMagicId);
-        writeFolders = false;
+        writeExtVersionUID = 100L;
     }
 
     public FolderListExt(Collection<FolderInfo> allFolders)
     {
         super(allFolders);
-        writeFolders = true;
+        writeExtVersionUID = extVersionUID;
     }
 
     public void readExternal(ObjectInput in) throws IOException,
@@ -88,7 +84,7 @@ public class FolderListExt extends FolderList implements Externalizable {
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeLong(extVersionUID);
+        out.writeLong(writeExtVersionUID);
         out.writeBoolean(joinedMetaFolders);
         out.writeBoolean(secretFolders != null);
         if (secretFolders != null) {
@@ -98,13 +94,15 @@ public class FolderListExt extends FolderList implements Externalizable {
             }
         }
 
-        if (writeFolders) {
-            out.writeBoolean(folders != null);
-            if (folders != null) {
-                out.writeInt(folders.length);
-                for (FolderInfo foInfo : folders) {
-                    foInfo.writeExternal(out);
-                }
+        if (writeExtVersionUID <= 100) {
+            return;
+        }
+
+        out.writeBoolean(folders != null);
+        if (folders != null) {
+            out.writeInt(folders.length);
+            for (FolderInfo foInfo : folders) {
+                foInfo.writeExternal(out);
             }
         }
     }
