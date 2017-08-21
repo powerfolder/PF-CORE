@@ -1846,6 +1846,77 @@ public class PathUtils {
     }
 
     /**
+     * Moves recursive from a source directory to a target directory. Creates the target directory if it doesn't exist.
+     * Moves also all file- and directory attributes. If move operation on one or more files fail, copy is tried instead.
+     * May leave files in sourceDirectory in that case.
+     *
+     * @param sourceDirectory the source directory.
+     * @param targetDirectory the target directory.
+     * @throws IOException
+     */
+
+    public static void recursiveMoveCopyFallbackVisitor(Path sourceDirectory, Path targetDirectory) throws IOException {
+
+        if (Files.exists(targetDirectory) && !isEmptyCryptoContainerRootDir(targetDirectory)) {
+            throw new FileAlreadyExistsException("Move from " + sourceDirectory + " to " + targetDirectory
+                    + " failed! Target directory already exists " + targetDirectory);
+        }
+
+        try {
+            Files.walkFileTree(sourceDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
+
+                    new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                            Path newDir = targetDirectory.resolve(sourceDirectory.relativize(dir).toString());
+                            if (Files.notExists(newDir)) {
+                                Files.createDirectories(newDir);
+                            }
+                            return CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            Path newFile = targetDirectory.resolve(sourceDirectory.relativize(file).toString());
+                            try {
+                                Files.move(file, newFile);
+                            } catch (NoSuchFileException e) {
+                                log.warning("Source file not available while move: " + file + " to " + newFile + ": " + e);
+                            } catch (IOException e) {
+                                log.warning("Coping file. Not able to move file " + file + " to " + newFile + ": " + e);
+                                Files.copy(file, newFile);
+                            }
+                            return CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                            if (exc == null) {
+                                try {
+                                    Files.delete(dir);
+                                } catch (DirectoryNotEmptyException e) {
+                                    log.warning("Source directory not empty while move: " + dir + ": " + e);
+                                } catch (IOException e) {
+                                    log.warning("Not able to remove directory in source: " + dir + ": " + e);
+                                }
+                                return FileVisitResult.CONTINUE;
+                            } else {
+                                throw exc;
+                            }
+                        }
+
+                        @Override
+                        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                            throw exc;
+                        }
+                    });
+        } catch (IOException ioe) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
+            throw ioe;
+        }
+    }
+
+    /**
      * Deletes recursive from a target directory.
      *
      * @param targetDirectory the target directory.

@@ -2675,7 +2675,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     PathUtils.recursiveDelete(targetPath);
                 }
 
-                PathUtils.recursiveMoveVisitor(sourceDirectory, targetPath);
+                PathUtils.recursiveMoveCopyFallbackVisitor(sourceDirectory, targetPath);
 
                 fs = fs.changeBaseDir(targetPath);
                 moved = true;
@@ -2733,6 +2733,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             Folder oldFolder = folder;
             folder = createFolder(folder.getInfo().intern(), fs, true, false);
             PathUtils.setAttributesOnWindows(folder.getLocalBase(), null, true);
+            PathUtils.setAttributesOnWindows(folder.getSystemSubDir(), true, true);
             fireFolderMoved(folder, oldFolder);
 
             // Restore patterns
@@ -2932,20 +2933,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                         continue;
                     }
                     suggestedLocalBase = userDir.getDirectory();
-                } else if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
-                    .getValueBoolean(getController()))
-                {
+                } else {
                     // Moderate strategy. Use existing folders.
                     suggestedLocalBase = getController().getFolderRepository()
-                        .getFoldersBasedir().resolve(folderName);
+                            .getFoldersBasedir().resolve(folderName);
                     if (Files.exists(suggestedLocalBase)) {
                         logInfo("Using existing directory "
                             + suggestedLocalBase + " for " + folderInfo);
                     }
-                } else {
-                    // Take folder name as subdir name
-                    suggestedLocalBase = getController().getFolderRepository()
-                        .getFoldersBasedir().resolve(folderName);
                 }
 
                 logInfo("Auto setting up folder " + folderInfo.getName() + "/"
