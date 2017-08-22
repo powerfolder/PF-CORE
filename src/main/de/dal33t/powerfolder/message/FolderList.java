@@ -121,7 +121,7 @@ public class FolderList extends Message
     }
 
     public boolean contains(FolderInfo folderInfo) {
-        return Arrays.stream(this.folders).anyMatch(f -> f.id.equals(folderInfo.id));
+        return folders != null ? Arrays.asList(folders).contains(folderInfo) : false;
     }
 
     @Deprecated
