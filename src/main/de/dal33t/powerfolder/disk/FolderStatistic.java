@@ -595,8 +595,17 @@ public class FolderStatistic extends PFComponent {
             }
             // SYNC-143
 
-            // Average of all folder member sync percentages.
-            return getLocalSyncPercentage();
+            // PFS-2288: If synced with server: min of local and server sync
+            for (Member member : folder.getConnectedMembers()) {
+                if (member.isServer()) {
+                    double localSync = getLocalSyncPercentage();
+                    double serverSync = getServerSyncPercentage();
+                    if (serverSync < 0 || localSync < 0) {
+                        continue;
+                    }
+                    return Math.min(localSync, serverSync);
+                }
+            }
         }
 
         // Otherwise, just return the local sync percentage.
