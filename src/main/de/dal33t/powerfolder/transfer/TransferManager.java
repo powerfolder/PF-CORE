@@ -1897,7 +1897,7 @@ public class TransferManager extends PFComponent {
                             download.isRequestedAutomatic());
                     man.init(false);
                 } catch (IOException e) {
-                    logWarning("IOException while initializing download: " + e);
+                    logWarning("IOException while initializing download of " + fInfo.toDetailString() + ": " + e);
                     return;
                 }
                 if (dlManagers.put(fInfo, man) != null) {
