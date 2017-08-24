@@ -796,9 +796,7 @@ public class UIController extends PFComponent {
         try {
             LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel());
         } catch (UnsupportedLookAndFeelException | ParseException e) {
-            logSevere(
-                "Failed to set look and feel for skin " + activeSkin.getName(),
-                e);
+            logWarning("Failed to set look and feel for skin " + activeSkin.getName(), e);
         }
     }
 
