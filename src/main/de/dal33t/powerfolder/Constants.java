@@ -20,10 +20,6 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Central constants holder for all important constants in PowerFolder.
  *
@@ -428,11 +424,17 @@ public class Constants {
     public static final String FOLDER_PERSONAL_FILES = "$personal_files";
     public static final String FOLDER_PUBLIC_SHARED_FILES = "$public_shared_files";
     public static final String MAIL_ATTACHMENT_FOLDER = "$mail_attachments";
-    
+
+    public static final String LOGIN_AS = "loginAs";
+
     // Locking ****************************************************************
     
     public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
     public static final String LIBRE_OFFICE_FILENAME_PREFIX = ".~lock.";
+
+    // Admin ****************************************************************
+
+    public static final String ADMIN_BUILT_IN_NAME = "admin";
 
     private Constants() {
         // No instance allowed
