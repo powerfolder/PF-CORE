@@ -366,6 +366,11 @@ public enum ConfigurationEntry {
      */
     SERVER_LOGIN_SKIP_RETRY("server.skip.auto.login", 1000),
 
+    /**
+     * PFS-2425: Federated login with AccountDiscovery
+     */
+    SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
+
     // Server WEB settings ****************************************************
 
     /**

@@ -425,16 +425,10 @@ public class Constants {
     public static final String FOLDER_PUBLIC_SHARED_FILES = "$public_shared_files";
     public static final String MAIL_ATTACHMENT_FOLDER = "$mail_attachments";
 
-    public static final String LOGIN_AS = "loginAs";
-
     // Locking ****************************************************************
     
     public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
     public static final String LIBRE_OFFICE_FILENAME_PREFIX = ".~lock.";
-
-    // Admin ****************************************************************
-
-    public static final String ADMIN_BUILT_IN_NAME = "admin";
 
     private Constants() {
         // No instance allowed
