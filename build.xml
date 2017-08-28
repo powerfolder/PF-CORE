@@ -515,7 +515,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<!-- Batchrun all tests -->
-		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="3g">
+		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="10g">
 			<!-- Reason: https://code.google.com/p/opendedup/issues/detail?id=34 -->
 			<sysproperty key="file.encoding" value="UTF-8"/>
 			<classpath>
