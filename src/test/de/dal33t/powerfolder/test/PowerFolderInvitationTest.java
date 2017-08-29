@@ -107,7 +107,6 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
         Invitation invitation = folderAtLisa
             .createInvitation(FolderPermission.read(folderAtLisa.getInfo()));
 
-        LoggingManager.setConsoleLogging(Level.FINER);
         // Send invitation over PF to bart.
         getContollerLisa().getTaskManager().scheduleTask(
             new SendMessageTask(invitation, getContollerBart().getMySelf()

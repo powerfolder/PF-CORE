@@ -277,7 +277,6 @@ public class FileArchiverTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(2500);
         Path fileAtLisa = fInfo
             .getDiskFile(getContollerLisa().getFolderRepository());
-        LoggingManager.setConsoleLogging(Level.FINER);
 
         FileInfo archiveFileInfo = FileInfoFactory.archivedFile(
             fInfo.getFolderInfo(), fInfo.getRelativeName(), null,

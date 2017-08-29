@@ -400,7 +400,6 @@ public class FileUpdateTest extends TwoControllerTestCase {
                 return getFolderAtLisa().getKnownFiles().size() > 0;
             }
         });
-        LoggingManager.setConsoleLogging(Level.FINER);
         for (int i = 0; i < 40; i++) {
             TestHelper.changeFile(fileAtBart,
                 5000000 + (long) (Math.random() * 10000));

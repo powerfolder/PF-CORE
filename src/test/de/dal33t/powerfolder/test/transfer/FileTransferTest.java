@@ -83,7 +83,6 @@ public class FileTransferTest extends TwoControllerTestCase {
      * @throws IOException
      */
     public void testSpecialChars() throws IOException {
-        LoggingManager.setConsoleLogging(Level.FINER);
         // |, ?, ", *, <, :, >
         String filename = "  subdir1|/  %%::::          ./  |||:::*?<>  . ";
         Path f = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
@@ -159,7 +158,6 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testFileCopyCert8() throws IOException {
-        LoggingManager.setConsoleLogging(Level.FINER);
         Path testFileBart = getFolderAtBart().getLocalBase()
             .resolve("cert8.db");
         Path origFile = Paths.get("src/test-resources/cert8.db");
