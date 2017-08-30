@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
@@ -550,6 +551,9 @@ public class RelayedConnectionManager extends PFComponent {
                 return;
             }
             if (!getController().getNodeManager().isStarted()) {
+                return;
+            }
+            if (!ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.getValueBoolean(getController())) {
                 return;
             }
             currentRelay = relayFinder.findRelay(getController()
