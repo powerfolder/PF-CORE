@@ -110,7 +110,7 @@ public class DownloadPersistenceTest extends TwoControllerTestCase {
             }
         }
         scanFolder(getFolderAtBart());
-        TestHelper.waitForCondition(nFiles * 100, new ConditionWithMessage() {
+        TestHelper.waitForCondition(nFiles * 5, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()
                     .getCompletedDownloadsCollection().size() == nFiles * 2;
