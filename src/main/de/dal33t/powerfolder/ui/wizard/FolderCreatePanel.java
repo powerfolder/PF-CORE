@@ -219,23 +219,20 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 FolderInfo folderInfo = entry.getKey();
                 FolderSettings folderSettings = entry.getValue();
                 String joinFolderName = joinFolders.get(folderInfo);
-
-                if (joinFolderName == null) {
-
-                    // Don't try to join online folders by name if this is an
-                    // invite. Invites always join the invite folder.
-                    Boolean folderIsInvite = (Boolean) getWizardContext()
+                // Don't try to join online folders by name if this is an
+                // invite. Invites always join the invite folder.
+                Boolean folderIsInvite = (Boolean) getWizardContext()
                         .getAttribute(FOLDER_IS_INVITE);
-                    if (folderIsInvite == null || !folderIsInvite) {
 
-                        // Look for folders where there is already an online
-                        // folder with the same name. Join instead of creating
-                        // duplicates.
+                if (joinFolderName == null && (folderIsInvite == null || !folderIsInvite)) {
+                    // Look for folders where there is already an online
+                    // folder with the same name. Join instead of creating duplicates.
+                    boolean hasPermission = client.getAccount().hasReadPermissions(folderInfo);
+                    if (!hasPermission) {
                         for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+                            String onlineFolderName = onlineFolderInfo.getLocalizedName();
                             // PFC-2562
-                            if (onlineFolderInfo.getName().equals(
-                                folderInfo.getName()))
-                            {
+                            if (onlineFolderName.equals(folderInfo.getName())) {
                                 if (!onlineFolderInfo.equals(folderInfo)) {
                                     log.info("Found online folder with same name: "
                                         + folderInfo.getName() + ". Using it");
