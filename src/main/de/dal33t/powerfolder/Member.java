@@ -2153,7 +2153,48 @@ public class Member extends PFComponent implements Comparable<Member> {
             return;
         }
         // Use secret folders only in old clients with protocol version below 112
-        if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+        if (folderList.folders != null && folderList.folders.length > 0 || getProtocolVersion() >= Identity.PROTOCOL_VERSION_112) {
+            // Check if remote side has joined one of our folders
+            logInfo(this + " Processing: " + folderList.folders.length);
+            for (FolderInfo folderInfo : folderList.folders) {
+                Folder folder = folderInfo.getFolder(getController());
+                if (folder == null) {
+                    logWarning("Folder not synced: " + folder);
+                    // Not synced locally
+                    continue;
+                }
+                // Join him into our folder if possible.
+                if (!folder.join(this)) {
+                    if (isWarning()) {
+                        logWarning(this + " did not join into: " + folder);
+                    }
+                    continue;
+                }
+                if (isFiner()) {
+                    logFiner("Joined " + folder);
+                }
+                joinedFolders.add(folder.getInfo());
+                if (!folderList.joinedMetaFolders) {
+                    continue;
+                }
+                Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
+                if (metaFolder == null) {
+                    logFine("Unable to join meta folder. Not found " + folder);
+                    continue;
+                }
+                // Join him into our folder if possible.
+                if (!metaFolder.join(this)) {
+                    if (isFine()) {
+                        logFine("Unable to join meta folder of " + folder);
+                    }
+                    continue;
+                }
+                joinedFolders.add(metaFolder.getInfo());
+                if (isFiner()) {
+                    logFiner("Joined meta folder: " + metaFolder);
+                }
+            }
+        } else {
             String myMagicId = fromPeer.getMyMagicId();
             if (StringUtils.isBlank(myMagicId)) {
                 logSevere("Unable to join to local folders. Own magic id of peer is blank: " + peer);
@@ -2200,45 +2241,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                             }
                         }
                     }
-                }
-            }
-        } else {
-            // Check if remote side has joined one of our folders
-            for (FolderInfo folderInfo : folderList.folders) {
-                Folder folder = folderInfo.getFolder(getController());
-                if (folder == null) {
-                    // Not synced locally
-                    continue;
-                }
-                // Join him into our folder if possible.
-                if (!folder.join(this)) {
-                    if (isFine()) {
-                        logFine(this + " did not join into: " + folder);
-                    }
-                    continue;
-                }
-                if (isFiner()) {
-                    logFiner("Joined " + folder);
-                }
-                joinedFolders.add(folder.getInfo());
-                if (!folderList.joinedMetaFolders) {
-                    continue;
-                }
-                Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
-                if (metaFolder == null) {
-                    logFine("Unable to join meta folder. Not found " + folder);
-                    continue;
-                }
-                // Join him into our folder if possible.
-                if (!metaFolder.join(this)) {
-                    if (isFine()) {
-                        logFine("Unable to join meta folder of " + folder);
-                    }
-                    continue;
-                }
-                joinedFolders.add(metaFolder.getInfo());
-                if (isFiner()) {
-                    logFiner("Joined meta folder: " + metaFolder);
                 }
             }
         }
