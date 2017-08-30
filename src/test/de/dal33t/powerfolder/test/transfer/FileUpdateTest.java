@@ -19,23 +19,21 @@
  */
 package de.dal33t.powerfolder.test.transfer;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
-import java.util.logging.Level;
-
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 
 /**
  * Tests the correct updating of files.
@@ -395,7 +393,12 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         final Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 5000000);
-        TestHelper.waitForCondition(70, new Condition() {
+        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "Known files at lisa: " + getFolderAtLisa().getKnownFiles().size();
+            }
+
             public boolean reached() {
                 return getFolderAtLisa().getKnownFiles().size() > 0;
             }
@@ -406,7 +409,20 @@ public class FileUpdateTest extends TwoControllerTestCase {
             TestHelper.waitMilliSeconds(400);
             scanFolder(getFolderAtBart());
         }
-        TestHelper.waitForCondition(70, new Condition() {
+        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
+                        .next()
+                        .getDiskFile(getContollerLisa().getFolderRepository());
+                try {
+                    return "size(Lisa):" + Files.size(fileAtLisa) + " size(Bart): " + Files.size(fileAtBart)
+                            + " lastmod(Lisa): " + Files.getLastModifiedTime(fileAtLisa) + " lastmod(Bart): " + Files.getLastModifiedTime(fileAtBart);
+                } catch (IOException e) {
+                    return e.getMessage();
+                }
+            }
+
             public boolean reached() {
                 Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
                     .next()
