@@ -19,6 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.WikiLinks;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
+import de.dal33t.powerfolder.ui.notices.RunnableNotice;
+import de.dal33t.powerfolder.ui.util.Help;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -29,15 +38,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.ui.WikiLinks;
-import de.dal33t.powerfolder.ui.dialog.DialogFactory;
-import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
-import de.dal33t.powerfolder.ui.notices.RunnableNotice;
-import de.dal33t.powerfolder.ui.util.Help;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Detects if PowerFolder is running out of memory.
@@ -67,7 +67,7 @@ public class MemoryMonitor implements Runnable {
         log.fine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
 
-        if (maxMemory == totalMemory) {
+        if (totalMemory > 0.95d * maxMemory) {
             addWarning();
             runAlready = true;
         }
@@ -113,20 +113,20 @@ public class MemoryMonitor implements Runnable {
             .handleNotice(notice);
     }
 
-    /**
-     * Reconfigure ini from (initial) 512M to 1024M max memory.
-     */
     private void increaseAvailableMemory() {
+        if (!OSUtil.is64BitPlatform()) {
+            DialogFactory.genericDialog(controller, Translation
+                            .get("low_memory.title"), Translation
+                            .get("low_memory.install_64bit"),
+                    GenericDialogType.WARN);
+            return;
+        }
         if (OSUtil.isMacOS()) {
             increaseAvailableMemoryMac();
         } else {
             increaseAvailableMemoryWin();
         }
     }
-
-    /**
-     * Reconfigure ini from (initial) 512M to 1024M max memory.
-     */
     private void increaseAvailableMemoryWin() {
 
         // Read the current ini file.
@@ -147,14 +147,14 @@ public class MemoryMonitor implements Runnable {
             // }
             // }
 
-            boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 1023;
+            boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 8000;
             // Write a new one if found.
             if (!alreadyMax) {
                 pw = new PrintWriter(new FileWriter(controller.getL4JININame()));
                 log.fine("Writing new ini...");
-                pw.println("-Xms16m");
-                pw.println("-Xmx1024m");
-                pw.println("-XX:MaxPermSize=256m");
+                pw.println("-Xms256m");
+                pw.println("-Xmx8192m");
+                pw.println("-XX:NewRatio=8");
                 pw.println("-XX:MinHeapFreeRatio=10");
                 pw.println("-XX:MaxHeapFreeRatio=20");
                 pw.flush();
@@ -208,11 +208,10 @@ public class MemoryMonitor implements Runnable {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.trim().startsWith("<string>-Xm")
-                    && !line.contains("-Xmx1024m"))
-                {
+                        && !line.contains("-Xmx8192m")) {
                     pw
-                        .write("      <string>-Xms16m -Xmx1024m -XX:MaxPermSize=256m "
-                            + "-XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10</string>");
+                            .write("      <string>-Xms256m -Xmx8192m "
+                                    + "-XX:NewRatio=8 -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10</string>");
                     success = true;
                 } else {
                     pw.write(line);
@@ -225,8 +224,8 @@ public class MemoryMonitor implements Runnable {
             PathUtils.copyFile(temp, orig);
         } catch (IOException e) {
             log.log(Level.WARNING,
-                "Problem reconfiguring Contents/Info.plist: " + e.getMessage(),
-                e);
+                    "Problem reconfiguring Contents/Info.plist: " + e.getMessage(),
+                    e);
             success = false;
         } finally {
             if (br != null) {
@@ -239,20 +238,18 @@ public class MemoryMonitor implements Runnable {
             if (pw != null) {
                 pw.close();
             }
-
         }
-
         // Show a response
         if (success) {
             DialogFactory.genericDialog(controller, Translation
-                .get("low_memory.title"), Translation
-                .get("low_memory.configure_success"),
-                GenericDialogType.INFO);
+                            .get("low_memory.title"), Translation
+                            .get("low_memory.configure_success"),
+                    GenericDialogType.INFO);
         } else {
             DialogFactory.genericDialog(controller, Translation
-                .get("low_memory.title"), Translation
-                .get("low_memory.configure_failure"),
-                GenericDialogType.WARN);
+                            .get("low_memory.title"), Translation
+                            .get("low_memory.configure_failure"),
+                    GenericDialogType.WARN);
         }
     }
 }
