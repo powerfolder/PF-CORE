@@ -545,7 +545,7 @@ public class LoginPanel extends PFWizardPanel {
                 boolean loginOk = false;
                 String newUsername = usernameField.getText();
                 char[] pw = passwordField.getPassword();
-                boolean reuseToken = Arrays.equals(TOKEN_PLACEHOLDER.toCharArray(), pw) && client.getUsername().equals(newUsername);
+                boolean reuseToken = Arrays.equals(TOKEN_PLACEHOLDER.toCharArray(), pw) && newUsername != null && newUsername.equals(client.getUsername());
                 if (reuseToken) {
                     loginOk = client.login(newUsername, client.getDeviceToken()).isValid();
                 } else {
