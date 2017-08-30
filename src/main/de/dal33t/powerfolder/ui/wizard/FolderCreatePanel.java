@@ -19,30 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.MAKE_FRIEND_AFTER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SET_DEFAULT_SYNCHRONIZED_FOLDER;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jwf.WizardPanel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -54,15 +30,21 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import jwf.WizardPanel;
+
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 
 /**
  * A panel that actually starts the creation process of a folder on display.
@@ -224,25 +206,27 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                 Boolean folderIsInvite = (Boolean) getWizardContext()
                         .getAttribute(FOLDER_IS_INVITE);
 
-                if (joinFolderName == null && (folderIsInvite == null || !folderIsInvite)) {
-                    // Look for folders where there is already an online
-                    // folder with the same name. Join instead of creating duplicates.
-                    boolean hasPermission = client.getAccount().hasReadPermissions(folderInfo);
-                    if (!hasPermission) {
-                        for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
-                            String onlineFolderName = onlineFolderInfo.getLocalizedName();
-                            // PFC-2562
-                            if (onlineFolderName.equals(folderInfo.getName())) {
-                                if (!onlineFolderInfo.equals(folderInfo)) {
-                                    log.info("Found online folder with same name: "
-                                        + folderInfo.getName() + ". Using it");
+                if (joinFolderName == null) {
+                    if (folderIsInvite == null || !folderIsInvite) {
+                        // Look for folders where there is already an online
+                        // folder with the same name. Join instead of creating duplicates.
+                        boolean hasPermission = client.getAccount().hasReadPermissions(folderInfo);
+                        if (!hasPermission) {
+                            for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
+                                String onlineFolderName = onlineFolderInfo.getLocalizedName();
+                                // PFC-2562
+                                if (onlineFolderName.equals(folderInfo.getName())) {
+                                    if (!onlineFolderInfo.equals(folderInfo)) {
+                                        log.info("Found online folder with same name: "
+                                                + folderInfo.getName() + ". Using it");
 
-                                    // User actually wants to join, so use
-                                    // online.
-                                    folderInfo = onlineFolderInfo;
-                                    log.info("Changed folder info to online version: "
-                                        + folderInfo.getName());
-                                    break;
+                                        // User actually wants to join, so use
+                                        // online.
+                                        folderInfo = onlineFolderInfo;
+                                        log.info("Changed folder info to online version: "
+                                                + folderInfo.getName());
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -252,8 +236,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     boolean gotIt = false;
                     for (FolderInfo onlineFolderInfo : onlineFolderInfos) {
                         if (onlineFolderInfo.getName().equals(joinFolderName)) {
-                            log.info("Joining specified folder "
-                                + joinFolderName);
+                            log.info("Joining specified folder " + joinFolderName);
                             folderInfo = onlineFolderInfo;
                             gotIt = true;
                             break;
