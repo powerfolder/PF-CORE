@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.clientserver;
 
 import de.dal33t.powerfolder.domain.NewsItem;
+import de.dal33t.powerfolder.light.AccountInfo;
 
 import java.util.Collection;
 
@@ -34,10 +35,11 @@ public interface NewsService {
     final static long RESULTS_UNLIMITED = -1;
 
     /**
+     * @param forAccount for this target account (logged in account)
      * @param filterAccountOID only show news of the given account, null for any
      * @param maxResults the number of maximum results
      *
      * @return the log according to the current filter settings.
      */
-     Collection<NewsItem> getNews(String filterAccountOID, long maxResults);
+     Collection<NewsItem> getNews(AccountInfo forAccount, String filterAccountOID, long maxResults);
 }
