@@ -391,8 +391,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        final Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 5000000);
+        final Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 5000000);
+        scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
             @Override
             public String message() {
