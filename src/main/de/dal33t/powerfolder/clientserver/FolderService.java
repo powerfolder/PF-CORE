@@ -315,7 +315,7 @@ public interface FolderService {
     /**
      * PFS-869: Creating a FileLink for unregistered user uploads.
      */
-    String prepareFileLink(String userName, String mailAddress, String folderID);
+    String prepareFileLink(String userName, String mailAddress, String password, String date, String folderID);
 
     /**
      * Checks if the storage path of a folder is correct (default)
