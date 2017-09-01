@@ -231,16 +231,16 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return false;
     }
 
+    public FolderInfo intern() {
+        return intern(false);
+    }
+
     public FolderInfo intern(boolean force) {
         if (force) {
             return INTERNALIZER.rename(this);
         } else {
-            return intern();
+            return INTERNALIZER.intern(this);
         }
-    }
-
-    public FolderInfo intern() {
-        return INTERNALIZER.intern(this);
     }
 
     // used for sorting ignores case
