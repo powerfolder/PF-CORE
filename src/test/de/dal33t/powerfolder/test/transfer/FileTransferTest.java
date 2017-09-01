@@ -1992,10 +1992,10 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisaListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisaListener);
 
-        // 1 Meg testfile
+        // 2 Meg +X KBes testfile
         Path fbart = TestHelper
             .createRandomFile(getFolderAtBart().getLocalBase(),
-                (long) (1024 * 1024 + Math.random() * 1024 * 1024));
+                (long) (2 * 1024 * 1024 + Math.random() * 1024 * 1024));
 
         assertTrue("Testfile is smaller than max chunk size: " + chunkSize + ". File: " +
                 Files.size(fbart), Files.size(fbart) > chunkSize);
