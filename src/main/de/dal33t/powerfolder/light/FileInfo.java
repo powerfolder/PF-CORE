@@ -914,13 +914,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(lastModifiedDate, "Modification date is null");
         if (lastModifiedDate.getTime() < 0) {
             throw new IllegalStateException("Modification date is invalid: "
-                + lastModifiedDate);
+                + lastModifiedDate + ": " + toDetailString());
         }
         Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
         char lastChar = fileName.charAt(fileName.length() - 1);
         if (lastChar == '/' || lastChar == '\\') {
             throw new IllegalStateException("Filename ends with slash: "
-                + fileName);
+                + fileName + ": " + toDetailString());
         }
 
         //Reject.ifNull(size, "Size is null");
