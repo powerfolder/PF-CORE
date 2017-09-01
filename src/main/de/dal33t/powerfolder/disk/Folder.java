@@ -4802,7 +4802,7 @@ public class Folder extends PFComponent {
         return currentInfo;
     }
 
-    public void updateInfo(FolderInfo folderInfo) {
+    void updateInfo(FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "folderInfo");
         Reject.ifFalse(currentInfo.getId().equals(folderInfo.getId()), "Unable to update meta data. Folder ID mismatch");
         this.currentInfo = folderInfo.intern();
@@ -4943,6 +4943,9 @@ public class Folder extends PFComponent {
     }
 
     private void storeLastSyncDate() {
+        if (shutdown) {
+            return;
+        }
         Path lastSyncFile = getSystemSubDir0().resolve(LAST_SYNC_INFO_FILENAME);
         if (Files.notExists(getSystemSubDir0())) {
             return;
