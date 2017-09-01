@@ -251,7 +251,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
                 try {
-                    return Files.size(fileAtLisa) == Files.size(fileAtBart);
+                    return Files.size(fileAtLisa) == Files.size(fileAtBart) && getContollerBart().getTransferManager().getActiveDownloads().isEmpty();
                 } catch (IOException ioe) {
                     return true;
                 }
