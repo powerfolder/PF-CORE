@@ -67,7 +67,6 @@ public class FolderStatisticTest extends FiveControllerTestCase {
      * Tests the sync percentage with one file that gets updated
      */
     public void testOneFile() throws IOException {
-        LoggingManager.setConsoleLogging(Level.FINE);
         forceStatsCals();
         assertHasLastSyncDate(false, false, false, false, false);
 
@@ -723,9 +722,9 @@ public class FolderStatisticTest extends FiveControllerTestCase {
             @Override
             public boolean reached() {
                 if (folder.getConnectedMembersCount() != 4) {
-                    throw new RuntimeException("Not all members connected on "
-                        + folder + ". Members: "
-                        + Arrays.asList(folder.getConnectedMembers()));
+                    throw new RuntimeException(folder.getController().getMySelf().getNick()
+                            + ": Not all members connected on " + folder + ". Connected members: "
+                            + Arrays.asList(folder.getConnectedMembers())+ ". All members: " + Arrays.asList(folder.getMembersAsCollection()));
                 }
                 Collection<FileInfo> filesLocal = folder.getKnownFiles();
                 MemberInfo source = folder.getController().getMySelf()
