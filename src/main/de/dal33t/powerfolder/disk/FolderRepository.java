@@ -1098,12 +1098,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                         + folder.getName() + ". at "
                         + folder.getCommitOrLocalDir()
                         + ". Existing folder ID: " + folder.getId()
-                        + ". Requested folder ID: " + folderInfo.getId());
+                        + ". Requested folder ID: " + folderInfo.getId() + ". " + folderSettings.getLocalBaseDir());
                 throw new IllegalStateException(
                         "Tried to create duplicate folder " + folder.getName()
                                 + ". at " + folder.getCommitOrLocalDir()
                                 + ". Existing folder ID: " + folder.getId()
-                                + ". Requested folder ID: " + folderInfo.getId());
+                                + ". Requested folder ID: " + folderInfo.getId() + ". " + folderSettings.getLocalBaseDir());
             }
         }
 
@@ -2139,6 +2139,37 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFS-2438
+     * @param foInfo the new or old folder info
+     * @param newName the new name to rename to.
+     * @return the new internalized FolderInfo with the new name.
+     */
+    public FolderInfo renameFolder(FolderInfo foInfo, String newName) {
+        Reject.ifNull(foInfo, "folder info is null");
+        Reject.ifBlank(newName, "New name is blank");
+
+        FolderInfo newFolderInfo = foInfo;
+        if (!foInfo.getName().equals(newName)) {
+            newFolderInfo = new FolderInfo(newName, foInfo.getId());
+        }
+        newFolderInfo = newFolderInfo.intern(true);
+
+        Folder folder = folders.get(foInfo);
+        if (folder != null) {
+            folder.updateInfo(newFolderInfo);
+            folders.remove(foInfo);
+            folders.put(newFolderInfo, folder);
+        }
+        Folder metaFolder = getMetaFolderForParent(foInfo);
+        if (metaFolder != null) {
+            metaFolder.updateInfo(newFolderInfo.getMetaFolderInfo());
+            metaFolders.remove(foInfo);
+            metaFolders.put(newFolderInfo, metaFolder);
+        }
+        return newFolderInfo;
+    }
+
+    /**
      * First check, if there is a Folder with the name equal to the {@code file}
      * 's name. Only if {@code fi} is not {@code null}, there is no known Folder
      * with the same name, the new and old name are not equal and
@@ -2557,7 +2588,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 logInfo("Renaming Folder " + localFolder.getName() + " to "
                         + foInfo.getName());
-                foInfo = foInfo.intern(true);
+                foInfo = renameFolder(localFolder, foInfo.getName());
 
                 Path newDirectory = folder.getLocalBase().getParent()
                         .resolve(PathUtils
