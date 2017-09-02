@@ -17,27 +17,21 @@
  */
 package de.dal33t.powerfolder.ui.iconoverlay;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.liferay.nativity.control.win.WindowsNativityUtil;
 import com.liferay.nativity.modules.fileicon.FileIconControl;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.FolderEvent;
-import de.dal33t.powerfolder.event.FolderListener;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.FolderRepositoryListener;
-import de.dal33t.powerfolder.event.LockingEvent;
-import de.dal33t.powerfolder.event.LockingListener;
-import de.dal33t.powerfolder.event.TransferManagerEvent;
-import de.dal33t.powerfolder.event.TransferManagerListener;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.UserDirectories;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Listen to changes of the transfer state, locking, folders and the folder
@@ -49,9 +43,11 @@ public class IconOverlayUpdateListener extends PFComponent implements
     LockingListener, TransferManagerListener, FolderListener,
     FolderRepositoryListener
 {
-    private AtomicInteger callCount = new AtomicInteger(0);
     private final FileIconControl iconControl;
     private final IconOverlayHandler overlayHandler;
+
+    private AtomicBoolean updateRunning = new AtomicBoolean(false);
+    private Map<FileInfo, FileInfo> dirtyFiles;
 
     public IconOverlayUpdateListener(Controller controller,
         FileIconControl iconControl, IconOverlayHandler overlayHandler)
@@ -59,6 +55,7 @@ public class IconOverlayUpdateListener extends PFComponent implements
         super(controller);
         this.iconControl = iconControl;
         this.overlayHandler = overlayHandler;
+        this.dirtyFiles = Util.createConcurrentHashMap();
     }
 
     @Override
@@ -151,58 +148,67 @@ public class IconOverlayUpdateListener extends PFComponent implements
         update(event.getFileInfo());
     }
 
-    private void update(final FileInfo fInfo) {
-        final Path file = fInfo.getDiskFile(getController()
-            .getFolderRepository());
 
-        int current = callCount.get();
-        if (current >= 100) {
-            logWarning("Creating very many threads to update the Windows Explorer. At the moment there are "
-                + current + " threads running.");
+    private void update(FileInfo fInfo) {
+        if (fInfo.getFolder(getController().getFolderRepository()) == null) {
+            return;
         }
 
-        if (file != null) {
-            callCount.incrementAndGet();
-            getController().getIOProvider().startIO(new Runnable() {
-                @Override
-                public void run() {
+        dirtyFiles.put(fInfo, fInfo);
+
+        if (!updateRunning.compareAndSet(false, true)) {
+            if (isFiner()) {
+                logFiner("Not spawning, already running update");
+            }
+            return;
+        }
+
+        getController().getIOProvider().startIO(new Runnable() {
+            @Override
+            public void run() {
+                while (!dirtyFiles.isEmpty()) {
                     try {
-                        if (Files.exists(file)) {
-                            String fileName = file.toString();
-                            if (OSUtil.isWindowsSystem()) {
-                                WindowsNativityUtil.updateExplorer(fileName);
-                            } else if (OSUtil.isMacOS()) {
-                                iconControl.setFileIcon(fileName,
-                                    overlayHandler.getIconForFile(fileName));
-                            }
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        updateRunning.set(false);
+                        return;
+                    }
+                    if (isFine()) {
+                        logFine("Updating OS file exporer for files: " + dirtyFiles.size()+ ": " + dirtyFiles);
+                    }
+                    for (FileInfo fileInfo : dirtyFiles.keySet()) {
+                        dirtyFiles.remove(fileInfo);
+                        Path file = fileInfo.getDiskFile(getController().getFolderRepository());
+                        if (file == null) {
+                            continue;
                         }
-                    } catch (RuntimeException re) {
-                        logFine(
-                            "Caught exception while updating single file "
-                                + fInfo + ". " + re, re);
-                    } finally {
-                        callCount.decrementAndGet();
+                        try {
+                            if (Files.exists(file)) {
+                                String fileName = file.toString();
+                                if (OSUtil.isWindowsSystem()) {
+                                    WindowsNativityUtil.updateExplorer(fileName);
+                                } else if (OSUtil.isMacOS()) {
+                                    iconControl.setFileIcon(fileName, overlayHandler.getIconForFile(fileInfo));
+                                }
+                            }
+                        } catch (RuntimeException re) {
+                            logFine(
+                                    "Caught exception while updating single file "
+                                            + fileInfo.toDetailString() + ". " + re, re);
+                        }
                     }
                 }
-            });
-        }
+                updateRunning.set(false);
+            }
+        });
     }
 
     private void updateFolder(final Folder folder) {
         if (OSUtil.isWindowsSystem()) {
-
-            int current = callCount.get();
-            if (current >= 100) {
-                logWarning("Creating very many threads to update the Windows Explorer. At the moment there are "
-                    + current + " threads running.");
-            }
-
-            callCount.incrementAndGet();
             getController().getIOProvider().startIO(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        String test = UserDirectories.getDocumentsReported();
                         // Do not update folder Documents because it would lead to duplicate entries in explorer sidebar (see PFC-2862)
                         if (!folder.getLocalBase().toString().equals(UserDirectories.getDocumentsReported())) {
                             WindowsNativityUtil.updateExplorer(folder.getLocalBase().toString());
@@ -213,8 +219,6 @@ public class IconOverlayUpdateListener extends PFComponent implements
                     } catch (UnsatisfiedLinkError e) {
                         logFine("Caught exception while updating folder "
                             + folder + ". " + e, e);
-                    } finally {
-                        callCount.decrementAndGet();
                     }
                 }
             });

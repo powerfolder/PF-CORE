@@ -109,8 +109,28 @@ public class IconOverlayHandler extends PFComponent implements
             // We know, it is a file in a Folder, so create a lookup instance
             // ...
             FileInfo lookup = FileInfoFactory.lookupInstance(folder, path);
-            SyncStatus status = SyncStatus.of(getController(), lookup, folder);
+            return getIconForFile(lookup);
+        } catch (RuntimeException re) {
+            logSevere("An error occured while determining the icon overlay for file '"
+                + path.toString() + "'. " + re);
+            re.printStackTrace();
+            return IconOverlayIndex.NO_OVERLAY.getIndex();
+        }
+    }
 
+    public int getIconForFile(FileInfo fileInfo) {
+        if (fileInfo == null) {
+            logFine("No fileinfo passed");
+            return IconOverlayIndex.NO_OVERLAY.getIndex();
+        }
+        Folder folder = fileInfo.getFolder(getController().getFolderRepository());
+        if (folder == null) {
+            logFine("No folder found for " + fileInfo.toDetailString());
+            return IconOverlayIndex.NO_OVERLAY.getIndex();
+        }
+
+        try {
+            SyncStatus status = SyncStatus.of(getController(), fileInfo, folder);
             // Pick the apropriate icon overlay
             switch (status) {
                 case SYNC_OK :
@@ -129,8 +149,7 @@ public class IconOverlayHandler extends PFComponent implements
             }
         } catch (RuntimeException re) {
             logSevere("An error occured while determining the icon overlay for file '"
-                + path.toString() + "'. " + re);
-            re.printStackTrace();
+                    + fileInfo.toDetailString() + "'. " + re);
             return IconOverlayIndex.NO_OVERLAY.getIndex();
         }
     }
