@@ -3181,7 +3181,7 @@ public class TransferManager extends PFComponent {
      * @param fInfo
      * @param member
      */
-    public void logTransfer(boolean download, long took, FileInfo fInfo,
+    public void logTransfer(boolean download, boolean aborted, long took, FileInfo fInfo,
         Member member)
     {
 
@@ -3205,8 +3205,10 @@ public class TransferManager extends PFComponent {
         }
 
         if (isInfo()) {
-            String msg = (download ? "Download" : "Upload") + " completed: "
-                + Format.formatDecimal(fInfo.getSize()) + " bytes in " + took
+            String type = download ? "Download" : "Upload";
+            String result = aborted ? "aborted: " : "completed: ";
+            String msg = type + " " + result;
+            msg += Format.formatDecimal(fInfo.getSize()) + " bytes in " + took
                 / 1000 + "s (" + cpsStr + " kByte/s): " + fInfo + memberInfo;
             if (fInfo.getFolderInfo().isMetaFolder()) {
                 logFine(msg);

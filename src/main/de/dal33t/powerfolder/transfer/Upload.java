@@ -269,7 +269,7 @@ public class Upload extends Transfer {
                         while (sendPart()) {
                         }
                         long took = System.currentTimeMillis() - startTime;
-                        getTransferManager().logTransfer(false, took,
+                        getTransferManager().logTransfer(false, aborted, took,
                             getFile(), getPartner());
                     }
                     closeIO();
