@@ -1998,7 +1998,7 @@ public class FileTransferTest extends TwoControllerTestCase {
                 (long) (2 * 1024 * 1024 + Math.random() * 1024 * 1024));
 
         assertTrue("Testfile is smaller than max chunk size: " + chunkSize + ". File: " +
-                Files.size(fbart), Files.size(fbart) > chunkSize);
+                Files.size(fbart), Files.size(fbart) > 2 * chunkSize);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -2029,7 +2029,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // FileUtils.copyFile(fbart, tmpCopy);
 
         int modSize = (int) (1024 + 7777);
-        long seek = (long) (Math.random() * (Files.size(fbart) - modSize)) + chunkSize;
+        long seek = (long) (1024 * 1024 + Math.random() * (Files.size(fbart) - modSize - 1024 * 1024)) + chunkSize;
 
         byte[] buf = new byte[(int) seek];
         try (InputStream in = Files.newInputStream(tmpCopy);
