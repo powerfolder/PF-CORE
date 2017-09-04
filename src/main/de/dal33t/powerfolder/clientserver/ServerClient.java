@@ -2105,7 +2105,7 @@ public class ServerClient extends PFComponent {
                     } catch (IOException e) {
                         logWarning("Cannot download client skin:" + e, e);
                     }
-                    if (file == "client/icons.properties") {
+                    if (file.equals("client/icons.properties")) {
                         // Parse the icons file list and add the files to the
                         // files list
                         try (BufferedReader bufferedReader = Files
