@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.util.ArchiveMode;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -315,7 +316,7 @@ public interface FolderService {
     /**
      * PFS-869: Creating a FileLink for unregistered user uploads.
      */
-    String prepareFileLink(String userName, String mailAddress, String password, String date, String folderID);
+    String prepareFileLink(FolderInfo foInfo, String name, String mailAddress, char[] password, Date date);
 
     /**
      * Checks if the storage path of a folder is correct (default)
