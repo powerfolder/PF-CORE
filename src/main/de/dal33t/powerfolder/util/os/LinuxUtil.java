@@ -65,6 +65,17 @@ public class LinuxUtil {
     }
 
     /**
+     * Whether current desktop environment is NOT KDE
+     *
+     * @return true when it's not KDE or otherwise false
+     */
+    public static boolean isNotKDE() {
+        String deskEnv = getDesktopEnvironment();
+
+        return (null == deskEnv || !deskEnv.contains("KDE"));
+    }
+
+    /**
      * Get path to desktop directory based on system settings
      *   Order: $XDG_CURRENT_DIR > xdg-user-dir > $HOME/Desktop
      *
