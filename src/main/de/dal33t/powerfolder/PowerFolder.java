@@ -315,7 +315,13 @@ public class PowerFolder {
         // Begin monitoring memory usage.
         if (controller.isStarted() && controller.isUIEnabled()) {
             ScheduledExecutorService service = controller.getThreadPool();
-            service.scheduleWithFixedDelay(new MemoryMonitor(controller), 1, 1,
+            MemoryMonitor memMon = new MemoryMonitor(controller);
+            if (PreferencesEntry.MEMORY_LIMIT_INCREASE.getValueBoolean(controller)) {
+                memMon.increaseAvailableMemory();
+                // Just try once:
+                PreferencesEntry.MEMORY_LIMIT_INCREASE.setValue(controller, false);
+            }
+            service.scheduleWithFixedDelay(memMon, 1, 1,
                 TimeUnit.MINUTES);
         }
 

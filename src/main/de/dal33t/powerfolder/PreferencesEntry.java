@@ -167,6 +167,11 @@ public enum PreferencesEntry {
     FOLDER_BASE_PATH_OVERWRITE("foldersbase.overwrite", true),
 
     /**
+     * PFS-2490: Try to increase max memory limits on next start.
+     */
+    MEMORY_LIMIT_INCREASE("memory_limit.increase", false),
+
+    /**
      * PFC-2963
      */
     SHOW_UPDATE("show.update", true) {
