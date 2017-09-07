@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class FileRequestor extends PFComponent {
     // 60 seconds
-    private static final long PERIODIC_REQUEST_MS = Controller.getWaitTime() * 12;
+    private static final long PERIODIC_REQUEST_MS = 1000L * 60;
     // 30 minutes
     private static final long WORKER_TIMEOUT = PERIODIC_REQUEST_MS * 30;
     private final Queue<Worker> workerPool;
@@ -270,8 +270,7 @@ public class FileRequestor extends PFComponent {
             // Quit here.
             return;
         }
-        Collections.sort(filesToDownload, folder.getTransferPriorities()
-            .getComparator());
+        Collections.sort(filesToDownload, folder.getTransferPriorities().getComparator());
         for (FileInfo fInfo : filesToDownload) {
             try {
                 // Safeguard:
@@ -442,7 +441,9 @@ public class FileRequestor extends PFComponent {
                         // Give CPU a bit time.
                         if (nFolders % 5 == 0 && !stopped) {
                             lastActivity = new Date();
-                            Thread.sleep(1);
+                            if (!getMySelf().isServer()) {
+                                Thread.sleep(1);
+                            }
                         }
                     } catch (RuntimeException e) {
                         logSevere("RuntimeException: " + e.toString(), e);

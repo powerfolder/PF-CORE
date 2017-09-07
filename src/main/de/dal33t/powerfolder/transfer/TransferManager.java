@@ -2713,7 +2713,8 @@ public class TransferManager extends PFComponent {
      */
     private class TransferChecker implements Runnable {
         public void run() {
-            long waitTime = Controller.getWaitTime() * 2;
+            // Every 10 seconds
+            long waitTime = 1000L * 10;
             int count = 0;
 
             while (!Thread.currentThread().isInterrupted()) {

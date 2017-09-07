@@ -95,10 +95,9 @@ public class Updater extends Thread {
                 new Updater(controller, updateHandler).start();
             }
         };
-        // Check for shortly after start.
+        // Check after 15 seconds on start and every hour
         controller.scheduleAndRepeat(updateCheckTask,
-            Controller.getWaitTime() * 3,
-            1000L * 60 * Constants.UPDATE_CHECK_PERIOD_MINUTES);
+            1000L * 15,1000L * 60 * Constants.UPDATE_CHECK_PERIOD_MINUTES);
 
     }
 
