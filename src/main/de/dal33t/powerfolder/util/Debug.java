@@ -779,6 +779,24 @@ public class Debug {
         return b.toString();
     }
 
+    public static String dumpThreadInfo(Thread thread, boolean hideIdleThreds) {
+        String threadDump = dumpStackTrace(thread, hideIdleThreds);
+        if (StringUtils.isBlank(threadDump)) {
+            return null;
+        }
+        String dump = '\"' + thread.getName() + "\" - Thread t@" + thread.hashCode() + '\n';
+        dump += "   java.lang.Thread.State: " + thread.getState();
+        dump += "\n";
+        dump += threadDump;
+        dump += "\n";
+
+        // dump += "   Locked ownable synchronizers:\n";
+        // dump += "        - unknown\n";
+        // dump += "\n";
+
+        return dump;
+    }
+
     private static List<String> getGroupInfo(ThreadGroup group,
         boolean hideIdleThreds)
     {
@@ -788,14 +806,10 @@ public class Debug {
 
         for (Thread thread : threads) {
             if (thread != null) {
-                String threadDump = dumpStackTrace(thread, hideIdleThreds);
-                if (StringUtils.isBlank(threadDump)) {
+                String dump = dumpThreadInfo(thread, hideIdleThreds);
+                if (StringUtils.isBlank(dump)) {
                     continue;
                 }
-                String dump = " " + thread
-                    + " --------------------------------------\n";
-                dump += threadDump;
-                dump += "\n";
                 threadDumps.add(dump);
             }
         }
@@ -811,6 +825,9 @@ public class Debug {
     }
 
     private static String dumpStackTrace(Thread t, boolean hideIdleThreds) {
+        if (hideIdleThreds && t.getState() != Thread.State.RUNNABLE) {
+            return null;
+        }
         StringBuilder b = new StringBuilder();
         for (StackTraceElement te : t.getStackTrace()) {
             if (hideIdleThreds) {
@@ -868,10 +885,30 @@ public class Debug {
                 {
                     return null;
                 }
-
+                if (te.toString().contains(
+                        "sun.nio.ch.ServerSocketChannelImpl.accept0")) {
+                    return null;
+                }
+                if (te.toString().contains(
+                        "java.net.DualStackPlainSocketImpl.accept0")) {
+                    return null;
+                }
+                if (te.toString().contains(
+                        "sun.nio.ch.WindowsSelectorImpl$SubSelector.poll0")) {
+                    return null;
+                }
+                if (te.toString()
+                        .contains("sun.nio.ch.ServerSocketChannelImpl.accept"))
+                {
+                    return null;
+                }
+                if (te.toString().contains(
+                        "java.net.TwoStacksPlainDatagramSocketImpl.receive0")) {
+                    return null;
+                }
             }
 
-            b.append("  " + te);
+            b.append("        " + te);
             b.append("\n");
         }
         return b.toString();
@@ -920,8 +957,8 @@ public class Debug {
 
         for (Thread thread : threads) {
             if (thread != null) {
-                log.fine(" " + thread
-                    + " --------------------------------------");
+                log.fine('\"' + thread.getName() + "\" - Thread t@" + thread.hashCode());
+                log.fine("   java.lang.Thread.State: " + thread.getState());
                 dumpStackTrace(thread);
                 log.fine("");
             }
@@ -938,7 +975,7 @@ public class Debug {
 
     private static void dumpStackTrace(Thread t) {
         for (StackTraceElement te : t.getStackTrace()) {
-            log.fine("  " + te);
+            log.fine("        " + te);
         }
     }
 
