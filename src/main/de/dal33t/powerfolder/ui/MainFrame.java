@@ -837,13 +837,14 @@ public class MainFrame extends PFUIComponent {
             }
             title.append(" | " + getController().getMySelf().getNick());
         }
+        /* No idea who archi is ;)
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         if (cal.get(Calendar.DAY_OF_MONTH) == 21
             && cal.get(Calendar.MONTH) == 2)
         {
             title.append(" | Happy birthday archi !");
-        }
+        }*/
         uiComponent.setTitle(title.toString());
     }
 
@@ -1003,8 +1004,7 @@ public class MainFrame extends PFUIComponent {
 
     /**
      * Source:
-     * http://stackoverflow.com/questions/309023/howto-bring-a-java-window
-     * -to-the-front
+     * http://stackoverflow.com/questions/309023/howto-bring-a-java-window-to-the-front
      */
     public void toFront() {
         uiComponent.setVisible(true);
@@ -1039,7 +1039,21 @@ public class MainFrame extends PFUIComponent {
         // // To COMPACT mode.
         // setFrameMode(FrameMode.COMPACT);
         // } else {
-        setFrameMode(FrameMode.MINIMIZED);
+
+        /** PFC-2937: Tray icon minimize and minus button action differ: There is a different behavior
+         *            when you use either and it gets weird, when you intermix them.
+         *            Apparently the current way works well enough for Windows/macOS, so we just have
+         *            to change it here for Linux, when it isn't KDE.
+         *
+         *            @see ActionListener in {@link UIController#initializeSystray()} vs else block here
+         *
+         *            KDE needs special treatmeant (see PFC-2914 and {@link MainFrame.MyWindowListener})
+         */
+        if(OSUtil.isLinux() && LinuxUtil.isNotKDE()) {
+            getUIComponent().setVisible(false);
+        } else {
+            setFrameMode(FrameMode.MINIMIZED);
+        }
         // }
     }
 
@@ -1098,12 +1112,12 @@ public class MainFrame extends PFUIComponent {
          * @param e
          */
         public void windowIconified(WindowEvent e) {
-            String desk = LinuxUtil.getDesktopEnvironment();
 
-            // #PFC-2914: Currently plasma (KDE's window manager) lacks proper support for java
-            //            tray handling, so hiding all windows on iconification makes it impossible
-            //            to get the window back.
-            if(null == desk || !desk.equals("KDE")) {
+            /** PFC-2914: Currently plasma (KDE's window manager) lacks proper support for java
+             *            tray handling, so hiding all windows on iconification makes it impossible
+             *            to get the window back.
+             */
+            if(LinuxUtil.isNotKDE()) {
                 getUIController().hideChildPanels();
                 if (OSUtil.isSystraySupported()) {
                     uiComponent.setVisible(false);
