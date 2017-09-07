@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class FileRequestor extends PFComponent {
     // 60 seconds
-    private static final long PERIODIC_REQUEST_MS = Controller.getWaitTime() * 12;
+    private static final long PERIODIC_REQUEST_MS = 1000L * 60;
     // 30 minutes
     private static final long WORKER_TIMEOUT = PERIODIC_REQUEST_MS * 30;
     private final Queue<Worker> workerPool;

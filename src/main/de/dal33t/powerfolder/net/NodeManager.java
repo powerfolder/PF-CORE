@@ -1023,7 +1023,7 @@ public class NodeManager extends PFComponent {
 
         // Throttle acception a bit depending on how much incoming connections
         // we are currently processing.
-        long waitTime = (acceptors.size() * Controller.getWaitTime()) / 400;
+        long waitTime = 10L * acceptors.size();
         if (isFiner()) {
             logFiner("Currently processing incoming connections ("
                 + acceptors.size() + "), throttled (" + waitTime + "ms wait)");

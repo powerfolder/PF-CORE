@@ -104,7 +104,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
           localAddresses = new ArrayList<InetAddress>();
           receivedBroadcastsFrom = new ArrayList<InetAddress>();
 
-          waitTime = Controller.getWaitTime() * 3;
+          waitTime = 1000L * 15;
           group = InetAddress.getByName("224.0.0.1");
 
           if(controller.hasConnectionListener())

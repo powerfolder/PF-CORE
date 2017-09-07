@@ -1575,10 +1575,6 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Mainenance thread for the folders
      */
     public void run() {
-
-        // 1000 ms wait
-        long waitTime = Controller.getWaitTime() / 5;
-
         // Wait to build up ui
         Waiter w = new Waiter(30L * 1000);
         while (!w.isTimeout()) {
@@ -1656,7 +1652,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     // use waiter, will quit faster
                     synchronized (scanTrigger) {
-                        scanTrigger.wait(waitTime);
+                        // one seconds wait
+                        scanTrigger.wait(1000L);
                     }
                 } catch (InterruptedException e) {
                     logFiner(e);
