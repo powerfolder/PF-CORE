@@ -173,11 +173,14 @@ public class FilenameProblemHelper {
      * : and / are illegal on Mac OSX
      */
     private static boolean containsIllegalMacOSXChar(String filename) {
+        // PFC-2957 / #2480:
+        /*
         for (String illegalLinuxChar : ILLEGAL_MACOSX_CHARS) {
             if (filename.contains(illegalLinuxChar)) {
                 return true;
             }
         }
+        */
         return false;
     }
 

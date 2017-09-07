@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -113,7 +114,7 @@ public class MemoryMonitor implements Runnable {
             .handleNotice(notice);
     }
 
-    private void increaseAvailableMemory() {
+    public void increaseAvailableMemory() {
         if (!OSUtil.is64BitPlatform()) {
             DialogFactory.genericDialog(controller, Translation
                             .get("low_memory.title"), Translation
@@ -121,13 +122,19 @@ public class MemoryMonitor implements Runnable {
                     GenericDialogType.WARN);
             return;
         }
+        boolean increased;
         if (OSUtil.isMacOS()) {
-            increaseAvailableMemoryMac();
+            increased = increaseAvailableMemoryMac();
         } else {
-            increaseAvailableMemoryWin();
+            increased = increaseAvailableMemoryWin();
+        }
+        if (!increased) {
+            // Increase on next start
+            PreferencesEntry.MEMORY_LIMIT_INCREASE.setValue(controller, true);
         }
     }
-    private void increaseAvailableMemoryWin() {
+
+    private boolean increaseAvailableMemoryWin() {
 
         // Read the current ini file.
         boolean wroteNewIni = false;
@@ -188,12 +195,13 @@ public class MemoryMonitor implements Runnable {
                 .get("low_memory.configure_failure"),
                 GenericDialogType.WARN);
         }
+        return wroteNewIni;
     }
 
     /**
      * Reconfigure Info.plist from (initial) 512M to 1024M max memory.
      */
-    private void increaseAvailableMemoryMac() {
+    private boolean increaseAvailableMemoryMac() {
         boolean success = false;
         PrintWriter pw = null;
         BufferedReader br = null;
@@ -251,5 +259,6 @@ public class MemoryMonitor implements Runnable {
                             .get("low_memory.configure_failure"),
                     GenericDialogType.WARN);
         }
+        return success;
     }
 }

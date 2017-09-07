@@ -64,7 +64,7 @@ public enum PreferencesEntry {
 
     UNDERLINE_LINKS("UnderlineLinks", false),
 
-    FILE_NAME_CHECK("folder.check_filenames", false),
+    FILE_NAME_CHECK("folder.check_filenames", true),
 
     CHECK_UPDATE("updatechecker.askfornewreleaseversion", true),
 
@@ -165,6 +165,11 @@ public enum PreferencesEntry {
      * Flag is set true if FOLDER_BASE_PATH shall overwrite existing configuration
      */
     FOLDER_BASE_PATH_OVERWRITE("foldersbase.overwrite", true),
+
+    /**
+     * PFS-2490: Try to increase max memory limits on next start.
+     */
+    MEMORY_LIMIT_INCREASE("memory_limit.increase", false),
 
     /**
      * PFC-2963

@@ -1160,7 +1160,7 @@ public enum ConfigurationEntry {
     FOLDER_FILE_REQUESTOR_MAX_WORKERS("sync.folder.max_filerequestors", 300),
 
     /** PFC-3018: The number of folders one requestor should handle */
-    FOLDER_FOLDERS_PER_FILE_REQUESTOR("sync.folder.folders_per_filerequestors", 300),
+    FOLDER_FOLDERS_PER_FILE_REQUESTOR("sync.folder.folders_per_filerequestors", 600),
 
     /**
      * Automatically setup all folders the user has access to and also
