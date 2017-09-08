@@ -1588,7 +1588,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                     try {
                                         sendMessage(filelistMsg);
                                     } catch (ConnectionException e) {
-                                        logWarning("Unable to send new filelist of "
+                                        logFine("Unable to send new filelist of "
                                             + targetFolder.getName()
                                             + " to "
                                             + getNick() + ". " + e);
