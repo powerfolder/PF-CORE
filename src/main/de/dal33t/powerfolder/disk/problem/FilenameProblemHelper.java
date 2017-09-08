@@ -52,12 +52,11 @@ public class FilenameProblemHelper {
 
     private static final int MAX_FILENAME_LENGTH = 255;
 
-    public static final String[] ILLEGAL_LINUX_CHARS = {"/"};
+    public static final String[] ILLEGAL_LINUX_CHARS = { "/" };
 
-    public static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "\\", "?", "\"",
-        "*", "<", ":", ">", "/"};
+    public static final String[] ILLEGAL_WINDOWS_CHARS = { "\\" };
 
-    public static final String[] ILLEGAL_MACOSX_CHARS = {"/", ":"};
+    public static final String[] ILLEGAL_MACOSX_CHARS = { };
 
     /**
      * See if there are any problems.
@@ -173,14 +172,11 @@ public class FilenameProblemHelper {
      * : and / are illegal on Mac OSX
      */
     private static boolean containsIllegalMacOSXChar(String filename) {
-        // PFC-2957 / #2480:
-        /*
         for (String illegalLinuxChar : ILLEGAL_MACOSX_CHARS) {
             if (filename.contains(illegalLinuxChar)) {
                 return true;
             }
         }
-        */
         return false;
     }
 
