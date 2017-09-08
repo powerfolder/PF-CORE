@@ -348,8 +348,8 @@ public interface FolderService {
      *
      * @param folderInfo
      * @param account
-     * @return
+     * @return true if folder was successfully encrypted.
      * @throws IOException
      */
-    void encrypt(FolderInfo folderInfo, Account account);
+    boolean encrypt(FolderInfo folderInfo, Account account);
 }
