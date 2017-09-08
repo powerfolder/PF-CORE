@@ -2885,16 +2885,6 @@ public class Controller extends PFComponent {
         }
     }
 
-    /**
-     * Answers the waittime for threads time differst a bit to avoid
-     * concurrencies
-     *
-     * @return The time to wait
-     */
-    public static long getWaitTime() {
-        return WAIT_TIME;
-    }
-
     @Override
     public String toString() {
         return "Controller '" + getMySelf() + '\'';
