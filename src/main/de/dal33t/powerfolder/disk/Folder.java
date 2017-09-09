@@ -5017,17 +5017,19 @@ public class Folder extends PFComponent {
     }
 
     public boolean hasWritePermission(Member member) {
-        Boolean hasWrite = hasWriteCache.getValidEntry(member);
-        if (hasWrite != null) {
+        Boolean hasReadWrite = hasWriteCache.getValidEntry(member);
+        if (hasReadWrite != null) {
             if (hasWriteCache.getCacheHits() % 100000 == 0 && isFine()) {
                 logFine("Permission write: " + hasWriteCache);
             }
-            return hasWrite;
+            return hasReadWrite;
         }
-        hasWrite = hasFolderPermission(member,
+        hasReadWrite = hasFolderPermission(member,
                 FolderPermission.readWrite(getParentFolderInfo()));
-        hasWriteCache.put(member, hasWrite);
-        return hasWrite;
+        hasWriteCache.put(member, hasReadWrite);
+        // PFC-3018: Also update read permission cache:
+        hasReadCache.put(member, hasReadWrite);
+        return hasReadWrite;
     }
 
     public boolean hasAdminPermission(Member member) {
