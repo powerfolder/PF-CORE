@@ -45,6 +45,8 @@ public class HTTPProxySettings {
         if ("true".equalsIgnoreCase(System.getProperty("java.net.useSystemProxies"))) {
             SYSTEM_PROXY_ENABLED = StringUtils.isNotBlank(System.getProperty("http.proxyHost", ""));
         }
+        // PFC-2990: http://www.oracle.com/technetwork/java/javase/8u111-relnotes-3124969.html
+        System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
     }
 
     private HTTPProxySettings() {
