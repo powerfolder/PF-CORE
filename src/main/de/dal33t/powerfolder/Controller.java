@@ -1616,26 +1616,20 @@ public class Controller extends PFComponent {
                 }
             }
 
-            if (!config.getFolders().isEmpty()) {
-                Properties prevFolders = new Properties();
-                if (Files.exists(folderFile)) {
-                    try (BufferedInputStream in = new BufferedInputStream(
-                        Files.newInputStream(folderFile))) {
-                        prevFolders.load(in);
-                    }
+            Properties prevFolders = new Properties();
+            if (Files.exists(folderFile)) {
+                try (BufferedInputStream in = new BufferedInputStream(Files.newInputStream(folderFile))) {
+                    prevFolders.load(in);
                 }
-                if (!prevFolders.equals(config.getFolders())) {
-                    PropertiesUtil
-                        .saveConfig(tempFolderFile, config.getFolders(),
-                            distName + " folders config file (v"
-                                + PROGRAM_VERSION + ')');
-                    Files.deleteIfExists(folderFile);
-                    try {
-                        Files.move(tempFolderFile, folderFile);
-                    } catch (IOException e) {
-                        Files.copy(tempFolderFile, folderFile);
-                        Files.delete(tempFolderFile);
-                    }
+            }
+            if (!prevFolders.equals(config.getFolders())) {
+                PropertiesUtil.saveConfig(tempFolderFile, config.getFolders(), distName + " folders config file (v" + PROGRAM_VERSION + ')');
+                Files.deleteIfExists(folderFile);
+                try {
+                    Files.move(tempFolderFile, folderFile);
+                } catch (IOException e) {
+                    Files.copy(tempFolderFile, folderFile);
+                    Files.delete(tempFolderFile);
                 }
             }
         } catch (IOException e) {
