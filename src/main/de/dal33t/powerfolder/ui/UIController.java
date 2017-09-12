@@ -1542,6 +1542,7 @@ public class UIController extends PFComponent {
         public void gotInvitation(Invitation invitation) {
             boolean autoAccepted = false;
 
+            /*
             if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
                 .getValueBoolean(getController()))
             {
@@ -1549,6 +1550,7 @@ public class UIController extends PFComponent {
                 autoAccepted = getController().getFolderRepository()
                     .autoAcceptInvitation(invitation);
             }
+            */
 
             if (autoAccepted) {
                 // Just tell the user what happened
