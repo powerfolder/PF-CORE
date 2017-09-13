@@ -51,7 +51,7 @@ public class UpdateSetting {
         UpdateSetting settings = new UpdateSetting();
 
         String webURL = "";
-        if (c.getOSClient().hasWebURL()) {
+        if (c.getOSClient() != null && c.getOSClient().hasWebURL()) {
             webURL = c.getOSClient().getWebURL();
         }
 
