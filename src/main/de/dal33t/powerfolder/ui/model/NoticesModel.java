@@ -28,6 +28,7 @@ import javax.swing.SwingUtilities;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FileInBasePathWarning;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -258,11 +259,15 @@ public class NoticesModel extends PFUIComponent {
     }
 
     public void clearAll() {
-        for (Notice n : notices) {
-            if (n instanceof InvitationNotice) {
-                getController().getThreadPool().execute(
-                    new DeclineInvitationTask(((InvitationNotice) n)
-                        .getPayload(getController())));
+        if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
+            .getValueBoolean(getController()))
+        {
+            for (Notice n : notices) {
+                if (n instanceof InvitationNotice) {
+                    getController().getThreadPool().execute(
+                        new DeclineInvitationTask(((InvitationNotice) n)
+                            .getPayload(getController())));
+                }
             }
         }
         notices.clear();
@@ -272,7 +277,10 @@ public class NoticesModel extends PFUIComponent {
     public void clearNotice(Notice notice) {
         for (Notice n : notices) {
             if (notice.equals(n)) {
-                if (n instanceof InvitationNotice) {
+                if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
+                    .getValueBoolean(getController()) &&
+                    n instanceof InvitationNotice)
+                {
                     getController().getThreadPool().execute(
                         new DeclineInvitationTask(((InvitationNotice) n)
                             .getPayload(getController())));
