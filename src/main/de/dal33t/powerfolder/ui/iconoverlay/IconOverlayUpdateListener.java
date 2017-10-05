@@ -276,7 +276,7 @@ public class IconOverlayUpdateListener extends PFComponent implements
     }
 
     @Override
-    public void scanResultCommited(FolderEvent folderEvent) {
+    public void scanResultCommitted(FolderEvent folderEvent) {
         if (folderEvent.getScanResult().isChangeDetected()) {
             updateFolder(folderEvent.getFolder());
         }

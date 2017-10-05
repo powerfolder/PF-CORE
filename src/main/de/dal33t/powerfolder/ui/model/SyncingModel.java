@@ -208,7 +208,7 @@ public class SyncingModel extends PFUIComponent {
             calculateOverallStats();
         }
 
-        public void scanResultCommited(final FolderEvent folderEvent) {
+        public void scanResultCommitted(final FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 calculateOverallStats();
             }

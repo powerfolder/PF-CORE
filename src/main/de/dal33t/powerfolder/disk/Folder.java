@@ -5161,7 +5161,7 @@ public class Folder extends PFComponent {
             logFiner("fireScanResultCommited: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, scanResult);
-        folderListenerSupport.scanResultCommited(folderEvent);
+        folderListenerSupport.scanResultCommitted(folderEvent);
     }
 
     /** package protected because fired by FolderStatistics */

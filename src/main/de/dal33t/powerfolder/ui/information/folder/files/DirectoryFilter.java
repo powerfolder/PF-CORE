@@ -639,7 +639,7 @@ public class DirectoryFilter extends FilterModel {
             }
         }
 
-        public void scanResultCommited(FolderEvent folderEvent) {
+        public void scanResultCommitted(FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 checkAndQueue(folderEvent);
             }

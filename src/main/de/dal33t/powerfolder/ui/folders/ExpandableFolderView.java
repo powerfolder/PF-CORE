@@ -1433,7 +1433,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
 
-        public void scanResultCommited(FolderEvent folderEvent) {
+        public void scanResultCommitted(FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 doFolderChanges(folderEvent.getFolder());
             }

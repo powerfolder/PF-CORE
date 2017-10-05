@@ -31,7 +31,7 @@ public abstract class FolderAdapter implements FolderListener {
         // Do nothing by default
     }
 
-    public void scanResultCommited(FolderEvent folderEvent) {
+    public void scanResultCommitted(FolderEvent folderEvent) {
         // Do nothing by default
     }
 

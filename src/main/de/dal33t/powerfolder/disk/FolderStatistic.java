@@ -731,7 +731,7 @@ public class FolderStatistic extends PFComponent {
             calculateIfRequired(folderEvent);
         }
 
-        public void scanResultCommited(FolderEvent folderEvent) {
+        public void scanResultCommitted(FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 // Recalculate statistics
                 scheduleCalculate();

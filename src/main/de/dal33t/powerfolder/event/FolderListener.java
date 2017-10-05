@@ -66,7 +66,7 @@ public interface FolderListener extends CoreListener {
      *
      * @param folderEvent
      */
-    void scanResultCommited(FolderEvent folderEvent);
+    void scanResultCommitted(FolderEvent folderEvent);
 
     /**
      * Fired when a single file has been changed. e.g. after scan or after
