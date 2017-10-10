@@ -370,6 +370,7 @@ public enum ConfigurationEntry {
      * PFS-2425: Federated login with AccountDiscovery
      */
     SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
+    CLIENT_FEDERATED_URL("client.federation.url", ""),
 
     // Server WEB settings ****************************************************
 

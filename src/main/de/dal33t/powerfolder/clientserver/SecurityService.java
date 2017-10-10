@@ -27,9 +27,9 @@ import java.util.Map;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
-import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
 
@@ -249,4 +249,19 @@ public interface SecurityService {
      *            the invitation.
      */
     void declineInvitation(Invitation invitation);
+
+    /**
+     * PF-102: In federation, get the hosting service of a given username.
+     *
+     * @param username The accounts username.
+     * @return The ServerInfo the account is hosted on.
+     */
+    ServerInfo getHostingService(String username);
+
+    /**
+     * PF-102: Checks if the server supports federation.
+     *
+     * @return true if the server supports federation.
+     */
+    boolean isFederatedService();
 }

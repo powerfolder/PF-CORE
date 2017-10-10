@@ -801,7 +801,6 @@ public class ServerClient extends PFComponent {
     /**
      * Convenience method to get the URL to an avatar
      *
-     * @param information about the account
      * @return the avatar URL.
      */
     public String getAvatarURL(AccountInfo aInfo, boolean thumbnail) {
@@ -1022,24 +1021,59 @@ public class ServerClient extends PFComponent {
             logFine("Login without username");
         }
         synchronized (loginLock) {
+
             loggingIn.set(true);
+
             String prevUsername = username;
             String prevPasswordObf = passwordObf;
+
             try {
                 username = theUsername;
                 passwordObf = thePasswordObj;
                 tokenSecret = theToken;
+
                 saveLastKnowLogin(username, null);
-                // WAS: saveLastKnowLogin(username, passwordObf);
+
+                // Start: PF-102: Federated client login.
+                if (isFederatedLogin()) {
+
+                    String serviceWebUrl = securityService.getHostingService(username).getWebUrl();
+                    String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
+
+                    if (!serviceWebUrl.equals(currentWebUrl)) {
+
+                        logInfo("Federated login! Starting AccountDiscovery ...");
+
+                        loadConfigURL(serviceWebUrl);
+
+                        // Mark the federated service for connect
+                        server.markForImmediateConnect();
+
+                        Waiter w = new Waiter(1000);
+                        while (!w.isTimeout() && !isConnected()) {
+                            w.waitABit();
+                        }
+
+                        if (isConnected()) {
+                            ConfigurationEntry.CLIENT_FEDERATED_URL.setValue(getController(), serviceWebUrl);
+                            logInfo("Successfully connected to federated service "
+                                    + serviceWebUrl + " / " + server.getNick());
+                        }
+                    }
+                }
+                // End: PF-102: Federated client login.
 
                 boolean disconnected = !server.isConnected();
+
                 if (disconnected || !hasCredentials()) {
                     setAnonAccount();
                     fireLogin(accountDetails);
                     return accountDetails.getAccount();
                 }
+
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
+
                 try {
                     if (isKerberosLogin()) {
                         byte[] serviceTicket = prepareKerberosLogin();
@@ -1582,6 +1616,7 @@ public class ServerClient extends PFComponent {
             }
 
             connectHostingServers(true);
+
         } catch (Exception e) {
             logWarning("Could not load connection infos from " + configURL
                 + ": " + e.getMessage());
@@ -1590,7 +1625,6 @@ public class ServerClient extends PFComponent {
     
     /**
      * Load all known (cluster) server nodes and their public keys.
-     * @param client
      */
     public void loadServerNodes() {
         if (!ConfigurationEntry.SERVER_LOAD_NODES
@@ -2478,14 +2512,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void changeToServer(ServerInfo newServerInfo) {
-        // PFC-2455
-        if (!newServerInfo.isClusterServer()) {
-            logWarning(
-                "Not allowed to change primary server to federated service: "
-                    + newServerInfo.getName() + ". Keeping server "
-                    + server.getNick());
-            return;
-        }
+
         logFine("Changing server to " + newServerInfo.getNode());
 
         // Add key of new server to keystore.
@@ -2527,6 +2554,7 @@ public class ServerClient extends PFComponent {
 
         // Now actually switch to new server.
         setNewServerNode(newServerNode);
+
         // Attempt to login. At least remind login for real connect.
         if (!isConnected()) {
             // Mark new server for connect
@@ -2666,6 +2694,30 @@ public class ServerClient extends PFComponent {
             getController().performFullSync();
             getController().exitAfterSync(60);
         }
+    }
+
+    /**
+     * PF-102: AccountDiscovery (federated login) must be performed if the target server supports federation AND
+     * the account was never discovered or the server has changed.
+     *
+     * @return true a new AccountDiscovery is necessary.
+     */
+    private boolean isFederatedLogin() {
+
+        boolean serverSupportsFederation;
+
+        try {
+            serverSupportsFederation = securityService.isFederatedService();
+        } catch (RemoteCallException ex) {
+            logWarning("Server " + server.getNick() + " does NOT support federated logins.");
+            return false;
+        }
+
+        boolean discoveryNecessary = StringUtils.isBlank(ConfigurationEntry.CLIENT_FEDERATED_URL.getValue(getController()));
+        boolean rediscoveryNecessary = !ConfigurationEntry.CLIENT_FEDERATED_URL.getValue(getController())
+                .equalsIgnoreCase(ConfigurationEntry.SERVER_WEB_URL.getValue(getController()));
+
+        return serverSupportsFederation && (discoveryNecessary || rediscoveryNecessary);
     }
 
     /**
@@ -2892,7 +2944,6 @@ public class ServerClient extends PFComponent {
                 logWarning(e);
                 return null;
             }
-
         }
     }
 }

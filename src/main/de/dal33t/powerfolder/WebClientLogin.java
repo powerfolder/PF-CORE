@@ -50,7 +50,10 @@ public class WebClientLogin extends PFComponent {
     }
 
     public void stop() {
-        myThread.interrupt();
+
+        if (myThread != null)
+            myThread.interrupt();
+
         try {
             serverSocket.close();
         } catch (IOException e) {
