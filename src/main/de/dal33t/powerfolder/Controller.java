@@ -109,8 +109,6 @@ public class Controller extends PFComponent {
     private Path configFile;
     private Path configFolderFile;
     private Path sslTrustStoreFile;
-    private Path sslCaTrustStoreFile;
-    private Path sslCaCertificateFile;
 
     /** The config properties */
     private SplitConfig config;
@@ -976,22 +974,6 @@ public class Controller extends PFComponent {
             sslTrustStoreFile = sslTrustStoreFile.resolve(sslTrustStoreFileName);
         }
 
-        String sslCaTrustStoreFileName = filename.replace(".config", ".sslca.jks");
-        sslCaTrustStoreFile = getConfigLocationBase();
-        if (sslCaTrustStoreFile == null) {
-            sslCaTrustStoreFile = Paths.get(sslCaTrustStoreFileName).toAbsolutePath();
-        } else {
-            sslCaTrustStoreFile = sslCaTrustStoreFile.resolve(sslCaTrustStoreFileName);
-        }
-
-        String sslCaCertificateFileName = filename.replace(".config", ".sslca.pem");
-        sslCaCertificateFile = getConfigLocationBase();
-        if (sslCaCertificateFile == null) {
-            sslCaCertificateFile = Paths.get(sslCaCertificateFileName).toAbsolutePath();
-        } else {
-            sslCaCertificateFile = sslCaCertificateFile.resolve(sslCaCertificateFileName);
-        }
-
         if (Files.exists(configFolderFile)) {
             try {
                 logInfo("Loading folder configfile "
@@ -1438,16 +1420,16 @@ public class Controller extends PFComponent {
 
         /* Check whether to start D2D, too */
         boolean useD2D = ConfigurationEntry.D2D_ENABLED.getValueBoolean(this);
-        int     port   = ConfigurationEntry.D2D_PORT.getValueInt(this);
-
-        if(useD2D) {
+        int port = ConfigurationEntry.D2D_PORT.getValueInt(this);
+        if (useD2D) {
             logInfo("D2D is enabled");
-
-            boolean listenerOpened = openListener(port, useD2D);
-
-            if(!listenerOpened) {
+            boolean listenerOpened = openListener(port, true);
+            nodeManager.getMySelf().getInfo().setD2dPort(port);
+            if (!listenerOpened) {
                 logSevere("Couldn't bind to port " + port);
-            } else logInfo("Listening on D2D port " + port);
+            } else {
+                logInfo("Listening on D2D port " + port);
+            }
         }
 
         return true;
@@ -2108,14 +2090,6 @@ public class Controller extends PFComponent {
 
     public Path getSslTrustStoreFile() {
         return sslTrustStoreFile;
-    }
-
-    public Path getSslCaTrustStoreFile() {
-        return sslCaTrustStoreFile;
-    }
-
-    public Path getSslCaCertificateFile() {
-        return sslCaCertificateFile;
     }
 
     /**

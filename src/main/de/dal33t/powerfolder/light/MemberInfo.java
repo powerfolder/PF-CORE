@@ -39,6 +39,7 @@ import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.Date;
@@ -81,6 +82,8 @@ public class MemberInfo implements Serializable, D2DObject {
      * afterwards because handshake was not completed, e.g. because
      * uninteresting.
      */
+    @Transient
+    private int d2dPort;
     private Date lastConnectTime;
 
     // flag if peer was connected at remote side
@@ -135,6 +138,14 @@ public class MemberInfo implements Serializable, D2DObject {
 
     public InetSocketAddress getConnectAddress() {
         return this.connectAddress;
+    }
+
+    public int getD2dPort() {
+        return d2dPort;
+    }
+
+    public void setD2dPort(int d2dPort) {
+        this.d2dPort = d2dPort;
     }
 
     public String getId() {
@@ -406,17 +417,8 @@ public class MemberInfo implements Serializable, D2DObject {
 
           this.nick            = proto.getNick();
           this.id              = proto.getId();
-          this.networkId       = proto.getNetworkId();
-
-          /* Disassemble host:port string */
-          String[] split = proto.getConnectAddress().split(":");
-
-          if(2 <= split.length)
-            {
-              this.connectAddress  = new InetSocketAddress(split[0],
-                Integer.valueOf(split[1]));
-            }
-
+          this.networkId       = proto.getNetworkId();this.connectAddress = new InetSocketAddress(proto.getAddress(), proto.getPort());
+          this.d2dPort         = proto.getPort();
           this.lastConnectTime = (-1 == proto.getLastConnectTime()
               ? null
               : new Date(proto.getLastConnectTime()));
@@ -441,9 +443,8 @@ public class MemberInfo implements Serializable, D2DObject {
       builder.setNick(this.nick);
       builder.setId(this.id);
       builder.setNetworkId(this.networkId);
-      if (this.connectAddress != null) {
-          builder.setConnectAddress(this.connectAddress.toString()); ///< Assemble to host:port
-      }
+      if (this.connectAddress != null) builder.setAddress(this.connectAddress.getHostName());
+      builder.setPort(this.d2dPort);
       builder.setLastConnectTime(null == this.lastConnectTime ? -1 : this.lastConnectTime.getTime());
       builder.setIsConnected(this.isConnected);
       builder.setIsSuperNode(this.isSupernode);

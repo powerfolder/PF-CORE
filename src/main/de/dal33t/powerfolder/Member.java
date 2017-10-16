@@ -655,6 +655,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             // Don't change the connection address on a tunneled connection.
         }
 
+        info.setD2dPort(identity.getMemberInfo().getD2dPort());
+
         return completeHandshake();
     }
 
