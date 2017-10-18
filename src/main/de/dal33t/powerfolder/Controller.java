@@ -54,6 +54,7 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
 import org.apache.commons.cli.CommandLine;
+import org.quartz.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,6 +66,7 @@ import java.nio.file.DirectoryStream.Filter;
 import java.security.Security;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -72,6 +74,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -87,7 +93,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 5;
-    private static final int REVISION_VERSION = 566;
+    private static final int REVISION_VERSION = 568;
 
     /**
      * Program version.
@@ -1175,12 +1181,13 @@ public class Controller extends PFComponent {
         // How long to wait initially?
         long secondsToMidnight = (midnight - now) / 1000;
         logFine("Initial log reconfigure in " + secondsToMidnight + " seconds");
-        threadPool.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                performHousekeeping(true);
-            }
-        }, secondsToMidnight, 60 * 60 * 24, TimeUnit.SECONDS);
+
+        // Run housekeeping at 12 am
+        JobDetail job = newJob(Housekeeping.class)
+            .withIdentity("housekeeping", "group1").build();
+
+        CronTrigger trigger = newTrigger().withIdentity("midnight", "group1")
+            .withSchedule(cronSchedule("0 0 12am * * ?")).build();
 
         // Also run housekeeping one minute after start up.
         threadPool.schedule(() -> {
@@ -1282,8 +1289,8 @@ public class Controller extends PFComponent {
      */
     private void performHousekeeping(boolean midnightRun) {
         log.fine("Performing housekeeping " + midnightRun);
-        Date now = new Date();
         if (midnightRun) {
+            Date now = new Date();
             // Reconfigure log file after midnight.
             logFine("Reconfiguring logs for new day: " + now);
             initLogger();
@@ -3131,4 +3138,13 @@ public class Controller extends PFComponent {
         }
     }
 
+    private class Housekeeping implements Job {
+
+        @Override
+        public void execute(JobExecutionContext jobExecutionContext)
+            throws JobExecutionException
+        {
+            performHousekeeping(true);
+        }
+    }
 }
