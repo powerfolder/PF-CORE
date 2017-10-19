@@ -2698,9 +2698,9 @@ public class ServerClient extends PFComponent {
 
     /**
      * PF-102: AccountDiscovery (federated login) must be performed if the target server supports federation AND
-     * the account was never discovered or the server has changed.
+     * the account was never discovered or the clients server has changed.
      *
-     * @return true a new AccountDiscovery is necessary.
+     * @return true if a new AccountDiscovery is necessary.
      */
     private boolean isFederatedLogin() {
 
