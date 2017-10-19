@@ -193,6 +193,8 @@ For creation of the installer:
 			<include name="cryptomator/slf4j-api-1.7.25.jar"/>
             <include name="cryptomator/siv-mode-1.2.2.jar"/>
 
+			<include name="quartz-2.2.3.jar" />
+			<include name="quartz-jobs-2.2.3.jar" />
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
