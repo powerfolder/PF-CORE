@@ -1348,10 +1348,12 @@ public class Account implements Serializable, D2DObject {
         }
 
         // last login date
-        if (this.lastLoginDate != null &&
-            this.lastLoginDate.before(account.lastLoginDate))
-        {
-            this.lastLoginDate = account.lastLoginDate;
+        if (account.lastLoginDate != null) {
+            if (this.lastLoginDate == null ||
+                this.lastLoginDate.before(account.lastLoginDate))
+            {
+                this.lastLoginDate = account.lastLoginDate;
+            }
         }
     }
 
