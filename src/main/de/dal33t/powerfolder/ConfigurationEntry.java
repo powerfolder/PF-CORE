@@ -889,7 +889,7 @@ public enum ConfigurationEntry {
     /**
      * Should the active threads be logged?
      */
-    LOG_ACTIVE_THREADS("log.active_threads", true),
+    LOG_ACTIVE_THREADS("log.active_threads", false),
 
     /**
      * Whether to request debug reports
