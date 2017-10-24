@@ -70,9 +70,9 @@ public class Token {
     private static final long REQUEST_TOKEN_TIMEOUT = 1000L * 60;
     // 1337 Years valid if not removed/revoked
     private static final long SERVICE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
-    // PFS-2008: 10 Minutes
-    private static final long MERGE_TOKEN_TIMEOUT = 1000L * 60 * 30;
-    private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 30;
+    // PF-881
+    private static final long MERGE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
+    private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
     // PFS-2296: Unlimited time
     private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
 
