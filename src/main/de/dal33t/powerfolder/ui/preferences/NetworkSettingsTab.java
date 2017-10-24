@@ -121,7 +121,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             }
         });
 
-        String port = ConfigurationEntry.NET_BIND_PORT.getValue(getController());
+        String port = ConfigurationEntry.NET_PORT.getValue(getController());
         if (port == null) {
             port = Integer.toString(ConnectionListener.DEFAULT_PORT);
         }
@@ -317,7 +317,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             }
 
             // Check if only one port was given which is the default port
-            if (ConfigurationEntry.NET_BIND_PORT.getValue(getController()) == null)
+            if (ConfigurationEntry.NET_PORT.getValue(getController()) == null)
             {
                 try {
                     int portnum = Integer.parseInt(port);
@@ -330,12 +330,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             // Only compare with old value if the things above don't match
             if (!needsRestart) {
                 // Check if the value actually changed
-                if (!port.equals(ConfigurationEntry.NET_BIND_PORT.getValue(getController()))) {
+                if (!port.equals(ConfigurationEntry.NET_PORT.getValue(getController()))) {
                     needsRestart = true;
                 }
             }
 
-            ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
+            ConfigurationEntry.NET_PORT.setValue(getController(), port);
         } catch (NumberFormatException e) {
             logWarning("Unparsable port number");
         }

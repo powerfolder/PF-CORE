@@ -109,7 +109,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
       super(controller);
 
       if(0 > port) {
-          this.port = (useD2D ? ConfigurationEntry.D2D_PORT.getValueInt(getController()) : DEFAULT_PORT);
+          this.port = (useD2D ? ConfigurationEntry.NET_PORT_D2D.getValueInt(getController()) : DEFAULT_PORT);
       } else this.port = port;
 
       this.hasIncomingConnection = false;

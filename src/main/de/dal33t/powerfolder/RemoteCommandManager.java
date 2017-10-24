@@ -149,7 +149,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean hasRunningInstance() {
         return hasRunningInstance(Integer
-            .valueOf(ConfigurationEntry.NET_RCON_PORT.getDefaultValue()));
+            .valueOf(ConfigurationEntry.NET_PORT_RCON.getDefaultValue()));
     }
 
     /**
@@ -196,7 +196,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean sendCommand(String command) {
         return sendCommand(
-            Integer.valueOf(ConfigurationEntry.NET_RCON_PORT.getDefaultValue()),
+            Integer.valueOf(ConfigurationEntry.NET_PORT_RCON.getDefaultValue()),
             command);
     }
 
@@ -236,7 +236,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      * Starts the remote command processor
      */
     public void start() {
-        Integer port = ConfigurationEntry.NET_RCON_PORT
+        Integer port = ConfigurationEntry.NET_PORT_RCON
             .getValueInt(getController());
         try {
             // Only bind to localhost

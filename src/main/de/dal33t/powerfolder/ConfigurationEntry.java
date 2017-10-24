@@ -304,7 +304,7 @@ public enum ConfigurationEntry {
     /**
      * The D2D port of the server
      */
-    SERVER_D2D_PORT("server.d2d.port", 7331),
+    SERVER_PORT_D2D("server.port.d2d", 0),
 
     /**
      * HTTP tunnel relay URL.
@@ -611,7 +611,90 @@ public enum ConfigurationEntry {
     /**
      * The port(s) to bind to.
      */
-    NET_BIND_PORT("port"),
+    NET_PORT("net.port") {
+
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                value = controller.getConfig().getProperty("port");
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            controller.getConfig().remove("port");
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            controller.getConfig().remove("port");
+        }
+
+    },
+
+    /**
+     * The TCP port for D2D
+     */
+    NET_PORT_D2D("net.port.d2d", 0) {
+
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null || value.equals(super.defaultValue)) {
+                String oldValue = controller.getConfig().getProperty("d2d.port");
+                if (oldValue != null) {
+                    value = oldValue;
+                }
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            controller.getConfig().remove("d2d.port");
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            controller.getConfig().remove("d2d.port");
+        }
+
+    },
+
+    /**
+     * The TCP port for the {@link RemoteCommandManager}
+     */
+    NET_PORT_RCON("net.port.rcon", 1338) {
+
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                // Old entry
+                value = controller.getConfig().getProperty("net.rcon.port");
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            controller.getConfig().remove("net.rcon.port");
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            controller.getConfig().remove("net.rcon.port");
+        }
+
+    },
 
     /**
      * If relayed or tunnel connections should be tried for LAN based computers.
@@ -626,11 +709,6 @@ public enum ConfigurationEntry {
     NET_RCON_MANAGER("net.rcon", true),
 
     /**
-     * The TCP port for the {@link RemoteCommandManager}
-     */
-    NET_RCON_PORT("net.rcon.port", 1338),
-
-    /**
      * If broadcast on LAN
      */
     NET_BROADCAST("net.broadcast", true),
@@ -641,7 +719,7 @@ public enum ConfigurationEntry {
     NET_BROADCAST_INTERVAL_SECONDS("net.broadcast.interval.seconds", 60),
 
     /**
-     * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
+     * Use a random port in the (49152) 0 to 65535 range, overides NET_PORT
      */
     NET_BIND_RANDOM_PORT("random-port", true),
 
@@ -1198,19 +1276,6 @@ public enum ConfigurationEntry {
     COPY_GETTING_STARTED_GUIDE("copy.getting_started.guide", false),
 
     RECOVER_0BYTE_FILES("recover.zero_byte.files", true),
-
-    /* D2D */
-
-    /**
-     * The TCP port for the {@link ConnectionListener} and D2D
-     */
-    D2D_PORT("d2d.port", ConnectionListener.DEFAULT_D2D_PORT),
-
-    /**
-     * Whether D2D is enabled
-     */
-
-    D2D_ENABLED("d2d.enabled", false),
 
     /**
      * PFS-1994: En-/Disable encrypted storage for this server.

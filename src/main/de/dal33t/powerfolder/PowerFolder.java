@@ -176,7 +176,7 @@ public class PowerFolder {
             return;
         }
 
-        int rconPort = Integer.valueOf(ConfigurationEntry.NET_RCON_PORT
+        int rconPort = Integer.valueOf(ConfigurationEntry.NET_PORT_RCON
             .getDefaultValue());
         String portStr = commandLine.getOptionValue("k");
         if (StringUtils.isNotBlank(portStr)) {

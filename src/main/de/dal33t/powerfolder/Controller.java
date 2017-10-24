@@ -550,7 +550,7 @@ public class Controller extends PFComponent {
                 if (addr != null) {
                     ConfigurationEntry.HOSTNAME.setValue(this,
                         addr.getHostName());
-                    ConfigurationEntry.NET_BIND_PORT.setValue(this,
+                    ConfigurationEntry.NET_PORT.setValue(this,
                         addr.getPort());
                 }
             }
@@ -1250,7 +1250,7 @@ public class Controller extends PFComponent {
         if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(this)) {
             try {
                 broadcastManager = new BroadcastMananger(this,
-                  ConfigurationEntry.D2D_ENABLED.getValueBoolean(this));
+                  ConfigurationEntry.NET_PORT_D2D.getValueInt(this) > 0);
                 broadcastManager.start();
             } catch (ConnectionException e) {
                 logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
@@ -1383,7 +1383,7 @@ public class Controller extends PFComponent {
         if (ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(this)) {
             bindRandomPort();
         } else {
-            String ports = ConfigurationEntry.NET_BIND_PORT.getValue(this);
+            String ports = ConfigurationEntry.NET_PORT.getValue(this);
             if ("0".equals(ports)) {
                 logWarning("Not opening connection listener. (port=0)");
             } else {
@@ -1428,9 +1428,8 @@ public class Controller extends PFComponent {
         }
 
         /* Check whether to start D2D, too */
-        boolean useD2D = ConfigurationEntry.D2D_ENABLED.getValueBoolean(this);
-        int port = ConfigurationEntry.D2D_PORT.getValueInt(this);
-        if (useD2D) {
+        int port = ConfigurationEntry.NET_PORT_D2D.getValueInt(this);
+        if (port > 0) {
             logInfo("D2D is enabled");
             boolean listenerOpened = false;
             for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {

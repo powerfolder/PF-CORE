@@ -56,8 +56,7 @@ public class D2DControllerTest extends TwoControllerTestCase
 
         /* Override values in test config */
         //ConfigurationEntry.NET_BROADCAST.setValue(controllerBart, true);
-        ConfigurationEntry.D2D_ENABLED.setValue(controllerBart, true);
-        ConfigurationEntry.D2D_PORT.setValue(controllerBart, 7331);
+        ConfigurationEntry.NET_PORT_D2D.setValue(controllerBart, 7331);
 
         controllerBart.start();
 
@@ -79,8 +78,7 @@ public class D2DControllerTest extends TwoControllerTestCase
 
         /* Override values in test config */
         //ConfigurationEntry.NET_BROADCAST.setValue(controllerLisa, true);
-        ConfigurationEntry.D2D_ENABLED.setValue(controllerLisa, true);
-        ConfigurationEntry.D2D_PORT.setValue(controllerLisa, 7332);
+        ConfigurationEntry.NET_PORT_D2D.setValue(controllerLisa, 7332);
 
         controllerLisa.start();
 
@@ -103,7 +101,7 @@ public class D2DControllerTest extends TwoControllerTestCase
 
             /* Connect Lisa to Bart via D2D */
             if(cl.getPort() ==
-                    ConfigurationEntry.D2D_PORT.getValueInt(controllerBart)) {
+                    ConfigurationEntry.NET_PORT_D2D.getValueInt(controllerBart)) {
                 controllerLisa.connect(cl.getAddress(), true);
             }
         }
