@@ -1422,6 +1422,23 @@ public enum ConfigurationEntry {
     }
 
     /**
+     * Parses the configuration entry into an Array.
+     *
+     * @param controller
+     *            the controller to read the config from
+     * @return A string array of the parsed configuration entry.
+     *            If the configuration entry is null, the array contains one null element.
+     */
+    public String[] getValueArray(Controller controller) {
+        String[] values = new String[1];
+        String valuesString = getValue(controller.getConfig());
+        if (valuesString != null) {
+            values = valuesString.split("\\s*,\\s*");
+        }
+        return values;
+    }
+
+    /**
      * Creates a model containing the value of the configuration entry.
      * <p>
      * Changes from "below" won't be reflected.

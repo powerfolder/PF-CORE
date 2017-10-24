@@ -144,8 +144,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             socket = new MulticastSocket(DEFAULT_BROADCAST_PORT);
 
             InetAddress bindAddr = null;
-            String bindIP = ConfigurationEntry.NET_BIND_ADDRESS
-                .getValue(getController());
+            String bindIP = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
             if (!StringUtils.isEmpty(bindIP)) {
                 bindAddr = InetAddress.getByName(bindIP);
             } else if (OSUtil.isWindowsSystem()) {
@@ -519,8 +518,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         updateNetworkInterfaces();
         localAddresses.clear();
 
-        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(getController());
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
         if (cfgBind != null && cfgBind.length() > 0)
             try {
                 localAddresses.add(InetAddress.getByName(cfgBind));

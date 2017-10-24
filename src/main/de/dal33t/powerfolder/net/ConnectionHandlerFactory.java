@@ -274,8 +274,7 @@ public class ConnectionHandlerFactory extends PFComponent {
       try
         {
           Socket socket = new Socket();
-          String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(getController());
+          String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
 
           if(!StringUtils.isEmpty(cfgBind))
             socket.bind(new InetSocketAddress(cfgBind, 0));

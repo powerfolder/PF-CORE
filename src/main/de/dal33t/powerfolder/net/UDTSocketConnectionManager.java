@@ -228,8 +228,7 @@ public class UDTSocketConnectionManager extends PFComponent {
             }
             slot.port = (int) res.getStart();
             try {
-                String cfgBindAddr = ConfigurationEntry.NET_BIND_ADDRESS
-                    .getValue(getController());
+                String cfgBindAddr = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
                 InetSocketAddress bindAddr;
                 if (!StringUtils.isEmpty(cfgBindAddr)) {
                     bindAddr = new InetSocketAddress(cfgBindAddr, slot.port);

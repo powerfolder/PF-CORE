@@ -179,8 +179,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         lanSpeed.setSpeedKBPS(false, tm.getUploadCPSForLAN() / 1024,
             tm.getDownloadCPSForLAN() / 1024);
 
-        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(getController());
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
         bindAddressCombo = new JComboBox();
         bindAddressCombo.addItem(Translation
             .get("exp.preferences.network.bind_any"));
@@ -373,7 +372,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(),
             String.valueOf(udtConnectionCB.isSelected()));
 
-        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController());
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
         Object bindObj = bindAddressCombo.getSelectedItem();
         if (bindObj instanceof String) { // Selected ANY
             if (!StringUtils.isEmpty(cfgBind)) {
