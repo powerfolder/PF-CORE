@@ -372,6 +372,11 @@ public enum ConfigurationEntry {
     SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
     CLIENT_FEDERATED_URL("client.federation.url", ""),
 
+    /**
+     * PF-615: OCM support.
+     */
+    SERVER_OCM_SUPPORT("server.ocm.enabled", true),
+
     // Server WEB settings ****************************************************
 
     /**
