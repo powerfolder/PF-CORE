@@ -68,6 +68,8 @@ public class Token {
     
     // PFC-2455: 1 Minute
     private static final long REQUEST_TOKEN_TIMEOUT = 1000L * 60;
+    // PF-615: OCM Filter token timeout
+    private static final long OCM_TOKEN_TIMEOUT = 1000L * 60 * 5;
     // 1337 Years valid if not removed/revoked
     private static final long SERVICE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
     // PFS-2008: 10 Minutes
@@ -109,6 +111,14 @@ public class Token {
             "Not a federated service");
         Date validTo = new Date(System.currentTimeMillis() + REQUEST_TOKEN_TIMEOUT);
         return new Token(validTo, fedService, null, null);
+    }
+
+    public static Token newOcmFilterToken(ServerInfo ocmProvider) {
+        Reject.ifNull(ocmProvider, "Service null");
+        Reject.ifFalse(ocmProvider.isFederatedService(),
+                "Not a federated service");
+        Date validTo = new Date(System.currentTimeMillis() + OCM_TOKEN_TIMEOUT);
+        return new Token(validTo, ocmProvider, null, null);
     }
     
     /**
