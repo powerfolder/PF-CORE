@@ -51,6 +51,7 @@ import javax.net.ssl.TrustManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.util.os.LinuxUtil;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -279,6 +280,9 @@ public class Util {
         Validate.notNull(c);
         if (d.getFile().getSize() < Constants.DELTA_SYNC_MIN_FILESIZE) {
             return false;
+        }
+        if (d.getPartner().getPeer() instanceof D2DSocketConnectionHandler) {
+           return false;
         }
         return allowDeltaSync(c, d.getPartner().isOnLAN());
     }
