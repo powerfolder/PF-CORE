@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.LDAPServerConfigurationEntry;
 import de.dal33t.powerfolder.disk.FolderSettings;
 
 import java.io.*;
@@ -34,6 +35,8 @@ public class SplitConfig extends Properties {
 
     private Properties regular = new Properties();
     private Properties folders = new Properties();
+
+    private List<LDAPServerConfigurationEntry> ldapServers = new ArrayList<>();
 
     public Properties getRegular() {
         return regular;
@@ -90,11 +93,18 @@ public class SplitConfig extends Properties {
 
     @Override
     public synchronized Object put(Object key, Object value) {
-        if (String.valueOf(key).startsWith(FolderSettings.PREFIX_V4)) {
+        String keyValue = String.valueOf(key);
+        if (keyValue.startsWith(FolderSettings.PREFIX_V4)) {
             return folders.put(key, value);
+        } else if (keyValue.startsWith(LDAPServerConfigurationEntry.LDAP_ENTRY_PREFIX)) {
+            return addLDAPEntry(key, value);
         } else {
             return regular.put(key, value);
         }
+    }
+
+    private Object addLDAPEntry(Object key, Object value) {
+
     }
 
     @Override
