@@ -44,7 +44,6 @@ import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
 import de.dal33t.powerfolder.ui.model.ApplicationModel;
 import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.ui.preferences.HTTPProxySettingsDialog;
 import de.dal33t.powerfolder.ui.util.LimitedConnectivityChecker;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -86,9 +85,9 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class
         .getName());
 
-    private static final int MAJOR_VERSION = 11;
-    private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 574;
+    private static final int MAJOR_VERSION = 14;
+    private static final int MINOR_VERSION = 0;
+    private static final int REVISION_VERSION = 4;
 
     /**
      * Program version.
@@ -486,7 +485,11 @@ public class Controller extends PFComponent {
         logFine("Build time: " + getBuildTime());
         logInfo("Program version " + PROGRAM_VERSION);
 
-        Debug.writeSystemProperties();
+        if (getDistribution().getBinaryName().toLowerCase()
+            .contains("powerfolder"))
+        {
+            Debug.writeSystemProperties();
+        }
 
         if (ConfigurationEntry.KILL_RUNNING_INSTANCE.getValueBoolean(this)) {
             killRunningInstance();
@@ -653,15 +656,6 @@ public class Controller extends PFComponent {
         // Load anything that was not handled last time.
         loadPersistentObjects();
 
-        // PFC-2990
-        if (HTTPProxySettings.requiresProxyAuthorization(this)) {
-            if (isUIEnabled()) {
-                new HTTPProxySettingsDialog(this).open();
-            } else {
-                logWarning("Proxy authorization required. Please setup credentials in config.");
-            }
-        }
-
         setLoadingCompletion(100, 100);
         if (!isConsoleMode()) {
             uiController.hideSplash();
@@ -701,14 +695,10 @@ public class Controller extends PFComponent {
     }
 
     private void enableFileBrowserIntegration(Controller controller) {
-        try {
-            // PFC-2395: Start
-            fbIntegration = new FileBrowserIntegration(getController());
-            fbIntegration.start();
-            // PFC-2395: End
-        } catch (Throwable t) {
-            logWarning("Unable to initialize file browser integration: " + t.getMessage(), t);
-        }
+        // PFC-2395: Start
+        fbIntegration = new FileBrowserIntegration(getController());
+        fbIntegration.start();
+        // PFC-2395: End
     }
 
     private void clearPreferencesOnConfigSwitch() {

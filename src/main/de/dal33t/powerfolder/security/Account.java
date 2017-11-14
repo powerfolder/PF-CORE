@@ -1346,13 +1346,6 @@ public class Account implements Serializable, D2DObject {
                 this.notes = sb.toString().trim();
             }
         }
-
-        // last login date
-        if (this.lastLoginDate == null ||
-            this.lastLoginDate.before(account.lastLoginDate))
-        {
-            this.lastLoginDate = account.lastLoginDate;
-        }
     }
 
     /**

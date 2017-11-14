@@ -33,7 +33,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -101,9 +100,9 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         {
           subnetIP = InetAddress.getLocalHost();
 
-          localNICList = new ArrayList<>();
-          localAddresses = new ArrayList<>();
-          receivedBroadcastsFrom = new HashSet<>();
+          localNICList = new ArrayList<NetworkInterface>();
+          localAddresses = new ArrayList<InetAddress>();
+          receivedBroadcastsFrom = new ArrayList<InetAddress>();
 
           waitTime = 1000L * 15;
           group = InetAddress.getByName("224.0.0.1");
