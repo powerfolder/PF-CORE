@@ -120,9 +120,18 @@ public interface AccountService {
     /**
      * Returns the current skin of an account
      * 
-     * @param accounts The account
+     * @param account The account
      * @return The current skin of the account
      */
     String getClientSkinName(AccountInfo account);
 
+    /**
+     * Merge one or more accounts into {@code account}.
+     * {@ocode account} will be stored on success.
+     * {@code mergeAccounts} are being deleted.
+     *
+     * @param account       Surviving account.
+     * @param mergeAccounts Accounts that are merged into {@code account} and deleted afterwards.
+     */
+    void mergeAccounts(Account account, Account... mergeAccounts);
 }

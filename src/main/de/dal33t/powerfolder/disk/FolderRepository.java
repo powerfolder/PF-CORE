@@ -2608,6 +2608,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
                 localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
             }
+            if (localBase.equals(targetPath)) {
+                logFine("Not required to move folder from/to " + targetPath);
+                return folder;
+            }
             logInfo("Not moving folder " + folder + " to new directory "
                 + targetPath.toString()
                     + ". The new directory is not empty. "

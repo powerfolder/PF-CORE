@@ -906,6 +906,10 @@ public class Debug {
                         "java.net.TwoStacksPlainDatagramSocketImpl.receive0")) {
                     return null;
                 }
+                if (te.toString().contains(
+                        "sun.nio.ch.EPollArrayWrapper.epollWait")) {
+                    return null;
+                }
             }
 
             b.append("        " + te);
