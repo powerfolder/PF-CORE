@@ -13,6 +13,13 @@ public class LDAPServerConfigurationEntry {
     public static final String LDAP_ENTRY_PREFIX = "ldap";
 
     /**
+     * A name to be shown in the UI
+     */
+    @DefaultValue(stringValue = "")
+    @ConfigurationEntryExtension(name = "server.name")
+    private String name;
+
+    /**
      * Replacement of LDAP_SERVER_URL("ldap.server.url")
      * <br /><br />
      * Examples of valid LDAP URLs:
