@@ -25,12 +25,14 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 /**
  * PFC-2444
  * @author Sprajc
  */
 public class SplitConfig extends Properties {
+    private static final Logger LOGGER = Logger.getLogger(SplitConfig.class.getName());
     private static final long serialVersionUID = 1L;
 
     private Properties regular = new Properties();
@@ -96,15 +98,87 @@ public class SplitConfig extends Properties {
         String keyValue = String.valueOf(key);
         if (keyValue.startsWith(FolderSettings.PREFIX_V4)) {
             return folders.put(key, value);
-        } else if (keyValue.startsWith(LDAPServerConfigurationEntry.LDAP_ENTRY_PREFIX)) {
+        } else if (keyValue
+            .startsWith(LDAPServerConfigurationEntry.LDAP_ENTRY_PREFIX))
+        {
             return addLDAPEntry(key, value);
         } else {
             return regular.put(key, value);
         }
     }
 
+    /**
+     * Inspect the {@code key} for its index ({@link #getIndexOfLDAPEntry}). If
+     * there is already an existing {@link LDAPServerConfigurationEntry} in
+     * {@link #ldapServers} for that index, add the information to that object.
+     * Otherwise create a new {@link LDAPServerConfigurationEntry} and add it to
+     * {@link #ldapServers}.
+     *
+     * @param key
+     *     The key of the LDAP config entry
+     * @param value
+     *     The value of that LDAP config entry
+     * @return The {@link LDAPServerConfigurationEntry} if information was added
+     * to it, {@code null} otherwise.
+     */
     private Object addLDAPEntry(Object key, Object value) {
+        String keyAsString = (String) key;
+        int index = getIndexOfLDAPEntry(keyAsString);
+        if (index == -1) {
+            LOGGER.info(
+                "Could not read index from ldap configuration key " + key +
+                    " = " + value);
+            return null;
+        }
 
+        LDAPServerConfigurationEntry serverConfig = ldapServers.get(index);
+        if (serverConfig == null) {
+            serverConfig = new LDAPServerConfigurationEntry();
+        }
+
+        String extension = getExtensionFromKey(keyAsString);
+        /*
+        # get field for extension by annotation
+        # set value of field
+        */
+        return null;
+    }
+
+    /**
+     * Get the extension from an LDAP config entry key. <br /><br /> An LDAP
+     * config entry is constructed from a prefix, an index and a name separated
+     * by a dot.
+     *
+     * @see #getIndexOfLDAPEntry(String)
+     * @param keyAsString
+     *     The key
+     * @return The {@code name} of the key
+     */
+    String getExtensionFromKey(String keyAsString) {
+        return keyAsString.replaceFirst(
+            LDAPServerConfigurationEntry.LDAP_ENTRY_PREFIX + "\\.\\d*\\.", "");
+    }
+
+    /**
+     * LDAP configuration entries are constructed from a prefix, an index and a
+     * name separated by a dot, e.g. {@code ldap.3.server.url} or more generic {@code
+     * <prefix>.<index>.<id>}.
+     *
+     * @param key
+     *     The key containing the index
+     * @return An integer greater or equal to zero for the index, or -1 if no
+     * index was found.
+     */
+    int getIndexOfLDAPEntry(String key) {
+        String[] keyComponents = key.split("\\.");
+        if (keyComponents.length < 2) {
+            return -1;
+        }
+        try {
+            return Integer.valueOf(keyComponents[1]);
+        } catch (NumberFormatException nfe) {
+            return -1;
+        }
     }
 
     @Override
