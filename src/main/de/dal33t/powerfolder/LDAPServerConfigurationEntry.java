@@ -180,7 +180,7 @@ public class LDAPServerConfigurationEntry {
      */
     @DefaultValue(booleanValue = true)
     @ConfigurationEntryExtension(name = "accounts.match_email")
-    private boolean doMatchEmail;
+    private boolean matchEmail;
 
     /**
      * Replacement of LDAP_SYNCHRONIZE_GROUPS("ldap.sync_groups.enabled", false)
@@ -358,4 +358,244 @@ public class LDAPServerConfigurationEntry {
     @DefaultValue(stringValue = "")
     @ConfigurationEntryExtension(name = "domain_list")
     private Set<String> domains;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getServerURL() {
+        return serverURL;
+    }
+
+    public void setServerURL(String serverURL) {
+        this.serverURL = serverURL;
+    }
+
+    public String getSearchUsername() {
+        return searchUsername;
+    }
+
+    public void setSearchUsername(String searchUsername) {
+        this.searchUsername = searchUsername;
+    }
+
+    public String getPasswordObf() {
+        return passwordObf;
+    }
+
+    public void setPasswordObf(String passwordObf) {
+        this.passwordObf = passwordObf;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getSearchBase() {
+        return searchBase;
+    }
+
+    public void setSearchBase(String searchBase) {
+        this.searchBase = searchBase;
+    }
+
+    public boolean isSyncEnabled() {
+        return syncEnabled;
+    }
+
+    public void setSyncEnabled(boolean syncEnabled) {
+        this.syncEnabled = syncEnabled;
+    }
+
+    public int getSyncType() {
+        return syncType;
+    }
+
+    public void setSyncType(int syncType) {
+        this.syncType = syncType;
+    }
+
+    public int getSyncTime() {
+        return syncTime;
+    }
+
+    public void setSyncTime(int syncTime) {
+        this.syncTime = syncTime;
+    }
+
+    public int getOrgDepth() {
+        return orgDepth;
+    }
+
+    public void setOrgDepth(int orgDepth) {
+        this.orgDepth = orgDepth;
+    }
+
+    public boolean isMatchEmail() {
+        return matchEmail;
+    }
+
+    public void setMatchEmail(boolean matchEmail) {
+        this.matchEmail = matchEmail;
+    }
+
+    public boolean isEnableSyncGroups() {
+        return enableSyncGroups;
+    }
+
+    public void setEnableSyncGroups(boolean enableSyncGroups) {
+        this.enableSyncGroups = enableSyncGroups;
+    }
+
+    public String getGroupsExpression() {
+        return groupsExpression;
+    }
+
+    public void setGroupsExpression(String groupsExpression) {
+        this.groupsExpression = groupsExpression;
+    }
+
+    public String getGroupsMember() {
+        return groupsMember;
+    }
+
+    public void setGroupsMember(String groupsMember) {
+        this.groupsMember = groupsMember;
+    }
+
+    public String getGroupsMemberOf() {
+        return groupsMemberOf;
+    }
+
+    public void setGroupsMemberOf(String groupsMemberOf) {
+        this.groupsMemberOf = groupsMemberOf;
+    }
+
+    public String getSearchExpression() {
+        return searchExpression;
+    }
+
+    public void setSearchExpression(String searchExpression) {
+        this.searchExpression = searchExpression;
+    }
+
+    public String getImportExpression() {
+        return importExpression;
+    }
+
+    public void setImportExpression(String importExpression) {
+        this.importExpression = importExpression;
+    }
+
+    public String getMappingMail() {
+        return mappingMail;
+    }
+
+    public void setMappingMail(String mappingMail) {
+        this.mappingMail = mappingMail;
+    }
+
+    public String getMappingUsername() {
+        return mappingUsername;
+    }
+
+    public void setMappingUsername(String mappingUsername) {
+        this.mappingUsername = mappingUsername;
+    }
+
+    public String getMappingGivenName() {
+        return mappingGivenName;
+    }
+
+    public void setMappingGivenName(String mappingGivenName) {
+        this.mappingGivenName = mappingGivenName;
+    }
+
+    public String getMappingCommonName() {
+        return mappingCommonName;
+    }
+
+    public void setMappingCommonName(String mappingCommonName) {
+        this.mappingCommonName = mappingCommonName;
+    }
+
+    public String getMappingMiddleName() {
+        return mappingMiddleName;
+    }
+
+    public void setMappingMiddleName(String mappingMiddleName) {
+        this.mappingMiddleName = mappingMiddleName;
+    }
+
+    public String getMappingSurname() {
+        return mappingSurname;
+    }
+
+    public void setMappingSurname(String mappingSurname) {
+        this.mappingSurname = mappingSurname;
+    }
+
+    public String getMappingDisplayName() {
+        return mappingDisplayName;
+    }
+
+    public void setMappingDisplayName(String mappingDisplayName) {
+        this.mappingDisplayName = mappingDisplayName;
+    }
+
+    public String getMappingTelephone() {
+        return mappingTelephone;
+    }
+
+    public void setMappingTelephone(String mappingTelephone) {
+        this.mappingTelephone = mappingTelephone;
+    }
+
+    public String getMappingExpiration() {
+        return mappingExpiration;
+    }
+
+    public void setMappingExpiration(String mappingExpiration) {
+        this.mappingExpiration = mappingExpiration;
+    }
+
+    public String getMappingValidFrom() {
+        return mappingValidFrom;
+    }
+
+    public void setMappingValidFrom(String mappingValidFrom) {
+        this.mappingValidFrom = mappingValidFrom;
+    }
+
+    public String getMappingQuota() {
+        return mappingQuota;
+    }
+
+    public void setMappingQuota(String mappingQuota) {
+        this.mappingQuota = mappingQuota;
+    }
+
+    public String getQuotaUnit() {
+        return quotaUnit;
+    }
+
+    public void setQuotaUnit(String quotaUnit) {
+        this.quotaUnit = quotaUnit;
+    }
+
+    public Set<String> getDomains() {
+        return domains;
+    }
+
+    public void setDomains(Set<String> domains) {
+        this.domains = domains;
+    }
 }
