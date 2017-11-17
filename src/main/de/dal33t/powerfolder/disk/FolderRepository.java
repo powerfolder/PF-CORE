@@ -2060,9 +2060,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Do it synchronous. Otherwise we might get race conditions.
                 getController().getOSClient().getFolderService()
                     .createFolder(foInfo, null);
-                if (fs != null) {
-                    getController().getOSClient().getFolderService()
-                        .setArchiveMode(foInfo, fs.getVersions());
+                if (fs != null && client.getAccount().hasAdminPermission(foInfo)) {
+                    getController().getOSClient().getFolderService().setArchiveMode(foInfo, fs.getVersions());
                 }
             } catch (Exception e) {
                 scheduleCreateOnServer = true;
@@ -2886,7 +2885,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     // Do it synchronous. Otherwise we might get race conditions.
                     getController().getOSClient().getFolderService()
                         .createFolder(foInfo, null);
-                    if (settings != null) {
+                    if (settings != null && ad.getAccount().hasAdminPermission(foInfo)) {
                         getController().getOSClient().getFolderService()
                             .setArchiveMode(foInfo, settings.getVersions());
                     }

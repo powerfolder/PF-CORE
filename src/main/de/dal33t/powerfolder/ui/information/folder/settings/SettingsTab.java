@@ -969,7 +969,8 @@ public class SettingsTab extends PFUIComponent {
                 FolderService folderService = serverClient.isLoggedIn()
                     && serverClient.isConnected() ? serverClient
                     .getFolderService() : null;
-                if (folderService != null && serverClient.joinedByCloud(folder))
+                if (folderService != null && serverClient.joinedByCloud(folder)
+                        && serverClient.getAccount().hasAdminPermission(folderInfo))
                 {
                     Integer versions = (Integer) onlineVersionModel
                         .getValue();
