@@ -335,7 +335,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private void initFoldersBasedir() {
+    private boolean initFoldersBasedir() {
         String baseDir;
         String cmdBaseDir = getController().getCommandLine() != null
             ? getController().getCommandLine().getOptionValue("b")
@@ -343,8 +343,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (StringUtils.isNotBlank(cmdBaseDir)) {
             baseDir = cmdBaseDir;
         } else {
-            baseDir = ConfigurationEntry.FOLDER_BASEDIR
-                .getValue(getController());
+            baseDir = ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
             // Read folder base path from registry if possible
             boolean overwriteBaseDir = PreferencesEntry.FOLDER_BASE_PATH_OVERWRITE.getValueBoolean(getController());
             if (overwriteBaseDir == true && !PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController()).isEmpty()) {
@@ -382,53 +381,32 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         // PFC-2544: End
 
-        // Check if this a windows network drive.
-        // TODO: Check: Does this really work?
-        boolean winNetworkDrive = baseDir != null && baseDir.contains(":\\")
-            && baseDir.charAt(1) == ':';
-
-        boolean ok = false;
-
-        if (OSUtil.isWindowsSystem() && winNetworkDrive || !winNetworkDrive) {
+        // PF-898: Network shares not allowed
+        boolean networkDrive = PathUtils.isNetworkPath(Paths.get(baseDir));
+        if (networkDrive && !ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController())) {
+            // Fall back to default
+            foldersBasedir = Paths.get(ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
+            logWarning("Network shares not allowed as base path: " + baseDir + ", switching to default: " + foldersBasedir);
+        } else {
             foldersBasedir = Paths.get(baseDir).toAbsolutePath();
-            if (Files.notExists(foldersBasedir)) {
-                try {
-                    Files.createDirectories(foldersBasedir);
-                    logInfo("Created base path for folders: " + foldersBasedir);
-                } catch (FileAlreadyExistsException faee) {
-                    // ignore
-                } catch (Exception e) {
-                    // TODO: take a closer look at the different Exceptions that
-                    // can be caught.
-                    logWarning("Unable to create base path for folders: "
-                        + foldersBasedir + ". " + e.getMessage());
-                }
-            }
-            ok = Files.exists(foldersBasedir)
-                && Files.isReadable(foldersBasedir)
-                && Files.isDirectory(foldersBasedir);
         }
 
-        if (!OSUtil.isWindowsSystem() && winNetworkDrive) {
-            foldersBasedir = Paths.get(ConfigurationEntry.FOLDER_BASEDIR
-                .getDefaultValue());
-            if (Files.notExists(foldersBasedir)) {
-                try {
-                    Files.createDirectories(foldersBasedir);
-                    logInfo("Created base path for folders: " + foldersBasedir);
-                } catch (FileAlreadyExistsException faee) {
-                    // ignore
-                } catch (Exception e) {
-                    // TODO: take a closer look at the different Exceptions that
-                    // can be caught.
-                    logWarning("Unable to create base path for folders: "
+        if (Files.notExists(foldersBasedir)) {
+            try {
+                Files.createDirectories(foldersBasedir);
+                logInfo("Created base path for folders: " + foldersBasedir);
+            } catch (FileAlreadyExistsException faee) {
+                // ignore
+            } catch (Exception e) {
+                // TODO: take a closer look at the different Exceptions that
+                // can be caught.
+                logWarning("Unable to create base path for folders: "
                         + foldersBasedir + ". " + e.getMessage());
-                }
             }
-            ok = Files.exists(foldersBasedir)
+        }
+        boolean ok = Files.exists(foldersBasedir)
                 && Files.isReadable(foldersBasedir)
                 && Files.isDirectory(foldersBasedir);
-        }
 
         // Use default as fallback
         if (!ok
@@ -492,6 +470,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         // Save folder base path to registry
         PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), baseDir);
+        return ok;
     }
 
     /**
@@ -817,9 +796,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             ConfigurationEntry.FOLDER_BASEDIR.removeValue(getController());
             return;
         }
+        String oldEntryConfig = ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+        String oldEntryPrefs = PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController());
         ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), path);
         PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), path);
-        initFoldersBasedir();
+        if (!initFoldersBasedir()) {
+            // PF-898: Reset
+            ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), oldEntryConfig);
+            PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), oldEntryPrefs);
+        }
     }
 
     /**
@@ -2000,8 +1985,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             foInfo = checkSystemSubdirForFolder(file);
             stillPresent = folderStillExists(foInfo);
 
-            try {
-                if (foInfo != null) {
+            if (foInfo != null) {
+                try {
                     Folder existingFolder = foInfo.getFolder(getController());
                     if (existingFolder != null && existingFolder.checkIfDeviceDisconnected()) {
                         removeFolder(existingFolder, false, false, true);
@@ -2012,10 +1997,19 @@ public class FolderRepository extends PFComponent implements Runnable {
                         foInfo = renamedFI;
                         renamedOnServer = true;
                     }
+                } catch (FolderRenameException fre) {
+                    logInfo("Could not rename Folder on server " + fre);
+                    logFine(fre);
                 }
-            } catch (FolderRenameException fre) {
-                logInfo("Could not rename Folder on server " + fre);
-                logFine(fre);
+            } else {
+                // PF-898: Match foldername with existing folders
+                String folderName = file.getFileName().toString();
+                for (FolderInfo existingFolderInfo : client.getAccount().getFoldersCharged()) {
+                    if (existingFolderInfo.getLocalizedName().equalsIgnoreCase(folderName)) {
+                        logInfo("Found existing folder ID " + existingFolderInfo.getId() + " for folder " + folderName);
+                        foInfo = existingFolderInfo;
+                    }
+                }
             }
         } else if (getMySelf().isServer()) {
             foInfo = checkSystemSubdirForFolder(file);
@@ -2974,8 +2968,16 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                 }
 
+                // PF-898
+                if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController())
+                        && PathUtils.isNetworkPath(suggestedLocalBase)) {
+                    logInfo("No auto setup up on network drive for folder " + folderInfo.getName() + "/"
+                            + folderInfo.getId() + " @ " + suggestedLocalBase);
+                    continue;
+                }
+
                 logInfo("Auto setting up folder " + folderInfo.getName() + "/"
-                    + folderInfo.getId() + " @ " + suggestedLocalBase);
+                        + folderInfo.getId() + " @ " + suggestedLocalBase);
 
                 // Correct local path if in UserDirectories.
                 FolderSettings settings = new FolderSettings(
