@@ -2945,7 +2945,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
                     } catch (RemoteCallException e) {
                        log.warning("Unable to retrieve owner name of " + folderInfo.getName() + ". " + e);
-                        folderName += " (shared)";
+                       continue;
                     }
                 } else {
                     // Allow to sync user directories only for folders user is owner of.
@@ -2971,7 +2971,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // PF-898
                 if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController())
                         && PathUtils.isNetworkPath(suggestedLocalBase)) {
-                    logInfo("No auto setup up on network drive for folder " + folderInfo.getName() + "/"
+                    logWarning("No auto setup up on network drive for folder " + folderInfo.getName() + "/"
                             + folderInfo.getId() + " @ " + suggestedLocalBase);
                     continue;
                 }
