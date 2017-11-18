@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.problem.ResolvableProblem;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -1136,7 +1137,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             boolean expert = PreferencesEntry.EXPERT_MODE
                 .getValueBoolean(getController());
             if (expert) {
-                contextMenu.add(syncFolderAction).setIcon(null);
+                if (!folder.getSyncProfile().equals(SyncProfile.AUTOMATIC_SYNCHRONIZATION)) {
+                    contextMenu.add(syncFolderAction).setIcon(null);
+                }
                 contextMenu.add(openFilesInformationAction).setIcon(null);
                 contextMenu.add(mostRecentChangesAction).setIcon(null);
                 contextMenu.add(clearCompletedDownloadsAction).setIcon(null);
