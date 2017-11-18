@@ -2004,9 +2004,17 @@ public class FolderRepository extends PFComponent implements Runnable {
             } else {
                 // PF-898: Match foldername with existing folders
                 String folderName = file.getFileName().toString();
-                for (FolderInfo existingFolderInfo : client.getAccount().getFoldersCharged()) {
-                    if (existingFolderInfo.getLocalizedName().equalsIgnoreCase(folderName)) {
-                        logInfo("Found existing folder ID " + existingFolderInfo.getId() + " for folder " + folderName);
+                for (FolderInfo existingFolderInfo : client.getAccount().getFolders()) {
+                    if (!PathUtils.isSameName(existingFolderInfo.getLocalizedName(), folderName)) {
+                        continue;
+                    }
+                    boolean receivedFolder = folderName.contains("(") && folderName.endsWith(")");
+                    boolean owner = client.getAccount().hasOwnerPermission(existingFolderInfo);
+                    if (receivedFolder && !owner) {
+                        logInfo("Found existing folder ID " + existingFolderInfo.getId() + " for received folder " + folderName);
+                        foInfo = existingFolderInfo;
+                    } else if (!receivedFolder && owner) {
+                        logInfo("Found existing folder ID " + existingFolderInfo.getId() + " for own folder " + folderName);
                         foInfo = existingFolderInfo;
                     }
                 }
