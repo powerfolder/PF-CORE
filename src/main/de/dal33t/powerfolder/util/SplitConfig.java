@@ -19,10 +19,12 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.ConfigurationEntryExtensionMapper;
 import de.dal33t.powerfolder.LDAPServerConfigurationEntry;
 import de.dal33t.powerfolder.disk.FolderSettings;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -39,6 +41,8 @@ public class SplitConfig extends Properties {
     private Properties folders = new Properties();
 
     private List<LDAPServerConfigurationEntry> ldapServers = new ArrayList<>();
+    private ConfigurationEntryExtensionMapper ldapMapper = new ConfigurationEntryExtensionMapper(
+        LDAPServerConfigurationEntry.class);
 
     public Properties getRegular() {
         return regular;
@@ -46,6 +50,34 @@ public class SplitConfig extends Properties {
 
     public Properties getFolders() {
         return folders;
+    }
+
+    /**
+     * Get an {@link LDAPServerConfigurationEntry} for an {@code index} or
+     * {@code null} if non found
+     *
+     * @param index
+     *     The index of the {@link LDAPServerConfigurationEntry}
+     *
+     * @return The associated {@link LDAPServerConfigurationEntry}, or {@code
+     * null} if not found.
+     *
+     * @see #getIndexOfLDAPEntry(String)
+     */
+    public LDAPServerConfigurationEntry getLDAPServer(int index) {
+        if (ldapServers.isEmpty()) {
+            return null;
+        }
+        for (LDAPServerConfigurationEntry server : ldapServers) {
+            if (server.getIndex() == index) {
+                return server;
+            }
+        }
+        return null;
+    }
+
+    public List<LDAPServerConfigurationEntry> getLDAPServers() {
+        return ldapServers;
     }
 
     // Overriding
@@ -101,7 +133,7 @@ public class SplitConfig extends Properties {
         } else if (keyValue
             .startsWith(LDAPServerConfigurationEntry.LDAP_ENTRY_PREFIX))
         {
-            return addLDAPEntry(key, value);
+            return addLDAPEntry(keyValue, value);
         } else {
             return regular.put(key, value);
         }
@@ -118,56 +150,115 @@ public class SplitConfig extends Properties {
      *     The key of the LDAP config entry
      * @param value
      *     The value of that LDAP config entry
+     *
      * @return The {@link LDAPServerConfigurationEntry} if information was added
      * to it, {@code null} otherwise.
+     *
+     * @author Maximilian Krickl
+     * @since 11.5 SP 5
      */
-    private Object addLDAPEntry(Object key, Object value) {
-        String keyAsString = (String) key;
-        int index = getIndexOfLDAPEntry(keyAsString);
+    Object addLDAPEntry(String key, Object value) {
+        int index = getIndexOfLDAPEntry(key);
         if (index == -1) {
-            LOGGER.info(
+            LOGGER.warning(
                 "Could not read index from ldap configuration key " + key +
                     " = " + value);
+
+            //rewriteDeprecatedLDAPEntry(key, value);
+
             return null;
         }
 
-        LDAPServerConfigurationEntry serverConfig = ldapServers.get(index);
-        if (serverConfig == null) {
-            serverConfig = new LDAPServerConfigurationEntry();
-        }
+        LDAPServerConfigurationEntry serverConfig = getLDAPServerConfigurationEntryOrCreate(index);
 
-        String extension = getExtensionFromKey(keyAsString);
-        /*
-        # get field for extension by annotation
-        # set value of field
-        */
-        return null;
+        String extension = getExtensionFromKey(key);
+        Field field = ldapMapper.fieldMapping.get(extension);
+
+        if (field != null) {
+            try {
+                field.setAccessible(true);
+                field.set(serverConfig, value);
+                LOGGER.fine(
+                    "Set " + field.getName() + " to '" + key + "=" + value +
+                        "'");
+
+                return serverConfig;
+            } catch (IllegalAccessException e) {
+                LOGGER.warning(
+                    "Could not access field '" + field.getName() + "' for '" +
+                        key);
+                return null;
+            }
+        } else {
+            LOGGER.warning(
+                "Extension " + extension + " of config entry '" + key + "=" +
+                    value + "' unknown");
+            return null;
+        }
     }
 
     /**
-     * Get the extension from an LDAP config entry key. <br /><br /> An LDAP
-     * config entry is constructed from a prefix, an index and a name separated
-     * by a dot.
+     * Get an existing {@link LDAPServerConfigurationEntry} for the passed {@code index}
+     * or create a new one, if not found.
+     *
+     * @param index
+     *     The index of the config entry key.
+     *
+     * @return An {@link LDAPServerConfigurationEntry} associated with the
+     * {@code index}.
      *
      * @see #getIndexOfLDAPEntry(String)
-     * @param keyAsString
-     *     The key
-     * @return The {@code name} of the key
      */
-    String getExtensionFromKey(String keyAsString) {
-        return keyAsString.replaceFirst(
+    LDAPServerConfigurationEntry getLDAPServerConfigurationEntryOrCreate(
+        int index)
+    {
+        LDAPServerConfigurationEntry serverConfig = getLDAPServer(index);
+        if (serverConfig == null) {
+            serverConfig = new LDAPServerConfigurationEntry(index);
+            ldapServers.add(serverConfig);
+            LOGGER.fine("Created new LDAP Server Configuration at index " + index);
+        } else {
+            LOGGER.fine("Found existing LDAP Server Configuration at index " + index);
+        }
+        return serverConfig;
+    }
+
+    /**
+     * Get the extension from an LDAP config entry key.
+     * <br /><br />
+     * An LDAP config entry is constructed from a prefix, an index and a name
+     * separated by a dot.
+     *
+     * @param key
+     *     The key
+     *
+     * @return The {@code extension} of the key. If {@code keyAsString} is
+     * {@code null} or blank, a blank String ('') is returned.
+     *
+     * @author Maximilian Krickl
+     * @since 11.5 SP 5
+     * @see #getIndexOfLDAPEntry(String)
+     */
+    String getExtensionFromKey(String key) {
+        if (StringUtils.isBlank(key)) {
+            return "";
+        }
+        return key.replaceFirst(
             LDAPServerConfigurationEntry.LDAP_ENTRY_PREFIX + "\\.\\d*\\.", "");
     }
 
     /**
      * LDAP configuration entries are constructed from a prefix, an index and a
-     * name separated by a dot, e.g. {@code ldap.3.server.url} or more generic {@code
-     * <prefix>.<index>.<id>}.
+     * name separated by a dot, e.g. {@code ldap.3.server.url} or more generic
+     * {@code <prefix>.<index>.<id>}.
      *
-     * @param key
-     *     The key containing the index
+     * @param key The key containing the index
+     *
      * @return An integer greater or equal to zero for the index, or -1 if no
      * index was found.
+     *
+     * @author Maximilian Krickl
+     * @since 11.5 SP 5
      */
     int getIndexOfLDAPEntry(String key) {
         String[] keyComponents = key.split("\\.");
@@ -175,7 +266,7 @@ public class SplitConfig extends Properties {
             return -1;
         }
         try {
-            return Integer.valueOf(keyComponents[1]);
+            return Integer.parseInt(keyComponents[1]);
         } catch (NumberFormatException nfe) {
             return -1;
         }
@@ -183,11 +274,56 @@ public class SplitConfig extends Properties {
 
     @Override
     public synchronized Object remove(Object key) {
+        int index = -1;
+        if ((index = getIndexOfLDAPEntry(String.valueOf(key))) > -1) {
+            return removeLDAPEntry(index, String.valueOf(key));
+        }
         Object value = regular.remove(key);
         if (value != null) {
             return value;
         }
         return folders.remove(key);
+    }
+
+    /**
+     * Remove an LDAP-related key from the configuration.
+     *
+     * @param index
+     *     The index of the LDAP entry
+     * @param key
+     *     The key of the LDAP config entry
+     *
+     * @return The previous entry or {@code null} if non was found.
+     *
+     * @author Maximilian Krickl
+     * @since 11.5 SP 5
+     */
+    Object removeLDAPEntry(int index, String key) {
+        LDAPServerConfigurationEntry serverConfig = null;
+        if (ldapServers.isEmpty()) {
+            return null;
+        }
+
+        serverConfig = getLDAPServer(index);
+        if (serverConfig == null) {
+            return null;
+        }
+
+        String extension = getExtensionFromKey(key);
+        Field field = ldapMapper.fieldMapping.get(extension);
+
+        if (field != null) {
+            try {
+                Object prev = field.get(serverConfig);
+                field.setAccessible(true);
+                field.set(serverConfig, null);
+                return prev;
+            } catch (IllegalAccessException e) {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     @Override

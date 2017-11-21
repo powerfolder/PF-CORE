@@ -12,6 +12,12 @@ import java.util.Set;
 public class LDAPServerConfigurationEntry {
     public static final String LDAP_ENTRY_PREFIX = "ldap";
 
+    private final int index;
+
+    public LDAPServerConfigurationEntry(int index) {
+        this.index = index;
+    }
+
     /**
      * A name to be shown in the UI
      */
@@ -85,7 +91,7 @@ public class LDAPServerConfigurationEntry {
      */
     @DefaultValue(booleanValue = false)
     @ConfigurationEntryExtension(name = "sync.enabled")
-    private boolean syncEnabled;
+    private Boolean syncEnabled;
 
     /**
      * Replacement of LDAP_SYNC_TYPE("ldap.sync.type", 2)
@@ -97,7 +103,7 @@ public class LDAPServerConfigurationEntry {
      */
     @DefaultValue(intValue = 2)
     @ConfigurationEntryExtension(name = "sync.type")
-    private int syncType;
+    private Integer syncType;
 
     /**
      * Replacement of LDAP_SYNC_TIME("ldap.sync.time", 0)
@@ -105,8 +111,8 @@ public class LDAPServerConfigurationEntry {
      * The time interval for LDAP synchronization in hours.
      */
     @DefaultValue(intValue = 0)
-    @ConfigurationEntryExtension(name = "sync.time", oldName = "sync.enabled", oldType = boolean.class)
-    private int syncTime;
+    @ConfigurationEntryExtension(name = "sync.time", oldName = "sync.enabled", oldType = Boolean.class)
+    private Integer syncTime;
     /*LDAP_SYNC_TIME("ldap.sync.time", 0) {
 
         // Backward compatibility
@@ -171,7 +177,7 @@ public class LDAPServerConfigurationEntry {
      */
     @DefaultValue(intValue = 0)
     @ConfigurationEntryExtension(name = "search.org.depth")
-    private int orgDepth;
+    private Integer orgDepth;
 
     /**
      * Replacement of LDAP_ACCOUNTS_MATCH_EMAIL("ldap.accounts.match_email", true)
@@ -180,7 +186,7 @@ public class LDAPServerConfigurationEntry {
      */
     @DefaultValue(booleanValue = true)
     @ConfigurationEntryExtension(name = "accounts.match_email")
-    private boolean matchEmail;
+    private Boolean matchEmail;
 
     /**
      * Replacement of LDAP_SYNCHRONIZE_GROUPS("ldap.sync_groups.enabled", false)
@@ -189,7 +195,7 @@ public class LDAPServerConfigurationEntry {
      */
     @DefaultValue(booleanValue = false)
     @ConfigurationEntryExtension(name = "sync_groups.enabled")
-    private boolean enableSyncGroups;
+    private Boolean enableSyncGroups;
 
     /**
      * Replacement of LDAP_SEARCH_FILTER_GROUPS("ldap.search.expression.groups",
@@ -359,6 +365,10 @@ public class LDAPServerConfigurationEntry {
     @ConfigurationEntryExtension(name = "domain_list")
     private Set<String> domains;
 
+    public int getIndex() {
+        return index;
+    }
+
     public String getName() {
         return name;
     }
@@ -447,7 +457,7 @@ public class LDAPServerConfigurationEntry {
         this.matchEmail = matchEmail;
     }
 
-    public boolean isEnableSyncGroups() {
+    public boolean isSyncGroupsEnabled() {
         return enableSyncGroups;
     }
 
