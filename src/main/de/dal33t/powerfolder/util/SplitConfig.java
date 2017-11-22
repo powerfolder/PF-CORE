@@ -162,16 +162,30 @@ public class SplitConfig extends Properties {
         if (index == -1) {
             LOGGER.warning(
                 "Could not read index from ldap configuration key " + key +
-                    " = " + value);
+                    " = " + value + ". Trying to migrate to new entry.");
 
-            //rewriteDeprecatedLDAPEntry(key, value);
-
-            return null;
+            if (key.startsWith("ldap.")) {
+                regular.put(key, value);
+                index = 0;
+                key = key.replace("ldap.", "ldap.0.");
+            } else if (key.startsWith("ldap2.")) {
+                regular.put(key, value);
+                index = 1;
+                key = key.replace("ldap2.", "ldap.1.");
+            } else if (key.startsWith("ldap3.")) {
+                regular.put(key, value);
+                index = 2;
+                key = key.replace("ldap3.", "ldap.2.");
+            } else {
+                LOGGER.warning("Could not migrate malformed config entry " +
+                    key);
+                return null;
+            }
         }
 
+        String extension = getExtensionFromKey(key);
         LDAPServerConfigurationEntry serverConfig = getLDAPServerConfigurationEntryOrCreate(index);
 
-        String extension = getExtensionFromKey(key);
         Field field = ldapMapper.fieldMapping.get(extension);
 
         if (field != null) {
@@ -179,20 +193,20 @@ public class SplitConfig extends Properties {
                 field.setAccessible(true);
                 field.set(serverConfig, value);
                 LOGGER.fine(
-                    "Set " + field.getName() + " to '" + key + "=" + value +
-                        "'");
+                    "Set " + field.getName() + " to " + key);
+
+                regular.put(key, value);
 
                 return serverConfig;
             } catch (IllegalAccessException e) {
                 LOGGER.warning(
-                    "Could not access field '" + field.getName() + "' for '" +
+                    "Could not access field '" + field.getName() + "' for " +
                         key);
                 return null;
             }
         } else {
             LOGGER.warning(
-                "Extension " + extension + " of config entry '" + key + "=" +
-                    value + "' unknown");
+                "Extension " + extension + " of config entry " + key + " unknown");
             return null;
         }
     }
@@ -214,7 +228,7 @@ public class SplitConfig extends Properties {
     {
         LDAPServerConfigurationEntry serverConfig = getLDAPServer(index);
         if (serverConfig == null) {
-            serverConfig = new LDAPServerConfigurationEntry(index);
+            serverConfig = new LDAPServerConfigurationEntry(index, regular);
             ldapServers.add(serverConfig);
             LOGGER.fine("Created new LDAP Server Configuration at index " + index);
         } else {
