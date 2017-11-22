@@ -1,5 +1,8 @@
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.logging.Loggable;
+
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,11 +13,17 @@ import java.util.Set;
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @since 11.5 SP 5
  */
-public class LDAPServerConfigurationEntry {
+public class LDAPServerConfigurationEntry extends Loggable {
     public static final String LDAP_ENTRY_PREFIX = "ldap";
 
     private final int index;
 
+    /**
+     * Create a new LDAP server configuration with an {@code index}. The index
+     * is used for storing to the config file and for the order in the UI.
+     *
+     * @param index
+     */
     public LDAPServerConfigurationEntry(int index) {
         this.index = index;
     }
@@ -596,12 +605,12 @@ public class LDAPServerConfigurationEntry {
     }
 
     public Set<String> getUsernameSuffixes() {
-        String[] suffixes = new String[0];
-        if (usernameSuffixes != null) {
-            suffixes = usernameSuffixes.split(",");
+        if (usernameSuffixes == null) {
+            return new HashSet<>();
         }
+
         Set<String> result = new HashSet<>();
-        for (String suffix : suffixes) {
+        for (String suffix : usernameSuffixes.split(",")) {
             result.add(suffix);
         }
 
@@ -612,7 +621,39 @@ public class LDAPServerConfigurationEntry {
         this.usernameSuffixes = usernameSuffixes;
     }
 
-    private Object getDefaultValue() {
-        
+    /**
+     * Return the default value as specified with {@link DefaultValue} of a
+     * member of {@link LDAPServerConfigurationEntry}.
+     *
+     * @param memberName
+     *     The name of a field/member of this class.
+     * @return The default value as specified in the {@link DefaultValue}
+     * annotation or {@code null} if either there is no member {@code
+     * memberName} or there is no default value.
+     */
+    Object getDefaultValue(String memberName) {
+        Field field;
+        try {
+            field = this.getClass().getDeclaredField(memberName);
+        } catch (NoSuchFieldException e) {
+            logWarning("Could not find field by name " + memberName);
+            return null;
+        }
+
+        DefaultValue dv = field.getAnnotation(DefaultValue.class);
+        if (dv == null) {
+            logFine("No default value for " + memberName);
+            return null;
+        }
+
+        if (field.getType() == String.class) {
+            return dv.stringValue();
+        } else if (field.getType() == Boolean.class) {
+            return dv.booleanValue();
+        } else if (field.getType() == Integer.class) {
+            return dv.intValue();
+        }
+
+        return null;
     }
 }
