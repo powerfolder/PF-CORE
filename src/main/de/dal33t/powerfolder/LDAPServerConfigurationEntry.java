@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -21,7 +22,6 @@ public class LDAPServerConfigurationEntry {
     /**
      * A name to be shown in the UI
      */
-    @DefaultValue(stringValue = "")
     @ConfigurationEntryExtension(name = "server.name")
     private String name;
 
@@ -43,7 +43,6 @@ public class LDAPServerConfigurationEntry {
      * running on example.com using standard port with a custom base DN.</li>
      * </ul>
      */
-    @DefaultValue(stringValue = "")
     @ConfigurationEntryExtension(name = "server.url")
     private String serverURL;
 
@@ -52,7 +51,6 @@ public class LDAPServerConfigurationEntry {
      * <br /><br />
      * #2133 the user to use for LDAP search queries.
      */
-    @DefaultValue(stringValue = "")
     @ConfigurationEntryExtension(name = "search.username")
     private String searchUsername;
 
@@ -61,7 +59,6 @@ public class LDAPServerConfigurationEntry {
      * <br /><br />
      * #2133 the password to use for LDAP search queries.
      */
-    @DefaultValue(stringValue = "")
     @ConfigurationEntryExtension(name = "search.passwordobf")
     private String passwordObf;
 
@@ -70,7 +67,6 @@ public class LDAPServerConfigurationEntry {
      * <br /><br />
      * #2133 the password to use for LDAP search queries.
      */
-    @DefaultValue(stringValue = "")
     @ConfigurationEntryExtension(name = "search.password")
     private String password;
 
@@ -244,7 +240,6 @@ public class LDAPServerConfigurationEntry {
      * PFS-1539 An LDAP search filter for the import such as
      * "(objectClass=person)" or "(&(objectClass=inetOrgPerson)(org=Sales))"
      */
-    @DefaultValue(stringValue = "")
     @ConfigurationEntryExtension(name = "import.expression")
     private String importExpression;
 
@@ -361,9 +356,8 @@ public class LDAPServerConfigurationEntry {
     /**
      * List of username suffixes (domains) that are associated with this LDAP Server
      */
-    @DefaultValue(stringValue = "")
-    @ConfigurationEntryExtension(name = "domain_list")
-    private Set<String> domains;
+    @ConfigurationEntryExtension(name = "username_suffixes")
+    private String usernameSuffixes;
 
     public int getIndex() {
         return index;
@@ -601,11 +595,24 @@ public class LDAPServerConfigurationEntry {
         this.quotaUnit = quotaUnit;
     }
 
-    public Set<String> getDomains() {
-        return domains;
+    public Set<String> getUsernameSuffixes() {
+        String[] suffixes = new String[0];
+        if (usernameSuffixes != null) {
+            suffixes = usernameSuffixes.split(",");
+        }
+        Set<String> result = new HashSet<>();
+        for (String suffix : suffixes) {
+            result.add(suffix);
+        }
+
+        return result;
     }
 
-    public void setDomains(Set<String> domains) {
-        this.domains = domains;
+    public void setUsernameSuffixes(String usernameSuffixes) {
+        this.usernameSuffixes = usernameSuffixes;
+    }
+
+    private Object getDefaultValue() {
+        
     }
 }
