@@ -2704,14 +2704,7 @@ public class ServerClient extends PFComponent {
      */
     private boolean isFederatedLogin() {
 
-        boolean serverSupportsFederation;
-
-        try {
-            serverSupportsFederation = securityService.isFederatedService();
-        } catch (RemoteCallException ex) {
-            logWarning("Server " + server.getNick() + " does NOT support federated logins.");
-            return false;
-        }
+        boolean serverSupportsFederation = ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController());
 
         boolean discoveryNecessary = StringUtils.isBlank(ConfigurationEntry.CLIENT_FEDERATED_URL.getValue(getController()));
         boolean rediscoveryNecessary = !ConfigurationEntry.CLIENT_FEDERATED_URL.getValue(getController())
