@@ -18,6 +18,36 @@ import java.util.Set;
 public class LDAPServerConfigurationEntry extends Loggable {
     public static final String LDAP_ENTRY_PREFIX = "ldap";
 
+    private static final String PROPERTY_NAME = "name";
+    private static final String PROPERTY_SERVER_URL = "serverURL";
+    private static final String PROPERTY_SEARCH_USERNAME = "searchUsername";
+    private static final String PROPERTY_PASSWORD_OBF = "passwordObf";
+    private static final String PROPERTY_PASSWORD = "password";
+    private static final String PROPERTY_SEARCH_BASE = "searchBase";
+    private static final String PROPERTY_SYNC_TYPE = "syncType";
+    private static final String PROPERTY_SYNC_TIME = "syncTime";
+    private static final String PROPERTY_ORG_DEPTH = "orgDepth";
+    private static final String PROPERTY_MATCH_EMAIL = "matchEmail";
+    private static final String PROPERTY_SYNC_GROUPS_ENABLED = "syncGroupsEnabled";
+    private static final String PROPERTY_GROUPS_EXPRESSION = "groupsExpression";
+    private static final String PROPERTY_GROUPS_MEMBER = "groupsMember";
+    private static final String PROPERTY_GROUPS_MEMBER_OF = "groupsMemberOf";
+    private static final String PROPERTY_SEARCH_EXPRESSION = "searchExpression";
+    private static final String PROPERTY_IMPORT_EXPRESSION = "importExpression";
+    private static final String PROPERTY_MAPPING_MAIL = "mappingMail";
+    private static final String PROPERTY_MAPPING_USERNAME = "mappingUsername";
+    private static final String PROPERTY_MAPPING_GIVEN_NAME = "mappingGivenName";
+    private static final String PROPERTY_MAPPING_COMMON_NAME = "mappingCommonName";
+    private static final String PROPERTY_MAPPING_MIDDLE_NAME = "mappingMiddleName";
+    private static final String PROPERTY_MAPPING_SURNAME = "mappingSurname";
+    private static final String PROPERTY_MAPPING_DISPLAY_NAME = "mappingDisplayName";
+    private static final String PROPERTY_MAPPING_TELEPHONE = "mappingTelephone";
+    private static final String PROPERTY_MAPPING_EXPIRATION = "mappingExpiration";
+    private static final String PROPERTY_MAPPING_VALID_FROM = "mappingValidFrom";
+    private static final String PROPERTY_MAPPING_QUOTA = "mappingQuota";
+    private static final String PROPERTY_QUOTA_UNIT = "quotaUnit";
+    private static final String PROPERTY_USERNAME_SUFFIXES = "usernameSuffixes";
+
     private final int index;
     private final Properties properties;
 
@@ -97,15 +127,6 @@ public class LDAPServerConfigurationEntry extends Loggable {
     private String searchBase;
 
     /**
-     * Replacement of LDAP_SYNCHRONIZE_STRUCTURE("ldap.sync.enabled", false)
-     * <br /><br />
-     * Enable automatic synchronization of LDAP/AD. (deprecated)
-     */
-    @DefaultValue(booleanValue = false)
-    @ConfigurationEntryExtension(name = "sync.enabled")
-    private Boolean syncEnabled;
-
-    /**
      * Replacement of LDAP_SYNC_TYPE("ldap.sync.type", 2)
      * <br /><br />
      * The type of automatic LDAP synchronization.
@@ -123,68 +144,21 @@ public class LDAPServerConfigurationEntry extends Loggable {
      * The time interval for LDAP synchronization in hours.
      */
     @DefaultValue(intValue = 0)
-    @ConfigurationEntryExtension(name = "sync.time", oldName = "sync.enabled", oldType = Boolean.class)
+    @ConfigurationEntryExtension(name = "sync.time", oldName = "sync.enabled", oldType = Boolean.class, migrationMethodName = "migrateSyncTime")
     private Integer syncTime;
-    /*LDAP_SYNC_TIME("ldap.sync.time", 0) {
 
-        // Backward compatibility
-        @Override
-        public String getValue(Controller controller) {
-            // Compare LDAP_SYNCHRONIZE_STRUCTURE and LDAP_SYNC_TYPE
-            // If the values differ LDAP_SYNCHRONIZE_STRUCTURE wins
-            // (setValue sets both variables to the same value, so this means
-            // setValue has not been called yet and we have to import the old
-            // settings)
-            String value = super.getValue(controller);
-            boolean oldValue = ConfigurationServerEntry.LDAP_SYNCHRONIZE_STRUCTURE
-                .getValueBoolean(controller);
-            // If LDAP_SYNCHRONIZE_STRUCTURE is false and LDAP_SYNC_TYPE is not,
-            // return false
-            if (oldValue == false && !value.equals("0")) {
-                ConfigurationServerEntry.LDAP_SYNC_TIME.setValue(controller, "0");
-                return "0";
-            }
-            // If LDAP_SYNCHRONIZE_STRUCTURE is true and LDAP_SYNC_TYPE is not,
-            // return true
-            if (oldValue == true && value.equals("0")) {
-                ConfigurationServerEntry.LDAP_SYNC_TIME.setValue(controller, "1");
-                return "1";
-            }
-            return value;
+    public void migrateSyncTime(Boolean oldValue) {
+        if (oldValue) {
+            syncTime = 1;
+        } else {
+            syncTime = 0;
         }
-
-        // Forward compatibility
-        // When setting LDAP_SYNC_TIME also set LDAP_SYNCHRONIZE_STRUCTURE accordingly
-        @Override
-        public void setValue(Controller controller, String value) {
-            super.setValue(controller, value);
-            if (value.equals("0")) {
-                ConfigurationServerEntry.LDAP_SYNCHRONIZE_STRUCTURE.setValue(controller, false);
-            }
-            else {
-                ConfigurationServerEntry.LDAP_SYNCHRONIZE_STRUCTURE.setValue(controller, true);
-            }
-        }
-
-        // Forward compatibility
-        // When setting LDAP_SYNC_TIME also set LDAP_SYNCHRONIZE_STRUCTURE accordingly
-        @Override
-        public void setValue(Controller controller, int value) {
-            super.setValue(controller, value);
-            if (value == 0) {
-                ConfigurationServerEntry.LDAP_SYNCHRONIZE_STRUCTURE.setValue(controller, false);
-            }
-            else {
-                ConfigurationServerEntry.LDAP_SYNCHRONIZE_STRUCTURE.setValue(controller, true);
-            }
-        }
-
-    },*/
+    }
 
     /**
      * Replacement of LDAP_ORGANIZATION_DN_FIELD_DEPTH("ldap.search.org.depth", 0)
      * <br /><br />
-     * The number of commas, that separate the attributes in the destingushed
+     * The number of commas, that separate the attributes in the distinguished
      * name until the organization's attribute is reached.
      */
     @DefaultValue(intValue = 0)
@@ -383,12 +357,12 @@ public class LDAPServerConfigurationEntry extends Loggable {
         if (name != null) {
             return name;
         }
-        return (String) getDefaultValue("name");
+        return (String) getDefaultValue(PROPERTY_NAME);
     }
 
 
     public void setName(String name) {
-        setValueForExtensionToConfig("name", name);
+        setValueForExtensionToConfig(PROPERTY_NAME, name);
         this.name = name;
     }
 
@@ -397,11 +371,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return serverURL;
         }
 
-        return (String) getDefaultValue("serverURL");
+        return (String) getDefaultValue(PROPERTY_SERVER_URL);
     }
 
     public void setServerURL(String serverURL) {
-        setValueForExtensionToConfig("serverURL", serverURL);
+        setValueForExtensionToConfig(PROPERTY_SERVER_URL, serverURL);
         this.serverURL = serverURL;
     }
 
@@ -410,11 +384,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return searchUsername;
         }
 
-        return (String) getDefaultValue("searchUsername");
+        return (String) getDefaultValue(PROPERTY_SEARCH_USERNAME);
     }
 
     public void setSearchUsername(String searchUsername) {
-        setValueForExtensionToConfig("searchUsername", searchUsername);
+        setValueForExtensionToConfig(PROPERTY_SEARCH_USERNAME, searchUsername);
         this.searchUsername = searchUsername;
     }
 
@@ -423,11 +397,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return passwordObf;
         }
 
-        return (String) getDefaultValue("passwordObf");
+        return (String) getDefaultValue(PROPERTY_PASSWORD_OBF);
     }
 
     public void setPasswordObf(String passwordObf) {
-        setValueForExtensionToConfig("passwordObf", passwordObf);
+        setValueForExtensionToConfig(PROPERTY_PASSWORD_OBF, passwordObf);
         this.passwordObf = passwordObf;
     }
 
@@ -436,11 +410,15 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return password;
         }
 
-        return (String) getDefaultValue("password");
+        return (String) getDefaultValue(PROPERTY_PASSWORD);
     }
 
     public void setPassword(String password) {
-        setPasswordObf(LoginUtil.obfuscate(password.toCharArray()));
+        if (password != null) {
+            setPasswordObf(LoginUtil.obfuscate(password.toCharArray()));
+        } else {
+            setValueForExtensionToConfig(PROPERTY_PASSWORD, password);
+        }
         this.password = password;
     }
 
@@ -449,25 +427,12 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return searchBase;
         }
 
-        return (String) getDefaultValue("searchBase");
+        return (String) getDefaultValue(PROPERTY_SEARCH_BASE);
     }
 
     public void setSearchBase(String searchBase) {
-        setValueForExtensionToConfig("searchBase", searchBase);
+        setValueForExtensionToConfig(PROPERTY_SEARCH_BASE, searchBase);
         this.searchBase = searchBase;
-    }
-
-    public boolean isSyncEnabled() {
-        if (syncEnabled != null) {
-            return syncEnabled;
-        }
-
-        return (Boolean) getDefaultValue("syncEnabled");
-    }
-
-    public void setSyncEnabled(boolean syncEnabled) {
-        setValueForExtensionToConfig("syncEnabled", syncEnabled);
-        this.syncEnabled = syncEnabled;
     }
 
     public int getSyncType() {
@@ -475,11 +440,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return syncType;
         }
 
-        return (Integer) getDefaultValue("syncType");
+        return (Integer) getDefaultValue(PROPERTY_SYNC_TYPE);
     }
 
     public void setSyncType(int syncType) {
-        setValueForExtensionToConfig("syncType", syncType);
+        setValueForExtensionToConfig(PROPERTY_SYNC_TYPE, syncType);
         this.syncType = syncType;
     }
 
@@ -488,11 +453,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return syncTime;
         }
 
-        return (Integer) getDefaultValue("syncTime");
+        return (Integer) getDefaultValue(PROPERTY_SYNC_TIME);
     }
 
     public void setSyncTime(int syncTime) {
-        setValueForExtensionToConfig("syncTime", syncTime);
+        setValueForExtensionToConfig(PROPERTY_SYNC_TIME, syncTime);
         this.syncTime = syncTime;
     }
 
@@ -501,11 +466,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return orgDepth;
         }
 
-        return (Integer) getDefaultValue("orgDepth");
+        return (Integer) getDefaultValue(PROPERTY_ORG_DEPTH);
     }
 
     public void setOrgDepth(int orgDepth) {
-        setValueForExtensionToConfig("orgDepth", orgDepth);
+        setValueForExtensionToConfig(PROPERTY_ORG_DEPTH, orgDepth);
         this.orgDepth = orgDepth;
     }
 
@@ -514,11 +479,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return matchEmail;
         }
 
-        return (Boolean) getDefaultValue("matchEmail");
+        return (Boolean) getDefaultValue(PROPERTY_MATCH_EMAIL);
     }
 
     public void setMatchEmail(boolean matchEmail) {
-        setValueForExtensionToConfig("matchEmail", matchEmail);
+        setValueForExtensionToConfig(PROPERTY_MATCH_EMAIL, matchEmail);
         this.matchEmail = matchEmail;
     }
 
@@ -527,11 +492,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return syncGroupsEnabled;
         }
 
-        return (Boolean) getDefaultValue("syncGroupsEnabled");
+        return (Boolean) getDefaultValue(PROPERTY_SYNC_GROUPS_ENABLED);
     }
 
     public void setSyncGroupsEnabled(boolean syncGroupsEnabled) {
-        setValueForExtensionToConfig("syncGroupsEnabled", syncGroupsEnabled);
+        setValueForExtensionToConfig(PROPERTY_SYNC_GROUPS_ENABLED, syncGroupsEnabled);
         this.syncGroupsEnabled = syncGroupsEnabled;
     }
 
@@ -540,11 +505,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return groupsExpression;
         }
 
-        return (String) getDefaultValue("groupsExpression");
+        return (String) getDefaultValue(PROPERTY_GROUPS_EXPRESSION);
     }
 
     public void setGroupsExpression(String groupsExpression) {
-        setValueForExtensionToConfig("groupsExpression", groupsExpression);
+        setValueForExtensionToConfig(PROPERTY_GROUPS_EXPRESSION, groupsExpression);
         this.groupsExpression = groupsExpression;
     }
 
@@ -553,11 +518,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return groupsMember;
         }
 
-        return (String) getDefaultValue("groupsMember");
+        return (String) getDefaultValue(PROPERTY_GROUPS_MEMBER);
     }
 
     public void setGroupsMember(String groupsMember) {
-        setValueForExtensionToConfig("groupsMember", groupsMember);
+        setValueForExtensionToConfig(PROPERTY_GROUPS_MEMBER, groupsMember);
         this.groupsMember = groupsMember;
     }
 
@@ -566,11 +531,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return groupsMemberOf;
         }
 
-        return (String) getDefaultValue("groupsMemberOf");
+        return (String) getDefaultValue(PROPERTY_GROUPS_MEMBER_OF);
     }
 
     public void setGroupsMemberOf(String groupsMemberOf) {
-        setValueForExtensionToConfig("groupsMemberOf", groupsMemberOf);
+        setValueForExtensionToConfig(PROPERTY_GROUPS_MEMBER_OF, groupsMemberOf);
         this.groupsMemberOf = groupsMemberOf;
     }
 
@@ -579,11 +544,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return searchExpression;
         }
 
-        return (String) getDefaultValue("searchExpression");
+        return (String) getDefaultValue(PROPERTY_SEARCH_EXPRESSION);
     }
 
     public void setSearchExpression(String searchExpression) {
-        setValueForExtensionToConfig("searchExpression", searchExpression);
+        setValueForExtensionToConfig(PROPERTY_SEARCH_EXPRESSION, searchExpression);
         this.searchExpression = searchExpression;
     }
 
@@ -592,11 +557,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return importExpression;
         }
 
-        return (String) getDefaultValue("importExpression");
+        return (String) getDefaultValue(PROPERTY_IMPORT_EXPRESSION);
     }
 
     public void setImportExpression(String importExpression) {
-        setValueForExtensionToConfig("importExpression", importExpression);
+        setValueForExtensionToConfig(PROPERTY_IMPORT_EXPRESSION, importExpression);
         this.importExpression = importExpression;
     }
 
@@ -605,11 +570,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingMail;
         }
 
-        return (String) getDefaultValue("mappingMail");
+        return (String) getDefaultValue(PROPERTY_MAPPING_MAIL);
     }
 
     public void setMappingMail(String mappingMail) {
-        setValueForExtensionToConfig("mappingMail", mappingMail);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_MAIL, mappingMail);
         this.mappingMail = mappingMail;
     }
 
@@ -618,11 +583,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingUsername;
         }
 
-        return (String) getDefaultValue("mappingUsername");
+        return (String) getDefaultValue(PROPERTY_MAPPING_USERNAME);
     }
 
     public void setMappingUsername(String mappingUsername) {
-        setValueForExtensionToConfig("mappingUsername", mappingUsername);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_USERNAME, mappingUsername);
         this.mappingUsername = mappingUsername;
     }
 
@@ -631,11 +596,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingGivenName;
         }
 
-        return (String) getDefaultValue("mappingGivenName");
+        return (String) getDefaultValue(PROPERTY_MAPPING_GIVEN_NAME);
     }
 
     public void setMappingGivenName(String mappingGivenName) {
-        setValueForExtensionToConfig("mappingGivenName", mappingGivenName);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_GIVEN_NAME, mappingGivenName);
         this.mappingGivenName = mappingGivenName;
     }
 
@@ -644,11 +609,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingCommonName;
         }
 
-        return (String) getDefaultValue("mappingCommonName");
+        return (String) getDefaultValue(PROPERTY_MAPPING_COMMON_NAME);
     }
 
     public void setMappingCommonName(String mappingCommonName) {
-        setValueForExtensionToConfig("mappingCommonName", mappingCommonName);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_COMMON_NAME, mappingCommonName);
         this.mappingCommonName = mappingCommonName;
     }
 
@@ -657,11 +622,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingMiddleName;
         }
 
-        return (String) getDefaultValue("mappingMiddleName");
+        return (String) getDefaultValue(PROPERTY_MAPPING_MIDDLE_NAME);
     }
 
     public void setMappingMiddleName(String mappingMiddleName) {
-        setValueForExtensionToConfig("mappingMiddleName", mappingMiddleName);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_MIDDLE_NAME, mappingMiddleName);
         this.mappingMiddleName = mappingMiddleName;
     }
 
@@ -670,11 +635,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingSurname;
         }
 
-        return (String) getDefaultValue("mappingSurname");
+        return (String) getDefaultValue(PROPERTY_MAPPING_SURNAME);
     }
 
     public void setMappingSurname(String mappingSurname) {
-        setValueForExtensionToConfig("mappingSurname", mappingSurname);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_SURNAME, mappingSurname);
         this.mappingSurname = mappingSurname;
     }
 
@@ -683,11 +648,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingDisplayName;
         }
 
-        return (String) getDefaultValue("mappingDisplayName");
+        return (String) getDefaultValue(PROPERTY_MAPPING_DISPLAY_NAME);
     }
 
     public void setMappingDisplayName(String mappingDisplayName) {
-        setValueForExtensionToConfig("mappingDisplayName", mappingDisplayName);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_DISPLAY_NAME, mappingDisplayName);
         this.mappingDisplayName = mappingDisplayName;
     }
 
@@ -696,11 +661,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingTelephone;
         }
 
-        return (String) getDefaultValue("mappingTelephone");
+        return (String) getDefaultValue(PROPERTY_MAPPING_TELEPHONE);
     }
 
     public void setMappingTelephone(String mappingTelephone) {
-        setValueForExtensionToConfig("mappingTelephone", mappingTelephone);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_TELEPHONE, mappingTelephone);
         this.mappingTelephone = mappingTelephone;
     }
 
@@ -709,11 +674,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingExpiration;
         }
 
-        return (String) getDefaultValue("mappingExpiration");
+        return (String) getDefaultValue(PROPERTY_MAPPING_EXPIRATION);
     }
 
     public void setMappingExpiration(String mappingExpiration) {
-        setValueForExtensionToConfig("mappingExpiration", mappingExpiration);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_EXPIRATION, mappingExpiration);
         this.mappingExpiration = mappingExpiration;
     }
 
@@ -722,11 +687,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingValidFrom;
         }
 
-        return (String) getDefaultValue("mappingValidFrom");
+        return (String) getDefaultValue(PROPERTY_MAPPING_VALID_FROM);
     }
 
     public void setMappingValidFrom(String mappingValidFrom) {
-        setValueForExtensionToConfig("mappingValidFrom", mappingValidFrom);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_VALID_FROM, mappingValidFrom);
         this.mappingValidFrom = mappingValidFrom;
     }
 
@@ -735,11 +700,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return mappingQuota;
         }
 
-        return (String) getDefaultValue("mappingQuota");
+        return (String) getDefaultValue(PROPERTY_MAPPING_QUOTA);
     }
 
     public void setMappingQuota(String mappingQuota) {
-        setValueForExtensionToConfig("mappingQuota", mappingQuota);
+        setValueForExtensionToConfig(PROPERTY_MAPPING_QUOTA, mappingQuota);
         this.mappingQuota = mappingQuota;
     }
 
@@ -748,18 +713,18 @@ public class LDAPServerConfigurationEntry extends Loggable {
             return quotaUnit;
         }
 
-        return (String) getDefaultValue("quotaUnit");
+        return (String) getDefaultValue(PROPERTY_QUOTA_UNIT);
     }
 
     public void setQuotaUnit(String quotaUnit) {
-        setValueForExtensionToConfig("quotaUnit", quotaUnit);
+        setValueForExtensionToConfig(PROPERTY_QUOTA_UNIT, quotaUnit);
         this.quotaUnit = quotaUnit;
     }
 
     public Set<String> getUsernameSuffixes() {
         String suffixes = "";
         if (usernameSuffixes == null) {
-            suffixes = (String) getDefaultValue("usernameSuffixes");
+            suffixes = (String) getDefaultValue(PROPERTY_USERNAME_SUFFIXES);
 
             if (suffixes == null) {
                 return new HashSet<>();
@@ -777,7 +742,7 @@ public class LDAPServerConfigurationEntry extends Loggable {
     }
 
     public void setUsernameSuffixes(String usernameSuffixes) {
-        setValueForExtensionToConfig("usernameSuffixes", usernameSuffixes);
+        setValueForExtensionToConfig(PROPERTY_USERNAME_SUFFIXES, usernameSuffixes);
         this.usernameSuffixes = usernameSuffixes;
     }
 
@@ -845,6 +810,10 @@ public class LDAPServerConfigurationEntry extends Loggable {
 
         String key = LDAP_ENTRY_PREFIX + "." + index + "." + cee.name();
 
-        properties.put(key, value.toString());
+        if (value == null) {
+            properties.remove(key);
+        } else {
+            properties.put(key, value.toString());
+        }
     }
 }
