@@ -19,12 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.ConfigurationEntryExtension;
 import de.dal33t.powerfolder.ConfigurationEntryExtensionMapper;
 import de.dal33t.powerfolder.LDAPServerConfigurationEntry;
 import de.dal33t.powerfolder.disk.FolderSettings;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -160,7 +163,7 @@ public class SplitConfig extends Properties {
     Object addLDAPEntry(String key, Object value) {
         int index = getIndexOfLDAPEntry(key);
         if (index == -1) {
-            LOGGER.warning(
+            LOGGER.info(
                 "Could not read index from ldap configuration key " + key +
                     " = " + value + ". Trying to migrate to new entry.");
 
@@ -177,7 +180,7 @@ public class SplitConfig extends Properties {
                 index = 2;
                 key = key.replace("ldap3.", "ldap.2.");
             } else {
-                LOGGER.warning("Could not migrate malformed config entry " +
+                LOGGER.warning("Could not migrate malformed LDAP config entry " +
                     key);
                 return null;
             }
@@ -190,25 +193,89 @@ public class SplitConfig extends Properties {
 
         if (field != null) {
             try {
-                field.setAccessible(true);
-                field.set(serverConfig, value);
                 LOGGER.fine(
                     "Set " + field.getName() + " to " + key);
+                key = setValueToField(serverConfig, field, key, value);
 
                 regular.put(key, value);
 
                 return serverConfig;
-            } catch (IllegalAccessException e) {
+            } catch (IllegalAccessException iae) {
                 LOGGER.warning(
                     "Could not access field '" + field.getName() + "' for " +
-                        key);
+                        key + ". " + iae);
+                return null;
+            } catch (NoSuchMethodException nsme) {
+                LOGGER.warning(
+                    "Could not migrate '" + field.getName() + "' for " + key +
+                        ". " + nsme);
+                return null;
+            } catch (InvocationTargetException ite) {
+                LOGGER.warning(
+                    "Could not migrate '" + field.getName() + "' for " + key +
+                        ". " + ite);
                 return null;
             }
         } else {
             LOGGER.warning(
-                "Extension " + extension + " of config entry " + key + " unknown");
+                "Extension " + extension + " of config entry " + key +
+                    " unknown");
             return null;
         }
+    }
+
+    private String setValueToField(LDAPServerConfigurationEntry serverConfig,
+        Field field, String key, Object value)
+        throws IllegalAccessException, NoSuchMethodException,
+        InvocationTargetException
+    {
+        field.setAccessible(true);
+
+        // migrate from old type to new if necessary
+        ConfigurationEntryExtension cee = field
+            .getAnnotation(ConfigurationEntryExtension.class);
+        Class<?> oldType = cee.oldType();
+
+        boolean isDefaultValue = oldType == Object.class;
+        boolean typesDiffer = field.getType() != oldType;
+        boolean matchesOldExtension = StringUtils.isNotBlank(cee.oldName()) &&
+            key.endsWith(cee.oldName());
+
+        // If oldType is not the default AND oldType differs from the type of the field
+        if (!isDefaultValue && typesDiffer &&
+            matchesOldExtension)
+        {
+            Method migrationMethod = serverConfig.getClass().getMethod(
+                cee.migrationMethodName(), oldType);
+
+            if (oldType == Boolean.class) {
+                migrationMethod
+                    .invoke(serverConfig, Boolean.parseBoolean(value.toString()));
+            } else if (oldType == Integer.class) {
+                migrationMethod
+                    .invoke(serverConfig, Integer.parseInt(value.toString()));
+            } else {
+                migrationMethod.invoke(serverConfig, value);
+            }
+
+            return key;
+        }
+
+        if (matchesOldExtension) {
+            key = key.replace(cee.oldName(), cee.name());
+        }
+
+        // set simple types
+        if (field.getType() == Boolean.class) {
+            field.set(serverConfig,
+                Boolean.parseBoolean(value.toString()));
+        } else if (field.getType() == Integer.class) {
+            field.set(serverConfig, Integer.parseInt(value.toString()));
+        } else {
+            field.set(serverConfig, value);
+        }
+
+        return key;
     }
 
     /**

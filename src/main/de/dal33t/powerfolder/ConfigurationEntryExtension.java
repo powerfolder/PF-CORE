@@ -15,5 +15,7 @@ public @interface ConfigurationEntryExtension {
 
     String oldName() default "";
 
-    Class oldType() default Object.class;
+    Class<?> oldType() default Object.class;
+
+    String migrationMethodName() default "";
 }
