@@ -1,10 +1,17 @@
 package de.dal33t.powerfolder;
 
 import de.dal33t.powerfolder.util.LoginUtil;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.*;
 import java.lang.reflect.Field;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Set;
 
@@ -17,6 +24,14 @@ import java.util.Set;
  */
 public class LDAPServerConfigurationEntry extends Loggable {
     public static final String LDAP_ENTRY_PREFIX = "ldap";
+
+    static final String OPEN_LDAP_ROOT_DSE = "OpenLDAProotDSE";
+    static final String ACTIVE_DIRECTORY = "1.2.840.113556.1.4.800";
+    static final String AD_V51_WIN_SERVER_2003 = "1.2.840.113556.1.4.1670";
+    static final String AD_LDAP_INTEGRATION = "1.2.840.113556.1.4.1791";
+    static final String AD_V60_WIN_SERVER_2008 = "1.2.840.113556.1.4.1935";
+    static final String AD_V61R2_WIN_SERVER_2008_R2 = "1.2.840.113556.1.4.2080";
+    static final String AD_WINDOWS_8 = "1.2.840.113556.1.4.2237";
 
     private static final String PROPERTY_NAME = "name";
     private static final String PROPERTY_SERVER_URL = "serverURL";
@@ -47,6 +62,7 @@ public class LDAPServerConfigurationEntry extends Loggable {
     private static final String PROPERTY_MAPPING_QUOTA = "mappingQuota";
     private static final String PROPERTY_QUOTA_UNIT = "quotaUnit";
     private static final String PROPERTY_USERNAME_SUFFIXES = "usernameSuffixes";
+    private static final String PROPERTY_SERVER_TYPE = "serverType";
 
     private final int index;
     private final Properties properties;
@@ -348,6 +364,11 @@ public class LDAPServerConfigurationEntry extends Loggable {
      */
     @ConfigurationEntryExtension(name = "username_suffixes")
     private String usernameSuffixes;
+
+    private LDAPType serverType;
+
+
+    // -- Getter and Setter ----------------------------------------------------
 
     public int getIndex() {
         return index;
@@ -746,6 +767,13 @@ public class LDAPServerConfigurationEntry extends Loggable {
         this.usernameSuffixes = usernameSuffixes;
     }
 
+    public LDAPType getServerType() {
+        return serverType;
+    }
+
+
+    // -- Helper methods -------------------------------------------------------
+
     /**
      * Return the default value as specified with {@link DefaultValue} of a
      * member of {@link LDAPServerConfigurationEntry}.
@@ -815,5 +843,149 @@ public class LDAPServerConfigurationEntry extends Loggable {
         } else {
             properties.put(key, value.toString());
         }
+    }
+
+    /**
+     * Find out what LDAP server {@code ldapServerURL} is.<br />
+     * <br />
+     * To find out there are some base attributes, that give a hint. The search
+     * has to be a search to base node {@code ""} (empty string). The scope has
+     * to be {@code base}. <br />
+     * <br />
+     * If queried for {@code structuralObjectClass} an OpenLDAP server will
+     * return
+     * <ul>
+     * <li>{@code structuralObjectClass: OpenLDAProotDSE}</li>
+     * </ul>
+     * <br />
+     * Where as an Active Directory can be asked for
+     * {@code supportedCapabilities} and contains on of
+     * <ul>
+     * <li>
+     * {@code supportedCapabilities: 1.2.840.113556.1.4.800  (Active Directory)}
+     * </li>
+     * <li>
+     * {@code supportedCapabilities: 1.2.840.113556.1.4.1670 (Active Directory V51: Windows Server® 2003)}
+     * </li>
+     * <li>
+     * {@code supportedCapabilities: 1.2.840.113556.1.4.1791 (Active Directory LDAP Integration: signing and sealing on an NTLM authenticated connection)}
+     * </li>
+     * <li>
+     * {@code supportedCapabilities: 1.2.840.113556.1.4.1935 (Active Directory V60: Server® 2008)}
+     * </li>
+     * <li>
+     * {@code supportedCapabilities: 1.2.840.113556.1.4.2080 (Active Directory V61R2: Windows Server® 2008 R2)}
+     * </li>
+     * </ul>
+     *
+     */
+    public void populateLDAPType()
+    {
+        DirContext ctx = null;
+        try {
+            ctx = getDirContext(serverURL, searchUsername,
+                LoginUtil.deobfuscate(passwordObf).toString());
+
+            SearchControls sc = new SearchControls();
+            sc.setSearchScope(SearchControls.OBJECT_SCOPE);
+            sc.setReturningAttributes(new String[]{"supportedCapabilities",
+                "structuralObjectClass"});
+
+            NamingEnumeration<SearchResult> results = ctx.search("",
+                "objectClass=*", sc);
+
+            while (results.hasMoreElements()) {
+                SearchResult result = results.nextElement();
+                Attributes attrs = result.getAttributes();
+
+                Attribute strucObjClass = attrs.get("structuralObjectClass");
+                if (strucObjClass != null) {
+                    String sOC = strucObjClass.toString();
+                    if (sOC != null
+                        && sOC.trim().toLowerCase()
+                        .contains(OPEN_LDAP_ROOT_DSE.trim().toLowerCase()))
+                    {
+                        serverType = LDAPType.OPEN_LDAP;
+                        break;
+                    }
+                }
+
+                Attribute supCaps = attrs.get("supportedCapabilities");
+                if (supCaps != null) {
+                    NamingEnumeration<?> all = supCaps.getAll();
+                    String allSupportedCapabilities = "";
+                    while (all.hasMoreElements()) {
+                        String supCap = all.nextElement().toString();
+                        if (supCap == null) {
+                            continue;
+                        }
+                        allSupportedCapabilities += supCap + ",";
+                    }
+
+                    if (allSupportedCapabilities.contains(ACTIVE_DIRECTORY)
+                        || allSupportedCapabilities.contains(AD_V51_WIN_SERVER_2003)
+                        || allSupportedCapabilities.contains(AD_V60_WIN_SERVER_2008)
+                        || allSupportedCapabilities.contains(AD_V61R2_WIN_SERVER_2008_R2)
+                        || allSupportedCapabilities.contains(AD_WINDOWS_8)
+                        || allSupportedCapabilities.contains(AD_LDAP_INTEGRATION))
+                    {
+                        serverType = LDAPType.ACTIVE_DIRECTORY;
+                        break;
+                    }
+                }
+            }
+        } catch (NamingException ne) {
+            // NOP
+        } finally {
+            if (ctx != null) {
+                try {
+                    ctx.close();
+                } catch (NamingException ne) {
+                    // NOP
+                }
+            }
+        }
+        serverType = LDAPType.UNKNOWN;
+    }
+
+    /**
+     * Generic method to obtain a reference to a DirContext. Anonymous LDAP
+     * login.
+     *
+     * @param ldapServerURL
+     *            the URL of the LDAP server.
+     * @param searchUsername
+     *            #2133 the user to use for LDAP search queries
+     * @param searchPassword
+     * @return a DirContext for the specified server.
+     * @throws NamingException
+     *             if a naming exception is encountered.
+     */
+    private DirContext getDirContext(String ldapServerURL,
+        String searchUsername, String searchPassword) throws NamingException
+    {
+        Reject.ifBlank(ldapServerURL, "LDAP Server url blank");
+        Hashtable<Object, Object> env = new Hashtable<>();
+        env.put(Context.INITIAL_CONTEXT_FACTORY,
+            "com.sun.jndi.ldap.LdapCtxFactory");
+        if (ldapServerURL != null && !ldapServerURL.startsWith("ldap")) {
+            env.put(Context.PROVIDER_URL, "ldap://" + ldapServerURL);
+        } else {
+            env.put(Context.PROVIDER_URL, ldapServerURL);
+        }
+        if (StringUtils.isNotBlank(searchUsername)) {
+            env.put(Context.SECURITY_AUTHENTICATION, "simple");
+            env.put(Context.SECURITY_PRINCIPAL, searchUsername);
+            env.put(Context.SECURITY_CREDENTIALS, searchPassword);
+        }
+
+        env.putAll(System.getProperties());
+
+        // Create the initial context
+        return new InitialDirContext(env);
+    }
+
+    public enum LDAPType {
+        ACTIVE_DIRECTORY, OPEN_LDAP, UNKNOWN;
     }
 }
