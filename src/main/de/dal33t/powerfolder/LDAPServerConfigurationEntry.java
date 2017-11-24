@@ -143,35 +143,6 @@ public class LDAPServerConfigurationEntry extends Loggable {
     private String searchBase;
 
     /**
-     * Replacement of LDAP_SYNC_TYPE("ldap.sync.type", 2)
-     * <br /><br />
-     * The type of automatic LDAP synchronization.
-     * 0 = No accounts
-     * 1 = Only existing accounts
-     * 2 = All accounts
-     */
-    @DefaultValue(intValue = 2)
-    @ConfigurationEntryExtension(name = "sync.type")
-    private Integer syncType;
-
-    /**
-     * Replacement of LDAP_SYNC_TIME("ldap.sync.time", 0)
-     * <br /><br />
-     * The time interval for LDAP synchronization in hours.
-     */
-    @DefaultValue(intValue = 0)
-    @ConfigurationEntryExtension(name = "sync.time", oldName = "sync.enabled", oldType = Boolean.class, migrationMethodName = "migrateSyncTime")
-    private Integer syncTime;
-
-    public void migrateSyncTime(Boolean oldValue) {
-        if (oldValue) {
-            syncTime = 1;
-        } else {
-            syncTime = 0;
-        }
-    }
-
-    /**
      * Replacement of LDAP_ORGANIZATION_DN_FIELD_DEPTH("ldap.search.org.depth", 0)
      * <br /><br />
      * The number of commas, that separate the attributes in the distinguished
@@ -180,24 +151,6 @@ public class LDAPServerConfigurationEntry extends Loggable {
     @DefaultValue(intValue = 0)
     @ConfigurationEntryExtension(name = "search.org.depth")
     private Integer orgDepth;
-
-    /**
-     * Replacement of LDAP_ACCOUNTS_MATCH_EMAIL("ldap.accounts.match_email", true)
-     * <br /><br />
-     * Enable to merge accounts according to their email address
-     */
-    @DefaultValue(booleanValue = true)
-    @ConfigurationEntryExtension(name = "accounts.match_email")
-    private Boolean matchEmail;
-
-    /**
-     * Replacement of LDAP_SYNCHRONIZE_GROUPS("ldap.sync_groups.enabled", false)
-     * <br /><br />
-     * Enable automatic synchronization of LDAP/AD Groups.
-     */
-    @DefaultValue(booleanValue = false)
-    @ConfigurationEntryExtension(name = "sync_groups.enabled")
-    private Boolean syncGroupsEnabled;
 
     /**
      * Replacement of LDAP_SEARCH_FILTER_GROUPS("ldap.search.expression.groups",
@@ -239,6 +192,53 @@ public class LDAPServerConfigurationEntry extends Loggable {
     @DefaultValue(stringValue = "(|(sAMAccountName=$username)(mail=$username)(userPrincipalName=$username)(uid=$username)(distinguishedName=$username))")
     @ConfigurationEntryExtension(name = "search.expression")
     private String searchExpression;
+
+    /**
+     * Replacement of LDAP_SYNC_TYPE("ldap.sync.type", 2)
+     * <br /><br />
+     * The type of automatic LDAP synchronization.
+     * 0 = No accounts
+     * 1 = Only existing accounts
+     * 2 = All accounts
+     */
+    @DefaultValue(intValue = 2)
+    @ConfigurationEntryExtension(name = "sync.type")
+    private Integer syncType;
+
+    /**
+     * Replacement of LDAP_SYNC_TIME("ldap.sync.time", 0)
+     * <br /><br />
+     * The time interval for LDAP synchronization in hours.
+     */
+    @DefaultValue(intValue = 0)
+    @ConfigurationEntryExtension(name = "sync.time", oldName = "sync.enabled", oldType = Boolean.class, migrationMethodName = "migrateSyncTime")
+    private Integer syncTime;
+
+    public void migrateSyncTime(Boolean oldValue) {
+        if (oldValue) {
+            syncTime = 1;
+        } else {
+            syncTime = 0;
+        }
+    }
+
+    /**
+     * Replacement of LDAP_ACCOUNTS_MATCH_EMAIL("ldap.accounts.match_email", true)
+     * <br /><br />
+     * Enable to merge accounts according to their email address
+     */
+    @DefaultValue(booleanValue = true)
+    @ConfigurationEntryExtension(name = "accounts.match_email")
+    private Boolean matchEmail;
+
+    /**
+     * Replacement of LDAP_SYNCHRONIZE_GROUPS("ldap.sync_groups.enabled", false)
+     * <br /><br />
+     * Enable automatic synchronization of LDAP/AD Groups.
+     */
+    @DefaultValue(booleanValue = false)
+    @ConfigurationEntryExtension(name = "sync_groups.enabled")
+    private Boolean syncGroupsEnabled;
 
     /**
      * Replacement of LDAP_IMPORT_FILTER_EXPRESSION("ldap.import.expression")
