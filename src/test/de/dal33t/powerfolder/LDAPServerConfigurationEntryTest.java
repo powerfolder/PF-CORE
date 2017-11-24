@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.LoginUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -118,8 +119,14 @@ public class LDAPServerConfigurationEntryTest {
         assertTrue(properties.containsKey("ldap.0.search.passwordobf"));
         assertEquals("newPasswordObf", properties.getProperty("ldap.0.search.passwordobf"));
 
-        // Todo: How should plain text passwords be handled?
-        //assertNull(ldapConfig.getPassword());
+        // the plain text password gets obfuscated, stored to passwordobj and is not stored to the config file
+        properties.remove("ldap.0.search.passwordobf");
+        assertFalse(properties.containsKey("ldap.0.search.passwordobf"));
+        assertFalse(properties.containsKey("ldap.0.search.password"));
+        ldapConfig.setPassword("abc123");
+        assertFalse(properties.containsKey("ldap.0.search.password"));
+        assertTrue(properties.containsKey("ldap.0.search.passwordobf"));
+        assertEquals(LoginUtil.obfuscate("abc123".toCharArray()), properties.getProperty("ldap.0.search.passwordobf"));
 
         assertFalse(properties.containsKey("ldap.0.search.base"));
         ldapConfig.setSearchBase("newSearchBase");
