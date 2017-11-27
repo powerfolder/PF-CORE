@@ -19,6 +19,4 @@ public @interface DefaultValue {
     String stringValue() default "";
 
     boolean booleanValue() default false;
-
-
 }
