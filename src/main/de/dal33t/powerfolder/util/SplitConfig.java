@@ -168,15 +168,15 @@ public class SplitConfig extends Properties {
                     " = " + value + ". Trying to migrate to new entry.");
 
             if (key.startsWith("ldap.")) {
-                regular.put(key, value);
+                regular.put("x" + key, value);
                 index = 0;
                 key = key.replace("ldap.", "ldap.0.");
             } else if (key.startsWith("ldap2.")) {
-                regular.put(key, value);
+                regular.put("x" + key, value);
                 index = 1;
                 key = key.replace("ldap2.", "ldap.1.");
             } else if (key.startsWith("ldap3.")) {
-                regular.put(key, value);
+                regular.put("x" + key, value);
                 index = 2;
                 key = key.replace("ldap3.", "ldap.2.");
             } else {
