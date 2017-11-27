@@ -884,7 +884,7 @@ public class LDAPServerConfigurationEntry extends Loggable {
         DirContext ctx = null;
         try {
             ctx = getDirContext(serverURL, searchUsername,
-                LoginUtil.deobfuscate(passwordObf).toString());
+                new String(LoginUtil.deobfuscate(passwordObf)));
 
             SearchControls sc = new SearchControls();
             sc.setSearchScope(SearchControls.OBJECT_SCOPE);
