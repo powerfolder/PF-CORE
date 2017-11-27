@@ -414,6 +414,7 @@ public class Constants {
     public static final String LOGIN_PARAM_OR_HEADER_TOKEN = "Token";
     public static final String LOGIN_PARAM_ORIGINAL_URI = "originalURI";
     public static final String MY_ACCOUNT_URI = "/myaccount";
+    public static final String OAUTH_IDENTIFIER = "oauth";
 
     /** Cleanup immediately, 1, 10, 30, never days. */
     public static final int[] CLEANUP_VALUES = {0, 1, 10, 30, Integer.MAX_VALUE};
