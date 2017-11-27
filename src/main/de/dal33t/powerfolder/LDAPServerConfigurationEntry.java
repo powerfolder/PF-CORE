@@ -3,6 +3,7 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.LoginUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
 import javax.naming.Context;
@@ -27,8 +28,8 @@ public class LDAPServerConfigurationEntry extends Loggable {
 
     static final String OPEN_LDAP_ROOT_DSE = "OpenLDAProotDSE";
     static final String ACTIVE_DIRECTORY = "1.2.840.113556.1.4.800";
-    static final String AD_V51_WIN_SERVER_2003 = "1.2.840.113556.1.4.1670";
     static final String AD_LDAP_INTEGRATION = "1.2.840.113556.1.4.1791";
+    static final String AD_V51_WIN_SERVER_2003 = "1.2.840.113556.1.4.1670";
     static final String AD_V60_WIN_SERVER_2008 = "1.2.840.113556.1.4.1935";
     static final String AD_V61R2_WIN_SERVER_2008_R2 = "1.2.840.113556.1.4.2080";
     static final String AD_WINDOWS_8 = "1.2.840.113556.1.4.2237";
@@ -883,8 +884,23 @@ public class LDAPServerConfigurationEntry extends Loggable {
     {
         DirContext ctx = null;
         try {
+            boolean serverURLIsBlank = StringUtils.isBlank(serverURL);
+            boolean searchUsernameIsBlank = StringUtils.isBlank(searchUsername);
+            boolean passwordObfIsBlank = StringUtils.isBlank(passwordObf);
+
+            if (serverURLIsBlank ||
+                searchUsernameIsBlank ||
+                passwordObfIsBlank)
+            {
+                logInfo(String.format(
+                    "Cannot query LDAP Type of index %d. Blank entry: Server URL %b; Search Username %b; Password Obf %b",
+                    index, serverURLIsBlank, searchUsernameIsBlank,
+                    passwordObfIsBlank));
+                return;
+            }
+
             ctx = getDirContext(serverURL, searchUsername,
-                new String(LoginUtil.deobfuscate(passwordObf)));
+                Util.toString(LoginUtil.deobfuscate(passwordObf)));
 
             SearchControls sc = new SearchControls();
             sc.setSearchScope(SearchControls.OBJECT_SCOPE);
