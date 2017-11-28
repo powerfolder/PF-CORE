@@ -1,6 +1,6 @@
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.LDAPServerConfigurationEntry;
+import de.dal33t.powerfolder.LDAPConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -80,7 +80,7 @@ public class SplitConfigTest {
 
         assertNull(sc.remove("ldap.3.search.username"));
 
-        LDAPServerConfigurationEntry server = sc.getLDAPServer(0);
+        LDAPConfiguration server = sc.getLDAPServer(0);
 
         assertEquals("username", server.getSearchUsername());
         assertEquals(true, server.isSyncGroupsEnabled());

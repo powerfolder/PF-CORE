@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.ConfigurationEntryExtension;
 import de.dal33t.powerfolder.ConfigurationEntryExtensionMapper;
-import de.dal33t.powerfolder.LDAPServerConfigurationEntry;
+import de.dal33t.powerfolder.LDAPConfiguration;
 import de.dal33t.powerfolder.disk.FolderSettings;
 
 import java.io.*;
@@ -43,9 +43,9 @@ public class SplitConfig extends Properties {
     private Properties regular = new Properties();
     private Properties folders = new Properties();
 
-    private List<LDAPServerConfigurationEntry> ldapServers = new ArrayList<>();
+    private List<LDAPConfiguration> ldapServers = new ArrayList<>();
     private ConfigurationEntryExtensionMapper ldapMapper = new ConfigurationEntryExtensionMapper(
-        LDAPServerConfigurationEntry.class);
+        LDAPConfiguration.class);
 
     public Properties getRegular() {
         return regular;
@@ -56,22 +56,22 @@ public class SplitConfig extends Properties {
     }
 
     /**
-     * Get an {@link LDAPServerConfigurationEntry} for an {@code index} or
+     * Get an {@link LDAPConfiguration} for an {@code index} or
      * {@code null} if non found
      *
      * @param index
-     *     The index of the {@link LDAPServerConfigurationEntry}
+     *     The index of the {@link LDAPConfiguration}
      *
-     * @return The associated {@link LDAPServerConfigurationEntry}, or {@code
+     * @return The associated {@link LDAPConfiguration}, or {@code
      * null} if not found.
      *
      * @see #getIndexOfLDAPEntry(String)
      */
-    public LDAPServerConfigurationEntry getLDAPServer(int index) {
+    public LDAPConfiguration getLDAPServer(int index) {
         if (ldapServers.isEmpty()) {
             return null;
         }
-        for (LDAPServerConfigurationEntry server : ldapServers) {
+        for (LDAPConfiguration server : ldapServers) {
             if (server.getIndex() == index) {
                 return server;
             }
@@ -79,7 +79,7 @@ public class SplitConfig extends Properties {
         return null;
     }
 
-    public List<LDAPServerConfigurationEntry> getLDAPServers() {
+    public List<LDAPConfiguration> getLDAPServers() {
         return ldapServers;
     }
 
@@ -134,7 +134,7 @@ public class SplitConfig extends Properties {
         if (keyValue.startsWith(FolderSettings.PREFIX_V4)) {
             return folders.put(key, value);
         } else if (keyValue
-            .startsWith(LDAPServerConfigurationEntry.LDAP_ENTRY_PREFIX))
+            .startsWith(LDAPConfiguration.LDAP_ENTRY_PREFIX))
         {
             return addLDAPEntry(keyValue, value);
         } else {
@@ -144,9 +144,9 @@ public class SplitConfig extends Properties {
 
     /**
      * Inspect the {@code key} for its index ({@link #getIndexOfLDAPEntry}). If
-     * there is already an existing {@link LDAPServerConfigurationEntry} in
+     * there is already an existing {@link LDAPConfiguration} in
      * {@link #ldapServers} for that index, add the information to that object.
-     * Otherwise create a new {@link LDAPServerConfigurationEntry} and add it to
+     * Otherwise create a new {@link LDAPConfiguration} and add it to
      * {@link #ldapServers}.
      *
      * @param key
@@ -154,7 +154,7 @@ public class SplitConfig extends Properties {
      * @param value
      *     The value of that LDAP config entry
      *
-     * @return The {@link LDAPServerConfigurationEntry} if information was added
+     * @return The {@link LDAPConfiguration} if information was added
      * to it, {@code null} otherwise.
      *
      * @author Maximilian Krickl
@@ -187,7 +187,7 @@ public class SplitConfig extends Properties {
         }
 
         String extension = getExtensionFromKey(key);
-        LDAPServerConfigurationEntry serverConfig = getLDAPServerConfigurationEntryOrCreate(index);
+        LDAPConfiguration serverConfig = getLDAPServerConfigurationEntryOrCreate(index);
 
         Field field = ldapMapper.fieldMapping.get(extension);
 
@@ -224,7 +224,7 @@ public class SplitConfig extends Properties {
         }
     }
 
-    private String setValueToField(LDAPServerConfigurationEntry serverConfig,
+    private String setValueToField(LDAPConfiguration serverConfig,
         Field field, String key, Object value)
         throws IllegalAccessException, NoSuchMethodException,
         InvocationTargetException
@@ -279,23 +279,23 @@ public class SplitConfig extends Properties {
     }
 
     /**
-     * Get an existing {@link LDAPServerConfigurationEntry} for the passed {@code index}
+     * Get an existing {@link LDAPConfiguration} for the passed {@code index}
      * or create a new one, if not found.
      *
      * @param index
      *     The index of the config entry key.
      *
-     * @return An {@link LDAPServerConfigurationEntry} associated with the
+     * @return An {@link LDAPConfiguration} associated with the
      * {@code index}.
      *
      * @see #getIndexOfLDAPEntry(String)
      */
-    LDAPServerConfigurationEntry getLDAPServerConfigurationEntryOrCreate(
+    LDAPConfiguration getLDAPServerConfigurationEntryOrCreate(
         int index)
     {
-        LDAPServerConfigurationEntry serverConfig = getLDAPServer(index);
+        LDAPConfiguration serverConfig = getLDAPServer(index);
         if (serverConfig == null) {
-            serverConfig = new LDAPServerConfigurationEntry(index, regular);
+            serverConfig = new LDAPConfiguration(index, regular);
             ldapServers.add(serverConfig);
             LOGGER.fine("Created new LDAP Server Configuration at index " + index);
         } else {
@@ -325,7 +325,7 @@ public class SplitConfig extends Properties {
             return "";
         }
         return key.replaceFirst(
-            LDAPServerConfigurationEntry.LDAP_ENTRY_PREFIX + "\\.\\d*\\.", "");
+            LDAPConfiguration.LDAP_ENTRY_PREFIX + "\\.\\d*\\.", "");
     }
 
     /**
@@ -380,7 +380,7 @@ public class SplitConfig extends Properties {
      * @since 11.5 SP 5
      */
     Object removeLDAPEntry(int index, String key) {
-        LDAPServerConfigurationEntry serverConfig = null;
+        LDAPConfiguration serverConfig = null;
         if (ldapServers.isEmpty()) {
             return null;
         }
