@@ -838,7 +838,23 @@ public class LDAPConfiguration extends Loggable {
     }
 
     public void populateFromJSON(JSONObject ldapConfigJSON) {
+        try {
+            for (String propertyName : JSON_PROPERTIES) {
+                Field field = this.getClass().getDeclaredField(propertyName);
+                field.setAccessible(true);
 
+                if (field.getType() == String.class) {
+                    field.set(this, ldapConfigJSON.optString(propertyName));
+                } else if (field.getType() == Integer.class) {
+                    field.set(this, ldapConfigJSON.optInt(propertyName));
+                } else if (field.getType() == Boolean.class) {
+                    field.set(this, ldapConfigJSON.optBoolean(propertyName));
+                }
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            logWarning("Could not populate ");
+
+        }
     }
 
     /**
