@@ -820,12 +820,16 @@ public class LDAPConfiguration extends Loggable {
         JSONObject ldapJSON = new JSONObject();
 
         try {
-            ldapJSON.put("index", index);
+            ldapJSON.put(LDAP_ENTRY_PREFIX + "index", index);
 
             for (String propertyName : JSON_PROPERTIES) {
                 Field field = this.getClass().getDeclaredField(propertyName);
                 field.setAccessible(true);
-                ldapJSON.put(propertyName, field.get(this));
+                Object value = field.get(this);
+                if (value == null) {
+                    value = "";
+                }
+                ldapJSON.put(LDAP_ENTRY_PREFIX + propertyName, value);
             }
         } catch (JSONException | NoSuchFieldException | IllegalAccessException e) {
             logWarning(
@@ -844,11 +848,14 @@ public class LDAPConfiguration extends Loggable {
                 field.setAccessible(true);
 
                 if (field.getType() == String.class) {
-                    field.set(this, ldapConfigJSON.optString(propertyName));
+                    field.set(this, ldapConfigJSON
+                        .optString(LDAP_ENTRY_PREFIX + propertyName));
                 } else if (field.getType() == Integer.class) {
-                    field.set(this, ldapConfigJSON.optInt(propertyName));
+                    field.set(this, ldapConfigJSON
+                        .optInt(LDAP_ENTRY_PREFIX + propertyName));
                 } else if (field.getType() == Boolean.class) {
-                    field.set(this, ldapConfigJSON.optBoolean(propertyName));
+                    field.set(this, ldapConfigJSON
+                        .optBoolean(LDAP_ENTRY_PREFIX + propertyName));
                 }
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
