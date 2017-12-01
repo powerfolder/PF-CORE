@@ -5,6 +5,8 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -23,7 +25,7 @@ import java.util.Set;
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @since 11.5 SP 5
  */
-public class LDAPServerConfigurationEntry extends Loggable {
+public class LDAPConfiguration extends Loggable {
     public static final String LDAP_ENTRY_PREFIX = "ldap";
 
     static final String OPEN_LDAP_ROOT_DSE = "OpenLDAProotDSE";
@@ -65,6 +67,36 @@ public class LDAPServerConfigurationEntry extends Loggable {
     private static final String PROPERTY_USERNAME_SUFFIXES = "usernameSuffixes";
     private static final String PROPERTY_SERVER_TYPE = "serverType";
 
+    private static final String[] JSON_PROPERTIES = {
+        PROPERTY_NAME,
+        PROPERTY_SERVER_URL,
+        PROPERTY_SEARCH_USERNAME,
+        PROPERTY_PASSWORD,
+        PROPERTY_SEARCH_BASE,
+        PROPERTY_SYNC_TYPE,
+        PROPERTY_SYNC_TIME,
+        PROPERTY_ORG_DEPTH,
+        PROPERTY_MATCH_EMAIL,
+        PROPERTY_SYNC_GROUPS_ENABLED,
+        PROPERTY_GROUPS_EXPRESSION,
+        PROPERTY_GROUPS_MEMBER,
+        PROPERTY_GROUPS_MEMBER_OF,
+        PROPERTY_SEARCH_EXPRESSION,
+        PROPERTY_IMPORT_EXPRESSION,
+        PROPERTY_MAPPING_MAIL,
+        PROPERTY_MAPPING_USERNAME,
+        PROPERTY_MAPPING_GIVEN_NAME,
+        PROPERTY_MAPPING_COMMON_NAME,
+        PROPERTY_MAPPING_MIDDLE_NAME,
+        PROPERTY_MAPPING_SURNAME,
+        PROPERTY_MAPPING_DISPLAY_NAME,
+        PROPERTY_MAPPING_TELEPHONE,
+        PROPERTY_MAPPING_EXPIRATION,
+        PROPERTY_MAPPING_VALID_FROM,
+        PROPERTY_MAPPING_QUOTA,
+        PROPERTY_USERNAME_SUFFIXES
+    };
+
     private final int index;
     private final Properties properties;
 
@@ -77,7 +109,7 @@ public class LDAPServerConfigurationEntry extends Loggable {
      *     The configuration to store new values. May be {@code null}, then the
      *     properties will not be changed.
      */
-    public LDAPServerConfigurationEntry(int index, Properties properties) {
+    public LDAPConfiguration(int index, Properties properties) {
         this.index = index;
         this.properties = properties;
     }
@@ -772,12 +804,69 @@ public class LDAPServerConfigurationEntry extends Loggable {
         return serverType;
     }
 
-
     // -- Helper methods -------------------------------------------------------
 
     /**
+     * Build a JSON representation of this object. Though it does not contain
+     * ALL information of all member.
+     * <br /></br />
+     * The {@link JSONObject} contains the index and all member of {@link
+     * #JSON_PROPERTIES}.
+     *
+     * @return A JSONObject representation of this object, or an empty
+     * JSONObject, if an error occurred while trying to build the JSONObject.
+     */
+    public JSONObject toJSONObject() {
+        JSONObject ldapJSON = new JSONObject();
+
+        try {
+            ldapJSON.put(LDAP_ENTRY_PREFIX + "index", index);
+
+            for (String propertyName : JSON_PROPERTIES) {
+                Field field = this.getClass().getDeclaredField(propertyName);
+                field.setAccessible(true);
+                Object value = field.get(this);
+                if (value == null) {
+                    value = "";
+                }
+                ldapJSON.put(LDAP_ENTRY_PREFIX + propertyName, value);
+            }
+        } catch (JSONException | NoSuchFieldException | IllegalAccessException e) {
+            logWarning(
+                "Could not add field to JSON object for " + serverURL + ". " +
+                    e);
+            return new JSONObject();
+        }
+
+        return ldapJSON;
+    }
+
+    public void populateFromJSON(JSONObject ldapConfigJSON) {
+        try {
+            for (String propertyName : JSON_PROPERTIES) {
+                Field field = this.getClass().getDeclaredField(propertyName);
+                field.setAccessible(true);
+
+                if (field.getType() == String.class) {
+                    field.set(this, ldapConfigJSON
+                        .optString(LDAP_ENTRY_PREFIX + propertyName));
+                } else if (field.getType() == Integer.class) {
+                    field.set(this, ldapConfigJSON
+                        .optInt(LDAP_ENTRY_PREFIX + propertyName));
+                } else if (field.getType() == Boolean.class) {
+                    field.set(this, ldapConfigJSON
+                        .optBoolean(LDAP_ENTRY_PREFIX + propertyName));
+                }
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            logWarning("Could not populate ");
+
+        }
+    }
+
+    /**
      * Return the default value as specified with {@link DefaultValue} of a
-     * member of {@link LDAPServerConfigurationEntry}.
+     * member of {@link LDAPConfiguration}.
      *
      * @param memberName
      *     The name of a field/member of this class.

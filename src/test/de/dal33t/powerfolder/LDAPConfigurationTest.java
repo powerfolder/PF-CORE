@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="mailto:krickl@powerfolder.com>Maximilian Krickl</a>
  */
-public class LDAPServerConfigurationEntryTest {
+public class LDAPConfigurationTest {
 
     LDAPConfiguration ldapConfig;
     Properties properties;
