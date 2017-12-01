@@ -16,13 +16,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class LDAPServerConfigurationEntryTest {
 
-    LDAPServerConfigurationEntry ldapConfig;
+    LDAPConfiguration ldapConfig;
     Properties properties;
 
     @Before
     public void setUp() {
         properties = new Properties();
-        ldapConfig = new LDAPServerConfigurationEntry(0, properties);
+        ldapConfig = new LDAPConfiguration(0, properties);
     }
 
     @Test
