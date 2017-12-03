@@ -19,22 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingWorker;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -45,6 +32,14 @@ import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FileRestoringPanel extends PFWizardPanel {
 
@@ -203,24 +198,22 @@ public class FileRestoringPanel extends PFWizardPanel {
 
                 // Try server restore if no local restore done.
                 if (!restored && !restoreLocalToAlternateLocation) {
-                    if (fo.hasMember(getController().getOSClient().getServer())) {
-                        ServerClient client = getController().getOSClient();
-                        if (client.isConnected() && client.isLoggedIn()) {
-                            FolderService service = client.getFolderService(fileInfo.getFolderInfo());
-                            String relativeName = fileInfo.getRelativeName();
-                            String targetRelativeName;
-                            if (restoreServerToAlternateName) {
-                                // Change the file name to alternateName.
-                                targetRelativeName = FileInfo.renameRelativeFileName(relativeName, alternateName);
-                            } else {
-                                // Just restore to existing location.
-                                targetRelativeName = relativeName;
-                            }
-                            FileInfo onlineRestoredFileInfo = service.restore(fileInfo, targetRelativeName);
-                            log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from cloud");
-                            filesProcessedSuccessfully++;
-                            restored = true;
+                    ServerClient client = getController().getOSClient();
+                    if (client.isConnected() && client.isLoggedIn()) {
+                        FolderService service = client.getFolderService(fileInfo.getFolderInfo());
+                        String relativeName = fileInfo.getRelativeName();
+                        String targetRelativeName;
+                        if (restoreServerToAlternateName) {
+                            // Change the file name to alternateName.
+                            targetRelativeName = FileInfo.renameRelativeFileName(relativeName, alternateName);
+                        } else {
+                            // Just restore to existing location.
+                            targetRelativeName = relativeName;
                         }
+                        FileInfo onlineRestoredFileInfo = service.restore(fileInfo, targetRelativeName);
+                        log.info("Restored " + onlineRestoredFileInfo.toDetailString() + " from cloud");
+                        filesProcessedSuccessfully++;
+                        restored = true;
                     }
                 }
 
