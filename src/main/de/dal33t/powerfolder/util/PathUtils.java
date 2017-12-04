@@ -191,8 +191,12 @@ public class PathUtils {
      * @return true if the given input path is or is located on a networked
      * drive or is a UNC path share.
      */
-    public static boolean isNetworkPath(Path path) {
+    public static boolean isNetworkPath(Path path) throws IOException {
         Reject.ifNull(path, "Path");
+
+        if (Files.isSymbolicLink(path)) {
+            path = path.toRealPath();
+        }
 
         if (OSUtil.isMacOS() || OSUtil.isLinux()) {
             return isNetworkPathUnix(path);
@@ -219,6 +223,7 @@ public class PathUtils {
      * otherwise.
      */
     private static boolean isNetworkPathUnix(Path path) {
+
         try {
             Process p = Runtime.getRuntime().exec("df");
             InputStream stdout = p.getInputStream();

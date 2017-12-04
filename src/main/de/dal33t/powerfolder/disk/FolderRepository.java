@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.*;
@@ -382,11 +383,38 @@ public class FolderRepository extends PFComponent implements Runnable {
         // PFC-2544: End
 
         // PF-898: Network shares not allowed
-        boolean networkDrive = PathUtils.isNetworkPath(Paths.get(baseDir));
-        if (networkDrive && !ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController())) {
-            // Fall back to default
-            foldersBasedir = Paths.get(ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
-            logWarning("Network shares not allowed as base path: " + baseDir + ", switching to default: " + foldersBasedir);
+        Path dir = Paths.get(baseDir);
+
+        if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController()) &&
+                Files.exists(dir)) {
+
+            try {
+                // Fall back to default if is network drive:
+                if (PathUtils.isNetworkPath(dir)) {
+                    foldersBasedir = Paths.get(ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
+
+                    int n = JOptionPane.showConfirmDialog(null,
+                            Translation.get("dialog.folder.network_paths_not_allowed"),
+                            Translation.get("dialog.folder.title.network_paths_not_allowed"),
+                            JOptionPane.OK_OPTION,
+                            JOptionPane.WARNING_MESSAGE,
+                            null);
+
+                    if (n == 0) {
+                        try {
+                            BrowserLauncher.openURL("http://www.java.com");
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+
+                    logWarning("Network shares not allowed as base path: " + baseDir + ", switching to default: " + foldersBasedir);
+                }
+            } catch (IOException e) {
+                logWarning("Failed to resolve symlink at " + dir);
+                throw new IllegalStateException("Failed to resolve symlink at " + dir);
+            }
+
         } else {
             foldersBasedir = Paths.get(baseDir).toAbsolutePath();
         }
@@ -1117,20 +1145,43 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // PFC-2572
+        Path localBaseDir = folderSettings.getLocalBaseDir();
+
         if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK
-            .getValueBoolean(getController()))
+                .getValueBoolean(getController()) && Files.exists(localBaseDir))
         {
-            if (PathUtils.isNetworkPath(folderSettings.getLocalBaseDir())) {
-                if (saveConfig) {
-                    getController().saveConfig();
+
+            try {
+                if (Files.isSymbolicLink(localBaseDir)) {
+                    localBaseDir = localBaseDir.toRealPath();
                 }
-                logWarning("Not allowed to create " + folderInfo.getName()
-                    + " at " + folderSettings.getLocalBaseDir()
-                    + ". Network shares not allowed");
-                throw new IllegalStateException("Not allowed to create "
-                    + folderInfo.getName() + " at "
-                    + folderSettings.getLocalBaseDir()
-                    + ". Network shares not allowed");
+            } catch (IOException e) {
+                logWarning("Failed to resolve symlink at "
+                        + localBaseDir + " for folder "
+                        + folderInfo.getName());
+                throw new IllegalStateException("Failed to resolve symlink at "
+                        + localBaseDir + " for folder "
+                        + folderInfo.getName());
+            }
+
+            try {
+                if (PathUtils.isNetworkPath(localBaseDir)) {
+                    if (saveConfig) {
+                        getController().saveConfig();
+                    }
+                    logWarning("Not allowed to create " + folderInfo.getName()
+                            + " at " + folderSettings.getLocalBaseDir()
+                            + ". Network shares not allowed");
+                    throw new IllegalStateException("Not allowed to create "
+                            + folderInfo.getName() + " at "
+                            + folderSettings.getLocalBaseDir()
+                            + ". Network shares not allowed");
+                }
+            } catch (IOException e) {
+                logWarning("Failed to resolve symlink at " + localBaseDir);
+                throw new IllegalStateException("Failed to resolve symlink at "
+                        + localBaseDir + " for folder "
+                        + folderInfo.getName());
             }
         }
 
@@ -2977,11 +3028,34 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
 
                 // PF-898
-                if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController())
-                        && PathUtils.isNetworkPath(suggestedLocalBase)) {
-                    logWarning("No auto setup up on network drive for folder " + folderInfo.getName() + "/"
-                            + folderInfo.getId() + " @ " + suggestedLocalBase);
-                    continue;
+                if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController()) &&
+                        Files.exists(suggestedLocalBase)) {
+
+                    try {
+                        if (Files.isSymbolicLink(suggestedLocalBase)) {
+                            suggestedLocalBase = suggestedLocalBase.toRealPath();
+                        }
+                    } catch (IOException e) {
+                        logWarning("Failed to resolve symlink at "
+                                + suggestedLocalBase + " for folder "
+                                + folderInfo.getName());
+                        throw new IllegalStateException("Failed to resolve symlink at "
+                                + suggestedLocalBase + " for folder "
+                                + folderInfo.getName());
+                    }
+
+                    try {
+                        if (PathUtils.isNetworkPath(suggestedLocalBase)) {
+                            logWarning("No auto setup up on network drive for folder " + folderInfo.getName() + "/"
+                                    + folderInfo.getId() + " @ " + suggestedLocalBase);
+                            continue;
+                        }
+                    } catch (IOException e) {
+                        logWarning("Failed to resolve symlink at " + suggestedLocalBase);
+                        throw new IllegalStateException("Failed to resolve symlink at "
+                                + suggestedLocalBase + " for folder "
+                                + folderInfo.getName());
+                    }
                 }
 
                 logInfo("Auto setting up folder " + folderInfo.getName() + "/"
