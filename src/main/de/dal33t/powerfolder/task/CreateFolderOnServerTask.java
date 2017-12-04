@@ -90,7 +90,7 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
             client.getFolderService().createFolder(foInfo, syncProfile);
 
             if (archiveVersions != null && client.getAccount().hasAdminPermission(foInfo)) {
-                client.getFolderService().setArchiveMode(foInfo, archiveVersions);
+                client.getFolderService(foInfo).setArchiveMode(foInfo, archiveVersions);
             }
             if (client.getAccount().hasReadPermissions(foInfo))
             {

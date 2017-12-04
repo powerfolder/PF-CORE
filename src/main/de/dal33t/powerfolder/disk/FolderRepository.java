@@ -2111,10 +2111,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Make sure it is backed up by the server.
             try {
                 // Do it synchronous. Otherwise we might get race conditions.
-                getController().getOSClient().getFolderService()
-                    .createFolder(foInfo, null);
+                getController().getOSClient().getFolderService().createFolder(foInfo, null);
                 if (fs != null && client.getAccount().hasAdminPermission(foInfo)) {
-                    getController().getOSClient().getFolderService().setArchiveMode(foInfo, fs.getVersions());
+                    getController().getOSClient().getFolderService(foInfo).setArchiveMode(foInfo, fs.getVersions());
                 }
             } catch (Exception e) {
                 scheduleCreateOnServer = true;
@@ -2936,10 +2935,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 boolean scheduleCreateOnServer = false;
                 try {
                     // Do it synchronous. Otherwise we might get race conditions.
-                    getController().getOSClient().getFolderService()
-                        .createFolder(foInfo, null);
+                    getController().getOSClient().getFolderService().createFolder(foInfo, null);
                     if (settings != null && ad.getAccount().hasAdminPermission(foInfo)) {
-                        getController().getOSClient().getFolderService()
+                        getController().getOSClient().getFolderService(foInfo)
                             .setArchiveMode(foInfo, settings.getVersions());
                     }
                 } catch (Exception e) {
@@ -2996,7 +2994,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // PFS-2412:
                 if (!a.hasOwnerPermission(folderInfo)) {
                     try {
-                        String ownerDisplayname = getController().getOSClient().getFolderService().getOwnerDisplayname(folderInfo);
+                        String ownerDisplayname = getController().getOSClient()
+                                .getFolderService(folderInfo).getOwnerDisplayname(folderInfo);
                         if (StringUtils.isNotBlank(ownerDisplayname)) {
                             folderName += " (";
                             folderName += PathUtils.removeInvalidFilenameChars(ownerDisplayname);

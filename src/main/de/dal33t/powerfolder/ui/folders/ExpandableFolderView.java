@@ -317,8 +317,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             return null;
         }
         if (webDAVURL == null) {
-            webDAVURL = serverClient.getFolderService()
-                .getWebDAVURL(folderInfo);
+            webDAVURL = serverClient.getFolderService(folderInfo).getWebDAVURL(folderInfo);
             if (webDAVURL == null) {
                 // Don't fetch again. It's simply not available.
                 webDAVURL = "";
@@ -336,8 +335,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
         if (ownerDisplayname == null) {
             try {
-                ownerDisplayname = serverClient.getFolderService()
-                    .getOwnerDisplayname(folderInfo);
+                ownerDisplayname = serverClient.getFolderService(folderInfo).getOwnerDisplayname(folderInfo);
             } catch (RemoteCallException e) {
                 logFine("Unsupported/Old server. Not able to retrieve owner name of "
                     + folderInfo.getName() + ". " + e);

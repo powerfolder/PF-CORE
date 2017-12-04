@@ -205,8 +205,7 @@ public class SettingsTab extends PFUIComponent {
     private void loadOnlineArchiveMode() {
         // Do this offline so it does not slow the main display.
         FolderInfo fi = folder == null ? null : folder.getInfo();
-        if (folder.hasMember(serverClient.getServer())
-            && serverClient.isConnected())
+        if (serverClient.isConnected() && serverClient.joinedByCloud(fi))
         {
             new MyServerModeSwingWorker(fi).execute();
         } else {
@@ -668,8 +667,7 @@ public class SettingsTab extends PFUIComponent {
 
             if (result == 0) { // Purge
                 try {
-                    serverClient.getFolderService().purgeArchive(
-                        folder.getInfo());
+                    serverClient.getFolderService(folder.getInfo()).purgeArchive(folder.getInfo());
                 } catch (Exception e) {
                     logSevere(e);
                     DialogFactory
@@ -968,15 +966,14 @@ public class SettingsTab extends PFUIComponent {
                 FolderInfo folderInfo = folder.getInfo();
                 FolderService folderService = serverClient.isLoggedIn()
                     && serverClient.isConnected() ? serverClient
-                    .getFolderService() : null;
-                if (folderService != null && serverClient.joinedByCloud(folder)
-                        && serverClient.getAccount().hasAdminPermission(folderInfo))
-                {
-                    Integer versions = (Integer) onlineVersionModel
-                        .getValue();
+                    .getFolderService(folderInfo) : null;
+                if (serverClient.getAccount().hasAdminPermission(folderInfo)) {
+                    Integer versions = (Integer) onlineVersionModel.getValue();
                     folderService.setArchiveMode(folderInfo, versions);
+                } else {
+                    logWarning("Permission denied to " + serverClient.getAccount().getUsername() +". FolderAdminPermission on " + folderInfo);
+                    new MyServerModeSwingWorker(folderInfo).execute();
                 }
-
             } catch (Exception e) {
                 logWarning(e);
             }
@@ -997,19 +994,15 @@ public class SettingsTab extends PFUIComponent {
 
         public Object doInBackground() {
             try {
-                onlineArchiveModeSelectorPanel.getUIComponent().setVisible(
-                    false);
+                onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
                 onlineLabel.setVisible(false);
                 if (folderInfo != null) {
-                    FolderService folderService = serverClient
-                        .getFolderService();
+                    FolderService folderService = serverClient.getFolderService(folderInfo);
                     int perFile = folderService.getVersionsPerFile(folderInfo);
                     updatingOnlineArchiveMode = true;
                     onlineArchiveModeSelectorPanel.setArchiveMode(perFile);
-                    onlineArchiveModeSelectorPanel.getUIComponent().setVisible(
-                        true);
+                    onlineArchiveModeSelectorPanel.getUIComponent().setVisible(true);
                     onlineLabel.setVisible(true);
-
                 }
             } catch (Exception e) {
                 logWarning(e.toString());
