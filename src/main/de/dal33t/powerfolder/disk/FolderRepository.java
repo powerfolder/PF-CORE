@@ -2084,7 +2084,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo(" stillPresent: " + stillPresent);
         logInfo(" createdNew: " + createdNew);
 
-        if (foInfo == null || stillPresent) {
+        if (foInfo == null) {
             foInfo = new FolderInfo(file.getFileName().toString(),
                 IdGenerator.makeFolderId());
             createdNew = true;
