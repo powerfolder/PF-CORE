@@ -909,6 +909,29 @@ public class LDAPServerConfigurationEntry extends Loggable {
     }
 
     /**
+     * TODO document this method
+     * @param props
+     */
+    public void addConfigToProperties(Properties props) {
+        for (Field field : getClass().getDeclaredFields()) {
+            ConfigurationEntryExtension cee = field
+                .getDeclaredAnnotation(ConfigurationEntryExtension.class);
+            if (cee != null) {
+                String key =
+                    LDAP_ENTRY_PREFIX + "." + index + "." + cee.name();
+                try {
+                    field.setAccessible(true);
+                    props.put(
+                        key,
+                        field.get(this));
+                } catch (IllegalAccessException e) {
+                    logFine("Could not add entry for " + key + " to properties. " + e);
+                }
+            }
+        }
+    }
+
+    /**
      * Remove all keys of this {@link LDAPConfiguration} from the configuration file.
      */
     public void removeLDAPFromConfig() {
