@@ -412,6 +412,7 @@ public class Constants {
     public static final String LOGIN_PARAM_PASSWORD = "Password";
     public static final String LOGIN_PARAM_PASSWORD_OBF = "PasswordOBF";
     public static final String LOGIN_PARAM_OR_HEADER_TOKEN = "Token";
+    public static final String LOGIN_PARAM_OR_HEADER_TOKEN_BEARER = "Bearer";
     public static final String LOGIN_PARAM_ORIGINAL_URI = "originalURI";
     public static final String MY_ACCOUNT_URI = "/myaccount";
     public static final String OAUTH_IDENTIFIER = "oauth";
