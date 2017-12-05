@@ -847,16 +847,20 @@ public class LDAPConfiguration extends Loggable {
                 Field field = this.getClass().getDeclaredField(propertyName);
                 field.setAccessible(true);
 
+                Object value = null;
+
                 if (field.getType() == String.class) {
-                    field.set(this, ldapConfigJSON
-                        .optString(LDAP_ENTRY_PREFIX + propertyName));
+                    value = ldapConfigJSON
+                        .optString(LDAP_ENTRY_PREFIX + propertyName);
                 } else if (field.getType() == Integer.class) {
-                    field.set(this, ldapConfigJSON
-                        .optInt(LDAP_ENTRY_PREFIX + propertyName));
+                    value = ldapConfigJSON
+                        .optInt(LDAP_ENTRY_PREFIX + propertyName);
                 } else if (field.getType() == Boolean.class) {
-                    field.set(this, ldapConfigJSON
-                        .optBoolean(LDAP_ENTRY_PREFIX + propertyName));
+                    value = ldapConfigJSON
+                        .optBoolean(LDAP_ENTRY_PREFIX + propertyName);
                 }
+                field.set(this, value);
+                setValueForExtensionToConfig(propertyName, value);
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             logWarning("Could not populate ");
