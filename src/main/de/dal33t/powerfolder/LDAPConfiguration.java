@@ -940,6 +940,20 @@ public class LDAPConfiguration extends Loggable {
     }
 
     /**
+     * Remove all keys of this {@link LDAPConfiguration} from the configuration file.
+     */
+    public void removeLDAPFromConfig() {
+        for (Field field : getClass().getDeclaredFields()) {
+            ConfigurationEntryExtension cee = field
+                .getDeclaredAnnotation(ConfigurationEntryExtension.class);
+            if (cee != null) {
+                properties
+                    .remove(LDAP_ENTRY_PREFIX + "." + index + "." + cee.name());
+            }
+        }
+    }
+
+    /**
      * Find out what LDAP server {@code ldapServerURL} is.<br />
      * <br />
      * To find out there are some base attributes, that give a hint. The search
