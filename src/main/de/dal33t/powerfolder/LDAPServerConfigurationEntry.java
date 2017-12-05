@@ -255,7 +255,7 @@ public class LDAPServerConfigurationEntry extends Loggable {
      * <br /><br />
      * Comma separated list of entries, that contain mail addresses
      */
-    @DefaultValue(stringValue = "mailAddresses,proxyAddresses")
+    @DefaultValue(stringValue = "mail,mailAddresses,proxyAddresses")
     @ConfigurationEntryExtension(name = "mapping.mail_addresses", oldName = "search.mail_addresses")
     private String mappingMail;
 
@@ -363,7 +363,7 @@ public class LDAPServerConfigurationEntry extends Loggable {
     /**
      * List of username suffixes (domains) that are associated with this LDAP Server
      */
-    @ConfigurationEntryExtension(name = "username_suffixes")
+    @ConfigurationEntryExtension(name = "server.username_suffixes")
     private String usernameSuffixes;
 
     private LDAPType serverType;
