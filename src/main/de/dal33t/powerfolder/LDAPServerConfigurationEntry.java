@@ -5,6 +5,8 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -772,6 +774,66 @@ public class LDAPServerConfigurationEntry extends Loggable {
         return serverType;
     }
 
+    /**
+     * Build a JSON representation of this object. Though it does not contain
+     * ALL information of all member.
+     * <br /></br />
+     * The {@link JSONObject} contains the index and all member of {@link
+     * #JSON_PROPERTIES}.
+     *
+     * @return A JSONObject representation of this object, or an empty
+     * JSONObject, if an error occurred while trying to build the JSONObject.
+     */
+    public JSONObject toJSONObject() {
+        JSONObject ldapJSON = new JSONObject();
+
+        try {
+            ldapJSON.put(LDAP_ENTRY_PREFIX + "index", index);
+
+            for (String propertyName : JSON_PROPERTIES) {
+                Field field = this.getClass().getDeclaredField(propertyName);
+                field.setAccessible(true);
+                Object value = field.get(this);
+                if (value == null) {
+                    value = "";
+                }
+                ldapJSON.put(LDAP_ENTRY_PREFIX + propertyName, value);
+            }
+        } catch (JSONException | NoSuchFieldException | IllegalAccessException e) {
+            logWarning(
+                "Could not add field to JSON object for " + serverURL + ". " +
+                    e);
+            return new JSONObject();
+        }
+
+        return ldapJSON;
+    }
+
+    public void populateFromJSON(JSONObject ldapConfigJSON) {
+        try {
+            for (String propertyName : JSON_PROPERTIES) {
+                Field field = this.getClass().getDeclaredField(propertyName);
+                field.setAccessible(true);
+
+                Object value = null;
+
+                if (field.getType() == String.class) {
+                    value = ldapConfigJSON
+                        .optString(LDAP_ENTRY_PREFIX + propertyName);
+                } else if (field.getType() == Integer.class) {
+                    value = ldapConfigJSON
+                        .optInt(LDAP_ENTRY_PREFIX + propertyName);
+                } else if (field.getType() == Boolean.class) {
+                    value = ldapConfigJSON
+                        .optBoolean(LDAP_ENTRY_PREFIX + propertyName);
+                }
+                field.set(this, value);
+                setValueForExtensionToConfig(propertyName, value);
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            logWarning("Could not populate ");
+        }
+    }
 
     // -- Helper methods -------------------------------------------------------
 
