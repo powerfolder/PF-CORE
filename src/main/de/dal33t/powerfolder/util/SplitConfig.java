@@ -23,6 +23,8 @@ import de.dal33t.powerfolder.ConfigurationEntryExtension;
 import de.dal33t.powerfolder.ConfigurationEntryExtensionMapper;
 import de.dal33t.powerfolder.LDAPServerConfigurationEntry;
 import de.dal33t.powerfolder.disk.FolderSettings;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -545,5 +547,33 @@ public class SplitConfig extends Properties {
     @Override
     public String toString() {
         return "SplitConfig [regular=" + regular + ", folders=" + folders + "]";
+    }
+
+    public void saveLDAPConfigurations(JSONArray ldapConfigurations) {
+        for (int i = 0; i < ldapConfigurations.length(); i++) {
+            JSONObject ldapConfigJSON = ldapConfigurations.optJSONObject(i);
+
+            if (ldapConfigJSON == null) {
+                continue;
+            }
+
+            int index = ldapConfigJSON.optInt("ldapindex");
+
+            LDAPConfiguration ldapConfig = ldapServers.get(index);
+            if (ldapConfig == null) {
+                ldapConfig = new LDAPConfiguration(index,
+                    this);
+            }
+            ldapConfig.populateFromJSON(ldapConfigJSON);
+        }
+
+        int newConfigLength = ldapConfigurations.length();
+        int oldConfigLength = ldapServers.size();
+        if (newConfigLength < oldConfigLength) {
+            for (int i = oldConfigLength - 1; i >= newConfigLength; i--) {
+                LDAPConfiguration config = ldapServers.remove(i);
+                config.removeLDAPFromConfig();
+            }
+        }
     }
 }
