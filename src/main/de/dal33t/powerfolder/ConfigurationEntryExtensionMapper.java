@@ -12,9 +12,19 @@ public final class ConfigurationEntryExtensionMapper {
 
     public final HashMap<String, Field> fieldMapping;
 
+    public ConfigurationEntryExtensionMapper(Class<?> clazz, boolean mapOldNames) {
+        fieldMapping = new HashMap<>();
+
+        map(clazz, mapOldNames);
+    }
+
     public ConfigurationEntryExtensionMapper(Class<?> clazz) {
         fieldMapping = new HashMap<>();
 
+        map(clazz, true);
+    }
+
+    private void map(Class<?> clazz, boolean mapOldNames) {
         for (Field field : clazz
             .getDeclaredFields())
         {
@@ -22,10 +32,14 @@ public final class ConfigurationEntryExtensionMapper {
                 .getAnnotation(ConfigurationEntryExtension.class);
             if (extension != null) {
                 fieldMapping.put(extension.name(), field);
-                if (StringUtils.isNotBlank(extension.oldName())) {
+
+                if (mapOldNames &&
+                    StringUtils.isNotBlank(extension.oldName()))
+                {
                     fieldMapping.put(extension.oldName(), field);
                 }
             }
         }
+
     }
 }
