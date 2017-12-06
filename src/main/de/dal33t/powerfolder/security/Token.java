@@ -19,35 +19,20 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.nio.ByteBuffer;
-import java.util.Date;
-
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Index;
-
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
-import de.dal33t.powerfolder.util.Base58;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.LoginUtil;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.*;
+import org.hibernate.annotations.*;
+
+import javax.persistence.*;
+import javax.persistence.Entity;
+import java.nio.ByteBuffer;
+import java.util.Date;
 
 /**
  * PFC-2548: Device token/keys for authentication.
- * 
+ *
  * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  */
 @Entity
@@ -65,25 +50,27 @@ public class Token {
     public static final String PROPERTYNAME_NODE_INFO = "nodeInfo";
     public static final String PROPERTYNAME_ACCOUNT_INFO = "accountInfo";
     public static final String PROPERTYNAME_SERVICE_INFO = "serviceInfo";
-    
+
     // PFC-2455: 1 Minute
     private static final long REQUEST_TOKEN_TIMEOUT = 1000L * 60;
-    // PF-615: OCM Filter token timeout
-    private static final long OCM_TOKEN_TIMEOUT = 1000L * 60 * 5;
     // 1337 Years valid if not removed/revoked
     private static final long SERVICE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
-    // PFS-2008: 10 Minutes
-    private static final long MERGE_TOKEN_TIMEOUT = 1000L * 60 * 30;
-    private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 30;
+    // PF-881
+    private static final long MERGE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
+    private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
     // PFS-2296: Unlimited time
     private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
+    // PF-895: 1 day:
+    private static final long OAUTH_ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 24;
+    // PF-615: OCM
+    private static final long OCM_TOKEN_TIMEOUT = 1000L * 60 * 30;
 
     @Id
     private String id;
     private String secrect;
 
     private boolean revoked;
-    @Index(name="IDX_TOKEN_VALID_TO")
+    @Index(name = "IDX_TOKEN_VALID_TO")
     private Date validTo;
 
     @ManyToOne
@@ -93,7 +80,7 @@ public class Token {
     @Embedded
     @Fetch(FetchMode.JOIN)
     private AccountInfo accountInfo;
-    
+
     @ManyToOne
     @JoinColumn(name = "serviceInfo_id")
     private ServerInfo serviceInfo;
@@ -108,7 +95,7 @@ public class Token {
     public static Token newRequestToken(ServerInfo fedService) {
         Reject.ifNull(fedService, "Service null");
         Reject.ifFalse(fedService.isFederatedService(),
-            "Not a federated service");
+                "Not a federated service");
         Date validTo = new Date(System.currentTimeMillis() + REQUEST_TOKEN_TIMEOUT);
         return new Token(validTo, fedService, null, null);
     }
@@ -120,25 +107,24 @@ public class Token {
         Date validTo = new Date(System.currentTimeMillis() + OCM_TOKEN_TIMEOUT);
         return new Token(validTo, ocmProvider, null, null);
     }
-    
+
+
     /**
      * PFS-2296
      */
     public static Token newRegistrationToken(AccountInfo aInfo) {
         Reject.ifNull(aInfo, "Account info null");
         Date validTo = new Date(
-            System.currentTimeMillis() + ACCOUNT_REGISTER_TIMEOUT);
+                System.currentTimeMillis() + ACCOUNT_REGISTER_TIMEOUT);
         return new Token(validTo, null, aInfo, null);
     }
-    
-    public static Token newAccessToken(long validMS, AccountInfo aInfo)
-    {
+
+    public static Token newAccessToken(long validMS, AccountInfo aInfo) {
         return newAccessToken(validMS, aInfo, (MemberInfo) null);
     }
 
     public static Token newAccessToken(long validMS, AccountInfo aInfo,
-        MemberInfo mInfo)
-    {
+                                       MemberInfo mInfo) {
         Reject.ifFalse(validMS > 0, "Invalid time");
         Reject.ifNull(aInfo, "Account info null");
         Date validTo = new Date(System.currentTimeMillis() + validMS);
@@ -146,46 +132,65 @@ public class Token {
     }
 
     public static Token newAccessToken(AccountInfo aInfo,
-        ServerInfo fedService)
-    {
+                                       ServerInfo fedService) {
         Reject.ifNull(aInfo, "Account info null");
         Reject.ifNull(fedService, "Service null");
         Reject.ifFalse(fedService.isFederatedService(),
-            "Not a federated service");
+                "Not a federated service");
         Date validTo = new Date(
-            System.currentTimeMillis() + SERVICE_TOKEN_TIMEOUT);
+                System.currentTimeMillis() + SERVICE_TOKEN_TIMEOUT);
         return new Token(validTo, fedService, aInfo, null);
     }
 
     public static Token newMergeToken(AccountInfo aInfo,
-        String usernameToMerge)
-    {
+                                      String usernameToMerge) {
         Token token = newAccessToken(MERGE_TOKEN_TIMEOUT, aInfo);
         token.addNotesWithDate(
-            aInfo.getUsername() + " merging with " + usernameToMerge);
+                aInfo.getUsername() + " merging with " + usernameToMerge);
         return token;
     }
 
     public static Token newAddEmailToken(AccountInfo aInfo,
-        String eMailToAdd)
-    {
+                                         String eMailToAdd) {
         Token token = newAccessToken(ADD_EMAIL_TOKEN_TIMEOUT, aInfo);
         token.addNotesWithDate(
-            aInfo.getUsername() + " adding email " + eMailToAdd);
+                aInfo.getUsername() + " adding email " + eMailToAdd);
+        return token;
+    }
+
+    /**
+     * An OAuth access token to access a protected resource.
+     *
+     * @param aInfo The account this token belongs to.
+     * @return The access token.
+     */
+    public static Token newOAuthAccessToken(AccountInfo aInfo) {
+
+        Token token = newAccessToken(OAUTH_ACCESS_TOKEN_VALIDITY, aInfo);
+        token.setNotes("access_token");
+        return token;
+    }
+
+    /**
+     * An infinitely long valid refresh token to get a new valid OAuth access token.
+     *
+     * @param aInfo
+     * @return The refresh token.
+     */
+    public static Token newOAuthRefreshToken(AccountInfo aInfo) {
+
+        Token token = newAccessToken(SERVICE_TOKEN_TIMEOUT, aInfo);
+        token.setNotes("refresh_token");
         return token;
     }
 
     /**
      * Constructs and prepares a new token.
-     * 
-     * @param validTo
-     *            mandatory expiration date.
-     * @param sInfo
-     *            optional federated service information
-     * @param aInfo
-     *            optional account information
-     * @param mInfo
-     *            optional device information
+     *
+     * @param validTo mandatory expiration date.
+     * @param sInfo   optional federated service information
+     * @param aInfo   optional account information
+     * @param mInfo   optional device information
      */
     private Token(Date validTo, ServerInfo sInfo, AccountInfo aInfo, MemberInfo mInfo) {
         Reject.ifNull(validTo, "Validto is null");
@@ -215,7 +220,7 @@ public class Token {
     /**
      * Tests if the secret token candidate matches this token. Does NOT check
      * validity or revoked status.
-     * 
+     *
      * @param secretCandiate
      * @return true if the given candidate secret matches this token.
      */
@@ -236,13 +241,13 @@ public class Token {
     /**
      * The final and full check if the secret can be used for authentication.
      * Checks: expiration date, revoke state, matching with db secret.
-     * 
+     *
      * @param secretCandiate
      * @return true if
      */
     public boolean validate(String secretCandiate) {
         return !isExpired(secretCandiate) && isValid()
-            && matches(secretCandiate);
+                && matches(secretCandiate);
     }
 
     public boolean isValid() {
@@ -284,11 +289,11 @@ public class Token {
     public AccountInfo getAccountInfo() {
         return accountInfo;
     }
-    
+
     public ServerInfo getServiceInfo() {
         return serviceInfo;
     }
-    
+
     public String getNotes() {
         return notes;
     }
@@ -296,7 +301,7 @@ public class Token {
     public void setNotes(String notes) {
         this.notes = notes;
     }
-    
+
     /**
      * Adds a line of info with the current date to the notes.
      *
@@ -317,8 +322,6 @@ public class Token {
     }
 
     // Static helper **********************************************************
-
-
 
     public static String extractId(String secret) {
         if (StringUtils.isBlank(secret)) {
@@ -357,7 +360,7 @@ public class Token {
     /**
      * Validates a token string against expiration time. Note: Does NOT validate
      * a token secret / full token!
-     * 
+     *
      * @param tokenString
      * @return if the token string is (still) valid
      */
@@ -394,7 +397,7 @@ public class Token {
     @Override
     public String toString() {
         return "Token [id=" + id + ", secrect=" + secrect + ", revoked="
-            + revoked + ", validTo=" + validTo + ", nodeInfo=" + nodeInfo
-            + ", accountInfo=" + accountInfo + "]";
+                + revoked + ", validTo=" + validTo + ", nodeInfo=" + nodeInfo
+                + ", accountInfo=" + accountInfo + "]";
     }
 }

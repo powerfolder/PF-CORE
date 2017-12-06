@@ -495,8 +495,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                         public void run() {
                             // COOL MODE: Directly get file link without web
                             // browser.
-                            String altURL = client.getFolderService()
-                                .getFileLink(fInfo);
+                            String altURL = client.getFolderService(fInfo.getFolderInfo()).getFileLink(fInfo);
                             Util.setClipboardContents(altURL.replace(
                                 Constants.GET_LINK_URI, Constants.DL_LINK_URI));
                         }

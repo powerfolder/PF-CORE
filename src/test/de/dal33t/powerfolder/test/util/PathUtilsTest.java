@@ -751,18 +751,24 @@ public class PathUtilsTest extends TestCase {
         if (!OSUtil.isWindowsSystem()) {
             return;
         }
-        assertFalse(PathUtils.isNetworkPath(Paths.get("C:\\")));
-        assertFalse(PathUtils.isNetworkPath(Paths.get("C:\\subdir\\subdir2")));
 
-        assertFalse(PathUtils.isNetworkPath(Paths
-            .get("/home/user/PowerFolders/123")));
+        try {
+            assertFalse(PathUtils.isNetworkPath(Paths.get("C:\\")));
+            assertFalse(PathUtils.isNetworkPath(Paths.get("C:\\subdir\\subdir2")));
 
-        // assertTrue(PathUtils.isNetworkPath(Paths.get("N:\\")));
-        // assertTrue(PathUtils.isNetworkPath(Paths.get("N:\\subdir\\subdir2")));
+            assertFalse(PathUtils.isNetworkPath(Paths
+                    .get("/home/user/PowerFolders/123")));
 
-        assertTrue(PathUtils.isNetworkPath(Paths.get("\\\\server\\share")));
-        assertTrue(PathUtils.isNetworkPath(Paths
-            .get("\\\\server\\share\\subdir")));
+            // assertTrue(PathUtils.isNetworkPath(Paths.get("N:\\")));
+            // assertTrue(PathUtils.isNetworkPath(Paths.get("N:\\subdir\\subdir2")));
+
+            assertTrue(PathUtils.isNetworkPath(Paths.get("\\\\server\\share")));
+            assertTrue(PathUtils.isNetworkPath(Paths
+                    .get("\\\\server\\share\\subdir")));
+
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to resolve symlink!");
+        }
     }
 
     public void testRecursiveMoveVisitor() throws IOException {

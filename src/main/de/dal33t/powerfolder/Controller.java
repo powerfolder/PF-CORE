@@ -93,7 +93,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 5;
-    private static final int REVISION_VERSION = 569;
+    private static final int REVISION_VERSION = 597;
 
     /**
      * Program version.
@@ -1163,25 +1163,6 @@ public class Controller extends PFComponent {
         // ============
         // Schedule a task to do housekeeping every day, just after midnight.
         // ============
-        Calendar cal = new GregorianCalendar();
-        long now = cal.getTime().getTime();
-
-        // Midnight tomorrow morning.
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.add(Calendar.DATE, 1);
-
-        // Add a few seconds to be sure the file name definately is for
-        // tomorrow.
-        cal.add(Calendar.SECOND, 2);
-
-        long midnight = cal.getTime().getTime();
-        // How long to wait initially?
-        long secondsToMidnight = (midnight - now) / 1000;
-        logFine("Initial log reconfigure in " + secondsToMidnight + " seconds");
-
         // Run housekeeping at 12 am
         JobDetail job = newJob(Housekeeping.class)
             .withIdentity("housekeeping", "group1").build();

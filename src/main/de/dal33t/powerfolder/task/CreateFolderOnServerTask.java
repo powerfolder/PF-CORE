@@ -89,12 +89,10 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
             LOG.info("Setting folder up for cloud sync: " + foInfo);
             client.getFolderService().createFolder(foInfo, syncProfile);
 
-            if (archiveVersions != null) {
-                client.getFolderService().setArchiveMode(foInfo,
-                    archiveVersions);
+            if (archiveVersions != null && client.getAccount().hasAdminPermission(foInfo)) {
+                client.getFolderService(foInfo).setArchiveMode(foInfo, archiveVersions);
             }
-            if (client.getSecurityService().hasPermission(
-                client.getAccountInfo(), FolderPermission.read(foInfo)))
+            if (client.getAccount().hasReadPermissions(foInfo))
             {
                 // Remove task
                 remove();

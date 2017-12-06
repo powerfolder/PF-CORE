@@ -91,6 +91,7 @@ public class Account implements Serializable, D2DObject {
     public static final String PROPERTYNAME_EMAILS = "emails";
     public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
     public static final String PROPERTYNAME_AGREED_TOS_VERSION = "agreedToSVersion";
+    public static final String PROPERTYNAME_JSON_DATA = "jsonData";
 
     @Id
     private String oid;
@@ -1348,10 +1349,12 @@ public class Account implements Serializable, D2DObject {
         }
 
         // last login date
-        if (this.lastLoginDate != null &&
-            this.lastLoginDate.before(account.lastLoginDate))
-        {
-            this.lastLoginDate = account.lastLoginDate;
+        if (account.lastLoginDate != null) {
+            if (this.lastLoginDate == null ||
+                this.lastLoginDate.before(account.lastLoginDate))
+            {
+                this.lastLoginDate = account.lastLoginDate;
+            }
         }
     }
 

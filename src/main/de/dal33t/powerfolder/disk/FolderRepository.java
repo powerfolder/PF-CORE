@@ -51,6 +51,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.*;
@@ -335,7 +336,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    private void initFoldersBasedir() {
+    private boolean initFoldersBasedir() {
         String baseDir;
         String cmdBaseDir = getController().getCommandLine() != null
             ? getController().getCommandLine().getOptionValue("b")
@@ -343,8 +344,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (StringUtils.isNotBlank(cmdBaseDir)) {
             baseDir = cmdBaseDir;
         } else {
-            baseDir = ConfigurationEntry.FOLDER_BASEDIR
-                .getValue(getController());
+            baseDir = ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
             // Read folder base path from registry if possible
             boolean overwriteBaseDir = PreferencesEntry.FOLDER_BASE_PATH_OVERWRITE.getValueBoolean(getController());
             if (overwriteBaseDir == true && !PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController()).isEmpty()) {
@@ -382,53 +382,58 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         // PFC-2544: End
 
-        // Check if this a windows network drive.
-        // TODO: Check: Does this really work?
-        boolean winNetworkDrive = baseDir != null && baseDir.contains(":\\")
-            && baseDir.charAt(1) == ':';
+        // PF-898: Network shares not allowed
+        Path dir = Paths.get(baseDir);
 
-        boolean ok = false;
+        if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController()) &&
+                Files.exists(dir)) {
 
-        if (OSUtil.isWindowsSystem() && winNetworkDrive || !winNetworkDrive) {
-            foldersBasedir = Paths.get(baseDir).toAbsolutePath();
-            if (Files.notExists(foldersBasedir)) {
-                try {
-                    Files.createDirectories(foldersBasedir);
-                    logInfo("Created base path for folders: " + foldersBasedir);
-                } catch (FileAlreadyExistsException faee) {
-                    // ignore
-                } catch (Exception e) {
-                    // TODO: take a closer look at the different Exceptions that
-                    // can be caught.
-                    logWarning("Unable to create base path for folders: "
-                        + foldersBasedir + ". " + e.getMessage());
+            try {
+                // Fall back to default if is network drive:
+                if (PathUtils.isNetworkPath(dir)) {
+                    foldersBasedir = Paths.get(ConfigurationEntry.FOLDER_BASEDIR.getDefaultValue());
+
+                    int n = JOptionPane.showConfirmDialog(null,
+                            Translation.get("dialog.folder.network_paths_not_allowed"),
+                            Translation.get("dialog.folder.title.network_paths_not_allowed"),
+                            JOptionPane.OK_OPTION,
+                            JOptionPane.WARNING_MESSAGE,
+                            null);
+
+                    if (n == 0) {
+                        try {
+                            BrowserLauncher.openURL("http://www.java.com");
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+
+                    logWarning("Network shares not allowed as base path: " + baseDir + ", switching to default: " + foldersBasedir);
+                } else {
+                    foldersBasedir = Paths.get(baseDir).toAbsolutePath();
                 }
+            } catch (IOException e) {
+                logWarning("Failed to resolve symlink at " + dir);
+                throw new IllegalStateException("Failed to resolve symlink at " + dir);
             }
-            ok = Files.exists(foldersBasedir)
-                && Files.isReadable(foldersBasedir)
-                && Files.isDirectory(foldersBasedir);
         }
 
-        if (!OSUtil.isWindowsSystem() && winNetworkDrive) {
-            foldersBasedir = Paths.get(ConfigurationEntry.FOLDER_BASEDIR
-                .getDefaultValue());
-            if (Files.notExists(foldersBasedir)) {
-                try {
-                    Files.createDirectories(foldersBasedir);
-                    logInfo("Created base path for folders: " + foldersBasedir);
-                } catch (FileAlreadyExistsException faee) {
-                    // ignore
-                } catch (Exception e) {
-                    // TODO: take a closer look at the different Exceptions that
-                    // can be caught.
-                    logWarning("Unable to create base path for folders: "
+        if (Files.notExists(foldersBasedir)) {
+            try {
+                Files.createDirectories(foldersBasedir);
+                logInfo("Created base path for folders: " + foldersBasedir);
+            } catch (FileAlreadyExistsException faee) {
+                // ignore
+            } catch (Exception e) {
+                // TODO: take a closer look at the different Exceptions that
+                // can be caught.
+                logWarning("Unable to create base path for folders: "
                         + foldersBasedir + ". " + e.getMessage());
-                }
             }
-            ok = Files.exists(foldersBasedir)
+        }
+        boolean ok = Files.exists(foldersBasedir)
                 && Files.isReadable(foldersBasedir)
                 && Files.isDirectory(foldersBasedir);
-        }
 
         // Use default as fallback
         if (!ok
@@ -492,6 +497,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         // Save folder base path to registry
         PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), baseDir);
+        return ok;
     }
 
     /**
@@ -817,9 +823,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             ConfigurationEntry.FOLDER_BASEDIR.removeValue(getController());
             return;
         }
+        String oldEntryConfig = ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
+        String oldEntryPrefs = PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController());
         ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), path);
         PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), path);
-        initFoldersBasedir();
+        if (!initFoldersBasedir()) {
+            // PF-898: Reset
+            ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), oldEntryConfig);
+            PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), oldEntryPrefs);
+        }
     }
 
     /**
@@ -1132,20 +1144,43 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // PFC-2572
+        Path localBaseDir = folderSettings.getLocalBaseDir();
+
         if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK
-            .getValueBoolean(getController()))
+                .getValueBoolean(getController()) && Files.exists(localBaseDir))
         {
-            if (PathUtils.isNetworkPath(folderSettings.getLocalBaseDir())) {
-                if (saveConfig) {
-                    getController().saveConfig();
+
+            try {
+                if (Files.isSymbolicLink(localBaseDir)) {
+                    localBaseDir = localBaseDir.toRealPath();
                 }
-                logWarning("Not allowed to create " + folderInfo.getName()
-                    + " at " + folderSettings.getLocalBaseDir()
-                    + ". Network shares not allowed");
-                throw new IllegalStateException("Not allowed to create "
-                    + folderInfo.getName() + " at "
-                    + folderSettings.getLocalBaseDir()
-                    + ". Network shares not allowed");
+            } catch (IOException e) {
+                logWarning("Failed to resolve symlink at "
+                        + localBaseDir + " for folder "
+                        + folderInfo.getName());
+                throw new IllegalStateException("Failed to resolve symlink at "
+                        + localBaseDir + " for folder "
+                        + folderInfo.getName());
+            }
+
+            try {
+                if (PathUtils.isNetworkPath(localBaseDir)) {
+                    if (saveConfig) {
+                        getController().saveConfig();
+                    }
+                    logWarning("Not allowed to create " + folderInfo.getName()
+                            + " at " + folderSettings.getLocalBaseDir()
+                            + ". Network shares not allowed");
+                    throw new IllegalStateException("Not allowed to create "
+                            + folderInfo.getName() + " at "
+                            + folderSettings.getLocalBaseDir()
+                            + ". Network shares not allowed");
+                }
+            } catch (IOException e) {
+                logWarning("Failed to resolve symlink at " + localBaseDir);
+                throw new IllegalStateException("Failed to resolve symlink at "
+                        + localBaseDir + " for folder "
+                        + folderInfo.getName());
             }
         }
 
@@ -2000,8 +2035,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             foInfo = checkSystemSubdirForFolder(file);
             stillPresent = folderStillExists(foInfo);
 
-            try {
-                if (foInfo != null) {
+            if (foInfo != null) {
+                try {
                     Folder existingFolder = foInfo.getFolder(getController());
                     if (existingFolder != null && existingFolder.checkIfDeviceDisconnected()) {
                         removeFolder(existingFolder, false, false, true);
@@ -2012,10 +2047,27 @@ public class FolderRepository extends PFComponent implements Runnable {
                         foInfo = renamedFI;
                         renamedOnServer = true;
                     }
+                } catch (FolderRenameException fre) {
+                    logInfo("Could not rename Folder on server " + fre);
+                    logFine(fre);
                 }
-            } catch (FolderRenameException fre) {
-                logInfo("Could not rename Folder on server " + fre);
-                logFine(fre);
+            } else {
+                // PF-898: Match foldername with existing folders
+                String folderName = file.getFileName().toString();
+                for (FolderInfo existingFolderInfo : client.getAccount().getFolders()) {
+                    if (!PathUtils.isSameName(existingFolderInfo.getLocalizedName(), folderName)) {
+                        continue;
+                    }
+                    boolean receivedFolder = folderName.contains("(") && folderName.endsWith(")");
+                    boolean owner = client.getAccount().hasOwnerPermission(existingFolderInfo);
+                    if (receivedFolder && !owner) {
+                        logInfo("Found existing folder ID " + existingFolderInfo.getId() + " for received folder " + folderName);
+                        foInfo = existingFolderInfo;
+                    } else if (!receivedFolder && owner) {
+                        logInfo("Found existing folder ID " + existingFolderInfo.getId() + " for own folder " + folderName);
+                        foInfo = existingFolderInfo;
+                    }
+                }
             }
         } else if (getMySelf().isServer()) {
             foInfo = checkSystemSubdirForFolder(file);
@@ -2031,7 +2083,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo(" stillPresent: " + stillPresent);
         logInfo(" createdNew: " + createdNew);
 
-        if (foInfo == null || stillPresent) {
+        if (foInfo == null) {
             foInfo = new FolderInfo(file.getFileName().toString(),
                 IdGenerator.makeFolderId());
             createdNew = true;
@@ -2058,11 +2110,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Make sure it is backed up by the server.
             try {
                 // Do it synchronous. Otherwise we might get race conditions.
-                getController().getOSClient().getFolderService()
-                    .createFolder(foInfo, null);
-                if (fs != null) {
-                    getController().getOSClient().getFolderService()
-                        .setArchiveMode(foInfo, fs.getVersions());
+                getController().getOSClient().getFolderService().createFolder(foInfo, null);
+                if (fs != null && client.getAccount().hasAdminPermission(foInfo)) {
+                    getController().getOSClient().getFolderService(foInfo).setArchiveMode(foInfo, fs.getVersions());
                 }
             } catch (Exception e) {
                 scheduleCreateOnServer = true;
@@ -2884,10 +2934,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 boolean scheduleCreateOnServer = false;
                 try {
                     // Do it synchronous. Otherwise we might get race conditions.
-                    getController().getOSClient().getFolderService()
-                        .createFolder(foInfo, null);
-                    if (settings != null) {
-                        getController().getOSClient().getFolderService()
+                    getController().getOSClient().getFolderService().createFolder(foInfo, null);
+                    if (settings != null && ad.getAccount().hasAdminPermission(foInfo)) {
+                        getController().getOSClient().getFolderService(foInfo)
                             .setArchiveMode(foInfo, settings.getVersions());
                     }
                 } catch (Exception e) {
@@ -2944,7 +2993,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // PFS-2412:
                 if (!a.hasOwnerPermission(folderInfo)) {
                     try {
-                        String ownerDisplayname = getController().getOSClient().getFolderService().getOwnerDisplayname(folderInfo);
+                        String ownerDisplayname = getController().getOSClient()
+                                .getFolderService(folderInfo).getOwnerDisplayname(folderInfo);
                         if (StringUtils.isNotBlank(ownerDisplayname)) {
                             folderName += " (";
                             folderName += PathUtils.removeInvalidFilenameChars(ownerDisplayname);
@@ -2952,7 +3002,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
                     } catch (RemoteCallException e) {
                        log.warning("Unable to retrieve owner name of " + folderInfo.getName() + ". " + e);
-                        folderName += " (shared)";
+                       continue;
                     }
                 } else {
                     // Allow to sync user directories only for folders user is owner of.
@@ -2975,8 +3025,39 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                 }
 
+                // PF-898
+                if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController()) &&
+                        Files.exists(suggestedLocalBase)) {
+
+                    try {
+                        if (Files.isSymbolicLink(suggestedLocalBase)) {
+                            suggestedLocalBase = suggestedLocalBase.toRealPath();
+                        }
+                    } catch (IOException e) {
+                        logWarning("Failed to resolve symlink at "
+                                + suggestedLocalBase + " for folder "
+                                + folderInfo.getName());
+                        throw new IllegalStateException("Failed to resolve symlink at "
+                                + suggestedLocalBase + " for folder "
+                                + folderInfo.getName());
+                    }
+
+                    try {
+                        if (PathUtils.isNetworkPath(suggestedLocalBase)) {
+                            logWarning("No auto setup up on network drive for folder " + folderInfo.getName() + "/"
+                                    + folderInfo.getId() + " @ " + suggestedLocalBase);
+                            continue;
+                        }
+                    } catch (IOException e) {
+                        logWarning("Failed to resolve symlink at " + suggestedLocalBase);
+                        throw new IllegalStateException("Failed to resolve symlink at "
+                                + suggestedLocalBase + " for folder "
+                                + folderInfo.getName());
+                    }
+                }
+
                 logInfo("Auto setting up folder " + folderInfo.getName() + "/"
-                    + folderInfo.getId() + " @ " + suggestedLocalBase);
+                        + folderInfo.getId() + " @ " + suggestedLocalBase);
 
                 // Correct local path if in UserDirectories.
                 FolderSettings settings = new FolderSettings(
