@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -56,6 +57,7 @@ import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.net.NodeManager;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.security.SecurityManagerEvent;
 import de.dal33t.powerfolder.security.SecurityManagerListener;
 import de.dal33t.powerfolder.ui.PFUIComponent;
@@ -63,6 +65,7 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
@@ -629,6 +632,12 @@ public class MembersSimpleTableModel extends PFUIComponent implements
             TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
     }
 
+    public void showError(String message) {
+        JOptionPane
+            .showMessageDialog(getUIController().getActiveFrame(), message,
+                "Information", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     public void setAscending(boolean ascending) {
         sortAscending = ascending;
     }
@@ -640,6 +649,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
     private class PermissionSetter extends SwingWorker<Void, Void> {
         private AccountInfo aInfo;
         private FolderPermission newPermission;
+        private String errorMessage;
 
         public PermissionSetter(AccountInfo aInfo,
             FolderPermission newPermission)
@@ -648,17 +658,26 @@ public class MembersSimpleTableModel extends PFUIComponent implements
             Reject.ifNull(aInfo, "AccountInfo is null");
             this.aInfo = aInfo;
             this.newPermission = newPermission;
+            this.errorMessage = null;
         }
 
         @Override
         protected Void doInBackground() throws Exception {
-            getController().getOSClient().getSecurityService()
-                .setFolderPermission(aInfo, folder.getInfo(), newPermission);
+            try {
+                getController().getOSClient().getSecurityService()
+                    .setFolderPermission(aInfo, folder.getInfo(),
+                        newPermission);
+            } catch (SecurityException se) {
+                errorMessage = se.getMessage();
+            }
             return null;
         }
 
         @Override
         protected void done() {
+            if (StringUtils.isNotBlank(errorMessage)) {
+                showError(errorMessage);
+            }
             refreshModel();
         }
     }
