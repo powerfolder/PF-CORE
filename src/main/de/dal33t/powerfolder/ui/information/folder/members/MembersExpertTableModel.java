@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.Action;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -70,6 +71,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.model.SortedTableModel;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.compare.ReverseComparator;
@@ -780,6 +782,12 @@ public class MembersExpertTableModel extends PFUIComponent implements
         return null;
     }
 
+    public void showError(String message) {
+        JOptionPane
+            .showMessageDialog(getUIController().getActiveFrame(), message,
+                "Information", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     public void setAscending(boolean ascending) {
         sortAscending = ascending;
     }
@@ -791,6 +799,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
     private class PermissionSetter extends SwingWorker<Void, Void> {
         private AccountInfo aInfo;
         private FolderPermission newPermission;
+        private String errorMessage;
 
         public PermissionSetter(AccountInfo aInfo,
             FolderPermission newPermission)
@@ -799,17 +808,26 @@ public class MembersExpertTableModel extends PFUIComponent implements
             Reject.ifNull(aInfo, "AccountInfo is null");
             this.aInfo = aInfo;
             this.newPermission = newPermission;
+            this.errorMessage = null;
         }
 
         @Override
         protected Void doInBackground() throws Exception {
-            getController().getOSClient().getSecurityService()
-                .setFolderPermission(aInfo, folder.getInfo(), newPermission);
+            try {
+                getController().getOSClient().getSecurityService()
+                    .setFolderPermission(aInfo, folder.getInfo(),
+                        newPermission);
+            } catch (SecurityException se) {
+                errorMessage = se.getMessage();
+            }
             return null;
         }
 
         @Override
         protected void done() {
+            if (StringUtils.isNotBlank(errorMessage)) {
+                showError(errorMessage);
+            }
             refreshModel();
         }
     }
