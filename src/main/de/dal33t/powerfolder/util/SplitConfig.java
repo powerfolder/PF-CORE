@@ -19,15 +19,9 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.ConfigurationEntryExtension;
-import de.dal33t.powerfolder.ConfigurationEntryExtensionMapper;
-import de.dal33t.powerfolder.LDAPConfiguration;
 import de.dal33t.powerfolder.disk.FolderSettings;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -43,44 +37,12 @@ public class SplitConfig extends Properties {
     private Properties regular = new Properties();
     private Properties folders = new Properties();
 
-    private List<LDAPConfiguration> ldapServers = new ArrayList<>();
-    private ConfigurationEntryExtensionMapper ldapMapper = new ConfigurationEntryExtensionMapper(
-        LDAPConfiguration.class);
-
     public Properties getRegular() {
         return regular;
     }
 
     public Properties getFolders() {
         return folders;
-    }
-
-    /**
-     * Get an {@link LDAPConfiguration} for an {@code index} or
-     * {@code null} if non found
-     *
-     * @param index
-     *     The index of the {@link LDAPConfiguration}
-     *
-     * @return The associated {@link LDAPConfiguration}, or {@code
-     * null} if not found.
-     *
-     * @see #getIndexOfLDAPEntry(String)
-     */
-    public LDAPConfiguration getLDAPServer(int index) {
-        if (ldapServers.isEmpty()) {
-            return null;
-        }
-        for (LDAPConfiguration server : ldapServers) {
-            if (server.getIndex() == index) {
-                return server;
-            }
-        }
-        return null;
-    }
-
-    public List<LDAPConfiguration> getLDAPServers() {
-        return ldapServers;
     }
 
     // Overriding
@@ -133,278 +95,18 @@ public class SplitConfig extends Properties {
         String keyValue = String.valueOf(key);
         if (keyValue.startsWith(FolderSettings.PREFIX_V4)) {
             return folders.put(key, value);
-        } else if (keyValue
-            .startsWith(LDAPConfiguration.LDAP_ENTRY_PREFIX))
-        {
-            return addLDAPEntry(keyValue, value);
         } else {
             return regular.put(key, value);
         }
     }
 
-    /**
-     * Inspect the {@code key} for its index ({@link #getIndexOfLDAPEntry}). If
-     * there is already an existing {@link LDAPConfiguration} in
-     * {@link #ldapServers} for that index, add the information to that object.
-     * Otherwise create a new {@link LDAPConfiguration} and add it to
-     * {@link #ldapServers}.
-     *
-     * @param key
-     *     The key of the LDAP config entry
-     * @param value
-     *     The value of that LDAP config entry
-     *
-     * @return The {@link LDAPConfiguration} if information was added
-     * to it, {@code null} otherwise.
-     *
-     * @author Maximilian Krickl
-     * @since 11.5 SP 5
-     */
-    Object addLDAPEntry(String key, Object value) {
-        int index = getIndexOfLDAPEntry(key);
-        if (index == -1) {
-            LOGGER.info(
-                "Could not read index from ldap configuration key " + key +
-                    " = " + value + ". Trying to migrate to new entry.");
-
-            if (key.startsWith("ldap.")) {
-                regular.put("x" + key, value);
-                index = 0;
-                key = key.replace("ldap.", "ldap.0.");
-            } else if (key.startsWith("ldap2.")) {
-                regular.put("x" + key, value);
-                index = 1;
-                key = key.replace("ldap2.", "ldap.1.");
-            } else if (key.startsWith("ldap3.")) {
-                regular.put("x" + key, value);
-                index = 2;
-                key = key.replace("ldap3.", "ldap.2.");
-            } else {
-                LOGGER.warning("Could not migrate malformed LDAP config entry " +
-                    key);
-                return null;
-            }
-        }
-
-        String extension = getExtensionFromKey(key);
-        LDAPConfiguration serverConfig = getLDAPServerConfigurationEntryOrCreate(index);
-
-        Field field = ldapMapper.fieldMapping.get(extension);
-
-        if (field != null) {
-            try {
-                LOGGER.fine(
-                    "Set " + field.getName() + " to " + key);
-                key = setValueToField(serverConfig, field, key, value);
-
-                regular.put(key, value);
-
-                return serverConfig;
-            } catch (IllegalAccessException iae) {
-                LOGGER.warning(
-                    "Could not access field '" + field.getName() + "' for " +
-                        key + ". " + iae);
-                return null;
-            } catch (NoSuchMethodException nsme) {
-                LOGGER.warning(
-                    "Could not migrate '" + field.getName() + "' for " + key +
-                        ". " + nsme);
-                return null;
-            } catch (InvocationTargetException ite) {
-                LOGGER.warning(
-                    "Could not migrate '" + field.getName() + "' for " + key +
-                        ". " + ite);
-                return null;
-            }
-        } else {
-            LOGGER.warning(
-                "Extension " + extension + " of config entry " + key +
-                    " unknown");
-            return null;
-        }
-    }
-
-    private String setValueToField(LDAPConfiguration serverConfig,
-        Field field, String key, Object value)
-        throws IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException
-    {
-        field.setAccessible(true);
-
-        // migrate from old type to new if necessary
-        ConfigurationEntryExtension cee = field
-            .getAnnotation(ConfigurationEntryExtension.class);
-        Class<?> oldType = cee.oldType();
-
-        boolean isDefaultValue = oldType == Object.class;
-        boolean typesDiffer = field.getType() != oldType;
-        boolean matchesOldExtension = StringUtils.isNotBlank(cee.oldName()) &&
-            key.endsWith(cee.oldName());
-
-        // If oldType is not the default AND oldType differs from the type of the field
-        if (!isDefaultValue && typesDiffer &&
-            matchesOldExtension)
-        {
-            Method migrationMethod = serverConfig.getClass().getMethod(
-                cee.migrationMethodName(), oldType);
-
-            if (oldType == Boolean.class) {
-                migrationMethod
-                    .invoke(serverConfig, Boolean.parseBoolean(value.toString()));
-            } else if (oldType == Integer.class) {
-                migrationMethod
-                    .invoke(serverConfig, Integer.parseInt(value.toString()));
-            } else {
-                migrationMethod.invoke(serverConfig, value);
-            }
-
-            return key;
-        }
-
-        if (matchesOldExtension) {
-            key = key.replace(cee.oldName(), cee.name());
-        }
-
-        // set simple types
-        if (field.getType() == Boolean.class) {
-            field.set(serverConfig,
-                Boolean.parseBoolean(value.toString()));
-        } else if (field.getType() == Integer.class) {
-            field.set(serverConfig, Integer.parseInt(value.toString()));
-        } else {
-            field.set(serverConfig, value);
-        }
-
-        return key;
-    }
-
-    /**
-     * Get an existing {@link LDAPConfiguration} for the passed {@code index}
-     * or create a new one, if not found.
-     *
-     * @param index
-     *     The index of the config entry key.
-     *
-     * @return An {@link LDAPConfiguration} associated with the
-     * {@code index}.
-     *
-     * @see #getIndexOfLDAPEntry(String)
-     */
-    LDAPConfiguration getLDAPServerConfigurationEntryOrCreate(
-        int index)
-    {
-        LDAPConfiguration serverConfig = getLDAPServer(index);
-        if (serverConfig == null) {
-            serverConfig = new LDAPConfiguration(index, regular);
-            ldapServers.add(serverConfig);
-            LOGGER.fine("Created new LDAP Server Configuration at index " + index);
-        } else {
-            LOGGER.fine("Found existing LDAP Server Configuration at index " + index);
-        }
-        return serverConfig;
-    }
-
-    /**
-     * Get the extension from an LDAP config entry key.
-     * <br /><br />
-     * An LDAP config entry is constructed from a prefix, an index and a name
-     * separated by a dot.
-     *
-     * @param key
-     *     The key
-     *
-     * @return The {@code extension} of the key. If {@code keyAsString} is
-     * {@code null} or blank, a blank String ('') is returned.
-     *
-     * @author Maximilian Krickl
-     * @since 11.5 SP 5
-     * @see #getIndexOfLDAPEntry(String)
-     */
-    String getExtensionFromKey(String key) {
-        if (StringUtils.isBlank(key)) {
-            return "";
-        }
-        return key.replaceFirst(
-            LDAPConfiguration.LDAP_ENTRY_PREFIX + "\\.\\d*\\.", "");
-    }
-
-    /**
-     * LDAP configuration entries are constructed from a prefix, an index and a
-     * name separated by a dot, e.g. {@code ldap.3.server.url} or more generic
-     * {@code <prefix>.<index>.<id>}.
-     *
-     * @param key The key containing the index
-     *
-     * @return An integer greater or equal to zero for the index, or -1 if no
-     * index was found.
-     *
-     * @author Maximilian Krickl
-     * @since 11.5 SP 5
-     */
-    int getIndexOfLDAPEntry(String key) {
-        String[] keyComponents = key.split("\\.");
-        if (keyComponents.length < 2) {
-            return -1;
-        }
-        try {
-            return Integer.parseInt(keyComponents[1]);
-        } catch (NumberFormatException nfe) {
-            return -1;
-        }
-    }
-
     @Override
     public synchronized Object remove(Object key) {
-        int index = -1;
-        if ((index = getIndexOfLDAPEntry(String.valueOf(key))) > -1) {
-            return removeLDAPEntry(index, String.valueOf(key));
-        }
         Object value = regular.remove(key);
         if (value != null) {
             return value;
         }
         return folders.remove(key);
-    }
-
-    /**
-     * Remove an LDAP-related key from the configuration.
-     *
-     * @param index
-     *     The index of the LDAP entry
-     * @param key
-     *     The key of the LDAP config entry
-     *
-     * @return The previous entry or {@code null} if non was found.
-     *
-     * @author Maximilian Krickl
-     * @since 11.5 SP 5
-     */
-    Object removeLDAPEntry(int index, String key) {
-        LDAPConfiguration serverConfig = null;
-        if (ldapServers.isEmpty()) {
-            return null;
-        }
-
-        serverConfig = getLDAPServer(index);
-        if (serverConfig == null) {
-            return null;
-        }
-
-        String extension = getExtensionFromKey(key);
-        Field field = ldapMapper.fieldMapping.get(extension);
-
-        if (field != null) {
-            try {
-                Object prev = field.get(serverConfig);
-                field.setAccessible(true);
-                field.set(serverConfig, null);
-                return prev;
-            } catch (IllegalAccessException e) {
-                return null;
-            }
-        } else {
-            return null;
-        }
     }
 
     @Override
