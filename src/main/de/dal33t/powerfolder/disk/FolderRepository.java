@@ -409,14 +409,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
 
                     logWarning("Network shares not allowed as base path: " + baseDir + ", switching to default: " + foldersBasedir);
+                } else {
+                    foldersBasedir = Paths.get(baseDir).toAbsolutePath();
                 }
             } catch (IOException e) {
                 logWarning("Failed to resolve symlink at " + dir);
                 throw new IllegalStateException("Failed to resolve symlink at " + dir);
             }
-
-        } else {
-            foldersBasedir = Paths.get(baseDir).toAbsolutePath();
         }
 
         if (Files.notExists(foldersBasedir)) {
