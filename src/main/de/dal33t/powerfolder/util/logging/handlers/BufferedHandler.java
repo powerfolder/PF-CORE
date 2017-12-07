@@ -80,6 +80,16 @@ public class BufferedHandler extends Handler {
         logRecords.clear();
     }
 
+    /**
+     * Get plain records without using a formatter
+     *
+     * @return A list of {@link LogRecord}
+     **/
+
+    public List<LogRecord> getLogRecords() {
+        return Collections.unmodifiableList(logRecords);
+    }
+
     public List<String> getFormattedLogLines(int nSize, Formatter formatter,
         Level level)
     {
