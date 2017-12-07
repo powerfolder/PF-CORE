@@ -108,9 +108,12 @@ public class IdGenerator {
     public static final String FILE_LINK_PREFIX = "fi";
 
     public static String generateFileLinkID(FileInfo fInfo) {
-        String tmp = fInfo.getFolderInfo().id + "/" + fInfo.getRelativeName();
-        byte[] buf = md5(tmp.getBytes(Convert.UTF8));
-        return FILE_LINK_PREFIX + Base58.encode(buf);
+        return generateFileLinkID(fInfo.getFolderInfo().id, fInfo.getRelativeName());
+    }
+
+    public static String generateFileLinkID(String folderId, String fileRelativePath) {
+        String fileId = folderId + "/" + fileRelativePath;
+        return FILE_LINK_PREFIX + Base58.encode(md5(fileId.getBytes(Convert.UTF8)));
     }
 
     /**

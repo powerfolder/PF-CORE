@@ -424,7 +424,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/protobuf-java-3.1.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/protobuf-java-3.5.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
