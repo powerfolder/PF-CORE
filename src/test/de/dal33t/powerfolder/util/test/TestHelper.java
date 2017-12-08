@@ -562,16 +562,12 @@ public class TestHelper {
 
     // Scanning help **********************************************************
 
-    public static void scanFolder(final Folder folder) {
-        scanFolder(folder, true);
-    }
-
     /**
      * Scans a folder and waits for the scan to complete.
      *
      * @param folder
      */
-    public static void scanFolder(final Folder folder, boolean ignoreMassDeletion) {
+    public static void scanFolder(final Folder folder) {
         // if (!folder.getSyncProfile().isInstantSync()) {
         // throw new IllegalStateException(
         // "Folder has auto-detect of local files disabled: " + folder
@@ -591,9 +587,9 @@ public class TestHelper {
         });
 
         // Scan // Ignore mass deletion
-        if (!folder.scanLocalFiles(ignoreMassDeletion)) {
+        if (!folder.scanLocalFiles()) {
             TestHelper.waitMilliSeconds(50);
-            if (!folder.scanLocalFiles(ignoreMassDeletion)) {
+            if (!folder.scanLocalFiles()) {
                 throw new RuntimeException("Unable to scan " + folder
                     + ". Last scan result: " + folder.getLastScanResultState()
                     + ". Device disconnected? "

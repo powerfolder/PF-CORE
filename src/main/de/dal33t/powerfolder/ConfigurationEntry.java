@@ -868,14 +868,6 @@ public enum ConfigurationEntry {
     FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
 
     /**
-     * Note - as of PFC-2182, mass delete protection should only be applied
-     * if the user has expert mode.
-     */
-    MASS_DELETE_PROTECTION("mass.delete.protection", false),
-
-    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95),
-
-    /**
      * Contains a comma-separated list of all plugins to load.
      */
     PLUGINS("plugins"),
