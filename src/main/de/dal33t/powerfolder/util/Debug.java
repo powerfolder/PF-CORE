@@ -800,6 +800,9 @@ public class Debug {
     private static List<String> getGroupInfo(ThreadGroup group,
         boolean hideIdleThreds)
     {
+        if (group == null) {
+            return Collections.EMPTY_LIST;
+        }
         Thread threads[] = new Thread[group.activeCount()];
         List<String> threadDumps = new LinkedList<String>();
         group.enumerate(threads, false);
@@ -954,6 +957,9 @@ public class Debug {
     }
 
     private static void showGroupInfo(ThreadGroup group) {
+        if (group == null) {
+            return;
+        }
         Thread threads[] = new Thread[group.activeCount()];
         group.enumerate(threads, false);
         log.fine("");
