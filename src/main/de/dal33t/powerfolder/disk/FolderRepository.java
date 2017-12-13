@@ -2530,62 +2530,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         return getFolder(metaFolderInfo.getParentFolderInfo());
     }
 
-    /**
-     * Automatically accept an invitation. If not able to, silently return
-     * false.
-     *
-     * @param invitation
-     * @return true if the invitation was accepted.
-     */
-    public boolean autoAcceptInvitation(Invitation invitation) {
-
-        // Defensive strategy: Place in PowerFolders\...
-
-        Path suggestedLocalBase;
-        if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
-            .getValueBoolean(getController()))
-        {
-            // Moderate strategy. Use existing folders.
-            suggestedLocalBase = getController().getFolderRepository()
-                .getFoldersBasedir().resolve(invitation.folder.getLocalizedName());
-            if (Files.exists(suggestedLocalBase)) {
-                logWarning("Using existing directory " + suggestedLocalBase
-                    + " for " + invitation.folder);
-            }
-        } else {
-            // Defensive strategy. Find free new empty directory.
-            suggestedLocalBase = PathUtils.createEmptyDirectory(getController()
-                .getFolderRepository().getFoldersBasedir(),
-                invitation.folder.getLocalizedName());
-        }
-
-        suggestedLocalBase = PathUtils.removeInvalidFilenameChars(suggestedLocalBase);
-
-        // Is this invitation from a friend?
-        boolean invitorIsFriend = false;
-        MemberInfo memberInfo = invitation.getSenderDevice();
-        if (memberInfo != null) {
-            Member node = getController().getNodeManager().getNode(memberInfo);
-            if (node != null) {
-                invitorIsFriend = node.isFriend();
-            }
-        }
-        if (!invitorIsFriend) {
-            logInfo("Not auto accepting " + invitation + " because "
-                + memberInfo + " is not a friend.");
-            return false;
-        }
-
-        logInfo("AutoAccepting " + invitation + " from " + memberInfo + '.');
-
-        FolderSettings folderSettings = new FolderSettings(suggestedLocalBase,
-            invitation.getSuggestedSyncProfile(),
-            ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
-                .getValueInt(getController()));
-        createFolder(invitation.folder, folderSettings);
-        return true;
-    }
-
     // Callbacks from ServerClient on login ***********************************
 
     private ReentrantLock accountSyncLock = new ReentrantLock();

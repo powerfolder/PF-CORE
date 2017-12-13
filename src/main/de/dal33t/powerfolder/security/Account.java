@@ -1317,7 +1317,11 @@ public class Account implements Serializable, D2DObject {
         }
 
         // Combine computers
-        this.computers.addAll(account.computers);
+        for (MemberInfo computer : account.computers) {
+            if (!this.computers.contains(computer)) {
+                this.computers.add(computer);
+            }
+        }
 
         boolean containsMergeNote = StringUtils.isNotBlank(account.notes)
             && StringUtils.isNotBlank(this.notes)

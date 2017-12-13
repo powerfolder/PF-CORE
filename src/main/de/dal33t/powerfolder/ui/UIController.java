@@ -1540,33 +1540,12 @@ public class UIController extends PFComponent {
     private class MyInvitationHandler implements InvitationHandler {
         @Override
         public void gotInvitation(Invitation invitation) {
-            boolean autoAccepted = false;
-
-            if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
-                .getValueBoolean(getController()))
-            {
-                // Automatically accept this invitation, if possible.
-                autoAccepted = getController().getFolderRepository()
-                    .autoAcceptInvitation(invitation);
-            }
-
-            if (autoAccepted) {
-                // Just tell the user what happened
-                Notice notice = new SimpleNotificationNotice(
+            Notice notice = new InvitationNotice(
                     Translation.get("notice.invitation.title"),
                     Translation.get("notice.invitation.summary",
-                        invitation.getSender(),
-                        invitation.folder.getLocalizedName()));
-                applicationModel.getNoticesModel().handleNotice(notice);
-            } else {
-                // Let user decide what to do with the invitation.
-                Notice notice = new InvitationNotice(
-                    Translation.get("notice.invitation.title"),
-                    Translation.get("notice.invitation.summary",
-                        invitation.getSender(),
-                        invitation.folder.getLocalizedName()), invitation);
-                applicationModel.getNoticesModel().handleNotice(notice);
-            }
+                            invitation.getSender(),
+                            invitation.folder.getLocalizedName()), invitation);
+            applicationModel.getNoticesModel().handleNotice(notice);
         }
     }
 
