@@ -1256,6 +1256,9 @@ public class ServerClient extends PFComponent {
                 return accountDetails.getAccount();
             } catch (Exception e) {
                 logWarning("Unable to login: " + e);
+                if (e instanceof RuntimeException) {
+                    logWarning(e);
+                }
                 if (isShibbolethLogin()) {
                     // PFC-2534: Start
 //                    username = prevUsername;
