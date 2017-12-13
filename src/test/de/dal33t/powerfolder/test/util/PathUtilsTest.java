@@ -121,11 +121,14 @@ public class PathUtilsTest extends TestCase {
         assertTrue(PathUtils.isSameName("abc123", "abc123 ()"));
         assertTrue(PathUtils.isSameName("abc123 ()", "abc123"));
         assertTrue(PathUtils.isSameName("abc123 (123)", "abc123 (123)"));
+        assertTrue(PathUtils.isSameName("foo (BRACKETS) (owner)", "foo (BRACKETS)"));
+        assertTrue(PathUtils.isSameName("foo (owner XXX)", "foo (owner YYY)"));
         assertFalse(PathUtils.isSameName("abc123", "abc123 ("));
         assertFalse(PathUtils.isSameName("foo", "bar"));
         assertFalse(PathUtils.isSameName("foo (123)", "bar (123)"));
         assertFalse(PathUtils.isSameName("foo", "bar (123)"));
         assertFalse(PathUtils.isSameName("foo (123)", "bar"));
+
     }
 
     public void testGetValidEmptyDirectory() throws IOException {

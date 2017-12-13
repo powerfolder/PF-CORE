@@ -2018,7 +2018,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         String fileName = entry.getFileName().toString();
         String folderName = info.getFolder().getLocalizedName();
 
-        return !fileName.equals(folderName);
+        return !PathUtils.isSameName(fileName, folderName);
     }
 
     // Found a new directory in the folder base. Create a new folder.
@@ -2929,11 +2929,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 String folderName = PathUtils.removeInvalidFilenameChars(folderInfo.getLocalizedName());
 
                 SyncProfile profile = SyncProfile.getDefault(getController());
-                Path suggestedLocalBase = getController().getFolderRepository()
-                    .getFoldersBasedir().resolve(folderName);
-                if (isIgnoredFolderDirectory(suggestedLocalBase)) {
-                    continue;
-                }
+                Path suggestedLocalBase;
                 UserDirectory userDir = null;
 
                 // PFS-2412:
@@ -3000,6 +2996,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 + suggestedLocalBase + " for folder "
                                 + folderInfo.getName());
                     }
+                }
+
+                if (isIgnoredFolderDirectory(suggestedLocalBase)) {
+                    continue;
                 }
 
                 logInfo("Auto setting up folder " + folderInfo.getName() + "/"
