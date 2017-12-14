@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.protocol.AccountInfoProto;
-import de.dal33t.powerfolder.protocol.OnlineStorageSubscriptionProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
@@ -1684,7 +1683,6 @@ public class Account implements Serializable, D2DObject {
                         break;
                 }
             }
-            this.osSubscription             = new OnlineStorageSubscription(proto.getOsSubscription());
         }
     }
     /** toD2D
@@ -1722,7 +1720,6 @@ public class Account implements Serializable, D2DObject {
                 builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((SingletonPermission)permission).toD2D());
             }
         }
-        if (this.osSubscription != null) builder.setOsSubscription((OnlineStorageSubscriptionProto.OnlineStorageSubscription) this.osSubscription.toD2D());
         return builder.build();
     }
 }

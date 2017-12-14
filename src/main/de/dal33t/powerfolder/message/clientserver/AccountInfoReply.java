@@ -17,6 +17,9 @@ public class AccountInfoReply extends D2DReplyMessage {
     private Account account;
     private Collection<FolderPermission> invitations;
     private long avatarLastModifiedDate;
+    private long usedQuota;
+    private long backupQuota;
+    private long freeQuota;
     private AccountInfo accountInfo;
 
     public AccountInfoReply() {
@@ -27,12 +30,15 @@ public class AccountInfoReply extends D2DReplyMessage {
         this.replyStatusCode = replyStatusCode;
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, long avatarLastModifiedDate) {
+    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.account = account;
         this.invitations = invitations;
         this.avatarLastModifiedDate = avatarLastModifiedDate;
+        this.usedQuota = usedQuota;
+        this.backupQuota = backupQuota;
+        this.freeQuota = freeQuota;
     }
 
     public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, AccountInfo accountInfo, long avatarLastModifiedDate) {
@@ -61,6 +67,30 @@ public class AccountInfoReply extends D2DReplyMessage {
 
     public long getAvatarLastModifiedDate() {
         return avatarLastModifiedDate;
+    }
+
+    public long getUsedQuota() {
+        return usedQuota;
+    }
+
+    public void setUsedQuota(long usedQuota) {
+        this.usedQuota = usedQuota;
+    }
+
+    public long getBackupQuota() {
+        return backupQuota;
+    }
+
+    public void setBackupQuota(long backupQuota) {
+        this.backupQuota = backupQuota;
+    }
+
+    public long getFreeQuota() {
+        return freeQuota;
+    }
+
+    public void setFreeQuota(long freeQuota) {
+        this.freeQuota = freeQuota;
     }
 
     public AccountInfo getAccountInfo() {
@@ -106,6 +136,10 @@ public class AccountInfoReply extends D2DReplyMessage {
             }
             // Inject avatarLastModifiedDate into AccountInfo
             accountInfoBuilder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);
+            // Inject quotas
+            accountInfoBuilder.setUsedQuota(this.usedQuota);
+            accountInfoBuilder.setBackupQuota(this.backupQuota);
+            accountInfoBuilder.setFreeQuota(this.freeQuota);
             // Add AccountInfo to message
             accountInfo = accountInfoBuilder.build();
             builder.setAccountInfo(accountInfo);
