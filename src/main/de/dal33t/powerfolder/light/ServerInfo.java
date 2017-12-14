@@ -45,6 +45,7 @@ public class ServerInfo implements Serializable {
     private static final long serialVersionUID = 100L;
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NODE = "node";
+    public static final String PROPERTYNAME_WEB_URL = "webUrl";
 
     @Id
     private String id;

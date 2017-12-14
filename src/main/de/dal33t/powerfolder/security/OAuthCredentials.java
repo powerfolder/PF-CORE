@@ -39,6 +39,14 @@ public class OAuthCredentials {
         return id;
     }
 
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    public String getClientID() {
+        return clientID;
+    }
+
     private OAuthCredentials(String clientID, String clientSecret) {
 
         Reject.ifNull(clientID, "clientID");

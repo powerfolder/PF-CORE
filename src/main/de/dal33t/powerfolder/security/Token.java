@@ -62,6 +62,8 @@ public class Token {
     private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
     // PF-895: 1 day:
     private static final long OAUTH_ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 24;
+    // PF-615: OCM
+    private static final long OCM_TOKEN_TIMEOUT = 1000L * 60 * 30;
 
     @Id
     private String id;
@@ -97,6 +99,15 @@ public class Token {
         Date validTo = new Date(System.currentTimeMillis() + REQUEST_TOKEN_TIMEOUT);
         return new Token(validTo, fedService, null, null);
     }
+
+    public static Token newOcmFilterToken(ServerInfo ocmProvider) {
+        Reject.ifNull(ocmProvider, "Service null");
+        Reject.ifFalse(ocmProvider.isFederatedService(),
+                "Not a federated service");
+        Date validTo = new Date(System.currentTimeMillis() + OCM_TOKEN_TIMEOUT);
+        return new Token(validTo, ocmProvider, null, null);
+    }
+
 
     /**
      * PFS-2296
@@ -311,7 +322,6 @@ public class Token {
     }
 
     // Static helper **********************************************************
-
 
     public static String extractId(String secret) {
         if (StringUtils.isBlank(secret)) {
