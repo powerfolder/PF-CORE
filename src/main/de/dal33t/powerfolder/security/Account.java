@@ -1168,6 +1168,26 @@ public class Account implements Serializable, D2DObject {
     }
 
     /**
+     * This method returns an email address to identify or reach this account.
+     *
+     * @return A mail address related to this account.
+     */
+    public String getEmail() {
+
+        String username = getUsername();
+        if (Util.isValidEmail(username)) {
+            return username;
+        }
+
+        List<String> mails = getEmails();
+        if (mails.size() > 0) {
+            return mails.iterator().next();
+        }
+
+        return null;
+    }
+
+    /**
      * Start PFS-1568
      */
     public void clearEmails() {
