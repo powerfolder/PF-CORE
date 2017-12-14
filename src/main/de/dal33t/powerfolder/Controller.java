@@ -55,6 +55,7 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
 import org.apache.commons.cli.CommandLine;
 import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -93,7 +94,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 14;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 25;
+    private static final int REVISION_VERSION = 28;
 
     /**
      * Program version.
@@ -1165,11 +1166,21 @@ public class Controller extends PFComponent {
         logFine("Initial log reconfigure in " + secondsToMidnight + " seconds");
 
         // Run housekeeping at 12 am
-        JobDetail job = newJob(Housekeeping.class)
+        JobDetail housekeepingJob = newJob(Housekeeping.class)
             .withIdentity("housekeeping", "group1").build();
 
-        CronTrigger trigger = newTrigger().withIdentity("midnight", "group1")
+        CronTrigger housekeepingTrigger = newTrigger()
+            .withIdentity("midnight", "group1")
             .withSchedule(cronSchedule("0 0 12am * * ?")).build();
+
+        SchedulerFactory sf = new StdSchedulerFactory();
+        try {
+            Scheduler sched = sf.getScheduler();
+            sched.scheduleJob(housekeepingJob, housekeepingTrigger);
+            sched.start();
+        } catch (SchedulerException e) {
+            logWarning("Could not initiate housekeeping: " + e.getMessage());
+        }
 
         // Also run housekeeping one minute after start up.
         threadPool.schedule(() -> {
