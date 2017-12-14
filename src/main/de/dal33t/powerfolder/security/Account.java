@@ -102,23 +102,23 @@ public class Account implements Serializable, D2DObject {
     // PFS-862: One time token password
     @Index(name = "IDX_AOTP")
     private String otp;
-    
+
     // PFC-2455: Tokens for federated services
     @CollectionOfElements(targetElement = String.class)
-    @MapKeyManyToMany(targetEntity = ServerInfo.class, joinColumns=@JoinColumn(name="serviceInfo_id"))
+    @MapKeyManyToMany(targetEntity = ServerInfo.class, joinColumns = @JoinColumn(name = "serviceInfo_id"))
     @JoinTable(name = "Account_tokens", joinColumns = @JoinColumn(name = "oid"))
     @Column(name = "tokenSecret")
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Map<ServerInfo, String> tokens;
-    
+
     private String language;
 
     @Index(name = "IDX_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
-    
+
     @Index(name = "IDX_SHIB_PID")
     @Column(length = 2048)
     private String shibbolethPersistentID;
@@ -142,14 +142,14 @@ public class Account implements Serializable, D2DObject {
     private String custom1;
     private String custom2;
     private String custom3;
-    
+
     // PFS-1656
     @Column(length = 4000)
     private String jsonData;
 
     @Column(length = 2048)
     private String notes;
-    
+
     // PFS-1446     
     @Column(length = 512)
     private String basePath;
@@ -267,12 +267,13 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * Init from D2D message
+     *
      * @param mesg Message to use data from
      **/
     public Account(AbstractMessage mesg) {
         initFromD2D(mesg);
     }
-    
+
     /**
      * @return a leightweight/reference object to this account.
      */
@@ -294,14 +295,14 @@ public class Account implements Serializable, D2DObject {
                 revokeAllFolderPermission(foInfo);
                 if (foInfo.isMetaFolder()) {
                     LOG.severe(this + ": Not allowed to grant permissions "
-                        + foInfo);
+                            + foInfo);
                     continue;
                 }
             }
             permissions.add(p);
         }
         LOG.fine("Granted permission to " + this + ": "
-            + Arrays.asList(newPermissions));
+                + Arrays.asList(newPermissions));
     }
 
     public synchronized void revoke(Permission... revokePermissions) {
@@ -316,13 +317,12 @@ public class Account implements Serializable, D2DObject {
     /**
      * Revokes any permission to a folders.
      *
-     * @param foInfo
-     *            the folder.
+     * @param foInfo the folder.
      */
     public void revokeAllFolderPermission(FolderInfo foInfo) {
         revoke(FolderPermission.read(foInfo),
-            FolderPermission.readWrite(foInfo), FolderPermission.admin(foInfo),
-            FolderPermission.owner(foInfo));
+                FolderPermission.readWrite(foInfo), FolderPermission.admin(foInfo),
+                FolderPermission.owner(foInfo));
     }
 
     /**
@@ -340,7 +340,7 @@ public class Account implements Serializable, D2DObject {
     public synchronized void revokeAllPermissions() {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Revoking all permission from " + this + ": "
-                + permissions);
+                    + permissions);
         }
         permissions.clear();
     }
@@ -379,8 +379,7 @@ public class Account implements Serializable, D2DObject {
             if (p instanceof FolderPermission) {
                 AccessMode mode = ((FolderPermission) p).getMode();
                 if (mode.equals(AccessMode.ADMIN)
-                    || mode.equals(AccessMode.OWNER))
-                {
+                        || mode.equals(AccessMode.OWNER)) {
                     return true;
                 }
             }
@@ -394,8 +393,7 @@ public class Account implements Serializable, D2DObject {
                 if (p instanceof FolderPermission) {
                     AccessMode mode = ((FolderPermission) p).getMode();
                     if (mode.equals(AccessMode.ADMIN)
-                        || mode.equals(AccessMode.OWNER))
-                    {
+                            || mode.equals(AccessMode.OWNER)) {
                         return true;
                     }
                 }
@@ -412,7 +410,7 @@ public class Account implements Serializable, D2DObject {
     /**
      * Returns the {@link FolderPermission} this {@link Account} has for a
      * certain {@code Folder}.
-     * 
+     *
      * @param foInfo
      * @return A FolderPermission with the correct {@code AccessMode}.
      */
@@ -431,9 +429,9 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * @return An unmodifiable collection of all
-     *         {@link OrganizationAdminPermission OrganizationAdminPermissions}.
-     *         If the user does not have any OrganizationAdminPermission, an
-     *         empty collection will be returned.
+     * {@link OrganizationAdminPermission OrganizationAdminPermissions}.
+     * If the user does not have any OrganizationAdminPermission, an
+     * empty collection will be returned.
      */
     public Collection<OrganizationAdminPermission> getOrgAdminPermissions() {
         Collection<OrganizationAdminPermission> orgAdmins = new ArrayList<>();
@@ -446,10 +444,9 @@ public class Account implements Serializable, D2DObject {
     }
 
     /**
-     * 
      * @param folder
      * @return the permission on the given folder. AccessMode.NO_ACCESS for no
-     *         access.
+     * access.
      */
     public AccessMode getAllowedAccess(FolderInfo folder) {
         if (hasPermission(FolderPermission.owner(folder))) {
@@ -466,7 +463,7 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * @return {@code True} if user is member of an {@link Organization} and has
-     *         {@link OrganizationAdminPermission} for this organization, {@code false} otherwise.
+     * {@link OrganizationAdminPermission} for this organization, {@code false} otherwise.
      */
     public boolean isAdminOfOwnOrganization() {
         if (StringUtils.isBlank(organizationOID)) {
@@ -477,7 +474,7 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * @return {@code True} if user has any {@link OrganizationAdminPermission}
-     *         or {@link OrganizationCreatePermission}, {@code false} otherwise.
+     * or {@link OrganizationCreatePermission}, {@code false} otherwise.
      */
     public boolean isAdminOfAnyOrganization() {
         if (hasPermission(OrganizationCreatePermission.INSTANCE)) {
@@ -505,7 +502,7 @@ public class Account implements Serializable, D2DObject {
             return Collections.emptyList();
         }
         Collection<FolderInfo> folders = new ArrayList<FolderInfo>(
-            permissions.size());
+                permissions.size());
         for (Permission p : permissions) {
             if (p instanceof FolderOwnerPermission) {
                 FolderPermission fp = (FolderPermission) p;
@@ -525,11 +522,11 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * @return all folders the account has directly at folder read permission
-     *         granted.
+     * granted.
      */
     public Collection<FolderInfo> getFolders() {
         List<FolderInfo> folderInfos = new ArrayList<FolderInfo>(
-            permissions.size());
+                permissions.size());
         for (Permission permission : permissions) {
             if (permission instanceof FolderPermission) {
                 FolderPermission fp = (FolderPermission) permission;
@@ -595,8 +592,7 @@ public class Account implements Serializable, D2DObject {
 
     public String getDisplayName() {
         if (StringUtils.isNotBlank(firstname)
-            || StringUtils.isNotBlank(surname))
-        {
+                || StringUtils.isNotBlank(surname)) {
             String fn = (firstname == null ? "" : firstname).trim();
             String sn = (surname == null ? "" : surname).trim();
 
@@ -609,8 +605,7 @@ public class Account implements Serializable, D2DObject {
 
             return (fn + " " + sn).trim();
         } else if (StringUtils.isNotBlank(username) && authByShibboleth()
-            && !emails.isEmpty())
-        {
+                && !emails.isEmpty()) {
             return this.getEmails().get(0);
         } else if (!emails.isEmpty() && StringUtils.isNotBlank(emails.get(0))) {
             return this.getEmails().get(0);
@@ -634,7 +629,7 @@ public class Account implements Serializable, D2DObject {
     /**
      * @param pwCandidate
      * @return true if the password candidate matches the password of the
-     *         account.
+     * account.
      */
     public boolean passwordMatches(char[] pwCandidate) {
         return LoginUtil.matches(pwCandidate, password);
@@ -660,48 +655,45 @@ public class Account implements Serializable, D2DObject {
     }
 
     // PFS-2455: Start
-    
+
     /**
      * Sets a new token to authenticate at the federated service/server
-     * 
-     * @param fedServiceInfo
-     *            the federated service
-     * @param tokenSecret the token secret, which can be used for authentication.
+     *
+     * @param fedServiceInfo the federated service
+     * @param tokenSecret    the token secret, which can be used for authentication.
      * @return if the token is new.
      */
     public void setToken(ServerInfo fedServiceInfo, String tokenSecret) {
         Reject.ifNull(fedServiceInfo, "fedServiceInfo");
         Reject.ifFalse(fedServiceInfo.isFederatedService(),
-            "Setting token only possible for federated services");
+                "Setting token only possible for federated services");
         tokens.put(fedServiceInfo, tokenSecret);
     }
 
     /**
      * Removes the token for the federated service.
-     * 
-     * @param fedServiceInfo
-     *            the federated service
+     *
+     * @param fedServiceInfo the federated service
      */
     public void removeToken(ServerInfo fedServiceInfo) {
         Reject.ifNull(fedServiceInfo, "fedServiceInfo");
         Reject.ifFalse(fedServiceInfo.isFederatedService(),
-            "Setting token only possible for federated services");
+                "Setting token only possible for federated services");
         tokens.remove(fedServiceInfo);
     }
 
     /**
-     * @param fedServiceInfo
-     *            the federated service
+     * @param fedServiceInfo the federated service
      * @return the token secret for authentication or null.
      */
     public String getToken(ServerInfo fedServiceInfo) {
         return tokens.get(fedServiceInfo);
     }
-    
+
     public Map<ServerInfo, String> getTokens() {
         return Collections.unmodifiableMap(tokens);
     }
-    
+
     // PFS-2455: End
 
     /**
@@ -717,8 +709,7 @@ public class Account implements Serializable, D2DObject {
     /**
      * setLanguage Set account language
      *
-     * @param lang
-     *            New language
+     * @param lang New language
      */
 
     public void setLanguage(String lang) {
@@ -824,11 +815,11 @@ public class Account implements Serializable, D2DObject {
     public void setCustom3(String custom3) {
         this.custom3 = custom3;
     }
-    
+
     public String getJSONData() {
         return jsonData;
     }
-    
+
     public void setJSONData(String jsonData) {
         this.jsonData = jsonData;
     }
@@ -841,7 +832,7 @@ public class Account implements Serializable, D2DObject {
             return new JSONObject(jsonData);
         } catch (JSONException e) {
             LOG.severe("Illegal JSON data for " + username + ": " + jsonData
-                + ". " + e);
+                    + ". " + e);
             return new JSONObject();
         }
     }
@@ -860,19 +851,19 @@ public class Account implements Serializable, D2DObject {
             o.put(key, value);
         } catch (JSONException e) {
             LOG.severe("Unable to set extra information in JSON format to "
-                + username + ": " + key + "=" + value + ". " + e);
+                    + username + ": " + key + "=" + value + ". " + e);
             return;
         }
         setJSONObject(o);
     }
-    
+
     public void put(String key, long value) {
         JSONObject o = getJSONObject();
         try {
             o.put(key, value);
         } catch (JSONException e) {
             LOG.severe("Unable to set extra information in JSON format to "
-                + username + ": " + key + "=" + value + ". " + e);
+                    + username + ": " + key + "=" + value + ". " + e);
             return;
         }
         setJSONObject(o);
@@ -918,7 +909,7 @@ public class Account implements Serializable, D2DObject {
     public void setNotes(String notes) {
         this.notes = StringUtils.cutNotes(notes);
     }
-    
+
     /**
      * Adds a line of info with the current date to the notes of that account.
      *
@@ -961,8 +952,7 @@ public class Account implements Serializable, D2DObject {
     }
 
     public void setDefaultSynchronizedFolder(
-        FolderInfo defaultSynchronizedFolder)
-    {
+            FolderInfo defaultSynchronizedFolder) {
         this.defaultSynchronizedFolder = defaultSynchronizedFolder;
     }
 
@@ -1009,7 +999,7 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * Adds a device/computer to the list of associated devices.
-     * 
+     *
      * @param nodeInfo
      */
     public void addDevice(MemberInfo nodeInfo) {
@@ -1023,10 +1013,10 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * Removes a device/computer from the list of associated devices.
-     * 
+     *
      * @param nodeInfo
      * @return true if the device was removed, false if the device was not in
-     *         list
+     * list
      */
     public boolean removeDevice(MemberInfo nodeInfo) {
         Reject.ifNull(nodeInfo, "NodeInfo");
@@ -1072,14 +1062,12 @@ public class Account implements Serializable, D2DObject {
         emails.add(email);
         return true;
     }
-    
+
     /**
      * Adds an email address to the account, combined with its corresponding LDAP identifier
-     * 
-     * @param email
-     *              The email address
-     * @param ldap
-     *              The LDAP search context of the email address
+     *
+     * @param email The email address
+     * @param ldap  The LDAP search context of the email address
      * @return true if the email address was added
      */
     public boolean addEmail(String email, String ldapSearchBase) {
@@ -1125,17 +1113,17 @@ public class Account implements Serializable, D2DObject {
     /**
      * Remove the email addresses stored for the account, that are not in the
      * list {@code ldapEmails} but contain the {@code ldapSearchBase} as suffix.
-     * 
+     *
      * @param ldapEmails
      * @param ldapSearchBase
      * @return
      */
     public boolean removeNonExistingLdapEmails(List<String> ldapEmails,
-        String ldapSearchBase) {
+                                               String ldapSearchBase) {
         ldapSearchBase = ldapSearchBase.trim().toLowerCase();
         // Append LDAP context to emails
         for (final ListIterator<String> i = ldapEmails.listIterator(); i
-            .hasNext();) {
+                .hasNext(); ) {
             final String email = i.next().trim().toLowerCase();
             i.set(email + ":" + ldapSearchBase);
         }
@@ -1168,6 +1156,26 @@ public class Account implements Serializable, D2DObject {
     }
 
     /**
+     * This method returns an email address to identify or reach this account.
+     *
+     * @return A mail address related to this account.
+     */
+    public String getEmail() {
+
+        String username = getUsername();
+        if (Util.isValidEmail(username)) {
+            return username;
+        }
+
+        List<String> mails = getEmails();
+        if (mails.size() > 0) {
+            return mails.iterator().next();
+        }
+
+        return null;
+    }
+
+    /**
      * Start PFS-1568
      */
     public void clearEmails() {
@@ -1197,8 +1205,7 @@ public class Account implements Serializable, D2DObject {
     }
 
     public void setAutoRenew(int autoRenewDevices, Date autoRenewTill,
-        boolean proUser)
-    {
+                             boolean proUser) {
         this.autoRenewDevices = autoRenewDevices;
         this.autoRenewTill = autoRenewTill;
         this.proUser = proUser;
@@ -1230,21 +1237,21 @@ public class Account implements Serializable, D2DObject {
             return -1;
         }
         long daysSinceRegistration = (System.currentTimeMillis() - registerDate
-            .getTime()) / (1000L * 60 * 60 * 24);
+                .getTime()) / (1000L * 60 * 60 * 24);
         return (int) daysSinceRegistration;
     }
 
     @Override
     public String toString() {
         return "Account '" + username + "', " + permissions.size()
-            + " permissions";
+                + " permissions";
     }
 
     public String toDetailString() {
         return toString() + ", pro? " + proUser + ", regdate: "
-            + Format.formatDateShort(registerDate) + ", licenses: "
-            + (licenseKeyFileList != null ? licenseKeyFileList.size() : "n/a")
-            + ", " + osSubscription;
+                + Format.formatDateShort(registerDate) + ", licenses: "
+                + (licenseKeyFileList != null ? licenseKeyFileList.size() : "n/a")
+                + ", " + osSubscription;
     }
 
     // Convenience/Applogic ***************************************************
@@ -1267,7 +1274,7 @@ public class Account implements Serializable, D2DObject {
      * <li>All computers/devices</li>
      * <li>Notes are appended</li>
      * </ul>
-     * 
+     *
      * @param account
      */
     public void mergeAccounts(Account account) {
@@ -1276,8 +1283,7 @@ public class Account implements Serializable, D2DObject {
 
         // Add Username and Emails
         if (Util.isValidEmail(account.getUsername())
-            && !account.authByShibboleth())
-        {
+                && !account.authByShibboleth()) {
             this.addEmail(account.getUsername());
         }
 
@@ -1320,8 +1326,8 @@ public class Account implements Serializable, D2DObject {
         this.computers.addAll(account.computers);
 
         boolean containsMergeNote = StringUtils.isNotBlank(account.notes)
-            && StringUtils.isNotBlank(this.notes)
-            && this.notes.contains("Merged with account '"
+                && StringUtils.isNotBlank(this.notes)
+                && this.notes.contains("Merged with account '"
                 + account.getUsername() + "'");
 
         // Combine Notes
@@ -1338,7 +1344,7 @@ public class Account implements Serializable, D2DObject {
             }
             this.notes = sb.toString();
             this.addNotesWithDate("Merged with account "
-                + account.getUsername());
+                    + account.getUsername());
 
             int len = sb.length();
             if (len >= 1000) {
@@ -1351,8 +1357,7 @@ public class Account implements Serializable, D2DObject {
         // last login date
         if (account.lastLoginDate != null) {
             if (this.lastLoginDate == null ||
-                this.lastLoginDate.before(account.lastLoginDate))
-            {
+                    this.lastLoginDate.before(account.lastLoginDate)) {
                 this.lastLoginDate = account.lastLoginDate;
             }
         }
@@ -1362,15 +1367,14 @@ public class Account implements Serializable, D2DObject {
      * Enables the selected account:
      * <p>
      * The Online Storage subscription
-     * <P>
+     * <p>
      * Sets all folders to SyncProfile.BACKUP_TARGET.
      * <p>
      * FIXME: Does only set the folders hosted on the CURRENT server to backup.
      * <p>
      * Account needs to be stored afterwards!!
      *
-     * @param controller
-     *            the controller
+     * @param controller the controller
      */
     public void enable(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
@@ -1424,7 +1428,7 @@ public class Account implements Serializable, D2DObject {
             }
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.finer("Disable download of new files for folder: " + folder
-                    + " for " + getUsername());
+                        + " for " + getUsername());
             }
             if (!folder.getSyncProfile().equals(SyncProfile.DISABLED)) {
                 folder.setSyncProfile(SyncProfile.DISABLED);
@@ -1433,7 +1437,7 @@ public class Account implements Serializable, D2DObject {
         }
         if (nNewDisabled > 0) {
             LOG.info("Disabled " + nNewDisabled + " folder for "
-                + getUsername());
+                    + getUsername());
         }
         return nNewDisabled;
     }
@@ -1443,8 +1447,7 @@ public class Account implements Serializable, D2DObject {
     /**
      * Answers if the user is allowed to read the folder contents.
      *
-     * @param foInfo
-     *            the folder to check
+     * @param foInfo the folder to check
      * @return true if the user is allowed to read the folder contents
      */
     public boolean hasReadPermissions(FolderInfo foInfo) {
@@ -1455,8 +1458,7 @@ public class Account implements Serializable, D2DObject {
     /**
      * Answers if the user is allowed to write into the folder.
      *
-     * @param foInfo
-     *            the folder to check
+     * @param foInfo the folder to check
      * @return true if the user is allowed to write into the folder.
      */
     public boolean hasReadWritePermissions(FolderInfo foInfo) {
@@ -1467,8 +1469,7 @@ public class Account implements Serializable, D2DObject {
     /**
      * Answers if the user is allowed to write into the folder.
      *
-     * @param foInfo
-     *            the folder to check
+     * @param foInfo the folder to check
      * @return true if the user is allowed to write into the folder.
      */
     public boolean hasWritePermissions(FolderInfo foInfo) {
@@ -1525,7 +1526,7 @@ public class Account implements Serializable, D2DObject {
     public synchronized void convertCollections() {
         if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
             Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
-                permissions);
+                    permissions);
             permissions = newPermissions;
         }
 
@@ -1539,19 +1540,19 @@ public class Account implements Serializable, D2DObject {
 
         if (!(computers instanceof CopyOnWriteArrayList<?>)) {
             Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<>(
-                computers);
+                    computers);
             computers = newComputers;
         }
 
         if (!(licenseKeyFileList instanceof CopyOnWriteArrayList<?>)) {
             List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<>(
-                licenseKeyFileList);
+                    licenseKeyFileList);
             licenseKeyFileList = newLicenseKeyFileList;
         }
-        
+
         if (!(licenseKeyFiles instanceof CopyOnWriteArrayList<?>)) {
             List<String> newlicenseKeyFiles = new CopyOnWriteArrayList<>(
-                licenseKeyFiles);
+                    licenseKeyFiles);
             licenseKeyFiles = newlicenseKeyFiles;
         }
 
@@ -1567,7 +1568,7 @@ public class Account implements Serializable, D2DObject {
     }
 
     public void migrate() {
-        if (permissions == null){
+        if (permissions == null) {
             permissions = new CopyOnWriteArrayList<>();
         }
         if (groups == null) {
@@ -1594,15 +1595,13 @@ public class Account implements Serializable, D2DObject {
     }
 
     private void writeObject(java.io.ObjectOutputStream stream)
-        throws IOException
-    {
+            throws IOException {
         licenseKeyFiles = new CopyOnWriteArrayList<String>(licenseKeyFileList);
         stream.defaultWriteObject();
     }
 
     private void readObject(java.io.ObjectInputStream stream)
-        throws IOException, ClassNotFoundException
-    {
+            throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         if (oid == null) {
             // Migration.
@@ -1621,77 +1620,80 @@ public class Account implements Serializable, D2DObject {
 
     @Override
     public void initFromD2D(AbstractMessage mesg) {
-        if(mesg instanceof AccountInfoProto.AccountInfo) {
-            AccountInfoProto.AccountInfo proto = (AccountInfoProto.AccountInfo)mesg;
-            this.oid                        = proto.getId();
-            this.username                   = proto.getUsername();
-            this.firstname                  = proto.getFirstname();
-            this.surname                    = proto.getSurname();
-            this.telephone                  = proto.getTelephone();
-            this.emails                     = new CopyOnWriteArrayList<String>();
+        if (mesg instanceof AccountInfoProto.AccountInfo) {
+            AccountInfoProto.AccountInfo proto = (AccountInfoProto.AccountInfo) mesg;
+            this.oid = proto.getId();
+            this.username = proto.getUsername();
+            this.firstname = proto.getFirstname();
+            this.surname = proto.getSurname();
+            this.telephone = proto.getTelephone();
+            this.emails = new CopyOnWriteArrayList<String>();
             this.emails.addAll(proto.getEmailsList());
-            this.organizationOID            = proto.getOrganizationId();
-            this.permissions                = new CopyOnWriteArrayList<Permission>();
-            for (PermissionInfoProto.PermissionInfo permissionInfoProto: proto.getPermissionInfosList()) {
-                switch(permissionInfoProto.getPermissionType()) {
-                    case ADMIN :
+            this.organizationOID = proto.getOrganizationId();
+            this.permissions = new CopyOnWriteArrayList<Permission>();
+            for (PermissionInfoProto.PermissionInfo permissionInfoProto : proto.getPermissionInfosList()) {
+                switch (permissionInfoProto.getPermissionType()) {
+                    case ADMIN:
                         this.permissions.add(new AdminPermission(permissionInfoProto));
                         break;
-                    case CHANGE_PREFERENCES :
+                    case CHANGE_PREFERENCES:
                         this.permissions.add(new ChangePreferencesPermission(permissionInfoProto));
                         break;
-                    case CHANGE_TRANSFER_MODE :
+                    case CHANGE_TRANSFER_MODE:
                         this.permissions.add(new ChangeTransferModePermission(permissionInfoProto));
                         break;
-                    case COMPUTERS_APP :
+                    case COMPUTERS_APP:
                         this.permissions.add(new ComputersAppPermission(permissionInfoProto));
                         break;
-                    case CONFIG_APP :
+                    case CONFIG_APP:
                         this.permissions.add(new ConfigAppPermission(permissionInfoProto));
                         break;
-                    case FOLDER_ADMIN :
+                    case FOLDER_ADMIN:
                         this.permissions.add(new FolderAdminPermission(permissionInfoProto));
                         break;
-                    case FOLDER_CREATE :
+                    case FOLDER_CREATE:
                         this.permissions.add(new FolderCreatePermission(permissionInfoProto));
                         break;
-                    case FOLDER_OWNER :
+                    case FOLDER_OWNER:
                         this.permissions.add(new FolderOwnerPermission(permissionInfoProto));
                         break;
-                    case FOLDER_READ :
+                    case FOLDER_READ:
                         this.permissions.add(new FolderReadPermission(permissionInfoProto));
                         break;
-                    case FOLDER_READ_WRITE :
+                    case FOLDER_READ_WRITE:
                         this.permissions.add(new FolderReadWritePermission(permissionInfoProto));
                         break;
-                    case FOLDER_REMOVE :
+                    case FOLDER_REMOVE:
                         this.permissions.add(new FolderRemovePermission(permissionInfoProto));
                         break;
-                    case GROUP_ADMIN :
+                    case GROUP_ADMIN:
                         this.permissions.add(new GroupAdminPermission(permissionInfoProto));
                         break;
-                    case ORGANIZATION_ADMIN :
+                    case ORGANIZATION_ADMIN:
                         this.permissions.add(new OrganizationAdminPermission(permissionInfoProto));
                         break;
-                    case ORGANIZATION_CREATE :
+                    case ORGANIZATION_CREATE:
                         this.permissions.add(new OrganizationCreatePermission(permissionInfoProto));
                         break;
-                    case SYSTEM_SETTINGS :
+                    case SYSTEM_SETTINGS:
                         this.permissions.add(new SystemSettingsPermission(permissionInfoProto));
                         break;
-                    case UNRECOGNIZED :
+                    case UNRECOGNIZED:
                         break;
-                    default :
+                    default:
                         break;
                 }
             }
-            this.osSubscription             = new OnlineStorageSubscription(proto.getOsSubscription());
+            this.osSubscription = new OnlineStorageSubscription(proto.getOsSubscription());
         }
     }
-    /** toD2D
+
+    /**
+     * toD2D
      * Convert to D2D message
-     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
+     *
      * @return Converted D2D message
+     * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
      **/
 
     @Override
@@ -1704,26 +1706,24 @@ public class Account implements Serializable, D2DObject {
         if (this.firstname != null) builder.setFirstname(this.firstname);
         if (this.surname != null) builder.setSurname(this.surname);
         if (this.telephone != null) builder.setTelephone(this.telephone);
-        for (String email: this.emails) {
+        for (String email : this.emails) {
             builder.addEmails(email);
         }
         if (this.organizationOID != null) builder.setOrganizationId(this.organizationOID);
-        for (Permission permission: this.permissions) {
+        for (Permission permission : this.permissions) {
             // Since the different permission classes do not have one common superclass we have to decide for each class separately
             if (permission instanceof FolderPermission) {
-                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((FolderPermission)permission).toD2D());
-            }
-            else if (permission instanceof GroupAdminPermission) {
-                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((GroupAdminPermission)permission).toD2D());
-            }
-            else if (permission instanceof OrganizationAdminPermission) {
-                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((OrganizationAdminPermission)permission).toD2D());
-            }
-            else if (permission instanceof SingletonPermission) {
-                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo)((SingletonPermission)permission).toD2D());
+                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo) ((FolderPermission) permission).toD2D());
+            } else if (permission instanceof GroupAdminPermission) {
+                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo) ((GroupAdminPermission) permission).toD2D());
+            } else if (permission instanceof OrganizationAdminPermission) {
+                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo) ((OrganizationAdminPermission) permission).toD2D());
+            } else if (permission instanceof SingletonPermission) {
+                builder.addPermissionInfos((PermissionInfoProto.PermissionInfo) ((SingletonPermission) permission).toD2D());
             }
         }
-        if (this.osSubscription != null) builder.setOsSubscription((OnlineStorageSubscriptionProto.OnlineStorageSubscription) this.osSubscription.toD2D());
+        if (this.osSubscription != null)
+            builder.setOsSubscription((OnlineStorageSubscriptionProto.OnlineStorageSubscription) this.osSubscription.toD2D());
         return builder.build();
     }
 }
