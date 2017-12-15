@@ -1016,39 +1016,43 @@ public class ServerClient extends PFComponent {
                 saveLastKnowLogin(username, null);
 
                 // Start: PF-102: Federated client login.
-                try {
-                    if (isFederatedLogin()) {
+                if (isFederatedLogin()) {
 
-                        String serviceWebUrl = securityService.getHostingService(username).getWebUrl();
-                        String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
-
-                        if (StringUtils.isNotBlank(serviceWebUrl)) {
-                            if (!serviceWebUrl.equals(currentWebUrl)) {
-
-                                logInfo("Federated login! Starting AccountDiscovery ...");
-                                loadConfigURL(serviceWebUrl);
-
-                                // Mark the federated service for connect
-                                server.markForImmediateConnect();
-
-                                Waiter w = new Waiter(1000);
-                                while (!w.isTimeout() && !isConnected()) {
-                                    w.waitABit();
-                                }
-
-                                if (isConnected()) {
-                                    ConfigurationEntry.CLIENT_FEDERATED_URL.setValue(getController(), serviceWebUrl);
-                                    logInfo("Successfully connected to federated service "
-                                            + serviceWebUrl + " / " + server.getNick());
-                                }
-                            }
-                        } else {
-                            logWarning("Federated login failed! " +
-                                    "Can't find hosting service for account " + username);
-                        }
+                    String serviceWebUrl = null;
+                    try {
+                        serviceWebUrl = securityService.getHostingService(username).getWebUrl();
+                    } catch (RemoteCallException ex) {
+                        logWarning("Server " + server.getNick() + " does NOT support federated logins.");
                     }
-                } catch (RemoteCallException ex) {
-                    logWarning("Server " + server.getNick() + " does NOT support federated logins.");
+
+                    String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
+
+                    if (StringUtils.isNotBlank(serviceWebUrl)) {
+                        if (!serviceWebUrl.equals(currentWebUrl)) {
+
+                            logInfo("Federated login! Starting AccountDiscovery ...");
+                            loadConfigURL(serviceWebUrl);
+
+                            // Mark the federated service for connect
+                            server.markForImmediateConnect();
+
+                            Waiter w = new Waiter(1000);
+                            while (!w.isTimeout() && !isConnected()) {
+                                w.waitABit();
+                            }
+
+                            ConfigurationEntry.CLIENT_FEDERATED_URL.setValue(getController(), serviceWebUrl);
+                            getController().saveConfig();
+
+                            if (isConnected()) {
+                                logInfo("Successfully connected to federated service "
+                                        + serviceWebUrl + " / " + server.getNick());
+                            }
+                        }
+                    } else {
+                        logWarning("Federated login failed! " +
+                                "Can't find hosting service for account " + username);
+                    }
                 }
                 // End: PF-102: Federated client login.
 
@@ -2681,7 +2685,8 @@ public class ServerClient extends PFComponent {
      */
     private boolean isFederatedLogin() throws RemoteCallException {
 
-        boolean serverSupportsFederation = securityService.isFederatedService();
+        boolean serverSupportsFederation = ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController());
+
         boolean discoveryNecessary = StringUtils.isBlank(ConfigurationEntry.CLIENT_FEDERATED_URL.getValue(getController()));
         boolean rediscoveryNecessary = !ConfigurationEntry.CLIENT_FEDERATED_URL.getValue(getController())
                 .equalsIgnoreCase(ConfigurationEntry.SERVER_WEB_URL.getValue(getController()));
