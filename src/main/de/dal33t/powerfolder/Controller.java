@@ -67,7 +67,6 @@ import java.nio.file.DirectoryStream.Filter;
 import java.security.Security;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,9 +75,7 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import static org.quartz.CronScheduleBuilder.cronSchedule;
-import static org.quartz.JobBuilder.newJob;
-import static org.quartz.TriggerBuilder.newTrigger;
+import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
@@ -1164,18 +1161,20 @@ public class Controller extends PFComponent {
         // ============
         // Schedule a task to do housekeeping every day, just after midnight.
         // ============
-        // Run housekeeping at 12 am
-        JobDetail housekeepingJob = newJob(Housekeeping.class)
-            .withIdentity("housekeeping", "group1").build();
+        // Run housekeeping at 00:00 o'clock
+        JobDetail housekeepingJob = JobBuilder.newJob(Housekeeping.class)
+            .withIdentity("midnight", "housekeeping").build();
 
-        CronTrigger housekeepingTrigger = newTrigger()
-            .withIdentity("midnight", "group1")
-            .withSchedule(cronSchedule("0 0 12am * * ?")).build();
+        Trigger housekeepingTrigger = TriggerBuilder.newTrigger()
+            .withIdentity("trigger", "housekeeping")
+            .forJob(housekeepingJob)
+            .withSchedule(dailyAtHourAndMinute(0, 0))
+            .build();
 
-        SchedulerFactory sf = new StdSchedulerFactory();
         try {
-            Scheduler sched = sf.getScheduler();
+            Scheduler sched = new StdSchedulerFactory().getScheduler();
             sched.scheduleJob(housekeepingJob, housekeepingTrigger);
+            sched.getContext().put("controller", this);
             sched.start();
         } catch (SchedulerException e) {
             logWarning("Could not initiate housekeeping: " + e.getMessage());
@@ -1279,7 +1278,7 @@ public class Controller extends PFComponent {
      *            true if this is the midnight invokation, false if this is at
      *            start up.
      */
-    private void performHousekeeping(boolean midnightRun) {
+    void performHousekeeping(boolean midnightRun) {
         log.fine("Performing housekeeping " + midnightRun);
         if (midnightRun) {
             Date now = new Date();
@@ -3127,16 +3126,6 @@ public class Controller extends PFComponent {
         public void run() {
             setPaused0(false, true);
             log.info("User inactive. Executed resume task.");
-        }
-    }
-
-    private class Housekeeping implements Job {
-
-        @Override
-        public void execute(JobExecutionContext jobExecutionContext)
-            throws JobExecutionException
-        {
-            performHousekeeping(true);
         }
     }
 }
