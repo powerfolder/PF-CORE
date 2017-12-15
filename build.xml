@@ -209,7 +209,6 @@ For creation of the installer:
 			<include name="jmock/jmock-junit3-2.4.0.jar" />
 			<include name="jmock/jmock-junit4-2.4.0.jar" />
 			<include name="jmock/jmock-legacy-2.4.0.jar" />
-
             <include name="mockito/byte-buddy-1.7.9.jar"/>
             <include name="mockito/byte-buddy-agent-1.7.9.jar"/>
             <include name="mockito/mockito-core-2.12.0.jar"/>
