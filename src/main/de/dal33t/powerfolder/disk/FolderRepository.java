@@ -385,7 +385,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (!ConfigurationEntry.FOLDER_CREATE_ALLOW_NETWORK.getValueBoolean(getController()) &&
                 Files.exists(dir)) {
-
             try {
                 // Fall back to default if is network drive:
                 if (PathUtils.isNetworkPath(dir)) {
@@ -402,10 +401,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                             options,
                             options[0]);
 
-                    ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), foldersBasedir.toString());
+                    PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), foldersBasedir.toString());
                     getController().saveConfig();
 
                     logWarning("Network shares not allowed as base path: " + baseDir + ", switching to default: " + foldersBasedir);
+                    return true;
                 }
             } catch (IOException e) {
                 logWarning("Failed to resolve symlink at " + dir);
@@ -413,7 +413,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        if (foldersBasedir == null) {
+        if (foldersBasedir == null || !foldersBasedir.equals(baseDir)) {
             foldersBasedir = Paths.get(baseDir).toAbsolutePath();
         }
 
@@ -435,8 +435,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 && Files.isDirectory(foldersBasedir);
 
         // Use default as fallback
-        if (!ok
-                && ConfigurationEntry.FOLDER_BASEDIR_FALLBACK_TO_DEFAULT
+        if (!ok && ConfigurationEntry.FOLDER_BASEDIR_FALLBACK_TO_DEFAULT
                 .getValueBoolean(getController())) {
             foldersBasedir = Paths.get(ConfigurationEntry.FOLDER_BASEDIR
                     .getDefaultValue());

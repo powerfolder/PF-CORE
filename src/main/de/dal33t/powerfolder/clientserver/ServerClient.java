@@ -154,6 +154,11 @@ public class ServerClient extends PFComponent {
      */
     private boolean shallDownloadClientSkin;
 
+    /**
+     * PF-102: Federated client login timeout:
+     */
+    private static final long DEFAULT_DISCOVERY_TIMEOUT_MS = 30L * 1000;
+
     // Construction ***********************************************************
 
     /**
@@ -1036,17 +1041,22 @@ public class ServerClient extends PFComponent {
                             // Mark the federated service for connect
                             server.markForImmediateConnect();
 
-                            Waiter w = new Waiter(1000);
+                            Waiter w = new Waiter(DEFAULT_DISCOVERY_TIMEOUT_MS);
                             while (!w.isTimeout() && !isConnected()) {
                                 w.waitABit();
                             }
 
-                            ConfigurationEntry.CLIENT_FEDERATED_URL.setValue(getController(), serviceWebUrl);
+                            ConfigurationEntry.SERVER_WEB_URL.setValue(getController(), serviceWebUrl);
                             getController().saveConfig();
 
                             if (isConnected()) {
                                 logInfo("Successfully connected to federated service "
                                         + serviceWebUrl + " / " + server.getNick());
+                            } else {
+                                logWarning("Failed to connect to federated server " + server);
+                                setAnonAccount();
+                                fireLogin(accountDetails);
+                                return accountDetails.getAccount();
                             }
                         }
                     } else {
@@ -2678,20 +2688,13 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * PF-102: AccountDiscovery (federated login) must be performed if the target server supports federation AND
-     * the account was never discovered or the clients server has changed.
+     * PF-102: AccountDiscovery (federated login) must be performed if the target server supports federation.
      *
-     * @return true if a new AccountDiscovery is necessary.
+     * @return true if a target server supports federation.
      */
     private boolean isFederatedLogin() throws RemoteCallException {
 
-        boolean serverSupportsFederation = ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController());
-
-        boolean discoveryNecessary = StringUtils.isBlank(ConfigurationEntry.CLIENT_FEDERATED_URL.getValue(getController()));
-        boolean rediscoveryNecessary = !ConfigurationEntry.CLIENT_FEDERATED_URL.getValue(getController())
-                .equalsIgnoreCase(ConfigurationEntry.SERVER_WEB_URL.getValue(getController()));
-
-        return serverSupportsFederation && (discoveryNecessary || rediscoveryNecessary);
+        return ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController());
     }
 
     /**
