@@ -402,6 +402,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             options[0]);
 
                     PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), foldersBasedir.toString());
+                    ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), foldersBasedir.toString());
                     getController().saveConfig();
 
                     logWarning("Network shares not allowed as base path: " + baseDir + ", switching to default: " + foldersBasedir);
@@ -493,6 +494,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         // Save folder base path to registry
         PreferencesEntry.FOLDER_BASE_PATH.setValue(getController(), baseDir);
+        ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), baseDir);
+        getController().saveConfig();
+
         return ok;
     }
 
