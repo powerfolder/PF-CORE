@@ -155,9 +155,9 @@ public class ServerClient extends PFComponent {
     private boolean shallDownloadClientSkin;
 
     /**
-     * PF-102: Federated client login timeout:
+     * PF-102: Federated client login server connect timeout:
      */
-    private static final long DEFAULT_DISCOVERY_TIMEOUT_MS = 30L * 1000;
+    private static final long DEFAULT_SERVER_CONNECT_TIMEOUT_MS = 5000;
 
     // Construction ***********************************************************
 
@@ -1041,7 +1041,7 @@ public class ServerClient extends PFComponent {
                             // Mark the federated service for connect
                             server.markForImmediateConnect();
 
-                            Waiter w = new Waiter(DEFAULT_DISCOVERY_TIMEOUT_MS);
+                            Waiter w = new Waiter(DEFAULT_SERVER_CONNECT_TIMEOUT_MS);
                             while (!w.isTimeout() && !isConnected()) {
                                 w.waitABit();
                             }
