@@ -266,7 +266,7 @@ public class Token {
         return id;
     }
 
-    public String getSecrect() {
+    public String getSecret() {
         return secrect;
     }
 
