@@ -417,7 +417,8 @@ public class MemberInfo implements Serializable, D2DObject {
 
           this.nick            = proto.getNick();
           this.id              = proto.getId();
-          this.networkId       = proto.getNetworkId();this.connectAddress = new InetSocketAddress(proto.getAddress(), proto.getPort());
+          this.networkId       = proto.getNetworkId();
+          this.connectAddress = new InetSocketAddress(proto.getHost(), proto.getPort());
           this.d2dPort         = proto.getPort();
           this.lastConnectTime = (-1 == proto.getLastConnectTime()
               ? null
@@ -443,7 +444,7 @@ public class MemberInfo implements Serializable, D2DObject {
       builder.setNick(this.nick);
       builder.setId(this.id);
       builder.setNetworkId(this.networkId);
-      if (this.connectAddress != null) builder.setAddress(this.connectAddress.getHostName());
+      if (this.connectAddress != null) builder.setHost(this.connectAddress.getHostName());
       builder.setPort(this.d2dPort);
       builder.setLastConnectTime(null == this.lastConnectTime ? -1 : this.lastConnectTime.getTime());
       builder.setIsConnected(this.isConnected);
