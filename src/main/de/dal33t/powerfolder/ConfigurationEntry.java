@@ -1456,8 +1456,6 @@ public enum ConfigurationEntry {
     /**
      * Sets the value of this config entry.
      *
-     * @param controller
-     *            the controller of the config
      * @param value
      *            the value to set
      */
@@ -1488,6 +1486,16 @@ public enum ConfigurationEntry {
      */
     public void setValue(Controller controller, int value) {
         setValue(controller, String.valueOf(value));
+    }
+
+    /**
+     * Sets the value of this config entry.
+     *
+     * @param config the config of the client
+     * @param value  the value to set
+     */
+    public void setValue(Properties config, boolean value) {
+        setValue(config, String.valueOf(value));
     }
 
     /**

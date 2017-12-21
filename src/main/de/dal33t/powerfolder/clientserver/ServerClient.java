@@ -1020,6 +1020,12 @@ public class ServerClient extends PFComponent {
 
                 saveLastKnowLogin(username, null);
 
+                if (!server.isConnected() || !hasCredentials()) {
+                    setAnonAccount();
+                    fireLogin(accountDetails);
+                    return accountDetails.getAccount();
+                }
+
                 // Start: PF-102: Federated client login.
                 if (isFederatedLogin()) {
 
@@ -1027,7 +1033,7 @@ public class ServerClient extends PFComponent {
                     try {
                         serviceWebUrl = securityService.getHostingService(username).getWebUrl();
                     } catch (RemoteCallException ex) {
-                        logWarning("Server " + server.getNick() + " does NOT support federated logins.");
+                        logWarning("Server " + server + " does not support federated logins.");
                     }
 
                     String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
@@ -1065,14 +1071,6 @@ public class ServerClient extends PFComponent {
                     }
                 }
                 // End: PF-102: Federated client login.
-
-                boolean disconnected = !server.isConnected();
-
-                if (disconnected || !hasCredentials()) {
-                    setAnonAccount();
-                    fireLogin(accountDetails);
-                    return accountDetails.getAccount();
-                }
 
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
@@ -1957,6 +1955,7 @@ public class ServerClient extends PFComponent {
                     .loadPreConfiguration(defaultConfigURL);
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, getUsername());
             ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, token);
+            ConfigurationEntry.SERVER_FEDERATED_LOGIN.setValue(config, false);
             ServerClient serverClient = new ServerClient(getController(), config);
             // Disable skin download for child clients
             serverClient.setShallDownloadClientSkin(false);
@@ -2693,8 +2692,7 @@ public class ServerClient extends PFComponent {
      * @return true if a target server supports federation.
      */
     private boolean isFederatedLogin() throws RemoteCallException {
-
-        return ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController());
+        return ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(config);
     }
 
     /**
