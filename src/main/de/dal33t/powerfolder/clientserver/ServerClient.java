@@ -40,6 +40,8 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.ietf.jgss.*;
 
@@ -2016,48 +2018,47 @@ public class ServerClient extends PFComponent {
      * @return True if the skin was downloaded correctly
      */
     private boolean downloadClientSkin(String skin) {
-        // Stop if no skin is given or default skin
-        if (skin == null) {
-            return false;
-        }
-       
-        boolean localSkinWasAlreadyInstalled = false;
-        Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
-        if (skin.equalsIgnoreCase("Bluberry")) {
-            // Delete old skin
-            if (Files.exists(skinPath)) {
-                try {
-                    PathUtils.recursiveDelete(skinPath);
-                    return true;
-                } catch (IOException e) {
-                    logWarning("Cannot delete old skin: " + e);
-                    return false;
-                }
-            }
-            return false;
-        }
- 
-        String baseUrl = this.getWebURL() + "/skin/";
-        String skinQuery = "?skin=" + skin;
-        URL url;
         try {
+            // Stop if no skin is given or default skin
+            if (skin == null) {
+                return false;
+            }
+            HttpClient httpClient = Util.createHttpClientBuilder(getController()).build();
+            Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+            if (skin.equalsIgnoreCase("Bluberry")) {
+                // Delete old skin
+                if (Files.exists(skinPath)) {
+                    try {
+                        PathUtils.recursiveDelete(skinPath);
+                        return true;
+                    } catch (IOException e) {
+                        logWarning("Cannot delete old skin: " + e);
+                        return false;
+                    }
+                }
+                return false;
+            }
+            String baseUrl = this.getWebURL() + "/skin/";
+            String skinQuery = "?skin=" + URLEncoder.encode(skin);
             // First check if a skin with a newer version is available
             Path versionPath = skinPath.resolve("version");
             String localSkinVersion = "local";
             String remoteSkinVersion = "remote";
             // Load local skin version
             if (Files.exists(versionPath)) {
-                localSkinWasAlreadyInstalled = true;
                 try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
                     if ((localSkinVersion = bufferedReader.readLine()) == null) {
                         logWarning("Cannot read local skin version");
                     }
+                } catch (IOException e) {
+                    logWarning("Cannot read local skin version");
                 }
             }
             // Download skin version
-            url = new URL(baseUrl + "version" + skinQuery);
+            String urlString = baseUrl + "version" + skinQuery;
             try {
-                PathUtils.copyFromStreamToFile(url.openStream(), versionPath);
+                PathUtils.copyFromStreamToFile(httpClient.execute(new HttpGet(urlString)).getEntity().getContent(), versionPath);
+
             } catch (IOException e) {
                 logWarning("Cannot read remote skin version:" + e, e);
                 return false;
@@ -2097,42 +2098,32 @@ public class ServerClient extends PFComponent {
                     // Do not return if download of single files fails because
                     // some icons.properties files may contain false entries
                     try {
-                        url = new URL(baseUrl + file + skinQuery);
-                        PathUtils.copyFromStreamToFile(url.openStream(),
-                            filePath);
-                    } catch (MalformedURLException e) {
-                        logWarning("Invalid client skin URL: " + e, e);
-                    } catch (IOException e) {
-                        logWarning("Cannot download client skin:" + e, e);
-                    }
-                    if (file.equals("client/icons.properties")) {
-                        // Parse the icons file list and add the files to the
-                        // files list
-                        try (BufferedReader bufferedReader = Files
-                            .newBufferedReader(filePath))
-                        {
-                            String line;
-                            while ((line = bufferedReader.readLine()) != null) {
-                                if (line.length() > 2) {
-                                    line = line
-                                        .substring(line.indexOf("=") + 1);
-                                    files.add(line);
+                        urlString = baseUrl + file + skinQuery;
+                        PathUtils.copyFromStreamToFile(httpClient.execute(new HttpGet(urlString)).getEntity().getContent(), filePath);
+                        if (file.equals("client/icons.properties")) {
+                            // Parse the icons file list and add the files to the
+                            // files list
+                            try (BufferedReader bufferedReader = Files.newBufferedReader(filePath)) {
+                                String line;
+                                while ((line = bufferedReader.readLine()) != null) {
+                                    if (line.length() > 2) {
+                                        line = line.substring(line.indexOf("=") + 1);
+                                        files.add(line);
+                                    }
                                 }
                             }
                         }
+                    } catch (MalformedURLException e) {
+                        logWarning("Invalid client skin URL: " + e, e);
+                        return false;
+                    } catch (IOException e) {
+                        logWarning("Cannot download client skin:" + e, e);
+                        return false;
                     }
                 }
             }
-        } catch (MalformedURLException e) {
-            logWarning("Invalid client skin URL: " + e, e);
-            return localSkinWasAlreadyInstalled;
-        } catch (IOException e) {
-            logWarning("Cannot download client skin:" + e, e);
-            return localSkinWasAlreadyInstalled;
         } catch (RuntimeException e) {
-            logSevere(
-                "RuntimeException while downloading skin " + skin + ": " + e,
-                e);
+            logSevere("RuntimeException while downloading skin " + skin + ": " + e, e);
             return false;
         }
         return true;
