@@ -1044,6 +1044,11 @@ public class ServerClient extends PFComponent {
                             logInfo("Federated login! Starting AccountDiscovery ...");
                             loadConfigURL(serviceWebUrl);
 
+                            // Destroy all child clients:
+                            for (ServerClient childClient : childClients.values()) {
+                                childClient.logout();
+                            }
+
                             // Mark the federated service for connect
                             server.markForImmediateConnect();
 
