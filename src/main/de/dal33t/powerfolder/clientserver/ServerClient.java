@@ -1045,8 +1045,10 @@ public class ServerClient extends PFComponent {
                             loadConfigURL(serviceWebUrl);
 
                             // Destroy all child clients:
-                            for (ServerClient childClient : childClients.values()) {
-                                childClient.logout();
+                            if (!childClients.isEmpty()) {
+                                for (ServerClient childClient : childClients.values()) {
+                                    childClient.logout();
+                                }
                             }
 
                             // Mark the federated service for connect
