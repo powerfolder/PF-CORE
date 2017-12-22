@@ -1000,12 +1000,14 @@ public class ServerClient extends PFComponent {
      */
     private Account login0(String theUsername, String thePasswordObj,
                            String theToken) {
+
         if (StringUtils.isNotBlank(theUsername)) {
             logInfo("Login with: " + theUsername
                     + (theToken != null ? (". token: " + theToken.length()) : ""));
         } else {
             logFine("Login without username");
         }
+
         synchronized (loginLock) {
 
             loggingIn.set(true);
@@ -1018,8 +1020,6 @@ public class ServerClient extends PFComponent {
                 passwordObf = thePasswordObj;
                 tokenSecret = theToken;
 
-                saveLastKnowLogin(username, null);
-
                 if (!server.isConnected() || !hasCredentials()) {
                     setAnonAccount();
                     fireLogin(accountDetails);
@@ -1028,56 +1028,11 @@ public class ServerClient extends PFComponent {
 
                 // Start: PF-102: Federated client login.
                 if (isFederatedLogin()) {
-
-                    String serviceWebUrl = null;
-                    try {
-                        serviceWebUrl = securityService.getHostingService(username).getWebUrl();
-                    } catch (RemoteCallException ex) {
-                        logWarning("Server " + server + " does not support federated logins.");
-                    }
-
-                    String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
-
-                    if (StringUtils.isNotBlank(serviceWebUrl)) {
-                        if (!serviceWebUrl.equals(currentWebUrl)) {
-
-                            logInfo("Federated login! Starting AccountDiscovery ...");
-                            loadConfigURL(serviceWebUrl);
-
-                            // Destroy all child clients:
-                            if (!childClients.isEmpty()) {
-                                for (ServerClient childClient : childClients.values()) {
-                                    childClient.logout();
-                                }
-                            }
-
-                            // Mark the federated service for connect
-                            server.markForImmediateConnect();
-
-                            Waiter w = new Waiter(DEFAULT_SERVER_CONNECT_TIMEOUT_MS);
-                            while (!w.isTimeout() && !isConnected()) {
-                                w.waitABit();
-                            }
-
-                            ConfigurationEntry.SERVER_WEB_URL.setValue(getController(), serviceWebUrl);
-                            getController().saveConfig();
-
-                            if (isConnected()) {
-                                logInfo("Successfully connected to federated service "
-                                        + serviceWebUrl + " / " + server.getNick());
-                            } else {
-                                logWarning("Failed to connect to federated server " + server);
-                                setAnonAccount();
-                                fireLogin(accountDetails);
-                                return accountDetails.getAccount();
-                            }
-                        }
-                    } else {
-                        logWarning("Federated login failed! " +
-                                "Can't find hosting service for account " + username);
-                    }
+                    doFederatedLogin();
                 }
                 // End: PF-102: Federated client login.
+
+                saveLastKnowLogin(username, null);
 
                 boolean loginOk = false;
                 char[] pw = LoginUtil.deobfuscate(passwordObf);
@@ -1597,12 +1552,19 @@ public class ServerClient extends PFComponent {
                 getController().getMySelf().getInfo().networkId = ConfigurationEntry.NETWORK_ID
                         .getDefaultValue();
             }
-            String newNetworkID = getController().getMySelf().getInfo().networkId;
+
+            // PF-102: In federation the networkID must always be set to 'ANY':
+            String newNetworkID;
+            if (isFederatedLogin()) {
+                newNetworkID = Constants.NETWORK_ID_ANY;
+            } else {
+                newNetworkID = getController().getMySelf().getInfo().networkId;
+            }
+
             boolean networkIDChanged = !Util.equals(oldNetworkID, newNetworkID);
             if (networkIDChanged) {
                 getController().getNodeManager().shutdown();
             }
-
 
             init(getController(), config, name, host, nodeId, allowServerChange,
                     updateConfig);
@@ -1611,13 +1573,13 @@ public class ServerClient extends PFComponent {
             setServerWebURLInConfig(webURL);
             setServerHTTPTunnelURLInConfig(tunnelURL);
             setServerInConfig(getServer().getInfo());
+
             ConfigurationEntry.NETWORK_ID.setValue(config, newNetworkID);
             ConfigurationEntry.CONFIG_URL.setValue(config, configURL);
 
             getController().saveConfig();
 
             if (networkIDChanged) {
-                // Restart nodemanager
                 getController().getNodeManager().start();
             }
 
@@ -2700,6 +2662,59 @@ public class ServerClient extends PFComponent {
      */
     private boolean isFederatedLogin() throws RemoteCallException {
         return ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(config);
+    }
+
+    /**
+     * PF-102: Starts the AccountDiscovery for the given username on this client. If a hosting server for the username
+     * could be found, the default config of this server will be loaded.
+     */
+    private void doFederatedLogin() {
+
+        // 1. Get the service URL of the hosting server of the username:
+        String serviceWebUrl = null;
+        try {
+            serviceWebUrl = securityService.getHostingService(username).getWebUrl();
+        } catch (RemoteCallException ex) {
+            logWarning("Server " + server + " does not support federated logins.");
+        }
+
+        String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
+
+        // 2. If the the service URL of the hosting server of the username differs from the current server URL of
+        // this client -> load the default config of the discovered server:
+        if (StringUtils.isNotBlank(serviceWebUrl)) {
+            if (!serviceWebUrl.equals(currentWebUrl)) {
+
+                logInfo("Federated login! Starting AccountDiscovery ...");
+                loadConfigURL(serviceWebUrl);
+
+                // Destroy all child clients:
+                if (!childClients.isEmpty()) {
+                    for (ServerClient childClient : childClients.values()) {
+                        childClient.logout();
+                    }
+                }
+
+                // Mark the federated service for connect
+                server.markForImmediateConnect();
+
+                Waiter w = new Waiter(DEFAULT_SERVER_CONNECT_TIMEOUT_MS);
+                while (!w.isTimeout() && !isConnected()) {
+                    w.waitABit();
+                }
+
+                ConfigurationEntry.SERVER_WEB_URL.setValue(getController(), serviceWebUrl);
+                getController().saveConfig();
+
+                if (isConnected()) {
+                    logInfo("Successfully connected to federated service "
+                            + serviceWebUrl + " / " + server.getNick());
+                }
+            }
+        } else {
+            logWarning("Federated login failed! " +
+                    "Can't find hosting service for account " + username);
+        }
     }
 
     /**
