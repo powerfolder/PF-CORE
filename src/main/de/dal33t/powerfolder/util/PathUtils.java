@@ -173,15 +173,25 @@ public class PathUtils {
         Reject.ifBlank(name1, "Name 1");
         Reject.ifBlank(name2, "Name 2");
 
-        boolean reallySameName = name1.equals(name2);
-        boolean matchingWithOwner1 = name1.matches(Pattern.quote(name2).replaceAll("\\(",
-                "\\\\(").replaceAll("\\)", "\\\\)")
-                + " \\(.*\\)");
-        boolean matchingWithOwner2 = name2.matches(Pattern.quote(name1).replaceAll("\\(",
-                "\\\\(").replaceAll("\\)", "\\\\)")
-                + " \\(.*\\)");
-
-        return reallySameName || matchingWithOwner1 || matchingWithOwner2;
+        boolean exactlySameName = name1.equals(name2);
+        if (exactlySameName) {
+            return true;
+        }
+        int n1Start = name1.lastIndexOf(" (");
+        if (n1Start > 0 && name1.endsWith(")")) {
+            String name1WithoutBrackets = name1.substring(0, n1Start);
+            if (name1WithoutBrackets.equals(name2)) {
+                return true;
+            }
+        }
+        int n2Start = name2.lastIndexOf(" (");
+        if (n2Start > 0 && name2.endsWith(")")) {
+            String name2WithoutBrackets = name2.substring(0, n2Start);
+            if (name2WithoutBrackets.equals(name1)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -191,8 +201,12 @@ public class PathUtils {
      * @return true if the given input path is or is located on a networked
      * drive or is a UNC path share.
      */
-    public static boolean isNetworkPath(Path path) {
+    public static boolean isNetworkPath(Path path) throws IOException {
         Reject.ifNull(path, "Path");
+
+        if (Files.isSymbolicLink(path)) {
+            path = path.toRealPath();
+        }
 
         if (OSUtil.isMacOS() || OSUtil.isLinux()) {
             return isNetworkPathUnix(path);
@@ -219,6 +233,7 @@ public class PathUtils {
      * otherwise.
      */
     private static boolean isNetworkPathUnix(Path path) {
+
         try {
             Process p = Runtime.getRuntime().exec("df");
             InputStream stdout = p.getInputStream();

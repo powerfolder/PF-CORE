@@ -821,7 +821,9 @@ public class Debug {
 
         int i = 0;
         while (i < activeGroup.length) {
-            threadDumps.addAll(getGroupInfo(activeGroup[i], hideIdleThreds));
+            if (activeGroup[i] != null) {
+                threadDumps.addAll(getGroupInfo(activeGroup[i], hideIdleThreds));
+            }
             i++;
         }
         return threadDumps;
@@ -907,6 +909,10 @@ public class Debug {
                 }
                 if (te.toString().contains(
                         "java.net.TwoStacksPlainDatagramSocketImpl.receive0")) {
+                    return null;
+                }
+                if (te.toString().contains(
+                        "sun.nio.ch.EPollArrayWrapper.epollWait")) {
                     return null;
                 }
             }

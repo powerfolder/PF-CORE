@@ -2150,114 +2150,120 @@ public class Member extends PFComponent implements Comparable<Member> {
         FolderRepository repo = getController().getFolderRepository();
         Set<FolderInfo> joinedFolders = new HashSet<FolderInfo>();
         Collection<Folder> localFolders = repo.getFolders();
-        if (fromPeer == null) {
-            logWarning("Unable to join to local folders. peer is null/disconnected");
-            return;
-        }
-        // Use secret folders only in old clients with protocol version below 112
-        if (folderList.folders != null && folderList.folders.length > 0 || getProtocolVersion() >= Identity.PROTOCOL_VERSION_112) {
-            // Check if remote side has joined one of our folders
-            for (FolderInfo folderInfo : folderList.folders) {
-                Folder folder = folderInfo.getFolder(getController());
-                if (folder == null) {
-                    // Not synced locally
-                    continue;
-                }
-                // Join him into our folder if possible.
-                if (!folder.join(this)) {
-                    if (isFiner()) {
-                        logFiner(this + " did not join into: " + folder);
-                    }
-                    continue;
-                }
-                if (isFiner()) {
-                    logFiner("Joined " + folder);
-                }
-                joinedFolders.add(folder.getInfo());
-                if (!folderList.joinedMetaFolders) {
-                    continue;
-                }
-                Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
-                if (metaFolder == null) {
-                    logFine("Unable to join meta folder. Not found " + folder);
-                    continue;
-                }
-                // Join him into our folder if possible.
-                if (!metaFolder.join(this)) {
-                    if (isFine()) {
-                        logFine("Unable to join meta folder of " + folder);
-                    }
-                    continue;
-                }
-                joinedFolders.add(metaFolder.getInfo());
-                if (isFiner()) {
-                    logFiner("Joined meta folder: " + metaFolder);
-                }
-            }
-        } else {
-            String myMagicId = fromPeer.getMyMagicId();
-            if (StringUtils.isBlank(myMagicId)) {
-                logSevere("Unable to join to local folders. Own magic id of peer is blank: " + peer);
+        // logWarning("joinToLocalFolders: " + folderList);
+        folderJoinLock.lock();
+        try {
+            if (fromPeer == null) {
+                logWarning("Unable to join to local folders. peer is null/disconnected");
                 return;
             }
-            // Process secret folders now
-            if (folderList.secretFolders != null && folderList.secretFolders.length > 0) {
-                // Step 1: Calculate secure folder ids for local secret folders
-                Map<String, Folder> localSecretFolders = new HashMap<String, Folder>();
-                for (Folder folder : localFolders) {
-                    // Calculate id with my magic id
-                    String secureId = folder.getInfo().calculateSecureId(myMagicId);
-                    // Add to local secret folder list
-                    localSecretFolders.put(secureId, folder);
+            // Use secret folders only in old clients with protocol version below 112
+            if (folderList.folders != null && folderList.folders.length > 0 || getProtocolVersion() >= Identity.PROTOCOL_VERSION_112) {
+                // Check if remote side has joined one of our folders
+                for (FolderInfo folderInfo : folderList.folders) {
+                    Folder folder = folderInfo.getFolder(getController());
+                    if (folder == null) {
+                        // Not synced locally
+                        continue;
+                    }
+                    // Join him into our folder if possible.
+                    if (!folder.join(this)) {
+                        if (isFiner()) {
+                            logFiner(this + " did not join into: " + folder);
+                        }
+                        continue;
+                    }
+                    if (isFiner()) {
+                        logFiner("Joined " + folder);
+                    }
+                    joinedFolders.add(folder.getInfo());
+                    if (!folderList.joinedMetaFolders) {
+                        continue;
+                    }
+                    Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
+                    if (metaFolder == null) {
+                        logFine("Unable to join meta folder. Not found " + folder);
+                        continue;
+                    }
+                    // Join him into our folder if possible.
+                    if (!metaFolder.join(this)) {
+                        if (isFine()) {
+                            logFine("Unable to join meta folder of " + folder);
+                        }
+                        continue;
+                    }
+                    joinedFolders.add(metaFolder.getInfo());
+                    if (isFiner()) {
+                        logFiner("Joined meta folder: " + metaFolder);
+                    }
                 }
-                // Step 2: Check if remote side has joined one of our secret folders
-                for (FolderInfo secretFolder : folderList.secretFolders) {
-                    if (localSecretFolders.containsKey(secretFolder.id)) {
-                        Folder folder = localSecretFolders.get(secretFolder.id);
-                        // Join him into our folder if possible.
-                        if (folder.join(this)) {
-                            if (isFiner()) {
-                                logFiner("Joined " + folder);
-                            }
-                            joinedFolders.add(folder.getInfo());
-                            if (folderList.joinedMetaFolders) {
-                                Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
-                                if (metaFolder != null) {
-                                    if (metaFolder.join(this)) {
-                                        joinedFolders.add(metaFolder.getInfo());
-                                        if (isFiner()) {
-                                            logFiner("Joined meta folder: " + metaFolder);
+            } else {
+                String myMagicId = fromPeer.getMyMagicId();
+                if (StringUtils.isBlank(myMagicId)) {
+                    logSevere("Unable to join to local folders. Own magic id of peer is blank: " + peer);
+                    return;
+                }
+                // Process secret folders now
+                if (folderList.secretFolders != null && folderList.secretFolders.length > 0) {
+                    // Step 1: Calculate secure folder ids for local secret folders
+                    Map<String, Folder> localSecretFolders = new HashMap<String, Folder>();
+                    for (Folder folder : localFolders) {
+                        // Calculate id with my magic id
+                        String secureId = folder.getInfo().calculateSecureId(myMagicId);
+                        // Add to local secret folder list
+                        localSecretFolders.put(secureId, folder);
+                    }
+                    // Step 2: Check if remote side has joined one of our secret folders
+                    for (FolderInfo secretFolder : folderList.secretFolders) {
+                        if (localSecretFolders.containsKey(secretFolder.id)) {
+                            Folder folder = localSecretFolders.get(secretFolder.id);
+                            // Join him into our folder if possible.
+                            if (folder.join(this)) {
+                                if (isFiner()) {
+                                    logFiner("Joined " + folder);
+                                }
+                                joinedFolders.add(folder.getInfo());
+                                if (folderList.joinedMetaFolders) {
+                                    Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
+                                    if (metaFolder != null) {
+                                        if (metaFolder.join(this)) {
+                                            joinedFolders.add(metaFolder.getInfo());
+                                            if (isFiner()) {
+                                                logFiner("Joined meta folder: " + metaFolder);
+                                            }
+                                        } else {
+                                            logFine("Unable to join meta folder of " + folder);
                                         }
                                     } else {
-                                        logFine("Unable to join meta folder of " + folder);
+                                        logFine("Unable to join meta folder. Not found " + folder);
                                     }
-                                } else {
-                                    logFine("Unable to join meta folder. Not found " + folder);
                                 }
-                            }
-                        } else {
-                            if (isFine()) {
-                                logFine(this + " did not join into: " + folder);
+                            } else {
+                                if (isFine()) {
+                                    logFine(this + " did not join into: " + folder);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        // ok now remove member from no longer joined folders
-        for (Folder folder : repo.getFolders(true)) {
-            if (!joinedFolders.contains(folder.getInfo())) {
-                // remove this member from folder, if not on new folder
-                folder.remove(this);
+            // ok now remove member from no longer joined folders
+            for (Folder folder : repo.getFolders(true)) {
+                if (!joinedFolders.contains(folder.getInfo())) {
+                    // remove this member from folder, if not on new folder
+                    folder.remove(this);
+                }
             }
-        }
-        if (!joinedFolders.isEmpty()) {
-            if (isFine()) {
-                logFine(getNick() + " joined " + joinedFolders.size() + " folder(s)");
+            if (!joinedFolders.isEmpty()) {
+                if (isFine()) {
+                    logFine(getNick() + " joined " + joinedFolders.size() + " folder(s)");
+                }
+                if (!isFriend() && !server) {
+                    getController().makeFriendship(getInfo());
+                }
             }
-            if (!isFriend() && !server) {
-                getController().makeFriendship(getInfo());
-            }
+        } finally {
+            folderJoinLock.unlock();
         }
     }
 
@@ -2471,6 +2477,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     public int getProtocolVersion() {
         Identity id = getIdentity();
         if (id == null) {
+            logWarning("ID IS NULL", new StackDump());
             return 0;
         }
         return id.getProtocolVersion();
