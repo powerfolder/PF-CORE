@@ -1168,15 +1168,12 @@ public class Account implements Serializable, D2DObject {
      * @return A mail address related to this account.
      */
     public String getEmail() {
-
-        String username = getUsername();
         if (Util.isValidEmail(username)) {
             return username;
         }
 
-        List<String> mails = getEmails();
-        if (mails.size() > 0) {
-            return mails.iterator().next();
+        if (!emails.isEmpty()) {
+            return emails.get(0);
         }
 
         return null;
