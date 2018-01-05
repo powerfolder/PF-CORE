@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -2015,6 +2016,40 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * Deletes the entire client skin directory
+     *
+     * @return True if no errors occur
+     */
+    public static boolean resetClientSkin() {
+        Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+        if (Files.exists(skinPath)) {
+            try {
+                PathUtils.recursiveDelete(skinPath);
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Deletes the clien skin but not the local skin version file
+     *
+     * @return True if no errors occur
+     */
+    private boolean deleteClientSkin() {
+        Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
+        try {
+            PathUtils.recursiveDelete(skinPath.resolve("client"));
+        } catch (IOException e) {
+            logWarning("Cannot delete skin: " + e, e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Downloads a client skin from the server and stores it in the misc config directory.
      * If the local and the remote skin version are the same, the download is skipped
      *
@@ -2031,16 +2066,7 @@ public class ServerClient extends PFComponent {
             Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
             if (skin.equalsIgnoreCase("Bluberry")) {
                 // Delete old skin
-                if (Files.exists(skinPath)) {
-                    try {
-                        PathUtils.recursiveDelete(skinPath);
-                        return true;
-                    } catch (IOException e) {
-                        logWarning("Cannot delete old skin: " + e);
-                        return false;
-                    }
-                }
-                return false;
+                return resetClientSkin();
             }
             String baseUrl = this.getWebURL() + "/skin/";
             String skinQuery = "?skin=" + URLEncoder.encode(skin);
@@ -2061,7 +2087,12 @@ public class ServerClient extends PFComponent {
             // Download skin version
             String urlString = baseUrl + "version" + skinQuery;
             try {
-                PathUtils.copyFromStreamToFile(httpClient.execute(new HttpGet(urlString)).getEntity().getContent(), versionPath);
+                HttpResponse httpResponse = httpClient.execute(new HttpGet(urlString));
+                if (httpResponse.getStatusLine().getStatusCode() != 200) {
+                    logWarning("Cannot read remote skin version");
+                    return false;
+                }
+                PathUtils.copyFromStreamToFile(httpResponse.getEntity().getContent(), versionPath);
 
             } catch (IOException e) {
                 logWarning("Cannot read remote skin version:" + e, e);
@@ -2082,10 +2113,7 @@ public class ServerClient extends PFComponent {
                 return false;
             }
             // Delete old skin
-            try {
-                PathUtils.recursiveDelete(skinPath.resolve("client"));
-            } catch (IOException e) {
-                logWarning("Cannot delete old skin: " + e, e);
+            if (!deleteClientSkin()) {
                 return false;
             }
             // Do not load default skin from server
@@ -2103,7 +2131,13 @@ public class ServerClient extends PFComponent {
                     // some icons.properties files may contain false entries
                     try {
                         urlString = baseUrl + file + skinQuery;
-                        PathUtils.copyFromStreamToFile(httpClient.execute(new HttpGet(urlString)).getEntity().getContent(), filePath);
+                        HttpResponse httpResponse = httpClient.execute(new HttpGet(urlString));
+                        if (httpResponse.getStatusLine().getStatusCode() != 200) {
+                            logFine("Cannot download remote skin file: " + urlString);
+                            resetClientSkin();
+                            return false;
+                        }
+                        PathUtils.copyFromStreamToFile(httpResponse.getEntity().getContent(), filePath);
                         if (file.equals("client/icons.properties")) {
                             // Parse the icons file list and add the files to the
                             // files list
@@ -2119,17 +2153,22 @@ public class ServerClient extends PFComponent {
                         }
                     } catch (MalformedURLException e) {
                         logWarning("Invalid client skin URL: " + e, e);
+                        resetClientSkin();
                         return false;
-                    } catch (IOException e) {
+                    } catch (IOException | RuntimeException e) {
                         logWarning("Cannot download client skin:" + e, e);
+                        resetClientSkin();
                         return false;
                     }
                 }
             }
         } catch (RuntimeException e) {
             logSevere("RuntimeException while downloading skin " + skin + ": " + e, e);
+            resetClientSkin();
             return false;
         }
+        // Only restart client if everything is OK
+        // If client skin was resetted, the default skin will be loaded at next restart
         return true;
     }
 

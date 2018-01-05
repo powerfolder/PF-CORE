@@ -73,6 +73,7 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.AgreeToSListener;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -795,6 +796,7 @@ public class UIController extends PFComponent {
         try {
             LookAndFeelSupport.setLookAndFeel(activeSkin.getLookAndFeel());
         } catch (UnsupportedLookAndFeelException | ParseException e) {
+            ServerClient.resetClientSkin();
             logWarning("Failed to set look and feel for skin " + activeSkin.getName(), e);
         }
     }
