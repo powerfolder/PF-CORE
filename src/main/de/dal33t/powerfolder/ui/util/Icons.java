@@ -42,6 +42,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ import javax.swing.plaf.IconUIResource;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
@@ -1086,7 +1088,6 @@ public class Icons {
      */
     public static Properties addPropertiesFromFile(Properties oldProperties, Path filePath) {
         Reject.ifNull(filePath, "Properties blank");
-        try {
             Properties properties = new Properties();
             // Read properties from file
             try (InputStream inputStream = Files.newInputStream(filePath)) {
@@ -1098,9 +1099,9 @@ public class Icons {
                     oldProperties.setProperty(key, skinPath.resolve(value).toString());
                 }
                 return oldProperties;
-            }
-        } catch (IOException e) {
+            } catch (InvalidPathException | IOException e) {
             log.log(Level.INFO, "Cannot read properties file: " + filePath, e);
+            ServerClient.resetClientSkin();
             return null;
         }
     }
