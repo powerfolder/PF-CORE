@@ -376,7 +376,6 @@ public class UIController extends PFComponent {
         UpdaterHandler updateHandler = new UIUpdateHandler(getController());
         Updater.installPeriodicalUpdateCheck(getController(), updateHandler);
 
-        getController().addMassDeletionHandler(new MyMassDeletionHandler());
         getController().addInvitationHandler(new MyInvitationHandler());
         getController().getFolderRepository().addFolderAutoCreateListener(
             new MyFolderAutoCreateListener());
@@ -1499,42 +1498,6 @@ public class UIController extends PFComponent {
             checkStatus();
         }
 
-    }
-
-    /**
-     * Class to handle local and remote mass deletion events. This pushes
-     * warnings into the app model.
-     */
-    private class MyMassDeletionHandler implements MassDeletionHandler {
-        @Override
-        public void localMassDeletion(LocalMassDeletionEvent event) {
-        }
-
-        @Override
-        public void remoteMassDeletion(RemoteMassDeletionEvent event) {
-            String message;
-            if (event.isPercentage()) {
-                message = Translation.get(
-                    "uicontroller.remote_mass_delete.warning_message", event
-                        .getMemberInfo().nick, String.valueOf(event
-                        .getDeleteFigure()), event.getFolderInfo()
-                        .getLocalizedName(), event.getOldProfile().getName(),
-                    event.getNewProfile().getName());
-            } else {
-                message = Translation.get(
-                    "uicontroller.remote_mass_delete.warning_absolute_message",
-                    event.getMemberInfo().nick, String.valueOf(event
-                        .getDeleteFigure()), event.getFolderInfo()
-                        .getLocalizedName(), event.getOldProfile().getName(),
-                    event.getNewProfile().getName());
-            }
-
-            WarningNotice notice = new WarningNotice(
-                Translation.get("warning_notice.title"),
-                Translation.get("warning_notice.mass_deletion",
-                    event.getFolderInfo().getLocalizedName()), message);
-            applicationModel.getNoticesModel().handleNotice(notice);
-        }
     }
 
     private class MyInvitationHandler implements InvitationHandler {
