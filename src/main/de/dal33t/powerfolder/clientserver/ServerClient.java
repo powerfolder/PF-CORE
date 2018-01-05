@@ -2676,6 +2676,11 @@ public class ServerClient extends PFComponent {
 
         String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
 
+        // Already got the hosting server:
+        if (StringUtils.isNotBlank(serviceWebUrl) && serviceWebUrl.equals(currentWebUrl)) {
+            return true;
+        }
+
         // 2. If the the service URL of the hosting server of the username differs from the current server URL of
         // this client -> load the default config of the discovered server:
         if (StringUtils.isNotBlank(serviceWebUrl) && !serviceWebUrl.equals(currentWebUrl)) {
@@ -2709,7 +2714,6 @@ public class ServerClient extends PFComponent {
             return true;
 
         } else {
-
             logWarning("Federated login failed! " +
                     "Can't find hosting service for account " + username);
             return false;
