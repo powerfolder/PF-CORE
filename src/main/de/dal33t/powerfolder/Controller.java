@@ -91,7 +91,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 14;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 35;
+    private static final int REVISION_VERSION = 37;
 
     /**
      * Program version.
@@ -183,7 +183,6 @@ public class Controller extends PFComponent {
     private List<ConnectionListener> additionalConnectionListeners;
 
     private final List<InvitationHandler> invitationHandlers;
-    private final List<MassDeletionHandler> massDeletionHandlers;
 
     /** The BroadcastManager send "broadcasts" on the LAN so we can */
     private BroadcastMananger broadcastManager;
@@ -261,7 +260,6 @@ public class Controller extends PFComponent {
         System.setProperty("com.apple.mrj.application.apple.menu.about.name",
             "PowerFolder");
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
-        massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
         pausedModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(PausedModeListener.class);
         networkingModeListenerSupport = ListenerSupportFactory
@@ -775,24 +773,6 @@ public class Controller extends PFComponent {
      */
     public void removeInvitationHandler(InvitationHandler l) {
         invitationHandlers.remove(l);
-    }
-
-    /**
-     * Add mass delete listener.
-     *
-     * @param l
-     */
-    public void addMassDeletionHandler(MassDeletionHandler l) {
-        massDeletionHandlers.add(l);
-    }
-
-    /**
-     * Remove mass delete listener.
-     *
-     * @param l
-     */
-    public void removeMassDeletionHandler(MassDeletionHandler l) {
-        massDeletionHandlers.remove(l);
     }
 
     private void setupProPlugins() {
@@ -2909,28 +2889,6 @@ public class Controller extends PFComponent {
     public void invitationReceived(Invitation invitation) {
         for (InvitationHandler handler : invitationHandlers) {
             handler.gotInvitation(invitation);
-        }
-    }
-
-    /**
-     * Distribute local mass deletion notifications.
-     *
-     * @param event
-     */
-    public void localMassDeletionDetected(LocalMassDeletionEvent event) {
-        for (MassDeletionHandler massDeletionHandler : massDeletionHandlers) {
-            massDeletionHandler.localMassDeletion(event);
-        }
-    }
-
-    /**
-     * Distribute remote mass deletion notifications.
-     *
-     * @param event
-     */
-    public void remoteMassDeletionDetected(RemoteMassDeletionEvent event) {
-        for (MassDeletionHandler massDeletionHandler : massDeletionHandlers) {
-            massDeletionHandler.remoteMassDeletion(event);
         }
     }
 

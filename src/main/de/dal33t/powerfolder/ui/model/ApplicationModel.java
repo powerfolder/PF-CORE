@@ -168,7 +168,7 @@ public class ApplicationModel extends PFUIComponent {
 
         Folder metaFolder = getController().getFolderRepository()
             .getMetaFolderForParent(folder.getInfo());
-        metaFolder.scanLocalFiles(true);
+        metaFolder.scanLocalFiles();
         metaFolder.syncRemoteDeletedFiles(true);
         metaFolder.getStatistic().scheduleCalculate();
 
