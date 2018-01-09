@@ -401,55 +401,44 @@ public class MemberInfo implements Serializable, D2DObject {
         out.writeBoolean(isSupernode);
     }
 
-    /** initFromD2DMessage
+    /**
+     * initFromD2DMessage
      * Init from D2D message
+     *
+     * @param mesg Message to use data from
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
      **/
-
     @Override
     public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof NodeInfoProto.NodeInfo)
-        {
-            NodeInfoProto.NodeInfo proto = (NodeInfoProto.NodeInfo)mesg;
-
-          this.nick            = proto.getNick();
-          this.id              = proto.getId();
-          this.networkId       = proto.getNetworkId();
-          this.connectAddress = new InetSocketAddress(proto.getHost(), proto.getPort());
-          this.d2dPort         = proto.getPort();
-          this.lastConnectTime = (-1 == proto.getLastConnectTime()
-              ? null
-              : new Date(proto.getLastConnectTime()));
-          this.isConnected     = proto.getIsConnected();
-          this.isSupernode     = proto.getIsSuperNode();
+    initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof NodeInfoProto.NodeInfo) {
+            NodeInfoProto.NodeInfo proto = (NodeInfoProto.NodeInfo) mesg;
+            this.id = proto.getId();
+            this.nick = proto.getNick();
+            this.networkId = proto.getNetworkId();
+            this.connectAddress = new InetSocketAddress(proto.getHost(), proto.getPort());
+            this.d2dPort = proto.getPort();
         }
     }
 
-    /** toD2D
+    /**
+     * toD2D
      * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
+     *
      * @return Converted D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
      **/
-
     @Override
     public AbstractMessage
-    toD2D()
-    {
-      NodeInfoProto.NodeInfo.Builder builder = NodeInfoProto.NodeInfo.newBuilder();
-      // Translate old message name to new name defined in protocol file
-      builder.setClazzName("NodeInfo");
-      builder.setNick(this.nick);
-      builder.setId(this.id);
-      builder.setNetworkId(this.networkId);
-      if (this.connectAddress != null) builder.setHost(this.connectAddress.getHostName());
-      builder.setPort(this.d2dPort);
-      builder.setLastConnectTime(null == this.lastConnectTime ? -1 : this.lastConnectTime.getTime());
-      builder.setIsConnected(this.isConnected);
-      builder.setIsSuperNode(this.isSupernode);
-
-      return builder.build();
+    toD2D() {
+        NodeInfoProto.NodeInfo.Builder builder = NodeInfoProto.NodeInfo.newBuilder();
+        // Translate old message name to new name defined in protocol file
+        builder.setClazzName("NodeInfo");
+        builder.setId(this.id);
+        builder.setNick(this.nick);
+        builder.setNetworkId(this.networkId);
+        if (this.connectAddress != null) builder.setHost(this.connectAddress.getHostName());
+        builder.setPort(this.d2dPort);
+        return builder.build();
     }
 }
