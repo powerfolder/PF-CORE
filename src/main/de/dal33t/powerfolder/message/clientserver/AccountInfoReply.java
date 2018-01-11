@@ -3,14 +3,13 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.protocol.AccountInfoProto;
-import de.dal33t.powerfolder.protocol.AccountInfoReplyProto;
-import de.dal33t.powerfolder.protocol.PermissionInfoProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
+import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.protocol.*;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class AccountInfoReply extends D2DReplyMessage {
 
@@ -133,6 +132,14 @@ public class AccountInfoReply extends D2DReplyMessage {
                 PermissionInfoProto.PermissionInfo.Builder permissionInfoBuilder = ((PermissionInfoProto.PermissionInfo) folderPermission.toD2D()).toBuilder();
                 permissionInfoBuilder.setIsInvitation(true);
                 accountInfoBuilder.addPermissionInfos(permissionInfoBuilder.build());
+            }
+            // Inject serverInfos into AccountInfo
+            for (Map.Entry<ServerInfo, String> entry : account.getTokens().entrySet()) {
+                ServerInfoProto.ServerInfo serverInfo = (ServerInfoProto.ServerInfo) entry.getKey().toD2D();
+                ServerInfoProto.ServerInfo.Builder serverInfoBuilder = serverInfo.toBuilder();
+                // Inject token into ServerInfo
+                serverInfoBuilder.setToken(entry.getValue());
+                accountInfoBuilder.addServerInfos(serverInfoBuilder.build());
             }
             // Inject avatarLastModifiedDate into AccountInfo
             accountInfoBuilder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);

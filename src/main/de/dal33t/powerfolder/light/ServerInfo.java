@@ -19,19 +19,21 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.Serializable;
-import java.net.URLEncoder;
+import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.NodeInfoProto;
+import de.dal33t.powerfolder.protocol.ServerInfoProto;
+import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.Reject;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.Reject;
+import java.io.Serializable;
+import java.net.URLEncoder;
 
 /**
  * Contains important information about a server
@@ -41,7 +43,7 @@ import de.dal33t.powerfolder.util.Reject;
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ServerInfo implements Serializable {
+public class ServerInfo implements Serializable, D2DObject {
     private static final long serialVersionUID = 100L;
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NODE = "node";
@@ -73,6 +75,15 @@ public class ServerInfo implements Serializable {
             this.id = webUrl;
         }
         Reject.ifBlank(this.id, "Unable to set ID of ServerInfo");
+    }
+
+    /**
+     * Init from D2D message
+     *
+     * @param message Message to use data from
+     **/
+    public ServerInfo(AbstractMessage message) {
+        initFromD2D(message);
     }
 
     /**
@@ -247,4 +258,35 @@ public class ServerInfo implements Serializable {
             return url;
         }
     }
+
+    /**
+     * Init from D2D message
+     *
+     * @param message Message to use data from
+     **/
+    @Override
+    public void initFromD2D(AbstractMessage message) {
+        if (message instanceof ServerInfoProto.ServerInfo) {
+            ServerInfoProto.ServerInfo proto = (ServerInfoProto.ServerInfo) message;
+            this.node = new MemberInfo(proto.getNodeInfo());
+            this.webUrl = proto.getHttpUrl();
+            this.httpTunnelUrl = proto.getHttpTunnelUrl();
+        }
+    }
+
+    /**
+     * Convert to D2D message
+     *
+     * @return Converted D2D message
+     **/
+    @Override
+    public AbstractMessage toD2D() {
+        ServerInfoProto.ServerInfo.Builder builder = ServerInfoProto.ServerInfo.newBuilder();
+        builder.setClazzName(this.getClass().getSimpleName());
+        if (this.node != null) builder.setNodeInfo((NodeInfoProto.NodeInfo) this.node.toD2D());
+        if (this.webUrl != null) builder.setHttpUrl(this.webUrl);
+        if (this.httpTunnelUrl != null) builder.setHttpUrl(this.httpTunnelUrl);
+        return builder.build();
+    }
+
 }
