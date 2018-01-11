@@ -19,24 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.SwingWorker;
-
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -47,6 +32,14 @@ import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.wizard.table.MultiFileRestoreTable;
 import de.dal33t.powerfolder.ui.wizard.table.MultiFileRestoreTableModel;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CancellationException;
 
 /**
  * Call this class via PFWizard.
@@ -155,15 +148,11 @@ public class MultiFileRestorePanel extends PFWizardPanel {
                     if (fo == null) {
                         continue;
                     }
-                    // Also try getting versions from OnlineStorage.
-                    boolean online = fo.hasMember(getController().getOSClient().getServer());
+                    // Also try getting versions from OnlineStorage
                     FolderService folderService = null;
-                    if (online) {
-                        ServerClient client = getController().getOSClient();
-                        if (client != null && client.isConnected() && client.isLoggedIn())
-                        {
-                            folderService = client.getFolderService(fo.getInfo());
-                        }
+                    ServerClient client = getController().getOSClient();
+                    if (client.isConnected() && client.isLoggedIn()) {
+                        folderService = client.getFolderService(fo.getInfo());
                     }
 
                     FileArchiver fileArchiver = fo.getFileArchiver();

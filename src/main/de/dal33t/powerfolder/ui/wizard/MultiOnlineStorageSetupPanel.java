@@ -370,7 +370,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
                 }
             }
             if (fi != null) {
-                webDAVURL = serverClient.getFolderService().getWebDAVURL(fi);
+                webDAVURL = serverClient.getFolderService(fi).getWebDAVURL(fi);
             }
             lastFetch = new Date();
         }
@@ -396,7 +396,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
             public void run() {
                 String ownerDisplayname;
                 try {
-                    ownerDisplayname = serverClient.getFolderService()
+                    ownerDisplayname = serverClient.getFolderService(folderInfo)
                         .getOwnerDisplayname(folderInfo);
                 } catch (RemoteCallException e) {
                     Logger.getLogger(

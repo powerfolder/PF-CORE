@@ -375,6 +375,7 @@ public enum ConfigurationEntry {
      * PFS-2425: Federated login with AccountDiscovery
      */
     SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
+    CLIENT_FEDERATED_URL("client.federation.url", ""),
 
     // Server WEB settings ****************************************************
 
@@ -868,14 +869,6 @@ public enum ConfigurationEntry {
     FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
 
     /**
-     * Note - as of PFC-2182, mass delete protection should only be applied
-     * if the user has expert mode.
-     */
-    MASS_DELETE_PROTECTION("mass.delete.protection", false),
-
-    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95),
-
-    /**
      * Contains a comma-separated list of all plugins to load.
      */
     PLUGINS("plugins"),
@@ -972,7 +965,7 @@ public enum ConfigurationEntry {
     /**
      * Should the active threads be logged?
      */
-    LOG_ACTIVE_THREADS("log.active_threads", true),
+    LOG_ACTIVE_THREADS("log.active_threads", false),
 
     /**
      * Whether to request debug reports
@@ -1542,8 +1535,6 @@ public enum ConfigurationEntry {
     /**
      * Sets the value of this config entry.
      *
-     * @param controller
-     *            the controller of the config
      * @param value
      *            the value to set
      */
@@ -1574,6 +1565,16 @@ public enum ConfigurationEntry {
      */
     public void setValue(Controller controller, int value) {
         setValue(controller, String.valueOf(value));
+    }
+
+    /**
+     * Sets the value of this config entry.
+     *
+     * @param config the config of the client
+     * @param value  the value to set
+     */
+    public void setValue(Properties config, boolean value) {
+        setValue(config, String.valueOf(value));
     }
 
     /**

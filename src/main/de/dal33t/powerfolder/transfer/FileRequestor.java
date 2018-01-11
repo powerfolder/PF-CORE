@@ -376,8 +376,8 @@ public class FileRequestor extends PFComponent {
             int reqWorkers = Math.max(1, Math.min(maxWorkers, folderQueue.size() / foldersPerWorker));
             int diff = reqWorkers - nWorkers;
 
-            if (isFine() && diff != 0) {
-                logFine("nWorkers: " + nWorkers + ", required: " + reqWorkers + ". Diff: " + diff);
+            if (isFiner() && diff != 0) {
+                logFiner("nWorkers: " + nWorkers + ", required: " + reqWorkers + ". Diff: " + diff);
             }
             if (reqWorkers == maxWorkers) {
                 logWarning("Maximum number of workers reached: " + maxWorkers + ". Try to increase this value by configuration");

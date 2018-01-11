@@ -19,39 +19,10 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.swing.AbstractAction;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
-import javax.swing.SwingWorker;
-
-import de.dal33t.powerfolder.util.*;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.jgoodies.binding.adapter.BasicComponentFactory;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -65,7 +36,26 @@ import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
+import de.dal33t.powerfolder.util.*;
 import jwf.WizardPanel;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {
@@ -127,7 +117,7 @@ public class LoginPanel extends PFWizardPanel {
         this.nextPanel = nextPanel;
         this.client = client;
         this.showUseOS = showUseOS;
-        LOG.log(Level.INFO, "Opening login wizard" , new StackDump());
+        LOG.log(Level.INFO, "Opening login wizard");
     }
 
     public boolean hasNext() {
@@ -293,11 +283,18 @@ public class LoginPanel extends PFWizardPanel {
             {
                 @Override
                 protected Void doInBackground() throws Exception {
+
                     URL url = new URL(
-                        ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                            .getValue(getController()));
-                    HttpsURLConnection con = (HttpsURLConnection) url
-                        .openConnection();
+                            ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                                    .getValue(getController()));
+
+                    HttpURLConnection con;
+                    if (url.toString().startsWith("https")) {
+                        con = (HttpsURLConnection) url.openConnection();
+                    } else {
+                        con = (HttpURLConnection) url.openConnection();
+                    }
+
 
                     BufferedReader is = new BufferedReader(
                         new InputStreamReader(con.getInputStream(),

@@ -61,8 +61,7 @@ class ShareFileNotificationHandler extends NotificationHandlerBase {
                         Util.setClipboardContents(previousClipboardContents);
 
                         try {
-                            controller.getOSClient().getFolderService()
-                                .removeFileLink(fInfo);
+                            controller.getOSClient().getFolderService(fInfo.getFolderInfo()).removeFileLink(fInfo);
                         } catch (RuntimeException re) {
                             logWarning("The server you use does not support file link removal. Please consider to update your server.");
                         }
