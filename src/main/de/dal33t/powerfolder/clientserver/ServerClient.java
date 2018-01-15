@@ -1967,6 +1967,7 @@ public class ServerClient extends PFComponent {
             } else {
                 logInfo("Switching from " + server.getNick() + " to "
                         + targetServerNode.getNick() + " after connect");
+                targetServerNode.markForImmediateConnect();
             }
 
             Waiter w = new Waiter(HAMMER_DELAY);
