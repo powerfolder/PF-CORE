@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
 import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CascadeType;
 import org.json.JSONException;
 import org.json.JSONObject;

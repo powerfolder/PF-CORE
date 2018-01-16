@@ -9,3 +9,5 @@
 /junit*.properties
 /.idea/
 /.DS_Store
+.gradle
+

@@ -1,0 +1,115 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "http://dl.bintray.com/palantir/releases"
+        }
+    }
+    dependencies {
+        classpath 'com.palantir:gradle-gitsemver:0.6.0'
+    }
+}
+
+apply plugin: 'gitsemver'
+apply plugin: 'java'
+apply plugin: 'signing'
+
+version semverVersion().tagName
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main'
+            srcDir 'src/jwf'
+            srcDir 'src/shib'
+            srcDir 'src/skins'
+        }
+    }
+    test {
+        java {
+            srcDir 'src/test'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+configurations.all {
+    exclude group: 'commons-collections', module: 'commons-collections'
+}
+
+dependencies {
+    compile name: 'powerfolder-protobuf-0.1'
+    compile name: 'liferay-nativity-1.0.6'
+    compile name: 'synthetica/synthetica'
+    compile name: 'synthetica/syntheticaAddons'
+
+    // com.jgoodies
+    // there are maven artifacts, but they are 'to new' and don't contain
+    // all classes used by PF
+    compile name: 'forms-1.2.0'
+    compile name: 'binding-2.0.6'
+    compile name: 'looks-2.1.4'
+    compile name: 'validation-2.0.1'
+
+    compile name: 'commons-collections-3.2.2-patched'
+
+    // https://mvnrepository.com/artifact/org.cryptomator/cryptofs
+    compile group: 'org.cryptomator', name: 'cryptofs', version: '1.4.5'
+
+    // https://mvnrepository.com/artifact/net.contentobjects.jnotify/jnotify
+    compile group: 'net.contentobjects.jnotify', name: 'jnotify', version: '0.94'
+
+    // https://mvnrepository.com/artifact/org.hibernate/hibernate-core
+    compile group: 'org.hibernate', name: 'hibernate-core', version: '3.6.10.Final'
+
+    // https://mvnrepository.com/artifact/org.json/json
+    compile group: 'org.json', name: 'json', version: '20171018'
+
+    // https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java
+    compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.5.1'
+
+    // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
+    compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.0'
+
+    // https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.4'
+    // https://mvnrepository.com/artifact/commons-cli/commons-cli
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+
+    // https://mvnrepository.com/artifact/org.jmock/jmock
+    testCompile group: 'org.jmock', name: 'jmock', version: '2.8.4'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+}
+
+
+jar {
+    manifest {
+        sourceCompatibility = 1.8
+        attributes(
+                'Version': version,
+                'Main-Class': 'de.dal33t.powerfolder.PowerFolder'
+        )
+    }
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    from ('src/skins') {
+        include '**'
+    }
+    from ('src/etc') {
+        include '*.properties'
+    }
+}
+
