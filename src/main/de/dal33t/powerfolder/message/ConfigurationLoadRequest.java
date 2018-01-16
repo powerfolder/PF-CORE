@@ -133,10 +133,10 @@ public class ConfigurationLoadRequest extends Message
         ConfigurationLoadRequestProto.ConfigurationLoadRequest.newBuilder();
 
       builder.setClazzName(this.getClass().getSimpleName());
-      builder.setConfigURL(this.configURL);
-      builder.setKey(this.key);
-      builder.setValue(this.value);
-      builder.setReplaceExisting(this.replaceExisting);
+      if (this.configURL!= null) builder.setConfigURL(this.configURL);
+      if (this.key!= null) builder.setKey(this.key);
+      if (this.value!= null) builder.setValue(this.value);
+      if (this.replaceExisting!= null) builder.setReplaceExisting(this.replaceExisting);
       builder.setRestartRequired(this.restartRequired);
 
       return builder.build();
