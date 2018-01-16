@@ -87,7 +87,7 @@ public class BufferedHandler extends Handler {
      **/
 
     public List<LogRecord> getLogRecords() {
-        return Collections.unmodifiableList(logRecords);
+        return logRecords;
     }
 
     public List<String> getFormattedLogLines(int nSize, Formatter formatter,
