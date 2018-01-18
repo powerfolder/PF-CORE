@@ -15,6 +15,7 @@ public class AccountInfoReply extends D2DReplyMessage {
 
     private Account account;
     private Collection<FolderPermission> invitations;
+    private Map<String, String> folderMapping;
     private long avatarLastModifiedDate;
     private long usedQuota;
     private long backupQuota;
@@ -29,11 +30,12 @@ public class AccountInfoReply extends D2DReplyMessage {
         this.replyStatusCode = replyStatusCode;
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota) {
+    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, Map<String, String> folderMapping, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.account = account;
         this.invitations = invitations;
+        this.folderMapping = folderMapping;
         this.avatarLastModifiedDate = avatarLastModifiedDate;
         this.usedQuota = usedQuota;
         this.backupQuota = backupQuota;
@@ -141,6 +143,8 @@ public class AccountInfoReply extends D2DReplyMessage {
                 serverInfoBuilder.setToken(entry.getValue());
                 accountInfoBuilder.addServerInfos(serverInfoBuilder.build());
             }
+            // Inject folderMapping into AccountInfo
+            if (this.folderMapping != null) accountInfoBuilder.putAllFolderMapping(this.folderMapping);
             // Inject avatarLastModifiedDate into AccountInfo
             accountInfoBuilder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);
             // Inject quotas
