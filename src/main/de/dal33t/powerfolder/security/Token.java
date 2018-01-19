@@ -246,6 +246,7 @@ public class Token {
      * @return true if
      */
     public boolean validate(String secretCandiate) {
+
         return !isExpired(secretCandiate) && isValid()
                 && matches(secretCandiate);
     }
