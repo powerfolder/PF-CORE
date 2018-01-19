@@ -1,3 +1,13 @@
+group 'de.dal33t'
+
+apply plugin: 'java'
+
+defaultTasks 'assemble'
+
+sourceCompatibility = 1.8
+
+// get the version from the latest tag of repo
+// ---
 buildscript {
     repositories {
         mavenCentral()
@@ -11,18 +21,18 @@ buildscript {
 }
 
 apply plugin: 'gitsemver'
-apply plugin: 'java'
-apply plugin: 'signing'
 
 version semverVersion().tagName
+// ---
+
 
 sourceSets {
     main {
         java {
-            srcDir 'src/main'
-            srcDir 'src/jwf'
-            srcDir 'src/shib'
-            srcDir 'src/skins'
+            srcDirs = ['src/main',
+                    'src/jwf',
+                    'src/shib',
+                    'src/skins']
         }
     }
     test {
@@ -53,10 +63,12 @@ dependencies {
     // com.jgoodies
     // there are maven artifacts, but they are 'to new' and don't contain
     // all classes used by PF
+    // ---
     compile name: 'forms-1.2.0'
     compile name: 'binding-2.0.6'
     compile name: 'looks-2.1.4'
     compile name: 'validation-2.0.1'
+    // ---
 
     compile name: 'commons-collections-3.2.2-patched'
 
@@ -91,10 +103,8 @@ dependencies {
     testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
 }
 
-
 jar {
     manifest {
-        sourceCompatibility = 1.8
         attributes(
                 'Version': version,
                 'Main-Class': 'de.dal33t.powerfolder.PowerFolder'
@@ -112,4 +122,3 @@ jar {
         include '*.properties'
     }
 }
-
