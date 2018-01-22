@@ -1,10 +1,6 @@
 group 'de.dal33t'
 
-apply plugin: 'java'
-
 defaultTasks 'assemble'
-
-sourceCompatibility = 1.8
 
 // get the version from the latest tag of repo
 // ---
@@ -25,6 +21,7 @@ apply plugin: 'gitsemver'
 version semverVersion().tagName
 // ---
 
+apply plugin: 'java'
 
 sourceSets {
     main {
