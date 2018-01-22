@@ -34,6 +34,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.net.URLEncoder;
+import java.util.Date;
 
 /**
  * Contains important information about a server
@@ -93,12 +94,11 @@ public class ServerInfo implements Serializable, D2DObject {
      * PFC-2455: Creates a {@link ServerInfo} instance representing a server of
      * the local cluster.
      *
-     * @see #isClusterServer()
-     * @param node
-     *            the node information to connect to.
+     * @param node          the node information to connect to.
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents a local server.
+     * @see #isClusterServer()
      * @see #isClusterServer()
      */
     public static ServerInfo newClusterServer(MemberInfo node, String webUrl,
@@ -113,7 +113,7 @@ public class ServerInfo implements Serializable, D2DObject {
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents the federated
-     *         service.
+     * service.
      */
     public static ServerInfo newFederatedService(String webUrl,
                                                  String httpTunnelUrl) {
@@ -245,7 +245,7 @@ public class ServerInfo implements Serializable, D2DObject {
             return "Federated service: " + webUrl;
         }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
-            + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
+                + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
     }
 
     private String URLEncode(String url) {
