@@ -57,6 +57,9 @@ public class ServerInfo implements Serializable, D2DObject {
     private MemberInfo node;
     private String webUrl;
     private String httpTunnelUrl;
+    private String validationCode;
+    private Date validationReceived;
+    private Date validationSend;
 
     protected ServerInfo() {
         // NOP - only for Hibernate
@@ -89,38 +92,37 @@ public class ServerInfo implements Serializable, D2DObject {
     /**
      * PFC-2455: Creates a {@link ServerInfo} instance representing a server of
      * the local cluster.
-     * 
+     *
      * @see #isClusterServer()
      * @param node
      *            the node information to connect to.
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents a local server.
+     * @see #isClusterServer()
      */
     public static ServerInfo newClusterServer(MemberInfo node, String webUrl,
-        String httpTunnelUrl)
-    {
+                                              String httpTunnelUrl) {
         return new ServerInfo(node, webUrl, httpTunnelUrl);
     }
 
     /**
      * PFC-2455: Creates a {@link ServerInfo} instance representing a federated
      * service
-     * 
+     *
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents the federated
      *         service.
      */
     public static ServerInfo newFederatedService(String webUrl,
-        String httpTunnelUrl)
-    {
+                                                 String httpTunnelUrl) {
         return new ServerInfo(null, webUrl, httpTunnelUrl);
     }
 
     /**
      * PFC-2455
-     * 
+     *
      * @return true if this represents a server of the local cluster serving.
      */
     public boolean isClusterServer() {
@@ -129,7 +131,7 @@ public class ServerInfo implements Serializable, D2DObject {
 
     /**
      * PFC-2455
-     * 
+     *
      * @return true if this represents a federated remote service.
      */
     public boolean isFederatedService() {
@@ -172,9 +174,7 @@ public class ServerInfo implements Serializable, D2DObject {
     }
 
     /**
-     * @param controller
-     * @param folder
-     *            the folder.
+     * @param folder the folder.
      * @return the URL to the given folder.
      */
     public String getURL(FolderInfo folder) {
@@ -211,7 +211,7 @@ public class ServerInfo implements Serializable, D2DObject {
 
     public void migrateId() {
         if (node != null) {
-            this.id = node.id;            
+            this.id = node.id;
         }
     }
 
@@ -247,7 +247,7 @@ public class ServerInfo implements Serializable, D2DObject {
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
             + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
     }
-    
+
     private String URLEncode(String url) {
         try {
             String newUrl = URLEncoder.encode(url, "UTF-8");
@@ -257,6 +257,39 @@ public class ServerInfo implements Serializable, D2DObject {
         } catch (Exception e) {
             return url;
         }
+    }
+
+    /**
+     * PF-768: Methods below are for the federated service validation process to build mutual trust relationships
+     * between the nodes of a federated network. A federated service is trusted if he has sent and received a
+     * validation/confirmation.
+     */
+    public Date getValidationReceived() {
+        return validationReceived;
+    }
+
+    public void setValidationReceived(Date validationReceived) {
+        this.validationReceived = validationReceived;
+    }
+
+    public Date getValidationSend() {
+        return validationSend;
+    }
+
+    public void setValidationSend(Date validationSend) {
+        this.validationSend = validationSend;
+    }
+
+    public String getValidationCode() {
+        return validationCode;
+    }
+
+    public void setValidationCode(String validationCode) {
+        this.validationCode = validationCode;
+    }
+
+    public boolean isValidated() {
+        return validationReceived != null && validationSend != null;
     }
 
     /**
