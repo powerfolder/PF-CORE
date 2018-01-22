@@ -3,19 +3,19 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.protocol.AccountInfoProto;
-import de.dal33t.powerfolder.protocol.AccountInfoReplyProto;
-import de.dal33t.powerfolder.protocol.PermissionInfoProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
+import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.protocol.*;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class AccountInfoReply extends D2DReplyMessage {
 
     private Account account;
     private Collection<FolderPermission> invitations;
+    private Map<String, String> folderMapping;
     private long avatarLastModifiedDate;
     private long usedQuota;
     private long backupQuota;
@@ -30,11 +30,12 @@ public class AccountInfoReply extends D2DReplyMessage {
         this.replyStatusCode = replyStatusCode;
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota) {
+    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, Map<String, String> folderMapping, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.account = account;
         this.invitations = invitations;
+        this.folderMapping = folderMapping;
         this.avatarLastModifiedDate = avatarLastModifiedDate;
         this.usedQuota = usedQuota;
         this.backupQuota = backupQuota;
@@ -134,6 +135,16 @@ public class AccountInfoReply extends D2DReplyMessage {
                 permissionInfoBuilder.setIsInvitation(true);
                 accountInfoBuilder.addPermissionInfos(permissionInfoBuilder.build());
             }
+            // Inject serverInfos into AccountInfo
+            for (Map.Entry<ServerInfo, String> entry : account.getTokens().entrySet()) {
+                ServerInfoProto.ServerInfo serverInfo = (ServerInfoProto.ServerInfo) entry.getKey().toD2D();
+                ServerInfoProto.ServerInfo.Builder serverInfoBuilder = serverInfo.toBuilder();
+                // Inject token into ServerInfo
+                serverInfoBuilder.setToken(entry.getValue());
+                accountInfoBuilder.addServerInfos(serverInfoBuilder.build());
+            }
+            // Inject folderMapping into AccountInfo
+            if (this.folderMapping != null) accountInfoBuilder.putAllFolderMapping(this.folderMapping);
             // Inject avatarLastModifiedDate into AccountInfo
             accountInfoBuilder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);
             // Inject quotas
