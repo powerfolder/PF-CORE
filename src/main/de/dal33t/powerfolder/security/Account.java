@@ -158,6 +158,9 @@ public class Account implements Serializable, D2DObject {
     @Column(nullable = true, unique = false)
     private String organizationOID;
 
+    // PF-526
+    private boolean active;
+
     /**
      * The list of computers associated with this account.
      */
@@ -1067,7 +1070,7 @@ public class Account implements Serializable, D2DObject {
      * Adds an email address to the account, combined with its corresponding LDAP identifier
      *
      * @param email The email address
-     * @param ldap  The LDAP search context of the email address
+     * @param ldapSearchBase  The LDAP search context of the email address
      * @return true if the email address was added
      */
     public boolean addEmail(String email, String ldapSearchBase) {
@@ -1510,6 +1513,17 @@ public class Account implements Serializable, D2DObject {
      */
     public boolean isClusterAccount() {
         return getServer().isClusterServer();
+    }
+
+    /**
+     * PF-526: Getter/Setter to mark this account as active/inactive (for registration process).
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override
