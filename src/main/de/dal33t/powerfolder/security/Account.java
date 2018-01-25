@@ -157,6 +157,9 @@ public class Account implements Serializable, D2DObject {
     @Column(nullable = true, unique = false)
     private String organizationOID;
 
+    // PF-526
+    private boolean active;
+
     /**
      * The list of computers associated with this account.
      */
@@ -1511,6 +1514,17 @@ public class Account implements Serializable, D2DObject {
      */
     public boolean isClusterAccount() {
         return getServer().isClusterServer();
+    }
+
+    /**
+     * PF-526: Getter/Setter to mark this account as active/inactive (for registration process).
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     @Override
