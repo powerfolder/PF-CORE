@@ -143,6 +143,17 @@ public class Invitation extends FolderRelatedMessage
     }
 
     /**
+     * Constructor with custom ID
+     *
+     * @param permission The permission to the folder of this invitation
+     */
+    public Invitation(FolderPermission permission, String ID) {
+        oid = ID;
+        this.permission = permission;
+        this.folder = permission.getFolder();
+    }
+
+    /**
      * Copy Constructor
      *
      * @param invitation The invitation to be copied
