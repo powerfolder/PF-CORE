@@ -132,12 +132,31 @@ public class Invitation extends FolderRelatedMessage
     private String inviteeUsername;
 
     /**
+     * PF-164: Mark this invitation as 'handled' by a federated service. That means, this invitation was
+     * accepted/declined by a remote federated service. We need this variable to determine whether or not an
+     * invitation request needs to be sent in ServerSecurityService#accept-/declineInvitation.
+     */
+    @Transient
+    private boolean handledByFederatedService;
+
+    /**
      * Constructor
      *
      * @param permission The permission to the folder of this invitation
      */
     public Invitation(FolderPermission permission) {
         oid = IdGenerator.makeId();
+        this.permission = permission;
+        this.folder = permission.getFolder();
+    }
+
+    /**
+     * Constructor with custom ID
+     *
+     * @param permission The permission to the folder of this invitation
+     */
+    public Invitation(FolderPermission permission, String ID) {
+        oid = ID;
         this.permission = permission;
         this.folder = permission.getFolder();
     }
@@ -314,6 +333,14 @@ public class Invitation extends FolderRelatedMessage
 
     public FolderPermission getPermission() {
         return permission;
+    }
+
+    public boolean wasHandledByFederatedService() {
+        return handledByFederatedService;
+    }
+
+    public void setHandledByFederatedService(boolean handledByFederatedService) {
+        this.handledByFederatedService = handledByFederatedService;
     }
 
     /**
