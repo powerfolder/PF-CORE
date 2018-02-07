@@ -771,8 +771,8 @@ public class NodeManager extends PFComponent {
             // + "Rebuilding reconnection queue");
             // getController().getReconnectManager().buildReconnectionQueue();
             // }
-            if (getController().getIOProvider().getRelayedConnectionManager()
-                .isRelay(node.getInfo()))
+            if (ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.getValueBoolean(getController())
+                    && getController().getIOProvider().getRelayedConnectionManager().isRelay(node.getInfo()))
             {
                 logFine("Connect to relay detected. Rebuilding reconnection queue");
                 getController().getReconnectManager().buildReconnectionQueue();
