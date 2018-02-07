@@ -202,7 +202,7 @@ public class FileRequestor extends PFComponent {
             }
             return;
         }
-        if (folder.getConnectedMembersCount() == 0) {
+        if (folder.getCompletelyConnectedMembersCount() == 0) {
             if (isFiner()) {
                 logFiner("Not requesting files. No member connected on "
                     + folder);
