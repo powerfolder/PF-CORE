@@ -1,14 +1,5 @@
 package de.dal33t.powerfolder.domain;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -16,6 +7,9 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * #2469: Simple transfer web log (stream, audit)
@@ -31,21 +25,25 @@ public class NewsItem implements Comparable<NewsItem>, Serializable {
     private Set<MemberInfo> computers;
     private SortedSet<FileInfo> newFiles;
     private SortedSet<FileInfo> updatedFiles;
+    private SortedSet<FileInfo> deletedFiles;
 
-    public NewsItem(Date date, AccountInfo account, FolderInfo folder) {
+    NewsItem(Date date, AccountInfo account, FolderInfo folder) {
         super();
         Reject.ifNull(date, "Date");
         Reject.ifNull(folder, "Folder");
         this.date = date;
         this.account = account;
         this.folder = folder;
-        this.newFiles = new TreeSet<FileInfo>(
-            FileInfoComparator
-                .getComparator(FileInfoComparator.BY_RELATIVE_NAME));
-        this.updatedFiles = new TreeSet<FileInfo>(
-            FileInfoComparator
-                .getComparator(FileInfoComparator.BY_RELATIVE_NAME));
-        this.computers = new HashSet<MemberInfo>();
+        this.newFiles = new TreeSet<>(
+                FileInfoComparator
+                        .getComparator(FileInfoComparator.BY_RELATIVE_NAME));
+        this.updatedFiles = new TreeSet<>(
+                FileInfoComparator
+                        .getComparator(FileInfoComparator.BY_RELATIVE_NAME));
+        this.deletedFiles = new TreeSet<>(
+                FileInfoComparator
+                        .getComparator(FileInfoComparator.BY_RELATIVE_NAME));
+        this.computers = new HashSet<>();
     }
 
     public AccountInfo getAccount() {
@@ -77,8 +75,12 @@ public class NewsItem implements Comparable<NewsItem>, Serializable {
         return Collections.unmodifiableSortedSet(updatedFiles);
     }
 
+    public SortedSet<FileInfo> getDeletedFiles() {
+        return Collections.unmodifiableSortedSet(deletedFiles);
+    }
+
     public Collection<FileInfo> getFiles() {
-        return new CompositeCollection<FileInfo>(newFiles, updatedFiles);
+        return new CompositeCollection<>(newFiles, updatedFiles, deletedFiles);
     }
 
     public void addFile(FileInfo fInfo) {
@@ -90,7 +92,11 @@ public class NewsItem implements Comparable<NewsItem>, Serializable {
                 newFiles.remove(fInfo);
                 newFiles.add(fInfo);
             } else {
-                updatedFiles.add(fInfo);
+                if (fInfo.isDeleted()) {
+                    deletedFiles.add(fInfo);
+                } else {
+                    updatedFiles.add(fInfo);
+                }
             }
         }
         computers.add(fInfo.getModifiedBy());
@@ -99,8 +105,10 @@ public class NewsItem implements Comparable<NewsItem>, Serializable {
     @Override
     public String toString() {
         return "LogPost [account=" + account + ", date=" + date + ", folder="
-            + folder + ", newFiles=" + newFiles + ", updatedFiles="
-            + updatedFiles + "]";
+                + folder + ", newFiles="
+                + newFiles + ", updatedFiles="
+                + updatedFiles + ", deletedFiles="
+                + deletedFiles + "]";
     }
 
     public int compareTo(NewsItem o) {
