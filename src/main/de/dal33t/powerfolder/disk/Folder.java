@@ -3515,7 +3515,7 @@ public class Folder extends PFComponent {
     }
 
     private void broadcastFolderChanges(final ScanResult scanResult) {
-        if (getConnectedMembersCount() == 0) {
+        if (getCompletelyConnectedMembersCount() == 0) {
             return;
         }
 
@@ -4706,6 +4706,19 @@ public class Folder extends PFComponent {
     public int getConnectedMembersCount() {
         int nConnected = 0;
         for (Member member : members.values()) {
+            if (member.isConnected()) {
+                nConnected++;
+            }
+        }
+        return nConnected;
+    }
+
+    /**
+     * @return the number of connected and handshaked members EXCLUDING myself.
+     */
+    public int getCompletelyConnectedMembersCount() {
+        int nConnected = 0;
+        for (Member member : members.values()) {
             if (member.isCompletelyConnected()) {
                 nConnected++;
             }
@@ -4714,7 +4727,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return the connected members EXCLUDING myself.
+     * @return the connected and handshaked members EXCLUDING myself.
      */
     public Member[] getConnectedMembers() {
         List<Member> connected = new ArrayList<Member>(members.size());
@@ -4955,7 +4968,7 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("Harmonized percentage: " + percentage + ". In sync? "
                 + newInSync + ". last sync date: " + lastSyncDate
-                + " . connected: " + getConnectedMembersCount());
+                + " . connected: " + getCompletelyConnectedMembersCount());
         }
     }
 
