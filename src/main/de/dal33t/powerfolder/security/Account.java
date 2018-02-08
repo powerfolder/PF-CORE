@@ -159,7 +159,7 @@ public class Account implements Serializable, D2DObject {
     private String organizationOID;
 
     // PF-526
-    private boolean active;
+    private Date activated;
 
     /**
      * The list of computers associated with this account.
@@ -1517,13 +1517,16 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * PF-526: Getter/Setter to mark this account as active/inactive (for registration process).
+     *
+     * - Active: Date of activation is set.
+     * - Inactive: No Date is set.
      */
-    public boolean isActive() {
-        return active;
+    public Date getActivationDate() {
+        return activated;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setActivationDate(Date activationDate) {
+        this.activated = activationDate;
     }
 
     @Override
