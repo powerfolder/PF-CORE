@@ -29,9 +29,7 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
-import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
@@ -3126,7 +3124,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
                     syncMemberShips = true;
                 }
-                if (folder.getConnectedMembersCount() == 0) {
+                if (folder.getCompletelyConnectedMembersCount() == 0) {
                     continue;
                 }
                 if (folder.getKnownItemCount() == 0) {

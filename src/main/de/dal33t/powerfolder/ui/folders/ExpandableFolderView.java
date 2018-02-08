@@ -905,7 +905,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                 } else {
                     showing100Sync.set(Double.compare(sync, 100) == 0);
                     if (Double.compare(sync, UNKNOWN_SYNC_STATUS) == 0) {
-                        if (folder.getConnectedMembersCount() >= 1) {
+                        if (folder.getCompletelyConnectedMembersCount() >= 1) {
                             syncPercentText = Translation
                                 .get("exp_folder_view.unsynchronized");
                             syncPercentTip = Translation

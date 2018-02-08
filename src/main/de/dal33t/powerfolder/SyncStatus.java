@@ -68,7 +68,7 @@ public enum SyncStatus {
                 return SYNCING;
             } else if (folder.isDeviceDisconnected()) {
                 return WARNING;
-            } else if (folder.getConnectedMembersCount() == 0 || sync < 0) {
+            } else if (folder.getCompletelyConnectedMembersCount() == 0 || sync < 0) {
                 return NONE;
             } else if (sync > 0 && sync < 100.0d) {
                 return SYNCING;
@@ -85,7 +85,7 @@ public enum SyncStatus {
         if (fInfo == null) {
             return NONE;
         }
-        if (folder.getConnectedMembersCount() == 0) {
+        if (folder.getCompletelyConnectedMembersCount() == 0) {
             return NONE;
         }
         if (folder.getDiskItemFilter().isExcluded(fInfo)) {
