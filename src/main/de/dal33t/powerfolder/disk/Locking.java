@@ -52,7 +52,7 @@ public class Locking extends PFComponent {
     private static final String LOCK_FILE_EXT = ".lck";
     private LockingListener listenerSupport;
 
-    public Locking(Controller controller) {
+    Locking(Controller controller) {
         super(controller);
         this.listenerSupport = ListenerSupportFactory
             .createListenerSupport(LockingListener.class);
@@ -172,6 +172,16 @@ public class Locking extends PFComponent {
         if (lockPath == null || Files.notExists(lockPath)) {
             return null;
         }
+        return getLock(lockPath);
+    }
+
+    /**
+     * Reads detailed lock information about a file.
+     *
+     * @param lockPath
+     * @return the Lock object or null if not locked OR the lock file could not be read
+     */
+    public Lock getLock(Path lockPath) {
         try (InputStream in = Files.newInputStream(lockPath)) {
             byte[] buf = StreamUtils.readIntoByteArray(in);
             return (Lock) ByteSerializer.deserializeStatic(buf, false);

@@ -3187,7 +3187,7 @@ public class Folder extends PFComponent {
             {
                 // PFC-2706 / PFC-2705
                 if (remoteFile.getFolderInfo().isMetaFolder()
-                    && localFile != null && localFile.inSyncWithDisk(localCopy))
+                    && localFile.inSyncWithDisk(localCopy))
                 {
                     MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
                         getController());
@@ -3235,8 +3235,6 @@ public class Folder extends PFComponent {
                     }
                     watcher.addIgnoreFile(localFile);
 
-                    UserPrincipal owner = null;
-
                     try {
                         Files.delete(localCopy);
                     } catch (IOException ioe) {
@@ -3275,10 +3273,6 @@ public class Folder extends PFComponent {
                                     || name.startsWith(
                                         Constants.LIBRE_OFFICE_FILENAME_PREFIX))
                                 {
-                                    if (owner != null) {
-                                        Files.setOwner(path, owner);
-                                    }
-
                                     Files.delete(path);
                                 }
                             }
@@ -3327,7 +3321,8 @@ public class Folder extends PFComponent {
                     }
 
                 } else if (localFile.isFile()) {
-                    if (!deleteFile(localFile, localCopy)) {
+
+                    if (!deleteFile(localFile, localCopy, remoteFile)) {
                         logWarning("Unable to delete local file "
                             + localCopy.toAbsolutePath() + ". "
                             + localFile.toDetailString());
@@ -4169,6 +4164,10 @@ public class Folder extends PFComponent {
         return dao.findAllDirectories(null);
     }
 
+    private boolean deleteFile(FileInfo newFileInfo, Path file) {
+        return deleteFile(newFileInfo, file, null);
+    }
+
     /**
      * Common file delete method. Either deletes the file or moves it to the
      * recycle bin.
@@ -4176,7 +4175,7 @@ public class Folder extends PFComponent {
      * @param newFileInfo
      * @param file
      */
-    private boolean deleteFile(FileInfo newFileInfo, Path file) {
+    private boolean deleteFile(FileInfo newFileInfo, Path file, FileInfo removeFileInfo) {
         Reject.ifNull(newFileInfo, "FileInfo is null");
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not deleteFile: " + newFileInfo.toDetailString() + " at " + file);
@@ -4202,6 +4201,13 @@ public class Folder extends PFComponent {
             synchronized (scanLock) {
                 if (fileInfo != null && fileInfo.isFile() && Files.exists(file))
                 {
+                    if (currentInfo.isMetaFolder() && fileInfo.getRelativeName()
+                        .startsWith(METAFOLDER_LOCKS_DIR))
+                    {
+                        MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
+                            getController());
+                        mfdh.handleRemoteLockOverwrite(removeFileInfo, file);
+                    }
                     try {
                         archiver.archive(fileInfo, file, false);
                     } catch (IOException e) {
