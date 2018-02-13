@@ -23,7 +23,20 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.Lock;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.ui.information.InformationCard;
+import de.dal33t.powerfolder.ui.information.InformationCardType;
+import de.dal33t.powerfolder.util.ByteSerializer;
+import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.*;
+import java.awt.*;
+import java.nio.file.Path;
 
 /**
  * This class delegates responsibility for processing metaFolder fileInfo
@@ -66,6 +79,60 @@ public class MetaFolderDataHandler extends PFComponent {
         {
             getController().getFolderRepository().getLocking()
                 .lockStateChanged(fileInfo);
+        }
+    }
+
+    /**
+     * Check {@code fileInfo} to be a remote lock deletion and inform the user
+     * about it.
+     *
+     * @param fileInfo
+     * @param file
+     */
+    public void handleRemoteLockOverwrite(final FileInfo fileInfo, Path file) {
+        if (getController().getMySelf().isServer()) {
+            return;
+        }
+
+        if (fileInfo == null) {
+            return;
+        }
+
+        Lock lock = getController().getFolderRepository().getLocking()
+            .getLock(file);
+
+        if (lock == null) {
+            return;
+        }
+
+        final MemberInfo lockMember = lock.getMemberInfo();
+        final MemberInfo remoteMember = fileInfo.getModifiedBy();
+
+        if (lockMember == null || remoteMember == null) {
+            return;
+        }
+
+        if (!lockMember.equals(remoteMember)) {
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() {
+                    logWarning("Overwriting lock for " + fileInfo + " set by " +
+                        lockMember.getNick() + " removed by " +
+                        remoteMember.getNick());
+
+                    DialogFactory
+                        .genericDialog(
+                            getController(),
+                            Translation.get("dialog.lock.removed_by_other_member.title"),
+                            Translation.get("dialog.lock.removed_by_other_member.message",
+                                fileInfo.getFilenameOnly(), remoteMember.nick),
+                            new String[]{"OK"},
+                            0, GenericDialogType.WARN);
+
+                    return null;
+                }
+            };
+            worker.execute();
         }
     }
 }
