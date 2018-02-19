@@ -660,11 +660,11 @@ public class FileArchiver {
     }
 
     public void purge(Account account, Folder folder) throws IOException {
-        Long[] directorySizeAndCount = PathUtils.calculateDirectorySizeAndCount(archiveDirectory);
-        log.info("Successfully cleared versioning of folder " + folder.getName() +
-                " by " + account.getUsername() +
-                " (Removed " + FileUtils.byteCountToDisplaySize(directorySizeAndCount[0]) +
-                "MB/" + directorySizeAndCount[1] + " files)");
+        String logMessage = "Successfully cleared versioning of folder " + folder.getName() +
+                " by " + account.getUsername();
+        logMessage = size == null ? logMessage : logMessage + " (Removed "
+                + FileUtils.byteCountToDisplaySize(size) + ")";
+        log.info(logMessage);
         purge();
     }
 
