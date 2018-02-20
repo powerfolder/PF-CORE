@@ -467,5 +467,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="annotations-java8" level="project" />
   </component>
 </module>
