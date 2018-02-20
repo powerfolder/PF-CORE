@@ -672,6 +672,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             });
         }
 
+        locking.start();
+
         started = true;
     }
 
@@ -785,6 +787,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         // make sure that on restart of folder the folders are freshly read
         folders.clear();
         metaFolders.clear();
+
+        locking.shutdown();
+
         logFine("Stopped");
     }
 
