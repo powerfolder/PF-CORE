@@ -229,8 +229,14 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 // received new packet
                 socket.receive(inPacket);
 
+                // Disabled accepting D2D multicasts until they can be processed
+                /*
                 if ((isPowerFolderBroadcast(inPacket)
-                    || isPowerFolderD2DBroadcast(inPacket))
+                        || isPowerFolderD2DBroadcast(inPacket))
+                        && getController().getNodeManager().isStarted())
+                */
+
+                if (isPowerFolderBroadcast(inPacket)
                     && getController().getNodeManager().isStarted())
                 {
                     processBroadcast(inPacket);
