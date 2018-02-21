@@ -1297,8 +1297,9 @@ public enum ConfigurationEntry {
      * PFS-2427: Check if the client runs on a WDNAS device. Therefore setting POSIX file
      * permissions after sync is mandatory.
      */
-    WDNAS_CLIENT("wdnas.client", false);
+    WDNAS_CLIENT("wdnas.client", false),
 
+    LOCKING_CHANGES_FILE_PERMISSIONS("locking.changes.file_permissions", false);
 
     // Methods/Constructors ***************************************************
 
