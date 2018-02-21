@@ -28,6 +28,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collection;
 import java.util.Set;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -42,7 +43,6 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.Util;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * PFC-1962: The main class for locking and unlocking files.
@@ -120,7 +120,7 @@ public class Locking extends PFComponent {
                 lockFile);
             scanLockFile(fInfo.getFolderInfo(), lockFile);
             fireLocked(fInfo);
-            setWritableIfFromOtherMember(fInfo, false);
+            setWritableIfFromOtherMember(fInfo, lock, false);
             if (isInfo()) {
                 logInfo("File locked: " + fInfo + " by "
                     + (by != null ? by.getUsername() : "?"));
@@ -149,7 +149,7 @@ public class Locking extends PFComponent {
             if (deleted) {
                 scanLockFile(fInfo.getFolderInfo(), lockFile);
                 fireUnlocked(fInfo);
-                setWritableIfFromOtherMember(fInfo, true);
+                setWritableIfFromOtherMember(fInfo, null, true);
                 logInfo("File un-locked: " + fInfo);
             }
             return true;
@@ -161,7 +161,7 @@ public class Locking extends PFComponent {
                 if (deleted) {
                     scanLockFile(fInfo.getFolderInfo(), lockFile);
                     fireUnlocked(fInfo);
-                    setWritableIfFromOtherMember(fInfo, true);
+                    setWritableIfFromOtherMember(fInfo, null, true);
                     logInfo("File un-locked: " + fInfo);
                 }
                 return true;
@@ -198,6 +198,20 @@ public class Locking extends PFComponent {
         return getLock(lockPath);
     }
 
+    private Path getLockFile(FileInfo fInfo) {
+        Folder metaFolder = getController().getFolderRepository()
+            .getMetaFolderForParent(fInfo.getFolderInfo());
+        if (metaFolder == null) {
+            logWarning("Meta-folder for " + fInfo.getFolderInfo()
+                + " not found");
+            return null;
+        }
+        Path baseDir = metaFolder.getLocalBase().resolve(
+            Folder.METAFOLDER_LOCKS_DIR);
+        return baseDir.resolve(FileInfoFactory.encodeIllegalChars(fInfo
+            .getRelativeName() + LOCK_FILE_EXT));
+    }
+
     /**
      * Reads detailed lock information about a file.
      *
@@ -222,7 +236,8 @@ public class Locking extends PFComponent {
      */
     public void lockStateChanged(FileInfo lockFileInfo) {
         FileInfo fInfo = getFileInfoFromLockFileInfo(lockFileInfo);
-        setWritableIfFromOtherMember(lockFileInfo, lockFileInfo.isDeleted());
+        Lock lock = getLock(fInfo);
+        setWritableIfFromOtherMember(fInfo, lock, lockFileInfo.isDeleted());
         if (lockFileInfo.isDeleted()) {
             logInfo("File un-locked by remote: " + fInfo);
             fireUnlocked(fInfo);
@@ -394,8 +409,7 @@ public class Locking extends PFComponent {
      *
      * @return The corresponding file
      */
-    @NotNull
-    private FileInfo getFileInfoFromLockFileInfo(@NotNull FileInfo lockFileInfo) {
+    private FileInfo getFileInfoFromLockFileInfo(FileInfo lockFileInfo) {
         String originalFileName = lockFileInfo.getRelativeName();
         originalFileName = originalFileName.replace(Folder.METAFOLDER_LOCKS_DIR
             + "/", "");
@@ -411,20 +425,25 @@ public class Locking extends PFComponent {
      *
      * @param fileInfo
      *     The file to change the permissions
+     * @param lock
+     *     The lock for the file, or null if it was deleted
      * @param writable
      *     {@code True} for writable, {@code false} for not writable
      */
-    private void setWritableIfFromOtherMember(@NotNull FileInfo fileInfo, boolean writable) {
-        if (getController().getMySelf().getId().equals(fileInfo.getModifiedBy().getId())) {
+    private void setWritableIfFromOtherMember(FileInfo fileInfo, Lock lock, boolean writable) {
+        if (!ConfigurationEntry.LOCKING_CHANGES_FILE_PERMISSIONS.getValueBoolean(getController())) {
+            return;
+        }
+
+        if (lock != null && getController().getMySelf().getId().equals(lock.getMemberInfo().getId())) {
             logFine("Don't change permissions, if lock set on same member.");
             return;
         }
 
-        fileInfo = getFileInfoFromLockFileInfo(fileInfo);
-
         Path file = fileInfo.getDiskFile(getController().getFolderRepository());
 
         if (file == null || Files.notExists(file)) {
+            logInfo("Could not get file on storage for " + fileInfo + ". Not changing permission.");
             return;
         }
 
@@ -454,7 +473,7 @@ public class Locking extends PFComponent {
      *
      * @return {@code True} if {@code fileInfo} represents a lock file, {@code false} otherwise.
      */
-    private boolean isLockfile(@NotNull FileInfo fileInfo) {
+    private boolean isLockfile(FileInfo fileInfo) {
         boolean isInMetaFolder = fileInfo.getFolderInfo().isMetaFolder();
         boolean isWithinLocksSubdir = fileInfo.getRelativeName()
             .startsWith(Folder.METAFOLDER_LOCKS_DIR);
@@ -507,21 +526,6 @@ public class Locking extends PFComponent {
         }
     }
 
-    private Path getLockFile(FileInfo fInfo) {
-        Folder metaFolder = getController().getFolderRepository()
-            .getMetaFolderForParent(fInfo.getFolderInfo());
-        if (metaFolder == null) {
-            logWarning("Meta-folder for " + fInfo.getFolderInfo()
-                + " not found");
-            return null;
-        }
-        Path baseDir = metaFolder.getLocalBase().resolve(
-            Folder.METAFOLDER_LOCKS_DIR);
-        return baseDir.resolve(FileInfoFactory.encodeIllegalChars(fInfo
-            .getRelativeName() + LOCK_FILE_EXT));
-    }
-
-
     public class FolderLockListener implements FolderListener {
 
         @Override
@@ -546,11 +550,17 @@ public class Locking extends PFComponent {
 
         @Override
         public void scanResultCommited(FolderEvent folderEvent) {
+            if (!ConfigurationEntry.LOCKING_CHANGES_FILE_PERMISSIONS.getValueBoolean(getController())) {
+                return;
+            }
+
             Collection<FileInfo> deletedFileInfos = folderEvent.getScanResult()
                 .getDeletedFiles();
             for (FileInfo possibleLockFileInfo : deletedFileInfos) {
                 if (isLockfile(possibleLockFileInfo)) {
-                    setWritableIfFromOtherMember(possibleLockFileInfo, true);
+                    FileInfo fileInfo = getFileInfoFromLockFileInfo(possibleLockFileInfo);
+                    Lock lock = getLock(fileInfo);
+                    setWritableIfFromOtherMember(fileInfo, lock, true);
                 }
             }
         }
