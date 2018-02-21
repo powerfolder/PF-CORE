@@ -549,7 +549,7 @@ public class Locking extends PFComponent {
         }
 
         @Override
-        public void scanResultCommitted(FolderEvent folderEvent) {
+        public void scanResultCommited(FolderEvent folderEvent) {
             if (!ConfigurationEntry.LOCKING_CHANGES_FILE_PERMISSIONS.getValueBoolean(getController())) {
                 return;
             }
