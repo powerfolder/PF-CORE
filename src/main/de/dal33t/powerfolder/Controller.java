@@ -91,7 +91,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 7;
-    private static final int REVISION_VERSION = 650;
+    private static final int REVISION_VERSION = 651;
 
     /**
      * Program version.
