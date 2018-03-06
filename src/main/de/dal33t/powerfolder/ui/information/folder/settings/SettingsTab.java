@@ -667,7 +667,8 @@ public class SettingsTab extends PFUIComponent {
 
             if (result == 0) { // Purge
                 try {
-                    serverClient.getFolderService(folder.getInfo()).purgeArchive(folder.getInfo());
+                    if (serverClient.getFolderService(folder.getInfo()).purgeArchive(folder.getInfo()))
+                        logInfo("Successfully cleared online versioning of folder " + folder.getName());
                 } catch (Exception e) {
                     logSevere(e);
                     DialogFactory
