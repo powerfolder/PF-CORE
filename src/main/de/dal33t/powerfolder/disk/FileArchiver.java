@@ -661,8 +661,8 @@ public class FileArchiver {
 
     public void purge(Account account, Folder folder) throws IOException {
         String logMessage = "Successfully cleared versioning of folder " + folder.getName() +
-                " by " + account.getUsername();
-        logMessage = size == null ? logMessage : logMessage + " (Removed "
+                " by " + account;
+        logMessage = size == 0 ? logMessage : logMessage + " (Removed "
                 + FileUtils.byteCountToDisplaySize(size) + ")";
         log.info(logMessage);
         purge();
