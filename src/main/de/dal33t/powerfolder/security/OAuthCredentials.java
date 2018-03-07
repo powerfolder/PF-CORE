@@ -18,8 +18,8 @@ public class OAuthCredentials {
 
     public static final String PROPERTYNAME_ID = "id";
 
-    public static final String PROPERTYNAME_CLIENT_ID = "client_id";
-    public static final String PROPERTYNAME_CLIENT_SECRET = "client_secrect";
+    public static final String PROPERTYNAME_CLIENT_ID = "clientId";
+    public static final String PROPERTYNAME_CLIENT_SECRET = "clientSecret";
 
     @Id
     private String id;
