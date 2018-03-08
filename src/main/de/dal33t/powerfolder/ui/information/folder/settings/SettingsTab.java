@@ -40,7 +40,6 @@ import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FolderDBMaintCommando;
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.security.FolderRemovePermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.action.BaseAction;
@@ -127,13 +126,13 @@ public class SettingsTab extends PFUIComponent {
         super(controller);
         serverClient = controller.getOSClient();
         transferModeSelectorPanel = new SyncProfileSelectorPanel(
-            getController());
+                getController());
         MyActionListener myActionListener = new MyActionListener();
         selectionModel = new SelectionModel();
         localFolderField = new JTextField();
         localFolderField.setEditable(false);
         localFolderButton = new JButtonMini(Icons.getIconById(Icons.DIRECTORY),
-            Translation.get("settings_tab.select_directory.text"));
+                Translation.get("settings_tab.select_directory.text"));
         localFolderButton.setEnabled(false);
         localFolderButton.addActionListener(myActionListener);
         patternChangeListener = new MyPatternChangeListener();
@@ -167,13 +166,13 @@ public class SettingsTab extends PFUIComponent {
         }
 
         localArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
-            controller, localVersionModels,
-            new LocalPurgeListener());
+                controller, localVersionModels,
+                new LocalPurgeListener());
         onlineArchiveModeSelectorPanel = new ArchiveModeSelectorPanel(
-            controller, onlineVersionModels,
-            new OnlinePurgeListener());
+                controller, onlineVersionModels,
+                new OnlinePurgeListener());
         onlineLabel = new JLabel(
-            Translation.get("general.online_archive_mode"));
+                Translation.get("general.online_archive_mode"));
         onlineLabel.setVisible(false);
         onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
     }
@@ -205,8 +204,7 @@ public class SettingsTab extends PFUIComponent {
     private void loadOnlineArchiveMode() {
         // Do this offline so it does not slow the main display.
         FolderInfo fi = folder == null ? null : folder.getInfo();
-        if (serverClient.isConnected() && serverClient.joinedByCloud(fi))
-        {
+        if (serverClient.isConnected() && serverClient.joinedByCloud(fi)) {
             new MyServerModeSwingWorker(fi).execute();
         } else {
             onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
@@ -230,8 +228,8 @@ public class SettingsTab extends PFUIComponent {
     private void buildUIComponent() {
         // label folder butn padding
         FormLayout layout = new FormLayout(
-            "3dlu, right:pref, 3dlu, 140dlu, 3dlu, pref, pref:grow",
-            "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
+                "3dlu, right:pref, 3dlu, 140dlu, 3dlu, pref, pref:grow",
+                "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 12dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -240,18 +238,18 @@ public class SettingsTab extends PFUIComponent {
                 PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
         if (expertMode) {
             builder.add(
-                new JLabel(Translation.get("general.transfer_mode")),
-                cc.xy(2, row));
+                    new JLabel(Translation.get("general.transfer_mode")),
+                    cc.xy(2, row));
             builder.add(transferModeSelectorPanel.getUIComponent(),
-                cc.xyw(4, row, 4));
+                    cc.xyw(4, row, 4));
         } else {
             transferModeSelectorPanel.getUIComponent();
         }
 
         row += 2;
         builder.add(
-            new JLabel(Translation.get(
-                    "settings_tab.local_folder_location")), cc.xy(2, row));
+                new JLabel(Translation.get(
+                        "settings_tab.local_folder_location")), cc.xy(2, row));
         builder.add(localFolderField, cc.xy(4, row));
         builder.add(localFolderButton, cc.xy(6, row));
 
@@ -259,20 +257,20 @@ public class SettingsTab extends PFUIComponent {
         builder.add(new JLabel(Translation.get(
                 "general.local_archive_mode")), cc.xy(2, row));
         builder.add(localArchiveModeSelectorPanel.getUIComponent(),
-            cc.xyw(4, row, 4));
+                cc.xyw(4, row, 4));
 
         if (expertMode) {
             row += 2;
             builder.add(onlineLabel, cc.xy(2, row));
             builder.add(onlineArchiveModeSelectorPanel.getUIComponent(),
-                cc.xyw(4, row, 4));
+                    cc.xyw(4, row, 4));
         }
 
         row += 2;
         if (expertMode) {
             builder.addLabel(
-                Translation.get("exp.settings_tab.download_script"),
-                cc.xy(2, row));
+                    Translation.get("exp.settings_tab.download_script"),
+                    cc.xy(2, row));
             builder.add(createScriptField(), cc.xyw(4, row, 4));
         }
 
@@ -304,12 +302,11 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private void addSelectionListener() {
-        selectionModel.addSelectionChangeListener(new SelectionChangeListener()
-        {
+        selectionModel.addSelectionChangeListener(new SelectionChangeListener() {
             public void selectionChanged(SelectionChangeEvent event) {
                 int selectionsLength = selectionModel.getSelections() == null
-                    ? 0
-                    : selectionModel.getSelections().length;
+                        ? 0
+                        : selectionModel.getSelections().length;
                 editButton.setEnabled(selectionsLength > 0);
                 removeButton.setEnabled(selectionsLength > 0);
             }
@@ -394,17 +391,17 @@ public class SettingsTab extends PFUIComponent {
         CellConstraints cc = new CellConstraints();
 
         JTextField locationTF = BasicComponentFactory.createTextField(
-            scriptModel, false);
+                scriptModel, false);
         locationTF.setEditable(true);
         builder.add(locationTF, cc.xy(1, 1));
 
         JButton locationButton = new JButtonMini(
-            Icons.getIconById(Icons.DIRECTORY),
-            Translation.get("exp.settings_tab.download_script"));
+                Icons.getIconById(Icons.DIRECTORY),
+                Translation.get("exp.settings_tab.download_script"));
         locationButton.addActionListener(new SelectScriptAction());
         builder.add(locationButton, cc.xy(3, 1));
         builder.add(Help.createWikiLinkButton(getController(),
-            WikiLinks.SCRIPT_EXECUTION), cc.xy(4, 1));
+                WikiLinks.SCRIPT_EXECUTION), cc.xy(4, 1));
         return builder.getPanel();
     }
 
@@ -414,7 +411,7 @@ public class SettingsTab extends PFUIComponent {
     private void update() {
         rebuildPatterns();
         localFolderField
-            .setText(folder.getCommitOrLocalDir().toAbsolutePath().toString());
+                .setText(folder.getCommitOrLocalDir().toAbsolutePath().toString());
         localFolderButton.setEnabled(true);
     }
 
@@ -432,7 +429,7 @@ public class SettingsTab extends PFUIComponent {
         RemoveAction removeAction = new RemoveAction(getController());
 
         FormLayout layout = new FormLayout("pref, pref, pref, pref, pref:grow",
-            "pref");
+                "pref");
         PanelBuilder bar = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
 
@@ -446,11 +443,11 @@ public class SettingsTab extends PFUIComponent {
         bar.add(editButton, cc.xy(2, 1));
         bar.add(removeButton, cc.xy(3, 1));
         bar.add(Help.createWikiLinkButton(getController(),
-            WikiLinks.EXCLUDING_FILES_FROM_SYNCHRONIZATION), cc.xy(4, 1));
+                WikiLinks.EXCLUDING_FILES_FROM_SYNCHRONIZATION), cc.xy(4, 1));
         syncPatternsCheckBox = new JCheckBox(
-            Translation.get("exp.settings_tab.sync_patterns"));
+                Translation.get("exp.settings_tab.sync_patterns"));
         syncPatternsCheckBox.setToolTipText(Translation
-            .get("exp.settings_tab.sync_patterns.tip"));
+                .get("exp.settings_tab.sync_patterns.tip"));
         syncPatternsCheckBox.addActionListener(new MyActionListener());
         bar.add(syncPatternsCheckBox, cc.xy(5, 1));
         syncPatternsCheckBox.setVisible(true);
@@ -467,9 +464,9 @@ public class SettingsTab extends PFUIComponent {
     public void removePatterns(String patterns) {
 
         String[] options = {
-            Translation.get("remove_pattern.remove"),
-            Translation.get("remove_pattern.dont"),
-            Translation.get("general.cancel")};
+                Translation.get("remove_pattern.remove"),
+                Translation.get("remove_pattern.dont"),
+                Translation.get("general.cancel")};
 
         String[] patternArray = patterns.split("\\n");
         for (String pattern : patternArray) {
@@ -477,14 +474,13 @@ public class SettingsTab extends PFUIComponent {
             // Match any patterns for this file.
             Pattern patternMatch = PatternFactory.createPattern(pattern);
             for (String blackListPattern : folder.getDiskItemFilter()
-                .getPatterns())
-            {
+                    .getPatterns()) {
                 if (patternMatch.isMatch(blackListPattern)) {
                     // Confirm that the user wants to remove this.
                     int result = DialogFactory.genericDialog(getController(),
-                        Translation.get("remove_pattern.title"),
-                        Translation.get("remove_pattern.prompt",
-                            pattern), options, 0, GenericDialogType.INFO);
+                            Translation.get("remove_pattern.title"),
+                            Translation.get("remove_pattern.prompt",
+                                    pattern), options, 0, GenericDialogType.INFO);
                     // Default is remove.
                     if (result == 0) { // Remove
                         // Remove pattern and update.
@@ -499,7 +495,7 @@ public class SettingsTab extends PFUIComponent {
 
         // Trigger resync
         getController().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting(folder.getInfo());
+                .triggerFileRequesting(folder.getInfo());
     }
 
     public void showAddPane(String initialPatterns) {
@@ -510,16 +506,16 @@ public class SettingsTab extends PFUIComponent {
         if (patternArray.length == 1) {
             String pattern = patternArray[0];
             String title = Translation
-                .get("exp.settings_tab.add_a_pattern.title");
+                    .get("exp.settings_tab.add_a_pattern.title");
             String text = Translation
-                .get("exp.settings_tab.add_a_pattern.text");
+                    .get("exp.settings_tab.add_a_pattern.text");
             String patternResult = (String) JOptionPane.showInputDialog(
-                getUIController().getActiveFrame(), text, title,
-                JOptionPane.PLAIN_MESSAGE, null, null, pattern);
+                    getUIController().getActiveFrame(), text, title,
+                    JOptionPane.PLAIN_MESSAGE, null, null, pattern);
             if (!StringUtils.isBlank(patternResult)) {
                 folder.addPattern(patternResult);
                 getController().getTransferManager()
-                    .checkActiveTranfersForExcludes();
+                        .checkActiveTranfersForExcludes();
             }
 
         } else {
@@ -530,21 +526,21 @@ public class SettingsTab extends PFUIComponent {
                 if (count++ >= 10) {
                     // Too many selections - enough!!!
                     sb.append(Translation
-                        .get("general.more.lower_case") + "...\n");
+                            .get("general.more.lower_case") + "...\n");
                     break;
                 }
                 sb.append(pattern + '\n');
             }
             String message = Translation
-                .get("exp.settings_tab.add_patterns.text_1")
-                + "\n\n"
-                + sb.toString();
+                    .get("exp.settings_tab.add_patterns.text_1")
+                    + "\n\n"
+                    + sb.toString();
             String title = Translation
-                .get("exp.settings_tab.add_patterns.title");
+                    .get("exp.settings_tab.add_patterns.title");
             int result = DialogFactory.genericDialog(getController(), title,
-                message, new String[]{Translation.get("general.ok"),
-                    Translation.get("general.cancel")}, 0,
-                GenericDialogType.QUESTION);
+                    message, new String[]{Translation.get("general.ok"),
+                            Translation.get("general.cancel")}, 0,
+                    GenericDialogType.QUESTION);
             if (result == 0) {
                 for (String pattern : patternArray) {
                     folder.addPattern(pattern);
@@ -563,21 +559,20 @@ public class SettingsTab extends PFUIComponent {
 
         boolean enabled = false;
         if (folder != null && serverClient.isConnected()
-            && serverClient.isLoggedIn())
-        {
+                && serverClient.isLoggedIn()) {
             enabled = true;
             boolean osConfigured = serverClient.joinedByCloud(folder);
             if (osConfigured) {
                 confOSActionLabel.setText(Translation
-                    .get("exp.action_stop_online_storage.name"));
+                        .get("exp.action_stop_online_storage.name"));
                 confOSActionLabel.setToolTipText(Translation
-                    .get("exp.action_stop_online_storage.description"));
+                        .get("exp.action_stop_online_storage.description"));
             } else {
                 confOSActionLabel.setText(Translation
-                    .get("exp.action_backup_online_storage.name"));
+                        .get("exp.action_backup_online_storage.name"));
                 confOSActionLabel
-                    .setToolTipText(Translation
-                        .get("exp.action_backup_online_storage.description"));
+                        .setToolTipText(Translation
+                                .get("exp.action_backup_online_storage.description"));
             }
         }
         confOSAction.allowWith(FolderPermission.admin(folder.getInfo()));
@@ -585,35 +580,34 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private void updateLocalArchiveMode(Object oldValue, final Object newValue) {
-            Integer versions = (Integer) localVersionModel.getValue();
-            folder.setArchiveVersions(versions);
+        Integer versions = (Integer) localVersionModel.getValue();
+        folder.setArchiveVersions(versions);
 
-            // If the versions is reduced, offer to delete excess.
-            if (newValue != null && oldValue != null
+        // If the versions is reduced, offer to delete excess.
+        if (newValue != null && oldValue != null
                 && newValue instanceof Integer && oldValue instanceof Integer
                 && (Integer) newValue < (Integer) oldValue
-                && (Integer) newValue > -1)
-            {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        int i = DialogFactory.genericDialog(
+                && (Integer) newValue > -1) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    int i = DialogFactory.genericDialog(
                             getController(),
                             Translation
-                                .get("exp.settings_tab.offer_maintenance.title"),
+                                    .get("exp.settings_tab.offer_maintenance.title"),
                             Translation
-                                .get("exp.settings_tab.offer_maintenance.text"),
+                                    .get("exp.settings_tab.offer_maintenance.text"),
                             new String[]{
-                                Translation
-                                    .get("exp.settings_tab.offer_maintenance.cleanup_button"),
-                                Translation.get("general.cancel")},
+                                    Translation
+                                            .get("exp.settings_tab.offer_maintenance.cleanup_button"),
+                                    Translation.get("general.cancel")},
                             0, GenericDialogType.QUESTION);
-                        if (i == 0) {
-                            SwingWorker worker = new MyMaintainSwingWorker();
-                            worker.execute();
-                        }
+                    if (i == 0) {
+                        SwingWorker worker = new MyMaintainSwingWorker();
+                        worker.execute();
                     }
-                });
-            }
+                }
+            });
+        }
     }
 
     private void purgeLocalArchive() {
@@ -621,15 +615,15 @@ public class SettingsTab extends PFUIComponent {
             logSevere("Calling purgeArchive with no folder???");
         } else {
             int result = DialogFactory.genericDialog(
-                getController(),
-                Translation.get("settings_tab.purge_archive_title"),
-                Translation
-                    .get("settings_tab.purge_archive_message"),
-                new String[]{
+                    getController(),
+                    Translation.get("settings_tab.purge_archive_title"),
                     Translation
-                        .get("settings_tab.purge_archive_purge"),
-                    Translation.get("general.cancel")}, 0,
-                GenericDialogType.WARN);
+                            .get("settings_tab.purge_archive_message"),
+                    new String[]{
+                            Translation
+                                    .get("settings_tab.purge_archive_purge"),
+                            Translation.get("general.cancel")}, 0,
+                    GenericDialogType.WARN);
 
             if (result == 0) { // Purge
                 try {
@@ -637,13 +631,13 @@ public class SettingsTab extends PFUIComponent {
                 } catch (IOException e) {
                     logSevere(e);
                     DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation
-                                .get("settings_tab.purge_archive_title"),
-                            Translation
-                                .get("settings_tab.purge_archive_problem"),
-                            GenericDialogType.ERROR);
+                            .genericDialog(
+                                    getController(),
+                                    Translation
+                                            .get("settings_tab.purge_archive_title"),
+                                    Translation
+                                            .get("settings_tab.purge_archive_problem"),
+                                    GenericDialogType.ERROR);
 
                 }
             }
@@ -655,30 +649,31 @@ public class SettingsTab extends PFUIComponent {
             logSevere("Calling purgeArchive with no folder???");
         } else {
             int result = DialogFactory.genericDialog(
-                getController(),
-                Translation.get("settings_tab.purge_archive_title"),
-                Translation
-                    .get("settings_tab.purge_archive_message"),
-                new String[]{
+                    getController(),
+                    Translation.get("settings_tab.purge_archive_title"),
                     Translation
-                        .get("settings_tab.purge_archive_purge"),
-                    Translation.get("general.cancel")}, 0,
-                GenericDialogType.WARN);
+                            .get("settings_tab.purge_archive_message"),
+                    new String[]{
+                            Translation
+                                    .get("settings_tab.purge_archive_purge"),
+                            Translation.get("general.cancel")}, 0,
+                    GenericDialogType.WARN);
 
             if (result == 0) { // Purge
                 try {
-                    if (serverClient.getFolderService(folder.getInfo()).purgeArchive(folder.getInfo()))
+                    if (serverClient.getFolderService(folder.getInfo()).purgeArchive(folder.getInfo())) {
                         logInfo("Successfully cleared online versioning of folder " + folder.getName());
+                    }
                 } catch (Exception e) {
                     logSevere(e);
                     DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation
-                                .get("settings_tab.purge_archive_title"),
-                            Translation
-                                .get("settings_tab.purge_archive_problem"),
-                            GenericDialogType.ERROR);
+                            .genericDialog(
+                                    getController(),
+                                    Translation
+                                            .get("settings_tab.purge_archive_title"),
+                                    Translation
+                                            .get("settings_tab.purge_archive_problem"),
+                                    GenericDialogType.ERROR);
 
                 }
             }
@@ -697,7 +692,7 @@ public class SettingsTab extends PFUIComponent {
             if (!settingFolder) {
                 if (e.getSource().equals(localFolderButton)) {
                     getController().getUIController().getApplicationModel()
-                        .moveLocalFolder(folder);
+                            .moveLocalFolder(folder);
                 } else if (e.getSource().equals(syncPatternsCheckBox)) {
                     folder.setSyncPatterns(syncPatternsCheckBox.isSelected());
                 }
@@ -713,7 +708,7 @@ public class SettingsTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             FolderRemoveDialog panel = new FolderRemoveDialog(getController(),
-                folder.getInfo());
+                    folder.getInfo());
             panel.open();
         }
     }
@@ -741,11 +736,11 @@ public class SettingsTab extends PFUIComponent {
             getController().getIOProvider().startIO(new Runnable() {
                 public void run() {
                     folder.broadcastMessages(new FolderDBMaintCommando(folder
-                        .getInfo(), new Date()));
+                            .getInfo(), new Date()));
                     folder.maintainFolderDB(System.currentTimeMillis());
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            setEnabled(true);                            
+                            setEnabled(true);
                             //TODO: Add dialog
                             DialogFactory.genericDialog(getController(), "Cleanup Database", Translation.get("database_cleanup_finished"), GenericDialogType.INFO);
                         }
@@ -806,8 +801,7 @@ public class SettingsTab extends PFUIComponent {
     }
 
     private class MyFolderMembershipListener implements
-        FolderMembershipListener
-    {
+            FolderMembershipListener {
 
         public void memberJoined(FolderMembershipEvent folderEvent) {
             if (folderEvent.getMember().isServer()) {
@@ -837,23 +831,23 @@ public class SettingsTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             String text = Translation
-                .get("exp.settings_tab.edit_a_pattern.text");
+                    .get("exp.settings_tab.edit_a_pattern.text");
             String title = Translation
-                .get("exp.settings_tab.edit_a_pattern.title");
+                    .get("exp.settings_tab.edit_a_pattern.title");
 
             String pattern = (String) JOptionPane.showInputDialog(
-                UIUtil.getParentWindow(e), text, title,
-                JOptionPane.PLAIN_MESSAGE, null, null,
-                // the text to edit:
-                selectionModel.getSelection());
+                    UIUtil.getParentWindow(e), text, title,
+                    JOptionPane.PLAIN_MESSAGE, null, null,
+                    // the text to edit:
+                    selectionModel.getSelection());
             if (!StringUtils.isBlank(pattern)) {
                 folder.removePattern((String) selectionModel.getSelection());
                 folder.addPattern(pattern);
                 getController().getTransferManager()
-                    .checkActiveTranfersForExcludes();
+                        .checkActiveTranfersForExcludes();
                 // Trigger resync
                 getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting(folder.getInfo());
+                        .triggerFileRequesting(folder.getInfo());
             }
             patternsList.getSelectionModel().clearSelection();
         }
@@ -872,7 +866,7 @@ public class SettingsTab extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             showAddPane(Translation
-                .get("exp.settings_tab.add_a_pattern.example"));
+                    .get("exp.settings_tab.add_a_pattern.example"));
         }
     }
 
@@ -892,7 +886,7 @@ public class SettingsTab extends PFUIComponent {
                 folder.removePattern(selection);
                 // Trigger resync
                 getController().getFolderRepository().getFileRequestor()
-                    .triggerFileRequesting(folder.getInfo());
+                        .triggerFileRequesting(folder.getInfo());
             }
             patternsList.getSelectionModel().clearSelection();
         }
@@ -908,8 +902,8 @@ public class SettingsTab extends PFUIComponent {
             JFileChooser chooser = DialogFactory.createFileChooser();
             chooser.setSelectedFile(Paths.get(initial).toFile());
             int res = chooser
-                .showDialog(getUIController().getMainFrame().getUIComponent(),
-                    Translation.get("general.select"));
+                    .showDialog(getUIController().getMainFrame().getUIComponent(),
+                            Translation.get("general.select"));
 
             if (res == JFileChooser.APPROVE_OPTION) {
                 String script = chooser.getSelectedFile().getAbsolutePath();
@@ -928,11 +922,9 @@ public class SettingsTab extends PFUIComponent {
         }
     }
 
-    private class MyOnlineValueChangeListener implements PropertyChangeListener
-    {
+    private class MyOnlineValueChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getSource() == onlineVersionModel)
-            {
+            if (evt.getSource() == onlineVersionModel) {
                 if (!updatingOnlineArchiveMode) {
                     SwingWorker worker = new MyUpdaterSwingWorker();
                     worker.execute();
@@ -966,13 +958,13 @@ public class SettingsTab extends PFUIComponent {
                 }
                 FolderInfo folderInfo = folder.getInfo();
                 FolderService folderService = serverClient.isLoggedIn()
-                    && serverClient.isConnected() ? serverClient
-                    .getFolderService(folderInfo) : null;
+                        && serverClient.isConnected() ? serverClient
+                        .getFolderService(folderInfo) : null;
                 if (serverClient.getAccount().hasAdminPermission(folderInfo)) {
                     Integer versions = (Integer) onlineVersionModel.getValue();
                     folderService.setArchiveMode(folderInfo, versions);
                 } else {
-                    logWarning("Permission denied to " + serverClient.getAccount().getUsername() +". FolderAdminPermission on " + folderInfo);
+                    logWarning("Permission denied to " + serverClient.getAccount().getUsername() + ". FolderAdminPermission on " + folderInfo);
                     new MyServerModeSwingWorker(folderInfo).execute();
                 }
             } catch (Exception e) {
