@@ -91,7 +91,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 7;
-    private static final int REVISION_VERSION = 653;
+    private static final int REVISION_VERSION = 654;
 
     /**
      * Program version.
@@ -1565,6 +1565,18 @@ public class Controller extends PFComponent {
                 getConfigName() + "-Folder.config");
             tempFolderFile = getConfigLocationBase().resolve(
                 getConfigName() + "-Folder.writing.config").toAbsolutePath();
+        }
+
+        // PF-1029
+        FileStore store = null;
+        try {
+            store = Files.getFileStore(file);
+            if (store.getUsableSpace() < 1024L * 1024L * 10) {
+                logSevere("Unable to store configuration file. Disk space insufficient: "
+                        + Format.formatBytesShort(store.getUsableSpace()));
+            }
+        } catch (IOException e) {
+            logFine(e);
         }
 
         try {
