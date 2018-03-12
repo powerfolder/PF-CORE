@@ -1534,6 +1534,18 @@ public class Controller extends PFComponent {
                 getConfigName() + "-Folder.writing.config").toAbsolutePath();
         }
 
+        // PF-1029
+        FileStore store = null;
+        try {
+            store = Files.getFileStore(file);
+            if (store.getUsableSpace() < 1024L * 1024L * 10) {
+                logSevere("Unable to store configuration file. Disk space insufficient: "
+                        + Format.formatBytesShort(store.getUsableSpace()));
+            }
+        } catch (IOException e) {
+            logFine(e);
+        }
+
         try {
             // Backup is done in #backupConfigAssets
             Files.deleteIfExists(backupFile);

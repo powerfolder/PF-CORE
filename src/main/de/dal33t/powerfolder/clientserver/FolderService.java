@@ -318,6 +318,8 @@ public interface FolderService {
      */
     String prepareFileLink(FolderInfo foInfo, String name, String mailAddress, char[] password, Date date);
 
+    void startFileLinkUploadMailTask(String fileLinkID, String uploaderMailAddress, String uploaderUserName);
+
     /**
      * Checks if the storage path of a folder is correct (default)
      *
