@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.test.util;
 
+import de.dal33t.powerfolder.util.InvitationUtil;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 
@@ -30,7 +31,6 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.task.SendMessageTask;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;

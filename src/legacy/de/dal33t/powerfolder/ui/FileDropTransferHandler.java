@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.ui;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.InvitationUtil;
 
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
