@@ -1158,6 +1158,10 @@ public class Account implements Serializable, D2DObject {
         return Collections.unmodifiableList(result);
     }
 
+    public List<String> getRawEmails() {
+        return Collections.unmodifiableList(emails);
+    }
+
     /**
      * This method returns an email address to identify or reach this account.
      *
