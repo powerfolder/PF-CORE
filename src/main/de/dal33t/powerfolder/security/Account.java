@@ -532,14 +532,18 @@ public class Account implements Serializable, D2DObject {
         for (Permission permission : permissions) {
             if (permission instanceof FolderPermission) {
                 FolderPermission fp = (FolderPermission) permission;
-                folderInfos.add(fp.getFolder());
+                if (fp.getFolder() != null) {
+                    folderInfos.add(fp.getFolder());
+                }
             }
         }
         for (Group g : groups) {
             for (Permission p : g.getPermissions()) {
                 if (p instanceof FolderPermission) {
                     FolderPermission fp = (FolderPermission) p;
-                    folderInfos.add(fp.getFolder());
+                    if (fp.getFolder() != null) {
+                        folderInfos.add(fp.getFolder());
+                    }
                 }
             }
         }
