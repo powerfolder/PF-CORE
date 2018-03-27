@@ -19,7 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.Identity;
@@ -35,6 +38,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -189,7 +193,7 @@ public class Util {
      * @return true if the input is a valid email address.
      */
     public static boolean isValidEmail(String email) {
-        
+
         if (StringUtils.isBlank(email)) {
             return false;
         }
@@ -970,6 +974,8 @@ public class Util {
                 SSLContext sc = SSLContext.getInstance("SSL");
                 sc.init(null, trustAllCerts, new java.security.SecureRandom());
                 builder.setSslcontext(sc);
+                builder.setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
             } catch (Exception e) {
                 LOG.severe("Unable to setup SSL to trust any certificate. " + e);
             }
