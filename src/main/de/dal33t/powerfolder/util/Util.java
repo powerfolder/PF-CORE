@@ -19,21 +19,39 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.awt.Color;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.*;
+import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.transfer.Download;
+import de.dal33t.powerfolder.util.net.NetworkUtil.AllTrustingSSLManager;
+import de.dal33t.powerfolder.util.os.LinuxUtil;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.ShellLink;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import java.awt.*;
+import java.awt.datatransfer.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
@@ -45,34 +63,6 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-
-import de.dal33t.powerfolder.util.os.LinuxUtil;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.transfer.Download;
-import de.dal33t.powerfolder.util.net.NetworkUtil.AllTrustingSSLManager;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.ShellLink;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Util helper class.
@@ -995,6 +985,8 @@ public class Util {
                 SSLContext sc = SSLContext.getInstance("SSL");
                 sc.init(null, trustAllCerts, new java.security.SecureRandom());
                 builder.setSslcontext(sc);
+                builder.setHostnameVerifier(SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
             } catch (Exception e) {
                 LOG.severe("Unable to setup SSL to trust any certificate. " + e);
             }
