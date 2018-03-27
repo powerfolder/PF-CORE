@@ -103,7 +103,7 @@ public class Account implements Serializable, D2DObject {
     @Index(name = "IDX_AOTP")
     private String otp;
 
-    // PFC-2455: Tokens for federated services
+    // PFC-2455: Tokens for federation services
     @CollectionOfElements(targetElement = String.class)
     @MapKeyManyToMany(targetEntity = ServerInfo.class, joinColumns = @JoinColumn(name = "serviceInfo_id"))
     @JoinTable(name = "Account_tokens", joinColumns = @JoinColumn(name = "oid"))
@@ -664,33 +664,33 @@ public class Account implements Serializable, D2DObject {
     // PFS-2455: Start
 
     /**
-     * Sets a new token to authenticate at the federated service/server
+     * Sets a new token to authenticate at the federation service/server
      *
-     * @param fedServiceInfo the federated service
+     * @param fedServiceInfo the federation service
      * @param tokenSecret    the token secret, which can be used for authentication.
      * @return if the token is new.
      */
     public void setToken(ServerInfo fedServiceInfo, String tokenSecret) {
         Reject.ifNull(fedServiceInfo, "fedServiceInfo");
         Reject.ifFalse(fedServiceInfo.isFederatedService(),
-                "Setting token only possible for federated services");
+                "Setting token only possible for federation services");
         tokens.put(fedServiceInfo, tokenSecret);
     }
 
     /**
-     * Removes the token for the federated service.
+     * Removes the token for the federation service.
      *
-     * @param fedServiceInfo the federated service
+     * @param fedServiceInfo the federation service
      */
     public void removeToken(ServerInfo fedServiceInfo) {
         Reject.ifNull(fedServiceInfo, "fedServiceInfo");
         Reject.ifFalse(fedServiceInfo.isFederatedService(),
-                "Setting token only possible for federated services");
+                "Setting token only possible for federation services");
         tokens.remove(fedServiceInfo);
     }
 
     /**
-     * @param fedServiceInfo the federated service
+     * @param fedServiceInfo the federation service
      * @return the token secret for authentication or null.
      */
     public String getToken(ServerInfo fedServiceInfo) {
@@ -1206,10 +1206,7 @@ public class Account implements Serializable, D2DObject {
         if (!authByDatabase()) {
             return false;
         }
-        if (osSubscription.getStorageSize() > 0) {
-            return false;
-        }
-        return true;
+        return osSubscription.getStorageSize() <= 0;
     }
 
     public void setAutoRenew(int autoRenewDevices, Date autoRenewTill,
@@ -1507,7 +1504,7 @@ public class Account implements Serializable, D2DObject {
     }
 
     /**
-     * @return true if the account is on federated remote service.
+     * @return true if the account is on federation remote service.
      */
     public boolean isFederatedAccount() {
         return getServer().isFederatedService();

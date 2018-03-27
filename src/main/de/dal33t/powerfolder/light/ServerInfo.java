@@ -95,12 +95,12 @@ public class ServerInfo implements Serializable {
     }
 
     /**
-     * PFC-2455: Creates a {@link ServerInfo} instance representing a federated
+     * PFC-2455: Creates a {@link ServerInfo} instance representing a federation
      * service
      *
      * @param webUrl
      * @param httpTunnelUrl
-     * @return an {@link ServerInfo} object that represents the federated
+     * @return an {@link ServerInfo} object that represents the federation
      *         service.
      */
     public static ServerInfo newFederatedService(String webUrl,
@@ -120,7 +120,7 @@ public class ServerInfo implements Serializable {
     /**
      * PFC-2455
      *
-     * @return true if this represents a federated remote service.
+     * @return true if this represents a federation remote service.
      */
     public boolean isFederatedService() {
         return node == null;
@@ -221,11 +221,8 @@ public class ServerInfo implements Serializable {
             return false;
         final ServerInfo other = (ServerInfo) obj;
         if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        return true;
+            return other.id == null;
+        } else return id.equals(other.id);
     }
 
     public String toString() {
@@ -248,8 +245,8 @@ public class ServerInfo implements Serializable {
     }
 
     /**
-     * PF-768: Methods below are for the federated service validation process to build mutual trust relationships
-     * between the nodes of a federated network. A federated service is trusted if he has sent and received a
+     * PF-768: Methods below are for the federation service validation process to build mutual trust relationships
+     * between the nodes of a federation network. A federation service is trusted if he has sent and received a
      * validation/confirmation.
      */
     public Date getValidationReceived() {

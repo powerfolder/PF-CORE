@@ -95,7 +95,7 @@ public class Token {
     public static Token newRequestToken(ServerInfo fedService) {
         Reject.ifNull(fedService, "Service null");
         Reject.ifFalse(fedService.isFederatedService(),
-                "Not a federated service");
+                "Not a federation service");
         Date validTo = new Date(System.currentTimeMillis() + REQUEST_TOKEN_TIMEOUT);
         return new Token(validTo, fedService, null, null);
     }
@@ -103,7 +103,7 @@ public class Token {
     public static Token newOcmFilterToken(ServerInfo ocmProvider) {
         Reject.ifNull(ocmProvider, "Service null");
         Reject.ifFalse(ocmProvider.isFederatedService(),
-                "Not a federated service");
+                "Not a federation service");
         Date validTo = new Date(System.currentTimeMillis() + OCM_TOKEN_TIMEOUT);
         return new Token(validTo, ocmProvider, null, null);
     }
@@ -120,7 +120,7 @@ public class Token {
     }
 
     public static Token newAccessToken(long validMS, AccountInfo aInfo) {
-        return newAccessToken(validMS, aInfo, (MemberInfo) null);
+        return newAccessToken(validMS, aInfo, null);
     }
 
     public static Token newAccessToken(long validMS, AccountInfo aInfo,
@@ -136,7 +136,7 @@ public class Token {
         Reject.ifNull(aInfo, "Account info null");
         Reject.ifNull(fedService, "Service null");
         Reject.ifFalse(fedService.isFederatedService(),
-                "Not a federated service");
+                "Not a federation service");
         Date validTo = new Date(
                 System.currentTimeMillis() + SERVICE_TOKEN_TIMEOUT);
         return new Token(validTo, fedService, aInfo, null);
@@ -188,7 +188,7 @@ public class Token {
      * Constructs and prepares a new token.
      *
      * @param validTo mandatory expiration date.
-     * @param sInfo   optional federated service information
+     * @param sInfo   optional federation service information
      * @param aInfo   optional account information
      * @param mInfo   optional device information
      */
