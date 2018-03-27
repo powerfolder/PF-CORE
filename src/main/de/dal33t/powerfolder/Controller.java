@@ -74,6 +74,7 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import static de.dal33t.powerfolder.util.ConfigurationLoader.DEFAULT_CONFIG_FILENAME;
 import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 
 /**
@@ -305,24 +306,41 @@ public class Controller extends PFComponent {
     /**
      * Starts a config with the given command line arguments
      *
-     * @param aCommandLine
-     *            the command line as specified by the user
+     * @param aCommandLine the command line as specified by the user
      */
-    public void startConfig(CommandLine aCommandLine) {
+    void startConfig(CommandLine aCommandLine) {
+
         commandLine = aCommandLine;
         String[] configNames = aCommandLine.getOptionValues("c");
         String configName = configNames != null && configNames.length > 0
-            && StringUtils.isNotBlank(configNames[0]) ? configNames[0] : null;
-        if (StringUtils.isNotBlank(configName)
-            && (configName.startsWith("http:") || configName
-                .startsWith("https:")))
-        {
+                && StringUtils.isNotBlank(configNames[0]) ? configNames[0] : null;
+
+        if (StringUtils.isNotBlank(configName) &&
+                (configName.startsWith("http:") || configName.startsWith("https:"))) {
             if (configNames.length > 1) {
                 configName = configNames[1];
             } else {
                 configName = Constants.DEFAULT_CONFIG_FILE;
             }
+        } else if (StringUtils.isBlank(configName)) {
+
+            Properties preConfig = null;
+            try {
+                preConfig = ConfigurationLoader
+                        .loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
+            } catch (IOException e) {
+                // Ignore
+            }
+            String distributionName = preConfig != null ? preConfig.getProperty("dist.name") : "";
+
+            if (StringUtils.isNotBlank(distributionName)) {
+                distributionName = distributionName.trim();
+                configName = distributionName + ".config";
+            } else {
+                configName = Constants.DEFAULT_CONFIG_FILE;
+            }
         }
+
         startConfig(configName);
     }
 
@@ -406,12 +424,7 @@ public class Controller extends PFComponent {
 
         if (verbose) {
             ByteSerializer.BENCHMARK = true;
-            scheduleAndRepeat(new Runnable() {
-                @Override
-                public void run() {
-                    ByteSerializer.printStats();
-                }
-            }, 600000L, 600000L);
+            scheduleAndRepeat(() -> ByteSerializer.printStats(), 600000L, 600000L);
             Profiling.setEnabled(false);
             Profiling.reset();
         }
@@ -1011,29 +1024,20 @@ public class Controller extends PFComponent {
     /**
      * PFC-2846: Config reload via command line while running
      */
-    public void reloadConfigFile() {
-        BufferedInputStream bis = null;
-        try {
-            if (Files.exists(configFile)) {
-                logInfo("Reloading configfile " + configFile.toString());
-            } else {
-                logWarning("Config file does not exist. " + configFile.toString());
-                return;
-            }
-            bis = new BufferedInputStream(Files.newInputStream(configFile));
+    void reloadConfigFile() {
+        if (Files.exists(configFile)) {
+            logInfo("Reloading configfile " + configFile.toString());
+        } else {
+            logWarning("Config file does not exist. " + configFile.toString());
+            return;
+        }
+        try (BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(configFile))) {
             config.load(bis);
         } catch (IOException e) {
             logWarning("Unable to reload config file " + configFile
                     + ". " + e);
-        } finally {
-            try {
-                if (bis != null) {
-                    bis.close();
-                }
-            } catch (Exception e) {
-                // Ignore.
-            }
         }
+        // Ignore.
     }
 
     /**
