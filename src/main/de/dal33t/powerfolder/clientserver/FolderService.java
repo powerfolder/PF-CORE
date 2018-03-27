@@ -279,7 +279,6 @@ public interface FolderService {
      * Create a download link.
      *
      * @param fInfo
-     * @param folder
      */
     String getDownloadLink(FileInfo fInfo);
 
@@ -317,6 +316,8 @@ public interface FolderService {
      * PFS-869: Creating a FileLink for unregistered user uploads.
      */
     String prepareFileLink(FolderInfo foInfo, String name, String mailAddress, char[] password, Date date);
+
+    void startFileLinkUploadMailTask(String fileLinkID, String uploaderMailAddress, String uploaderUserName);
 
     /**
      * Checks if the storage path of a folder is correct (default)
