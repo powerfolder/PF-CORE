@@ -91,7 +91,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 7;
-    private static final int REVISION_VERSION = 677;
+    private static final int REVISION_VERSION = 678;
 
     /**
      * Program version.
@@ -200,7 +200,7 @@ public class Controller extends PFComponent {
     private Callable<TransferManager> transferManagerFactory = new Callable<TransferManager>()
     {
         @Override
-        public TransferManager call() throws Exception {
+        public TransferManager call() {
             return new TransferManager(Controller.this);
         }
     };
