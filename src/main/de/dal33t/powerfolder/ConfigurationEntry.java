@@ -1285,6 +1285,11 @@ public enum ConfigurationEntry {
     ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", null),
 
     /**
+     * PF-1178: Add configuration entry for folder encryption checkbox default value
+     */
+    ENCRYPTED_STORAGE_DEFAULT("encrypted_storage.default", true),
+
+    /**
      * PFS-2871: Port for client authentication over web requests.
      */
     WEB_CLIENT_PORT("web.client.port", 0),
