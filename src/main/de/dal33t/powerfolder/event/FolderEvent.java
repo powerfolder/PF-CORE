@@ -151,7 +151,6 @@ public class FolderEvent extends EventObject {
         return scannedFileInfos;
     }
 
-    @Deprecated
     public Collection<FileInfo> getDeletedFileInfos() {
         return deletedFileInfos;
     }

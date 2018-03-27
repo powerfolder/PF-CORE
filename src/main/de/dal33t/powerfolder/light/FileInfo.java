@@ -54,14 +54,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     public static final String UNIX_SEPARATOR = "/";
     private static final Logger log = Logger
-        .getLogger(FileInfo.class.getName());
+            .getLogger(FileInfo.class.getName());
 
     /**
      * #1531: If this system should ignore cases of files in
      * {@link #equals(Object)} and {@link #hashCode()}
      */
     public static final boolean IGNORE_CASE = OSUtil.isWindowsSystem()
-        || OSUtil.isMacOS();
+            || OSUtil.isMacOS();
 
     public static final String PROPERTYNAME_FILE_NAME = "fileName";
     public static final String PROPERTYNAME_SIZE = "size";
@@ -85,7 +85,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     private String hashes;
     private String tags;
 
-    /** The size of the file */
+    /**
+     * The size of the file
+     */
     private Long size;
 
     /**
@@ -99,13 +101,19 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * PFC-2571
      */
     private AccountInfo modifiedByAccount;
-    /** modified in folder on date */
+    /**
+     * modified in folder on date
+     */
     private Date lastModifiedDate;
 
-    /** Version number of this file */
+    /**
+     * Version number of this file
+     */
     private int version;
 
-    /** the deleted flag */
+    /**
+     * the deleted flag
+     */
     private boolean deleted;
 
     /**
@@ -128,6 +136,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      */
     private transient Reference<FileInfoStrings> cachedStrings;
 
+    private boolean reupload;
+
     protected FileInfo() {
         // ONLY for backward compatibility to MP3FileInfo
 
@@ -141,20 +151,20 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         version = 0;
         deleted = false;
         folderInfo = null;
+        reupload = false;
 
         // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
         // this.hash = hashCode0();
     }
 
     protected FileInfo(String relativeName, String oid, long size,
-        MemberInfo modifiedByDevice, AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
-        String hashes, boolean deleted, String tags, FolderInfo folderInfo)
-    {
+                       MemberInfo modifiedByDevice, AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
+                       String hashes, boolean deleted, String tags, FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
         if (relativeName.contains("/../")) {
             throw new IllegalArgumentException(
-                "relativeName must not contain /../: " + relativeName);
+                    "relativeName must not contain /../: " + relativeName);
         }
 
         this.fileName = relativeName;
@@ -168,6 +178,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         this.version = version;
         this.deleted = deleted;
         this.folderInfo = folderInfo;
+        this.reupload = false;
+
         validate();
 
         // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
@@ -179,7 +191,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(relativeName, "relativeName is null!");
         if (relativeName.contains("/../")) {
             throw new IllegalArgumentException(
-                "relativeName must not contain /../: " + relativeName);
+                    "relativeName must not contain /../: " + relativeName);
         }
 
         fileName = relativeName;
@@ -193,21 +205,22 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         lastModifiedDate = null;
         version = 0;
         deleted = false;
+        reupload = false;
 
         // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
         // this.hash = hashCode0();
     }
 
-    /** FileInfo
+    /**
+     * FileInfo
      * Init from D2D message
+     *
+     * @param mesg Message to use data from
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
      **/
 
-    public
-    FileInfo(AbstractMessage mesg)
-    {
-      initFromD2D(mesg);
+    public FileInfo(AbstractMessage mesg) {
+        initFromD2D(mesg);
     }
 
     /**
@@ -215,12 +228,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * that this. Assume that file has changed on disk and update its modified
      * info.
      *
-     * @param folder
-     *            the folder to sync with
-     * @param diskFile
-     *            the diskfile of this file, not gets it from controller !
+     * @param folder   the folder to sync with
+     * @param diskFile the diskfile of this file, not gets it from controller !
      * @return the new FileInfo if the file was synced or null if the file is in
-     *         sync
+     * sync
      */
     public FileInfo syncFromDiskIfRequired(Folder folder, Path diskFile) {
         Reject.ifNull(folder, "Folder is null");
@@ -229,7 +240,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             throw new NullPointerException("diskFile is null");
         }
         String diskFileName = FileInfoFactory.decodeIllegalChars(diskFile
-            .getFileName().toString());
+                .getFileName().toString());
         boolean nameMatch = fileName.endsWith(diskFileName);
 
         if (!nameMatch && IGNORE_CASE) {
@@ -240,10 +251,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         // Check if files match
         if (!nameMatch && !isBaseDirectory()) {
             throw new IllegalArgumentException(
-                "Diskfile does not match fileinfo name '" + getFilenameOnly()
-                    + "', details: " + toDetailString() + ", diskfile name '"
-                    + diskFile.getFileName().toString() + "', path: "
-                    + diskFile);
+                    "Diskfile does not match fileinfo name '" + getFilenameOnly()
+                            + "', details: " + toDetailString() + ", diskfile name '"
+                            + diskFile.getFileName().toString() + "', path: "
+                            + diskFile);
         }
 
         // if (!diskFile.exists()) {
@@ -253,15 +264,15 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (!inSyncWithDisk(diskFile)) {
             MemberInfo mySelf = folder.getController().getMySelf().getInfo();
             AccountInfo myAccount = folder.getController().getMySelf()
-                .getAccountInfo();
+                    .getAccountInfo();
             if (Files.exists(diskFile)) {
                 // PFC-2352: TODO: Calc new hashes
                 String newHashes = null;
                 return FileInfoFactory.modifiedFile(this, folder, diskFile,
-                    mySelf, myAccount, newHashes);
+                        mySelf, myAccount, newHashes);
             } else {
                 return FileInfoFactory.deletedFile(this, mySelf, myAccount,
-                    new Date());
+                        new Date());
             }
         }
 
@@ -269,8 +280,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     }
 
     /**
-     * @param diskFile
-     *            the file on disk.
+     * @param diskFile the file on disk.
      * @return true if the fileinfo is in sync with the file on disk.
      */
     public boolean inSyncWithDisk(Path diskFile) {
@@ -278,15 +288,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     }
 
     /**
-     * @param diskFile
-     *            the file on disk.
-     * @param ignoreSizeAndModDate
-     *            ignore the reported size of the diskfile/dir.
+     * @param diskFile             the file on disk.
+     * @param ignoreSizeAndModDate ignore the reported size of the diskfile/dir.
      * @return true if the fileinfo is in sync with the file on disk.
      */
     protected boolean inSyncWithDisk0(Path diskFile,
-        boolean ignoreSizeAndModDate)
-    {
+                                      boolean ignoreSizeAndModDate) {
         Reject.ifNull(diskFile, "Diskfile is null");
 
         // PFC-2849:
@@ -294,7 +301,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Map<String, Object> attrs;
         try {
             attrs = Files.readAttributes(diskFile,
-                "size,lastModifiedTime,isDirectory");
+                    "size,lastModifiedTime,isDirectory");
             diskFileDeleted = false;
         } catch (FileNotFoundException | NoSuchFileException e) {
             diskFileDeleted = true;
@@ -303,15 +310,15 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             diskFileDeleted = Files.notExists(diskFile);
             if (!diskFileDeleted) {
                 log.warning("Could not access file attributes of file "
-                    + diskFile.toAbsolutePath().toString() + "\n"
-                    + toDetailString() + "\n" + e.toString());
+                        + diskFile.toAbsolutePath().toString() + "\n"
+                        + toDetailString() + "\n" + e.toString());
                 return false;
             }
             attrs = null;
         }
 
         boolean existanceSync = diskFileDeleted && deleted || !diskFileDeleted
-            && !deleted;
+                && !deleted;
 
         if (!existanceSync) {
             return false;
@@ -325,12 +332,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             try {
                 diskSize = (Long) attrs.get("size");
                 diskLastMod = ((FileTime) attrs.get("lastModifiedTime"))
-                    .toMillis();
+                        .toMillis();
                 diskIsDirectory = (Boolean) attrs.get("isDirectory");
             } catch (Exception e) {
                 log.warning("Could not access file attributes of file "
-                    + diskFile.toAbsolutePath().toString() + "\n"
-                    + toDetailString() + "\n" + e.toString());
+                        + diskFile.toAbsolutePath().toString() + "\n"
+                        + toDetailString() + "\n" + e.toString());
                 return false;
             }
 
@@ -339,16 +346,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                 return dirFileSync;
             }
             boolean lastModificationSync = DateUtil
-                .equalsFileDateCrossPlattform(diskLastMod,
-                    lastModifiedDate.getTime());
+                    .equalsFileDateCrossPlattform(diskLastMod,
+                            lastModifiedDate.getTime());
             if (!lastModificationSync) {
                 return false;
             }
 
             boolean sizeSync = size == diskSize;
-            if (!sizeSync) {
-                return false;
-            }
+            return sizeSync;
         }
         return true;
         // return existanceSync && lastModificationSync && sizeSync;
@@ -364,7 +369,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     /**
      * @return The filename (including the path from the base of the folder)
-     *         converted to lowercase
+     * converted to lowercase
      */
     @Override
     public String getLowerCaseFilenameOnly() {
@@ -377,7 +382,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     private FileInfoStrings getStringsCache() {
         FileInfoStrings stringsRef = cachedStrings != null ? cachedStrings
-            .get() : null;
+                .get() : null;
         if (stringsRef == null) {
             // Cache miss. create new entry
             stringsRef = new FileInfoStrings();
@@ -397,7 +402,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             return "";
         }
         return tmpFileName.substring(index + 1, tmpFileName.length())
-            .toUpperCase();
+                .toUpperCase();
     }
 
     /**
@@ -444,7 +449,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     /**
      * @param repo
-     * @return if this file is expeced
+     * @return if this file is expected.
      */
     public boolean isExpected(FolderRepository repo) {
         if (deleted) {
@@ -540,7 +545,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     /**
      * @return a lookup instance of the subdirectory this {@link FileInfo} is
-     *         located in.
+     * located in.
      */
     public DirectoryInfo getDirectory() {
         int i = fileName.lastIndexOf('/');
@@ -580,10 +585,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     // PFC-1962: End
 
     /**
-     * @param ofInfo
-     *            the other fileinfo.
+     * @param ofInfo the other fileinfo.
      * @return if this file is newer than the other one. By file version, or
-     *         file modification date if version of both =0
+     * file modification date if version of both =0
      */
     public boolean isNewerThan(FileInfo ofInfo) {
         return isNewerThan(ofInfo, false);
@@ -598,7 +602,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                 return false;
             }
             return DateUtil.isNewerFileDateCrossPlattform(lastModifiedDate,
-                ofInfo.lastModifiedDate);
+                    ofInfo.lastModifiedDate);
         }
         return version > ofInfo.version;
     }
@@ -606,8 +610,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     /**
      * Also considers myself.
      *
-     * @param repo
-     *            the folder repository
+     * @param repo the folder repository
      * @return if there is a newer version available of this file
      */
     public boolean isNewerAvailable(FolderRepository repo) {
@@ -629,7 +632,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (folder == null) {
             if (log.isLoggable(Level.FINER)) {
                 log.finer("Unable to determine newest version. Folder not joined "
-                    + folderInfo);
+                        + folderInfo);
             }
             return null;
         }
@@ -643,12 +646,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                 continue;
             }
             // Check if remote file in newer
-            if (newestVersion == null || remoteFile.isNewerThan(newestVersion))
-            {
+            if (newestVersion == null || remoteFile.isNewerThan(newestVersion)) {
                 // HACK(tm)
                 if (!ServerClient.SERVER_HANDLE_MESSAGE_THREAD.get()
-                    && !folder.hasWritePermission(member))
-                {
+                        && !folder.hasWritePermission(member)) {
                     continue;
                 }
                 newestVersion = remoteFile;
@@ -660,7 +661,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     /**
      * @param repo
      * @return the newest available version of this file, excludes deleted
-     *         remote files
+     * remote files
      */
     public FileInfo getNewestNotDeletedVersion(FolderRepository repo) {
         if (repo == null) {
@@ -669,7 +670,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Folder folder = getFolder(repo);
         if (folder == null) {
             log.warning("Unable to determine newest version. Folder not joined "
-                + folderInfo);
+                    + folderInfo);
             return null;
         }
         FileInfo newestVersion = null;
@@ -682,12 +683,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                 }
                 // Check if remote file is newer
                 if (newestVersion == null
-                    || remoteFile.isNewerThan(newestVersion))
-                {
+                        || remoteFile.isNewerThan(newestVersion)) {
                     // HACK(tm)
                     if (!ServerClient.SERVER_HANDLE_MESSAGE_THREAD.get()
-                        && !folder.hasWritePermission(member))
-                    {
+                            && !folder.hasWritePermission(member)) {
                         continue;
                     }
                     // log.finer("Newer version found at " + member);
@@ -740,8 +739,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     }
 
     /**
-     * @param repo
-     *            the folder repository.
+     * @param repo the folder repository.
      * @return the folder for this file.
      */
     public Folder getFolder(FolderRepository repo) {
@@ -774,13 +772,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             // not equals, return
             return false;
         }
-        if (lastModifiedDate != null && otherFile.lastModifiedDate != null
-            && !lastModifiedDate.equals(otherFile.lastModifiedDate))
-        {
-            return false;
-        }
-        // All match!
-        return true;
+        return lastModifiedDate == null || otherFile.lastModifiedDate == null
+                || lastModifiedDate.equals(otherFile.lastModifiedDate);
     }
 
     /**
@@ -808,7 +801,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     private int hashCode0() {
         int hash = IGNORE_CASE ? fileName.toLowerCase().hashCode() : fileName
-            .hashCode();
+                .hashCode();
         hash += folderInfo.hashCode();
         return hash;
     }
@@ -821,7 +814,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (other instanceof FileInfo) {
             FileInfo otherInfo = (FileInfo) other;
             boolean caseMatch = Util.equalsRelativeName(fileName,
-                otherInfo.fileName);
+                    otherInfo.fileName);
             return caseMatch && Util.equals(folderInfo, otherInfo.folderInfo);
         }
 
@@ -831,14 +824,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     @Override
     public String toString() {
         return '[' + folderInfo.getName() + "]:" + (deleted ? "(del) /" : "/")
-            + fileName;
+                + fileName;
     }
 
     /**
      * appends to buffer
      *
-     * @param str
-     *            the stringbuilder to add the detail info to.
+     * @param str the stringbuilder to add the detail info to.
      */
     private void toDetailString(StringBuilder str) {
         str.append(toString());
@@ -877,7 +869,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     /**
      * @return true if this instance is valid. false if is broken,e.g. Negative
-     *         Time
+     * Time
      */
     public boolean isValid() {
         try {
@@ -894,20 +886,19 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * checks should be made while constructing this class (by
      * constructor/deserialization).
      *
-     * @throws IllegalArgumentException
-     *             if the state is corrupt
+     * @throws IllegalArgumentException if the state is corrupt
      */
     private void validate() {
         Reject.ifNull(lastModifiedDate, "Modification date is null");
         if (lastModifiedDate.getTime() < 0) {
             throw new IllegalStateException("Modification date is invalid: "
-                + lastModifiedDate + ": " + toDetailString());
+                    + lastModifiedDate + ": " + toDetailString());
         }
         Reject.ifTrue(StringUtils.isEmpty(fileName), "Filename is empty");
         char lastChar = fileName.charAt(fileName.length() - 1);
         if (lastChar == '/' || lastChar == '\\') {
             throw new IllegalStateException("Filename ends with slash: "
-                + fileName + ": " + toDetailString());
+                    + fileName + ": " + toDetailString());
         }
 
         //Reject.ifNull(size, "Size is null");
@@ -918,8 +909,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     // Serialization optimization *********************************************
 
     private void readObject(ObjectInputStream in) throws IOException,
-        ClassNotFoundException
-    {
+            ClassNotFoundException {
         in.defaultReadObject();
 
         // #2037: Removed internalization
@@ -950,14 +940,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     private static final long extVersionCurrentUID = 101L;
 
     void readExternal(ObjectInput in) throws IOException,
-        ClassNotFoundException
-    {
+            ClassNotFoundException {
         long extUID = in.readLong();
         if (extUID != extVersion100UID && extUID != extVersionCurrentUID) {
             throw new InvalidClassException(getClass().getName(),
-                "Unable to read. extVersionUID(steam): " + extUID
-                    + ", supported: " + extVersion100UID + ", "
-                    + extVersionCurrentUID);
+                    "Unable to read. extVersionUID(steam): " + extUID
+                            + ", supported: " + extVersion100UID + ", "
+                            + extVersionCurrentUID);
         }
         fileName = in.readUTF();
         size = in.readLong();
@@ -997,7 +986,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (in.readBoolean()) {
             modifiedByAccount = AccountInfo.readExt(in);
             modifiedByAccount = modifiedByAccount != null ? modifiedByAccount
-                .intern() : null;
+                    .intern() : null;
         }
         // PFC-2571: End
     }
@@ -1067,15 +1056,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * @return
      */
     public static String renameRelativeFileName(String relativeName,
-        String newFileName)
-    {
+                                                String newFileName) {
         if (newFileName.contains(UNIX_SEPARATOR)) {
             throw new IllegalArgumentException("newFileName must not contain "
-                + UNIX_SEPARATOR + ": " + relativeName);
+                    + UNIX_SEPARATOR + ": " + relativeName);
         }
         if (relativeName.contains(UNIX_SEPARATOR)) {
             String directoryPart = relativeName.substring(0,
-                relativeName.lastIndexOf(UNIX_SEPARATOR));
+                    relativeName.lastIndexOf(UNIX_SEPARATOR));
             return directoryPart + UNIX_SEPARATOR + newFileName;
         } else {
             // No path - just use the relative filename.
@@ -1083,10 +1071,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
     }
 
-    /** initFromD2DMessage
+    /**
+     * initFromD2DMessage
      * Init from D2D message
+     *
+     * @param mesg Message to use data from
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
      **/
     @Override
     public void
@@ -1126,5 +1116,23 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         builder.setVersion(this.version);
         if (this.size != null) builder.setSize(this.size);
         return builder.build();
+    }
+
+    /**
+     * Mark this fileInfo as reupload. Means: The file was deleted before and afterwards uploaded again.
+     *
+     * @param reupload
+     */
+    public void setReupload(boolean reupload) {
+        this.reupload = reupload;
+    }
+
+    /**
+     * Check if this fileInfo was reuploaded. Means: The file was deleted before and afterwards uploaded again.
+     *
+     * @param reupload
+     */
+    public boolean isReupload() {
+        return reupload;
     }
 }

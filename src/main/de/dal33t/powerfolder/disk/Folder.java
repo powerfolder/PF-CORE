@@ -355,7 +355,7 @@ public class Folder extends PFComponent {
         initFileInfoDAO();
         checkIfDeviceDisconnected();
 
-        members = new ConcurrentHashMap<Member, Member>();
+        members = new ConcurrentHashMap<>();
 
         // Load folder database, ignore patterns and other metadata stuff.
         loadMetadata();
@@ -4967,13 +4967,8 @@ public class Folder extends PFComponent {
         if (fileInfosList.size() >= 1
             || diskItemFilter.isRetained(fileInfosList.get(0)))
         {
-            broadcastMessages(new MessageProducer() {
-                @Override
-                public Message[] getMessages(boolean useExt) {
-                    return FolderFilesChanged.create(getInfo(), fileInfosList,
-                        diskItemFilter, useExt);
-                }
-            });
+            broadcastMessages(useExt -> FolderFilesChanged.create(getInfo(), fileInfosList,
+                    diskItemFilter, useExt));
         }
     }
 
