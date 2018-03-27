@@ -315,9 +315,9 @@ public class NoticesModel extends PFUIComponent {
     }
 
     /**
-     * PF-164: Support federated invites:
+     * PF-164: Support federation invites:
      * <p>
-     * If we're in a federated environment, we have to ask the service of the invitation if
+     * If we're in a federation environment, we have to ask the service of the invitation if
      * FOLDER_AGREE_INVITATION_ENABLED is enabled.
      *
      * @param invitation The invitation.
@@ -341,7 +341,7 @@ public class NoticesModel extends PFUIComponent {
                 }
 
             } catch (IOException e) {
-                logWarning("Failed to get config from federated server "
+                logWarning("Failed to get config from federation server "
                         + invitation.getServer().getWebUrl());
                 return serverAgreeInvitationsEnabled;
             }
@@ -386,8 +386,7 @@ public class NoticesModel extends PFUIComponent {
 
         @Override
         public void run() {
-            getController().getOSClient().getSecurityService()
-                .declineInvitation(invitation);
+            getController().getOSClient().getSecurityService().declineInvitation(invitation);
         }
     }
 }

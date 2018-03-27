@@ -61,6 +61,7 @@ public class ServerInfo implements Serializable, D2DObject {
     private String validationCode;
     private Date validationReceived;
     private Date validationSend;
+    private String federationVersion;
 
     protected ServerInfo() {
         // NOP - only for Hibernate
@@ -78,6 +79,7 @@ public class ServerInfo implements Serializable, D2DObject {
             // Federated service
             this.id = webUrl;
         }
+        this.federationVersion = Controller.PROGRAM_VERSION;
         Reject.ifBlank(this.id, "Unable to set ID of ServerInfo");
     }
 
@@ -107,7 +109,7 @@ public class ServerInfo implements Serializable, D2DObject {
     }
 
     /**
-     * PFC-2455: Creates a {@link ServerInfo} instance representing a federated
+     * PFC-2455: Creates a {@link ServerInfo} instance representing a federation
      * service
      *
      * @param webUrl
@@ -132,7 +134,7 @@ public class ServerInfo implements Serializable, D2DObject {
     /**
      * PFC-2455
      *
-     * @return true if this represents a federated remote service.
+     * @return true if this represents a federation remote service.
      */
     public boolean isFederatedService() {
         return node == null;
@@ -233,11 +235,8 @@ public class ServerInfo implements Serializable, D2DObject {
             return false;
         final ServerInfo other = (ServerInfo) obj;
         if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        return true;
+            return other.id == null;
+        } else return id.equals(other.id);
     }
 
     public String toString() {
@@ -260,8 +259,8 @@ public class ServerInfo implements Serializable, D2DObject {
     }
 
     /**
-     * PF-768: Methods below are for the federated service validation process to build mutual trust relationships
-     * between the nodes of a federated network. A federated service is trusted if he has sent and received a
+     * PF-768: Methods below are for the federation service validation process to build mutual trust relationships
+     * between the nodes of a federation network. A federation service is trusted if he has sent and received a
      * validation/confirmation.
      */
     public Date getValidationReceived() {
@@ -289,7 +288,7 @@ public class ServerInfo implements Serializable, D2DObject {
     }
 
     public boolean isValidated() {
-        return validationReceived != null && validationSend != null;
+        return (validationReceived != null && validationSend != null);
     }
 
     /**
@@ -320,4 +319,11 @@ public class ServerInfo implements Serializable, D2DObject {
         return builder.build();
     }
 
+
+    /**
+     * PF-1289/PF-453: Backwards compatibility for federation with version <= 11.6..
+     */
+    public void setFederationVersion(String version) { federationVersion = version; }
+
+    public String getFederationVersion() { return federationVersion; }
 }

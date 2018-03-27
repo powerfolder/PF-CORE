@@ -1908,7 +1908,7 @@ public class ServerClient extends PFComponent {
             if (childClients.containsKey(fedService)) {
                 continue;
             }
-            logInfo("Starting connect to federated service: " + fedService);
+            logInfo("Starting connect to federation service: " + fedService);
             ServerClient client = createNewFedClient(fedService, token);
             client.loadServerNodes();
             client.start();
@@ -2228,7 +2228,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * @param foInfo
-     * @return true if the folder is joined/synced with server of federated
+     * @return true if the folder is joined/synced with server of federation
      * service
      */
     public boolean joinedByFederation(FolderInfo foInfo) {
@@ -2686,7 +2686,7 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * PF-102: AccountDiscovery (federated login) must be performed if the target server supports federation.
+     * PF-102: AccountDiscovery (federation login) must be performed if the target server supports federation.
      *
      * @return true if a target server supports federation.
      */
@@ -2716,7 +2716,7 @@ public class ServerClient extends PFComponent {
             }
             serviceWebUrl = sInfo.getWebUrl();
         } catch (RemoteCallException ex) {
-            logWarning("Server " + server + " does not support federated logins.");
+            logWarning("Server " + server + " does not support federation logins.");
             return false;
         }
 
@@ -2741,7 +2741,7 @@ public class ServerClient extends PFComponent {
                 }
             }
 
-            // Mark the federated service for connect
+            // Mark the federation service for connect
             server.markForImmediateConnect();
 
             Waiter w = new Waiter(DEFAULT_SERVER_CONNECT_TIMEOUT_MS);
@@ -2753,7 +2753,7 @@ public class ServerClient extends PFComponent {
             getController().saveConfig();
 
             if (isConnected()) {
-                logInfo("Successfully connected to federated service "
+                logInfo("Successfully connected to federation service "
                         + serviceWebUrl + " / " + server.getNick());
             }
 
