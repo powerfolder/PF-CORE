@@ -276,7 +276,7 @@ public class ServerInfo implements Serializable, D2DObject {
         this.validationReceived = validationReceived;
     }
 
-    public Date getValidationSent() {
+    public Date getValidationSend() {
         return validationSend;
     }
 
