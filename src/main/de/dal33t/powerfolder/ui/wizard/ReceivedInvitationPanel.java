@@ -29,10 +29,14 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
 import javax.swing.*;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
@@ -115,8 +119,31 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 .getSuggestedLocalBase(getController()).toAbsolutePath().toString(),
                 new FolderCreatePanel(getController()));
 
-        if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
-            .getValueBoolean(getController()))
+        boolean serverAgreeInvitationsEnabled =
+                ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED.getValueBoolean(getController());
+
+        // Start: PF-164: Federated invites:
+        if (invitation.getServer() != null &&
+                ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController())) {
+
+            try {
+                Properties props = ConfigurationLoader
+                        .loadPreConfiguration(invitation.getServer().getWebUrl());
+                String agreeInvitations = (String) props.get(ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
+                        .getConfigKey());
+
+                if (StringUtils.isNotBlank(agreeInvitations)) {
+                    serverAgreeInvitationsEnabled = Boolean.parseBoolean(agreeInvitations);
+                }
+
+            } catch (IOException e) {
+                log.warning("Failed to get config from federated server "
+                        + invitation.getServer().getWebUrl());
+            }
+        }
+        // End: PF-164: Federated invites:
+
+        if (serverAgreeInvitationsEnabled)
         {
             return new SwingWorkerPanel(getController(), new AcceptInviteTask(),
                 Translation.get(""), Translation.get(""),
