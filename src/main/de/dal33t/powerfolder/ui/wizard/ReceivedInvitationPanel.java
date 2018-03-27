@@ -124,7 +124,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Start: PF-164: Federated invites:
         if (invitation.getServer() != null &&
-                ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController())) {
+                ConfigurationEntry.SERVER_FEDERATION_ENABLED.getValueBoolean(getController())) {
 
             try {
                 Properties props = ConfigurationLoader
