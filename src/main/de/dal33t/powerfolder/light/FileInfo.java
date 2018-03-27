@@ -1129,8 +1129,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     /**
      * Check if this fileInfo was reuploaded. Means: The file was deleted before and afterwards uploaded again.
-     *
-     * @param reupload
      */
     public boolean isReupload() {
         return reupload;
