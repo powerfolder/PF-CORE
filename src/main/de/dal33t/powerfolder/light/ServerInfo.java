@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Reject;
 import org.hibernate.annotations.Cache;
@@ -57,7 +58,7 @@ public class ServerInfo implements Serializable {
     private String validationCode;
     private Date validationReceived;
     private Date validationSend;
-    private int federationVersion;
+    private String federationVersion;
 
     protected ServerInfo() {
         // NOP - only for Hibernate
@@ -75,6 +76,7 @@ public class ServerInfo implements Serializable {
             // Federated service
             this.id = webUrl;
         }
+        this.federationVersion = Controller.PROGRAM_VERSION;
         Reject.ifBlank(this.id, "Unable to set ID of ServerInfo");
     }
 
@@ -280,10 +282,7 @@ public class ServerInfo implements Serializable {
     /**
      * PF-1289/PF-453: Backwards compatibility for federation with version <= 11.6..
      */
-    public void setFederationVersion(int version) { federationVersion = version; }
+    public void setFederationVersion(String version) { federationVersion = version; }
 
-    public int getFederationVersion() {
-        return federationVersion;
-    }
-
+    public String getFederationVersion() { return federationVersion; }
 }
