@@ -951,15 +951,14 @@ public class ServerClient extends PFComponent {
      * Log out of online storage.
      */
     public void logout() {
+
         username = null;
         passwordObf = null;
         tokenSecret = null;
         webdavToken = null;
-        try {
-            securityService.logout();
-        } catch (Exception e) {
-            logWarning("Unable to logout. " + e);
-        }
+
+        securityService.logout();
+
         saveLastKnowLogin(null, null);
         setAnonAccount();
         fireLogin(accountDetails);
@@ -2953,7 +2952,7 @@ public class ServerClient extends PFComponent {
     private class ServiceTicketGenerator implements
             PrivilegedExceptionAction<byte[]> {
         @Override
-        public byte[] run() throws Exception {
+        public byte[] run() {
             try {
                 Oid kerberos5Oid = new Oid("1.2.840.113554.1.2.2");
                 GSSManager gssManager = GSSManager.getInstance();
