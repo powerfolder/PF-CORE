@@ -196,6 +196,11 @@ public class Util {
      * @return true if the input is a valid email address.
      */
     public static boolean isValidEmail(String email) {
+        
+        if (StringUtils.isBlank(email)) {
+            return false;
+        }
+
         Pattern p = Pattern.compile(".+@.+\\.[a-z]+");
         Matcher m = p.matcher(email);
         return m.matches();
