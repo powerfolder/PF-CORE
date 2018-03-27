@@ -62,7 +62,6 @@ import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.file.*;
-import java.nio.file.DirectoryStream.Filter;
 import java.security.Security;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -91,7 +90,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 7;
-    private static final int REVISION_VERSION = 751;
+    private static final int REVISION_VERSION = 752;
 
     /**
      * Program version.
