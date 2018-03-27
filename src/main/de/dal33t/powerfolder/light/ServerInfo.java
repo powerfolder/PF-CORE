@@ -303,7 +303,6 @@ public class ServerInfo implements Serializable, D2DObject {
             ServerInfoProto.ServerInfo proto = (ServerInfoProto.ServerInfo) message;
             this.node = new MemberInfo(proto.getNodeInfo());
             this.webUrl = proto.getHttpUrl();
-            this.httpTunnelUrl = proto.getHttpTunnelUrl();
         }
     }
 
@@ -318,7 +317,6 @@ public class ServerInfo implements Serializable, D2DObject {
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.node != null) builder.setNodeInfo((NodeInfoProto.NodeInfo) this.node.toD2D());
         if (this.webUrl != null) builder.setHttpUrl(this.webUrl);
-        if (this.httpTunnelUrl != null) builder.setHttpUrl(this.httpTunnelUrl);
         return builder.build();
     }
 
