@@ -71,6 +71,23 @@ public class StringUtils {
     }
 
     /**
+     * Test multiple strings if one is blank.
+     *
+     * @param strings
+     * @return
+     */
+    public static boolean isBlankAny(String... strings) {
+
+        for (String string : strings) {
+            if (isBlank(string)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * <p>Checks if a String is not empty (""), not null and not whitespace only.</p>
      *
      * <pre>
