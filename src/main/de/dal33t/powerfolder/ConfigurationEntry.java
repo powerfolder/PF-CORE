@@ -448,6 +448,7 @@ public enum ConfigurationEntry {
     /**
      * If all folder settings should be dropped when this config is loaded
      */
+    @Deprecated
     CONFIG_DROP_FOLDER_SETTINGS("config.drop.folders.settings", false),
 
     /**
