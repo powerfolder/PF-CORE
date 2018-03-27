@@ -229,7 +229,11 @@ public class ServerInfo implements Serializable {
 
     public String toString() {
         if (isFederatedService()) {
-            return "Federated service: " + webUrl;
+            if (this.federationVersion != null) {
+                return "Federated service: " + webUrl + " (" + "v" + this.federationVersion + ")";
+            } else {
+                return "Federated service: " + webUrl;
+            }
         }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
                 + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
@@ -286,5 +290,7 @@ public class ServerInfo implements Serializable {
         federationVersion = version;
     }
 
-    public String getFederationVersion() { return federationVersion; }
+    public String getFederationVersion() {
+        return federationVersion;
+    }
 }
