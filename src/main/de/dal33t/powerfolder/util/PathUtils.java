@@ -758,11 +758,7 @@ public class PathUtils {
      */
     public static void recursiveCopy(Path sourceFile, Path targetFile)
             throws IOException {
-        recursiveCopy(sourceFile, targetFile, new Filter<Path>() {
-            public boolean accept(Path pathname) {
-                return true;
-            }
-        });
+        recursiveCopy(sourceFile, targetFile, pathname -> true);
     }
 
     /**
@@ -776,6 +772,7 @@ public class PathUtils {
      */
     public static void recursiveCopy(Path sourceFile, Path targetFile,
                                      Filter<Path> filter) throws IOException {
+
         Reject.ifNull(sourceFile, "Source directory is null");
         Reject.ifNull(targetFile, "Target directory is null");
 
