@@ -276,7 +276,7 @@ public class ServerInfo implements Serializable {
     }
 
     public boolean isValidated() {
-        return validationReceived != null && validationSend != null;
+        return (validationReceived != null && validationSend != null);
     }
 
     /**
