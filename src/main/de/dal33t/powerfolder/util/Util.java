@@ -63,6 +63,8 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Util helper class.
@@ -194,22 +196,9 @@ public class Util {
      * @return true if the input is a valid email address.
      */
     public static boolean isValidEmail(String email) {
-        if (email == null) {
-            return false;
-        }
-        int etIndex = email.indexOf('@');
-        boolean orderOk = etIndex > 0 && email.lastIndexOf('.') > etIndex;
-        if (!orderOk) {
-            return false;
-        }
-        if (email.trim().contains(" ")) {
-            // Whitespaces not allowed
-            return false;
-        }
-        if (email.trim().contains(";")){
-            return false;
-        }
-        return true;
+        Pattern p = Pattern.compile(".+@.+\\.[a-z]+");
+        Matcher m = p.matcher(email);
+        return m.matches();
     }
 
     /**
