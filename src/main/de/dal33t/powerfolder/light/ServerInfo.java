@@ -57,6 +57,7 @@ public class ServerInfo implements Serializable {
     private String validationCode;
     private Date validationReceived;
     private Date validationSend;
+    private int federationVersion;
 
     protected ServerInfo() {
         // NOP - only for Hibernate
@@ -81,12 +82,11 @@ public class ServerInfo implements Serializable {
      * PFC-2455: Creates a {@link ServerInfo} instance representing a server of
      * the local cluster.
      *
-     * @see #isClusterServer()
-     * @param node
-     *            the node information to connect to.
+     * @param node          the node information to connect to.
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents a local server.
+     * @see #isClusterServer()
      * @see #isClusterServer()
      */
     public static ServerInfo newClusterServer(MemberInfo node, String webUrl,
@@ -101,7 +101,7 @@ public class ServerInfo implements Serializable {
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents the federation
-     *         service.
+     * service.
      */
     public static ServerInfo newFederatedService(String webUrl,
                                                  String httpTunnelUrl) {
@@ -230,7 +230,7 @@ public class ServerInfo implements Serializable {
             return "Federated service: " + webUrl;
         }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
-            + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
+                + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
     }
 
     private String URLEncode(String url) {
@@ -276,4 +276,14 @@ public class ServerInfo implements Serializable {
     public boolean isValidated() {
         return validationReceived != null && validationSend != null;
     }
+
+    /**
+     * PF-1289/PF-453: Backwards compatibility for federation with version <= 11.6..
+     */
+    public void setFederationVersion(int version) { federationVersion = version; }
+
+    public int getFederationVersion() {
+        return federationVersion;
+    }
+
 }
