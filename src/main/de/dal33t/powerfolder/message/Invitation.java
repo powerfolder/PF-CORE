@@ -132,14 +132,6 @@ public class Invitation extends FolderRelatedMessage
     private String inviteeUsername;
 
     /**
-     * PF-164: Mark this invitation as 'handled' by a federated service. That means, this invitation was
-     * accepted/declined by a remote federated service. We need this variable to determine whether or not an
-     * invitation request needs to be sent in ServerSecurityService#accept-/declineInvitation.
-     */
-    @Transient
-    private boolean handledByFederatedService;
-
-    /**
      * Constructor
      *
      * @param permission The permission to the folder of this invitation
@@ -335,14 +327,6 @@ public class Invitation extends FolderRelatedMessage
         return permission;
     }
 
-    public boolean wasHandledByFederatedService() {
-        return handledByFederatedService;
-    }
-
-    public void setHandledByFederatedService(boolean handledByFederatedService) {
-        this.handledByFederatedService = handledByFederatedService;
-    }
-
     /**
      * Storing Invitation to the database does not store the {@link FolderInfo}
      * from {@link FolderRelatedMessage}. So when an Invitation is loaded from
@@ -507,14 +491,9 @@ public class Invitation extends FolderRelatedMessage
             return false;
         }
         if (suggestedSyncProfileConfig == null) {
-            if (other.suggestedSyncProfileConfig != null) {
-                return false;
-            }
-        } else if (!suggestedSyncProfileConfig
-            .equals(other.suggestedSyncProfileConfig)) {
-            return false;
-        }
-        return true;
+            return other.suggestedSyncProfileConfig == null;
+        } else return suggestedSyncProfileConfig
+                .equals(other.suggestedSyncProfileConfig);
     }
 
     // Backward compatability for deprecated/replaced fields.
