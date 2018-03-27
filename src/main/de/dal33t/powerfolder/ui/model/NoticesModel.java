@@ -139,11 +139,15 @@ public class NoticesModel extends PFUIComponent {
      *            the Notice to handle
      */
     public void handleSystemNotice(Notice notice, boolean suppressPopup) {
+
         if (!getUIController().isStarted() || getController().isShuttingDown()
             || notices.contains(notice))
         {
             return;
         }
+
+        // PF-164: Remove duplicate invitations:
+        removeDuplicateInvitations(notice);
 
         // Show notice?
         if ((Boolean) getApplicationModel().getSystemNotificationsValueModel()
@@ -179,6 +183,30 @@ public class NoticesModel extends PFUIComponent {
                 }
             }
             addNotice(notice);
+        }
+    }
+
+    /**
+     * PF-164: Removes duplicate invitations.
+     *
+     * @param notice The notice to be displayed in the client notification tab.
+     */
+    private void removeDuplicateInvitations(Notice notice) {
+
+        if (notice instanceof InvitationNotice) {
+
+            InvitationNotice incInvitationNotice = (InvitationNotice) notice;
+            Invitation incomingInvitation = incInvitationNotice.getPayload(getController());
+
+            for (Notice n : notices) {
+                if (n instanceof InvitationNotice) {
+                    InvitationNotice in = (InvitationNotice) n;
+                    Invitation i = in.getPayload(getController());
+                    if (i.getOID().equals(incomingInvitation.getOID())) {
+                        notices.remove(n);
+                    }
+                }
+            }
         }
     }
 
