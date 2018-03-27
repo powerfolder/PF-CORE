@@ -32,8 +32,6 @@ import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
@@ -1443,12 +1441,7 @@ public enum ConfigurationEntry {
     public ValueModel getModel(final Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         ValueModel model = new ValueHolder(getValue(controller), false);
-        model.addValueChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                setValue(controller, (String) evt.getNewValue());
-            }
-        });
+        model.addValueChangeListener(evt -> setValue(controller, (String) evt.getNewValue()));
         return model;
     }
 

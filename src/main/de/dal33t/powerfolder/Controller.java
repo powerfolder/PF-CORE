@@ -59,7 +59,6 @@ import org.quartz.impl.StdSchedulerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.ExceptionListener;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.file.*;
@@ -869,7 +868,7 @@ public class Controller extends PFComponent {
 
         /* Init stuff (moved here from {@link startConfig} */
         additionalConnectionListeners = Collections
-            .synchronizedList(new ArrayList<ConnectionListener>());
+            .synchronizedList(new ArrayList<>());
         started = false;
         shuttingDown = false;
         threadPool = new WrappedScheduledThreadPoolExecutor(
@@ -877,17 +876,14 @@ public class Controller extends PFComponent {
                 "Controller-Thread-"));
 
         // PFI-312
-        PathUtils.setIOExceptionListener(new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                if (e instanceof FileSystemException
-                    && e.toString().toLowerCase()
-                        .contains("too many open files"))
-                {
-                    logSevere("Detected I/O Exception: " + e.getMessage());
-                    logSevere("Please adjust limits for open file handles on this server");
-                    exit(1);
-                }
+        PathUtils.setIOExceptionListener(e -> {
+            if (e instanceof FileSystemException
+                && e.toString().toLowerCase()
+                    .contains("too many open files"))
+            {
+                logSevere("Detected I/O Exception: " + e.getMessage());
+                logSevere("Please adjust limits for open file handles on this server");
+                exit(1);
             }
         });
 
