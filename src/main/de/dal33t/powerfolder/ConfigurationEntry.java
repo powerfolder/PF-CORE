@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder;
 
+import com.google.common.collect.Maps;
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.disk.FolderSettings;
@@ -34,6 +35,8 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +67,7 @@ public enum ConfigurationEntry {
 
     /**
      * If any running instance should be killed when starting PowerFolder.
-     * <P>
+     * <p>
      * TRAC #2028
      */
     KILL_RUNNING_INSTANCE("kill.running.instance", false),
@@ -93,7 +96,7 @@ public enum ConfigurationEntry {
             }
             return super.getValueBoolean(controller);
         }
-        
+
         @Override
         public String getDefaultValue() {
             // Hack for PFC-2461
@@ -117,7 +120,7 @@ public enum ConfigurationEntry {
      * Don't show the FolderAdminPermission
      */
     SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN(
-        "security.permissions.show_folder_admin", true),
+            "security.permissions.show_folder_admin", true),
 
     /**
      * PFS-1040
@@ -132,8 +135,8 @@ public enum ConfigurationEntry {
      * http://www.powerfolder.com/wiki/Security_Permissions
      */
     SECURITY_FOLDER_ARCHIVE_PERMISSION("security.folder.archive.permission",
-        AccessMode.READ_WRITE.name()),
-        
+            AccessMode.READ_WRITE.name(), true),
+
     /**
      * PFC-2670: Trust self-signed/any SSL certificate
      */
@@ -176,10 +179,10 @@ public enum ConfigurationEntry {
      * networks. Nodes with different network IDs won't connect to each other.
      * They even don't have other nodes in its local peer-to-peer nodes
      * database.
-     * <P>
+     * <p>
      * The default network ID of the open PowerFolder network is X.
      */
-    NETWORK_ID("networkid", "X"),
+    NETWORK_ID("networkid", "X", true),
 
     // Provider Settings ******************************************************
 
@@ -241,7 +244,7 @@ public enum ConfigurationEntry {
     DIST_DESCRIPTION("dist.description", "Sync your world"),
 
     DIST_FOLDERS_BASE_NAME("dist.folderbasename",
-        Constants.FOLDERS_BASE_DIR_SUBDIR_NAME),
+            Constants.FOLDERS_BASE_DIR_SUBDIR_NAME),
 
     DIST_EMAIL("dist.email", ""),
 
@@ -261,8 +264,8 @@ public enum ConfigurationEntry {
     /**
      * PFC-2580: No connection to powerfolder.com / Cloud Replication options
      */
-    SERVER_CONNECT("server.connect.enabled", true),
-    
+    SERVER_CONNECT("server.connect.enabled", true, true),
+
     /**
      * The optional name of the sever to connect to.
      */
@@ -276,8 +279,7 @@ public enum ConfigurationEntry {
         public String getValue(Controller controller) {
             String str = super.getValue(controller);
             if (str != null && str.toLowerCase().trim()
-                .startsWith("https://access.powerfolder.com/node/os"))
-            {
+                    .startsWith("https://access.powerfolder.com/node/os")) {
                 return getDefaultValue();
             }
             return str;
@@ -306,18 +308,18 @@ public enum ConfigurationEntry {
      * HTTP tunnel relay URL.
      */
     SERVER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
-        "http://my.powerfolder.com/rpc"),
+            "http://my.powerfolder.com/rpc"),
 
     /**
      * #1687: How this computer should behave when the server is not connected.
-     * 
+     *
      * @deprecated for testing use {@link Feature#P2P_REQUIRES_LOGIN_AT_SERVER}
      */
     SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
         @Override
         public String getValue(Controller controller) {
             return Boolean.toString(Feature.P2P_REQUIRES_LOGIN_AT_SERVER
-                .isDisabled());
+                    .isDisabled());
         }
     },
 
@@ -342,7 +344,7 @@ public enum ConfigurationEntry {
     /**
      * Specify a URL to get a list of Shibboleth Identity Provider.
      */
-    SERVER_IDP_DISCO_FEED_URL("server.idp.disco_feed.url"),
+    SERVER_IDP_DISCO_FEED_URL("server.idp.disco_feed.url", null, true),
 
     /**
      * The last Identity Provider URL that was selected.
@@ -359,7 +361,7 @@ public enum ConfigurationEntry {
      * PFS-2006: Comma-seperated list to add custom LDAP-Organizations to institution
      * dropdown on Shibboleth login page.
      */
-    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names", ""),
+    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names", "", true),
 
     /**
      * PFC-2534: Skip auto login for the specified number. Defaults to retrying
@@ -540,7 +542,7 @@ public enum ConfigurationEntry {
      * PFS-1685: Token for webdav authentication
      */
     SERVER_CONNECT_TOKEN_WEBDAV("server.connect.token.webdav"),
-    
+
     /**
      * Password for connection (clear text)
      */
@@ -551,19 +553,19 @@ public enum ConfigurationEntry {
      * "user.name" as login username.
      */
     SERVER_CONNECT_NO_PASSWORD_ALLOWED("server.connect.nopassword.allowed",
-        false),
+            false),
 
     /**
      * #2518
      */
     SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED(
-        "server.connect.rememberpassword.allowed", true),
+            "server.connect.rememberpassword.allowed", true),
 
     /**
      * #2229: Disallow change of login
      */
     SERVER_CONNECT_CHANGE_LOGIN_ALLOWED("server.connect.changelogin.allowed",
-        true),
+            true),
 
     /**
      * #2338: Always connect to server, even in LAN only mode
@@ -574,7 +576,7 @@ public enum ConfigurationEntry {
 
     /**
      * PFC-2446
-     *
+     * <p>
      * Enable Single Sign-on via Kerberos
      */
     KERBEROS_SSO_ENABLED("kerberos.sso.enabled", false),
@@ -612,7 +614,7 @@ public enum ConfigurationEntry {
     /**
      * The port(s) to bind to.
      */
-    NET_PORT("net.port") {
+    NET_PORT("net.port", null, true) {
         @Override
         public String getValue(Controller controller) {
             String value = super.getValue(controller);
@@ -639,7 +641,7 @@ public enum ConfigurationEntry {
     /**
      * The TCP port for D2D
      */
-    NET_PORT_D2D("net.port.d2d", 0) {
+    NET_PORT_D2D("net.port.d2d", 0, true) {
         @Override
         public String getValue(Controller controller) {
             String value = super.getValue(controller);
@@ -725,7 +727,7 @@ public enum ConfigurationEntry {
      * The TCP/IP socket buffer size for TCP/UDT connections over Internet.
      */
     NET_SOCKET_INTERNET_BUFFER_SIZE("net.socket.internet.buffer.size",
-        1024 * 1024),
+            1024 * 1024),
 
     /**
      * The TCP/IP socket buffer size for TCP/UDT connections in LAN.
@@ -736,7 +738,7 @@ public enum ConfigurationEntry {
      * The TCP/IP socket buffer size limit for UDT connections over Internet.
      */
     NET_SOCKET_INTERNET_BUFFER_LIMIT("net.socket.internet.buffer.limit",
-        8 * 1024 * 1024),
+            8 * 1024 * 1024),
 
     /**
      * The TCP/IP socket buffer size limit for UDT connections in LAN.
@@ -791,8 +793,7 @@ public enum ConfigurationEntry {
     /**
      * My dynamic dns hostname or fix ip.
      */
-    HOSTNAME("hostname") {
-
+    HOSTNAME("hostname", null, true) {
         @Override
         public String getValue(Controller controller) {
             String value = super.getValue(controller);
@@ -852,14 +853,14 @@ public enum ConfigurationEntry {
                 WinUtils util = WinUtils.getInstance();
                 if (util != null) {
                     String can = util.getSystemFolderPath(
-                        WinUtils.CSIDL_PERSONAL, false);
+                            WinUtils.CSIDL_PERSONAL, false);
                     if (StringUtils.isNotBlank(can)) {
                         rootDir = can;
                     }
                 }
             }
             return Paths.get(rootDir).resolve(
-                Constants.FOLDERS_BASE_DIR_SUBDIR_NAME).toString();
+                    Constants.FOLDERS_BASE_DIR_SUBDIR_NAME).toString();
         }
     },
 
@@ -888,7 +889,6 @@ public enum ConfigurationEntry {
      * Flag if update at start should performed.
      */
     DYNDNS_AUTO_UPDATE("dyndns.autoUpdate", false) {
-
         @Override
         public String getValue(Controller controller) {
             String value = super.getValue(controller);
@@ -930,7 +930,7 @@ public enum ConfigurationEntry {
      */
     CONFLICT_DETECTION("conflict.detection", true),
 
-    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true),
+    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true, true),
 
     LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
 
@@ -942,36 +942,36 @@ public enum ConfigurationEntry {
     /**
      * The loglevel to write to debug file when verbose=true
      */
-    LOG_LEVEL_FILE("log.file.level", Level.FINE.getName()),
+    LOG_LEVEL_FILE("log.file.level", Level.FINE.getName(), true),
 
     /**
      * #2585
      */
-    LOG_FILE_ROTATE("log.file.rotate", true),
+    LOG_FILE_ROTATE("log.file.rotate", true, true),
 
     /**
      * PFS-475: Remove old log files
      */
-    LOG_FILE_DELETE_DAYS("log.file.keep.days", 31),
+    LOG_FILE_DELETE_DAYS("log.file.keep.days", 31, true),
 
     /**
      * The loglevel to print to console when verbose=true
      */
-    LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName()),
+    LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName(), true),
 
     /**
      * PFS-1017: Logging to syslog
      */
-    LOG_SYSLOG_LEVEL("log.syslog.level",  Level.INFO.getName()),
+    LOG_SYSLOG_LEVEL("log.syslog.level", Level.INFO.getName(), true),
 
-    LOG_SYSLOG_HOST("log.syslog.host"),
+    LOG_SYSLOG_HOST("log.syslog.host", null, true),
 
-    LOG_SYSLOG_PORT("log.syslog.port", 514),
+    LOG_SYSLOG_PORT("log.syslog.port", 514, true),
 
     /**
      * Should the active threads be logged?
      */
-    LOG_ACTIVE_THREADS("log.active_threads", false),
+    LOG_ACTIVE_THREADS("log.active_threads", false, true),
 
     /**
      * Whether to request debug reports
@@ -1033,7 +1033,7 @@ public enum ConfigurationEntry {
     /**
      * #2637: Disabling can save OS resources.
      */
-    FOLDER_WATCHER_ENABLED("folder.watcher.enabled", true),
+    FOLDER_WATCHER_ENABLED("folder.watcher.enabled", true, true),
     /**
      * #2405: The delay for syncing after folderWatcher detects a change.
      */
@@ -1042,7 +1042,7 @@ public enum ConfigurationEntry {
     /**
      * Enable to copy and delete a newly transfered file instead of moveing.
      */
-    FOLDER_COPY_AFTER_TRANSFER("folder.copy_after_transfer.enabled", false),
+    FOLDER_COPY_AFTER_TRANSFER("folder.copy_after_transfer.enabled", false, true),
 
     /**
      * The number of seconds between db maintenance (1 hour).
@@ -1054,12 +1054,12 @@ public enum ConfigurationEntry {
      * maintenance. In Seconds! Default: 3 month
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", 60 * 60 * 24 * 30
-        * 3),
+            * 3),
 
     /**
      * The http proxy to use for HTTP tunneled connections
      */
-    HTTP_PROXY_HOST("http.proxy.host") {
+    HTTP_PROXY_HOST("http.proxy.host", null, true) {
         @Override
         public String getDefaultValue() {
             String host = System.getProperty("https.proxyHost");
@@ -1073,7 +1073,7 @@ public enum ConfigurationEntry {
     /**
      * The http proxy port to use for HTTP tunneled connections
      */
-    HTTP_PROXY_PORT("http.proxy.port", 80) {
+    HTTP_PROXY_PORT("http.proxy.port", 80, true) {
         @Override
         public String getDefaultValue() {
             String port = System.getProperty("https.proxyPort");
@@ -1090,12 +1090,12 @@ public enum ConfigurationEntry {
     /**
      * The http proxy username to use for HTTP tunneled connections
      */
-    HTTP_PROXY_USERNAME("http.proxy.username"),
+    HTTP_PROXY_USERNAME("http.proxy.username", null, true),
 
     /**
      * The http password proxy to use for HTTP tunneled connections
      */
-    HTTP_PROXY_PASSWORD("http.proxy.password"),
+    HTTP_PROXY_PASSWORD("http.proxy.password", null, true),
 
     HTTP_PROXY_NON_PROXY_HOSTS("http.proxy.nonproxyhosts") {
         @Override
@@ -1120,10 +1120,14 @@ public enum ConfigurationEntry {
      */
     DOWNLOAD_AUTO_CLEANUP_FREQUENCY("downloads.auto.cleanup.frequency", 2),
 
-    /** Warning about unsyned folders. */
+    /**
+     * Warning about unsyned folders.
+     */
     FOLDER_SYNC_USE("sync.folder.use", false),
 
-    /** Seconds before warning about unsynced folders (10 days). */
+    /**
+     * Seconds before warning about unsynced folders (10 days).
+     */
     FOLDER_SYNC_WARN_SECONDS("sync.folder.warn.seconds", 864000) {
         @Override
         public String getValue(Controller controller) {
@@ -1132,8 +1136,8 @@ public enum ConfigurationEntry {
                 // Old entry
                 try {
                     value = String.valueOf(24L * 60 * 60 * Integer
-                        .valueOf(controller.getConfig().getProperty(
-                            "sync.folder.warn")));
+                            .valueOf(controller.getConfig().getProperty(
+                                    "sync.folder.warn")));
                 } catch (Exception e) {
                 }
             }
@@ -1182,8 +1186,7 @@ public enum ConfigurationEntry {
 
             if (value == null) {
                 if (!PreferencesEntry.EXPERT_MODE
-                        .getValueBoolean(controller))
-                {
+                        .getValueBoolean(controller)) {
                     return Boolean.TRUE;
                 }
                 value = getDefaultValue();
@@ -1193,9 +1196,9 @@ public enum ConfigurationEntry {
                 return value.trim().equalsIgnoreCase("true");
             } catch (NumberFormatException e) {
                 LOG.log(
-                    Level.WARNING,
-                    "Unable to parse configuration entry 'create.folder.basedir.only' into a boolean. Value: "
-                        + value, e);
+                        Level.WARNING,
+                        "Unable to parse configuration entry 'create.folder.basedir.only' into a boolean. Value: "
+                                + value, e);
                 return "true".equalsIgnoreCase(getDefaultValue());
             }
         }
@@ -1205,13 +1208,15 @@ public enum ConfigurationEntry {
      * Remove folder from setup if disappeared/deleted from basedir.
      */
     FOLDER_REMOVE_IN_BASEDIR_WHEN_DISAPPEARED("remove.folder.basedir.when_disappeared", true),
-    
+
     /**
      * PFC-2709: Enable/Disabled client sync with special directories, e.g. Documents‚ (User directories)
      */
     FOLDER_MAP_USER_DIRECTORIES("create.folder.map.user.directories", true),
 
-    /** The number of file versions to use when creating a new folder. */
+    /**
+     * The number of file versions to use when creating a new folder.
+     */
     DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 25),
 
     /**
@@ -1224,7 +1229,7 @@ public enum ConfigurationEntry {
      * #2132: This transfer mode will be recommend by default.
      */
     DEFAULT_TRANSFER_MODE("default.transfer.mode",
-        SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
+            SyncProfile.AUTOMATIC_SYNCHRONIZATION.getFieldList()),
 
     /**
      * PFC-2545: Special transfer mode if UNC path is encountered (used for
@@ -1238,10 +1243,14 @@ public enum ConfigurationEntry {
      */
     FOLDER_SCANNER_MAX_CRAWLERS("sync.folder.max_crawlers", 3),
 
-    /** PFC-3018: The max number of file requesting workers to spawn */
+    /**
+     * PFC-3018: The max number of file requesting workers to spawn
+     */
     FOLDER_FILE_REQUESTOR_MAX_WORKERS("sync.folder.max_filerequestors", 300),
 
-    /** PFC-3018: The number of folders one requestor should handle */
+    /**
+     * PFC-3018: The number of folders one requestor should handle
+     */
     FOLDER_FOLDERS_PER_FILE_REQUESTOR("sync.folder.folders_per_filerequestors", 600),
 
     /**
@@ -1315,22 +1324,28 @@ public enum ConfigurationEntry {
     // Methods/Constructors ***************************************************
 
     private static final Logger LOG = Logger.getLogger(ConfigurationEntry.class
-        .getName());
+            .getName());
 
     private final String configKey;
     protected final String defaultValue;
+    protected final boolean restartRequired;
 
     ConfigurationEntry(String aConfigKey) {
         this(aConfigKey, null);
     }
 
     ConfigurationEntry(String aConfigKey, String theDefaultValue) {
+        this(aConfigKey, theDefaultValue, false);
+    }
+
+    ConfigurationEntry(String aConfigKey, String theDefaultValue, boolean restartRequired) {
         Reject.ifBlank(aConfigKey, "Config key is blank");
         Reject.ifTrue(
-            aConfigKey.startsWith(FolderSettings.PREFIX_V4),
-            "Config entries must not start with '"
-                + FolderSettings.PREFIX_V4 + '\'');
+                aConfigKey.startsWith(FolderSettings.PREFIX_V4),
+                "Config entries must not start with '"
+                        + FolderSettings.PREFIX_V4 + '\'');
         configKey = aConfigKey;
+        this.restartRequired = restartRequired;
         if (theDefaultValue != null) {
             defaultValue = theDefaultValue;
         } else {
@@ -1343,23 +1358,29 @@ public enum ConfigurationEntry {
         this(aConfigKey, String.valueOf(theDefaultValue));
     }
 
+    ConfigurationEntry(String aConfigKey, boolean theDefaultValue, boolean restartRequired) {
+        this(aConfigKey, String.valueOf(theDefaultValue), restartRequired);
+    }
+
     ConfigurationEntry(String aConfigKey, int theDefaultValue) {
         this(aConfigKey, String.valueOf(theDefaultValue));
     }
 
+    ConfigurationEntry(String aConfigKey, int theDefaultValue, boolean restartRequired) {
+        this(aConfigKey, String.valueOf(theDefaultValue), restartRequired);
+    }
+
     /**
-     * @param controller
-     *            the controller to read the config from
+     * @param controller the controller to read the config from
      * @return If a value was set for this entry.
      */
     public boolean hasValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         return hasValue(controller.getConfig());
     }
-    
+
     /**
-     * @param config
-     *            the config
+     * @param config the config
      * @return If a value was set for this entry.
      */
     public boolean hasValue(Properties config) {
@@ -1368,30 +1389,27 @@ public enum ConfigurationEntry {
     }
 
     /**
-     * @param controller
-     *            the controller to read the config from
+     * @param controller the controller to read the config from
      * @return If a value was set for this entry and contains a non-blank
-     *         string.
+     * string.
      */
     public boolean hasNonBlankValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         return hasNonBlankValue(controller.getConfig());
     }
-    
+
     /**
-     * @param config
-     *            the config
+     * @param config the config
      * @return If a value was set for this entry and contains a non-blank
-     *         string.
+     * string.
      */
     public boolean hasNonBlankValue(Properties config) {
         return hasValue(config)
-            && StringUtils.isNotBlank(getValue(config));
+                && StringUtils.isNotBlank(getValue(config));
     }
 
     /**
-     * @param controller
-     *            the controller to read the config from
+     * @param controller the controller to read the config from
      * @return The current value from the configuration for this entry. or
      */
     public String getValue(Controller controller) {
@@ -1400,8 +1418,7 @@ public enum ConfigurationEntry {
     }
 
     /**
-     * @param config
-     *            the config to read the value from
+     * @param config the config to read the value from
      * @return The current value from the configuration for this entry. or
      */
     public String getValue(Properties config) {
@@ -1412,28 +1429,26 @@ public enum ConfigurationEntry {
         }
         return value;
     }
-    
+
     /**
      * Parses the configuration entry into a Integer.
-     * 
-     * @param controller
-     *            the controller to read the config from
+     *
+     * @param controller the controller to read the config from
      * @return The current value from the configuration for this entry or the
-     *         default value if value not set/unparseable or {@code null} if no
-     *         default value was set.
+     * default value if value not set/unparseable or {@code null} if no
+     * default value was set.
      */
     public Integer getValueInt(Controller controller) {
         return getValueInt(controller.getConfig());
     }
-    
+
     /**
      * Parses the configuration entry into a Integer.
-     * 
-     * @param config
-     *            the config to read from
+     *
+     * @param config the config to read from
      * @return The current value from the configuration for this entry or the
-     *         default value if value not set/unparseable or {@code null} if no
-     *         default value was set.
+     * default value if value not set/unparseable or {@code null} if no
+     * default value was set.
      */
     public Integer getValueInt(Properties config) {
         String value = getValue(config);
@@ -1447,7 +1462,7 @@ public enum ConfigurationEntry {
             return new Integer(value.trim());
         } catch (NumberFormatException e) {
             LOG.log(Level.WARNING, "Unable to parse configuration entry '"
-                + configKey + "' into a int. Value: " + value, e);
+                    + configKey + "' into a int. Value: " + value, e);
             return new Integer(getDefaultValue());
         }
     }
@@ -1455,24 +1470,22 @@ public enum ConfigurationEntry {
     /**
      * Parses the configuration entry into a Boolen.
      *
-     * @param controller
-     *            the controller to read the config from
+     * @param controller the controller to read the config from
      * @return The current value from the configuration for this entry or the
-     *         default value if value not set/unparseable or {@code null} if no
-     *         default value was set.
+     * default value if value not set/unparseable or {@code null} if no
+     * default value was set.
      */
     public Boolean getValueBoolean(Controller controller) {
         return getValueBoolean(controller.getConfig());
     }
-    
+
     /**
      * Parses the configuration entry into a Boolen.
      *
-     * @param config
-     *            the config to read from
+     * @param config the config to read from
      * @return The current value from the configuration for this entry or the
-     *         default value if value not set/unparseable or {@code null} if no
-     *         default value was set.
+     * default value if value not set/unparseable or {@code null} if no
+     * default value was set.
      */
     public Boolean getValueBoolean(Properties config) {
         String value = getValue(config);
@@ -1486,7 +1499,7 @@ public enum ConfigurationEntry {
             return value.trim().equalsIgnoreCase("true");
         } catch (NumberFormatException e) {
             LOG.log(Level.WARNING, "Unable to parse configuration entry '"
-                + configKey + "' into a boolean. Value: " + value, e);
+                    + configKey + "' into a boolean. Value: " + value, e);
             return "true".equalsIgnoreCase(getDefaultValue());
         }
     }
@@ -1529,20 +1542,17 @@ public enum ConfigurationEntry {
     /**
      * Sets the value of this config entry.
      *
-     * @param controller
-     *            the controller of the config
-     * @param value
-     *            the value to set
+     * @param controller the controller of the config
+     * @param value      the value to set
      */
     public void setValue(Controller controller, String value) {
         setValue(controller.getConfig(), value);
     }
-        
+
     /**
      * Sets the value of this config entry.
      *
-     * @param value
-     *            the value to set
+     * @param value the value to set
      */
     public void setValue(Properties config, String value) {
         Reject.ifNull(config, "config is null");
@@ -1552,10 +1562,8 @@ public enum ConfigurationEntry {
     /**
      * Sets the value of this config entry.
      *
-     * @param controller
-     *            the controller of the config
-     * @param value
-     *            the value to set
+     * @param controller the controller of the config
+     * @param value      the value to set
      */
     public void setValue(Controller controller, boolean value) {
         setValue(controller, String.valueOf(value));
@@ -1564,10 +1572,8 @@ public enum ConfigurationEntry {
     /**
      * Sets the value of this config entry.
      *
-     * @param controller
-     *            the controller of the config
-     * @param value
-     *            the value to set
+     * @param controller the controller of the config
+     * @param value      the value to set
      */
     public void setValue(Controller controller, int value) {
         setValue(controller, String.valueOf(value));
@@ -1586,17 +1592,16 @@ public enum ConfigurationEntry {
     /**
      * Removes the entry from the configuration.
      *
-     * @param controller
-     *            the controller to use
+     * @param controller the controller to use
      */
     public void removeValue(Controller controller) {
         removeValue(controller.getConfig());
     }
+
     /**
      * Removes the entry from the configuration.
      *
-     * @param config
-     *            the config to remove from
+     * @param config the config to remove from
      */
     public void removeValue(Properties config) {
         Reject.ifNull(config, "config is null");
@@ -1605,6 +1610,7 @@ public enum ConfigurationEntry {
 
     /**
      * PFC-2969
+     *
      * @param config
      * @param overwrite
      */
@@ -1659,5 +1665,20 @@ public enum ConfigurationEntry {
      */
     public String getConfigKey() {
         return configKey;
+    }
+
+    private static final Map<String, ConfigurationEntry> LOOKUP = Maps.uniqueIndex(Arrays.asList(ConfigurationEntry.values()), ConfigurationEntry::getConfigKey);
+
+    public static ConfigurationEntry getEnum(String key) {
+        return LOOKUP.get(key);
+    }
+
+    /**
+     * Indicates if by setting this configuration entry an server restart is required.
+     *
+     * @return true if an restart is required or false if not.
+     */
+    public boolean isRestartRequired() {
+        return restartRequired;
     }
 }

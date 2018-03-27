@@ -19,15 +19,14 @@
  */
 package de.dal33t.powerfolder;
 
-import java.util.logging.Level;
-
 import com.jgoodies.binding.adapter.PreferencesAdapter;
 import com.jgoodies.binding.value.ValueModel;
-
 import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+
+import java.util.logging.Level;
 
 /**
  * Refelects an entry setting in the preferences. Provides basic method for
@@ -45,7 +44,9 @@ public enum PreferencesEntry {
      * Show offline members
      */
     NODE_MANAGER_MODEL_SHOW_OFFLINE("node_manager_model_show_offline", true),
-    /** find offline users */
+    /**
+     * find offline users
+     */
     FRIEND_SEARCH_HIDE_OFFLINE("FriendsSearch_HideOfflineUsers", false),
 
     QUIT_ON_X("quitonx", false),
@@ -56,8 +57,6 @@ public enum PreferencesEntry {
 
     EXPERT_MODE("ExpertMode", false),
 
-    //BEGINNER_MODE("BeginnerMode", true),
-    
     SHOW_DEVICES("show.devices", false),
 
     VIEW_ACHIVE("view.archive", true),
@@ -82,7 +81,9 @@ public enum PreferencesEntry {
      */
     WARN_ON_NO_DIRECT_CONNECTIVITY("warn_on_no_direct_connectivity", false),
 
-    /** Warn user if cloud space is getting full (90%+). */
+    /**
+     * Warn user if cloud space is getting full (90%+).
+     */
     WARN_FULL_CLOUD("warn.poor.quality", true),
 
     SETUP_DEFAULT_FOLDER("setup_default_folder", false),
@@ -90,25 +91,35 @@ public enum PreferencesEntry {
     /**
      * If the last password of login should be reminded.
      */
-    SERVER_REMEMBER_PASSWORD("server_remind_password", true),
+    SERVER_REMEMBER_PASSWORD("server_remind_password", true, true),
 
     DOCUMENT_LOGGING("document.logging", Level.WARNING.getName()),
 
     AUTO_EXPAND("auto.expand", false),
 
-    /** Whether the user uses OS. If not, don't show OS stuff. */
+    /**
+     * Whether the user uses OS. If not, don't show OS stuff.
+     */
     USE_ONLINE_STORAGE("use.os", true),
 
-    /** How many seconds the notification should display. */
+    /**
+     * How many seconds the notification should display.
+     */
     NOTIFICATION_DISPLAY("notification.display", 10),
 
-    /** How translucent the notification should display, as percentage. */
+    /**
+     * How translucent the notification should display, as percentage.
+     */
     NOTIFICATION_TRANSLUCENT("notification.translucent", 0),
 
-    /** Skin name. */
+    /**
+     * Skin name.
+     */
     SKIN_NAME("skin.name", Origin.NAME),
 
-    /** The 'Show offline' checkbox on the ComputersTab. */
+    /**
+     * The 'Show offline' checkbox on the ComputersTab.
+     */
     SHOW_OFFLINE("show.offline", true),
 
     SHOW_ASK_FOR_PAUSE("show.ask.for.pause", true),
@@ -116,7 +127,7 @@ public enum PreferencesEntry {
     MAIN_FRAME_MAXIMIZED("mainframe.maximized", false),
 
     FILE_SEARCH_MODE("file.search.mode",
-        DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
+            DirectoryFilter.SEARCH_MODE_FILE_NAME_DIRECTORY_NAME),
 
     SHOW_TYPICAL_FOLDERS("show.typical.folders", false),
 
@@ -155,12 +166,12 @@ public enum PreferencesEntry {
      * PFC-2395
      */
     ENABLE_CONTEXT_MENU("context_menu.enabled", true),
-    
+
     /**
      * Folder base path
      */
     FOLDER_BASE_PATH("foldersbase", ""),
-    
+
     /**
      * Flag is set true if FOLDER_BASE_PATH shall overwrite existing configuration
      */
@@ -190,33 +201,43 @@ public enum PreferencesEntry {
         }
     };
 
-    /** String, Boolean, Integer */
+    /**
+     * String, Boolean, Integer
+     */
     private Class<?> type;
 
     private String preferencesKey;
     private Object defaultValue;
+    private boolean restartRequired;
 
     // Methods/Constructors ***************************************************
 
     PreferencesEntry(String aPreferencesKey, boolean theDefaultValue) {
+        this(aPreferencesKey, theDefaultValue, false);
+    }
+
+    PreferencesEntry(String aPreferencesKey, boolean theDefaultValue, boolean restartRequired) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
-        type = Boolean.class;
-        preferencesKey = aPreferencesKey;
-        defaultValue = theDefaultValue;
+        this.type = Boolean.class;
+        this.preferencesKey = aPreferencesKey;
+        this.defaultValue = theDefaultValue;
+        this.restartRequired = restartRequired;
     }
 
     PreferencesEntry(String aPreferencesKey, int theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
-        type = Integer.class;
-        preferencesKey = aPreferencesKey;
-        defaultValue = theDefaultValue;
+        this.type = Integer.class;
+        this.preferencesKey = aPreferencesKey;
+        this.defaultValue = theDefaultValue;
+        this.restartRequired = false;
     }
 
     PreferencesEntry(String aPreferencesKey, String theDefaultValue) {
         Reject.ifBlank(aPreferencesKey, "Preferences key is blank");
-        type = String.class;
-        preferencesKey = aPreferencesKey;
-        defaultValue = theDefaultValue;
+        this.type = String.class;
+        this.preferencesKey = aPreferencesKey;
+        this.defaultValue = theDefaultValue;
+        this.restartRequired = false;
     }
 
     String getPreferencesKey() {
@@ -224,17 +245,16 @@ public enum PreferencesEntry {
     }
 
     /**
-     * @param controller
-     *            the controller to read the config from
+     * @param controller the controller to read the config from
      * @return The current value from the configuration for this entry. or
      */
     public String getValueString(Controller controller) {
         if (!type.isAssignableFrom(String.class)) {
             throw new IllegalStateException("This preferences entry has type "
-                + type.getName() + " cannot acces as String");
+                    + type.getName() + " cannot acces as String");
         }
         return controller.getPreferences().get(preferencesKey,
-            (String) getDefaultValue(controller));
+                (String) getDefaultValue(controller));
     }
 
     public Integer getDefaultValueInt() {
@@ -248,65 +268,59 @@ public enum PreferencesEntry {
     /**
      * the preferences entry if its a Integer.
      *
-     * @param controller
-     *            the controller to read the config from
+     * @param controller the controller to read the config from
      * @return The current value from the preferences for this entry. or the
-     *         default value if value not set.
+     * default value if value not set.
      */
     public Integer getValueInt(Controller controller) {
         if (!type.isAssignableFrom(Integer.class)) {
             throw new IllegalStateException("This preferences entry has type "
-                + type.getName() + " cannot access as Integer");
+                    + type.getName() + " cannot access as Integer");
         }
         return controller.getPreferences().getInt(preferencesKey,
-            (Integer) getDefaultValue(controller));
+                (Integer) getDefaultValue(controller));
     }
 
     /**
-
      * Parses the configuration entry into a Boolen.
      *
-     * @param controller
-     *            the controller to read the config from
+     * @param controller the controller to read the config from
      * @return The current value from the configuration for this entry. or the
-     *         default value if value not set/unparseable.
+     * default value if value not set/unparseable.
      */
     public Boolean getValueBoolean(Controller controller) {
         if (!type.isAssignableFrom(Boolean.class)) {
             throw new IllegalStateException("This preferences entry has type "
-                + type.getName() + " cannot access as Boolean");
+                    + type.getName() + " cannot access as Boolean");
         }
         return controller.getPreferences().getBoolean(preferencesKey,
-            (Boolean) getDefaultValue(controller));
+                (Boolean) getDefaultValue(controller));
     }
 
     /**
      * Constructs a preferences adapter which is directly bound to the
      * preferences entry.
      *
-     * @param controller
-     *            the controller
+     * @param controller the controller
      * @return the model bound to the pref entry.
      */
     public ValueModel getModel(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         return new PreferencesAdapter(controller.getPreferences(),
-            preferencesKey, getDefaultValue(controller));
+                preferencesKey, getDefaultValue(controller));
     }
 
     /**
      * Sets the value of this preferences entry.
      *
-     * @param controller
-     *            the controller of the prefs
-     * @param value
-     *            the value to set
+     * @param controller the controller of the prefs
+     * @param value      the value to set
      */
     public void setValue(Controller controller, String value) {
         Reject.ifNull(controller, "Controller is null");
         if (!type.isAssignableFrom(String.class)) {
             throw new IllegalStateException("This preferences entry has type "
-                + type.getName() + " cannot set as String");
+                    + type.getName() + " cannot set as String");
         }
         controller.getPreferences().put(preferencesKey, value);
     }
@@ -314,16 +328,14 @@ public enum PreferencesEntry {
     /**
      * Sets the value of this preferences entry.
      *
-     * @param controller
-     *            the controller of the prefs
-     * @param value
-     *            the value to set
+     * @param controller the controller of the prefs
+     * @param value      the value to set
      */
     public void setValue(Controller controller, boolean value) {
         Reject.ifNull(controller, "Controller is null");
         if (!type.isAssignableFrom(Boolean.class)) {
             throw new IllegalStateException("This preferences entry has type "
-                + type.getName() + " cannot set as Boolean");
+                    + type.getName() + " cannot set as Boolean");
         }
         controller.getPreferences().putBoolean(preferencesKey, value);
     }
@@ -331,16 +343,14 @@ public enum PreferencesEntry {
     /**
      * Sets the value of this preferences entry.
      *
-     * @param controller
-     *            the controller of the prefs
-     * @param value
-     *            the value to set
+     * @param controller the controller of the prefs
+     * @param value      the value to set
      */
     public void setValue(Controller controller, int value) {
         Reject.ifNull(controller, "Controller is null");
         if (!type.isAssignableFrom(Integer.class)) {
             throw new IllegalStateException("This preferences entry has type "
-                + type.getName() + " cannot set as Integer");
+                    + type.getName() + " cannot set as Integer");
         }
         controller.getPreferences().putInt(preferencesKey, value);
     }
@@ -348,11 +358,19 @@ public enum PreferencesEntry {
     /**
      * Removes the entry from the preferences.
      *
-     * @param controller
-     *            the controller to use
+     * @param controller the controller to use
      */
     public void removeValue(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
         controller.getPreferences().remove(preferencesKey);
+    }
+
+    /**
+     * Indicates if by setting this configuration entry an server restart is required.
+     *
+     * @return true if an restart is required or false if not.
+     */
+    public boolean isRestartRequired() {
+        return restartRequired;
     }
 }
