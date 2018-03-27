@@ -127,11 +127,13 @@ public interface AccountService {
 
     /**
      * Merge one or more accounts into {@code account}.
-     * {@ocode account} will be stored on success.
+     * {@code account} will be stored on success.
      * {@code mergeAccounts} are being deleted.
      *
      * @param account       Surviving account.
      * @param mergeAccounts Accounts that are merged into {@code account} and deleted afterwards.
+     * @retun
+     *
      */
-    void mergeAccounts(Account account, Account... mergeAccounts);
+    List<String> mergeAccounts(Account account, Account... mergeAccounts);
 }
