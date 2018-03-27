@@ -98,6 +98,11 @@ public class Controller extends PFComponent {
     public static final String PROGRAM_VERSION = MAJOR_VERSION + "."
         + MINOR_VERSION + "." + REVISION_VERSION;
 
+    /**
+     * Federation version.
+     */
+    public static final String FEDERATION_VERSION = MAJOR_VERSION + "." + MINOR_VERSION;
+
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
 

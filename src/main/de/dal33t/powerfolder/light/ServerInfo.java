@@ -76,7 +76,7 @@ public class ServerInfo implements Serializable {
             // Federated service
             this.id = webUrl;
         }
-        this.federationVersion = Controller.PROGRAM_VERSION;
+        this.federationVersion = Controller.FEDERATION_VERSION;
         Reject.ifBlank(this.id, "Unable to set ID of ServerInfo");
     }
 
@@ -282,7 +282,9 @@ public class ServerInfo implements Serializable {
     /**
      * PF-1289/PF-453: Backwards compatibility for federation with version <= 11.6..
      */
-    public void setFederationVersion(String version) { federationVersion = version; }
+    public void setFederationVersion(String version) {
+        federationVersion = version;
+    }
 
     public String getFederationVersion() { return federationVersion; }
 }
