@@ -276,8 +276,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     private class AcceptInviteTask implements Runnable {
         @Override
         public void run() {
-            getController().getOSClient().getSecurityService()
-                .acceptInvitation(invitation);
+            getController().getOSClient().getSecurityService().acceptInvitation(invitation);
         }
 
     }

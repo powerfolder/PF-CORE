@@ -386,8 +386,7 @@ public class NoticesModel extends PFUIComponent {
 
         @Override
         public void run() {
-            getController().getOSClient().getSecurityService()
-                .declineInvitation(invitation);
+            getController().getOSClient().getSecurityService().declineInvitation(invitation);
         }
     }
 }
