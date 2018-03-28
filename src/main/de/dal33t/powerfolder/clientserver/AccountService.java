@@ -130,10 +130,28 @@ public interface AccountService {
      * {@code account} will be stored on success.
      * {@code mergeAccounts} are being deleted.
      *
+     * Only certain combinations of accounts are allowed to be merged.
+     *
+     * DB Users are allowed to only merge DB Users
+     * LDAP Users are allowed to merge DB Users and LDAP Users
+     * Shib Users are allowed to only merge DB Users
+     *
+     * _column_ user can import _row_ user
+     *
+     *      | DB | LDAP | Shib
+     * -----+----+------+------
+     * DB   | T  | T    | T
+     * LDAP | F  | T    | F
+     * Shib | F  | F    | F
+     *
+     *
      * @param account       Surviving account.
      * @param mergeAccounts Accounts that are merged into {@code account} and deleted afterwards.
-     * @retun
-     *
+     * @return
+     *      An empty list, if all accounts were merged correctly, otherwise the
+     *      list of Account IDs of the accounts which are not allowed to be merged.
+     *      If any one account of {@code mergeAccounts} cannot be merged, no account
+     *      will be merged.
      */
     List<String> mergeAccounts(Account account, Account... mergeAccounts);
 }
