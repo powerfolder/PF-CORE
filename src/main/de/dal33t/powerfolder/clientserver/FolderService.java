@@ -279,7 +279,6 @@ public interface FolderService {
      * Create a download link.
      *
      * @param fInfo
-     * @param folder
      */
     String getDownloadLink(FileInfo fInfo);
 
