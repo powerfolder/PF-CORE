@@ -91,7 +91,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 6;
-    private static final int REVISION_VERSION = 685;
+    private static final int REVISION_VERSION = 686;
 
     /**
      * Program version.
@@ -1554,6 +1554,7 @@ public class Controller extends PFComponent {
             if (store.getUsableSpace() < 1024L * 1024L * 10) {
                 logSevere("Unable to store configuration file. Disk space insufficient: "
                         + Format.formatBytesShort(store.getUsableSpace()));
+                return;
             }
         } catch (IOException e) {
             logFine(e);
