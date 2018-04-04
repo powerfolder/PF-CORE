@@ -52,8 +52,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     private JCheckBox useSwarmingOnLanCB;
     private JCheckBox useSwarmingOnInternetCB;
     private JCheckBox conflictDetectionCB;
-    private JCheckBox massDeleteCB;
-    private JSlider massDeleteSlider;
     private JCheckBox usePowerFolderIconCB;
     private JCheckBox folderAutoSetupCB;
     private JCheckBox autoDetectFoldersCB;
@@ -89,25 +87,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
                 Translation.get("exp.preferences.expert.use_pf_icon"),
                 ConfigurationEntry.USE_PF_ICON.getValueBoolean(getController()));
         }
-
-        massDeleteCB = SimpleComponentFactory.createCheckBox(Translation
-            .get("exp.preferences.expert.use_mass_delete"));
-        massDeleteCB.setSelected(ConfigurationEntry.MASS_DELETE_PROTECTION
-            .getValueBoolean(getController()));
-        massDeleteCB.addItemListener(new MassDeleteItemListener());
-        massDeleteSlider = new JSlider(20, 100, ConfigurationEntry.MASS_DELETE_THRESHOLD
-            .getValueInt(getController()));
-        massDeleteSlider.setMajorTickSpacing(20);
-        massDeleteSlider.setMinorTickSpacing(5);
-        massDeleteSlider.setPaintTicks(true);
-        massDeleteSlider.setPaintLabels(true);
-        Dictionary<Integer, JLabel> dictionary = new Hashtable<Integer, JLabel>();
-        for (int i = 20; i <= 100; i += massDeleteSlider.getMajorTickSpacing())
-        {
-            dictionary.put(i, new JLabel(Integer.toString(i) + '%'));
-        }
-        massDeleteSlider.setLabelTable(dictionary);
-        enableMassDeleteSlider();
 
         conflictDetectionCB = new JCheckBox(
             Translation
@@ -180,20 +159,13 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     }
 
     /**
-     * Enable the mass delete slider if the box is selected.
-     */
-    private void enableMassDeleteSlider() {
-        massDeleteSlider.setEnabled(massDeleteCB.isSelected());
-    }
-
-    /**
      * Creates the JPanel for advanced settings
      *
      * @return the created panel
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            String rows = "pref, 3dlu, pref, 3dlu, pref, 3dlu, pref,  3dlu, pref, "
+            String rows = "pref, 3dlu, pref, 3dlu, pref, "
                 + "3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref, 3dlu, pref";
 
             FormLayout layout = new FormLayout(
@@ -212,18 +184,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 
             row += 2;
             builder.add(conflictDetectionCB, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder.add(massDeleteCB, cc.xyw(3, row, 2));
-
-            row += 2;
-            builder
-                .add(
-                    new JLabel(
-                        Translation
-                            .get("exp.preferences.expert.mass_delete_threshold")),
-                    cc.xy(1, row));
-            builder.add(massDeleteSlider, cc.xy(3, row));
 
             row += 2;
             builder.add(folderAutoSetupCB, cc.xyw(3, row, 2));
@@ -277,11 +237,6 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
     public void save() {
         ConfigurationEntry.CONFLICT_DETECTION.setValue(getController(),
             conflictDetectionCB.isSelected());
-
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getController(),
-            massDeleteCB.isSelected());
-        ConfigurationEntry.MASS_DELETE_THRESHOLD.setValue(getController(),
-            massDeleteSlider.getValue());
 
         // zip on lan?
         boolean current = ConfigurationEntry.USE_ZIP_ON_LAN
@@ -356,15 +311,4 @@ public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
             needsRestart = true;
         }
     }
-
-    // ////////////////
-    // Inner Classes //
-    // ////////////////
-
-    private class MassDeleteItemListener implements ItemListener {
-        public void itemStateChanged(ItemEvent e) {
-            enableMassDeleteSlider();
-        }
-    }
-
 }

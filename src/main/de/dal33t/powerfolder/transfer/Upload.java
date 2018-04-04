@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -32,12 +33,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Simple class for a scheduled Upload
@@ -54,6 +59,7 @@ public class Upload extends Transfer {
     protected transient InputStream in;
     private long inpos;
     private String debugState;
+    private byte[] buffer;
 
     /**
      * Constructs a new uploads, package protected, can only be called by
@@ -197,6 +203,19 @@ public class Upload extends Transfer {
                         try {
                             inputFile = getFile().getDiskFile(getController().getFolderRepository());
                             fileChannel = FileChannel.open(inputFile, StandardOpenOption.READ);
+
+                            int bufferSize = ConfigurationEntry.TRANSFER_BUFFER_THRESHOLD.getValueInt(getController());
+                            long fileSize = Files.size(inputFile);
+
+                            if (fileSize <= bufferSize) {
+                                logFine("Using buffer to upload file");
+                                ByteBuffer tempBuffer = ByteBuffer.allocate((int)fileSize);
+                                fileChannel.read(tempBuffer, 0);
+                                fileChannel.close();
+                                fileChannel = null;
+                                buffer = tempBuffer.array();
+                            }
+
                         } catch (FileNotFoundException e) {
                             useInputStream = true;
                         } catch (IOException e) {
@@ -319,6 +338,9 @@ public class Upload extends Transfer {
                 logSevere("IOException", e);
             }
         }
+        if (buffer != null) {
+            buffer = null;
+        }
     }
 
     protected boolean checkForFilePartsRecordRequest() throws TransferException
@@ -439,11 +461,18 @@ public class Upload extends Transfer {
                 }
 
             }
+
             int pos = 0;
             while (pos < data.length) {
                 int read;
                 int readLen = data.length - pos;
-                if (fileChannel != null) {
+                if (buffer != null &&
+                    buffer.length >= startOffset + pr.getRange().getLength())
+                {
+                    data = Arrays.copyOfRange(buffer, (int) startOffset,
+                        (int) (startOffset + pr.getRange().getLength()));
+                    read = data.length;
+                } else if (fileChannel != null) {
                     read = fileChannel.read(ByteBuffer.wrap(data, pos, readLen));
                 } else if (in != null) {
                     read = in.read(data, pos, readLen);
@@ -458,6 +487,7 @@ public class Upload extends Transfer {
                 }
                 pos += read;
             }
+
             FileChunk chunk;
             if (getPartner().getProtocolVersion() >= Identity.PROTOCOL_VERSION_110) {
                 chunk = new FileChunkExt(pr.getFile(),

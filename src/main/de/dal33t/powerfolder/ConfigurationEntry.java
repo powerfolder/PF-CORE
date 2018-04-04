@@ -700,6 +700,15 @@ public enum ConfigurationEntry {
     TRANSFERS_MAX_REQUESTS_QUEUED("transfers.max.request.queued", 15),
 
     /**
+     * PF-972
+     * Files that are smaller than this threshold are being buffered into memory
+     * directly and the upload is serviced from this buffer. For larger files
+     * the file is held open during upload and the upload is serviced from the
+     * storage.
+     */
+    TRANSFER_BUFFER_THRESHOLD("transfer.buffer.threshold", 2 * 1024 * 1024),
+
+    /**
      * My dynamic dns hostname or fix ip.
      */
     HOSTNAME("hostname") {
@@ -784,14 +793,6 @@ public enum ConfigurationEntry {
      * Lets do this flexible.
      */
     FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
-
-    /**
-     * Note - as of PFC-2182, mass delete protection should only be applied
-     * if the user has expert mode.
-     */
-    MASS_DELETE_PROTECTION("mass.delete.protection", false),
-
-    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95),
 
     /**
      * Contains a comma-separated list of all plugins to load.

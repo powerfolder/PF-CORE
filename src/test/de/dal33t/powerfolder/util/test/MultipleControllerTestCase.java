@@ -131,7 +131,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
         assertNotNull("Connection listener for controller '" + id
             + "' could not be opened", controller.getConnectionListener());
         // triggerAndWaitForInitialMaitenenace(controller);
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(controller, false);
         // Clean up on completion.
         controllers.put(id, controller);
         return controller;
