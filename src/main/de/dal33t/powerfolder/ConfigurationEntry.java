@@ -783,6 +783,15 @@ public enum ConfigurationEntry {
     TRANSFERS_MAX_REQUESTS_QUEUED("transfers.max.request.queued", 15),
 
     /**
+     * PF-972
+     * Files that are smaller than this threshold are being buffered into memory
+     * directly and the upload is serviced from this buffer. For larger files
+     * the file is held open during upload and the upload is serviced from the
+     * storage.
+     */
+    TRANSFER_BUFFER_THRESHOLD("transfer.buffer.threshold", 2 * 1024 * 1024),
+
+    /**
      * My dynamic dns hostname or fix ip.
      */
     HOSTNAME("hostname") {

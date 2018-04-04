@@ -85,21 +85,9 @@ public class SendInvitationEmail implements Serializable {
     }
 
     // Serialization and validation
-
     private void validate() {
         Reject.ifNull(invitation, "Invitation is null!");
-        // validateRecipient();
     }
-
-    // private void validateRecipient() {
-    // Reject.ifNull(getRecipient(), "Recipient is null!");
-    // validateEmail(getRecipient());
-    // }
-
-    // private void validateEmail(String address) {
-    // Reject.ifTrue(address.indexOf('@') < 0,
-    // "Address has to be an email address: " + address);
-    // }
 
     /**
      * @return the invitation
