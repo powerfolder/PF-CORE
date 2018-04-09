@@ -1649,6 +1649,7 @@ public class Account implements Serializable, D2DObject {
         if (mesg instanceof AccountInfoProto.AccountInfo) {
             AccountInfoProto.AccountInfo proto = (AccountInfoProto.AccountInfo) mesg;
             this.oid = proto.getId();
+            this.agreedToSVersion = (int)proto.getTosVersion();
             this.username = proto.getUsername();
             this.firstname = proto.getFirstname();
             this.surname = proto.getSurname();
@@ -1726,6 +1727,7 @@ public class Account implements Serializable, D2DObject {
         AccountInfoProto.AccountInfo.Builder builder = AccountInfoProto.AccountInfo.newBuilder();
         builder.setClazzName("AccountInfo");
         if (this.oid != null) builder.setId(this.oid);
+        builder.setTosVersion(this.agreedToSVersion);
         if (this.username != null) builder.setUsername(this.username);
         builder.setDisplayName(this.getDisplayName());
         if (this.firstname != null) builder.setFirstname(this.firstname);

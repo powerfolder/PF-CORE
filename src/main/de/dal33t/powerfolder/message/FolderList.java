@@ -274,7 +274,6 @@ public class FolderList extends Message
             for (FolderInfoProto.FolderInfo folderInfo : proto.getFolderInfosList()) {
                 this.folders[i++] = new FolderInfo(folderInfo);
             }
-            this.joinedMetaFolders = proto.getJoinedMetaFolders();
         }
     }
 
@@ -292,7 +291,6 @@ public class FolderList extends Message
         for (FolderInfo folderInfo : this.folders) {
             builder.addFolderInfos((FolderInfoProto.FolderInfo) folderInfo.toD2D());
         }
-        builder.setJoinedMetaFolders(this.joinedMetaFolders);
         return builder.build();
     }
 

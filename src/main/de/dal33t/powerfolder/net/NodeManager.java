@@ -54,6 +54,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.NodeManagerEvent;
 import de.dal33t.powerfolder.event.NodeManagerListener;
@@ -1149,7 +1150,7 @@ public class NodeManager extends PFComponent {
                     // on LAN
                     acceptHandler = true;
                     // #841 NOT isCompletelyConnected()
-                } else if (member.isConnected()) {
+                } else if (!(handler instanceof D2DSocketConnectionHandler) && member.isConnected()) {
                     rejectCause = "Duplicate connection detected to "
                         + member.getNick() + " ("
                         + member.getReconnectAddress() + ")";

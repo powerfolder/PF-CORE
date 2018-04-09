@@ -147,7 +147,7 @@ public class GroupAdminPermission implements Permission, D2DObject {
         stringMessageBuilder.setClazzName("StringMessage");
         stringMessageBuilder.setValue(this.groupOID);
         // Objects can be any message so they need to be packed to com.google.protobuf.Any
-        builder.setObjects(0, com.google.protobuf.Any.pack(stringMessageBuilder.build()));
+        builder.addObjects(com.google.protobuf.Any.pack(stringMessageBuilder.build()));
         // Set permission enum
         builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.GROUP_ADMIN);
         return builder.build();
