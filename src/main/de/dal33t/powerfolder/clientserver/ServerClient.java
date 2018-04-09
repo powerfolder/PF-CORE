@@ -2707,11 +2707,12 @@ public class ServerClient extends PFComponent {
     private boolean federatedLoginSuccess() {
 
         // 1. Get the service URL of the hosting server of the username:
-        String serviceWebUrl = null;
+        String serviceWebUrl;
         try {
             serviceWebUrl = securityService.getHostingService(username).getWebUrl();
         } catch (RemoteCallException ex) {
             logWarning("Server " + server + " does not support federated logins.");
+            return false;
         }
 
         String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
