@@ -70,7 +70,6 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.InvitationUtil;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -533,13 +532,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             return;
         }
 
-        if (file.getFileName().toString().endsWith(".invitation")) {
-            // Load invitation file
-            Invitation invitation = InvitationUtil.load(file);
-            if (invitation != null) {
-                getController().invitationReceived(invitation);
-            }
-        } else if (file.getFileName().toString().endsWith(".nodes")) {
+        if (file.getFileName().toString().endsWith(".nodes")) {
             // Load nodes file
             MemberInfo[] nodes = loadNodesFile(file);
             // Enqueue new nodes
