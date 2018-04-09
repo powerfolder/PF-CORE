@@ -682,10 +682,13 @@ public class Controller extends PFComponent {
         setupPeriodicalTasks();
 
         if (MacUtils.isSupported()) {
-            if (isFirstStart()) {
-                MacUtils.getInstance().setPFStartup(true, this);
+            MacUtils macUtils = MacUtils.getInstance();
+            if (macUtils != null) {
+                if (isFirstStart()) {
+                    macUtils.setPFStartup(true, this);
+                }
+                macUtils.setAppReOpenedListener(this);
             }
-            MacUtils.getInstance().setAppReOpenedListener(this);
         }
 
         if (pauseSecs == 0) {
@@ -993,27 +996,20 @@ public class Controller extends PFComponent {
      * PFC-2846: Config reload via command line while running
      */
     public void reloadConfigFile() {
-        BufferedInputStream bis = null;
-        try {
-            if (Files.exists(configFile)) {
-                logInfo("Reloading configfile " + configFile.toString());
-            } else {
-                logWarning("Config file does not exist. " + configFile.toString());
-                return;
-            }
-            bis = new BufferedInputStream(Files.newInputStream(configFile));
+        if (Files.exists(configFile)) {
+            logInfo("Reloading configfile " + configFile.toString());
+        } else {
+            logWarning("Config file does not exist. " + configFile.toString());
+            return;
+        }
+
+        try (BufferedInputStream bis = new BufferedInputStream(
+            Files.newInputStream(configFile)))
+        {
             config.load(bis);
         } catch (IOException e) {
             logWarning("Unable to reload config file " + configFile
-                    + ". " + e);
-        } finally {
-            try {
-                if (bis != null) {
-                    bis.close();
-                }
-            } catch (Exception e) {
-                // Ignore.
-            }
+                + ". " + e);
         }
     }
 
@@ -1369,7 +1365,7 @@ public class Controller extends PFComponent {
                         for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
                             boolean listenerOpened = openListener(bindAddress, port, false);
                             if (listenerOpened && connectionListener != null) {
-                                // set reconnect on first successfull listener
+                                // set reconnect on first successful listener
                                 nodeManager
                                         .getMySelf()
                                         .getInfo()
@@ -2290,7 +2286,7 @@ public class Controller extends PFComponent {
      * Connects to a remote peer, with ip and port
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  address  Address to connect to
-     * @throw {@link ConnectionException} Raised when something is wrong
+     * @throws ConnectionException Raised when something is wrong
      * @return The connected {@link Node}
      */
     public Member connect(InetSocketAddress address) throws ConnectionException
@@ -2303,7 +2299,7 @@ public class Controller extends PFComponent {
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  address  Address to connect to
      * @param  useD2D   Whether to use D2D proto
-     * @throw {@link ConnectionException} Raised when something is wrong
+     * @throws ConnectionException Raised when something is wrong
      * @return The connected {@link Node}
      **/
 
@@ -2887,10 +2883,10 @@ public class Controller extends PFComponent {
                     + memberInfo.getNick() + ". is a pf server.");
                 return;
             }
-        }
 
-        // A new friend!
-        member.setFriend(true, null);
+            // A new friend!
+            member.setFriend(true, null);
+        }
     }
 
     /**
