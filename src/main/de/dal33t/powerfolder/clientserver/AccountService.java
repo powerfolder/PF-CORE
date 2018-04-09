@@ -130,6 +130,8 @@ public interface AccountService {
      * {@code account} will be stored on success.
      * {@code mergeAccounts} are being deleted.
      *
+     * HINT: Server Administrators are always allowed to merge accounts!
+     *
      * Only certain combinations of accounts are allowed to be merged.
      *
      * DB Users are allowed to only merge DB Users

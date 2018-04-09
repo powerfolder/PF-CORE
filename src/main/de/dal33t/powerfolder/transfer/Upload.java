@@ -205,10 +205,11 @@ public class Upload extends Transfer {
                             fileChannel = FileChannel.open(inputFile, StandardOpenOption.READ);
 
                             int bufferSize = ConfigurationEntry.TRANSFER_BUFFER_THRESHOLD.getValueInt(getController());
+                            long fileSize = Files.size(inputFile);
 
-                            if (Files.size(inputFile) <= bufferSize) {
+                            if (fileSize <= bufferSize) {
                                 logFine("Using buffer to upload file");
-                                ByteBuffer tempBuffer = ByteBuffer.allocate(bufferSize);
+                                ByteBuffer tempBuffer = ByteBuffer.allocate((int)fileSize);
                                 fileChannel.read(tempBuffer, 0);
                                 fileChannel.close();
                                 fileChannel = null;
@@ -336,6 +337,9 @@ public class Upload extends Transfer {
             } catch (IOException e) {
                 logSevere("IOException", e);
             }
+        }
+        if (buffer != null) {
+            buffer = null;
         }
     }
 

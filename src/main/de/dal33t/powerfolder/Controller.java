@@ -1554,6 +1554,7 @@ public class Controller extends PFComponent {
             if (store.getUsableSpace() < 1024L * 1024L * 10) {
                 logSevere("Unable to store configuration file. Disk space insufficient: "
                         + Format.formatBytesShort(store.getUsableSpace()));
+                return;
             }
         } catch (IOException e) {
             logFine(e);
