@@ -19,33 +19,19 @@
  */
 package de.dal33t.powerfolder.net;
 
+import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Listener, which listens for incoming broadcast messages
@@ -144,8 +130,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             socket = new MulticastSocket(DEFAULT_BROADCAST_PORT);
 
             InetAddress bindAddr = null;
-            String bindIP = ConfigurationEntry.NET_BIND_ADDRESS
-                .getValue(getController());
+            String bindIP = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
             if (!StringUtils.isEmpty(bindIP)) {
                 bindAddr = InetAddress.getByName(bindIP);
             } else if (OSUtil.isWindowsSystem()) {
@@ -229,8 +214,14 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 // received new packet
                 socket.receive(inPacket);
 
+                // Disabled accepting D2D multicasts until they can be processed
+                /*
                 if ((isPowerFolderBroadcast(inPacket)
-                    || isPowerFolderD2DBroadcast(inPacket))
+                        || isPowerFolderD2DBroadcast(inPacket))
+                        && getController().getNodeManager().isStarted())
+                */
+
+                if (isPowerFolderBroadcast(inPacket)
                     && getController().getNodeManager().isStarted())
                 {
                     processBroadcast(inPacket);
@@ -519,8 +510,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         updateNetworkInterfaces();
         localAddresses.clear();
 
-        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(getController());
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
         if (cfgBind != null && cfgBind.length() > 0)
             try {
                 localAddresses.add(InetAddress.getByName(cfgBind));

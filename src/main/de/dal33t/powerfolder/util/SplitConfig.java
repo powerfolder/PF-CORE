@@ -24,12 +24,14 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 /**
  * PFC-2444
  * @author Sprajc
  */
 public class SplitConfig extends Properties {
+    private static final Logger LOGGER = Logger.getLogger(SplitConfig.class.getName());
     private static final long serialVersionUID = 1L;
 
     private Properties regular = new Properties();
@@ -90,7 +92,8 @@ public class SplitConfig extends Properties {
 
     @Override
     public synchronized Object put(Object key, Object value) {
-        if (String.valueOf(key).startsWith(FolderSettings.PREFIX_V4)) {
+        String keyValue = String.valueOf(key);
+        if (keyValue.startsWith(FolderSettings.PREFIX_V4)) {
             return folders.put(key, value);
         } else {
             return regular.put(key, value);

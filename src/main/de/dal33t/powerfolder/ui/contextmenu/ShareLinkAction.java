@@ -17,13 +17,7 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.liferay.nativity.modules.contextmenu.model.ContextMenuAction;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.SyncStatus;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -31,6 +25,11 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Util;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The action performed, when the "share link" context menu item was clicked.<br />
@@ -77,8 +76,7 @@ class ShareLinkAction extends ContextMenuAction {
                         @Override
                         public void run() {
                             String previousEntry = Util.getClipboardContents();
-                            String url = client.getFolderService()
-                                .getDownloadLink(fInfo);
+                            String url = client.getFolderService(fInfo.getFolderInfo()).getDownloadLink(fInfo);
                             Util.setClipboardContents(url);
 
                             ShareFileNotificationHandler handler = new ShareFileNotificationHandler(

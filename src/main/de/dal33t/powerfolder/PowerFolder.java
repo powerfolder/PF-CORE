@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
+import org.apache.commons.cli.*;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,24 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-
-import javax.swing.JOptionPane;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.JavaVersion;
-import de.dal33t.powerfolder.util.MemoryMonitor;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
  * Main class for the PowerFolder application.
@@ -176,7 +163,7 @@ public class PowerFolder {
             return;
         }
 
-        int rconPort = Integer.valueOf(ConfigurationEntry.NET_RCON_PORT
+        int rconPort = Integer.valueOf(ConfigurationEntry.NET_PORT_RCON
             .getDefaultValue());
         String portStr = commandLine.getOptionValue("k");
         if (StringUtils.isNotBlank(portStr)) {

@@ -19,15 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.SwingUtilities;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FileInBasePathWarning;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -36,17 +30,16 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
-import de.dal33t.powerfolder.ui.notices.InvitationNotice;
-import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
-import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
-import de.dal33t.powerfolder.ui.notices.RunnableNotice;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.SystemNotificationHandler;
 import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Model of the notices awaiting action by the user.
@@ -138,11 +131,15 @@ public class NoticesModel extends PFUIComponent {
      *            the Notice to handle
      */
     public void handleSystemNotice(Notice notice, boolean suppressPopup) {
+
         if (!getUIController().isStarted() || getController().isShuttingDown()
             || notices.contains(notice))
         {
             return;
         }
+
+        // PF-164: Remove duplicate invitations:
+        removeDuplicateInvitations(notice);
 
         // Show notice?
         if ((Boolean) getApplicationModel().getSystemNotificationsValueModel()
@@ -178,6 +175,30 @@ public class NoticesModel extends PFUIComponent {
                 }
             }
             addNotice(notice);
+        }
+    }
+
+    /**
+     * PF-164: Removes duplicate invitations.
+     *
+     * @param notice The notice to be displayed in the client notification tab.
+     */
+    private void removeDuplicateInvitations(Notice notice) {
+
+        if (notice instanceof InvitationNotice) {
+
+            InvitationNotice incInvitationNotice = (InvitationNotice) notice;
+            Invitation incomingInvitation = incInvitationNotice.getPayload(getController());
+
+            for (Notice n : notices) {
+                if (n instanceof InvitationNotice) {
+                    InvitationNotice in = (InvitationNotice) n;
+                    Invitation i = in.getPayload(getController());
+                    if (i.getOID().equals(incomingInvitation.getOID())) {
+                        notices.remove(n);
+                    }
+                }
+            }
         }
     }
 
@@ -258,11 +279,14 @@ public class NoticesModel extends PFUIComponent {
     }
 
     public void clearAll() {
-        for (Notice n : notices) {
-            if (n instanceof InvitationNotice) {
-                getController().getThreadPool().execute(
-                    new DeclineInvitationTask(((InvitationNotice) n)
-                        .getPayload(getController())));
+        if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
+                .getValueBoolean(getController())) {
+            for (Notice n : notices) {
+                if (n instanceof InvitationNotice) {
+                    getController().getThreadPool().execute(
+                            new DeclineInvitationTask(((InvitationNotice) n)
+                                    .getPayload(getController())));
+                }
             }
         }
         notices.clear();
@@ -272,7 +296,9 @@ public class NoticesModel extends PFUIComponent {
     public void clearNotice(Notice notice) {
         for (Notice n : notices) {
             if (notice.equals(n)) {
-                if (n instanceof InvitationNotice) {
+                if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
+                        .getValueBoolean(getController()) &&
+                        n instanceof InvitationNotice) {
                     getController().getThreadPool().execute(
                         new DeclineInvitationTask(((InvitationNotice) n)
                             .getPayload(getController())));

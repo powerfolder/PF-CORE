@@ -299,9 +299,6 @@ public class Identity extends Message
         if (message instanceof IdentityProto.Identity) {
             IdentityProto.Identity proto = (IdentityProto.Identity) message;
             this.member = new MemberInfo(proto.getNodeInfo());
-            this.protocolVersion = proto.getProtocolVersion();
-            this.requestFullFolderlist = proto.getRequestFullFolderlist();
-            this.configurationURL = proto.getConfigurationUrl();
         }
     }
 
@@ -316,9 +313,6 @@ public class Identity extends Message
         IdentityProto.Identity.Builder builder = IdentityProto.Identity.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.member != null) builder.setNodeInfo((NodeInfoProto.NodeInfo) this.member.toD2D());
-        builder.setProtocolVersion(this.protocolVersion);
-        builder.setRequestFullFolderlist(this.requestFullFolderlist);
-        if (this.configurationURL != null) builder.setConfigurationUrl(this.configurationURL);
         return builder.build();
     }
 

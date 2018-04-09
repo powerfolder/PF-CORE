@@ -19,14 +19,14 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.util.Collection;
-import java.util.List;
-
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Contains all methods to modify/alter, create or notify Accounts.
@@ -93,7 +93,9 @@ public interface AccountService {
      * @param emails
      * @param personalMessage
      * @return true if all messages was successfully delivered
+     * @deprecated since 14.0
      */
+    @Deprecated
     boolean tellFriend(Collection<String> emails, String personalMessage);
 
     /**
@@ -119,10 +121,39 @@ public interface AccountService {
     
     /**
      * Returns the current skin of an account
-     * 
-     * @param accounts The account
+     *
+     * @param account The account
      * @return The current skin of the account
      */
     String getClientSkinName(AccountInfo account);
 
+    /**
+     * Merge one or more accounts into {@code account}.
+     * {@code account} will be stored on success.
+     * {@code mergeAccounts} are being deleted.
+     * <p>
+     * HINT: Server Administrators are always allowed to merge accounts!
+     * <p>
+     * Only certain combinations of accounts are allowed to be merged.
+     * <p>
+     * DB Users are allowed to only merge DB Users
+     * LDAP Users are allowed to merge DB Users and LDAP Users
+     * Shib Users are allowed to only merge DB Users
+     * <p>
+     * _column_ user can import _row_ user
+     * <p>
+     * | DB | LDAP | Shib
+     * -----+----+------+------
+     * DB   | T  | T    | T
+     * LDAP | F  | T    | F
+     * Shib | F  | F    | F
+     *
+     * @param account       Surviving account.
+     * @param mergeAccounts Accounts that are merged into {@code account} and deleted afterwards.
+     * @return An empty list, if all accounts were merged correctly, otherwise the
+     * list of Account IDs of the accounts which are not allowed to be merged.
+     * If any one account of {@code mergeAccounts} cannot be merged, no account
+     * will be merged.
+     */
+    List<String> mergeAccounts(Account account, Account... mergeAccounts);
 }

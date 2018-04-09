@@ -19,19 +19,22 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.Serializable;
-import java.net.URLEncoder;
+import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.protocol.NodeInfoProto;
+import de.dal33t.powerfolder.protocol.ServerInfoProto;
+import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.Reject;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
-import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.Reject;
+import java.io.Serializable;
+import java.net.URLEncoder;
+import java.util.Date;
 
 /**
  * Contains important information about a server
@@ -41,10 +44,11 @@ import de.dal33t.powerfolder.util.Reject;
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ServerInfo implements Serializable {
+public class ServerInfo implements Serializable, D2DObject {
     private static final long serialVersionUID = 100L;
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NODE = "node";
+    public static final String PROPERTYNAME_WEB_URL = "webUrl";
 
     @Id
     private String id;
@@ -54,6 +58,9 @@ public class ServerInfo implements Serializable {
     private MemberInfo node;
     private String webUrl;
     private String httpTunnelUrl;
+    private String validationCode;
+    private Date validationReceived;
+    private Date validationSend;
 
     protected ServerInfo() {
         // NOP - only for Hibernate
@@ -75,40 +82,47 @@ public class ServerInfo implements Serializable {
     }
 
     /**
+     * Init from D2D message
+     *
+     * @param message Message to use data from
+     **/
+    public ServerInfo(AbstractMessage message) {
+        initFromD2D(message);
+    }
+
+    /**
      * PFC-2455: Creates a {@link ServerInfo} instance representing a server of
      * the local cluster.
-     * 
-     * @see #isClusterServer()
-     * @param node
-     *            the node information to connect to.
+     *
+     * @param node          the node information to connect to.
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents a local server.
+     * @see #isClusterServer()
+     * @see #isClusterServer()
      */
     public static ServerInfo newClusterServer(MemberInfo node, String webUrl,
-        String httpTunnelUrl)
-    {
+                                              String httpTunnelUrl) {
         return new ServerInfo(node, webUrl, httpTunnelUrl);
     }
 
     /**
      * PFC-2455: Creates a {@link ServerInfo} instance representing a federated
      * service
-     * 
+     *
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents the federated
-     *         service.
+     * service.
      */
     public static ServerInfo newFederatedService(String webUrl,
-        String httpTunnelUrl)
-    {
+                                                 String httpTunnelUrl) {
         return new ServerInfo(null, webUrl, httpTunnelUrl);
     }
 
     /**
      * PFC-2455
-     * 
+     *
      * @return true if this represents a server of the local cluster serving.
      */
     public boolean isClusterServer() {
@@ -117,7 +131,7 @@ public class ServerInfo implements Serializable {
 
     /**
      * PFC-2455
-     * 
+     *
      * @return true if this represents a federated remote service.
      */
     public boolean isFederatedService() {
@@ -160,9 +174,7 @@ public class ServerInfo implements Serializable {
     }
 
     /**
-     * @param controller
-     * @param folder
-     *            the folder.
+     * @param folder the folder.
      * @return the URL to the given folder.
      */
     public String getURL(FolderInfo folder) {
@@ -199,7 +211,7 @@ public class ServerInfo implements Serializable {
 
     public void migrateId() {
         if (node != null) {
-            this.id = node.id;            
+            this.id = node.id;
         }
     }
 
@@ -233,9 +245,9 @@ public class ServerInfo implements Serializable {
             return "Federated service: " + webUrl;
         }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
-            + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
+                + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
     }
-    
+
     private String URLEncode(String url) {
         try {
             String newUrl = URLEncoder.encode(url, "UTF-8");
@@ -246,4 +258,66 @@ public class ServerInfo implements Serializable {
             return url;
         }
     }
+
+    /**
+     * PF-768: Methods below are for the federated service validation process to build mutual trust relationships
+     * between the nodes of a federated network. A federated service is trusted if he has sent and received a
+     * validation/confirmation.
+     */
+    public Date getValidationReceived() {
+        return validationReceived;
+    }
+
+    public void setValidationReceived(Date validationReceived) {
+        this.validationReceived = validationReceived;
+    }
+
+    public Date getValidationSend() {
+        return validationSend;
+    }
+
+    public void setValidationSend(Date validationSend) {
+        this.validationSend = validationSend;
+    }
+
+    public String getValidationCode() {
+        return validationCode;
+    }
+
+    public void setValidationCode(String validationCode) {
+        this.validationCode = validationCode;
+    }
+
+    public boolean isValidated() {
+        return validationReceived != null && validationSend != null;
+    }
+
+    /**
+     * Init from D2D message
+     *
+     * @param message Message to use data from
+     **/
+    @Override
+    public void initFromD2D(AbstractMessage message) {
+        if (message instanceof ServerInfoProto.ServerInfo) {
+            ServerInfoProto.ServerInfo proto = (ServerInfoProto.ServerInfo) message;
+            this.node = new MemberInfo(proto.getNodeInfo());
+            this.webUrl = proto.getHttpUrl();
+        }
+    }
+
+    /**
+     * Convert to D2D message
+     *
+     * @return Converted D2D message
+     **/
+    @Override
+    public AbstractMessage toD2D() {
+        ServerInfoProto.ServerInfo.Builder builder = ServerInfoProto.ServerInfo.newBuilder();
+        builder.setClazzName(this.getClass().getSimpleName());
+        if (this.node != null) builder.setNodeInfo((NodeInfoProto.NodeInfo) this.node.toD2D());
+        if (this.webUrl != null) builder.setHttpUrl(this.webUrl);
+        return builder.build();
+    }
+
 }

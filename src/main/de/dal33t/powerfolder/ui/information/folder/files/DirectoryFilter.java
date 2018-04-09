@@ -19,20 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.information.folder.files;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -50,6 +38,17 @@ import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FilterModel;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.StringUtils;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class to filter a directory.
@@ -639,7 +638,7 @@ public class DirectoryFilter extends FilterModel {
             }
         }
 
-        public void scanResultCommited(FolderEvent folderEvent) {
+        public void scanResultCommitted(FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 checkAndQueue(folderEvent);
             }

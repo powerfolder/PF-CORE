@@ -19,40 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -67,6 +36,24 @@ import de.dal33t.powerfolder.ui.wizard.data.SingleFileRestoreItem;
 import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTable;
 import de.dal33t.powerfolder.ui.wizard.table.SingleFileRestoreTableModel;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.CancellationException;
 
 /**
  * Call this class via PFWizard.
@@ -355,14 +342,11 @@ public class SingleFileRestorePanel extends PFWizardPanel {
 
         protected List<SingleFileRestoreItem> doInBackground() {
 
-            // Also try getting versions from OnlineStorage.
-            boolean online = folder.hasMember(getController().getOSClient().getServer());
+            // Also try getting versions from OnlineStorage
             FolderService folderService = null;
-            if (online) {
-                ServerClient client = getController().getOSClient();
-                if (client != null && client.isConnected() && client.isLoggedIn()) {
-                    folderService = client.getFolderService();
-                }
+            ServerClient client = getController().getOSClient();
+            if (client.isConnected() && client.isLoggedIn()) {
+                folderService = client.getFolderService(folder.getInfo());
             }
 
             FileArchiver fileArchiver = folder.getFileArchiver();

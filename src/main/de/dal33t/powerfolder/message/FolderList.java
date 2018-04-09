@@ -29,7 +29,10 @@ import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.FolderListProto;
 import de.dal33t.powerfolder.util.*;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -274,7 +277,6 @@ public class FolderList extends Message
             for (FolderInfoProto.FolderInfo folderInfo : proto.getFolderInfosList()) {
                 this.folders[i++] = new FolderInfo(folderInfo);
             }
-            this.joinedMetaFolders = proto.getJoinedMetaFolders();
         }
     }
 
@@ -292,7 +294,6 @@ public class FolderList extends Message
         for (FolderInfo folderInfo : this.folders) {
             builder.addFolderInfos((FolderInfoProto.FolderInfo) folderInfo.toD2D());
         }
-        builder.setJoinedMetaFolders(this.joinedMetaFolders);
         return builder.build();
     }
 

@@ -8,6 +8,8 @@ public class LoginRequest extends D2DRequestMessage {
 
     protected String username;
     protected String password;
+    protected String token;
+    protected long tosVersion;
 
     public LoginRequest() {
     }
@@ -29,6 +31,14 @@ public class LoginRequest extends D2DRequestMessage {
         return password;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public long getTosVersion() {
+        return tosVersion;
+    }
+
     /**
      * Init from D2D message
      *
@@ -41,6 +51,8 @@ public class LoginRequest extends D2DRequestMessage {
             this.requestCode = proto.getRequestCode();
             this.username = proto.getUsername();
             this.password = proto.getPassword();
+            this.token = proto.getToken();
+            this.tosVersion = proto.getTosVersion();
         }
     }
 
@@ -56,6 +68,8 @@ public class LoginRequest extends D2DRequestMessage {
         if (this.requestCode != null) builder.setRequestCode(this.getRequestCode());
         if (this.username != null) builder.setUsername(this.getUsername());
         if (this.password != null) builder.setPassword(this.getPassword());
+        if (this.token != null) builder.setToken(this.getToken());
+        builder.setTosVersion(this.tosVersion);
         return builder.build();
     }
 

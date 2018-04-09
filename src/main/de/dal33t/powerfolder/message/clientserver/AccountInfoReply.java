@@ -3,20 +3,23 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.protocol.AccountInfoProto;
-import de.dal33t.powerfolder.protocol.AccountInfoReplyProto;
-import de.dal33t.powerfolder.protocol.PermissionInfoProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
+import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.protocol.*;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class AccountInfoReply extends D2DReplyMessage {
 
     private Account account;
     private Collection<FolderPermission> invitations;
+    private Map<String, String> folderMapping;
     private long avatarLastModifiedDate;
+    private long usedQuota;
+    private long backupQuota;
+    private long freeQuota;
     private AccountInfo accountInfo;
 
     public AccountInfoReply() {
@@ -27,12 +30,16 @@ public class AccountInfoReply extends D2DReplyMessage {
         this.replyStatusCode = replyStatusCode;
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, long avatarLastModifiedDate) {
+    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, Map<String, String> folderMapping, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.account = account;
         this.invitations = invitations;
+        this.folderMapping = folderMapping;
         this.avatarLastModifiedDate = avatarLastModifiedDate;
+        this.usedQuota = usedQuota;
+        this.backupQuota = backupQuota;
+        this.freeQuota = freeQuota;
     }
 
     public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, AccountInfo accountInfo, long avatarLastModifiedDate) {
@@ -61,6 +68,30 @@ public class AccountInfoReply extends D2DReplyMessage {
 
     public long getAvatarLastModifiedDate() {
         return avatarLastModifiedDate;
+    }
+
+    public long getUsedQuota() {
+        return usedQuota;
+    }
+
+    public void setUsedQuota(long usedQuota) {
+        this.usedQuota = usedQuota;
+    }
+
+    public long getBackupQuota() {
+        return backupQuota;
+    }
+
+    public void setBackupQuota(long backupQuota) {
+        this.backupQuota = backupQuota;
+    }
+
+    public long getFreeQuota() {
+        return freeQuota;
+    }
+
+    public void setFreeQuota(long freeQuota) {
+        this.freeQuota = freeQuota;
     }
 
     public AccountInfo getAccountInfo() {
@@ -104,8 +135,24 @@ public class AccountInfoReply extends D2DReplyMessage {
                 permissionInfoBuilder.setIsInvitation(true);
                 accountInfoBuilder.addPermissionInfos(permissionInfoBuilder.build());
             }
+            if (this.account.getServer() != null && this.account.getServer().getNode() != null)
+                accountInfoBuilder.setHostingNodeId(this.account.getServer().getNode().id);
+            // Inject serverInfos into AccountInfo
+            for (Map.Entry<ServerInfo, String> entry : account.getTokens().entrySet()) {
+                ServerInfoProto.ServerInfo serverInfo = (ServerInfoProto.ServerInfo) entry.getKey().toD2D();
+                ServerInfoProto.ServerInfo.Builder serverInfoBuilder = serverInfo.toBuilder();
+                // Inject token into ServerInfo
+                serverInfoBuilder.setToken(entry.getValue());
+                accountInfoBuilder.addServerInfos(serverInfoBuilder.build());
+            }
+            // Inject folderMapping into AccountInfo
+            if (this.folderMapping != null) accountInfoBuilder.putAllFolderMapping(this.folderMapping);
             // Inject avatarLastModifiedDate into AccountInfo
             accountInfoBuilder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);
+            // Inject quotas
+            accountInfoBuilder.setUsedQuota(this.usedQuota);
+            accountInfoBuilder.setBackupQuota(this.backupQuota);
+            accountInfoBuilder.setFreeQuota(this.freeQuota);
             // Add AccountInfo to message
             accountInfo = accountInfoBuilder.build();
             builder.setAccountInfo(accountInfo);

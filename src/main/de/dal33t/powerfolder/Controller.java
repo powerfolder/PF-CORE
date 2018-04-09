@@ -54,6 +54,8 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
 import org.apache.commons.cli.CommandLine;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -73,6 +75,8 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
+
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
  * to extend PFComponent so you always have a reference to the main
@@ -87,7 +91,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 14;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 4;
+    private static final int REVISION_VERSION = 63;
 
     /**
      * Program version.
@@ -109,8 +113,6 @@ public class Controller extends PFComponent {
     private Path configFile;
     private Path configFolderFile;
     private Path sslTrustStoreFile;
-    private Path sslCaTrustStoreFile;
-    private Path sslCaCertificateFile;
 
     /** The config properties */
     private SplitConfig config;
@@ -181,7 +183,6 @@ public class Controller extends PFComponent {
     private List<ConnectionListener> additionalConnectionListeners;
 
     private final List<InvitationHandler> invitationHandlers;
-    private final List<MassDeletionHandler> massDeletionHandlers;
 
     /** The BroadcastManager send "broadcasts" on the LAN so we can */
     private BroadcastMananger broadcastManager;
@@ -259,7 +260,6 @@ public class Controller extends PFComponent {
         System.setProperty("com.apple.mrj.application.apple.menu.about.name",
             "PowerFolder");
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
-        massDeletionHandlers = new CopyOnWriteArrayList<MassDeletionHandler>();
         pausedModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(PausedModeListener.class);
         networkingModeListenerSupport = ListenerSupportFactory
@@ -546,7 +546,7 @@ public class Controller extends PFComponent {
                 if (addr != null) {
                     ConfigurationEntry.HOSTNAME.setValue(this,
                         addr.getHostName());
-                    ConfigurationEntry.NET_BIND_PORT.setValue(this,
+                    ConfigurationEntry.NET_PORT.setValue(this,
                         addr.getPort());
                 }
             }
@@ -682,10 +682,13 @@ public class Controller extends PFComponent {
         setupPeriodicalTasks();
 
         if (MacUtils.isSupported()) {
-            if (isFirstStart()) {
-                MacUtils.getInstance().setPFStartup(true, this);
+            MacUtils macUtils = MacUtils.getInstance();
+            if (macUtils != null) {
+                if (isFirstStart()) {
+                    macUtils.setPFStartup(true, this);
+                }
+                macUtils.setAppReOpenedListener(this);
             }
-            MacUtils.getInstance().setAppReOpenedListener(this);
         }
 
         if (pauseSecs == 0) {
@@ -773,24 +776,6 @@ public class Controller extends PFComponent {
      */
     public void removeInvitationHandler(InvitationHandler l) {
         invitationHandlers.remove(l);
-    }
-
-    /**
-     * Add mass delete listener.
-     *
-     * @param l
-     */
-    public void addMassDeletionHandler(MassDeletionHandler l) {
-        massDeletionHandlers.add(l);
-    }
-
-    /**
-     * Remove mass delete listener.
-     *
-     * @param l
-     */
-    public void removeMassDeletionHandler(MassDeletionHandler l) {
-        massDeletionHandlers.remove(l);
     }
 
     private void setupProPlugins() {
@@ -976,22 +961,6 @@ public class Controller extends PFComponent {
             sslTrustStoreFile = sslTrustStoreFile.resolve(sslTrustStoreFileName);
         }
 
-        String sslCaTrustStoreFileName = filename.replace(".config", ".sslca.jks");
-        sslCaTrustStoreFile = getConfigLocationBase();
-        if (sslCaTrustStoreFile == null) {
-            sslCaTrustStoreFile = Paths.get(sslCaTrustStoreFileName).toAbsolutePath();
-        } else {
-            sslCaTrustStoreFile = sslCaTrustStoreFile.resolve(sslCaTrustStoreFileName);
-        }
-
-        String sslCaCertificateFileName = filename.replace(".config", ".sslca.pem");
-        sslCaCertificateFile = getConfigLocationBase();
-        if (sslCaCertificateFile == null) {
-            sslCaCertificateFile = Paths.get(sslCaCertificateFileName).toAbsolutePath();
-        } else {
-            sslCaCertificateFile = sslCaCertificateFile.resolve(sslCaCertificateFileName);
-        }
-
         if (Files.exists(configFolderFile)) {
             try {
                 logInfo("Loading folder configfile "
@@ -1027,27 +996,19 @@ public class Controller extends PFComponent {
      * PFC-2846: Config reload via command line while running
      */
     public void reloadConfigFile() {
-        BufferedInputStream bis = null;
-        try {
-            if (Files.exists(configFile)) {
-                logInfo("Reloading configfile " + configFile.toString());
-            } else {
-                logWarning("Config file does not exist. " + configFile.toString());
-                return;
-            }
-            bis = new BufferedInputStream(Files.newInputStream(configFile));
+        if (Files.exists(configFile)) {
+            logInfo("Reloading configfile " + configFile.toString());
+        } else {
+            logWarning("Config file does not exist. " + configFile.toString());
+            return;
+        }
+
+        try (BufferedInputStream bis = new BufferedInputStream(
+                Files.newInputStream(configFile))) {
             config.load(bis);
         } catch (IOException e) {
             logWarning("Unable to reload config file " + configFile
                     + ". " + e);
-        } finally {
-            try {
-                if (bis != null) {
-                    bis.close();
-                }
-            } catch (Exception e) {
-                // Ignore.
-            }
         }
     }
 
@@ -1157,30 +1118,24 @@ public class Controller extends PFComponent {
         // ============
         // Schedule a task to do housekeeping every day, just after midnight.
         // ============
-        Calendar cal = new GregorianCalendar();
-        long now = cal.getTime().getTime();
+        // Run housekeeping at 00:00 o'clock
+        JobDetail housekeepingJob = JobBuilder.newJob(Housekeeping.class)
+                .withIdentity("midnight", "housekeeping").build();
 
-        // Midnight tomorrow morning.
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.add(Calendar.DATE, 1);
+        Trigger housekeepingTrigger = TriggerBuilder.newTrigger()
+                .withIdentity("trigger", "housekeeping")
+                .forJob(housekeepingJob)
+                .withSchedule(dailyAtHourAndMinute(0, 0))
+                .build();
 
-        // Add a few seconds to be sure the file name definately is for
-        // tomorrow.
-        cal.add(Calendar.SECOND, 2);
-
-        long midnight = cal.getTime().getTime();
-        // How long to wait initially?
-        long secondsToMidnight = (midnight - now) / 1000;
-        logFine("Initial log reconfigure in " + secondsToMidnight + " seconds");
-        threadPool.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                performHousekeeping(true);
-            }
-        }, secondsToMidnight, 60 * 60 * 24, TimeUnit.SECONDS);
+        try {
+            Scheduler sched = new StdSchedulerFactory().getScheduler();
+            sched.scheduleJob(housekeepingJob, housekeepingTrigger);
+            sched.getContext().put("controller", this);
+            sched.start();
+        } catch (SchedulerException e) {
+            logWarning("Could not initiate housekeeping: " + e.getMessage());
+        }
 
         // Also run housekeeping one minute after start up.
         threadPool.schedule(() -> {
@@ -1261,7 +1216,7 @@ public class Controller extends PFComponent {
         if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(this)) {
             try {
                 broadcastManager = new BroadcastMananger(this,
-                  ConfigurationEntry.D2D_ENABLED.getValueBoolean(this));
+                        ConfigurationEntry.NET_PORT_D2D.getValueInt(this) > 0);
                 broadcastManager.start();
             } catch (ConnectionException e) {
                 logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
@@ -1280,10 +1235,10 @@ public class Controller extends PFComponent {
      *            true if this is the midnight invokation, false if this is at
      *            start up.
      */
-    private void performHousekeeping(boolean midnightRun) {
+    void performHousekeeping(boolean midnightRun) {
         log.fine("Performing housekeeping " + midnightRun);
-        Date now = new Date();
         if (midnightRun) {
+            Date now = new Date();
             // Reconfigure log file after midnight.
             logFine("Reconfiguring logs for new day: " + now);
             initLogger();
@@ -1394,7 +1349,7 @@ public class Controller extends PFComponent {
         if (ConfigurationEntry.NET_BIND_RANDOM_PORT.getValueBoolean(this)) {
             bindRandomPort();
         } else {
-            String ports = ConfigurationEntry.NET_BIND_PORT.getValue(this);
+            String ports = ConfigurationEntry.NET_PORT.getValue(this);
             if ("0".equals(ports)) {
                 logWarning("Not opening connection listener. (port=0)");
             } else {
@@ -1406,21 +1361,23 @@ public class Controller extends PFComponent {
                     String portStr = nizer.nextToken();
                     try {
                         int port = Integer.parseInt(portStr);
-                        boolean listenerOpened = openListener(port, false);
-                        if (listenerOpened && connectionListener != null) {
-                            // set reconnect on first successfull listener
-                            nodeManager
-                                .getMySelf()
-                                .getInfo()
-                                .setConnectAddress(
-                                    connectionListener.getAddress());
-                        }
-                        if (!listenerOpened && !isUIOpen()) {
-                            logSevere("Couldn't bind to port " + port);
-                            // exit(1);
-                            // fatalStartError(Translation
-                            // .getTranslation("dialog.bind_error"));
-                            // return false; // Shouldn't reach this!
+                        for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
+                            boolean listenerOpened = openListener(bindAddress, port, false);
+                            if (listenerOpened && connectionListener != null) {
+                                // set reconnect on first successful listener
+                                nodeManager
+                                        .getMySelf()
+                                        .getInfo()
+                                        .setConnectAddress(
+                                                connectionListener.getAddress());
+                            }
+                            if (!listenerOpened && !isUIOpen()) {
+                                logSevere("Couldn't bind to port " + port);
+                                // exit(1);
+                                // fatalStartError(Translation
+                                // .getTranslation("dialog.bind_error"));
+                                // return false; // Shouldn't reach this!
+                            }
                         }
                     } catch (NumberFormatException e) {
                         logFine("Unable to read listener port ('" + portStr
@@ -1437,17 +1394,19 @@ public class Controller extends PFComponent {
         }
 
         /* Check whether to start D2D, too */
-        boolean useD2D = ConfigurationEntry.D2D_ENABLED.getValueBoolean(this);
-        int     port   = ConfigurationEntry.D2D_PORT.getValueInt(this);
-
-        if(useD2D) {
+        int port = ConfigurationEntry.NET_PORT_D2D.getValueInt(this);
+        if (port > 0) {
             logInfo("D2D is enabled");
-
-            boolean listenerOpened = openListener(port, useD2D);
-
-            if(!listenerOpened) {
-                logSevere("Couldn't bind to port " + port);
-            } else logInfo("Listening on D2D port " + port);
+            boolean listenerOpened = false;
+            for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
+                listenerOpened = openListener(bindAddress, port, true);
+                nodeManager.getMySelf().getInfo().setD2dPort(port);
+                if (!listenerOpened) {
+                    logSevere("Couldn't bind to D2D port " + port);
+                } else {
+                    logInfo("Listening on D2D port " + port);
+                }
+            }
         }
 
         return true;
@@ -1496,15 +1455,16 @@ public class Controller extends PFComponent {
      * Tries to bind a random port
      */
     private void bindRandomPort() {
-        if ((openListener(ConnectionListener.DEFAULT_PORT, false)
-            || openListener(0, false))
-            && connectionListener != null)
-        {
-            nodeManager.getMySelf().getInfo()
-                .setConnectAddress(connectionListener.getAddress());
-        } else {
-            logSevere("failed to open random port!!!");
-            fatalStartError(Translation.get("dialog.bind_error"));
+        for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
+            if ((openListener(bindAddress, ConnectionListener.DEFAULT_PORT, false)
+                    || openListener(bindAddress, 0, false))
+                    && connectionListener != null) {
+                nodeManager.getMySelf().getInfo()
+                        .setConnectAddress(connectionListener.getAddress());
+            } else {
+                logSevere("failed to open random port!!!");
+                fatalStartError(Translation.get("dialog.bind_error"));
+            }
         }
     }
 
@@ -1567,6 +1527,19 @@ public class Controller extends PFComponent {
                 getConfigName() + "-Folder.config");
             tempFolderFile = getConfigLocationBase().resolve(
                 getConfigName() + "-Folder.writing.config").toAbsolutePath();
+        }
+
+        // PF-1029
+        FileStore store = null;
+        try {
+            store = Files.getFileStore(file);
+            if (store.getUsableSpace() < 1024L * 1024L * 10) {
+                logSevere("Unable to store configuration file. Disk space insufficient: "
+                        + Format.formatBytesShort(store.getUsableSpace()));
+                return;
+            }
+        } catch (IOException e) {
+            logFine(e);
         }
 
         try {
@@ -2110,14 +2083,6 @@ public class Controller extends PFComponent {
         return sslTrustStoreFile;
     }
 
-    public Path getSslCaTrustStoreFile() {
-        return sslCaTrustStoreFile;
-    }
-
-    public Path getSslCaCertificateFile() {
-        return sslCaCertificateFile;
-    }
-
     /**
      * Returns the config, read from the configfile.
      *
@@ -2321,7 +2286,7 @@ public class Controller extends PFComponent {
      * Connects to a remote peer, with ip and port
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  address  Address to connect to
-     * @throw {@link ConnectionException} Raised when something is wrong
+     * @throws ConnectionException Raised when something is wrong
      * @return The connected {@link Node}
      */
     public Member connect(InetSocketAddress address) throws ConnectionException
@@ -2334,7 +2299,7 @@ public class Controller extends PFComponent {
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  address  Address to connect to
      * @param  useD2D   Whether to use D2D proto
-     * @throw {@link ConnectionException} Raised when something is wrong
+     * @throws ConnectionException Raised when something is wrong
      * @return The connected {@link Node}
      **/
 
@@ -2470,21 +2435,21 @@ public class Controller extends PFComponent {
      * "connectionListener". All others are added the the list of
      * additionalConnectionListeners.
      *
-     * @param  port    Port to open listener to
-     * @param  useD2D  Whether to use D2D proto (FIXME: Might be a bit
-     *                 pointless this way but allows to use this proto
-     *                 on any port later <kappel@powerfolder.com>)
+     * @param  port             Port to open listener to
+     * @param  bindAddress      Address to bind listener to
+     * @param  useD2D           Whether to use D2D proto (FIXME: Might be a bit
+     *                          pointless this way but allows to use this proto
+     *                          on any port later <kappel@powerfolder.com>)
      *
      * @return if succeeded
      */
-    private boolean openListener(int port, boolean useD2D) {
-        String bind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(this);
+    private boolean openListener(String bindAddress, int port, boolean useD2D) {
         logFine("Opening incoming connection listener on port " + port
-            + " on interface " + (bind != null ? bind : "(all)"));
+                + " on interface " + (bindAddress != null ? bindAddress : "(all)"));
         while (true) {
             try {
                 ConnectionListener newListener = new ConnectionListener(this,
-                    port, bind, useD2D);
+                        port, bindAddress, useD2D);
                 if (connectionListener == null || !connectionListener.isServerSocketOpen()) {
                     // its our primary listener
                     connectionListener = newListener;
@@ -2495,9 +2460,9 @@ public class Controller extends PFComponent {
             } catch (ConnectionException e) {
                 logWarning("Unable to bind to port " + port);
                 logFiner("ConnectionException", e);
-                if (bind != null) {
+                if (bindAddress != null) {
                     logSevere("This could've been caused by a binding error on the interface... Retrying without binding");
-                    bind = null;
+                    bindAddress = null;
                 } else { // Already tried binding once or not at all so get
                     // out
                     return false;
@@ -2918,10 +2883,10 @@ public class Controller extends PFComponent {
                     + memberInfo.getNick() + ". is a pf server.");
                 return;
             }
-        }
 
-        // A new friend!
-        member.setFriend(true, null);
+            // A new friend!
+            member.setFriend(true, null);
+        }
     }
 
     /**
@@ -2932,28 +2897,6 @@ public class Controller extends PFComponent {
     public void invitationReceived(Invitation invitation) {
         for (InvitationHandler handler : invitationHandlers) {
             handler.gotInvitation(invitation);
-        }
-    }
-
-    /**
-     * Distribute local mass deletion notifications.
-     *
-     * @param event
-     */
-    public void localMassDeletionDetected(LocalMassDeletionEvent event) {
-        for (MassDeletionHandler massDeletionHandler : massDeletionHandlers) {
-            massDeletionHandler.localMassDeletion(event);
-        }
-    }
-
-    /**
-     * Distribute remote mass deletion notifications.
-     *
-     * @param event
-     */
-    public void remoteMassDeletionDetected(RemoteMassDeletionEvent event) {
-        for (MassDeletionHandler massDeletionHandler : massDeletionHandlers) {
-            massDeletionHandler.remoteMassDeletion(event);
         }
     }
 
@@ -3124,5 +3067,4 @@ public class Controller extends PFComponent {
             log.info("User inactive. Executed resume task.");
         }
     }
-
 }

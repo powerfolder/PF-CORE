@@ -19,21 +19,10 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.List;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.problem.LocalDeletionProblem;
-import de.dal33t.powerfolder.disk.problem.Problem;
-import de.dal33t.powerfolder.event.LocalMassDeletionEvent;
-import de.dal33t.powerfolder.event.MassDeletionHandler;
-import de.dal33t.powerfolder.event.RemoteMassDeletionEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
@@ -42,6 +31,12 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Tests the correct synchronization of file deletions.
@@ -702,148 +697,6 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             .getFileName().toString(), new byte[0]);
     }
 
-    public void testLocalDeletionProblem() throws Exception {
-        getContollerLisa().addMassDeletionHandler(new MyMassDeletionHandler());
-        ConfigurationEntry.MASS_DELETE_PROTECTION.setValue(getContollerLisa(), true);
-        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-        // 1) Create a file
-        final Path testFile = TestHelper.createRandomFile(getFolderAtLisa()
-            .getLocalBase());
-        scanFolder(getFolderAtLisa());
-
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return getFolderAtBart().getIncomingFiles().size() > 0;
-            }
-
-            @Override
-            public String message() {
-                return "There are " + getFolderAtBart().getIncomingFiles().size() + " incoming files. " +
-                     " Expected were at lease 1.";
-            }
-        });
-
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return getFolderAtBart().getIncomingFiles().size() == 0;
-            }
-
-            @Override
-            public String message() {
-                return "There are " + getFolderAtBart().getIncomingFiles().size() + " incoming files. " +
-                    " Expected were 0.";
-            }
-        });
-
-        assertTrue(Files.exists(getFolderAtBart().getLocalBase().resolve(
-            testFile.getFileName())));
-
-        // 2) Delete
-        Files.delete(testFile);
-        TestHelper.scanFolder(getFolderAtLisa(), false);
-
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return getFolderAtLisa().getProblems().size() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "There was no Problem on Lisa's Folder, although one was expected!";
-            }
-        });
-
-        assertTrue(Files.exists(getFolderAtBart().getLocalBase().resolve(
-            testFile.getFileName())));
-
-        FileInfo fInfo = getFolderAtLisa().getKnownFiles().iterator().next();
-
-        assertTrue(fInfo.getDiskFile(getContollerLisa().getFolderRepository())
-            .equals(testFile));
-
-        assertFalse(fInfo.isDeleted());
-
-        // 3) Discard changes and restore.
-        for (FileInfo fileInfo : getFolderAtLisa().getKnownFiles()) {
-            Path diskFile = fileInfo.getDiskFile(getContollerLisa().getFolderRepository());
-            boolean notInSync = !fileInfo.inSyncWithDisk(diskFile);
-            if (notInSync) {
-                getFolderAtLisa().getDAO().delete(null, fileInfo);
-            }
-        }
-        getContollerLisa().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting(getFolderAtLisa().getInfo());
-
-        Problem prob = getFolderAtLisa().getProblems().get(0);
-        getFolderAtLisa().removeProblem(prob);
-        assertTrue(getFolderAtLisa().getProblems().isEmpty());
-
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return Files.exists(testFile);
-            }
-
-            @Override
-            public String message() {
-                return "The file " + testFile.toString()
-                    + " does not exist, although it should have been restored";
-            }
-        });
-
-        // 4) Delete
-        Files.delete(testFile);
-        TestHelper.scanFolder(getFolderAtLisa(), false);
-
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return getFolderAtLisa().getProblems().size() == 1;
-            }
-
-            @Override
-            public String message() {
-                return "There was no Problem on Lisa's Folder, although one was expected!";
-            }
-        });
-
-        fInfo = getFolderAtLisa().getKnownFiles().iterator().next();
-
-        assertTrue(fInfo.getDiskFile(getContollerLisa().getFolderRepository())
-            .equals(testFile));
-
-        assertFalse(fInfo.isDeleted());
-
-        // 5) Really delete the file on Lisa
-        FileInfo oldFI = getFolderAtLisa().getFile(
-            FileInfoFactory.lookupInstance(getFolderAtLisa(), testFile));
-        FileInfo newFI = getFolderAtLisa().scanChangedFile(oldFI);
-
-        assertNotNull(newFI);
-
-        prob = getFolderAtLisa().getProblems().get(0);
-        getFolderAtLisa().removeProblem(prob);
-
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
-            @Override
-            public boolean reached() {
-                return Files.notExists(getFolderAtBart().getLocalBase().resolve(
-                    testFile.getFileName()));
-            }
-
-            @Override
-            public String message() {
-                return "The file " + getFolderAtBart().getLocalBase().resolve(testFile.getFileName()) + " still exists? "
-                    + Files.notExists(getFolderAtBart().getLocalBase().resolve(
-                        testFile.getFileName()));
-            }
-        });
-    }
-    
     /**
      * PFS-2002
      * @throws IOException
@@ -912,18 +765,5 @@ public class DeletionSyncTest extends TwoControllerTestCase {
                 return "Subdir at bart not deleted: " + subdirBart;
             }
         });
-    }
-
-    private class MyMassDeletionHandler implements MassDeletionHandler {
-        @Override
-        public void localMassDeletion(LocalMassDeletionEvent event) {
-            LocalDeletionProblem ldp = new LocalDeletionProblem(event
-                .getFolder().getInfo(), event.getFile());
-            event.getFolder().addProblem(ldp);
-        }
-
-        @Override
-        public void remoteMassDeletion(RemoteMassDeletionEvent event) {
-        }
     }
 }

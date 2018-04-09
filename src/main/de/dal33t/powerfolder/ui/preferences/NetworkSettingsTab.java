@@ -19,33 +19,11 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-import java.util.StringTokenizer;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.NetworkingMode;
@@ -58,6 +36,21 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.net.UDTSocket;
+
+import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+import java.util.StringTokenizer;
 
 public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
 
@@ -121,7 +114,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             }
         });
 
-        String port = ConfigurationEntry.NET_BIND_PORT.getValue(getController());
+        String port = ConfigurationEntry.NET_PORT.getValue(getController());
         if (port == null) {
             port = Integer.toString(ConnectionListener.DEFAULT_PORT);
         }
@@ -179,8 +172,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         lanSpeed.setSpeedKBPS(false, tm.getUploadCPSForLAN() / 1024,
             tm.getDownloadCPSForLAN() / 1024);
 
-        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS
-            .getValue(getController());
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
         bindAddressCombo = new JComboBox();
         bindAddressCombo.addItem(Translation
             .get("exp.preferences.network.bind_any"));
@@ -318,7 +310,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             }
 
             // Check if only one port was given which is the default port
-            if (ConfigurationEntry.NET_BIND_PORT.getValue(getController()) == null)
+            if (ConfigurationEntry.NET_PORT.getValue(getController()) == null)
             {
                 try {
                     int portnum = Integer.parseInt(port);
@@ -331,12 +323,12 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
             // Only compare with old value if the things above don't match
             if (!needsRestart) {
                 // Check if the value actually changed
-                if (!port.equals(ConfigurationEntry.NET_BIND_PORT.getValue(getController()))) {
+                if (!port.equals(ConfigurationEntry.NET_PORT.getValue(getController()))) {
                     needsRestart = true;
                 }
             }
 
-            ConfigurationEntry.NET_BIND_PORT.setValue(getController(), port);
+            ConfigurationEntry.NET_PORT.setValue(getController(), port);
         } catch (NumberFormatException e) {
             logWarning("Unparsable port number");
         }
@@ -373,7 +365,7 @@ public class NetworkSettingsTab extends PFComponent implements PreferenceTab {
         ConfigurationEntry.UDT_CONNECTIONS_ENABLED.setValue(getController(),
             String.valueOf(udtConnectionCB.isSelected()));
 
-        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValue(getController());
+        String cfgBind = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
         Object bindObj = bindAddressCombo.getSelectedItem();
         if (bindObj instanceof String) { // Selected ANY
             if (!StringUtils.isEmpty(cfgBind)) {

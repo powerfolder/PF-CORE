@@ -19,13 +19,13 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.Serializable;
-
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.Serializable;
 
 /**
  * Represents a request to send an invitation to another member by email.
@@ -85,21 +85,9 @@ public class SendInvitationEmail implements Serializable {
     }
 
     // Serialization and validation
-
     private void validate() {
         Reject.ifNull(invitation, "Invitation is null!");
-        // validateRecipient();
     }
-
-    // private void validateRecipient() {
-    // Reject.ifNull(getRecipient(), "Recipient is null!");
-    // validateEmail(getRecipient());
-    // }
-
-    // private void validateEmail(String address) {
-    // Reject.ifTrue(address.indexOf('@') < 0,
-    // "Address has to be an email address: " + address);
-    // }
 
     /**
      * @return the invitation

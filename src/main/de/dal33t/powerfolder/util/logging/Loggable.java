@@ -19,12 +19,12 @@
  */
 package de.dal33t.powerfolder.util.logging;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
 
 /**
  * This class provides generic logging functionality. Extend from this class if
@@ -121,6 +121,10 @@ public abstract class Loggable {
         logIt(Level.SEVERE, message, null);
     }
 
+    protected void logSevere(String message, Object... args) {
+        logIt(Level.SEVERE, String.format(message, args), null);
+    }
+
     /**
      * Log a message if logging level is warning.
      *
@@ -128,6 +132,10 @@ public abstract class Loggable {
      */
     protected void logWarning(String message) {
         logIt(Level.WARNING, message, null);
+    }
+
+    protected void logWarning(String message, Object... args) {
+        logIt(Level.WARNING, String.format(message, args), null);
     }
 
     /**
@@ -139,6 +147,10 @@ public abstract class Loggable {
         logIt(Level.INFO, message, null);
     }
 
+    protected void logInfo(String message, Object... args) {
+        logIt(Level.INFO, String.format(message, args), null);
+    }
+
     /**
      * Log a message if logging level is fine.
      *
@@ -148,6 +160,10 @@ public abstract class Loggable {
         logIt(Level.FINE, message, null);
     }
 
+    protected void logFine(String message, Object... args) {
+        logIt(Level.FINE, String.format(message, args), null);
+    }
+
     /**
      * Log a message if logging level is finer.
      *
@@ -155,6 +171,10 @@ public abstract class Loggable {
      */
     protected void logFiner(String message) {
         logIt(Level.FINER, message, null);
+    }
+
+    protected void logFiner(String message, Object... args) {
+        logIt(Level.FINER, String.format(message, args), null);
     }
 
     /**

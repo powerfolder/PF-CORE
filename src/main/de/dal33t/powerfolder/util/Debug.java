@@ -19,32 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.ID;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -61,6 +35,19 @@ import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.compare.FileInfoComparator;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static de.dal33t.powerfolder.disk.FolderSettings.ID;
 
 /**
  * Utility class with methods for debugging
@@ -800,6 +787,9 @@ public class Debug {
     private static List<String> getGroupInfo(ThreadGroup group,
         boolean hideIdleThreds)
     {
+        if (group == null) {
+            return Collections.EMPTY_LIST;
+        }
         Thread threads[] = new Thread[group.activeCount()];
         List<String> threadDumps = new LinkedList<String>();
         group.enumerate(threads, false);
@@ -818,7 +808,9 @@ public class Debug {
 
         int i = 0;
         while (i < activeGroup.length) {
-            threadDumps.addAll(getGroupInfo(activeGroup[i], hideIdleThreds));
+            if (activeGroup[i] != null) {
+                threadDumps.addAll(getGroupInfo(activeGroup[i], hideIdleThreds));
+            }
             i++;
         }
         return threadDumps;
@@ -950,6 +942,9 @@ public class Debug {
     }
 
     private static void showGroupInfo(ThreadGroup group) {
+        if (group == null) {
+            return;
+        }
         Thread threads[] = new Thread[group.activeCount()];
         group.enumerate(threads, false);
         log.fine("");

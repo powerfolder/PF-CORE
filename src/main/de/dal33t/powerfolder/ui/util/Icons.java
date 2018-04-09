@@ -19,15 +19,24 @@
  */
 package de.dal33t.powerfolder.ui.util;
 
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.Transparency;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.net.ConnectionHandler;
+import de.dal33t.powerfolder.net.ConnectionQuality;
+import de.dal33t.powerfolder.skin.Origin;
+import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.ui.TrayIconManager;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
+import javax.swing.*;
+import javax.swing.SwingWorker;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.plaf.IconUIResource;
+import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
@@ -42,35 +51,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.SwingWorker;
-import javax.swing.filechooser.FileSystemView;
-import javax.swing.plaf.IconUIResource;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.net.ConnectionQuality;
-import de.dal33t.powerfolder.skin.Origin;
-import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.ui.TrayIconManager;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Contains all icons for the powerfolder application. Icons should be got by
@@ -1086,7 +1074,6 @@ public class Icons {
      */
     public static Properties addPropertiesFromFile(Properties oldProperties, Path filePath) {
         Reject.ifNull(filePath, "Properties blank");
-        try {
             Properties properties = new Properties();
             // Read properties from file
             try (InputStream inputStream = Files.newInputStream(filePath)) {
@@ -1098,9 +1085,9 @@ public class Icons {
                     oldProperties.setProperty(key, skinPath.resolve(value).toString());
                 }
                 return oldProperties;
-            }
-        } catch (IOException e) {
+            } catch (InvalidPathException | IOException e) {
             log.log(Level.INFO, "Cannot read properties file: " + filePath, e);
+                ServerClient.resetClientSkin();
             return null;
         }
     }

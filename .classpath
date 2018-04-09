@@ -46,7 +46,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/bcprov-ext-jdk15on-152.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/javax.inject-1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/commons-codec-1.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/protobuf-java-3.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/commons-lang3-3.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/cryptofs-1.3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cryptomator/cryptolib-1.1.2.jar"/>

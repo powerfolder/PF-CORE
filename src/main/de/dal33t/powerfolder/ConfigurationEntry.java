@@ -19,6 +19,18 @@
  */
 package de.dal33t.powerfolder;
 
+import com.jgoodies.binding.value.ValueHolder;
+import com.jgoodies.binding.value.ValueModel;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.message.RequestNodeInformation;
+import de.dal33t.powerfolder.security.AccessMode;
+import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.InetAddress;
@@ -27,20 +39,6 @@ import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.jgoodies.binding.value.ValueHolder;
-import com.jgoodies.binding.value.ValueModel;
-
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.RequestNodeInformation;
-import de.dal33t.powerfolder.net.ConnectionListener;
-import de.dal33t.powerfolder.security.AccessMode;
-import de.dal33t.powerfolder.util.*;
-import de.dal33t.powerfolder.util.os.OSUtil;
-import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 /**
  * Refelects a entry setting in the configuration file. Provides basic method
@@ -302,6 +300,11 @@ public enum ConfigurationEntry {
     SERVER_HOST("server.host", "os003.powerfolder.com:1337"),
 
     /**
+     * The D2D port of the server
+     */
+    SERVER_PORT_D2D("server.port.d2d", 0),
+
+    /**
      * HTTP tunnel relay URL.
      */
     SERVER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",
@@ -370,6 +373,7 @@ public enum ConfigurationEntry {
      * PFS-2425: Federated login with AccountDiscovery
      */
     SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
+    CLIENT_FEDERATED_URL("client.federation.url", ""),
 
     // Server WEB settings ****************************************************
 
@@ -606,7 +610,87 @@ public enum ConfigurationEntry {
     /**
      * The port(s) to bind to.
      */
-    NET_BIND_PORT("port"),
+    NET_PORT("net.port") {
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                value = controller.getConfig().getProperty("port");
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            controller.getConfig().remove("port");
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            controller.getConfig().remove("port");
+        }
+
+    },
+
+    /**
+     * The TCP port for D2D
+     */
+    NET_PORT_D2D("net.port.d2d", 0) {
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null || value.equals(super.defaultValue)) {
+                String oldValue = controller.getConfig().getProperty("d2d.port");
+                if (oldValue != null) {
+                    value = oldValue;
+                }
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            controller.getConfig().remove("d2d.port");
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            controller.getConfig().remove("d2d.port");
+        }
+
+    },
+
+    /**
+     * The TCP port for the {@link RemoteCommandManager}
+     */
+    NET_PORT_RCON("net.port.rcon", 1338) {
+        @Override
+        public String getValue(Controller controller) {
+            String value = super.getValue(controller);
+            if (value == null) {
+                // Old entry
+                value = controller.getConfig().getProperty("net.rcon.port");
+            }
+            return value;
+        }
+
+        @Override
+        public void removeValue(Controller controller) {
+            super.removeValue(controller);
+            controller.getConfig().remove("net.rcon.port");
+        }
+
+        @Override
+        public void setValue(Controller controller, String value) {
+            super.setValue(controller, value);
+            controller.getConfig().remove("net.rcon.port");
+        }
+
+    },
 
     /**
      * If relayed or tunnel connections should be tried for LAN based computers.
@@ -621,11 +705,6 @@ public enum ConfigurationEntry {
     NET_RCON_MANAGER("net.rcon", true),
 
     /**
-     * The TCP port for the {@link RemoteCommandManager}
-     */
-    NET_RCON_PORT("net.rcon.port", 1338),
-
-    /**
      * If broadcast on LAN
      */
     NET_BROADCAST("net.broadcast", true),
@@ -636,7 +715,7 @@ public enum ConfigurationEntry {
     NET_BROADCAST_INTERVAL_SECONDS("net.broadcast.interval.seconds", 60),
 
     /**
-     * Use a random port in the (49152) 0 to 65535 range, overides NET_BIND_PORT
+     * Use a random port in the (49152) 0 to 65535 range, overides NET_PORT
      */
     NET_BIND_RANDOM_PORT("random-port", true),
 
@@ -697,6 +776,15 @@ public enum ConfigurationEntry {
      * The maximum number of queued request for {@link FileChunk}s
      */
     TRANSFERS_MAX_REQUESTS_QUEUED("transfers.max.request.queued", 15),
+
+    /**
+     * PF-972
+     * Files that are smaller than this threshold are being buffered into memory
+     * directly and the upload is serviced from this buffer. For larger files
+     * the file is held open during upload and the upload is serviced from the
+     * storage.
+     */
+    TRANSFER_BUFFER_THRESHOLD("transfer.buffer.threshold", 2 * 1024 * 1024),
 
     /**
      * My dynamic dns hostname or fix ip.
@@ -783,14 +871,6 @@ public enum ConfigurationEntry {
      * Lets do this flexible.
      */
     FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
-
-    /**
-     * Note - as of PFC-2182, mass delete protection should only be applied
-     * if the user has expert mode.
-     */
-    MASS_DELETE_PROTECTION("mass.delete.protection", false),
-
-    MASS_DELETE_THRESHOLD("mass.delete.threshold", 95),
 
     /**
      * Contains a comma-separated list of all plugins to load.
@@ -889,7 +969,7 @@ public enum ConfigurationEntry {
     /**
      * Should the active threads be logged?
      */
-    LOG_ACTIVE_THREADS("log.active_threads", true),
+    LOG_ACTIVE_THREADS("log.active_threads", false),
 
     /**
      * Whether to request debug reports
@@ -1194,19 +1274,6 @@ public enum ConfigurationEntry {
 
     RECOVER_0BYTE_FILES("recover.zero_byte.files", true),
 
-    /* D2D */
-
-    /**
-     * The TCP port for the {@link ConnectionListener} and D2D
-     */
-    D2D_PORT("d2d.port", ConnectionListener.DEFAULT_D2D_PORT),
-
-    /**
-     * Whether D2D is enabled
-     */
-
-    D2D_ENABLED("d2d.enabled", false),
-
     /**
      * PFS-1994: En-/Disable encrypted storage for this server.
      */
@@ -1234,8 +1301,9 @@ public enum ConfigurationEntry {
      * PFS-2427: Check if the client runs on a WDNAS device. Therefore setting POSIX file
      * permissions after sync is mandatory.
      */
-    WDNAS_CLIENT("wdnas.client", false);
+    WDNAS_CLIENT("wdnas.client", false),
 
+    LOCKING_CHANGES_FILE_PERMISSIONS("locking.changes.file_permissions", false);
 
     // Methods/Constructors ***************************************************
 
@@ -1417,6 +1485,22 @@ public enum ConfigurationEntry {
     }
 
     /**
+     * Parses the configuration entry into an Array.
+     *
+     * @param controller the controller to read the config from
+     * @return A string array of the parsed configuration entry.
+     * If the configuration entry is null, the array contains one null element.
+     */
+    public String[] getValueArray(Controller controller) {
+        String[] values = new String[1];
+        String valuesString = getValue(controller.getConfig());
+        if (valuesString != null) {
+            values = valuesString.split("\\s*,\\s*");
+        }
+        return values;
+    }
+
+    /**
      * Creates a model containing the value of the configuration entry.
      * <p>
      * Changes from "below" won't be reflected.
@@ -1455,8 +1539,6 @@ public enum ConfigurationEntry {
     /**
      * Sets the value of this config entry.
      *
-     * @param controller
-     *            the controller of the config
      * @param value
      *            the value to set
      */
@@ -1487,6 +1569,16 @@ public enum ConfigurationEntry {
      */
     public void setValue(Controller controller, int value) {
         setValue(controller, String.valueOf(value));
+    }
+
+    /**
+     * Sets the value of this config entry.
+     *
+     * @param config the config of the client
+     * @param value  the value to set
+     */
+    public void setValue(Properties config, boolean value) {
+        setValue(config, String.valueOf(value));
     }
 
     /**

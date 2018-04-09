@@ -19,6 +19,21 @@
  */
 package de.dal33t.powerfolder.net;
 
+import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
+import de.dal33t.powerfolder.event.ListenerSupportFactory;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.NodeManagerListener;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.task.RemoveComputerFromAccountTask;
+import de.dal33t.powerfolder.task.SendMessageTask;
+import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.intern.MemberInfoInternalizer;
+import de.dal33t.powerfolder.util.net.AddressRange;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -28,61 +43,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.ConnectResult;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.event.ListenerSupportFactory;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.NodeManagerListener;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.AddFriendNotification;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.KnownNodes;
-import de.dal33t.powerfolder.message.KnownNodesExt;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.message.MessageProducer;
-import de.dal33t.powerfolder.message.Problem;
-import de.dal33t.powerfolder.message.RequestNodeList;
-import de.dal33t.powerfolder.message.SearchNodeRequest;
-import de.dal33t.powerfolder.message.SingleMessageProducer;
-import de.dal33t.powerfolder.message.TransferStatus;
-import de.dal33t.powerfolder.task.RemoveComputerFromAccountTask;
-import de.dal33t.powerfolder.task.SendMessageTask;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.Filter;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.MessageListenerSupport;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.intern.MemberInfoInternalizer;
-import de.dal33t.powerfolder.util.net.AddressRange;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 /**
  * Managing class which takes care about all old and new nodes. reconnects those
@@ -771,8 +735,8 @@ public class NodeManager extends PFComponent {
             // + "Rebuilding reconnection queue");
             // getController().getReconnectManager().buildReconnectionQueue();
             // }
-            if (getController().getIOProvider().getRelayedConnectionManager()
-                .isRelay(node.getInfo()))
+            if (ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.getValueBoolean(getController())
+                    && getController().getIOProvider().getRelayedConnectionManager().isRelay(node.getInfo()))
             {
                 logFine("Connect to relay detected. Rebuilding reconnection queue");
                 getController().getReconnectManager().buildReconnectionQueue();
@@ -1149,7 +1113,7 @@ public class NodeManager extends PFComponent {
                     // on LAN
                     acceptHandler = true;
                     // #841 NOT isCompletelyConnected()
-                } else if (member.isConnected()) {
+                } else if (!(handler instanceof D2DSocketConnectionHandler) && member.isConnected()) {
                     rejectCause = "Duplicate connection detected to "
                         + member.getNick() + " ("
                         + member.getReconnectAddress() + ")";

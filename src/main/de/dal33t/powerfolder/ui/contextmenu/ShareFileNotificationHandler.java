@@ -17,15 +17,14 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.notification.NotificationHandlerBase;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 /**
  * This notification is shown, when the "share link" context menu item was clicked.<br />
@@ -61,8 +60,7 @@ class ShareFileNotificationHandler extends NotificationHandlerBase {
                         Util.setClipboardContents(previousClipboardContents);
 
                         try {
-                            controller.getOSClient().getFolderService()
-                                .removeFileLink(fInfo);
+                            controller.getOSClient().getFolderService(fInfo.getFolderInfo()).removeFileLink(fInfo);
                         } catch (RuntimeException re) {
                             logWarning("The server you use does not support file link removal. Please consider to update your server.");
                         }

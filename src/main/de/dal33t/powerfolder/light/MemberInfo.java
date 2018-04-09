@@ -39,6 +39,7 @@ import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.Date;
@@ -81,6 +82,8 @@ public class MemberInfo implements Serializable, D2DObject {
      * afterwards because handshake was not completed, e.g. because
      * uninteresting.
      */
+    @Transient
+    private int d2dPort;
     private Date lastConnectTime;
 
     // flag if peer was connected at remote side
@@ -135,6 +138,14 @@ public class MemberInfo implements Serializable, D2DObject {
 
     public InetSocketAddress getConnectAddress() {
         return this.connectAddress;
+    }
+
+    public int getD2dPort() {
+        return d2dPort;
+    }
+
+    public void setD2dPort(int d2dPort) {
+        this.d2dPort = d2dPort;
     }
 
     public String getId() {
@@ -390,64 +401,44 @@ public class MemberInfo implements Serializable, D2DObject {
         out.writeBoolean(isSupernode);
     }
 
-    /** initFromD2DMessage
+    /**
+     * initFromD2DMessage
      * Init from D2D message
+     *
+     * @param mesg Message to use data from
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
      **/
-
     @Override
     public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof NodeInfoProto.NodeInfo)
-        {
-            NodeInfoProto.NodeInfo proto = (NodeInfoProto.NodeInfo)mesg;
-
-          this.nick            = proto.getNick();
-          this.id              = proto.getId();
-          this.networkId       = proto.getNetworkId();
-
-          /* Disassemble host:port string */
-          String[] split = proto.getConnectAddress().split(":");
-
-          if(2 <= split.length)
-            {
-              this.connectAddress  = new InetSocketAddress(split[0],
-                Integer.valueOf(split[1]));
-            }
-
-          this.lastConnectTime = (-1 == proto.getLastConnectTime()
-              ? null
-              : new Date(proto.getLastConnectTime()));
-          this.isConnected     = proto.getIsConnected();
-          this.isSupernode     = proto.getIsSuperNode();
+    initFromD2D(AbstractMessage mesg) {
+        if (mesg instanceof NodeInfoProto.NodeInfo) {
+            NodeInfoProto.NodeInfo proto = (NodeInfoProto.NodeInfo) mesg;
+            this.id = proto.getId();
+            this.nick = proto.getNick();
+            this.networkId = proto.getNetworkId();
+            this.connectAddress = new InetSocketAddress(proto.getHost(), proto.getPort());
+            this.d2dPort = proto.getPort();
         }
     }
 
-    /** toD2D
+    /**
+     * toD2D
      * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
+     *
      * @return Converted D2D message
+     * @author Christoph Kappel <kappel@powerfolder.com>
      **/
-
     @Override
     public AbstractMessage
-    toD2D()
-    {
-      NodeInfoProto.NodeInfo.Builder builder = NodeInfoProto.NodeInfo.newBuilder();
-      // Translate old message name to new name defined in protocol file
-      builder.setClazzName("NodeInfo");
-      builder.setNick(this.nick);
-      builder.setId(this.id);
-      builder.setNetworkId(this.networkId);
-      if (this.connectAddress != null) {
-          builder.setConnectAddress(this.connectAddress.toString()); ///< Assemble to host:port
-      }
-      builder.setLastConnectTime(null == this.lastConnectTime ? -1 : this.lastConnectTime.getTime());
-      builder.setIsConnected(this.isConnected);
-      builder.setIsSuperNode(this.isSupernode);
-
-      return builder.build();
+    toD2D() {
+        NodeInfoProto.NodeInfo.Builder builder = NodeInfoProto.NodeInfo.newBuilder();
+        // Translate old message name to new name defined in protocol file
+        builder.setClazzName("NodeInfo");
+        builder.setId(this.id);
+        builder.setNick(this.nick);
+        builder.setNetworkId(this.networkId);
+        if (this.connectAddress != null) builder.setHost(this.connectAddress.getHostName());
+        builder.setPort(this.d2dPort);
+        return builder.build();
     }
 }

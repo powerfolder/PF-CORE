@@ -19,42 +19,24 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.Util;
+import org.apache.commons.io.FileUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.*;
+import java.nio.file.attribute.FileTime;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A file archiver that tries to move a file to an archive first, and falls back
@@ -69,17 +51,17 @@ import de.dal33t.powerfolder.util.Util;
 public class FileArchiver {
 
     private static final Logger log = Logger.getLogger(FileArchiver.class
-        .getName());
+            .getName());
     private static final VersionComparator VERSION_COMPARATOR = new VersionComparator();
     private static final Pattern BASE_NAME_PATTERN = Pattern
-        .compile("(.*)_K_\\d+(.*)");
+            .compile("(.*)_K_\\d+(.*)");
     private static final String SIZE_INFO_FILE = "Size";
 
     private final Path archiveDirectory;
     private volatile int versionsPerFile;
     private MemberInfo mySelf;
 
-    /**
+    /*
      * Cached size of this file archive.
      */
     private Long size;
@@ -89,8 +71,7 @@ public class FileArchiver {
      * directory.
      *
      * @param archiveDirectory
-     * @param mySelf
-     *            myself
+     * @param mySelf           myself
      */
     public FileArchiver(Path archiveDirectory, MemberInfo mySelf) {
         Reject.notNull(archiveDirectory, "archiveDirectory");
@@ -120,8 +101,7 @@ public class FileArchiver {
      * @see FileArchiver#archive(FileInfo, Path, boolean)
      */
     public void archive(FileInfo fileInfo, Path source, boolean forceKeepSource)
-        throws IOException
-    {
+            throws IOException {
         Reject.notNull(fileInfo, "fileInfo");
         Reject.notNull(source, "source");
 
@@ -140,13 +120,12 @@ public class FileArchiver {
         if (Files.exists(target)) {
             // PFS-1794: Happens 2136x
             if (log.isLoggable(Level.WARNING)
-                && !fileInfo.inSyncWithDisk(target))
-            {
+                    && !fileInfo.inSyncWithDisk(target)) {
                 log.warning("File " + fileInfo.toDetailString()
-                    + " seems to be archived already, doing nothing.");
+                        + " seems to be archived already, doing nothing.");
             } else if (log.isLoggable(Level.FINE)) {
                 log.fine("File " + fileInfo.toDetailString()
-                    + " seems to be archived already, doing nothing.");
+                        + " seems to be archived already, doing nothing.");
             }
             return;
         }
@@ -171,23 +150,23 @@ public class FileArchiver {
                 try {
                     // // PFS-1794: Replace existing target file atomically.
                     Files.move(source, target,
-                        StandardCopyOption.REPLACE_EXISTING);
+                            StandardCopyOption.REPLACE_EXISTING);
                     if (size != null && Files.exists(target)) {
                         size += Files.size(target);
                     }
                 } catch (IOException ioe) {
                     log.warning("Failed to rename " + source
-                        + ", falling back to copying: " + ioe);
+                            + ", falling back to copying: " + ioe);
                     tryCopy = true;
                 }
             }
             if (tryCopy) {
                 long lastModified = Files.getLastModifiedTime(source)
-                    .toMillis();
+                        .toMillis();
                 PathUtils.copyFile(source, target);
                 // Preserve last modification date.
                 Files.setLastModifiedTime(target,
-                    FileTime.fromMillis(lastModified));
+                        FileTime.fromMillis(lastModified));
                 if (size != null && Files.exists(target)) {
                     size += Files.size(target);
                 }
@@ -195,12 +174,12 @@ public class FileArchiver {
 
             if (log.isLoggable(Level.FINE)) {
                 log.fine("Archived " + fileInfo.toDetailString() + " from "
-                    + source + " to " + target);
+                        + source + " to " + target);
             }
 
             // Success, now check if we have to remove a file
             List<Path> list = getArchivedFiles(target.getParent(),
-                fileInfo.getFilenameOnly());
+                    fileInfo.getFilenameOnly());
             checkArchivedFile(list);
 
             if (oldSize != size) {
@@ -208,7 +187,7 @@ public class FileArchiver {
             }
         } else {
             throw new IOException("Failed to create directory: "
-                + target.getParent());
+                    + target.getParent());
         }
     }
 
@@ -217,8 +196,7 @@ public class FileArchiver {
     }
 
     private void checkArchivedFile(Collection<Path> versions)
-        throws IOException
-    {
+            throws IOException {
         assert versions != null;
         if (versionsPerFile < 0) {
             // Unlimited. Don't check
@@ -262,7 +240,7 @@ public class FileArchiver {
      * the archive.
      *
      * @return true the maintenance worked successfully for all files, false if
-     *         it failed for at least one file
+     * it failed for at least one file
      */
     public synchronized boolean maintain() {
         if (Files.notExists(archiveDirectory)) {
@@ -364,10 +342,10 @@ public class FileArchiver {
             parts[1] = "";
         }
         return archiveDirectory.resolve(FileInfoFactory
-            .encodeIllegalChars(parts[0])
-            + "_K_"
-            + fileInfo.getVersion()
-            + FileInfoFactory.encodeIllegalChars(parts[1]));
+                .encodeIllegalChars(parts[0])
+                + "_K_"
+                + fileInfo.getVersion()
+                + FileInfoFactory.encodeIllegalChars(parts[1]));
     }
 
     /**
@@ -380,7 +358,7 @@ public class FileArchiver {
      */
     private Path getOldArchiveTarget(FileInfo fileInfo) {
         return archiveDirectory.resolve(FileInfoFactory
-            .encodeIllegalChars(fileInfo.getRelativeName()) + "_K_"
+                .encodeIllegalChars(fileInfo.getRelativeName()) + "_K_"
                 + fileInfo.getVersion());
     }
 
@@ -390,7 +368,7 @@ public class FileArchiver {
 
     private static String buildFileName(Path baseDirectory, Path file) {
         String fn = FileInfoFactory.decodeIllegalChars(file.getFileName()
-            .toString());
+                .toString());
         int i = fn.lastIndexOf("_K_");
         int ext = fn.lastIndexOf(".");
         if (i >= 0 && ext >= 0) {
@@ -403,10 +381,10 @@ public class FileArchiver {
         while (!baseDirectory.equals(parent)) {
             if (parent == null) {
                 throw new IllegalArgumentException(
-                    "Local file seems not to be in a subdir of the local powerfolder copy");
+                        "Local file seems not to be in a subdir of the local powerfolder copy");
             }
             fn = FileInfoFactory.decodeIllegalChars(parent.getFileName()
-                .toString()) + '/' + fn;
+                    .toString()) + '/' + fn;
             parent = parent.getParent();
         }
         return fn;
@@ -416,8 +394,7 @@ public class FileArchiver {
      * Parse the file name for the last "_K_" and extract the following version
      * number. Like 'file_K_45.txt' returns 45.
      *
-     * @param file
-     *            file to parse name.
+     * @param file file to parse name.
      * @return the version.
      */
     private static int getVersionNumber(Path file) {
@@ -431,8 +408,7 @@ public class FileArchiver {
     }
 
     private static List<Path> getArchivedFiles(Path directory,
-        final String baseName)
-    {
+                                               final String baseName) {
         List<Path> ret = new ArrayList<Path>();
 
         try (DirectoryStream<Path> files = Files.newDirectoryStream(directory)) {
@@ -452,13 +428,11 @@ public class FileArchiver {
      * Use the {@link FileArchiver#BASE_NAME_PATTERN} to match the name and
      * extension of the {@code baseName} to match the file's name and extension
      * of {@code name}.
-     * 
-     * @param name
-     *            Name of a file in the history
-     * @param baseName
-     *            Name of the actual file in the folder
+     *
+     * @param name     Name of a file in the history
+     * @param baseName Name of the actual file in the folder
      * @return {@code True} if {@code name} has the same filename and extension
-     *         as {@code baseName}
+     * as {@code baseName}
      */
     private static boolean belongsTo(String name, String baseName) {
         Matcher m = BASE_NAME_PATTERN.matcher(name);
@@ -470,11 +444,10 @@ public class FileArchiver {
 
     /**
      * Search the history for an archived file of {@code fileInfo}
-     * 
-     * @param fileInfo
-     *            The file to check for in the history.
+     *
+     * @param fileInfo The file to check for in the history.
      * @return {@code True} if there is a file in the history, {@code false}
-     *         otherwise.
+     * otherwise.
      */
     public boolean hasArchivedFileInfo(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
@@ -482,13 +455,13 @@ public class FileArchiver {
         try {
             // Find archive subdirectory.
             subdirectory = archiveDirectory
-                .resolve(FileInfoFactory
-                    .encodeIllegalChars(fileInfo.getRelativeName()))
-                .getParent();
+                    .resolve(FileInfoFactory
+                            .encodeIllegalChars(fileInfo.getRelativeName()))
+                    .getParent();
         } catch (InvalidPathException e) {
             // PFS-2000:
             log.warning("Unable to resolve versions for file: "
-                + fileInfo.toDetailString() + ". " + e);
+                    + fileInfo.toDetailString() + ". " + e);
             return false;
         }
         if (Files.notExists(subdirectory)) {
@@ -496,9 +469,9 @@ public class FileArchiver {
         }
 
         try (DirectoryStream<Path> files = Files
-            .newDirectoryStream(subdirectory)) {
+                .newDirectoryStream(subdirectory)) {
             String fn = FileInfoFactory.encodeIllegalChars(fileInfo
-                .getFilenameOnly());
+                    .getFilenameOnly());
 
             // get rid of the extension, if present
             int ind = fn.lastIndexOf('.');
@@ -526,26 +499,25 @@ public class FileArchiver {
      * with the same <code>filename</code>.<br />
      * <br />
      * <b>Attention:</b> The returned list may not be orderd!
-     * 
-     * @param fileInfo
-     *            Get all files in the history that are older versions of
-     *            {@code fileInfo}.
+     *
+     * @param fileInfo Get all files in the history that are older versions of
+     *                 {@code fileInfo}.
      * @return A list of all older versions of the passed file in the history.
      */
     public List<FileInfo> getArchivedFilesInfos(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo is null");
         // Find archive subdirectory.
         Path subdirectory = PathUtils.buildFileFromRelativeName(
-            archiveDirectory,
-            FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
-            .getParent();
+                archiveDirectory,
+                FileInfoFactory.encodeIllegalChars(fileInfo.getRelativeName()))
+                .getParent();
         if (Files.notExists(subdirectory)) {
             return Collections.emptyList();
         }
 
         Path target = getArchiveTarget(fileInfo);
         List<Path> archivedFiles = getArchivedFiles(target.getParent(),
-            FileInfoFactory.encodeIllegalChars(fileInfo.getFilenameOnly()));
+                FileInfoFactory.encodeIllegalChars(fileInfo.getFilenameOnly()));
         if (archivedFiles == null || archivedFiles.size() == 0) {
             return Collections.emptyList();
         }
@@ -555,7 +527,7 @@ public class FileArchiver {
             try {
                 int version = getVersionNumber(file);
                 Date modDate = new Date(Files.getLastModifiedTime(file)
-                    .toMillis());
+                        .toMillis());
                 String name = getFileInfoName(file);
                 // PFC-2352: TODO: Support ID, hashes and tags
                 String oid = null;
@@ -564,8 +536,8 @@ public class FileArchiver {
                 // PFC-2571: TODO: Add/Read modifier from meta-db
                 AccountInfo modAccount = null;
                 FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo,
-                    name, oid, Files.size(file), mySelf, modAccount, modDate,
-                    version, hashes, tags);
+                        name, oid, Files.size(file), mySelf, modAccount, modDate,
+                        version, hashes, tags);
                 list.add(archiveFile);
             } catch (IOException ioe) {
                 log.warning(ioe.getMessage());
@@ -578,11 +550,10 @@ public class FileArchiver {
     /**
      * Calls {@link #getArchivedFilesInfos(FileInfo)} and sorts the returned
      * list according to the version number.
-     * 
-     * @param fileInfo
-     *            The file to get the archived versions of.
+     *
+     * @param fileInfo The file to get the archived versions of.
      * @return A alpha-numerically ascending sorted list of all versions of
-     *         {@code fileInfo} in the history.
+     * {@code fileInfo} in the history.
      */
     public List<FileInfo> getSortedArchivedFilesInfos(FileInfo fileInfo) {
         List<FileInfo> history = new ArrayList<>();
@@ -604,13 +575,13 @@ public class FileArchiver {
         Path subdirectory;
         try {
             subdirectory = archiveDirectory
-                .resolve(FileInfoFactory
-                    .encodeIllegalChars(fileInfo.getRelativeName()))
-                .getParent();
+                    .resolve(FileInfoFactory
+                            .encodeIllegalChars(fileInfo.getRelativeName()))
+                    .getParent();
         } catch (InvalidPathException e) {
             // PFS-2000:
             log.warning("Unable to resolve versions for file: "
-                + fileInfo.toDetailString() + ". " + e);
+                    + fileInfo.toDetailString() + ". " + e);
             return null;
         }
         if (Files.notExists(subdirectory)) {
@@ -631,13 +602,11 @@ public class FileArchiver {
     /**
      * Restore a file version.
      *
-     * @param versionInfo
-     *            the FileInfo of the archived file.
+     * @param versionInfo the FileInfo of the archived file.
      * @param target
      */
     public boolean restore(FileInfo versionInfo, Path target)
-        throws IOException
-    {
+            throws IOException {
         Path archiveFile = getArchiveTarget(versionInfo);
         if (Files.notExists(archiveFile)) {
             // Try with the old format, adding _K_nnn to end of file name, after
@@ -646,10 +615,9 @@ public class FileArchiver {
         }
         if (Files.exists(archiveFile)) {
             log.fine("Restoring " + versionInfo.getRelativeName() + " to "
-                + target.toAbsolutePath());
+                    + target.toAbsolutePath());
             if (target.getParent() != null
-                && Files.notExists(target.getParent()))
-            {
+                    && Files.notExists(target.getParent())) {
                 Files.createDirectories(target.getParent());
             }
 
@@ -691,6 +659,15 @@ public class FileArchiver {
         return size;
     }
 
+    public void purge(Account account, Folder folder) throws IOException {
+        purge();
+        String logMessage = "Successfully cleared versioning of folder " + folder.getName() +
+                " by " + account;
+        logMessage = size == 0 ? logMessage : logMessage + " (Removed "
+                + FileUtils.byteCountToDisplaySize(size) + ")";
+        log.info(logMessage);
+    }
+
     public void purge() throws IOException {
         PathUtils.recursiveDelete(archiveDirectory);
         size = 0L;
@@ -700,12 +677,12 @@ public class FileArchiver {
     /**
      * Delete archives older that a specified number of days.
      *
-     * @param cleanupDate
-     *            Age in days of archive files to delete.
+     * @param cleanupDate Age in days of archive files to delete.
      */
     public void cleanupOldArchiveFiles(Date cleanupDate) {
+
         log.info("Cleaning up " + archiveDirectory + " for files older than "
-            + cleanupDate);
+                + cleanupDate);
 
         if (Files.exists(archiveDirectory)) {
             cleanupOldArchiveFiles(archiveDirectory, cleanupDate);
@@ -727,7 +704,7 @@ public class FileArchiver {
                 if (age.before(cleanupDate)) {
                     if (log.isLoggable(Level.FINE)) {
                         log.fine("Deleting old archive file " + file + " ("
-                            + age + ')');
+                                + age + ')');
                     }
                     try {
                         Files.delete(file);
@@ -749,11 +726,11 @@ public class FileArchiver {
                 return;
             } catch (IOException e) {
                 log.fine("Unable to delete meta data file: " + sizeFile + ". "
-                    + e);
+                        + e);
             }
         }
         ByteArrayInputStream bin = new ByteArrayInputStream(String
-            .valueOf(size).getBytes());
+                .valueOf(size).getBytes());
         try {
             PathUtils.copyFromStreamToFile(bin, sizeFile);
             PathUtils.setAttributesOnWindows(sizeFile, true, true);

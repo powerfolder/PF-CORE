@@ -150,7 +150,6 @@ public class RequestPart extends Message
 
           this.file     = new FileInfo(proto.getFileInfo());
           this.range    = new Range(proto.getDataRange());
-          this.progress = proto.getProgress();
         }
     }
 
@@ -171,7 +170,6 @@ public class RequestPart extends Message
       builder.setClazzName("FilePartRequest");
       builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setDataRange((DataRangeProto.DataRange)this.range.toD2D());
-      builder.setProgress(this.progress);
 
       return builder.build();
     }

@@ -1,11 +1,5 @@
 package de.dal33t.powerfolder.ui.model;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.swing.SwingUtilities;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -13,6 +7,11 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.PFUIComponent;
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class SyncingModel extends PFUIComponent {
 
@@ -208,7 +207,7 @@ public class SyncingModel extends PFUIComponent {
             calculateOverallStats();
         }
 
-        public void scanResultCommited(final FolderEvent folderEvent) {
+        public void scanResultCommitted(final FolderEvent folderEvent) {
             if (folderEvent.getScanResult().isChangeDetected()) {
                 calculateOverallStats();
             }

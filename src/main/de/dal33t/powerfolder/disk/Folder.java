@@ -533,33 +533,12 @@ public class Folder extends PFComponent {
      *
      * @param scanResult
      *            the scanresult to commit.
-     * @param ignoreLocalMassDeletions
-     *            bypass the local mass delete checks.
      */
-    private void commitScanResult(ScanResult scanResult,
-        boolean ignoreLocalMassDeletions)
+    private void commitScanResult(ScanResult scanResult)
     {
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not commitScanResult: " + scanResult);
             return;
-        }
-
-        // See if everything has been deleted.
-        if (!ignoreLocalMassDeletions
-            && getKnownItemCount() > 0
-            && !scanResult.getDeletedFiles().isEmpty()
-            && ConfigurationEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController()) && !isRevertLocalChanges())
-        {
-
-            // Advise controller of the carnage.
-            for (FileInfo info : scanResult.getDeletedFiles()) {
-                getController().localMassDeletionDetected(
-                    new LocalMassDeletionEvent(this, info));
-            }
-
-            return;
-
         }
 
         synchronized (scanLock) {
@@ -1016,26 +995,13 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Scans the local directory for new files. Be carefull! This method is not
+     * Scans the local directory for new files. Be careful! This method is not
      * Thread safe. In most cases you want to use
      * recommendScanOnNextMaintenance() followed by maintain().
      *
      * @return if the local files where scanned
      */
     public boolean scanLocalFiles() {
-        return scanLocalFiles(false);
-    }
-
-    /**
-     * Scans the local directory for new files. Be careful! This method is not
-     * Thread safe. In most cases you want to use
-     * recommendScanOnNextMaintenance() followed by maintain().
-     *
-     * @param ignoreLocalMassDeletion
-     *            bypass the local mass delete checks.
-     * @return if the local files where scanned
-     */
-    public boolean scanLocalFiles(boolean ignoreLocalMassDeletion) {
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not scanLocalFiles");
             return false;
@@ -1084,7 +1050,7 @@ public class Folder extends PFComponent {
                         addProblem(problem);
                     }
                 }
-                commitScanResult(result, ignoreLocalMassDeletion);
+                commitScanResult(result);
                 lastScan = new Date();
                 return true;
             }
@@ -1263,7 +1229,7 @@ public class Folder extends PFComponent {
             logFine(getName() + ": Already shutdown: Not scanChangedFile: " + fileInfo);
             return null;
         }
-        FileInfo localFileInfo = scanChangedFile0(fileInfo, true);
+        FileInfo localFileInfo = scanChangedFile0(fileInfo);
         if (localFileInfo != null) {
             FileInfo existinfFInfo = findSameFile(localFileInfo);
             if (existinfFInfo != null) {
@@ -1326,21 +1292,12 @@ public class Folder extends PFComponent {
                 logFine(getName() + ": Already shutdown: Not scanChangedFiles (" + fileInfos.size() + "): " + fileInfos);
                 return;
             }
-            FileInfo localFileInfo = scanChangedFile0(fileInfo,
-                !ConfigurationEntry.MASS_DELETE_PROTECTION
-                    .getValueBoolean(getController()));
+            FileInfo localFileInfo = scanChangedFile0(fileInfo);
             if (localFileInfo == null) {
                 // No change
                 it.remove();
             } else if (checkRevert && checkRevertLocalChanges(localFileInfo)) {
                 // No change, reverted
-                it.remove();
-            } else if (localFileInfo.isDeleted()
-                && ConfigurationEntry.MASS_DELETE_PROTECTION
-                    .getValueBoolean(getController()))
-            {
-                getController().localMassDeletionDetected(
-                    new LocalMassDeletionEvent(this, localFileInfo));
                 it.remove();
             } else {
                 // Allowed to change files
@@ -1374,7 +1331,7 @@ public class Folder extends PFComponent {
      *            the file to be scanned
      * @return null, if the file hasn't changed, the new FileInfo otherwise
      */
-    private FileInfo scanChangedFile0(FileInfo fInfo, boolean ignoreDeleteProtection) {
+    private FileInfo scanChangedFile0(FileInfo fInfo) {
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not scanChangedFile0: " + fInfo.toDetailString());
             return null;
@@ -1486,8 +1443,7 @@ public class Folder extends PFComponent {
                         file);
                     if (syncFile != null) {
 
-                        if (!ignoreDeleteProtection
-                            && syncFile.isDeleted()
+                        if (syncFile.isDeleted()
                             && !currentInfo.isMetaFolder())
                         {
                             return null;
@@ -3231,7 +3187,7 @@ public class Folder extends PFComponent {
             {
                 // PFC-2706 / PFC-2705
                 if (remoteFile.getFolderInfo().isMetaFolder()
-                    && localFile != null && localFile.inSyncWithDisk(localCopy))
+                        && localFile.inSyncWithDisk(localCopy))
                 {
                     MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
                         getController());
@@ -3279,8 +3235,6 @@ public class Folder extends PFComponent {
                     }
                     watcher.addIgnoreFile(localFile);
 
-                    UserPrincipal owner = null;
-
                     try {
                         Files.delete(localCopy);
                     } catch (IOException ioe) {
@@ -3319,10 +3273,6 @@ public class Folder extends PFComponent {
                                     || name.startsWith(
                                         Constants.LIBRE_OFFICE_FILENAME_PREFIX))
                                 {
-                                    if (owner != null) {
-                                        Files.setOwner(path, owner);
-                                    }
-
                                     Files.delete(path);
                                 }
                             }
@@ -3371,7 +3321,8 @@ public class Folder extends PFComponent {
                     }
 
                 } else if (localFile.isFile()) {
-                    if (!deleteFile(localFile, localCopy)) {
+
+                    if (!deleteFile(localFile, localCopy, remoteFile)) {
                         logWarning("Unable to delete local file "
                             + localCopy.toAbsolutePath() + ". "
                             + localFile.toDetailString());
@@ -3515,7 +3466,7 @@ public class Folder extends PFComponent {
     }
 
     private void broadcastFolderChanges(final ScanResult scanResult) {
-        if (getConnectedMembersCount() == 0) {
+        if (getCompletelyConnectedMembersCount() == 0) {
             return;
         }
 
@@ -3581,17 +3532,6 @@ public class Folder extends PFComponent {
             }
         }
 
-        // #1022 - Mass delete detection. Switch to a safe profile if
-        // a large percent of files would get deleted by another node.
-        if (newList.files != null
-            && syncProfile.isSyncDeletion()
-            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
-            && ConfigurationEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController()))
-        {
-            checkForMassDeletion(from, newList.files);
-        }
-
         // Update DAO
         if (newList.isNull()) {
             // Delete files in domain and do nothing
@@ -3652,25 +3592,6 @@ public class Folder extends PFComponent {
                 changes.getRemoved()[i] = FileInfoFactory.changedFolderInfo(
                     fInfo, currentInfo);
             }
-        }
-
-        // #1022 - Mass delete detection. Switch to a safe profile if
-        // a large percent of files would get deleted by another node.
-        if (changes.getFiles() != null
-            && syncProfile.isSyncDeletion()
-            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
-            && ConfigurationEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController()))
-        {
-            checkForMassDeletion(from, changes.getFiles());
-        }
-        if (changes.getRemoved() != null
-            && syncProfile.isSyncDeletion()
-            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())
-            && ConfigurationEntry.MASS_DELETE_PROTECTION
-                .getValueBoolean(getController()))
-        {
-            checkForMassDeletion(from, changes.getRemoved());
         }
 
         // Try to find same files
@@ -3753,61 +3674,6 @@ public class Folder extends PFComponent {
             }
             dao.store(domainID, fileInfos);
         }
-    }
-
-    private void checkForMassDeletion(Member from, FileInfo[] fileInfos) {
-        int delsCount = 0;
-        for (FileInfo remoteFile : fileInfos) {
-            if (!remoteFile.isDeleted()) {
-                continue;
-            }
-            // #1842: Actually check if these files have just been deleted.
-            FileInfo localFile = getFile(remoteFile);
-            if (localFile != null && !localFile.isDeleted()
-                && remoteFile.isNewerThan(localFile))
-            {
-                delsCount++;
-            }
-        }
-
-        if (delsCount >= Constants.FILE_LIST_MAX_FILES_PER_MESSAGE) {
-            // #1786 - If deletion >= max files per message, switch.
-            switchToSafe(from, delsCount, false);
-        } else {
-            int knownFilesCount = getKnownItemCount();
-            if (knownFilesCount > 1) {
-                int delPercentage = 100 * delsCount / knownFilesCount;
-                if (isFiner()) {
-                    logFiner("FolderFilesChanged delete percentage "
-                        + delPercentage + '%');
-                }
-                if (delPercentage >= ConfigurationEntry.MASS_DELETE_THRESHOLD
-                    .getValueInt(getController()))
-                {
-                    switchToSafe(from, delPercentage, true);
-                }
-            }
-        }
-    }
-
-    private void switchToSafe(Member from, int delsCount, boolean percentage) {
-        logWarning("Received a FolderFilesChanged message from "
-            + from.getInfo().nick + " which will delete " + delsCount
-            + " files in folder " + currentInfo.getLocalizedName()
-            + ". The sync profile will now be switched from "
-            + syncProfile.getName() + " to " + SyncProfile.HOST_FILES.getName()
-            + " to protect the files.");
-        SyncProfile original = syncProfile;
-
-        // Emergency profile switch to something safe.
-        setSyncProfile(SyncProfile.HOST_FILES);
-
-        // Advise the controller of the problem.
-        getController().remoteMassDeletionDetected(
-            new RemoteMassDeletionEvent(currentInfo, from.getInfo(), delsCount,
-                original, syncProfile, percentage));
-
-        logWarning("Switched to " + syncProfile.getName());
     }
 
     /**
@@ -4298,6 +4164,10 @@ public class Folder extends PFComponent {
         return dao.findAllDirectories(null);
     }
 
+    private boolean deleteFile(FileInfo newFileInfo, Path file) {
+        return deleteFile(newFileInfo, file, null);
+    }
+
     /**
      * Common file delete method. Either deletes the file or moves it to the
      * recycle bin.
@@ -4305,7 +4175,7 @@ public class Folder extends PFComponent {
      * @param newFileInfo
      * @param file
      */
-    private boolean deleteFile(FileInfo newFileInfo, Path file) {
+    private boolean deleteFile(FileInfo newFileInfo, Path file, FileInfo removeFileInfo) {
         Reject.ifNull(newFileInfo, "FileInfo is null");
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not deleteFile: " + newFileInfo.toDetailString() + " at " + file);
@@ -4331,6 +4201,12 @@ public class Folder extends PFComponent {
             synchronized (scanLock) {
                 if (fileInfo != null && fileInfo.isFile() && Files.exists(file))
                 {
+                    if (currentInfo.isMetaFolder() && fileInfo.getRelativeName()
+                            .startsWith(METAFOLDER_LOCKS_DIR)) {
+                        MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
+                                getController());
+                        mfdh.handleRemoteLockOverwrite(removeFileInfo, file);
+                    }
                     try {
                         archiver.archive(fileInfo, file, false);
                     } catch (IOException e) {
@@ -4689,6 +4565,19 @@ public class Folder extends PFComponent {
     public int getConnectedMembersCount() {
         int nConnected = 0;
         for (Member member : members.values()) {
+            if (member.isConnected()) {
+                nConnected++;
+            }
+        }
+        return nConnected;
+    }
+
+    /**
+     * @return the number of connected and handshaked members EXCLUDING myself.
+     */
+    public int getCompletelyConnectedMembersCount() {
+        int nConnected = 0;
+        for (Member member : members.values()) {
             if (member.isCompletelyConnected()) {
                 nConnected++;
             }
@@ -4697,7 +4586,7 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @return the connected members EXCLUDING myself.
+     * @return the connected and handshaked members EXCLUDING myself.
      */
     public Member[] getConnectedMembers() {
         List<Member> connected = new ArrayList<Member>(members.size());
@@ -4938,7 +4827,7 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("Harmonized percentage: " + percentage + ". In sync? "
                 + newInSync + ". last sync date: " + lastSyncDate
-                + " . connected: " + getConnectedMembersCount());
+                    + " . connected: " + getCompletelyConnectedMembersCount());
         }
     }
 
@@ -5161,7 +5050,7 @@ public class Folder extends PFComponent {
             logFiner("fireScanResultCommited: " + this);
         }
         FolderEvent folderEvent = new FolderEvent(this, scanResult);
-        folderListenerSupport.scanResultCommited(folderEvent);
+        folderListenerSupport.scanResultCommitted(folderEvent);
     }
 
     /** package protected because fired by FolderStatistics */

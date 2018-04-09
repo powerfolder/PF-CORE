@@ -35,6 +35,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.*;
@@ -108,7 +109,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
       super(controller);
 
       if(0 > port) {
-          this.port = (useD2D ? ConfigurationEntry.D2D_PORT.getValueInt(getController()) : DEFAULT_PORT);
+          this.port = (useD2D ? ConfigurationEntry.NET_PORT_D2D.getValueInt(getController()) : DEFAULT_PORT);
       } else this.port = port;
 
       this.hasIncomingConnection = false;
@@ -160,10 +161,12 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 // Create SSl socket factory
                 SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
                 serverSocket = serverSocketFactory.createServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
-            }
-            else {
+            } else {
                 serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
             }
+        } catch (EOFException e) {
+            logWarning("Cannot open D2D server socket: Cannot get SSL certificate");
+            throw new ConnectionException("Cannot open D2D server socket: Cannot get SSL certificate", e);
         } catch (Exception e) {
             throw new ConnectionException(Translation.get(
                 "dialog.unable_to_open_port", port + ""), e);

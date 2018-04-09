@@ -21,13 +21,8 @@
 
 package de.dal33t.powerfolder.d2d;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.Socket;
-
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.net.AbstractSocketConnectionHandler;
@@ -36,6 +31,10 @@ import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
 import de.dal33t.powerfolder.protocol.AnyMessageProto;
 import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.Socket;
 
 /**
  * Handler for relayed connections to other clients. NO encrypted transfer.
@@ -200,11 +199,19 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
         // Block unsupported messages
         if (mesg instanceof AddFriendNotification) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof RelayedMessageExt) {
+        } else if (mesg instanceof KnownNodes) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof Invitation) {
+        } else if (mesg instanceof RelayedMessageExt) {
+            mesg = new Ping();
+        } else if (mesg instanceof Invitation) {
+            mesg = new Ping();
+        } else if (mesg instanceof Problem) {
+            mesg = new Ping();
+        } else if (mesg instanceof RequestNodeList) {
+            mesg = new Ping();
+        } else if (mesg instanceof TransferStatus) {
+            mesg = new Ping();
+        } else if (mesg instanceof UDTMessage) {
             mesg = new Ping();
         }
 

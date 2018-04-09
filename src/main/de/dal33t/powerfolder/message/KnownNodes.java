@@ -19,12 +19,8 @@
  */
 package de.dal33t.powerfolder.message;
 
-import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.protocol.NodeInfoProto;
-import de.dal33t.powerfolder.protocol.NodeListProto;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.io.Externalizable;
@@ -42,7 +38,6 @@ import java.util.logging.Logger;
  * @version $Revision: 1.11 $
  */
 public class KnownNodes extends Message
-  implements D2DObject
 {
     private static final Logger log = Logger.getLogger(KnownNodes.class
         .getName());
@@ -78,15 +73,6 @@ public class KnownNodes extends Message
         if (nodes.length > Constants.NODES_LIST_MAX_NODES_PER_MESSAGE) {
             log.warning("Nodelist longer than max size: " + this);
         }
-    }
-
-    /**
-     * Init from D2D message
-     *
-     * @param mesg Message to use data from
-     **/
-    public KnownNodes(AbstractMessage mesg) {
-        initFromD2D(mesg);
     }
 
     /**
@@ -184,53 +170,4 @@ public class KnownNodes extends Message
         return "NodeList, " + (nodes != null ? nodes.length : 0) + " nodes(s)";
     }
 
-    /** initFromD2DMessage
-     * Init from D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
-     **/
-
-    @Override
-    public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof NodeListProto.NodeList)
-        {
-          NodeListProto.NodeList proto = (NodeListProto.NodeList)mesg;
-
-          /* Convert list back to array */
-          int i = 0;
-
-          this.nodes = new MemberInfo[proto.getNodeInfosCount()];
-
-          for(NodeInfoProto.NodeInfo minfo : proto.getNodeInfosList())
-            {
-              this.nodes[i++] = new MemberInfo(minfo);
-            }
-        }
-    }
-
-    /** toD2D
-     * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @return Converted D2D message
-     **/
-
-    @Override
-    public AbstractMessage
-    toD2D()
-    {
-      NodeListProto.NodeList.Builder builder = NodeListProto.NodeList.newBuilder();
-
-        // Translate old message name to new name defined in protocol file
-        builder.setClazzName("NodeList");
-
-      /* Convert array to list */
-      for(MemberInfo minfo : this.nodes)
-        {
-          builder.addNodeInfos((NodeInfoProto.NodeInfo)minfo.toD2D());
-        }
-
-      return builder.build();
-    }
 }

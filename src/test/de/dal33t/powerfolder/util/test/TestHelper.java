@@ -19,35 +19,6 @@
  */
 package de.dal33t.powerfolder.util.test;
 
-import java.awt.EventQueue;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.lang.reflect.InvocationTargetException;
-import java.net.InetSocketAddress;
-import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.transfer.DownloadManager;
@@ -56,6 +27,18 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import junit.framework.Assert;
 import junit.framework.TestCase;
+
+import java.awt.*;
+import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
+import java.nio.file.*;
+import java.nio.file.DirectoryStream.Filter;
+import java.util.*;
+import java.util.List;
 
 /**
  * Offers several helping methods for junit tests.
@@ -562,16 +545,12 @@ public class TestHelper {
 
     // Scanning help **********************************************************
 
-    public static void scanFolder(final Folder folder) {
-        scanFolder(folder, true);
-    }
-
     /**
      * Scans a folder and waits for the scan to complete.
      *
      * @param folder
      */
-    public static void scanFolder(final Folder folder, boolean ignoreMassDeletion) {
+    public static void scanFolder(final Folder folder) {
         // if (!folder.getSyncProfile().isInstantSync()) {
         // throw new IllegalStateException(
         // "Folder has auto-detect of local files disabled: " + folder
@@ -591,9 +570,9 @@ public class TestHelper {
         });
 
         // Scan // Ignore mass deletion
-        if (!folder.scanLocalFiles(ignoreMassDeletion)) {
+        if (!folder.scanLocalFiles()) {
             TestHelper.waitMilliSeconds(50);
-            if (!folder.scanLocalFiles(ignoreMassDeletion)) {
+            if (!folder.scanLocalFiles()) {
                 throw new RuntimeException("Unable to scan " + folder
                     + ". Last scan result: " + folder.getLastScanResultState()
                     + ". Device disconnected? "

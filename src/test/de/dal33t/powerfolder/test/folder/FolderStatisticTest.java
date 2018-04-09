@@ -19,6 +19,19 @@
  */
 package de.dal33t.powerfolder.test.folder;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -28,21 +41,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
-import de.dal33t.powerfolder.util.test.Condition;
-import de.dal33t.powerfolder.util.test.ConditionWithMessage;
-import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
-import de.dal33t.powerfolder.util.test.TestHelper;
 
 /**
  * Test for FolderStatistic.
@@ -721,7 +719,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
             @Override
             public boolean reached() {
-                if (folder.getConnectedMembersCount() != 4) {
+                if (folder.getCompletelyConnectedMembersCount() != 4) {
                     throw new RuntimeException(folder.getController().getMySelf().getNick()
                             + ": Not all members connected on " + folder + ". Connected members: "
                             + Arrays.asList(folder.getConnectedMembers())+ ". All members: " + Arrays.asList(folder.getMembersAsCollection()));
