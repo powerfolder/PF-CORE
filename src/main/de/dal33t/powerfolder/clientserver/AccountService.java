@@ -93,7 +93,9 @@ public interface AccountService {
      * @param emails
      * @param personalMessage
      * @return true if all messages was successfully delivered
+     * @deprecated since 14.0
      */
+    @Deprecated
     boolean tellFriend(Collection<String> emails, String personalMessage);
 
     /**
