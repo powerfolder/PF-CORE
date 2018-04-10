@@ -689,7 +689,7 @@ public class PathUtils {
 
     public static void recursiveDelete(Path file, Filter<Path> filter)
             throws IOException {
-        if (file == null) {
+        if (file == null || filter == null) {
             return;
         }
         if (!filter.accept(file)) {
