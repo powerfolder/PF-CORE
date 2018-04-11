@@ -1619,7 +1619,6 @@ public class Folder extends PFComponent {
                         try {
                             watcher.addIgnoreFile(fInfo);
                             deleteFileRecursive(fInfo, diskFile);
-//                            PathUtils.recursiveDelete(diskFile);
                             recommendScanOnNextMaintenance();
                         } catch (IOException e) {
                             logWarning("Unable to delete local file. "
