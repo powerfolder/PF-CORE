@@ -184,12 +184,12 @@ public class Member extends PFComponent implements Comparable<Member> {
             return false;
         }
         if (aInfo.getUsername() != null
-            && aInfo.getUsername().toLowerCase().indexOf(searchString) >= 0)
+            && aInfo.getUsername().toLowerCase().contains(searchString))
         {
             return true;
         }
         return aInfo.getDisplayName() != null
-            && aInfo.getDisplayName().toLowerCase().indexOf(searchString) >= 0;
+            && aInfo.getDisplayName().toLowerCase().contains(searchString);
     }
 
     public String getHostName() {
@@ -715,13 +715,6 @@ public class Member extends PFComponent implements Comparable<Member> {
         ConnectResult connectResult;
         ConnectionHandler handler = null;
         try {
-            // #1334
-            // if (info.getConnectAddress().getPort() <= 0) {
-            // logWarning(this + " has illegal connect port "
-            // + info.getConnectAddress().getPort());
-            // return false;
-            // }
-
             // Set reconnecting state
             if (markConnecting) {
                 markConnecting();

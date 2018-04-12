@@ -14,19 +14,16 @@ import org.quartz.SchedulerException;
 public class Housekeeping extends Loggable implements Job {
 
     @Override
-    public void execute(JobExecutionContext jobExecutionContext)
-        throws JobExecutionException
-    {
-        Controller controller = null;
+    public void execute(JobExecutionContext jobExecutionContext){
+        Controller controller;
         try {
             controller = (Controller) jobExecutionContext.getScheduler()
                 .getContext().get("controller");
+            controller.performHousekeeping(true);
         } catch (SchedulerException e) {
             logWarning(
                 "Could not perform housekeeping, could not access the controller. " +
                     e);
-            return;
         }
-        controller.performHousekeeping(true);
     }
 }

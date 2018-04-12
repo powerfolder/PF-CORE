@@ -27,12 +27,13 @@ public enum DocumentType {
     }
 
     public String toRegExp() {
-        String s = "";
+        StringBuilder sb = new StringBuilder();
         for (String ext:
              extensions) {
-            s += ext;
-            s += "|";
+            sb.append(ext);
+            sb.append("|");
         }
+        String s = sb.toString();
         if (s.length() > 0) {
             s = s.substring(0, s.length() - 1);
         }

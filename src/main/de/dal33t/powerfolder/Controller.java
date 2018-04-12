@@ -650,7 +650,7 @@ public class Controller extends PFComponent {
         }
 
         if (!this.getMySelf().isServer()) {
-            enableFileBrowserIntegration(this);
+            enableFileBrowserIntegration();
         }
 
         // Load anything that was not handled last time.
@@ -697,7 +697,7 @@ public class Controller extends PFComponent {
         }
     }
 
-    private void enableFileBrowserIntegration(Controller controller) {
+    private void enableFileBrowserIntegration() {
         // PFC-2395: Start
         fbIntegration = new FileBrowserIntegration(getController());
         fbIntegration.start();
@@ -870,7 +870,7 @@ public class Controller extends PFComponent {
 
         /* Init stuff (moved here from {@link startConfig} */
         additionalConnectionListeners = Collections
-            .synchronizedList(new ArrayList<ConnectionListener>());
+            .synchronizedList(new ArrayList<>());
         started = false;
         shuttingDown = false;
         threadPool = new WrappedScheduledThreadPoolExecutor(
@@ -1531,9 +1531,8 @@ public class Controller extends PFComponent {
         }
 
         // PF-1029
-        FileStore store = null;
         try {
-            store = Files.getFileStore(file);
+            FileStore store = Files.getFileStore(file);
             if (store.getUsableSpace() < 1024L * 1024L * 10) {
                 logSevere("Unable to store configuration file. Disk space insufficient: "
                         + Format.formatBytesShort(store.getUsableSpace()));
