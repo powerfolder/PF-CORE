@@ -140,7 +140,7 @@ public class RemoteServiceStubFactory {
                             + "Please check program version of "
                             + remoteSide
                             + ": "
-                            + (id == null ? "" : id.getProgramVersion())
+                            + id.getProgramVersion()
                             + ". Request: " + request);
                 }
 

@@ -196,11 +196,10 @@ public class ServerClient extends PFComponent {
             }
         }
 
-        boolean allowServerChange = true;
         boolean updateConfig = ConfigurationEntry.SERVER_CONFIG_UPDATE
                 .getValueBoolean(config);
 
-        init(controller, config, name, host, nodeId, allowServerChange, updateConfig);
+        init(controller, config, name, host, nodeId, true, updateConfig);
     }
 
     public ServerClient(Controller controller, Properties config, String name, String host,
@@ -1409,8 +1408,7 @@ public class ServerClient extends PFComponent {
                     && System.currentTimeMillis() <= Long.valueOf(shibToken
                     .substring(shibToken.indexOf(':') + 1, shibToken.length()));
         } catch (Exception e) {
-            logFine("Unusable Shibboleth Token: " + shibToken + " valid ? "
-                    + tokenIsValid);
+            logFine("Unusable Shibboleth Token: " + shibToken);
             shibUsername = null;
             shibToken = null;
         }
@@ -1430,7 +1428,7 @@ public class ServerClient extends PFComponent {
                                 + e);
             }
 
-            URI idpURI = null;
+            URI idpURI;
             try {
                 idpURI = new URI(idpURLString);
             } catch (Exception e) {
@@ -1622,7 +1620,7 @@ public class ServerClient extends PFComponent {
                 useCache = true;
                 for (MemberInfo snInfo : list.getServersSet()) {
                     Boolean hasKey = cachedServerPublicKey.getValidEntry(snInfo);
-                    useCache &= hasKey != null && hasKey.booleanValue();
+                    useCache &= hasKey != null && hasKey;
                 }
             } else {
                 useCache = false;
@@ -1671,7 +1669,7 @@ public class ServerClient extends PFComponent {
 
     private boolean processNodeList(NodeList nodeList) {
         getController().getNodeManager().queueNewNodes(nodeList.getNodeList().toArray(
-                new MemberInfo[nodeList.getNodeList().size()]));
+                new MemberInfo[0]));
 
         for (MemberInfo friend : nodeList.getFriendsSet()) {
             Member node = friend.getNode(getController(), true);
@@ -2326,7 +2324,7 @@ public class ServerClient extends PFComponent {
 
             Collection<FolderInfo> infos = getController()
                     .getFolderRepository().getJoinedFolderInfos();
-            FolderInfo[] folders = infos.toArray(new FolderInfo[infos.size()]);
+            FolderInfo[] folders = infos.toArray(new FolderInfo[0]);
             Collection<MemberInfo> hostingServers = getFolderService()
                     .getHostingServers(folders);
             if (isFine()) {

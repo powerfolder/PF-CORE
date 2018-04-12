@@ -136,10 +136,8 @@ public class FileArchiver {
             if (Files.notExists(target.getParent())) {
                 Files.createDirectories(target.getParent());
             }
-        } catch (FileAlreadyExistsException faee) {
+        } catch (IOException faee) {
             // Ignore.
-        } catch (IOException ioe) {
-
         }
 
         if (Files.exists(target.getParent())) {
@@ -207,7 +205,7 @@ public class FileArchiver {
             return;
         }
 
-        Path[] versionArray = versions.toArray(new Path[versions.size()]);
+        Path[] versionArray = versions.toArray(new Path[0]);
         Arrays.sort(versionArray, VERSION_COMPARATOR);
         int toDelete = versionArray.length - versionsPerFile;
         long oldSize = size;
@@ -290,9 +288,7 @@ public class FileArchiver {
             } else {
                 String baseName = getBaseName(f);
                 Path vf = dir.resolve(baseName);
-                if (!checked.contains(vf)) {
-                    checked.add(vf);
-                }
+                checked.add(vf);
                 Collection<Path> files = fileMap.get(baseName);
                 if (files == null) {
                     files = new LinkedList<Path>();
@@ -556,8 +552,8 @@ public class FileArchiver {
      * {@code fileInfo} in the history.
      */
     public List<FileInfo> getSortedArchivedFilesInfos(FileInfo fileInfo) {
-        List<FileInfo> history = new ArrayList<>();
-        history.addAll(getArchivedFilesInfos(fileInfo));
+        List<FileInfo> history = new ArrayList<>(
+            getArchivedFilesInfos(fileInfo));
         history.sort(new Comparator<FileInfo>() {
             public int compare(FileInfo lhs, FileInfo rhs) {
                 return lhs.getVersion() - rhs.getVersion();

@@ -348,8 +348,6 @@ public class FolderScanner extends PFComponent {
     /**
      * Produces a list of FilenameProblems per FileInfo that has problems.
      * Public for testing
-     *
-     * @param files
      */
     private void tryFindProblemsInCurrentScan() {
         if (!PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(getController()))
@@ -364,18 +362,9 @@ public class FolderScanner extends PFComponent {
     private void tryToFindProblemsInCurrentScan(Collection<FileInfo> files)
     {
         for (FileInfo fileInfo : files) {
-            List<Problem> problemList = null;
-            if (FilenameProblemHelper.hasProblems(fileInfo)) {
-                if (problemList == null) {
-                    problemList = new ArrayList<Problem>();
-                }
-                problemList.addAll(FilenameProblemHelper.getProblems(
+            currentScanResult
+                .putFileProblems(fileInfo, FilenameProblemHelper.getProblems(
                     getController(), fileInfo));
-
-            }
-            if (problemList != null) {
-                currentScanResult.putFileProblems(fileInfo, problemList);
-            }
         }
     }
 
@@ -400,16 +389,7 @@ public class FolderScanner extends PFComponent {
                 return false;
             }
 
-            Iterator<Path> it = stream.iterator();
-
-            if (it == null) {
-                failure = true;
-                return false;
-            }
-
-            while (it.hasNext()) {
-                Path path = it.next();
-
+            for (Path path : stream) {
                 if (failure) {
                     return false;
                 }
@@ -767,14 +747,7 @@ public class FolderScanner extends PFComponent {
             scanDirectory(dirToScan, currentDirName);
 
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirToScan)) {
-                Iterator<Path> it = stream.iterator();
-
-                if (it == null) {
-                    throw new IOException("Unable to access directory");
-                }
-
-                while (it.hasNext()) {
-                    Path path = it.next();
+                for (Path path : stream) {
                     if (failure) {
                         return false;
                     }

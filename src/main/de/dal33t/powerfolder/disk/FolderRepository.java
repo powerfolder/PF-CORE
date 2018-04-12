@@ -344,7 +344,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             baseDir = ConfigurationEntry.FOLDER_BASEDIR.getValue(getController());
             // Read folder base path from registry if possible
             boolean overwriteBaseDir = PreferencesEntry.FOLDER_BASE_PATH_OVERWRITE.getValueBoolean(getController());
-            if (overwriteBaseDir == true && !PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController()).isEmpty()) {
+            if (overwriteBaseDir && !PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController()).isEmpty()) {
                 baseDir = PreferencesEntry.FOLDER_BASE_PATH.getValueString(getController());
                 // Set folder base path in config
                 ConfigurationEntry.FOLDER_BASEDIR.setValue(getController(), baseDir);
@@ -583,7 +583,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         }
 
                         // Do not add0 if already added
-                        if (!hasJoinedFolder(foInfo) && folderId != null
+                        if (!hasJoinedFolder(foInfo)
                                 && folderSettings != null) {
                             createFolder(foInfo, folderSettings, false, true);
                         }
@@ -1622,7 +1622,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         scanningFolders.add(metaFolder);
                     }
                 }
-                Collections.sort(scanningFolders, FolderComparator.INSTANCE);
+                scanningFolders.sort(FolderComparator.INSTANCE);
                 if (isFiner()) {
                     logFiner("Maintaining " + scanningFolders.size()
                             + " folders...");
@@ -2016,7 +2016,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         removeFolder(existingFolder, false, false, true);
                     }
                     FolderInfo renamedFI = tryRenaming(client, file, foInfo, stillPresent);
-                    if (renamedFI != null && foInfo != null && renamedFI.equals(foInfo)
+                    if (renamedFI != null && renamedFI.equals(foInfo)
                             && !renamedFI.getName().equals(foInfo.getName())) {
                         foInfo = renamedFI;
                         renamedOnServer = true;
@@ -2055,7 +2055,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         logInfo(" renamedOnServer: " + renamedOnServer);
         logInfo(" stillPresent: " + stillPresent);
-        logInfo(" createdNew: " + createdNew);
 
         if (foInfo == null) {
             foInfo = new FolderInfo(file.getFileName().toString(),
@@ -2068,10 +2067,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 foInfo = new FolderInfo(file.getFileName().toString(),
                         IdGenerator.makeFolderId()).intern();
                 createdNew = true;
-            } else {
-                createdNew = false;
             }
         }
+        logInfo(" createdNew: " + createdNew);
+
         FolderSettings fs = new FolderSettings(file,
                 SyncProfile.getDefault(getController()),
                 ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
@@ -2084,7 +2083,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             try {
                 // Do it synchronous. Otherwise we might get race conditions.
                 getController().getOSClient().getFolderService().createFolder(foInfo, null);
-                if (fs != null && client.getAccount().hasAdminPermission(foInfo)) {
+                if (client.getAccount().hasAdminPermission(foInfo)) {
                     getController().getOSClient().getFolderService(foInfo).setArchiveMode(foInfo, fs.getVersions());
                 }
             } catch (Exception e) {
@@ -2600,7 +2599,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean sourceEncrypted = EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase());
         boolean targetEncrypted = targetPath.getFileName().toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
 
-        /**
+        /*
          * Allowed moving constellations:
          * 1. encrypted Folder -> encrypted Folder
          * 2. unencrypted Folder -> unencrypted Folder
@@ -2692,14 +2691,14 @@ public class FolderRepository extends PFComponent implements Runnable {
                     Long[] sizes = PathUtils.calculateDirectorySizeAndCount(targetPath);
                     long targetSizeBytes = 0;
                     long targetNFiles = 0;
-                    if (sizes != null && sizes.length >= 2) {
+                    if (sizes.length >= 2) {
                         targetSizeBytes = sizes[0];
                         targetNFiles = sizes[1];
                     }
                     sizes = PathUtils.calculateDirectorySizeAndCount(sourceDirectory);
                     long sourceSizeBytes = 0;
                     long sourceNFiles = 0;
-                    if (sizes != null && sizes.length >= 2) {
+                    if (sizes.length >= 2) {
                         sourceSizeBytes = sizes[0];
                         sourceNFiles = sizes[1];
                     }
@@ -3294,15 +3293,14 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return True if there is enough space on the disk to store all folders
      */
     private boolean checkDiskSpace(AccountDetails accountDetails) {
-        long dataSize = accountDetails.getSpaceUsed();
-        long freeDiskSpace = 0;
         try {
-            freeDiskSpace = Files.getFileStore(getFoldersBasedir()).getUsableSpace();
+            long dataSize = accountDetails.getSpaceUsed();
+            long freeDiskSpace = Files.getFileStore(getFoldersBasedir()).getUsableSpace();
+            return dataSize < freeDiskSpace;
         } catch (IOException e) {
             logSevere("Cannot get file store: " + e);
             return true;
         }
-        return dataSize < freeDiskSpace;
     }
 
 }

@@ -155,8 +155,8 @@ public abstract class PFComponent extends Loggable {
         // Remove all property change listener
         PropertyChangeListener[] listener = getPropertyChangeSupport()
             .getPropertyChangeListeners();
-        for (int i = 0; i < listener.length; i++) {
-            removePropertyChangeListener(listener[i]);
+        for (PropertyChangeListener aListener : listener) {
+            removePropertyChangeListener(aListener);
         }
     }
 

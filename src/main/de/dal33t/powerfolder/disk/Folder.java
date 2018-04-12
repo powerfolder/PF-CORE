@@ -223,7 +223,6 @@ public class Folder extends PFComponent {
      * @param controller
      * @param fInfo
      * @param folderSettings
-     * @throws FolderException
      */
     Folder(Controller controller, FolderInfo fInfo,
         FolderSettings folderSettings)
@@ -478,8 +477,7 @@ public class Folder extends PFComponent {
      * Remove all problems from the list of known problems.
      */
     public void removeAllProblems() {
-        List<Problem> list = new ArrayList<Problem>();
-        list.addAll(problems);
+        List<Problem> list = new ArrayList<>(problems);
         problems.clear();
         for (Problem problem : list) {
             problemListenerSupport.problemRemoved(problem);
@@ -1772,13 +1770,9 @@ public class Folder extends PFComponent {
                     + dbFile.toAbsolutePath());
                 return false;
             }
-            InputStream fIn = null;
-            ObjectInputStream in = null;
-            try {
-                // load files and scan in
-                 fIn = new BufferedInputStream(
-                    Files.newInputStream(dbFile));
-                 in = new ObjectInputStream(fIn);
+            // load files and scan in
+            try (InputStream fIn = new BufferedInputStream(
+                Files.newInputStream(dbFile)); ObjectInputStream in = new ObjectInputStream(fIn)) {
 
                 FileInfo[] files = (FileInfo[]) in.readObject();
                 // Convert.cleanMemberInfos(getController().getNodeManager(),
@@ -1871,9 +1865,6 @@ public class Folder extends PFComponent {
                     logSevere("read ignore error: " + this + e.getMessage(), e);
                 }
 
-                in.close();
-                fIn.close();
-
                 logFine("Loaded folder database (" + files.length
                     + " files) from " + dbFile.toAbsolutePath());
             } catch (Exception e) {
@@ -1881,19 +1872,6 @@ public class Folder extends PFComponent {
                     + dbFile.toAbsolutePath() + ". " + e);
                 logFiner(e);
                 return false;
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                    }
-                }
-                if (fIn != null) {
-                    try {
-                        fIn.close();
-                    } catch (IOException e) {
-                    }
-                }
             }
         }
 
@@ -2023,7 +2001,7 @@ public class Folder extends PFComponent {
                 oOut.writeObject(diskItems);
                 // Store members
                 oOut.writeObject(Convert.asMemberInfos(getMembersAsCollection()
-                    .toArray(new Member[getMembersAsCollection().size()])));
+                    .toArray(new Member[0])));
                 // Old blacklist. Maintained for backward serialization
                 // compatability. Do not remove.
                 oOut.writeObject(new ArrayList<FileInfo>());
@@ -2116,7 +2094,7 @@ public class Folder extends PFComponent {
         int expired = 0;
         int keepDeleted = 0;
         int total = 0;
-        List<FileInfo> brokenExisting = new LinkedList<FileInfo>();
+        List<FileInfo> brokenExisting = new LinkedList<>();
         for (FileInfo file : dao.findAllFiles(null)) {
             total++;
             if (!file.isDeleted()) {
@@ -2745,8 +2723,7 @@ public class Folder extends PFComponent {
         FileInfo fileInfo = FileInfoFactory.lookupInstance(metaFolder, file);
         // Read in.
         Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
-        Map<String, MemberInfo> originalMap = new HashMap<String, MemberInfo>();
-        originalMap.putAll(membersMap);
+        Map<String, MemberInfo> originalMap = new HashMap<>(membersMap);
         // Update members with any new ones from this file.
         for (MemberInfo memberInfo : membersMap.values()) {
             Member memberCanidate = memberInfo.getNode(getController(), true);
@@ -2810,9 +2787,7 @@ public class Folder extends PFComponent {
         }
         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(f))) {
             membersMap.putAll((Map<String, MemberInfo>) ois.readObject());
-        } catch (IOException e) {
-            logWarning("Unable to read members file " + fileInfo + ". " + e);
-        } catch (ClassNotFoundException e) {
+        } catch (IOException |ClassNotFoundException e) {
             logWarning("Unable to read members file " + fileInfo + ". " + e);
         }
         if (isFine()) {
@@ -3065,11 +3040,9 @@ public class Folder extends PFComponent {
                         + member.getNick() + "' has " + dirList.size()
                         + " possible files");
                 }
-                List<FileInfo> list = new ArrayList<FileInfo>(dirList);
-                Collections.sort(
-                    list,
-                    new ReverseComparator<FileInfo>(FileInfoComparator
-                        .getComparator(FileInfoComparator.BY_RELATIVE_NAME)));
+                List<FileInfo> list = new ArrayList<>(dirList);
+                list.sort(new ReverseComparator<>(FileInfoComparator
+                    .getComparator(FileInfoComparator.BY_RELATIVE_NAME)));
                 int n = 0;
                 synchronized (scanLock) {
                     for (FileInfo remoteDir : list) {
@@ -3703,7 +3676,7 @@ public class Folder extends PFComponent {
         }
 
         Boolean hasWrite = null;
-        List<FileInfo> found = new LinkedList<FileInfo>();
+        List<FileInfo> found = new LinkedList<>();
         for (FileInfo remoteFileInfo : remoteFileInfos) {
             FileInfo localFileInfo = getFile(remoteFileInfo);
             if (localFileInfo == null) {
@@ -4026,9 +3999,7 @@ public class Folder extends PFComponent {
      * @return true if the device is disconnected. false if everything is ok.
      */
     public boolean checkIfDeviceDisconnected() {
-        /**
-         * Check that we still have a good local base.
-         */
+        // Check that we still have a good local base.
         try {
             checkBaseDir(true);
         } catch (FolderException e) {
@@ -4285,11 +4256,11 @@ public class Folder extends PFComponent {
         int maxPerMember)
     {
         // build a temp list
-        SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<FileInfo, FileInfo>(
+        SortedMap<FileInfo, FileInfo> incomingFiles = new TreeMap<>(
             new FileInfoComparator(FileInfoComparator.BY_RELATIVE_NAME));
         // add0 expeced files
         Map<Member, Integer> incomingCount = maxPerMember > 0
-            ? new HashMap<Member, Integer>(getMembersCount())
+            ? new HashMap<>(getMembersCount())
             : null;
         memberloop:
         for (Member member : getMembersAsCollection()) {
@@ -4607,7 +4578,7 @@ public class Folder extends PFComponent {
      * @return the connected and handshaked members EXCLUDING myself.
      */
     public Member[] getConnectedMembers() {
-        List<Member> connected = new ArrayList<Member>(members.size());
+        List<Member> connected = new ArrayList<>(members.size());
         for (Member member : getMembersAsCollection()) {
             if (member.isCompletelyConnected()) {
                 if (member.isMySelf()) {
@@ -4616,7 +4587,7 @@ public class Folder extends PFComponent {
                 connected.add(member);
             }
         }
-        return connected.toArray(new Member[connected.size()]);
+        return connected.toArray(new Member[0]);
     }
 
     /**

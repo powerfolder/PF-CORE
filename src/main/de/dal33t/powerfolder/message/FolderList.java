@@ -68,7 +68,7 @@ public class FolderList extends Message
     }
 
     public FolderList(Collection<FolderInfo> folderInfos) {
-        this.folders = folderInfos.toArray(new FolderInfo[folderInfos.size()]);
+        this.folders = folderInfos.toArray(new FolderInfo[0]);
         this.secretFolders = new FolderInfo[0];
         this.joinedMetaFolders = true;
     }
@@ -121,7 +121,7 @@ public class FolderList extends Message
     }
 
     public boolean contains(FolderInfo folderInfo) {
-        return folders != null ? Arrays.asList(folders).contains(folderInfo) : false;
+        return folders != null && Arrays.asList(folders).contains(folderInfo);
     }
 
     @Deprecated

@@ -146,7 +146,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         private static final long serialVersionUID = 100L;
         private final String tosURL;
 
-        public ToSNotice(String title, String summary, String message,
+        ToSNotice(String title, String summary, String message,
             String tosURL)
         {
             super(title, summary, message);

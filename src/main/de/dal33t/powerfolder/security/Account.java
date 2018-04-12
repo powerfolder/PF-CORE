@@ -1205,10 +1205,7 @@ public class Account implements Serializable, D2DObject {
         if (!authByDatabase()) {
             return false;
         }
-        if (osSubscription.getStorageSize() > 0) {
-            return false;
-        }
-        return true;
+        return osSubscription.getStorageSize() <= 0;
     }
 
     public void setAutoRenew(int autoRenewDevices, Date autoRenewTill,
@@ -1349,9 +1346,12 @@ public class Account implements Serializable, D2DObject {
                 sb.append("\n");
             }
             if (StringUtils.isNotBlank(account.notes)) {
-                sb.append("Begin of notes of " + account.getUsername() + "\n");
+                sb.append("Begin of notes of ");
+                sb.append(account.getUsername());
+                sb.append("\n");
                 sb.append(account.notes);
-                sb.append("\nEND of notes of " + account.getUsername());
+                sb.append("\nEND of notes of ");
+                sb.append(account.getUsername());
             }
             this.notes = sb.toString();
             this.addNotesWithDate("Merged with account "
@@ -1540,7 +1540,7 @@ public class Account implements Serializable, D2DObject {
             return true;
         }
 
-        if (obj == null || !(obj instanceof Account)) {
+        if (!(obj instanceof Account)) {
             return false;
         }
 
@@ -1551,45 +1551,38 @@ public class Account implements Serializable, D2DObject {
 
     public synchronized void convertCollections() {
         if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
-            Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
+            permissions = new CopyOnWriteArrayList<>(
                     permissions);
-            permissions = newPermissions;
         }
 
         if (!(groups instanceof CopyOnWriteArrayList<?>)) {
-            Collection<Group> newGroups = new CopyOnWriteArrayList<>(groups);
-            groups = newGroups;
+            groups = new CopyOnWriteArrayList<>(groups);
             for (Group group : groups) {
                 group.convertCollections();
             }
         }
 
         if (!(computers instanceof CopyOnWriteArrayList<?>)) {
-            Collection<MemberInfo> newComputers = new CopyOnWriteArrayList<>(
+            computers = new CopyOnWriteArrayList<>(
                     computers);
-            computers = newComputers;
         }
 
         if (!(licenseKeyFileList instanceof CopyOnWriteArrayList<?>)) {
-            List<String> newLicenseKeyFileList = new CopyOnWriteArrayList<>(
+            licenseKeyFileList = new CopyOnWriteArrayList<>(
                     licenseKeyFileList);
-            licenseKeyFileList = newLicenseKeyFileList;
         }
 
         if (!(licenseKeyFiles instanceof CopyOnWriteArrayList<?>)) {
-            List<String> newlicenseKeyFiles = new CopyOnWriteArrayList<>(
+            licenseKeyFiles = new CopyOnWriteArrayList<>(
                     licenseKeyFiles);
-            licenseKeyFiles = newlicenseKeyFiles;
         }
 
         if (!(emails instanceof CopyOnWriteArrayList<?>)) {
-            List<String> newEmails = new CopyOnWriteArrayList<>(emails);
-            emails = newEmails;
+            emails = new CopyOnWriteArrayList<>(emails);
         }
 
         if (!(tokens instanceof ConcurrentHashMap<?, ?>)) {
-            Map<ServerInfo, String> newTokens = new ConcurrentHashMap<>(tokens);
-            tokens = newTokens;
+            tokens = new ConcurrentHashMap<>(tokens);
         }
     }
 

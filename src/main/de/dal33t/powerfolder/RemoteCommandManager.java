@@ -755,10 +755,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         } catch (IOException e) {
             log.log(Level.SEVERE, "Unable to load nodes from file '" + file
                 + "'.", e);
-        } catch (ClassCastException e) {
-            log.log(Level.SEVERE, "Illegal format of nodes file '" + file
-                + "'.", e);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassCastException | ClassNotFoundException e) {
             log.log(Level.SEVERE, "Illegal format of nodes file '" + file
                 + "'.", e);
         }

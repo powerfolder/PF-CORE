@@ -1904,7 +1904,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 String remoteMagicId = thisPeer
                         .getRemoteMagicId();
                 Collection<FolderInfo> folders2node = getFilteredFolderList(
-                        fList, fullList);
+                        fList, false);
                 FolderList myFolderList;
                 if (getProtocolVersion() < Identity.PROTOCOL_VERSION_106) {
                     myFolderList = new FolderList(folders2node, remoteMagicId);
@@ -2043,9 +2043,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Send node informations now
             // Send joined folders to synchronize
-            Identity identity = thisPeer != null
-                ? thisPeer.getIdentity()
-                : null;
+            Identity identity = thisPeer.getIdentity();
             boolean fullList = identity != null
                 && identity.isRequestFullFolderlist();
             Collection<FolderInfo> folders2node = getFilteredFolderList(
@@ -2081,7 +2079,6 @@ public class Member extends PFComponent implements Comparable<Member> {
         Collection<FolderInfo> allFolders = getController()
             .getFolderRepository().getJoinedFolderInfos();
         Collection<FolderInfo> folders2node = allFolders;
-        folders2node = allFolders;
         ConnectionHandler thisPeer = peer;
 
         // #2569: Send "filtered" folder list if no full list is requested.
@@ -2583,10 +2580,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             }
 
-//            if (server && hasJoinedAnyFolder()) {
-//                synchronizeFolderMemberships();
-//            }
-
             getController().getNodeManager().serverStateChanged(this, server);
         }
     }
@@ -2689,19 +2682,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
         Download dl = getController().getTransferManager()
             .getCompletedDownload(this, fInfo);
-        if (dl != null) {
-            return true;
-        }
-        return false;
+        return dl != null;
     }
 
     // Logger methods *********************************************************
-
-//    @Override
-//    public String getLoggerName() {
-//        return super.getLoggerName() + " '" + getNick() + '\''
-//            + (isSupernode() ? " (s)" : "");
-//    }
 
     /*
      * General

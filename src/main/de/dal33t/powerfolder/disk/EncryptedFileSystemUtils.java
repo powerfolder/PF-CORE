@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
+import org.apache.commons.codec.digest.Crypt;
 import org.cryptomator.cryptofs.CryptoFileSystem;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
@@ -114,9 +115,9 @@ public class EncryptedFileSystemUtils {
      */
 
     public static Path getPhysicalStorageLocation(Path path) {
-        CryptoFileSystem fs = (CryptoFileSystem) path.getFileSystem();
+        FileSystem fs = path.getFileSystem();
         if (fs instanceof CryptoFileSystem) {
-            return fs.getPathToVault();
+            return ((CryptoFileSystem) fs).getPathToVault();
         } else {
             throw new IllegalArgumentException("FileSystem from " + path  + " is not a CryptoFileSystem");
         }
