@@ -2446,7 +2446,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     public int getProtocolVersion() {
         Identity id = getIdentity();
         if (id == null) {
-            logWarning("ID IS NULL", new StackDump());
+            logWarning(this + ": Identity is NULL", new StackDump());
             return 0;
         }
         return id.getProtocolVersion();
