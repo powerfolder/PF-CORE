@@ -186,6 +186,18 @@ public class RelayedConnectionManager extends PFComponent {
     public void handleRelayedMessage(final Member receivedFrom,
         final RelayedMessage message)
     {
+        // PFC-2982
+        if (!ConfigurationEntry.RELAYED_CONNECTIONS_ENABLED.getValueBoolean(getController())) {
+            // Unsupported, send EOF
+            RelayedMessage eofMsg = receivedFrom.getProtocolVersion() >= Identity.PROTOCOL_VERSION_108
+                    ? new RelayedMessageExt(Type.EOF, message.getDestination(),
+                    message.getSource(), message.getConnectionId(), null)
+                    : new RelayedMessage(Type.EOF, message.getDestination(),
+                    message.getSource(), message.getConnectionId(), null);
+            receivedFrom.sendMessagesAsynchron(eofMsg);
+            return;
+        }
+
         if (getController().getMySelf().getInfo().equals(
             message.getDestination()))
         {

@@ -86,8 +86,7 @@ public class ServerClient extends PFComponent {
      */
     private Properties config;
     private Collection<Member> servers = new CopyOnWriteArrayList<Member>();
-    private SimpleCache<MemberInfo, Boolean> cachedServerPublicKey = new SimpleCache<>(
-            Util.createConcurrentHashMap(), 1, TimeUnit.MINUTES);
+    private SimpleCache<MemberInfo, Boolean> cachedServerPublicKey = new SimpleCache<>(1, TimeUnit.MINUTES);
     private Map<ServerInfo, ServerClient> childClients = Util
             .createConcurrentHashMap();
 
