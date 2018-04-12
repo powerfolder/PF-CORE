@@ -466,7 +466,7 @@ public class Locking extends PFComponent {
     }
 
     /**
-     * Check whether {@codoe fileInfo} is a lock file or not
+     * Check whether {@code fileInfo} is a lock file or not
      *
      * @param fileInfo
      *     The file to be checked.

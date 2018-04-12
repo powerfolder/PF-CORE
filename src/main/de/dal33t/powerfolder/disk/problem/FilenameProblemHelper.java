@@ -97,17 +97,17 @@ public class FilenameProblemHelper {
         if (PreferencesEntry.FILE_NAME_CHECK.getValueBoolean(controller)) {
 
             if (containsIllegalLinuxChar(filename)) {
-                returnValue.add(new IllegalLinuxCharsFilenameProblem(fileInfo));
+                returnValue.add(new IllegalCharsFilenameProblem(fileInfo, ILLEGAL_LINUX_CHARS));
             }
 
             if (containsIllegalMacOSXChar(filename)) {
                 returnValue
-                    .add(new IllegalMacosxCharsFilenameProblem(fileInfo));
+                    .add(new IllegalCharsFilenameProblem(fileInfo, ILLEGAL_MACOSX_CHARS));
             }
 
             if (containsIllegalWindowsChars(filename)) {
                 returnValue
-                    .add(new IllegalWindowsCharsFilenameProblem(fileInfo));
+                    .add(new IllegalCharsFilenameProblem(fileInfo, ILLEGAL_WINDOWS_CHARS));
             }
 
             if (endsWithIllegalWindowsChar(filename)) {

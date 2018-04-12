@@ -187,9 +187,8 @@ public class FolderWatcher extends PFComponent {
         }
         delay = 1000L * ConfigurationEntry.FOLDER_WATCHER_DELAY
             .getValueInt(getController());
-        boolean watchSubtree = true;
         try {
-            watchID = JNotify.addWatch(path, JNotify.FILE_ANY, watchSubtree,
+            watchID = JNotify.addWatch(path, JNotify.FILE_ANY, true,
                 listener);
             logFine("Initialized filesystem watch(" + watchID + ") on " + path
                 + " / " + folder);

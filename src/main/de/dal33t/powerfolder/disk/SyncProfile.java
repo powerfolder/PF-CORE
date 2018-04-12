@@ -401,8 +401,8 @@ public class SyncProfile implements Serializable {
      * @return Shallow copy of SyncProfile caches.
      */
     public static List<SyncProfile> getSyncProfilesCopy() {
-        List<SyncProfile> list = new ArrayList<SyncProfile>();
-        list.addAll(Arrays.asList(PRESET_SYNC_PROFILES));
+        List<SyncProfile> list = new ArrayList<SyncProfile>(
+            Arrays.asList(PRESET_SYNC_PROFILES));
         synchronized (customProfiles) {
             for (SyncProfile customProfile : customProfiles) {
                 if (!list.contains(customProfile)) {
