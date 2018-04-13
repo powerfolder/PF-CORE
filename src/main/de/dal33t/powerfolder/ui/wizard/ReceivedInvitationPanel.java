@@ -29,10 +29,14 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.panel.SyncProfileSelectorPanel;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import jwf.WizardPanel;
 
 import javax.swing.*;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
@@ -79,15 +83,15 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Set sync profile
         getWizardContext().setAttribute(SYNC_PROFILE_ATTRIBUTE,
-            syncProfileSelectorPanel.getSyncProfile());
+                syncProfileSelectorPanel.getSyncProfile());
 
         // Set folder info
         getWizardContext()
-            .setAttribute(FOLDERINFO_ATTRIBUTE, invitation.folder);
+                .setAttribute(FOLDERINFO_ATTRIBUTE, invitation.folder);
 
         // Set folder permission
         getWizardContext().setAttribute(FOLDER_PERMISSION_ATTRIBUTE,
-            invitation.getPermission());
+                invitation.getPermission());
 
         // Do not prompt for send invitation afterwards
         getWizardContext().setAttribute(SEND_INVIATION_AFTER_ATTRIBUTE, false);
@@ -97,15 +101,15 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
 
         // Setup choose disk location panel
         getWizardContext()
-            .setAttribute(
-                PROMPT_TEXT_ATTRIBUTE,
-                Translation
-                    .get("wizard.what_to_do.invite.select_local"));
+                .setAttribute(
+                        PROMPT_TEXT_ATTRIBUTE,
+                        Translation
+                                .get("wizard.what_to_do.invite.select_local"));
 
         // Setup success panel of this wizard path
         TextPanelPanel successPanel = new TextPanelPanel(getController(),
-            Translation.get("wizard.setup_success"),
-            Translation.get("wizard.success_join"));
+                Translation.get("wizard.setup_success"),
+                Translation.get("wizard.success_join"));
         getWizardContext().setAttribute(PFWizard.SUCCESS_PANEL, successPanel);
 
         getWizardContext().setAttribute(MAKE_FRIEND_AFTER,
@@ -115,15 +119,49 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 .getSuggestedLocalBase(getController()).toAbsolutePath().toString(),
                 new FolderCreatePanel(getController()));
 
-        if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
-            .getValueBoolean(getController()))
-        {
+        if (serverAgreeInvitationEnabled(invitation)) {
             return new SwingWorkerPanel(getController(), new AcceptInviteTask(),
-                Translation.get(""), Translation.get(""),
-                next);
+                    Translation.get(""), Translation.get(""),
+                    next);
         } else {
             return next;
         }
+    }
+
+    /**
+     * PF-164: Support federated invites:
+     * <p>
+     * If we're in a federated environment, we have to ask the service of the invitation if
+     * FOLDER_AGREE_INVITATION_ENABLED is enabled.
+     *
+     * @param invitation The invitation.
+     */
+    private boolean serverAgreeInvitationEnabled(Invitation invitation) {
+
+        boolean serverAgreeInvitationsEnabled =
+                ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED.getValueBoolean(getController());
+
+        if (invitation.getServer() != null &&
+                ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController())) {
+
+            try {
+                Properties props = ConfigurationLoader
+                        .loadPreConfiguration(invitation.getServer().getWebUrl());
+                String agreeInvitations = (String) props.get(ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
+                        .getConfigKey());
+
+                if (StringUtils.isNotBlank(agreeInvitations)) {
+                    serverAgreeInvitationsEnabled = Boolean.parseBoolean(agreeInvitations);
+                }
+
+            } catch (IOException e) {
+                log.warning("Failed to get config from federated server "
+                        + invitation.getServer().getWebUrl());
+                return serverAgreeInvitationsEnabled;
+            }
+        }
+
+        return serverAgreeInvitationsEnabled;
     }
 
     @Override

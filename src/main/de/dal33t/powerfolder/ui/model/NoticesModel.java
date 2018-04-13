@@ -19,15 +19,8 @@
  */
 package de.dal33t.powerfolder.ui.model;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.SwingUtilities;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FileInBasePathWarning;
@@ -37,17 +30,20 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.notices.FolderAutoCreateNotice;
-import de.dal33t.powerfolder.ui.notices.InvitationNotice;
-import de.dal33t.powerfolder.ui.notices.Notice;
-import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
-import de.dal33t.powerfolder.ui.notices.OutOfMemoryNotice;
-import de.dal33t.powerfolder.ui.notices.RunnableNotice;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.SystemNotificationHandler;
 import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
+import de.dal33t.powerfolder.util.ConfigurationLoader;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+
+import javax.swing.*;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Model of the notices awaiting action by the user.
@@ -86,9 +82,10 @@ public class NoticesModel extends PFUIComponent {
     private void addNotice(Notice notice) {
         if (notices.contains(notice)) {
             logFine("Ignoring existing notice: " + notice);
+        } else {
+            notices.add(notice);
+            updateNoticeCounts();
         }
-        notices.add(notice);
-        updateNoticeCounts();
     }
 
     /**
@@ -287,14 +284,12 @@ public class NoticesModel extends PFUIComponent {
     }
 
     public void clearAll() {
-        if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
-            .getValueBoolean(getController()))
-        {
-            for (Notice n : notices) {
-                if (n instanceof InvitationNotice) {
+        for (Notice n : notices) {
+            if (n instanceof InvitationNotice) {
+                Invitation invitation = ((InvitationNotice) n).getPayload(getController());
+                if (invitation != null && serverAgreeInvitationEnabled(invitation)) {
                     getController().getThreadPool().execute(
-                        new DeclineInvitationTask(((InvitationNotice) n)
-                            .getPayload(getController())));
+                            new DeclineInvitationTask(((InvitationNotice) n).getPayload(getController())));
                 }
             }
         }
@@ -305,19 +300,54 @@ public class NoticesModel extends PFUIComponent {
     public void clearNotice(Notice notice) {
         for (Notice n : notices) {
             if (notice.equals(n)) {
-                if (ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
-                    .getValueBoolean(getController()) &&
-                    n instanceof InvitationNotice)
-                {
-                    getController().getThreadPool().execute(
-                        new DeclineInvitationTask(((InvitationNotice) n)
-                            .getPayload(getController())));
+                if (n instanceof InvitationNotice) {
+                    Invitation invitation = ((InvitationNotice) n).getPayload(getController());
+                    if (invitation != null && serverAgreeInvitationEnabled(invitation)) {
+                        getController().getThreadPool().execute(
+                                new DeclineInvitationTask(((InvitationNotice) n).getPayload(getController())));
+                    }
                 }
                 notices.remove(notice);
                 updateNoticeCounts();
                 return;
             }
         }
+    }
+
+    /**
+     * PF-164: Support federated invites:
+     * <p>
+     * If we're in a federated environment, we have to ask the service of the invitation if
+     * FOLDER_AGREE_INVITATION_ENABLED is enabled.
+     *
+     * @param invitation The invitation.
+     */
+    private boolean serverAgreeInvitationEnabled(Invitation invitation) {
+
+        boolean serverAgreeInvitationsEnabled =
+                ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED.getValueBoolean(getController());
+
+        if (invitation.getServer() != null &&
+                ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController())) {
+
+            try {
+                Properties props = ConfigurationLoader
+                        .loadPreConfiguration(invitation.getServer().getWebUrl());
+                String agreeInvitations = (String) props.get(ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
+                        .getConfigKey());
+
+                if (StringUtils.isNotBlank(agreeInvitations)) {
+                    serverAgreeInvitationsEnabled = Boolean.parseBoolean(agreeInvitations);
+                }
+
+            } catch (IOException e) {
+                logWarning("Failed to get config from federated server "
+                        + invitation.getServer().getWebUrl());
+                return serverAgreeInvitationsEnabled;
+            }
+        }
+
+        return serverAgreeInvitationsEnabled;
     }
     
     /**
