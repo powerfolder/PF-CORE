@@ -2705,11 +2705,20 @@ public class ServerClient extends PFComponent {
      * @return true if the hosting service for the username/account could be found.
      */
     private boolean federatedLoginSuccess() {
+        String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+            .getValue(getController());
+        if (StringUtils.isNotBlank(ecpURL) && !"ext".equals(ecpURL)) {
+            return true;
+        }
 
         // 1. Get the service URL of the hosting server of the username:
         String serviceWebUrl;
         try {
-            serviceWebUrl = securityService.getHostingService(username).getWebUrl();
+            ServerInfo sInfo = securityService.getHostingService(username);
+            if (sInfo == null) {
+                return false;
+            }
+            serviceWebUrl = sInfo.getWebUrl();
         } catch (RemoteCallException ex) {
             logWarning("Server " + server + " does not support federated logins.");
             return false;

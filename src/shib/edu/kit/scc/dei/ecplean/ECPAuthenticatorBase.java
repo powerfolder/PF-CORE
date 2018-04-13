@@ -54,7 +54,6 @@ public abstract class ECPAuthenticatorBase extends Observable {
         .getName());
     protected ECPAuthenticationInfo authInfo;
     protected HttpClientBuilder clientBuilder;
-    private HttpClient client;
     protected DocumentBuilderFactory documentBuilderFactory;
     protected XPathFactory xpathFactory;
     protected NamespaceResolver namespaceResolver;
@@ -80,19 +79,19 @@ public abstract class ECPAuthenticatorBase extends Observable {
     protected Document authenticateIdP(Document idpRequest)
         throws ECPAuthenticationException
     {
-        if (isInfo()) {
+        if (isFine()) {
             LOG.fine("Sending initial IdP Request to "
                 + authInfo.getIdpEcpEndpoint());
         }
-
         // PFS-2070
         HttpPost httpPost = new HttpPost(authInfo.getIdpEcpEndpoint().toString());
-        HttpClient client = getHttpClient();
+        BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(AuthScope.ANY,
+            new UsernamePasswordCredentials(authInfo.getUsername(), authInfo.getPassword()));
 
         // PFC-2958:
         httpPost.setHeader("Content-Type", "text/xml; charset=UTF-8");
-        HttpResponse httpResponse;
-        
+
         HttpHost targetHost = new HttpHost(authInfo.getIdpEcpEndpoint().getHost(), authInfo.getIdpEcpEndpoint().getPort(), 
                 authInfo.getIdpEcpEndpoint().getScheme());
         AuthCache authCache = new BasicAuthCache();
@@ -101,8 +100,10 @@ public abstract class ECPAuthenticatorBase extends Observable {
 
         // Add AuthCache to the execution context
         HttpClientContext context = HttpClientContext.create();
+        context.setCredentialsProvider(credentialsProvider);
         context.setAuthCache(authCache);
-        
+
+        HttpResponse httpResponse;
         try {
             String idpRequestString = documentToString(idpRequest);
             httpPost.setEntity(new StringEntity(idpRequestString));
