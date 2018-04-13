@@ -55,6 +55,7 @@ public abstract class ECPAuthenticatorBase extends Observable {
     protected ECPAuthenticationInfo authInfo;
     protected HttpClientBuilder clientBuilder;
     protected DocumentBuilderFactory documentBuilderFactory;
+    protected HttpClient client;
     protected XPathFactory xpathFactory;
     protected NamespaceResolver namespaceResolver;
     protected TransformerFactory transformerFactory;
