@@ -162,10 +162,7 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
             httpResponse = getHttpClient().execute(httpGet);
             int statusCode = httpResponse.getStatusLine().getStatusCode();
 
-            if (statusCode == 403 || statusCode == 401) {
-                throw new ECPUnauthorizedException(statusCode + " - "
-                    + httpResponse.getStatusLine().getReasonPhrase());
-            } else if (statusCode != 200) {
+            if (statusCode != 200) {
                 throw new ECPUnauthorizedException(statusCode + " - "
                     + httpResponse.getStatusLine().getReasonPhrase());
             }

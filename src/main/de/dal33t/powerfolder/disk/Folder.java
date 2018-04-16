@@ -1616,9 +1616,7 @@ public class Folder extends PFComponent {
                     if (fInfo.isDiretory() || Files.isDirectory(diskFile)) {
                         try {
                             watcher.addIgnoreFile(fInfo);
-                            synchronized (scanLock) {
-                                PathUtils.recursiveDelete(diskFile);
-                            }
+                            deleteFileRecursive(fInfo, diskFile);
                             recommendScanOnNextMaintenance();
                         } catch (IOException e) {
                             logWarning("Unable to delete local file. "
@@ -3212,25 +3210,23 @@ public class Folder extends PFComponent {
                         Files.delete(localCopy);
                     } catch (IOException ioe) {
                         // PFS-1821
-                        if (localFile instanceof DirectoryInfo) {
-                            FileInfoCriteria c = new FileInfoCriteria();
-                            c.addMySelf(this);
-                            c.setPath((DirectoryInfo) localFile);
-                            Collection<FileInfo> filesInDir = getDAO()
-                                .findFiles(c);
-                            for (FileInfo fileInfo : filesInDir) {
-                                if (!fileInfo.isDeleted()) {
-                                    // PFS-2147:
-                                    removeFileLocal(fileInfo);
-                                    if (isInfo()) {
-                                        logInfo(
-                                            "Deleted file in deleted directory: "
-                                                + fileInfo.toDetailString()
-                                                + ". Directory: "
-                                                + fileInfo.toDetailString()
-                                                + ". Message: "
-                                                + ioe.toString());
-                                    }
+                        FileInfoCriteria c = new FileInfoCriteria();
+                        c.addMySelf(this);
+                        c.setPath((DirectoryInfo) localFile);
+                        Collection<FileInfo> filesInDir = getDAO()
+                            .findFiles(c);
+                        for (FileInfo fileInfo : filesInDir) {
+                            if (!fileInfo.isDeleted()) {
+                                // PFS-2147:
+                                removeFileLocal(fileInfo);
+                                if (isInfo()) {
+                                    logInfo(
+                                        "Deleted file in deleted directory: "
+                                            + fileInfo.toDetailString()
+                                            + ". Directory: "
+                                            + fileInfo.toDetailString()
+                                            + ". Message: "
+                                            + ioe.toString());
                                 }
                             }
                         }
@@ -4133,6 +4129,22 @@ public class Folder extends PFComponent {
      */
     public Collection<DirectoryInfo> getKnownDirectories() {
         return dao.findAllDirectories(null);
+    }
+
+    private boolean deleteFileRecursive(FileInfo newFileInfo, Path file) throws IOException {
+        if (newFileInfo.isDiretory() || Files.isDirectory(file)) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(file, path -> Files.isDirectory(path))) {
+                for (Path path : stream) {
+                    FileInfo lookupInstance = FileInfoFactory.lookupInstance(this, path);
+                    FileInfo storedInfo = getFile(lookupInstance);
+                    if (storedInfo == null) {
+                        storedInfo = lookupInstance;
+                    }
+                    return deleteFileRecursive(storedInfo, path);
+                }
+            }
+        }
+        return deleteFile(newFileInfo, file);
     }
 
     private boolean deleteFile(FileInfo newFileInfo, Path file) {
