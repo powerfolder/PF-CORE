@@ -118,11 +118,17 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                     "Node id contains illegal characters: " + id);
                 }
 
-              // build broadcast string
+              // build broadcast string/
+              // Disabled sending D2D multicasts until they can be processed
+              /*
               broadCastString = String.format("PowerFolder %s: [%d]-[%s]",
                 (useD2D ? "D2D-node" : "node"),
                 controller.getConnectionListener().getAddress().getPort(),
                 id);
+              */
+              broadCastString = String.format("PowerFolder %s: [%d]-[%s]", "node",
+                        controller.getConnectionListener().getAddress().getPort(),
+                        id);
 
               if(useD2D) logFiner("D2D is enabled");
           }
