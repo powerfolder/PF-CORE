@@ -261,9 +261,7 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
      * Saves this FolderStatisticInfo contents to the given OutputStream.
      *
      * @param out
-     * @throws IOException
      */
-
     public boolean save(Path file) {
         if (isFiner()) {
             logFiner("Writing folder " + folder.getName() + " stats to " + file);

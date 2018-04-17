@@ -23,9 +23,8 @@ public class PathUtilsTest extends TestCase {
     }
 
     public void testURLEncoding() {
-        String filename = "PowerFolder.exe";
         String url = "https://www.my-server.com:8822";
-        filename = "PowerFolder" + PathUtils.encodeURLinFilename(url) + ".exe";
+        String filename = "PowerFolder" + PathUtils.encodeURLinFilename(url) + ".exe";
         String actual = PathUtils.decodeURLFromFilename(filename);
         assertEquals(url, actual);
 
@@ -56,26 +55,23 @@ public class PathUtilsTest extends TestCase {
 
     public void testFileInDirectory() {
 
-        boolean okay;
         Path testDir = TestHelper.getTestDir();
 
         // Test null file.
         try {
             PathUtils.isFileInDirectory(null, testDir);
-            okay = false;
+            fail("Null file should not work");
         } catch (IllegalArgumentException e) {
-            okay = true;
+            // expected Exception
         }
-        assertTrue("Process a null file", okay);
 
         // Test null directory.
         try {
             PathUtils.isFileInDirectory(Paths.get("x"), null);
-            okay = false;
+            fail("Null directory should not work");
         } catch (IllegalArgumentException e) {
-            okay = true;
+            // expected Exception
         }
-        assertTrue("Process a null directory", okay);
 
         // Test directory for file
         assertFalse(PathUtils.isFileInDirectory(testDir, testDir));
@@ -83,16 +79,16 @@ public class PathUtilsTest extends TestCase {
         // Test file for directory
         assertFalse(PathUtils.isFileInDirectory(Paths.get("X"), Paths.get("Y")));
 
+        boolean okay = false;
+
         // Test file not in directory
         try {
             Path dir = testDir.resolve("P");
             Files.createDirectories(dir);
             assertTrue(Files.isDirectory(dir));
             okay = PathUtils.isFileInDirectory(testDir.resolve("X"), dir);
-        } catch (IllegalArgumentException e) {
+        } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
         }
         assertFalse("Process a file not in directory", okay);
 
@@ -102,10 +98,8 @@ public class PathUtilsTest extends TestCase {
             Files.createDirectories(dir);
             assertTrue(Files.isDirectory(dir));
             okay = PathUtils.isFileInDirectory(dir.resolve("X"), testDir);
-        } catch (IllegalArgumentException e) {
+        } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
         }
         assertTrue("Process a file in directory", okay);
     }
@@ -236,8 +230,8 @@ public class PathUtilsTest extends TestCase {
         long sourceSizeBytesAfterMove = sourceDirectorySizeAfterMove[0];
         long sourceSizeCountAfterMove = sourceDirectorySizeAfterMove[1];
 
-        assertTrue(sourceSizeBytesBeforeMove == sourceSizeBytesAfterMove);
-        assertTrue(sourceSizeCountBeforeMove == sourceSizeCountAfterMove);
+        assertEquals(sourceSizeBytesBeforeMove, sourceSizeBytesAfterMove);
+        assertEquals(sourceSizeCountBeforeMove, sourceSizeCountAfterMove);
 
         assertTrue(Files.exists(moveDir.resolve("a")));
         assertTrue(Files.exists(moveDir.resolve("b")));
@@ -283,7 +277,7 @@ public class PathUtilsTest extends TestCase {
 
         // Check copy.
         assertTrue(Files.exists(copyDir));
-        assertTrue(PathUtils.getNumberOfSiblings(copyDir) == 2); // a and dir
+        assertEquals(2, PathUtils.getNumberOfSiblings(copyDir)); // a and dir
         boolean foundDir = false;
         boolean foundSub = false;
 
@@ -291,7 +285,7 @@ public class PathUtilsTest extends TestCase {
             for (Path dirFile : stream) {
                 if (Files.isDirectory(dirFile)) {
                     foundDir = true;
-                    assertTrue(PathUtils.getNumberOfSiblings(dirFile) == 3); // b,
+                    assertEquals(3, PathUtils.getNumberOfSiblings(dirFile)); // b,
                                                                              // c
                                                                              // and
                                                                              // sub
@@ -301,8 +295,8 @@ public class PathUtilsTest extends TestCase {
                         for (Path subFile : subStream) {
                             if (Files.isDirectory(subFile)) {
                                 foundSub = true;
-                                assertTrue(PathUtils
-                                    .getNumberOfSiblings(subFile) == 1); // d
+                                assertEquals(1, PathUtils
+                                    .getNumberOfSiblings(subFile)); // d
                             }
                         }
                     }
@@ -322,7 +316,7 @@ public class PathUtilsTest extends TestCase {
             for (Path dirFile : stream) { // a and dir
                 if (Files.isDirectory(dirFile)) {
                     foundDir = true;
-                    assertTrue(PathUtils.getNumberOfSiblings(dirFile) == 3); // b,
+                    assertEquals(3, PathUtils.getNumberOfSiblings(dirFile)); // b,
                                                                              // c,
                                                                              // and
                                                                              // sub
@@ -332,8 +326,8 @@ public class PathUtilsTest extends TestCase {
                         for (Path subFile : subStream) {
                             if (Files.isDirectory(subFile)) {
                                 foundSub = true;
-                                assertTrue(PathUtils
-                                    .getNumberOfSiblings(subFile) == 1); // d
+                                assertEquals(1, PathUtils
+                                    .getNumberOfSiblings(subFile)); // d
                             }
                         }
                     }
@@ -657,10 +651,7 @@ public class PathUtilsTest extends TestCase {
 
         // Test empty dir
         Path base = Paths.get("build/test/x");
-        try {
-            PathUtils.recursiveDelete(base);
-        } catch (IOException e) {
-        }
+        PathUtils.recursiveDelete(base);
         Files.createDirectories(base);
         assertFalse("Failed because test dir has files",
             PathUtils.hasFiles(base));
@@ -738,10 +729,7 @@ public class PathUtilsTest extends TestCase {
             PathUtils.hasContents(base));
 
         // Bye
-        try {
-            PathUtils.recursiveDelete(base);
-        } catch (IOException e) {
-        }
+        PathUtils.recursiveDelete(base);
     }
 
     public void testRawCopy() throws IOException {
@@ -812,8 +800,8 @@ public class PathUtilsTest extends TestCase {
         long targetSizeBytesAfterMove = targetDirectorySizeAfterMove[0];
         long targetSizeCountBeforeMove = targetDirectorySizeAfterMove[1];
 
-        assertTrue(sourceSizeBytesBeforeMove == targetSizeBytesAfterMove);
-        assertTrue(sourceSizeCountBeforeMove == targetSizeCountBeforeMove);
+        assertEquals(sourceSizeBytesBeforeMove, targetSizeBytesAfterMove);
+        assertEquals(sourceSizeCountBeforeMove, targetSizeCountBeforeMove);
         assertTrue(Files.notExists(source));
 
         // Test 2
@@ -836,8 +824,8 @@ public class PathUtilsTest extends TestCase {
         long targetSizeBytesAfterMove2 = targetDirectorySizeAfterMove2[0];
         long targetSizeCountBeforeMove2 = targetDirectorySizeAfterMove2[1];
 
-        assertTrue(sourceSizeBytesBeforeMove2 == targetSizeBytesAfterMove2);
-        assertTrue(sourceSizeCountBeforeMove2 == targetSizeCountBeforeMove2);
+        assertEquals(sourceSizeBytesBeforeMove2, targetSizeBytesAfterMove2);
+        assertEquals(sourceSizeCountBeforeMove2, targetSizeCountBeforeMove2);
         assertTrue(Files.notExists(source));
 
         // After test check
@@ -897,16 +885,16 @@ public class PathUtilsTest extends TestCase {
             long targetSizeBytesAfterMove = targetDirectorySizeAfterMove[0];
             long targetSizeCountAfterMove = targetDirectorySizeAfterMove[1];
 
-            assertTrue(targetSizeBytesBeforeMove == targetSizeBytesAfterMove);
-            assertTrue(targetSizeCountBeforeMove == targetSizeCountAfterMove);
+            assertEquals(targetSizeBytesBeforeMove, targetSizeBytesAfterMove);
+            assertEquals(targetSizeCountBeforeMove, targetSizeCountAfterMove);
         }
 
         Long[] sourceDirectorySizeAfterMove = PathUtils.calculateDirectorySizeAndCount(source);
         long sourceSizeBytesAfterMove = sourceDirectorySizeAfterMove[0];
         long sourceSizeCountAfterMove = sourceDirectorySizeAfterMove[1];
 
-        assertTrue(sourceSizeBytesBeforeMove == sourceSizeBytesAfterMove);
-        assertTrue(sourceSizeCountBeforeMove == sourceSizeCountAfterMove);
+        assertEquals(sourceSizeBytesBeforeMove, sourceSizeBytesAfterMove);
+        assertEquals(sourceSizeCountBeforeMove, sourceSizeCountAfterMove);
 
         // Test 2
         TestHelper.createRandomFile(target, "f");
@@ -928,16 +916,16 @@ public class PathUtilsTest extends TestCase {
             long targetSizeBytesAfterMove = targetDirectorySizeAfterMove[0];
             long targetSizeCountAfterMove = targetDirectorySizeAfterMove[1];
 
-            assertTrue(targetSizeBytesBeforeMove == targetSizeBytesAfterMove);
-            assertTrue(targetSizeCountBeforeMove == targetSizeCountAfterMove);
+            assertEquals(targetSizeBytesBeforeMove, targetSizeBytesAfterMove);
+            assertEquals(targetSizeCountBeforeMove, targetSizeCountAfterMove);
         }
 
         Long[] sourceDirectorySizeAfterMove2 = PathUtils.calculateDirectorySizeAndCount(source);
         long sourceSizeBytesAfterMove2 = sourceDirectorySizeAfterMove2[0];
         long sourceSizeCountAfterMove2 = sourceDirectorySizeAfterMove2[1];
 
-        assertTrue(sourceSizeBytesAfterMove2 == sourceSizeBytesAfterMove);
-        assertTrue(sourceSizeCountAfterMove2 == sourceSizeCountAfterMove);
+        assertEquals(sourceSizeBytesAfterMove2, sourceSizeBytesAfterMove);
+        assertEquals(sourceSizeCountAfterMove2, sourceSizeCountAfterMove);
 
         // After test check
         assertTrue(Files.notExists(target.resolve("b")));
@@ -992,8 +980,8 @@ public class PathUtilsTest extends TestCase {
         long targetSizeBytesAfterCopy = targetDirectorySizeAfterCopy[0];
         long targetSizeCountBeforeCopy = targetDirectorySizeAfterCopy[1];
 
-        assertTrue(sourceSizeBytesBeforeCopy == targetSizeBytesAfterCopy);
-        assertTrue(sourceSizeCountBeforeCopy == targetSizeCountBeforeCopy);
+        assertEquals(sourceSizeBytesBeforeCopy, targetSizeBytesAfterCopy);
+        assertEquals(sourceSizeCountBeforeCopy, targetSizeCountBeforeCopy);
 
         // Test 2
         TestHelper.createRandomFile(source, "f");
@@ -1015,8 +1003,8 @@ public class PathUtilsTest extends TestCase {
         long targetSizeBytesAfterCopy2 = targetDirectorySizeAfterCopy2[0];
         long targetSizeCountBeforeCopy2 = targetDirectorySizeAfterCopy2[1];
 
-        assertTrue(sourceSizeBytesBeforeCopy2 == targetSizeBytesAfterCopy2);
-        assertTrue(sourceSizeCountBeforeCopy2 == targetSizeCountBeforeCopy2);
+        assertEquals(sourceSizeBytesBeforeCopy2, targetSizeBytesAfterCopy2);
+        assertEquals(sourceSizeCountBeforeCopy2, targetSizeCountBeforeCopy2);
 
         // After test check
         assertTrue(Files.exists(target.resolve("b")));
@@ -1077,8 +1065,8 @@ public class PathUtilsTest extends TestCase {
             long targetSizeBytesAfterCopy = targetDirectorySizeAfterCopy[0];
             long targetSizeCountAfterCopy = targetDirectorySizeAfterCopy[1];
 
-            assertTrue(targetSizeBytesBeforeCopy == targetSizeBytesAfterCopy);
-            assertTrue(targetSizeCountBeforeCopy == targetSizeCountAfterCopy);
+            assertEquals(targetSizeBytesBeforeCopy, targetSizeBytesAfterCopy);
+            assertEquals(targetSizeCountBeforeCopy, targetSizeCountAfterCopy);
         }
 
         // Test 2
@@ -1101,16 +1089,16 @@ public class PathUtilsTest extends TestCase {
             long targetSizeBytesAfterCopy = targetDirectorySizeAfterCopy[0];
             long targetSizeCountAfterCopy = targetDirectorySizeAfterCopy[1];
 
-            assertTrue(targetSizeBytesBeforeCopy == targetSizeBytesAfterCopy);
-            assertTrue(targetSizeCountBeforeCopy == targetSizeCountAfterCopy);
+            assertEquals(targetSizeBytesBeforeCopy, targetSizeBytesAfterCopy);
+            assertEquals(targetSizeCountBeforeCopy, targetSizeCountAfterCopy);
         }
 
         Long[] sourceDirectorySizeAfterCopy = PathUtils.calculateDirectorySizeAndCount(source);
         long sourceSizeBytesAfterCopy = sourceDirectorySizeAfterCopy[0];
         long sourceSizeCountAfterCopy = sourceDirectorySizeAfterCopy[1];
 
-        assertTrue(sourceSizeBytesBeforeCopy == sourceSizeBytesAfterCopy);
-        assertTrue(sourceSizeCountBeforeCopy == sourceSizeCountAfterCopy);
+        assertEquals(sourceSizeBytesBeforeCopy, sourceSizeBytesAfterCopy);
+        assertEquals(sourceSizeCountBeforeCopy, sourceSizeCountAfterCopy);
 
         // After test check
         assertFalse(Files.exists(target.resolve("b")));
@@ -1151,6 +1139,5 @@ public class PathUtilsTest extends TestCase {
         assertFalse(Files.exists(dir.resolve("c")));
         assertFalse(Files.exists(dir.resolve("sub")));
         assertFalse(Files.exists(dir.resolve("sub").resolve("d")));
-
     }
 }
