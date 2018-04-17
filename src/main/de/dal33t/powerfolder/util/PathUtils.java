@@ -84,7 +84,7 @@ public class PathUtils {
      *
      * @param listener
      */
-    public static final void setIOExceptionListener(ExceptionListener listener) {
+    public static void setIOExceptionListener(ExceptionListener listener) {
         if (listener == null) {
             IO_EXCEPTION_LISTENER = new ExceptionListener() {
                 @Override
@@ -117,16 +117,14 @@ public class PathUtils {
         if (file == null) {
             throw new NullPointerException("File is null");
         }
-        try {
-            ZipFile zipFile = new ZipFile(file.toAbsolutePath().toString());
-            zipFile.close();
+        try (ZipFile zipFile = new ZipFile(file.toAbsolutePath().toString())) {
+            return true;
         } catch (ZipException e) {
             return false;
         } catch (IOException e) {
             IO_EXCEPTION_LISTENER.exceptionThrown(e);
             return false;
         }
-        return true;
     }
 
     /**
@@ -187,9 +185,7 @@ public class PathUtils {
         int n2Start = name2.lastIndexOf(" (");
         if (n2Start > 0 && name2.endsWith(")")) {
             String name2WithoutBrackets = name2.substring(0, n2Start);
-            if (name2WithoutBrackets.equals(name1)) {
-                return true;
-            }
+            return name2WithoutBrackets.equals(name1);
         }
         return false;
     }
@@ -401,14 +397,7 @@ public class PathUtils {
                 return 0;
             }
 
-            Iterator<Path> it = files.iterator();
-
-            if (it == null) {
-                return 0;
-            }
-
-            while (it.hasNext()) {
-                it.next();
+            for (Path file : files) {
                 i++;
             }
         } catch (IOException ioe) {
@@ -439,13 +428,7 @@ public class PathUtils {
                 return false;
             }
 
-            Iterator<Path> it = files.iterator();
-
-            if (it == null) {
-                return false;
-            }
-
-            return !it.hasNext();
+            return !files.iterator().hasNext();
         } catch (IOException ioe) {
             log.warning("Error checking for empty directory. " + ioe);
             IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
@@ -577,18 +560,14 @@ public class PathUtils {
                     + to.toAbsolutePath().toString());
         }
 
-        OutputStream out = new BufferedOutputStream(
-                Files.newOutputStream(to));
-        try {
+        try (OutputStream out = new BufferedOutputStream(
+            Files.newOutputStream(to)))
+        {
             byte[] buffer = new byte[BYTE_CHUNK_SIZE];
             int read;
             long position = 0;
 
-            do {
-                read = in.read(buffer);
-                if (read < 0) {
-                    break;
-                }
+            while ((read = in.read(buffer)) >= 0) {
                 out.write(buffer, 0, read);
                 position += read;
                 if (callback != null) {
@@ -601,13 +580,13 @@ public class PathUtils {
                                         + callback);
                     }
                 }
-            } while (read >= 0);
+            }
         } finally {
             // Close streams
             try {
-                out.close();
                 in.close();
             } catch (IOException e) {
+                // NOP
             }
         }
     }

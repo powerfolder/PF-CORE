@@ -323,11 +323,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
         if (!diskFileDeleted) {
             try {
-                diskSize = ((Long) attrs.get("size")).longValue();
+                diskSize = (Long) attrs.get("size");
                 diskLastMod = ((FileTime) attrs.get("lastModifiedTime"))
                     .toMillis();
-                diskIsDirectory = ((Boolean) attrs.get("isDirectory"))
-                    .booleanValue();
+                diskIsDirectory = (Boolean) attrs.get("isDirectory");
             } catch (Exception e) {
                 log.warning("Could not access file attributes of file "
                     + diskFile.toAbsolutePath().toString() + "\n"
@@ -336,9 +335,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             }
 
             if (ignoreSizeAndModDate) {
-                boolean dirFileSync = diskFileDeleted
-                    || (isDiretory() && diskIsDirectory);
-                return existanceSync && dirFileSync;
+                boolean dirFileSync = isDiretory() && diskIsDirectory;
+                return dirFileSync;
             }
             boolean lastModificationSync = DateUtil
                 .equalsFileDateCrossPlattform(diskLastMod,
@@ -370,9 +368,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      */
     @Override
     public String getLowerCaseFilenameOnly() {
-        // if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
-        // return getFilenameOnly0().toLowerCase();
-        // }
         FileInfoStrings strings = getStringsCache();
         if (strings.getLowerCaseName() == null) {
             strings.setLowerCaseName(fileName.toLowerCase());
@@ -412,9 +407,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      */
     @Override
     public String getFilenameOnly() {
-        // if (Feature.CACHE_FILEINFO_STRINGS.isDisabled()) {
-        // return getFilenameOnly0();
-        // }
         FileInfoStrings strings = getStringsCache();
         if (strings.getFileNameOnly() == null) {
             strings.setFileNameOnly(getFilenameOnly0());
@@ -601,11 +593,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (ofInfo == null) {
             throw new NullPointerException("Other file is null");
         }
-        // if (Feature.DETECT_UPDATE_BY_VERSION.isDisabled()) {
-        // // Directly detected by last modified
-        // return DateUtil.isNewerFileDateCrossPlattform(lastModifiedDate,
-        // ofInfo.lastModifiedDate);
-        // }
         if (version == ofInfo.version) {
             if (ignoreLastModified) {
                 return false;
@@ -877,8 +864,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
         str.append('\'');
         if (modifiedBy != null) {
-            str.append(" on " + modifiedBy.nick);
-        } else {
+            str.append(" on ");
+            str.append(modifiedBy.nick);
         }
     }
 
