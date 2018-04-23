@@ -196,8 +196,8 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
                 mId.length);
             return new String(Util.encodeHex(Util.md5(hexId)));
         } catch (UnsupportedEncodingException e) {
-            throw (IllegalStateException) new IllegalStateException(
-                "Fatal problem: UTF-8 encoding not found").initCause(e);
+            throw new IllegalStateException(
+                "Fatal problem: UTF-8 encoding not found", e);
         }
     }
 
