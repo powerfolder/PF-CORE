@@ -110,12 +110,13 @@ public interface FolderService {
     void inviteUser(Invitation invitation, String user);
 
     /**
-     * Invites an account to a folder
+     * Creates an invitation for a given folder permission
      *
-     * @param accountInfo The account to invite
-     * @param folderPermission The folder permission to apply
+     * @param folderPermission The folder permission
+     *
+     * @return A folder invitation
      */
-    boolean invite(AccountInfo accountInfo, FolderPermission folderPermission);
+    Invitation createInvitation(FolderPermission folderPermission);
 
     /**
      * @param request
