@@ -19,19 +19,20 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Service for client authentication and permission checks.
@@ -88,6 +89,13 @@ public interface SecurityService {
      * Logs out.
      */
     void logout();
+
+    /**
+     * Notifies nodes that their accounts have changed
+     *
+     * @param accounts The changed accounts
+     */
+    void notifyAccountStateChanged(Account... accounts);
 
     /**
      * PFS-862

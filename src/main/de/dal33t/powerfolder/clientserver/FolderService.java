@@ -20,12 +20,10 @@
 package de.dal33t.powerfolder.clientserver;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.FolderStatisticInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.ArchiveMode;
 
 import java.io.IOException;
@@ -112,6 +110,15 @@ public interface FolderService {
     void inviteUser(Invitation invitation, String user);
 
     /**
+     * Creates an invitation for a given folder permission
+     *
+     * @param folderPermission The folder permission
+     *
+     * @return A folder invitation
+     */
+    Invitation createInvitation(FolderPermission folderPermission);
+
+    /**
      * @param request
      */
     void sendInvitationEmail(SendInvitationEmail request);
@@ -154,7 +161,17 @@ public interface FolderService {
      *            the list of folders to retrieve the hosted servers for.
      * @return the list of servers the folders are hosted on.
      */
+    @Deprecated
     Collection<MemberInfo> getHostingServers(FolderInfo... foInfos);
+
+    /**
+     * Retrieves the hosting servers for an array of folder infos
+     *
+     * @param folderInfos The array of folders to retrieve the hosted servers for
+     *                    
+     * @return The list of servers the folders are hosted on
+     */
+    Collection<MemberInfo> getHostingServersNew(FolderInfo... folderInfos);
 
     // Server archive calls ***************************************************
 
