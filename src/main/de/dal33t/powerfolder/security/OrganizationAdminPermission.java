@@ -122,9 +122,10 @@ public class OrganizationAdminPermission implements Permission, D2DObject {
         stringMessageBuilder.setClazzName("StringMessage");
         stringMessageBuilder.setValue(this.organizationOID);
         // Objects can be any message so they need to be packed to com.google.protobuf.Any
-        builder.setObjects(0, com.google.protobuf.Any.pack(stringMessageBuilder.build()));
+        builder.addObjects(com.google.protobuf.Any.pack(stringMessageBuilder.build()));
         // Set permission enum
         builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.ORGANIZATION_ADMIN);
         return builder.build();
     }
+    
 }
