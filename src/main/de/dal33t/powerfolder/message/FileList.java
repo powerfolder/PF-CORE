@@ -321,9 +321,14 @@ public class FileList extends FolderRelatedMessage
 
           this.files = new FileInfo[proto.getFileInfosCount()];
 
-          for(FileInfoProto.FileInfo finfo : proto.getFileInfosList())
+            for(FileInfoProto.FileInfo finfo : proto.getFileInfosList())
             {
-              this.files[i++] = new FileInfo(finfo);
+                if (finfo.getClazzName().equals("DirectoryInfo")) {
+                    this.files[i++] = new DirectoryInfo(finfo);
+                }
+                else {
+                    this.files[i++] = new FileInfo(finfo);
+                }
             }
 
           this.nFollowingDeltas = proto.getNFollowingDeltas();
