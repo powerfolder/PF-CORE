@@ -2073,25 +2073,21 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @param remoteFolderList
      * @return
      */
-    private Collection<FolderInfo> getFilteredFolderList(
-        FolderList remoteFolderList, boolean fullList)
-    {
-        Collection<FolderInfo> allFolders = getController()
-            .getFolderRepository().getJoinedFolderInfos();
-        Collection<FolderInfo> folders2node = allFolders;
-        ConnectionHandler thisPeer = peer;
-
-        // #2569: Send "filtered" folder list if no full list is requested.
-        if (getMySelf().isServer() && !fullList && remoteFolderList != null
-            && thisPeer != null
-            && StringUtils.isNotBlank(thisPeer.getMyMagicId()))
-        {
-            folders2node = new LinkedList<FolderInfo>();
+    private Collection<FolderInfo> getFilteredFolderList(FolderList remoteFolderList, boolean fullList) {
+        Collection<FolderInfo> allFolders = getController().getFolderRepository().getJoinedFolderInfos();
+        if (fullList) {
+            return allFolders;
+        } else if (remoteFolderList == null || peer == null) {
+            return new LinkedList<FolderInfo>();
+        } else if (getMySelf().isServer()) {
+            Collection<FolderInfo> folders2node = new LinkedList<FolderInfo>();
             if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
-                String magicId = thisPeer.getMyMagicId();
-                for (FolderInfo folderInfo : allFolders) {
-                    if (remoteFolderList.contains(folderInfo, magicId)) {
-                        folders2node.add(folderInfo);
+                String magicId = peer.getMyMagicId();
+                if (StringUtils.isNotBlank(magicId)) {
+                    for (FolderInfo folderInfo : allFolders) {
+                        if (remoteFolderList.contains(folderInfo, magicId)) {
+                            folders2node.add(folderInfo);
+                        }
                     }
                 }
             } else {
@@ -2102,11 +2098,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             }
             if (isFiner() && allFolders.size() != folders2node.size()) {
-                logFiner("Generated optimized folder list: "
-                    + folders2node.size() + "/" + allFolders.size());
+                logFiner("Generated optimized folder list: " + folders2node.size() + "/" + allFolders.size());
             }
+            return folders2node;
+        } else {
+            return new LinkedList<FolderInfo>();
         }
-        return folders2node;
     }
 
     /**
