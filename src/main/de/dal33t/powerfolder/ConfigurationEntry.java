@@ -19,18 +19,8 @@
  */
 package de.dal33t.powerfolder;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.file.Paths;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
-
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -41,6 +31,15 @@ import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.file.Paths;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Refelects a entry setting in the configuration file. Provides basic method
@@ -367,10 +366,15 @@ public enum ConfigurationEntry {
     SERVER_LOGIN_SKIP_RETRY("server.skip.auto.login", 1000),
 
     /**
-     * PFS-2425: Federated login with AccountDiscovery
+     * PFS-2425: Federated login.
      */
     SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
     CLIENT_FEDERATED_URL("client.federation.url", ""),
+
+    /**
+     * Server federation support.
+     */
+    SERVER_FEDERATION_ENABLED("server.federation.enabled", true),
 
     // Server WEB settings ****************************************************
 
