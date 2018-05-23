@@ -198,7 +198,7 @@ public class Controller extends PFComponent {
     private Callable<TransferManager> transferManagerFactory = new Callable<TransferManager>()
     {
         @Override
-        public TransferManager call() throws Exception {
+        public TransferManager call() {
             return new TransferManager(Controller.this);
         }
     };
