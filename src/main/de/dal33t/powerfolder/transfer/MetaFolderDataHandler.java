@@ -24,18 +24,13 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.Lock;
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.information.InformationCard;
-import de.dal33t.powerfolder.ui.information.InformationCardType;
-import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
-import java.awt.*;
 import java.nio.file.Path;
 
 /**
@@ -99,7 +94,7 @@ public class MetaFolderDataHandler extends PFComponent {
         }
 
         Lock lock = getController().getFolderRepository().getLocking()
-            .getLock(file);
+                .getLock(file);
 
         if (lock == null) {
             return;
@@ -117,17 +112,17 @@ public class MetaFolderDataHandler extends PFComponent {
                 @Override
                 protected Void doInBackground() {
                     logWarning("Overwriting lock for " + fileInfo + " set by " +
-                        lockMember.getNick() + " removed by " +
-                        remoteMember.getNick());
+                            lockMember.getNick() + " removed by " +
+                            remoteMember.getNick());
 
                     DialogFactory
-                        .genericDialog(
-                            getController(),
-                            Translation.get("dialog.lock.removed_by_other_member.title"),
-                            Translation.get("dialog.lock.removed_by_other_member.message",
-                                fileInfo.getFilenameOnly(), remoteMember.nick),
-                            new String[]{"OK"},
-                            0, GenericDialogType.WARN);
+                            .genericDialog(
+                                    getController(),
+                                    Translation.get("dialog.lock.removed_by_other_member.title"),
+                                    Translation.get("dialog.lock.removed_by_other_member.message",
+                                            fileInfo.getFilenameOnly(), remoteMember.nick),
+                                    new String[]{"OK"},
+                                    0, GenericDialogType.WARN);
 
                     return null;
                 }

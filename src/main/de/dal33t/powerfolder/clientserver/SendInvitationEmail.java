@@ -19,13 +19,13 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import java.io.Serializable;
-
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.Serializable;
 
 /**
  * Represents a request to send an invitation to another member by email.

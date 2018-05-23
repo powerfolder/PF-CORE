@@ -19,10 +19,6 @@
  */
 package de.dal33t.powerfolder.event;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EventObject;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -31,6 +27,10 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.FolderFilesChanged;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EventObject;
 
 /**
  * Event about changes in the folder, mostly file changes. Exception: Stats

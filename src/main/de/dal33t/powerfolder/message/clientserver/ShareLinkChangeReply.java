@@ -35,7 +35,8 @@ public class ShareLinkChangeReply extends ShareLinkRemoveReply {
         ShareLinkChangeReplyProto.ShareLinkChangeReply.Builder builder = ShareLinkChangeReplyProto.ShareLinkChangeReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        if (this.replyStatusCode != null)
+            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
         return builder.build();
     }
 

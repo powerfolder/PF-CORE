@@ -1189,12 +1189,12 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         //PFS-1918: Start: Folder WebDAV support. Mount this folder as WebDAV resource.
         if (folderSettings.getLocalBaseDirString().
-                toLowerCase().startsWith(Constants.FOLDER_WEBDAV_PREFIX) && OSUtil.isLinux()) {
+                toLowerCase().startsWith(Constants.FOLDER_WEBDAV_HTTP_PREFIX) && OSUtil.isLinux()) {
 
             // This is inevitable because the WebDAV URL is initially a path object and path does
             // not support '//' notations.
             String webDAVURL = folderSettings.getLocalBaseDirString();
-            if (webDAVURL.contains(Constants.FOLDER_WEBDAV_PREFIX) && !webDAVURL.contains("://")) {
+            if (webDAVURL.contains(Constants.FOLDER_WEBDAV_HTTP_PREFIX) && !webDAVURL.contains("://")) {
                 webDAVURL = webDAVURL.replace(":/", "://");
             }
 
@@ -2618,10 +2618,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             Path localBase = folder.getLocalBase();
             if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
                 localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
-            }
-            if (localBase.equals(targetPath)) {
-                logFine("Not required to move folder from/to " + targetPath);
-                return folder;
             }
             logInfo("Not moving folder " + folder + " to new directory "
                     + targetPath.toString()

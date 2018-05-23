@@ -19,14 +19,14 @@
  */
 package de.dal33t.powerfolder.test.d2d;
 
-import java.util.logging.Level;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.util.logging.Level;
 
 public class D2DControllerTest extends TwoControllerTestCase
 {

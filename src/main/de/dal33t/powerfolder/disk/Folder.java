@@ -3158,7 +3158,7 @@ public class Folder extends PFComponent {
             {
                 // PFC-2706 / PFC-2705
                 if (remoteFile.getFolderInfo().isMetaFolder()
-                    && localFile.inSyncWithDisk(localCopy))
+                        && localFile.inSyncWithDisk(localCopy))
                 {
                     MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
                         getController());
@@ -4185,10 +4185,9 @@ public class Folder extends PFComponent {
                 if (fileInfo != null && fileInfo.isFile() && Files.exists(file))
                 {
                     if (currentInfo.isMetaFolder() && fileInfo.getRelativeName()
-                        .startsWith(METAFOLDER_LOCKS_DIR))
-                    {
+                            .startsWith(METAFOLDER_LOCKS_DIR)) {
                         MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
-                            getController());
+                                getController());
                         mfdh.handleRemoteLockOverwrite(removeFileInfo, file);
                     }
                     try {
@@ -4274,7 +4273,7 @@ public class Folder extends PFComponent {
         Map<Member, Integer> incomingCount = maxPerMember > 0
             ? new HashMap<>(getMembersCount())
             : null;
-        memberloop:
+        boolean revert = isRevertLocalChanges();
         for (Member member : getMembersAsCollection()) {
             if (!member.isCompletelyConnected()) {
                 // disconnected or myself (=skip)
@@ -4287,7 +4286,6 @@ public class Folder extends PFComponent {
                 }
                 continue;
             }
-            /* PFC-3018: Most expensive call. Moved check to inner loop, if actual incoming file is found.
             if (!hasWritePermission(member)) {
                 if (isFine()) {
                     logFine("Not downloading files. " + member + " / "
@@ -4295,7 +4293,7 @@ public class Folder extends PFComponent {
                 }
                 continue;
             }
-            */
+
             Collection<FileInfo> memberFiles = getFilesAsCollection(member);
             if (incomingCount != null) {
                 incomingCount.put(member, 0);
@@ -4313,7 +4311,7 @@ public class Folder extends PFComponent {
 
                     // Check if remote file is newer
                     FileInfo localFile = getFile(remoteFile);
-                    if (localFile != null && isRevertLocalChanges()) {
+                    if (revert && localFile != null) {
                         FileInfo newestFileInfo = remoteFile
                             .getNewestVersion(getController()
                                 .getFolderRepository());
@@ -4342,14 +4340,6 @@ public class Folder extends PFComponent {
                     if (notLocal || newerThanLocal && newestRemote) {
                         // Okay this one is expected
                         if (!diskItemFilter.isExcluded(remoteFile)) {
-                            if (!hasWritePermission(member)) {
-                                if (isFine()) {
-                                    logFine("Not downloading files. " + member + " / "
-                                            + member.getAccountInfo() + " no write permission");
-                                }
-                                // Skip member
-                                continue memberloop;
-                            }
                             incomingFiles.put(remoteFile, remoteFile);
                             if (incomingCount != null) {
                                 Integer i = incomingCount.get(member);
@@ -4387,14 +4377,6 @@ public class Folder extends PFComponent {
                     if (notLocal || newerThanLocal && newestRemote) {
                         // Okay this one is expected
                         if (!diskItemFilter.isExcluded(remoteDir)) {
-                            if (!hasWritePermission(member)) {
-                                if (isFine()) {
-                                    logFine("Not downloading files. " + member + " / "
-                                            + member.getAccountInfo() + " no write permission");
-                                }
-                                // Skip member
-                                continue memberloop;
-                            }
                             incomingFiles.put(remoteDir, remoteDir);
                         }
                     }
@@ -4828,7 +4810,7 @@ public class Folder extends PFComponent {
         if (isFiner()) {
             logFiner("Harmonized percentage: " + percentage + ". In sync? "
                 + newInSync + ". last sync date: " + lastSyncDate
-                + " . connected: " + getCompletelyConnectedMembersCount());
+                    + " . connected: " + getCompletelyConnectedMembersCount());
         }
     }
 
@@ -4890,19 +4872,17 @@ public class Folder extends PFComponent {
     }
 
     public boolean hasWritePermission(Member member) {
-        Boolean hasReadWrite = hasWriteCache.getValidEntry(member);
-        if (hasReadWrite != null) {
+        Boolean hasWrite = hasWriteCache.getValidEntry(member);
+        if (hasWrite != null) {
             if (hasWriteCache.getCacheHits() % 100000 == 0 && isFine()) {
                 logFine("Permission write: " + hasWriteCache);
             }
-            return hasReadWrite;
+            return hasWrite;
         }
-        hasReadWrite = hasFolderPermission(member,
+        hasWrite = hasFolderPermission(member,
                 FolderPermission.readWrite(getParentFolderInfo()));
-        hasWriteCache.put(member, hasReadWrite);
-        // PFC-3018: Also update read permission cache:
-        hasReadCache.put(member, hasReadWrite);
-        return hasReadWrite;
+        hasWriteCache.put(member, hasWrite);
+        return hasWrite;
     }
 
     public boolean hasAdminPermission(Member member) {

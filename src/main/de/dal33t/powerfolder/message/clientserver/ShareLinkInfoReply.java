@@ -66,8 +66,10 @@ public class ShareLinkInfoReply extends D2DReplyMessage {
         ShareLinkInfoReplyProto.ShareLinkInfoReply.Builder builder = ShareLinkInfoReplyProto.ShareLinkInfoReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
-        if (this.shareLinkInfo != null) builder.setShareLinkInfo((ShareLinkInfoProto.ShareLinkInfo) this.shareLinkInfo.toD2D());
+        if (this.replyStatusCode != null)
+            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        if (this.shareLinkInfo != null)
+            builder.setShareLinkInfo((ShareLinkInfoProto.ShareLinkInfo) this.shareLinkInfo.toD2D());
         return builder.build();
     }
 

@@ -19,12 +19,12 @@
  */
 package de.dal33t.powerfolder.util.test;
 
-import java.util.Arrays;
-
-import de.dal33t.powerfolder.util.Util;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.LoginUtil;
+import de.dal33t.powerfolder.util.Util;
+import junit.framework.TestCase;
+
+import java.util.Arrays;
 
 public class LoginUtilTest extends TestCase {
     public void testObfuscate() {

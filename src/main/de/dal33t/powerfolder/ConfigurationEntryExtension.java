@@ -3,7 +3,6 @@ package de.dal33t.powerfolder;
 import java.lang.annotation.*;
 
 /**
- *
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @since 11.5 SP 5
  */

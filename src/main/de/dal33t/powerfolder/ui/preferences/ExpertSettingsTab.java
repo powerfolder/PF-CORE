@@ -19,28 +19,19 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.util.Dictionary;
-import java.util.Hashtable;
-
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import javax.swing.*;
 
 public class ExpertSettingsTab extends PFComponent implements PreferenceTab {
 

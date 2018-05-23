@@ -19,34 +19,19 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import java.io.IOException;
+import java.net.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Listener, which listens for incoming broadcast messages
@@ -101,9 +86,9 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         {
           subnetIP = InetAddress.getLocalHost();
 
-          localNICList = new ArrayList<>();
-          localAddresses = new ArrayList<>();
-          receivedBroadcastsFrom = new HashSet<>();
+          localNICList = new ArrayList<NetworkInterface>();
+          localAddresses = new ArrayList<InetAddress>();
+          receivedBroadcastsFrom = new ArrayList<InetAddress>();
 
           waitTime = 1000L * 15;
           group = InetAddress.getByName("224.0.0.1");

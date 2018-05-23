@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
-import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
@@ -374,7 +373,11 @@ public enum ConfigurationEntry {
      * PFS-2425: Federated login.
      */
     SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
-    CLIENT_FEDERATED_URL("client.federation.url", ""),
+
+    /**
+     * Server federation support.
+     */
+    SERVER_FEDERATION_ENABLED("server.federation.enabled", true),
 
     /**
      * Server federation support.
@@ -617,7 +620,6 @@ public enum ConfigurationEntry {
      * The port(s) to bind to.
      */
     NET_PORT("net.port") {
-
         @Override
         public String getValue(Controller controller) {
             String value = super.getValue(controller);
@@ -645,7 +647,6 @@ public enum ConfigurationEntry {
      * The TCP port for D2D
      */
     NET_PORT_D2D("net.port.d2d", 0) {
-
         @Override
         public String getValue(Controller controller) {
             String value = super.getValue(controller);
@@ -676,7 +677,6 @@ public enum ConfigurationEntry {
      * The TCP port for the {@link RemoteCommandManager}
      */
     NET_PORT_RCON("net.port.rcon", 1338) {
-
         @Override
         public String getValue(Controller controller) {
             String value = super.getValue(controller);
@@ -1496,10 +1496,9 @@ public enum ConfigurationEntry {
     /**
      * Parses the configuration entry into an Array.
      *
-     * @param controller
-     *            the controller to read the config from
+     * @param controller the controller to read the config from
      * @return A string array of the parsed configuration entry.
-     *            If the configuration entry is null, the array contains one null element.
+     * If the configuration entry is null, the array contains one null element.
      */
     public String[] getValueArray(Controller controller) {
         String[] values = new String[1];

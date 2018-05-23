@@ -19,14 +19,13 @@
  */
 package de.dal33t.powerfolder.task;
 
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.util.logging.Logger;
 
 /**
  * Task to create a folder on the server.

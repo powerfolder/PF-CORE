@@ -23,25 +23,18 @@ package de.dal33t.powerfolder.util.os;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.security.Account;
-import de.dal33t.powerfolder.util.Base58;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 
 /**
  * Utilities for linux
@@ -168,7 +161,7 @@ public class LinuxUtil {
             password = authority.substring(authority.indexOf(":") + 1, authority.lastIndexOf("@"));
         }
 
-        webDAVURL = !webDAVHost.contains(Constants.FOLDER_WEBDAV_PREFIX) ? protocol + "://" + webDAVHost : webDAVHost;
+        webDAVURL = !webDAVHost.contains(Constants.FOLDER_WEBDAV_HTTP_PREFIX) ? protocol + "://" + webDAVHost : webDAVHost;
 
         return mountWebDAV(username, password, webDAVURL, mountPath, true);
     }

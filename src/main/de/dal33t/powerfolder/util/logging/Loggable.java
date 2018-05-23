@@ -19,12 +19,12 @@
  */
 package de.dal33t.powerfolder.util.logging;
 
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
 
 /**
  * This class provides generic logging functionality. Extend from this class if

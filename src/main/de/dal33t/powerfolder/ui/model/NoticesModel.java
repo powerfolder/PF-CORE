@@ -289,7 +289,7 @@ public class NoticesModel extends PFUIComponent {
                 Invitation invitation = ((InvitationNotice) n).getPayload(getController());
                 if (invitation != null && serverAgreeInvitationEnabled(invitation)) {
                     getController().getThreadPool().execute(
-                            new DeclineInvitationTask(((InvitationNotice) n).getPayload(getController())));
+                        new DeclineInvitationTask(((InvitationNotice) n).getPayload(getController())));
                 }
             }
         }
@@ -304,7 +304,7 @@ public class NoticesModel extends PFUIComponent {
                     Invitation invitation = ((InvitationNotice) n).getPayload(getController());
                     if (invitation != null && serverAgreeInvitationEnabled(invitation)) {
                         getController().getThreadPool().execute(
-                                new DeclineInvitationTask(((InvitationNotice) n).getPayload(getController())));
+                            new DeclineInvitationTask(((InvitationNotice) n).getPayload(getController())));
                     }
                 }
                 notices.remove(notice);
@@ -349,7 +349,7 @@ public class NoticesModel extends PFUIComponent {
 
         return serverAgreeInvitationsEnabled;
     }
-    
+
     /**
      * Clears all FileInBasePathWarnings
      */

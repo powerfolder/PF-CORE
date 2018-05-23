@@ -48,7 +48,8 @@ public class ShareLinkRemoveReply extends D2DReplyMessage {
         ShareLinkRemoveReplyProto.ShareLinkRemoveReply.Builder builder = ShareLinkRemoveReplyProto.ShareLinkRemoveReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        if (this.replyStatusCode != null)
+            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
         return builder.build();
     }
 

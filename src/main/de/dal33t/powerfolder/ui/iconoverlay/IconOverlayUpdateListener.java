@@ -163,63 +163,57 @@ public class IconOverlayUpdateListener extends PFComponent implements
             return;
         }
 
-        getController().getIOProvider().startIO(new Runnable() {
-            @Override
-            public void run() {
-                while (!dirtyFiles.isEmpty()) {
+        getController().getIOProvider().startIO(() -> {
+            while (!dirtyFiles.isEmpty()) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    updateRunning.set(false);
+                    return;
+                }
+                if (isFine()) {
+                    logFine("Updating OS file exporer for files: " + dirtyFiles.size() + ": " + dirtyFiles);
+                }
+                for (FileInfo fileInfo : dirtyFiles.keySet()) {
+                    dirtyFiles.remove(fileInfo);
+                    Path file = fileInfo.getDiskFile(getController().getFolderRepository());
+                    if (file == null) {
+                        continue;
+                    }
                     try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        updateRunning.set(false);
-                        return;
-                    }
-                    if (isFine()) {
-                        logFine("Updating OS file exporer for files: " + dirtyFiles.size()+ ": " + dirtyFiles);
-                    }
-                    for (FileInfo fileInfo : dirtyFiles.keySet()) {
-                        dirtyFiles.remove(fileInfo);
-                        Path file = fileInfo.getDiskFile(getController().getFolderRepository());
-                        if (file == null) {
-                            continue;
-                        }
-                        try {
-                            if (Files.exists(file)) {
-                                String fileName = file.toString();
-                                if (OSUtil.isWindowsSystem()) {
-                                    WindowsNativityUtil.updateExplorer(fileName);
-                                } else if (OSUtil.isMacOS()) {
-                                    iconControl.setFileIcon(fileName, overlayHandler.getIconForFile(fileInfo));
-                                }
+                        if (Files.exists(file)) {
+                            String fileName = file.toString();
+                            if (OSUtil.isWindowsSystem()) {
+                                WindowsNativityUtil.updateExplorer(fileName);
+                            } else if (OSUtil.isMacOS()) {
+                                iconControl.setFileIcon(fileName, overlayHandler.getIconForFile(fileInfo));
                             }
-                        } catch (RuntimeException re) {
-                            logFine(
-                                    "Caught exception while updating single file "
-                                            + fileInfo.toDetailString() + ". " + re, re);
                         }
+                    } catch (RuntimeException re) {
+                        logFine(
+                                "Caught exception while updating single file "
+                                        + fileInfo.toDetailString() + ". " + re, re);
                     }
                 }
-                updateRunning.set(false);
             }
+            updateRunning.set(false);
         });
     }
 
     private void updateFolder(final Folder folder) {
         if (OSUtil.isWindowsSystem()) {
-            getController().getIOProvider().startIO(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        // Do not update folder Documents because it would lead to duplicate entries in explorer sidebar (see PFC-2862)
-                        if (!folder.getLocalBase().toString().equals(UserDirectories.getDocumentsReported())) {
-                            WindowsNativityUtil.updateExplorer(folder.getLocalBase().toString());
-                        }
-                    } catch (RuntimeException re) {
-                        logFine("Caught exception while updating folder "
-                            + folder + ". " + re, re);
-                    } catch (UnsatisfiedLinkError e) {
-                        logFine("Caught exception while updating folder "
-                            + folder + ". " + e, e);
+            getController().getIOProvider().startIO(() -> {
+                try {
+                    // Do not update folder Documents because it would lead to duplicate entries in explorer sidebar (see PFC-2862)
+                    if (!folder.getLocalBase().toString().equals(UserDirectories.getDocumentsReported())) {
+                        WindowsNativityUtil.updateExplorer(folder.getLocalBase().toString());
                     }
+                } catch (RuntimeException re) {
+                    logFine("Caught exception while updating folder "
+                            + folder + ". " + re, re);
+                } catch (UnsatisfiedLinkError e) {
+                    logFine("Caught exception while updating folder "
+                            + folder + ". " + e, e);
                 }
             });
         }

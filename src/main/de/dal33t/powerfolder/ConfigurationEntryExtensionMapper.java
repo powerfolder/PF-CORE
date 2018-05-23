@@ -26,16 +26,14 @@ public final class ConfigurationEntryExtensionMapper {
 
     private void map(Class<?> clazz, boolean mapOldNames) {
         for (Field field : clazz
-            .getDeclaredFields())
-        {
+                .getDeclaredFields()) {
             ConfigurationEntryExtension extension = field
-                .getAnnotation(ConfigurationEntryExtension.class);
+                    .getAnnotation(ConfigurationEntryExtension.class);
             if (extension != null) {
                 fieldMapping.put(extension.name(), field);
 
                 if (mapOldNames &&
-                    StringUtils.isNotBlank(extension.oldName()))
-                {
+                        StringUtils.isNotBlank(extension.oldName())) {
                     fieldMapping.put(extension.oldName(), field);
                 }
             }

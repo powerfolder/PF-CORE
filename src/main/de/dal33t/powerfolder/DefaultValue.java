@@ -6,7 +6,6 @@ import java.lang.annotation.*;
  * Use in context of configuration entries.<br />
  * <br />
  *
- *
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  * @since 11.5 SP 5
  */

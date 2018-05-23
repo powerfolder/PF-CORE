@@ -19,11 +19,11 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.light.FileInfo;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
-
-import de.dal33t.powerfolder.light.FileInfo;
 
 /**
  * Simple mechanism to generate a unique id in space and time

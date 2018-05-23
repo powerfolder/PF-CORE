@@ -378,7 +378,7 @@ public class Constants {
      * PFS-1918: Suffix to mark a folder path as WebDAV resource.
      */
     public static final String FOLDER_WEBDAV_SUFFIX = ".webdav";
-    public static final String FOLDER_WEBDAV_PREFIX = "http";
+    public static final String FOLDER_WEBDAV_HTTP_PREFIX = "http";
     public static final String FOLDER_WEBDAV_URI = "webdav";
 
     public static final String POWERFOLDER_SERVER_ID_HEADER = "PF-Server-ID";

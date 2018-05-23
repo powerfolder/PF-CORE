@@ -19,34 +19,6 @@
  */
 package de.dal33t.powerfolder;
 
-import java.awt.Frame;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URLDecoder;
-import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jwf.WizardPanel;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -56,25 +28,26 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
-import de.dal33t.powerfolder.ui.wizard.ChooseDiskLocationPanel;
-import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
-import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
-import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
-import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.ui.wizard.*;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Waiter;
+import jwf.WizardPanel;
+
+import java.awt.*;
+import java.io.*;
+import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -148,7 +121,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean hasRunningInstance() {
         return hasRunningInstance(Integer
-            .valueOf(ConfigurationEntry.NET_PORT_RCON.getDefaultValue()));
+                .valueOf(ConfigurationEntry.NET_PORT_RCON.getDefaultValue()));
     }
 
     /**
@@ -195,7 +168,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
      */
     public static boolean sendCommand(String command) {
         return sendCommand(
-            Integer.valueOf(ConfigurationEntry.NET_PORT_RCON.getDefaultValue()),
+                Integer.valueOf(ConfigurationEntry.NET_PORT_RCON.getDefaultValue()),
             command);
     }
 

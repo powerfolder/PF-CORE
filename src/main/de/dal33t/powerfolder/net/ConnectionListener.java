@@ -161,8 +161,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 // Create SSl socket factory
                 SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
                 serverSocket = serverSocketFactory.createServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
-            }
-            else {
+            } else {
                 serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
             }
         } catch (EOFException e) {

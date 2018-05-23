@@ -17,15 +17,14 @@
  */
 package de.dal33t.powerfolder.ui.contextmenu;
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.AbstractAction;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.ui.notification.NotificationHandlerBase;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 
 /**
  * This notification is shown, when the "share link" context menu item was clicked.<br />

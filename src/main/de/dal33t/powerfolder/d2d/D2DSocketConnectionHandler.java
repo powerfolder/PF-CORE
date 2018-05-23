@@ -199,26 +199,19 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
         // Block unsupported messages
         if (mesg instanceof AddFriendNotification) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof KnownNodes) {
+        } else if (mesg instanceof KnownNodes) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof RelayedMessageExt) {
+        } else if (mesg instanceof RelayedMessageExt) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof Invitation) {
+        } else if (mesg instanceof Invitation) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof Problem) {
+        } else if (mesg instanceof Problem) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof RequestNodeList) {
+        } else if (mesg instanceof RequestNodeList) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof TransferStatus) {
+        } else if (mesg instanceof TransferStatus) {
             mesg = new Ping();
-        }
-        else if (mesg instanceof UDTMessage) {
+        } else if (mesg instanceof UDTMessage) {
             mesg = new Ping();
         }
 

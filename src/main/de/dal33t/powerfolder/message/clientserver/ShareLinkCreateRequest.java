@@ -53,7 +53,8 @@ public class ShareLinkCreateRequest extends D2DRequestMessage {
         ShareLinkCreateRequestProto.ShareLinkCreateRequest.Builder builder = ShareLinkCreateRequestProto.ShareLinkCreateRequest.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.requestCode != null) builder.setRequestCode(this.getRequestCode());
-        if (this.shareLinkInfo != null) builder.setShareLinkInfo((ShareLinkInfoProto.ShareLinkInfo) this.shareLinkInfo.toD2D());
+        if (this.shareLinkInfo != null)
+            builder.setShareLinkInfo((ShareLinkInfoProto.ShareLinkInfo) this.shareLinkInfo.toD2D());
         return builder.build();
     }
 

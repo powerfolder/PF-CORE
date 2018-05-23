@@ -1368,8 +1368,7 @@ public class Account implements Serializable, D2DObject {
         // last login date
         if (account.lastLoginDate != null) {
             if (this.lastLoginDate == null ||
-                this.lastLoginDate.before(account.lastLoginDate))
-            {
+                    this.lastLoginDate.before(account.lastLoginDate)) {
                 this.lastLoginDate = account.lastLoginDate;
             }
         }
@@ -1522,7 +1521,7 @@ public class Account implements Serializable, D2DObject {
 
     /**
      * PF-526: Getter/Setter to mark this account as active/inactive (for registration process).
-     *
+     * <p>
      * - Active: Date of activation is set.
      * - Inactive: No Date is set.
      */
@@ -1642,7 +1641,7 @@ public class Account implements Serializable, D2DObject {
         if (mesg instanceof AccountInfoProto.AccountInfo) {
             AccountInfoProto.AccountInfo proto = (AccountInfoProto.AccountInfo) mesg;
             this.oid = proto.getId();
-            this.agreedToSVersion = (int)proto.getTosVersion();
+            this.agreedToSVersion = (int) proto.getTosVersion();
             this.username = proto.getUsername();
             this.firstname = proto.getFirstname();
             this.surname = proto.getSurname();

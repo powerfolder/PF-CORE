@@ -30,7 +30,8 @@ public class ShareLinkChangeRequest extends ShareLinkCreateRequest {
         ShareLinkChangeRequestProto.ShareLinkChangeRequest.Builder builder = ShareLinkChangeRequestProto.ShareLinkChangeRequest.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.requestCode != null) builder.setRequestCode(this.getRequestCode());
-        if (this.shareLinkInfo != null) builder.setShareLinkInfo((ShareLinkInfoProto.ShareLinkInfo) this.shareLinkInfo.toD2D());
+        if (this.shareLinkInfo != null)
+            builder.setShareLinkInfo((ShareLinkInfoProto.ShareLinkInfo) this.shareLinkInfo.toD2D());
         return builder.build();
     }
 

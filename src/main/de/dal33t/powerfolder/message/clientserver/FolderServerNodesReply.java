@@ -63,7 +63,8 @@ public class FolderServerNodesReply extends D2DReplyMessage {
         FolderServerNodesReplyProto.FolderServerNodesReply.Builder builder = FolderServerNodesReplyProto.FolderServerNodesReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        if (this.replyStatusCode != null)
+            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
         if (this.nodeInfos != null) {
             for (MemberInfo nodeInfo : this.nodeInfos) {
                 builder.addNodeInfos((NodeInfoProto.NodeInfo) nodeInfo.toD2D());

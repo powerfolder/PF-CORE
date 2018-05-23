@@ -1004,12 +1004,11 @@ public class Controller extends PFComponent {
         }
 
         try (BufferedInputStream bis = new BufferedInputStream(
-            Files.newInputStream(configFile)))
-        {
+                Files.newInputStream(configFile))) {
             config.load(bis);
         } catch (IOException e) {
             logWarning("Unable to reload config file " + configFile
-                + ". " + e);
+                    + ". " + e);
         }
     }
 
@@ -1121,13 +1120,13 @@ public class Controller extends PFComponent {
         // ============
         // Run housekeeping at 00:00 o'clock
         JobDetail housekeepingJob = JobBuilder.newJob(Housekeeping.class)
-            .withIdentity("midnight", "housekeeping").build();
+                .withIdentity("midnight", "housekeeping").build();
 
         Trigger housekeepingTrigger = TriggerBuilder.newTrigger()
-            .withIdentity("trigger", "housekeeping")
-            .forJob(housekeepingJob)
-            .withSchedule(dailyAtHourAndMinute(0, 0))
-            .build();
+                .withIdentity("trigger", "housekeeping")
+                .forJob(housekeepingJob)
+                .withSchedule(dailyAtHourAndMinute(0, 0))
+                .build();
 
         try {
             Scheduler sched = new StdSchedulerFactory().getScheduler();
@@ -1217,7 +1216,7 @@ public class Controller extends PFComponent {
         if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(this)) {
             try {
                 broadcastManager = new BroadcastMananger(this,
-                  ConfigurationEntry.NET_PORT_D2D.getValueInt(this) > 0);
+                        ConfigurationEntry.NET_PORT_D2D.getValueInt(this) > 0);
                 broadcastManager.start();
             } catch (ConnectionException e) {
                 logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
@@ -2445,11 +2444,11 @@ public class Controller extends PFComponent {
      */
     private boolean openListener(String bindAddress, int port, boolean useD2D) {
         logFine("Opening incoming connection listener on port " + port
-            + " on interface " + (bindAddress != null ? bindAddress : "(all)"));
+                + " on interface " + (bindAddress != null ? bindAddress : "(all)"));
         while (true) {
             try {
                 ConnectionListener newListener = new ConnectionListener(this,
-                    port, bindAddress, useD2D);
+                        port, bindAddress, useD2D);
                 if (connectionListener == null || !connectionListener.isServerSocketOpen()) {
                     // its our primary listener
                     connectionListener = newListener;

@@ -33,7 +33,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,8 +40,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 /**
  * Simple class for a scheduled Upload
@@ -209,7 +206,7 @@ public class Upload extends Transfer {
 
                             if (fileSize <= bufferSize) {
                                 logFine("Using buffer to upload file");
-                                ByteBuffer tempBuffer = ByteBuffer.allocate((int)fileSize);
+                                ByteBuffer tempBuffer = ByteBuffer.allocate((int) fileSize);
                                 fileChannel.read(tempBuffer, 0);
                                 fileChannel.close();
                                 fileChannel = null;
@@ -467,10 +464,9 @@ public class Upload extends Transfer {
                 int read;
                 int readLen = data.length - pos;
                 if (buffer != null &&
-                    buffer.length >= startOffset + pr.getRange().getLength())
-                {
+                        buffer.length >= startOffset + pr.getRange().getLength()) {
                     data = Arrays.copyOfRange(buffer, (int) startOffset,
-                        (int) (startOffset + pr.getRange().getLength()));
+                            (int) (startOffset + pr.getRange().getLength()));
                     read = data.length;
                 } else if (fileChannel != null) {
                     read = fileChannel.read(ByteBuffer.wrap(data, pos, readLen));
