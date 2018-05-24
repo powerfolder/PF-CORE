@@ -379,11 +379,6 @@ public enum ConfigurationEntry {
      */
     SERVER_FEDERATION_ENABLED("server.federation.enabled", true),
 
-    /**
-     * Server federation support.
-     */
-    SERVER_FEDERATION_ENABLED("server.federation.enabled", true),
-
     // Server WEB settings ****************************************************
 
     /**
