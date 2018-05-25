@@ -20,10 +20,9 @@
 package de.dal33t.powerfolder.util.net;
 
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.text.ParseException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.net.UnknownHostException;
 
 /**
  * This class represents an IP range in a subnet.
@@ -33,34 +32,36 @@ import java.util.regex.Pattern;
  * @version $Revision$
  */
 public final class AddressRange {
-	private static Pattern addressPattern = Pattern
-	.compile("\\s*((?:\\d{1,3})(?:\\.(?:\\d){1,3}){3})\\s*(?:-\\s*((?:\\d{1,3})(?:\\.(?:\\d){1,3}){3}))?\\s*");
+	private InetAddress start;
+	private InetAddress end;
 
-	private Inet4Address start;
-	private Inet4Address end;
+	public AddressRange(InetAddress start, InetAddress end) {
+        if (!((start instanceof Inet4Address && end instanceof Inet4Address) ||
+            (start instanceof Inet6Address && end instanceof Inet6Address)))
+        {
+   	        throw new IllegalArgumentException(String.format("Start and End Addresses are not of the same type: start is %s end is %s", start.getClass().getName(), end.getClass().getName()));
+        }
 
-	public AddressRange(Inet4Address start, Inet4Address end) {
-		super();
 		this.start = start;
 		this.end = end;
 	}
 
-	public static AddressRange parseRange(String s) throws ParseException {
-		try {
-			Matcher m = addressPattern.matcher(s);
-			m.matches();
-			String ipEnd = m.group(2);
-			if (ipEnd == null) {
-				ipEnd = m.group(1);
-			}
-			return new AddressRange((Inet4Address) InetAddress.getByName(m.group(1)),
-					(Inet4Address) InetAddress.getByName(ipEnd));
-		} catch (Throwable e) {
-			throw new ParseException(s, 0);
-		}
+	public static AddressRange parseRange(String s)
+        throws UnknownHostException
+    {
+	    String[] ips = s.split("-");
+	    if (s.length() > 2) {
+	        return null;
+        }
+        String startIP = ips[0];
+	    String endIP = startIP;
+	    if (s.length() == 1) {
+	        endIP = ips[1];
+        }
+        return new AddressRange(InetAddress.getByName(startIP), InetAddress.getByName(endIP));
 	}
 
-	public Inet4Address getEnd() {
+	public InetAddress getEnd() {
 		return end;
 	}
 
@@ -115,7 +116,7 @@ public final class AddressRange {
 		return true;
 	}
 
-	public Inet4Address getStart() {
+	public InetAddress getStart() {
 		return start;
 	}
 

@@ -182,7 +182,7 @@ public class AddressEditor extends BaseDialog {
         private boolean isValidRange() {
             try {
                 return AddressRange.parseRange(input) != null;
-            } catch (ParseException e) {
+            } catch (Exception e) {
             }
             return false;
         }

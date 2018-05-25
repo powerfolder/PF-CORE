@@ -121,10 +121,19 @@ public class NetUtilTest extends TestCase {
 
     }
 
+    public void testAddressRangeCreationFailed() throws UnknownHostException {
+        try {
+            new AddressRange(InetAddress.getByName("0.0.0.0"), InetAddress.getByName("[::1]"));
+            fail();
+        } catch (IllegalArgumentException iae) {
+            System.err.println(iae.getMessage());
+        }
+    }
+
     public void testAddressRanges() throws UnknownHostException {
         AddressRange ar = new AddressRange(
-            (Inet4Address) InetAddress.getByName("0.0.0.110"),
-            (Inet4Address) InetAddress.getByName("127.127.127.127"));
+            InetAddress.getByName("0.0.0.110"),
+            InetAddress.getByName("127.127.127.127"));
         assertTrue(ar.contains((Inet4Address) InetAddress
             .getByName("127.127.127.127")));
         assertTrue(ar.contains((Inet4Address) InetAddress
