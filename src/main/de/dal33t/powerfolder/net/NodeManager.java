@@ -36,13 +36,12 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 import java.io.Externalizable;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -153,8 +152,8 @@ public class NodeManager extends PFComponent {
             if (ipr.length() > 0) {
                 try {
                     lanRanges.add(AddressRange.parseRange(ipr));
-                } catch (ParseException e) {
-                    logWarning("Invalid IP range format: " + ipr);
+                } catch (UnknownHostException e) {
+                    logWarning("Invalid IP range format: " + ipr + ". " + e.getMessage());
                 }
             }
         }
@@ -424,8 +423,7 @@ public class NodeManager extends PFComponent {
             for (InterfaceAddress ia : NetworkUtil
                 .getAllLocalNetworkAddressesCached().keySet())
             {
-                if (ia.getAddress() instanceof Inet4Address
-                    && isNodeOnConfiguredLan0(ia.getAddress()))
+                if (isNodeOnConfiguredLan0(ia.getAddress()))
                 {
                     iamOnLANlist = true;
                     break;
@@ -440,7 +438,7 @@ public class NodeManager extends PFComponent {
             return false;
         }
         for (AddressRange ar : lanRanges) {
-            if (ar.contains((Inet4Address) adr)) {
+            if (ar.contains(adr)) {
                 return true;
             }
         }
@@ -449,7 +447,7 @@ public class NodeManager extends PFComponent {
 
     private boolean isNodeOnConfiguredLan0(InetAddress adr) {
         for (AddressRange ar : lanRanges) {
-            if (ar.contains((Inet4Address) adr)) {
+            if (ar.contains(adr)) {
                 return true;
             }
         }
@@ -458,15 +456,12 @@ public class NodeManager extends PFComponent {
 
     /**
      * @param adr
-     *            the internet addedss
+     *            the internet address
      * @return true if this address is on LAN (by IP/subnet mask) OR configured
      *         on LAN
      */
     public boolean isOnLANorConfiguredOnLAN(InetAddress adr) {
         Reject.ifNull(adr, "Address is null");
-        if (!(adr instanceof Inet4Address)) {
-            return false;
-        }
         if (Feature.CORRECT_LAN_DETECTION.isDisabled()) {
             return true;
         }

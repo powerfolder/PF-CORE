@@ -20,14 +20,8 @@
 package de.dal33t.powerfolder.util.net;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.math.BigInteger;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +39,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Utility class for all low level networking stuff.
@@ -64,13 +59,22 @@ public class NetworkUtil {
     private static long LAST_CHACHE_UPDATE = 0;
     private static Map<InterfaceAddress, NetworkInterface> LOCAL_NETWORK_ADDRESSES_CACHE;
 
-    private static InetAddress NULL_IP;
+    private static InetAddress NULL_IPv4;
     static {
         try {
-            NULL_IP = InetAddress.getByAddress("0.0.0.0",
-                new byte[]{0, 0, 0, 0});
+            NULL_IPv4 = InetAddress.getByAddress(new byte[]{0, 0, 0, 0});
         } catch (UnknownHostException e) {
-            NULL_IP = null;
+            NULL_IPv4 = null;
+            e.printStackTrace();
+        }
+    }
+
+    private static InetAddress NULL_IPv6;
+    static {
+        try {
+            NULL_IPv6 = InetAddress.getByAddress(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
+        } catch (UnknownHostException e) {
+            NULL_IPv6 = null;
             e.printStackTrace();
         }
     }
@@ -185,9 +189,6 @@ public class NetworkUtil {
      */
     public static boolean isOnLanOrLoopback(InetAddress addr) {
         Reject.ifNull(addr, "Address is null");
-        if (!(addr instanceof Inet4Address)) {
-            LOG.warning("Inet6 not supported yet: " + addr);
-        }
         try {
             boolean local = addr.isLoopbackAddress()
                 || isFromThisComputer(addr);
@@ -198,9 +199,6 @@ public class NetworkUtil {
             for (InterfaceAddress ia : getAllLocalNetworkAddressesCached()
                 .keySet())
             {
-                if (!(ia.getAddress() instanceof Inet4Address)) {
-                    continue;
-                }
                 if (isOnInterfaceSubnet(ia, addr)) {
                     return true;
                 }
@@ -217,12 +215,12 @@ public class NetworkUtil {
      * associated NetworkInterface as values.
      *
      * @return all local network addresses
-     * @throws SocketException
+     * @throws SocketException If an I/O error occurs
      */
-    public static final Map<InterfaceAddress, NetworkInterface> getAllLocalNetworkAddresses()
+    public static Map<InterfaceAddress, NetworkInterface> getAllLocalNetworkAddresses()
         throws SocketException
     {
-        Map<InterfaceAddress, NetworkInterface> res = new HashMap<InterfaceAddress, NetworkInterface>();
+        Map<InterfaceAddress, NetworkInterface> res = new HashMap<>();
         NetworkInterface ni = null;
         InterfaceAddress ia = null;
         try {
@@ -249,79 +247,118 @@ public class NetworkUtil {
         return res;
     }
 
-    public static boolean isOnInterfaceSubnet(InterfaceAddress ia,
+    /**
+     * Check if the address represented by {@code address} is within the range
+     * from {@code start} to {@code end}
+     *
+     * @param start
+     *     The starting address bytes
+     * @param end
+     *     The ending address bytes
+     * @param address
+     *     The address to check
+     *
+     * @return {@code True} if {@code address} is within range, {@code false} otherwise.
+     *
+     * @throws IllegalArgumentException
+     *     If the lengths of all parameters does not match.
+     */
+    static boolean isAddressInRange(@NotNull byte[] start, @NotNull byte[] end, @NotNull byte[] address) {
+        if (start.length != address.length || address.length != end.length) {
+            throw new IllegalArgumentException(String.format("Length of addresses do not match. Start is %d, end is %d, address is %d", start.length, end.length, address.length));
+        }
+
+        BigInteger startIP = new BigInteger(1, start);
+        BigInteger endIP = new BigInteger(1, end);
+        BigInteger targetIP = new BigInteger(1, address);
+
+        int st = startIP.compareTo(targetIP);
+        int te = targetIP.compareTo(endIP);
+
+        return st <= 0 && te <= 0;
+    }
+
+    /**
+     * Checks if {@code start} and {@code end} are either both IPv4 or IPv6 Addresses
+     *
+     * @param address1
+     * @param address2
+     */
+    public static boolean checkIfSameVersion(@NotNull InetAddress address1,
+        @NotNull InetAddress address2)
+    {
+        return (address1 instanceof Inet4Address && address2 instanceof Inet4Address) ||
+            (address1 instanceof Inet6Address && address2 instanceof Inet6Address);
+    }
+
+    static boolean isOnInterfaceSubnet(InterfaceAddress ia,
         InetAddress addr)
     {
         Reject.ifNull(addr, "Address");
         Reject.ifNull(ia, "InterfaceAddress");
 
-        try {
-            if (!(ia.getAddress() instanceof Inet4Address)
-                || !(addr instanceof Inet4Address))
-            {
-                // TODO How?
-                return false;
-            }
-            byte[] bAddr = ia.getAddress().getAddress();
-            int iAddr = (bAddr[0] << 24) + (bAddr[1] << 16) + (bAddr[2] << 8)
-                + ((int) bAddr[3] & 0xFF);
-            int iMask = 0;
-            int nplen = ia.getNetworkPrefixLength();
-            if (nplen > 32) {
-                if (ia.getAddress().isSiteLocalAddress()) {
-                    // UGLY HACK because of:
-                    // http://bugs.sun.com/view_bug.do?bug_id=6707289
-                    // Simply assume a C-class network on site local addresses.
-                    nplen = 24;
-                } else if (ia.getAddress().isLinkLocalAddress()) {
-                    // UGLY HACK because of:
-                    // http://bugs.sun.com/view_bug.do?bug_id=6707289
-                    // Simply assume a B-class network on link local addresses.
-                    // http://en.wikipedia.org/wiki/Link-local_address
-                    nplen = 16;
-                } else if (ia.getAddress().isLoopbackAddress()) {
-                    // UGLY HACK because of:
-                    // http://bugs.sun.com/view_bug.do?bug_id=6707289
-                    // Simply assume a A-class network on local addresses
-                    // (127.0.0.1)
-                    nplen = 8;
-                } else {
-                    // Cannot handle
-                    return false;
-                }
-            } else if (nplen <= 0) {
-                if (ia.getAddress().isLoopbackAddress()) {
-                    // UGLY HACK because of:
-                    // http://bugs.sun.com/view_bug.do?bug_id=6707289
-                    // Simply assume a A-class network on local addresses
-                    // (127.0.0.1)
-                    nplen = 8;
-                } else {
-                    // Cannot handle
-                    return false;
-                }
-            }
-            for (int i = 0; i < nplen; i++) {
-                int mod = 1 << (31 - i);
-                iMask += mod;
-            }
-            int subnetAddr = iAddr & iMask;
+        InetAddress interfaceAddress = ia.getAddress();
 
-            byte[] btAddress = addr.getAddress();
-            int itAddr = (btAddress[0] << 24) + (btAddress[1] << 16)
-                + (btAddress[2] << 8) + ((int) btAddress[3] & 0xFF);
-            int tsubnetAddr = itAddr & iMask;
-            // On same subnet!
-            return tsubnetAddr == subnetAddr;
-        } catch (Exception e) {
-            LOG.severe("Prolbem while checking subnet mask. " + e);
+        if (!checkIfSameVersion(interfaceAddress, addr)) {
             return false;
         }
+        short version = 4;
+        if (addr instanceof Inet6Address) {
+            version = 6;
+        }
+        short prefixLength = ia.getNetworkPrefixLength();
+
+        byte[] addr1 = interfaceAddress.getAddress();
+        byte[] addr2 = addr.getAddress();
+        byte[] mask = makeMaskPrefixArray(version, prefixLength);
+
+        for (int i = 0; i < addr1.length; i++)
+            if ((addr1[i] & mask[i]) != (addr2[i] & mask[i]))
+                return false;
+
+        return true;
     }
 
-    public static boolean isFromThisComputer(InetAddress addr)
-        throws SocketException
-    {
+    /**
+     * Creates a byte array for IP network mask prefix.
+     *
+     * @param version the IP address version
+     * @param prefixLength the length of the mask prefix. Must be in the
+     * interval [0, 32] for IPv4, or [0, 128] for IPv6
+     * @return a byte array that contains a mask prefix of the
+     * specified length
+     * @throws IllegalArgumentException if the arguments are invalid
+     */
+    private static byte[] makeMaskPrefixArray(int version, int prefixLength) {
+        int addrByteLength = version == 4 ? 4 : 16;
+        int addrBitLength = addrByteLength * Byte.SIZE;
+
+        // Verify the prefix length
+        if ((prefixLength < 0) || (prefixLength > addrBitLength)) {
+            final String msg = "Invalid IP prefix length: " + prefixLength +
+                ". Must be in the interval [0, " + addrBitLength + "].";
+            throw new IllegalArgumentException(msg);
+        }
+
+        // Number of bytes and extra bits that should be all 1s
+        int maskBytes = prefixLength / Byte.SIZE;
+        int maskBits = prefixLength % Byte.SIZE;
+        byte[] mask = new byte[addrByteLength];
+
+        // Set the bytes and extra bits to 1s
+        for (int i = 0; i < maskBytes; i++) {
+            mask[i] = (byte) 0xff;              // Set mask bytes to 1s
+        }
+        for (int i = maskBytes; i < addrByteLength; i++) {
+            mask[i] = 0;                        // Set remaining bytes to 0s
+        }
+        if (maskBits > 0) {
+            mask[maskBytes] = (byte) (0xff << (Byte.SIZE - maskBits));
+        }
+        return mask;
+    }
+
+    public static boolean isFromThisComputer(InetAddress addr) {
         try {
             if (addr == null) {
                 return false;
@@ -351,9 +388,9 @@ public class NetworkUtil {
      * amount of time.
      *
      * @return the cached list al all network addresses
-     * @throws SocketException
+     * @throws SocketException If an I/O error occurs
      */
-    public static final Map<InterfaceAddress, NetworkInterface> getAllLocalNetworkAddressesCached()
+    public static Map<InterfaceAddress, NetworkInterface> getAllLocalNetworkAddressesCached()
         throws SocketException
     {
         boolean cacheInvalid = LOCAL_NETWORK_ADDRESSES_CACHE == null
@@ -368,51 +405,62 @@ public class NetworkUtil {
     /**
      * @return true if this system has support for UDT based connections.
      */
-    public static final boolean isUDTSupported() {
+    public static boolean isUDTSupported() {
         return UDTSocket.isSupported();
     }
 
     /**
+     * Check if {@code address} is an all zero address (IPv4 0.0.0.0, IPv6 [::])
+     *
      * @param address
-     * @return true if the address is 0.0.0.0
+     *     The address to check
+     *
+     * @return {@code True} if all bytes of {@code address} are zero, {@code
+     * false} otherwise.
      */
-    public static final boolean isNullIP(InetAddress address) {
+    public static boolean isNullIP(InetAddress address) {
         Reject.ifNull(address, "Address is null");
-        boolean nullIP = false;
-        if (NULL_IP != null) {
-            // Using advanced check
-            nullIP = Boolean.valueOf(NULL_IP.equals(address));
-        } else {
-            // Fallback, this works
-            byte[] addr = address.getAddress();
-            nullIP = Boolean.valueOf((addr[0] & 0xff) == 0
-                && (addr[1] & 0xff) == 0 && (addr[2] & 0xff) == 0
-                && (addr[3] & 0xff) == 0);
+
+        if (NULL_IPv4 != null && address instanceof Inet4Address) {
+            return NULL_IPv4.equals(address);
         }
-        return nullIP;
+
+        if (NULL_IPv6 != null && address instanceof Inet6Address) {
+            return NULL_IPv6.equals(address);
+        }
+
+        for (byte b : address.getAddress()) {
+            if (b != 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
      * Tries to retrieve the hostname of the address if available, but returns
      * the IP only if not available. Does NOT perform a reverse lookup.
      *
-     * @param addr
+     * @param address
+     *     The address to get the host or IP address for.
+     *
      * @return the hostname or IP of the address.
      */
-    public static final String getHostAddressNoResolve(InetAddress addr) {
-        Reject.ifNull(addr, "Address is null");
+    public static String getHostAddressNoResolve(InetAddress address) {
+        Reject.ifNull(address, "Address is null");
         try {
-            String[] str = addr.toString().split("/");
+            String[] str = address.toString().split("/");
             if (StringUtils.isNotBlank(str[0])) {
                 return str[0];
             } else if (StringUtils.isNotBlank(str[1])) {
                 return str[1];
             }
         } catch (Exception e) {
-            LOG.warning("Unable to resolve hostname/ip from " + addr + ". " + e);
+            LOG.warning("Unable to resolve hostname/ip from " + address + ". " + e);
         }
         // Fallback
-        return addr.getHostAddress();
+        return address.getHostAddress();
     }
 
     /**
@@ -420,7 +468,7 @@ public class NetworkUtil {
      * certificates, thus also accepting self-signed certificates. ATTENTION:
      * Potential security hole, use it only if you know what you are doing.
      */
-    public static final void installAllTrustingSSLManager() {
+    public static void installAllTrustingSSLManager() {
         try {
             LOG.warning("Any certificate will be trusted for SSL connections");
             // Create a trust manager that does not validate certificate chains

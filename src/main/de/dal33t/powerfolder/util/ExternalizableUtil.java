@@ -93,7 +93,7 @@ public class ExternalizableUtil {
             InetAddress addr = value.getAddress();
             if (addr != null) {
 
-                str = NetworkUtil.getHostAddressNoResolve(addr);
+                str = Base64.encodeString(NetworkUtil.getHostAddressNoResolve(addr));
                 str += ":";
                 if (!value.isUnresolved()) {
                     str += Base64.encodeBytes(addr.getAddress());
@@ -121,10 +121,10 @@ public class ExternalizableUtil {
             return null;
         }
         if (addAndPort.length == 2) {
-            return new InetSocketAddress(addAndPort[0], Integer.valueOf(
-                addAndPort[1]).intValue());
+            return new InetSocketAddress(Base64.decodeString(addAndPort[0]), Integer.valueOf(
+                addAndPort[1]));
         }
-        String hostname = addAndPort[0];
+        String hostname = Base64.decodeString(addAndPort[0]);
         int port = Integer.valueOf(addAndPort[2]);
         if (StringUtils.isNotBlank(addAndPort[1])) {
             byte[] ip = Base64.decode(addAndPort[1]);

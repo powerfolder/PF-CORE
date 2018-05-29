@@ -153,11 +153,9 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                     Enumeration<InetAddress> addresses = nic.getInetAddresses();
                     while (addresses.hasMoreElements()) {
                         InetAddress addr = addresses.nextElement();
-                        if (addr instanceof Inet4Address) {
-                            if (!addr.isLoopbackAddress()) {
-                                logFine("Selected interface: " +nic + " (" + addr + ")");
-                                bindAddr = addr;
-                            }
+                        if (!addr.isLoopbackAddress()) {
+                            logFine("Selected interface: " +nic + " (" + addr + ")");
+                            bindAddr = addr;
                         }
                     }
                 }

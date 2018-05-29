@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.ui.preferences;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 
 import javax.swing.DefaultListModel;
@@ -157,12 +158,11 @@ public class LANList extends PFComponent {
             AddressRange ar;
             try {
                 ar = AddressRange.parseRange(ip);
-            } catch (ParseException e) {
-                logWarning("Invalid lanlist entry in configuration file!");
-                continue;
+                ((DefaultListModel<String>) networklist.getModel()).addElement(ar
+                    .toString());
+            } catch (UnknownHostException e) {
+                logWarning("Invalid lanlist entry in configuration file! " + e.getMessage());
             }
-            ((DefaultListModel<String>) networklist.getModel()).addElement(ar
-                .toString());
         }
     }
 }

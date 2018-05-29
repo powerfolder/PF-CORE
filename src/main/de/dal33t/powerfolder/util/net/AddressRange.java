@@ -19,6 +19,12 @@
 */
 package de.dal33t.powerfolder.util.net;
 
+import de.dal33t.powerfolder.util.Reject;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -29,63 +35,132 @@ import java.net.UnknownHostException;
  * Instances are immutable.
  *
  * @author Dennis "Dante" Waldherr
- * @version $Revision$
  */
 public final class AddressRange {
-	private InetAddress start;
-	private InetAddress end;
+	private final InetAddress start;
+	private final InetAddress end;
 
-	public AddressRange(InetAddress start, InetAddress end) {
-        if (!((start instanceof Inet4Address && end instanceof Inet4Address) ||
-            (start instanceof Inet6Address && end instanceof Inet6Address)))
-        {
-   	        throw new IllegalArgumentException(String.format("Start and End Addresses are not of the same type: start is %s end is %s", start.getClass().getName(), end.getClass().getName()));
+	private final int version;
+
+    /**
+     * Create a range of IP addresses. {@code start} and {@code end} can only be
+     * either both IPv4 or IPv6 addresses
+     *
+     * @param start
+     *     Start of address range
+     * @param end
+     *     End of address range
+     *
+     * @throws IllegalArgumentException
+     *     If {@code start} and {@code end} are not both either IPv4 or IPv6
+     *     addresses
+     */
+	AddressRange(@NotNull InetAddress start, @NotNull InetAddress end) {
+        Reject.ifNull(start, "Start is null");
+        Reject.ifNull(end, "End is null");
+
+        if (!NetworkUtil.checkIfSameVersion(start, end)) {
+            throw new IllegalArgumentException(String.format("Start and End Addresses are not of the same type: start is %s end is %s", start.getClass().getName(), end.getClass().getName()));
+        }
+
+        if (start instanceof Inet4Address) {
+            version = 4;
+        } else {
+            version = 6;
         }
 
 		this.start = start;
 		this.end = end;
 	}
 
-	public static AddressRange parseRange(String s)
-        throws UnknownHostException
+    /**
+     * Parses an IP range in the form of <ip address>-<ip address>.
+     *
+     * @param rangeAsString
+     *     The string to parse
+     *
+     * @return an AddressRange
+     *
+     * @throws UnknownHostException
+     *     If {@link InetAddress#getByName(String)} fails
+     * @throws IllegalArgumentException
+     *     if there are more then two IP Addresses specified in {@code
+     *     rangeAsString}
+     */
+	public static @NotNull AddressRange parseRange(@NotNull String rangeAsString)
+        throws UnknownHostException, IllegalArgumentException
     {
-	    String[] ips = s.split("-");
-	    if (s.length() > 2) {
-	        return null;
+	    String[] ips = rangeAsString.split("-");
+	    if (ips.length > 2) {
+	        throw new IllegalArgumentException("To many addresses, should be 2 at max but are " + ips.length);
         }
         String startIP = ips[0];
+	    // default endIP to startIP
 	    String endIP = startIP;
-	    if (s.length() == 1) {
+	    if (ips.length == 2) {
 	        endIP = ips[1];
         }
         return new AddressRange(InetAddress.getByName(startIP), InetAddress.getByName(endIP));
 	}
 
-	public InetAddress getEnd() {
+    @Contract(pure = true)
+    public @NotNull InetAddress getStart() {
+        return start;
+    }
+
+    @Contract(pure = true)
+    public @NotNull InetAddress getEnd() {
 		return end;
 	}
 
-	/**
-	 * Checks if the given address is in range of the interval [start, end].
-	 * @param addr the address to check
-	 * @return true if the address is contained in this range
-	 */
-	public boolean contains(Inet4Address addr) {
-		byte[] s = start.getAddress(), e = end.getAddress(), a = addr.getAddress();
-		// Lexicographic compare
-		for (int i = 0; i < s.length; i++) {
-			int av = a[i] & 0xff, sv = s[i] & 0xff, ev = e[i] & 0xff;
-			if (av > ev || av < sv) {
-				return false;
-			}
-			if (av > sv && av < ev) {
-				return true;
-			} // else av == ev or av == sv=> continue
-		}
-		return true;
+    @Contract(pure = true)
+    public int getProtocolVersion() {
+	    return version;
 	}
 
-	@Override
+    /**
+     * Checks if the given address is in range of the interval [start, end].
+     *
+     * @param address
+     *     the address to check, can be {@code null}
+     *
+     * @return {@code True} if the address is contained in this range, {@code
+     * false} otherwise. If {@code address} is {@code null}, {@code false}
+     *
+     * @throws IllegalArgumentException
+     *     If an {@link Inet4Address} is passed for an IPv6 AddressRange or an
+     *     {@link Inet6Address} is passed for an IPv4 AddressRange
+     */
+	public boolean contains(@Nullable InetAddress address) {
+		if (address == null) {
+			return false;
+		}
+
+        checkProtocolVersion(address);
+
+        // Lexicographic compare
+        return NetworkUtil.isAddressInRange(start.getAddress(), end.getAddress(),
+            address.getAddress());
+	}
+
+    /**
+     * Check if {@code address} is the same IP version as this {@link
+     * AddressRange}.
+     *
+     * @param address
+     *     The {@link InetAddress} to compare
+     */
+    private void checkProtocolVersion(@Nullable InetAddress address) {
+        if (version == 4 && address instanceof Inet6Address) {
+            throw new IllegalArgumentException(
+                "IPv6 Address is not within IPv4 Address range");
+        } else if (version == 6 && address instanceof Inet4Address) {
+            throw new IllegalArgumentException(
+                "IPv4 Address is not within IPv6 Address range");
+        }
+    }
+
+    @Override
 	public int hashCode() {
 		final int PRIME = 31;
 		int result = 1;
@@ -96,39 +171,37 @@ public final class AddressRange {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
+		if (this == obj) {
+            return true;
+        }
+		if (obj == null || getClass() != obj.getClass()) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final AddressRange other = (AddressRange) obj;
-		if (end == null) {
-			if (other.end != null)
-				return false;
-		} else if (!end.equals(other.end))
-			return false;
-		if (start == null) {
-			if (other.start != null)
-				return false;
-		} else if (!start.equals(other.start))
-			return false;
-		return true;
-	}
+		}
 
-	public InetAddress getStart() {
-		return start;
-	}
+		final AddressRange other = (AddressRange) obj;
+
+		if (end == null) {
+			if (other.end != null) {
+                return false;
+            }
+		} else if (!end.equals(other.end)) {
+            return false;
+        }
+
+		if (start == null) {
+            return other.start == null;
+		} else {
+            return start.equals(other.start);
+        }
+    }
 
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
-		String t = start.toString();
-		b.append(t.substring(t.indexOf('/') + 1));
+        b.append(start.getHostAddress());
 		if (!end.equals(start)) {
 			b.append('-');
-			t = end.toString();
-			b.append(t.substring(t.indexOf('/') + 1));
+            b.append(end.getHostAddress());
 		}
 		return b.toString();
 	}

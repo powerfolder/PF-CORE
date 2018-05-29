@@ -127,9 +127,7 @@ public class WebClientLogin extends PFComponent {
             if (networkInterface.getDisplayName().contains("bond0")) {
                 Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
                 for (InetAddress address : Collections.list(inetAddresses)) {
-                    if (address instanceof Inet4Address) {
-                        inetAddress = address.toString();
-                    }
+                    inetAddress = address.toString();
                 }
             }
         }
