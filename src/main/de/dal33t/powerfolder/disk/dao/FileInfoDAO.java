@@ -19,14 +19,14 @@
  */
 package de.dal33t.powerfolder.disk.dao;
 
-import java.util.Collection;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
+
+import java.util.Collection;
 
 /**
  * Describes a Folder database access object. Offers basic CRUD and advanced
@@ -151,7 +151,17 @@ public interface FileInfoDAO {
      *            the selection criteria.
      * @return the collection of matching directories.
      */
+    @Deprecated
     Collection<FileInfo> findFiles(FileInfoCriteria criteria);
+
+    /**
+     * Finds all files in the given (sub) directory and domain only.
+     *
+     * @param criteria
+     *            the selection criteria.
+     * @return the collection of matching files and directories.
+     */
+    Collection<FileInfo> findFilesFast(FileInfoCriteria criteria);
 
     /**
      * Finds all files in the given (sub) directory and domain only.

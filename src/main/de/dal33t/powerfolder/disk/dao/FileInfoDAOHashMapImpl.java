@@ -1,13 +1,5 @@
 package de.dal33t.powerfolder.disk.dao;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
 import de.dal33t.powerfolder.light.DirectoryInfo;
@@ -17,6 +9,10 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * A {@link FileInfoDAO} implementation based on fast, in-memory
@@ -376,6 +372,50 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         return items;
     }
 
+    public Collection<FileInfo> findFilesFast(FileInfoCriteria criteria) {
+        Reject.ifTrue(criteria.getDomains().isEmpty(), "No domains/members selected in criteria");
+        String relativePath = criteria.getPath();
+        if (relativePath == null || relativePath.equals("/")) {
+            relativePath = "";
+        }
+        if (relativePath.length() > 0 && !relativePath.endsWith("/")) {
+            relativePath += "/";
+        }
+        Collection<FileInfo> fileInfos = new HashSet<>();
+        for (String domainString : criteria.getDomains()) {
+            Domain domain = getDomain(domainString);
+            if (domain == null) {
+                continue;
+            }
+            if (fileInfos.size() >= criteria.getMaxResults()) {
+                break;
+            }
+            for (DirectoryInfo directoryInfo : domain.directories.values()) {
+                if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
+                    break;
+                }
+                if (!directoryInfo.isDeleted() && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
+                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, criteria.getKeyWords())) {
+                        fileInfos.add(directoryInfo);
+                    }
+                }
+            }
+            if (criteria.getType() == Type.FILES_ONLY || criteria.getType() == Type.FILES_AND_DIRECTORIES) {
+                for (FileInfo fileInfo : domain.files.values()) {
+                    if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
+                        break;
+                    }
+                    if (!fileInfo.isDeleted() && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
+                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, criteria.getKeyWords())) {
+                            fileInfos.add(fileInfo);
+                        }
+                    }
+                }
+            }
+        }
+        return fileInfos;
+    }
+
     public FileHistory getFileHistory(FileInfo fileInfo) {
         // TODO Auto-generated method stub
         return null;
@@ -409,6 +449,19 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         String lower = fInfo.getRelativeName().toLowerCase();
         for (String keyWord : keyWords) {
             if (!lower.contains(keyWord)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
+        if (keyWords.isEmpty()) {
+            return true;
+        }
+        String name = fileInfo.getFilenameOnly().toLowerCase();
+        for (String keyWord : keyWords) {
+            if (!name.contains(keyWord)) {
                 return false;
             }
         }
