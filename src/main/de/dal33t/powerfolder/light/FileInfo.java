@@ -152,9 +152,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         deleted = false;
         folderInfo = null;
         reupload = false;
-
-        // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
-        // this.hash = hashCode0();
     }
 
     protected FileInfo(String relativeName, String oid, long size,
@@ -181,9 +178,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         this.reupload = false;
 
         validate();
-
-        // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
-        // NOT LONGER NEEDED this.hash = hashCode0();
     }
 
     protected FileInfo(FolderInfo folder, String relativeName) {
@@ -206,9 +200,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         version = 0;
         deleted = false;
         reupload = false;
+    }
 
-        // VERY IMPORANT. MUST BE DONE IN EVERY CONSTRUCTOR
-        // this.hash = hashCode0();
+    protected FileInfo(FolderInfo folder, String relativeName, Date modificationDate) {
+        this(folder, relativeName);
+
+        lastModifiedDate = modificationDate;
     }
 
     /**

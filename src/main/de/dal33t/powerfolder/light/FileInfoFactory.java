@@ -95,6 +95,9 @@ public final class FileInfoFactory {
         return lookupInstance(folder.getInfo(), fn, Files.isDirectory(file));
     }
 
+    public static FileInfo lookupInstanceForTest(FolderInfo folder, String name, Date modificationDate) {
+        return new FileInfo(folder, name, modificationDate);
+    }
     /**
      * Returns a FileInfo with changed FolderInfo. No version update etc.
      * whatsoever happens.
