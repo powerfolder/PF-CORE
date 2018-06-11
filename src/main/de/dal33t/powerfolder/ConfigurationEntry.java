@@ -1285,7 +1285,7 @@ public enum ConfigurationEntry {
     ENCRYPTED_STORAGE_PASSPHRASE("encrypted_storage.passphrase", null),
 
     /**
-     * PF-1178: Add configuration entry for folder encryption checkbox default value
+     * PF-1178: Add configuration entry for folder encryption checkbox default value.
      */
     ENCRYPTED_STORAGE_DEFAULT("encrypted_storage.default", true),
 
