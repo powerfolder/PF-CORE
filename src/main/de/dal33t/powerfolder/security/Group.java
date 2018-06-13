@@ -383,7 +383,7 @@ public class Group implements Serializable, D2DObject {
     @Override
     public AbstractMessage toD2D() {
         GroupInfoProto.GroupInfo.Builder builder = GroupInfoProto.GroupInfo.newBuilder();
-        builder.setClazzName(this.getClass().getSimpleName());
+        builder.setClazzName("GroupInfo");
         if (this.oid != null) builder.setId(this.oid);
         if (this.getDisplayName() != null) builder.setName(this.getDisplayName());
         if (this.organizationOID != null) builder.setOrganizationId(this.organizationOID);
