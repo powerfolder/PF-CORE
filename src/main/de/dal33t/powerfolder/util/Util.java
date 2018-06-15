@@ -201,7 +201,7 @@ public class Util {
             return false;
         }
 
-        Pattern p = Pattern.compile(".+@.+\\.[a-z]+");
+        Pattern p = Pattern.compile(".+@.+(\\.[a-z]+)?");
         Matcher m = p.matcher(email);
         return m.matches();
     }
