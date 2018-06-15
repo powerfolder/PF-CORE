@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.protocol.AccountInfoProto;
+import de.dal33t.powerfolder.protocol.GroupInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
@@ -1729,6 +1730,9 @@ public class Account implements Serializable, D2DObject {
             builder.addEmails(email);
         }
         if (this.organizationOID != null) builder.setOrganizationId(this.organizationOID);
+        for (Group group: this.groups) {
+            builder.addGroupInfos((GroupInfoProto.GroupInfo) group.toD2D());
+        }
         for (Permission permission : this.permissions) {
             // Since the different permission classes do not have one common superclass we have to decide for each class separately
             if (permission instanceof FolderPermission) {
