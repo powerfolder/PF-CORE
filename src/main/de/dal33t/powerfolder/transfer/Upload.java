@@ -120,12 +120,14 @@ public class Upload extends Transfer {
         if (pr.getRange().getLength() > getTransferManager()
             .getMaxFileChunkSize())
         {
-            logWarning("Got request for a range bigger then my max filechunk size ("
-                + pr.getRange()
-                + "): "
-                + pr.getRange().getLength()
-                + " on "
-                + getFile().toDetailString());
+            if (isFine()) {
+                logFine("Got request for a range bigger then my max filechunk size ("
+                        + pr.getRange()
+                        + "): "
+                        + pr.getRange().getLength()
+                        + " on "
+                        + getFile().toDetailString());
+            }
         }
         state.setProgress(pr.getProgress());
         enqueueMessage(pr);
