@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
@@ -118,7 +119,7 @@ public class FileChunk extends Message
       builder.setFileInfo((FileInfoProto.FileInfo)this.file.toD2D());
       builder.setOffset(this.offset);
       builder.setData(ByteString.copyFrom(this.data));
-
+      builder.setReplyStatusCode(StatusCode.OK.getCode());
       return builder.build();
     }
 }
