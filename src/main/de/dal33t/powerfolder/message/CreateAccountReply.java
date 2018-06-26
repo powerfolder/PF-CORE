@@ -1,14 +1,13 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.message.clientserver.LoginReply;
-import de.dal33t.powerfolder.message.clientserver.ReplyStatusCode;
 import de.dal33t.powerfolder.protocol.CreateAccountReplyProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
 public class CreateAccountReply extends LoginReply {
 
-    public CreateAccountReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public CreateAccountReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
@@ -23,7 +22,7 @@ public class CreateAccountReply extends LoginReply {
         if (message instanceof CreateAccountReplyProto.CreateAccountReply) {
             CreateAccountReplyProto.CreateAccountReply proto = (CreateAccountReplyProto.CreateAccountReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
         }
     }
 
@@ -37,7 +36,7 @@ public class CreateAccountReply extends LoginReply {
         CreateAccountReplyProto.CreateAccountReply.Builder builder = CreateAccountReplyProto.CreateAccountReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         return builder.build();
     }
 

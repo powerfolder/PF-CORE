@@ -1,8 +1,8 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 import de.dal33t.powerfolder.protocol.ShareLinkInfoProto;
 import de.dal33t.powerfolder.protocol.ShareLinkListReplyProto;
 
@@ -15,12 +15,12 @@ public class ShareLinkListReply extends D2DReplyMessage {
     public ShareLinkListReply() {
     }
 
-    public ShareLinkListReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public ShareLinkListReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public ShareLinkListReply(String replyCode, ReplyStatusCode replyStatusCode, Collection<ShareLinkInfo> shareLinkInfos) {
+    public ShareLinkListReply(String replyCode, StatusCode replyStatusCode, Collection<ShareLinkInfo> shareLinkInfos) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.shareLinkInfos = shareLinkInfos;
@@ -53,7 +53,7 @@ public class ShareLinkListReply extends D2DReplyMessage {
         if (message instanceof ShareLinkListReplyProto.ShareLinkListReply) {
             ShareLinkListReplyProto.ShareLinkListReply proto = (ShareLinkListReplyProto.ShareLinkListReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             for (ShareLinkInfoProto.ShareLinkInfo shareLinkInfoProto : proto.getShareLinkInfosList()) {
                 this.shareLinkInfos.add(new ShareLinkInfo(shareLinkInfoProto));
             }
@@ -70,8 +70,7 @@ public class ShareLinkListReply extends D2DReplyMessage {
         ShareLinkListReplyProto.ShareLinkListReply.Builder builder = ShareLinkListReplyProto.ShareLinkListReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null)
-            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.shareLinkInfos != null) {
             for (ShareLinkInfo shareLinkInfo : this.shareLinkInfos) {
                 builder.addShareLinkInfos((ShareLinkInfoProto.ShareLinkInfo) shareLinkInfo.toD2D());

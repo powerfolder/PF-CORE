@@ -1,18 +1,16 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
-import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
-import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.InvitationCreateReplyProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
 public class InvitationCreateReply extends D2DReplyMessage {
 
     public InvitationCreateReply() {
     }
 
-    public InvitationCreateReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public InvitationCreateReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
@@ -36,7 +34,7 @@ public class InvitationCreateReply extends D2DReplyMessage {
         if (message instanceof InvitationCreateReplyProto.InvitationCreateReply) {
             InvitationCreateReplyProto.InvitationCreateReply proto = (InvitationCreateReplyProto.InvitationCreateReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
         }
     }
 
@@ -50,7 +48,7 @@ public class InvitationCreateReply extends D2DReplyMessage {
         InvitationCreateReplyProto.InvitationCreateReply.Builder builder = InvitationCreateReplyProto.InvitationCreateReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         return builder.build();
     }
 }

@@ -1,10 +1,10 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.protocol.LoginReplyProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 import de.dal33t.powerfolder.protocol.ServerInfoProto;
 
 public class LoginReply extends D2DReplyMessage {
@@ -15,12 +15,12 @@ public class LoginReply extends D2DReplyMessage {
     public LoginReply() {
     }
 
-    public LoginReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public LoginReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public LoginReply(String replyCode, ReplyStatusCode replyStatusCode, ServerInfo redirectServerInfo) {
+    public LoginReply(String replyCode, StatusCode replyStatusCode, ServerInfo redirectServerInfo) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.redirectServerInfo = redirectServerInfo;
@@ -35,14 +35,6 @@ public class LoginReply extends D2DReplyMessage {
         initFromD2D(message);
     }
 
-    public ServerInfo getRedirectServerInfo() {
-        return redirectServerInfo;
-    }
-
-    public void setRedirectServerInfo(ServerInfo redirectServerInfo) {
-        this.redirectServerInfo = redirectServerInfo;
-    }
-
     /**
      * Init from D2D message
      *
@@ -53,7 +45,7 @@ public class LoginReply extends D2DReplyMessage {
         if (message instanceof LoginReplyProto.LoginReply) {
             LoginReplyProto.LoginReply proto = (LoginReplyProto.LoginReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             this.redirectServerInfo = new ServerInfo(proto.getRedirectServerInfo());
         }
     }
@@ -68,7 +60,7 @@ public class LoginReply extends D2DReplyMessage {
         LoginReplyProto.LoginReply.Builder builder = LoginReplyProto.LoginReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.redirectServerInfo != null) builder.setRedirectServerInfo((ServerInfoProto.ServerInfo) this.redirectServerInfo.toD2D());
         return builder.build();
     }

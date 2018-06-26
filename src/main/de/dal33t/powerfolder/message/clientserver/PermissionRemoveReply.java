@@ -1,12 +1,12 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.protocol.PermissionRemoveReplyProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
 public class PermissionRemoveReply extends InvitationCreateReply {
 
-    public PermissionRemoveReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public PermissionRemoveReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
@@ -21,7 +21,7 @@ public class PermissionRemoveReply extends InvitationCreateReply {
         if (message instanceof PermissionRemoveReplyProto.PermissionRemoveReply) {
             PermissionRemoveReplyProto.PermissionRemoveReply proto = (PermissionRemoveReplyProto.PermissionRemoveReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
         }
     }
 
@@ -35,7 +35,7 @@ public class PermissionRemoveReply extends InvitationCreateReply {
         PermissionRemoveReplyProto.PermissionRemoveReply.Builder builder = PermissionRemoveReplyProto.PermissionRemoveReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         return builder.build();
     }
 

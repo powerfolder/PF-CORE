@@ -2,8 +2,8 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 import de.dal33t.powerfolder.protocol.ThumbnailReplyProto;
 
 public class ThumbnailReply extends D2DReplyMessage {
@@ -13,12 +13,12 @@ public class ThumbnailReply extends D2DReplyMessage {
     public ThumbnailReply() {
     }
 
-    public ThumbnailReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public ThumbnailReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public ThumbnailReply(String replyCode, ReplyStatusCode replyStatusCode, byte[] data) {
+    public ThumbnailReply(String replyCode, StatusCode replyStatusCode, byte[] data) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.data = data;
@@ -47,7 +47,7 @@ public class ThumbnailReply extends D2DReplyMessage {
         if (message instanceof ThumbnailReplyProto.ThumbnailReply) {
             ThumbnailReplyProto.ThumbnailReply proto = (ThumbnailReplyProto.ThumbnailReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             this.data = proto.getData().toByteArray();
         }
     }
@@ -62,7 +62,7 @@ public class ThumbnailReply extends D2DReplyMessage {
         ThumbnailReplyProto.ThumbnailReply.Builder builder = ThumbnailReplyProto.ThumbnailReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.data != null) builder.setData(ByteString.copyFrom(this.data));
         return builder.build();
     }

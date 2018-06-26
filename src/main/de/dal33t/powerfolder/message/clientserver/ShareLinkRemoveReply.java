@@ -1,8 +1,8 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 import de.dal33t.powerfolder.protocol.ShareLinkRemoveReplyProto;
 
 public class ShareLinkRemoveReply extends D2DReplyMessage {
@@ -10,7 +10,7 @@ public class ShareLinkRemoveReply extends D2DReplyMessage {
     public ShareLinkRemoveReply() {
     }
 
-    public ShareLinkRemoveReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public ShareLinkRemoveReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
@@ -34,7 +34,7 @@ public class ShareLinkRemoveReply extends D2DReplyMessage {
         if (message instanceof ShareLinkRemoveReplyProto.ShareLinkRemoveReply) {
             ShareLinkRemoveReplyProto.ShareLinkRemoveReply proto = (ShareLinkRemoveReplyProto.ShareLinkRemoveReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
         }
     }
 
@@ -48,8 +48,7 @@ public class ShareLinkRemoveReply extends D2DReplyMessage {
         ShareLinkRemoveReplyProto.ShareLinkRemoveReply.Builder builder = ShareLinkRemoveReplyProto.ShareLinkRemoveReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null)
-            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         return builder.build();
     }
 

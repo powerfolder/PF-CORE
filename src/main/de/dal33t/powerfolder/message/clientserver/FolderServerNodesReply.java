@@ -1,11 +1,11 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.protocol.FolderServerNodesReplyProto;
 import de.dal33t.powerfolder.protocol.NodeInfoProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
 public class FolderServerNodesReply extends D2DReplyMessage {
 
@@ -14,12 +14,12 @@ public class FolderServerNodesReply extends D2DReplyMessage {
     public FolderServerNodesReply() {
     }
 
-    public FolderServerNodesReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public FolderServerNodesReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public FolderServerNodesReply(String replyCode, ReplyStatusCode replyStatusCode, MemberInfo[] nodeInfos) {
+    public FolderServerNodesReply(String replyCode, StatusCode replyStatusCode, MemberInfo[] nodeInfos) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.nodeInfos = nodeInfos;
@@ -44,7 +44,7 @@ public class FolderServerNodesReply extends D2DReplyMessage {
         if (message instanceof FolderServerNodesReplyProto.FolderServerNodesReply) {
             FolderServerNodesReplyProto.FolderServerNodesReply proto = (FolderServerNodesReplyProto.FolderServerNodesReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             this.nodeInfos = new MemberInfo[proto.getNodeInfosCount()];
             int i = 0;
             for (NodeInfoProto.NodeInfo nodeInfo : proto.getNodeInfosList()) {
@@ -63,8 +63,7 @@ public class FolderServerNodesReply extends D2DReplyMessage {
         FolderServerNodesReplyProto.FolderServerNodesReply.Builder builder = FolderServerNodesReplyProto.FolderServerNodesReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null)
-            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.nodeInfos != null) {
             for (MemberInfo nodeInfo : this.nodeInfos) {
                 builder.addNodeInfos((NodeInfoProto.NodeInfo) nodeInfo.toD2D());

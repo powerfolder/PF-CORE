@@ -1,9 +1,9 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.protocol.CertificateSigningReplyProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
 public class CertificateSigningReply extends D2DReplyMessage {
 
@@ -12,12 +12,12 @@ public class CertificateSigningReply extends D2DReplyMessage {
     public CertificateSigningReply() {
     }
 
-    public CertificateSigningReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public CertificateSigningReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public CertificateSigningReply(String replyCode, ReplyStatusCode replyStatusCode, String certificate) {
+    public CertificateSigningReply(String replyCode, StatusCode replyStatusCode, String certificate) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.certificate = certificate;
@@ -42,7 +42,7 @@ public class CertificateSigningReply extends D2DReplyMessage {
         if (message instanceof CertificateSigningReplyProto.CertificateSigningReply) {
             CertificateSigningReplyProto.CertificateSigningReply proto = (CertificateSigningReplyProto.CertificateSigningReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             this.certificate = proto.getCertificate();
         }
     }
@@ -57,7 +57,7 @@ public class CertificateSigningReply extends D2DReplyMessage {
         CertificateSigningReplyProto.CertificateSigningReply.Builder builder = CertificateSigningReplyProto.CertificateSigningReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.certificate != null) builder.setCertificate(this.certificate);
         return builder.build();
     }

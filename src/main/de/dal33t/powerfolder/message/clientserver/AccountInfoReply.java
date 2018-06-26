@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -25,12 +26,12 @@ public class AccountInfoReply extends D2DReplyMessage {
     public AccountInfoReply() {
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public AccountInfoReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, Map<String, String> folderMapping, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota) {
+    public AccountInfoReply(String replyCode, StatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, Map<String, String> folderMapping, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.account = account;
@@ -42,7 +43,7 @@ public class AccountInfoReply extends D2DReplyMessage {
         this.freeQuota = freeQuota;
     }
 
-    public AccountInfoReply(String replyCode, ReplyStatusCode replyStatusCode, AccountInfo accountInfo, long avatarLastModifiedDate) {
+    public AccountInfoReply(String replyCode, StatusCode replyStatusCode, AccountInfo accountInfo, long avatarLastModifiedDate) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.accountInfo = accountInfo;
@@ -108,7 +109,7 @@ public class AccountInfoReply extends D2DReplyMessage {
         if (message instanceof AccountInfoReplyProto.AccountInfoReply) {
             AccountInfoReplyProto.AccountInfoReply proto = (AccountInfoReplyProto.AccountInfoReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             this.accountInfo = new AccountInfo(proto.getAccountInfo());
         }
     }
@@ -123,7 +124,7 @@ public class AccountInfoReply extends D2DReplyMessage {
         AccountInfoReplyProto.AccountInfoReply.Builder builder = AccountInfoReplyProto.AccountInfoReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.account != null) {
             // Send Account as AccountInfo
             // Create AccountInfo message from Account

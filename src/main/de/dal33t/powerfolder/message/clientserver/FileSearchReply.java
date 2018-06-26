@@ -1,9 +1,9 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.protocol.FileSearchReplyProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 
 public class FileSearchReply extends D2DReplyMessage {
 
@@ -12,12 +12,12 @@ public class FileSearchReply extends D2DReplyMessage {
     public FileSearchReply() {
     }
 
-    public FileSearchReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public FileSearchReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public FileSearchReply(String replyCode, ReplyStatusCode replyStatusCode, String[] fileIds) {
+    public FileSearchReply(String replyCode, StatusCode replyStatusCode, String[] fileIds) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.fileIds = fileIds;
@@ -51,7 +51,7 @@ public class FileSearchReply extends D2DReplyMessage {
         if (message instanceof FileSearchReplyProto.FileSearchReply) {
             FileSearchReplyProto.FileSearchReply proto = (FileSearchReplyProto.FileSearchReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
         }
     }
 
@@ -65,7 +65,7 @@ public class FileSearchReply extends D2DReplyMessage {
         FileSearchReplyProto.FileSearchReply.Builder builder = FileSearchReplyProto.FileSearchReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.fileIds != null) {
             for (String fileId : this.fileIds) {
                 builder.addFileIds(fileId);

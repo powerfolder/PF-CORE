@@ -1,21 +1,21 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoReplyProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 import de.dal33t.powerfolder.security.*;
 
 public class PermissionInfoReply extends InvitationCreateReply {
 
     private Permission permission;
 
-    public PermissionInfoReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public PermissionInfoReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public PermissionInfoReply(String replyCode, ReplyStatusCode replyStatusCode, Permission permission) {
+    public PermissionInfoReply(String replyCode, StatusCode replyStatusCode, Permission permission) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.permission = permission;
@@ -35,7 +35,7 @@ public class PermissionInfoReply extends InvitationCreateReply {
         if (message instanceof PermissionInfoReplyProto.PermissionInfoReply) {
             PermissionInfoReplyProto.PermissionInfoReply proto = (PermissionInfoReplyProto.PermissionInfoReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             PermissionInfoProto.PermissionInfo permissionInfoProto = proto.getPermissionInfo();
             switch (permissionInfoProto.getPermissionType()) {
                 case ADMIN:
@@ -101,7 +101,7 @@ public class PermissionInfoReply extends InvitationCreateReply {
         PermissionInfoReplyProto.PermissionInfoReply.Builder builder = PermissionInfoReplyProto.PermissionInfoReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null) builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.permission != null) {
             Permission permission = this.permission;
             // Since the different permission classes do not have one common superclass we have to decide for each class separately

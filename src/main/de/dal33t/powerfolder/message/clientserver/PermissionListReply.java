@@ -1,12 +1,12 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionListReplyProto;
-import de.dal33t.powerfolder.protocol.ReplyStatusCodeProto;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 
@@ -21,17 +21,17 @@ public class PermissionListReply extends D2DReplyMessage {
     public PermissionListReply() {
     }
 
-    public PermissionListReply(String replyCode, ReplyStatusCode replyStatusCode) {
+    public PermissionListReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public PermissionListReply(String replyCode, ReplyStatusCode replyStatusCode, Account account) {
+    public PermissionListReply(String replyCode, StatusCode replyStatusCode, Account account) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
     }
 
-    public PermissionListReply(String replyCode, ReplyStatusCode replyStatusCode, Map<Serializable, FolderPermission> permissions, Map<AccountInfo, FolderPermission> invitations) {
+    public PermissionListReply(String replyCode, StatusCode replyStatusCode, Map<Serializable, FolderPermission> permissions, Map<AccountInfo, FolderPermission> invitations) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.permissions = permissions;
@@ -66,7 +66,7 @@ public class PermissionListReply extends D2DReplyMessage {
         if (message instanceof PermissionListReplyProto.PermissionListReply) {
             PermissionListReplyProto.PermissionListReply proto = (PermissionListReplyProto.PermissionListReply) message;
             this.replyCode = proto.getReplyCode();
-            this.replyStatusCode = new ReplyStatusCode(proto.getReplyStatusCode());
+            this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
         }
     }
 
@@ -80,8 +80,7 @@ public class PermissionListReply extends D2DReplyMessage {
         PermissionListReplyProto.PermissionListReply.Builder builder = PermissionListReplyProto.PermissionListReply.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
-        if (this.replyStatusCode != null)
-            builder.setReplyStatusCode((ReplyStatusCodeProto.ReplyStatusCode) this.replyStatusCode.toD2D());
+        builder.setReplyStatusCode(this.replyStatusCode.getCode());
         // Create one permission info object for each permission type
         if (this.permissions != null) {
             PermissionInfoProto.PermissionInfo.Builder folderAdminPermissionInfoBuilder = PermissionInfoProto.PermissionInfo.newBuilder();
