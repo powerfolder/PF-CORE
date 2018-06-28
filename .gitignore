@@ -8,6 +8,6 @@
 /test-reports
 /junit*.properties
 /.idea/
-/.DS_Store
+.DS_Store
 .gradle
 
