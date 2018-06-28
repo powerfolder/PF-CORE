@@ -19,10 +19,12 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.protocol.PermissionTypeProto;
 import de.dal33t.powerfolder.util.StringUtils;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.logging.Logger;
 
 /**
  * Different access level for resources (Folders, Groups, Users, etc.pp)
@@ -65,4 +67,35 @@ public enum AccessMode
         return mode;
         // PFS-1336: End
     }
+
+    public @Nullable PermissionTypeProto.PermissionType toD2D() {
+        switch (this) {
+            case READ:
+                return PermissionTypeProto.PermissionType.FOLDER_READ;
+            case READ_WRITE:
+                return PermissionTypeProto.PermissionType.FOLDER_READ_WRITE;
+            case ADMIN:
+                return PermissionTypeProto.PermissionType.ADMIN;
+            case OWNER:
+                return PermissionTypeProto.PermissionType.FOLDER_OWNER;
+            default:
+                return null;
+        }
+    }
+
+    public static @Nullable AccessMode getEnum(PermissionTypeProto.PermissionType permissionType) {
+        switch (permissionType) {
+            case FOLDER_OWNER:
+                return OWNER;
+            case FOLDER_ADMIN:
+                return ADMIN;
+            case FOLDER_READ_WRITE:
+                return READ_WRITE;
+            case FOLDER_READ:
+                return READ;
+            default:
+                return null;
+        }
+    }
+
 }

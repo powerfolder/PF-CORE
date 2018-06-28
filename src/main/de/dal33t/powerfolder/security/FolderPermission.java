@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
+import de.dal33t.powerfolder.protocol.PermissionTypeProto;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.util.logging.Logger;
@@ -170,16 +171,16 @@ public abstract class FolderPermission
         builder.addObjects(com.google.protobuf.Any.pack(this.folder.toD2D()));
         // Set permission enum
         if (this instanceof FolderAdminPermission) {
-            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_ADMIN);
+            builder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_ADMIN);
         }
         else if (this instanceof FolderOwnerPermission) {
-            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_OWNER);
+            builder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_OWNER);
         }
         else if (this instanceof FolderReadPermission) {
-            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ);
+            builder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_READ);
         }
         else if (this instanceof FolderReadWritePermission) {
-            builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ_WRITE);
+            builder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_READ_WRITE);
         }
         return builder.build();
     }

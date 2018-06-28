@@ -23,6 +23,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
+import de.dal33t.powerfolder.protocol.PermissionTypeProto;
 import de.dal33t.powerfolder.protocol.StringMessageProto;
 import de.dal33t.powerfolder.util.Util;
 
@@ -124,7 +125,7 @@ public class OrganizationAdminPermission implements Permission, D2DObject {
         // Objects can be any message so they need to be packed to com.google.protobuf.Any
         builder.addObjects(com.google.protobuf.Any.pack(stringMessageBuilder.build()));
         // Set permission enum
-        builder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.ORGANIZATION_ADMIN);
+        builder.setPermissionType(PermissionTypeProto.PermissionType.ORGANIZATION_ADMIN);
         return builder.build();
     }
     

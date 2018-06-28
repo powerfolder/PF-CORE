@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionListReplyProto;
+import de.dal33t.powerfolder.protocol.PermissionTypeProto;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 
@@ -91,10 +92,10 @@ public class PermissionListReply extends D2DReplyMessage {
             folderOwnerPermissionInfoBuilder.setClazzName("PermissionInfo");
             folderReadWritePermissionInfoBuilder.setClazzName("PermissionInfo");
             folderReadPermissionInfoBuilder.setClazzName("PermissionInfo");
-            folderAdminPermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_ADMIN);
-            folderOwnerPermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_OWNER);
-            folderReadWritePermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ_WRITE);
-            folderReadPermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ);
+            folderAdminPermissionInfoBuilder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_ADMIN);
+            folderOwnerPermissionInfoBuilder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_OWNER);
+            folderReadWritePermissionInfoBuilder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_READ_WRITE);
+            folderReadPermissionInfoBuilder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_READ);
             // Iterate over permission map and sort each permission into the correct permission info object
             for (Map.Entry<Serializable, FolderPermission> entry : this.permissions.entrySet()) {
                 switch (entry.getValue().getClass().getSimpleName()) {
@@ -136,10 +137,10 @@ public class PermissionListReply extends D2DReplyMessage {
             folderOwnerInvitationPermissionInfoBuilder.setIsInvitation(true);
             folderReadWriteInvitationPermissionInfoBuilder.setIsInvitation(true);
             folderReadInvitationPermissionInfoBuilder.setIsInvitation(true);
-            folderAdminInvitationPermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_ADMIN);
-            folderOwnerInvitationPermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_OWNER);
-            folderReadWriteInvitationPermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ_WRITE);
-            folderReadInvitationPermissionInfoBuilder.setPermissionType(PermissionInfoProto.PermissionInfo.PermissionType.FOLDER_READ);
+            folderAdminInvitationPermissionInfoBuilder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_ADMIN);
+            folderOwnerInvitationPermissionInfoBuilder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_OWNER);
+            folderReadWriteInvitationPermissionInfoBuilder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_READ_WRITE);
+            folderReadInvitationPermissionInfoBuilder.setPermissionType(PermissionTypeProto.PermissionType.FOLDER_READ);
             // Iterate over invitation map and sort each invitation into the correct permission info object
             for (Map.Entry<AccountInfo, FolderPermission> entry : this.invitations.entrySet()) {
                 switch (entry.getValue().getClass().getSimpleName()) {
