@@ -1,10 +1,13 @@
 group 'de.dal33t'
 
+apply plugin: 'java'
+apply plugin: 'idea'
+
 defaultTasks 'assemble'
 
 // get the version from the latest tag of repo
 // ---
-buildscript {
+/*buildscript {
     repositories {
         mavenCentral()
         maven {
@@ -18,11 +21,9 @@ buildscript {
 
 apply plugin: 'gitsemver'
 
-version semverVersion().tagName
+version semverVersion().tagName*/
+version '0.1'
 // ---
-
-apply plugin: 'java'
-apply plugin: 'idea'
 
 sourceSets {
     main {
@@ -113,13 +114,9 @@ jar {
     manifest {
         attributes(
                 'Version': version,
-                'Main-Class': 'de.dal33t.powerfolder.PowerFolder'
+                'Main-Class': 'de.dal33t.powerfolder.PowerFolder',
+                'Class-Path': "PF-CORE-${version}.jar lib/*"
         )
-    }
-    from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
     }
     from ('src/skins') {
         include '**'
@@ -127,4 +124,29 @@ jar {
     from ('src/etc') {
         include '*.properties'
     }
+
+    doLast {
+        def secretKeyRingFile = '/Users/krickl/code/PF-PRO/src/code-sign/dal33t_GmbH_2017.p12'
+        def password = 'qwertz123456'
+        def keyId = 'f2b261a2-c472-411e-824b-16e3d268b7ba'
+
+        def signJar = "jarsigner -keystore ${secretKeyRingFile} -storepass ${password} -keypass ${password} ${jar.archivePath} ${keyId}"
+
+        def proc = signJar.execute()
+        proc.waitFor()
+
+        def exitCode = proc.exitValue()
+
+        println "Exit Code was ${exitCode}"
+    }
+}
+
+task install( type: Copy ) {
+    dependsOn build
+
+    println "Copy libraries to ${buildDir}/libs/lib"
+
+    from configurations.compile
+    from jar
+    into "${buildDir}/libs/lib"
 }
