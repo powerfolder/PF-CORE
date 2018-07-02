@@ -139,6 +139,7 @@ public class ActivityItem implements D2DObject {
     public AbstractMessage toD2D() {
         ActivityItemProto.ActivityItem.Builder builder = ActivityItemProto.ActivityItem.newBuilder();
         builder.setClazzName(this.getClass().getSimpleName());
+        builder.setId(this.getId());
         if (this.getFileActivity() != null) {
             builder.setActivity(com.google.protobuf.Any.pack(this.getFileActivity().toD2D()));
         } else if (this.getPermissionActivity() != null) {
