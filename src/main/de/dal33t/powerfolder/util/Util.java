@@ -221,11 +221,6 @@ public class Util {
         }
     }
 
-    public static boolean isMySelfPowerFolderComCloud(Controller controller) {
-        // WHAT A MESS
-        return Feature.INTERNAL_USE.isEnabled();
-    }
-
     /**
      * @param c
      * @param otherIsOnLAN
