@@ -223,7 +223,7 @@ public class Util {
 
     public static boolean isMySelfPowerFolderComCloud(Controller controller) {
         // WHAT A MESS
-        return Feature.CREDITS_SYSTEM.isEnabled();
+        return Feature.INTERNAL_USE.isEnabled();
     }
 
     /**

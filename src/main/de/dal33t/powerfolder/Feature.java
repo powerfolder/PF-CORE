@@ -83,7 +83,7 @@ public enum Feature {
     /**
      * TRAC #1901 for internal use only.
      */
-    CREDITS_SYSTEM(false),
+    INTERNAL_USE(false),
 
     /**
      * #2051: Disable email client directories until fully supported.
@@ -171,6 +171,6 @@ public enum Feature {
         }
         // Feature.DETECT_UPDATE_BY_VERSION.enable();
         // Feature.CORRECT_MOVEMENT_DETECTION.enable();
-        Feature.CREDITS_SYSTEM.enable();
+        Feature.INTERNAL_USE.enable();
     }
 }
