@@ -115,7 +115,7 @@ public class Util {
         return awtAvailable;
     }
 
-    public static final boolean equals(Object a, Object b) {
+    public static boolean equals(Object a, Object b) {
         if (a == null) {
             // a == null
             return b == null;
@@ -128,13 +128,6 @@ public class Util {
             return true;
         }
         return a.equals(b);
-    }
-
-    public static final boolean equalsIgnoreCase(String a, String b) {
-        if (equals(a, b)) {
-            return true;
-        }
-        return a.equalsIgnoreCase(b);
     }
 
     /**
