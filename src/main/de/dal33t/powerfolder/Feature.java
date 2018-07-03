@@ -91,23 +91,6 @@ public enum Feature {
     USER_DIRECTORIES_EMAIL_CLIENTS(false),
 
     /**
-     * #2056 If all new created folders should first download into a temp
-     * directory and mirror all contents to the actual target directory after it
-     * is 100% sync.
-     */
-    FOLDER_ATOMIC_COMMIT(false),
-
-    /**
-     * TRAC #1962 For later use
-     */
-    REGION_SELECTOR(false),
-
-    /**
-     * #2533 By default disabled to save memory. Otherwise swingx.jar would be required.
-     */
-    SYSTEM_MONITOR(false),
-
-    /**
      * #2726 - disable manual sync check box for now.
      */
     MANUAL_SYNC_CB(false),

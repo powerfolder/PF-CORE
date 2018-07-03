@@ -1166,27 +1166,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        if (Feature.FOLDER_ATOMIC_COMMIT.isEnabled()
-                && folderSettings.getCommitDir() == null) {
-            Path newBaseDir = folderSettings.getLocalBaseDir().resolve(
-                    Constants.ATOMIC_COMMIT_TEMP_TARGET_DIR);
-            try {
-                Files.createDirectories(newBaseDir);
-            } catch (IOException e) {
-                logInfo(e.getMessage());
-            }
-            PathUtils.setAttributesOnWindows(newBaseDir, true, true);
-            Path commitDir = folderSettings.getLocalBaseDir();
-            SyncProfile syncProfile = SyncProfile.NO_SYNC;
-
-            folderSettings = new FolderSettings(newBaseDir, syncProfile,
-                    folderSettings.getDownloadScript(),
-                    folderSettings.getVersions(), folderSettings.isSyncPatterns(),
-                    commitDir, folderSettings.getSyncWarnSeconds());
-            logWarning("Auto-commit setup. temp dir: " + newBaseDir
-                    + ". commit dir:" + commitDir);
-        }
-
         //PFS-1918: Start: Folder WebDAV support. Mount this folder as WebDAV resource.
         if (folderSettings.getLocalBaseDirString().
                 toLowerCase().startsWith(Constants.FOLDER_WEBDAV_HTTP_PREFIX) && OSUtil.isLinux()) {
