@@ -150,8 +150,9 @@ public class WebClientLogin extends PFComponent {
 
         stringBuilder.append("Location: ");
         stringBuilder.append(ConfigurationEntry.CONFIG_URL.getValue(getController()));
-        stringBuilder.append("/login?autoLogin=1&originalURI=");
-        stringBuilder.append("http://");
+        stringBuilder.append("/login?autoLogin=1&");
+        stringBuilder.append(Constants.LOGIN_PARAM_ORIGINAL_URI);
+        stringBuilder.append("=http://");
         stringBuilder.append(originalURI);
         stringBuilder.append(":");
         stringBuilder.append(ConfigurationEntry.WEB_CLIENT_PORT.getValue(getController()));
