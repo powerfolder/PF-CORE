@@ -104,7 +104,6 @@ public class UIController extends PFComponent {
     private SplashScreen splash;
     private TrayIconManager trayIconManager;
     private MainFrame mainFrame;
-    private SystemMonitorFrame systemMonitorFrame;
     private final InformationFrame informationFrame;
     private WeakReference<JDialog> wizardDialogReference;
 
@@ -186,9 +185,6 @@ public class UIController extends PFComponent {
         }
 
         informationFrame = new InformationFrame(getController());
-        if (Feature.SYSTEM_MONITOR.isEnabled()) {
-            systemMonitorFrame = new SystemMonitorFrame(getController());
-        }
         started = false;
     }
 
@@ -773,16 +769,6 @@ public class UIController extends PFComponent {
     /**
      * Displays the information window if not already displayed.
      */
-    public void displaySystemMonitorWindow() {
-        if (systemMonitorFrame != null) {
-            UIUtil.putOnScreen(systemMonitorFrame.getUIComponent());
-            systemMonitorFrame.getUIComponent().setVisible(true);
-        }
-    }
-
-    /**
-     * Displays the information window if not already displayed.
-     */
     private void displayInformationWindow() {
         mainFrame.showInlineInfoPanel((JPanel) informationFrame
             .getUIComponent().getContentPane(), informationFrame
@@ -913,9 +899,6 @@ public class UIController extends PFComponent {
      */
     public void hideChildPanels() {
         informationFrame.getUIComponent().setVisible(false);
-        if (systemMonitorFrame != null) {
-            systemMonitorFrame.getUIComponent().setVisible(false);
-        }
     }
 
     /**
@@ -981,12 +964,6 @@ public class UIController extends PFComponent {
         if (started) {
             informationFrame.getUIComponent().setVisible(false);
             informationFrame.getUIComponent().dispose();
-
-            if (systemMonitorFrame != null) {
-                systemMonitorFrame.storeValues();
-                systemMonitorFrame.getUIComponent().setVisible(false);
-                systemMonitorFrame.getUIComponent().dispose();
-            }
 
             if (wizardDialogReference != null
                 && wizardDialogReference.get() != null)
