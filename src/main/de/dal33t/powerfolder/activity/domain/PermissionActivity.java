@@ -85,7 +85,7 @@ public class PermissionActivity implements D2DObject {
         builder.setId(this.getId());
         builder.setFolderId(this.getFolderInfo().getId());
         if (this.getPermissionType().toD2D() != null) builder.setPermissionType(this.getPermissionType().toD2D());
-        builder.setFolderId(this.getRecipientAccount().getOID());
+        builder.setRecipientAccountId(this.getRecipientAccount().getOID());
         return builder.build();
     }
 

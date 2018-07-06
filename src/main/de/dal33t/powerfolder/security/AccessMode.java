@@ -75,7 +75,7 @@ public enum AccessMode
             case READ_WRITE:
                 return PermissionTypeProto.PermissionType.FOLDER_READ_WRITE;
             case ADMIN:
-                return PermissionTypeProto.PermissionType.ADMIN;
+                return PermissionTypeProto.PermissionType.FOLDER_ADMIN;
             case OWNER:
                 return PermissionTypeProto.PermissionType.FOLDER_OWNER;
             default:
