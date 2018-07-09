@@ -66,6 +66,7 @@ public class PathUtils {
     public static final String DOWNLOAD_INCOMPLETE_FILE = "(incomplete) ";
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
+    public static final String INVALID_CHARS = "/\\:*?\"<>|";
 
     private static ExceptionListener IO_EXCEPTION_LISTENER = new ExceptionListener() {
         @Override
@@ -1259,15 +1260,34 @@ public class PathUtils {
     }
 
     /**
+     * Check whether filename contains an invalid char
+     *
+     * @param fileName  Name to check
+     *
+     * @return Either true when an invalid char has been found; otherwise false
+     **/
+
+    public static boolean containsInvalidChar(String fileName) {
+        for (int i = 0; i < fileName.length(); i++) {
+            char c = fileName.charAt(i);
+
+            if (-1 != INVALID_CHARS.indexOf((int)c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Removes invalid characters from the filename.
      *
      * @param filename
      * @return
      */
     public static String removeInvalidFilenameChars(String filename) {
-        String invalidChars = "/\\:*?\"<>|";
-        for (int i = 0; i < invalidChars.length(); i++) {
-            char c = invalidChars.charAt(i);
+        for (int i = 0; i < INVALID_CHARS.length(); i++) {
+            char c = INVALID_CHARS.charAt(i);
             while (filename.indexOf(c) != -1) {
                 int index = filename.indexOf(c);
                 filename = filename.substring(0, index)
@@ -1285,7 +1305,7 @@ public class PathUtils {
             return path;
         }
 
-        // TODO: Check this method with encrypted paths
+
         String filename = path.getFileName().toString();
         String cleared = PathUtils.removeInvalidFilenameChars(filename);
 
