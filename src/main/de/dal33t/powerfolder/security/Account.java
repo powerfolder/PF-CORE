@@ -1549,6 +1549,11 @@ public class Account implements Serializable, D2DObject {
         return (this.oid.equals(otherAccount.oid));
     }
 
+    @Override
+    public int hashCode() {
+        return oid.hashCode();
+    }
+
     public synchronized void convertCollections() {
         if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
             permissions = new CopyOnWriteArrayList<>(
