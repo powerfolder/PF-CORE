@@ -297,4 +297,19 @@ public class MacUtils extends Loggable {
         }
         return de.dal33t.powerfolder.jni.osx.Util.hasLoginItem(pfile.toAbsolutePath().toString());
     }
+
+    /**
+     * Test if the passed {@code path} is on a network mount
+     *
+     * @param path The path to be checked
+     * @return {@code True} if the {@code path} is on a network mount, {@code false} otherwise.
+     */
+    public boolean isNetworkPath(Path path) {
+        if (!de.dal33t.powerfolder.jni.osx.Util.loaded) {
+            logFine("JNI bindings not loaded");
+            return false;
+        }
+
+        return !de.dal33t.powerfolder.jni.osx.Util.isOnLocalVolume("file://" + path.toAbsolutePath().toString());
+    }
 }

@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.disk.EncryptedFileSystemUtils;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 import java.awt.*;
 import java.beans.ExceptionListener;
@@ -204,8 +205,10 @@ public class PathUtils {
             path = path.toRealPath();
         }
 
-        if (OSUtil.isMacOS() || OSUtil.isLinux()) {
+        if (OSUtil.isLinux()) {
             return isNetworkPathUnix(path);
+        } else if (OSUtil.isMacOS()) {
+            return MacUtils.getInstance().isNetworkPath(path);
         } else if (OSUtil.isWindowsSystem()) {
             return isNetworkPathWindows(path);
         }
