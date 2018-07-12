@@ -1998,7 +1998,7 @@ public class Controller extends PFComponent {
         }
 
         if (MacUtils.isSupported()) {
-            MacUtils.getInstance().removeAppReOpenedListener(this);
+            MacUtils.getInstance().removeAppReOpenedListener();
         }
 
         if (webClientLogin != null){

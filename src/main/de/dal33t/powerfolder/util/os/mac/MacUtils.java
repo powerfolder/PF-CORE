@@ -159,10 +159,8 @@ public class MacUtils extends Loggable {
 
     /**
      * Unregister the listener, set by {@link #setAppReOpenedListener(Controller)}.
-     * 
-     * @param controller
      */
-    public void removeAppReOpenedListener(Controller controller) {
+    public void removeAppReOpenedListener() {
         if (reOpenedListener == null) {
             return;
         }
