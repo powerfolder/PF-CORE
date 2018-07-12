@@ -21,4 +21,5 @@ public class Util {
     public native static boolean hasLoginItem(String path);
     public native static void addFavorite(String path);
     public native static void removeFavorite(String path);
+    public native static boolean isOnLocalVolume(String path);
 }
