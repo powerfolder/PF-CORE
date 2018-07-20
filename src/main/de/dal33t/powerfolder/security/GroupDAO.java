@@ -22,6 +22,13 @@ public interface GroupDAO extends GenericDAO<Group> {
      */
     Group findByGroupname(String groupname);
 
+     /**
+     * Finds all accounts by their organization ID.
+     *
+     * @param orgID
+     */
+    Collection<Group> findByOrgID(String orgID);
+
     /**
      * Get all Groups.
      * 
