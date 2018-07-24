@@ -41,6 +41,11 @@ public class SimpleCache<K, E> extends Loggable {
     private AtomicInteger cacheHits = new AtomicInteger();
     private AtomicInteger cacheMisses = new AtomicInteger();
 
+    public SimpleCache(long duration, TimeUnit unit)
+    {
+        this(Util.createConcurrentHashMap(), duration, unit);
+    }
+
     public SimpleCache(Map<K, Pair<Date, E>> backingMap, long duration,
         TimeUnit unit)
     {

@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Reject;
 import org.hibernate.annotations.Cache;
@@ -57,6 +58,7 @@ public class ServerInfo implements Serializable {
     private String validationCode;
     private Date validationReceived;
     private Date validationSend;
+    private String federationVersion;
 
     protected ServerInfo() {
         // NOP - only for Hibernate
@@ -74,6 +76,7 @@ public class ServerInfo implements Serializable {
             // Federated service
             this.id = webUrl;
         }
+        this.federationVersion = Controller.FEDERATION_VERSION;
         Reject.ifBlank(this.id, "Unable to set ID of ServerInfo");
     }
 
@@ -81,12 +84,11 @@ public class ServerInfo implements Serializable {
      * PFC-2455: Creates a {@link ServerInfo} instance representing a server of
      * the local cluster.
      *
-     * @see #isClusterServer()
-     * @param node
-     *            the node information to connect to.
+     * @param node          the node information to connect to.
      * @param webUrl
      * @param httpTunnelUrl
      * @return an {@link ServerInfo} object that represents a local server.
+     * @see #isClusterServer()
      * @see #isClusterServer()
      */
     public static ServerInfo newClusterServer(MemberInfo node, String webUrl,
@@ -95,13 +97,13 @@ public class ServerInfo implements Serializable {
     }
 
     /**
-     * PFC-2455: Creates a {@link ServerInfo} instance representing a federated
+     * PFC-2455: Creates a {@link ServerInfo} instance representing a federation
      * service
      *
      * @param webUrl
      * @param httpTunnelUrl
-     * @return an {@link ServerInfo} object that represents the federated
-     *         service.
+     * @return an {@link ServerInfo} object that represents the federation
+     * service.
      */
     public static ServerInfo newFederatedService(String webUrl,
                                                  String httpTunnelUrl) {
@@ -120,7 +122,7 @@ public class ServerInfo implements Serializable {
     /**
      * PFC-2455
      *
-     * @return true if this represents a federated remote service.
+     * @return true if this represents a federation remote service.
      */
     public boolean isFederatedService() {
         return node == null;
@@ -221,19 +223,20 @@ public class ServerInfo implements Serializable {
             return false;
         final ServerInfo other = (ServerInfo) obj;
         if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        return true;
+            return other.id == null;
+        } else return id.equals(other.id);
     }
 
     public String toString() {
         if (isFederatedService()) {
-            return "Federated service: " + webUrl;
+            if (this.federationVersion != null) {
+                return "Federated service: " + webUrl + " (" + "v" + this.federationVersion + ")";
+            } else {
+                return "Federated service: " + webUrl;
+            }
         }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
-            + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
+                + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
     }
 
     private String URLEncode(String url) {
@@ -248,8 +251,8 @@ public class ServerInfo implements Serializable {
     }
 
     /**
-     * PF-768: Methods below are for the federated service validation process to build mutual trust relationships
-     * between the nodes of a federated network. A federated service is trusted if he has sent and received a
+     * PF-768: Methods below are for the federation service validation process to build mutual trust relationships
+     * between the nodes of a federation network. A federation service is trusted if he has sent and received a
      * validation/confirmation.
      */
     public Date getValidationReceived() {
@@ -277,6 +280,17 @@ public class ServerInfo implements Serializable {
     }
 
     public boolean isValidated() {
-        return validationReceived != null && validationSend != null;
+        return (validationReceived != null && validationSend != null);
+    }
+
+    /**
+     * PF-1289/PF-453: Backwards compatibility for federation with version <= 11.6..
+     */
+    public void setFederationVersion(String version) {
+        federationVersion = version;
+    }
+
+    public String getFederationVersion() {
+        return federationVersion;
     }
 }

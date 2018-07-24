@@ -507,14 +507,9 @@ public class Invitation extends FolderRelatedMessage
             return false;
         }
         if (suggestedSyncProfileConfig == null) {
-            if (other.suggestedSyncProfileConfig != null) {
-                return false;
-            }
-        } else if (!suggestedSyncProfileConfig
-            .equals(other.suggestedSyncProfileConfig)) {
-            return false;
-        }
-        return true;
+            return other.suggestedSyncProfileConfig == null;
+        } else return suggestedSyncProfileConfig
+                .equals(other.suggestedSyncProfileConfig);
     }
 
     // Backward compatability for deprecated/replaced fields.

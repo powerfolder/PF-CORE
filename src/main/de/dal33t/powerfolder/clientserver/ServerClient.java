@@ -86,8 +86,7 @@ public class ServerClient extends PFComponent {
      */
     private Properties config;
     private Collection<Member> servers = new CopyOnWriteArrayList<Member>();
-    private SimpleCache<MemberInfo, Boolean> cachedServerPublicKey = new SimpleCache<>(
-            Util.createConcurrentHashMap(), 1, TimeUnit.MINUTES);
+    private SimpleCache<MemberInfo, Boolean> cachedServerPublicKey = new SimpleCache<>(1, TimeUnit.MINUTES);
     private Map<ServerInfo, ServerClient> childClients = Util
             .createConcurrentHashMap();
 
@@ -1912,7 +1911,7 @@ public class ServerClient extends PFComponent {
             if (childClients.containsKey(fedService)) {
                 continue;
             }
-            logInfo("Starting connect to federated service: " + fedService);
+            logInfo("Starting connect to federation service: " + fedService);
             ServerClient client = createNewFedClient(fedService, token);
             client.loadServerNodes();
             client.start();
@@ -2232,7 +2231,7 @@ public class ServerClient extends PFComponent {
 
     /**
      * @param foInfo
-     * @return true if the folder is joined/synced with server of federated
+     * @return true if the folder is joined/synced with server of federation
      * service
      */
     public boolean joinedByFederation(FolderInfo foInfo) {
@@ -2690,7 +2689,7 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * PF-102: AccountDiscovery (federated login) must be performed if the target server supports federation.
+     * PF-102: AccountDiscovery (federation login) must be performed if the target server supports federation.
      *
      * @return true if a target server supports federation.
      */
@@ -2705,6 +2704,7 @@ public class ServerClient extends PFComponent {
      * @return true if the hosting service for the username/account could be found.
      */
     private boolean federatedLoginSuccess() {
+
         String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
             .getValue(getController());
         if (StringUtils.isNotBlank(ecpURL) && !"ext".equals(ecpURL)) {
@@ -2720,7 +2720,7 @@ public class ServerClient extends PFComponent {
             }
             serviceWebUrl = sInfo.getWebUrl();
         } catch (RemoteCallException ex) {
-            logWarning("Server " + server + " does not support federated logins.");
+            logWarning("Server " + server + " does not support federation logins.");
             return false;
         }
 
@@ -2732,7 +2732,7 @@ public class ServerClient extends PFComponent {
         }
 
         // 2. If the the service URL of the hosting server of the username differs from the current server URL of
-        // this client -> load the default config of the discovered server:
+        // this client -> load the default config of the discovered service:
         if (StringUtils.isNotBlank(serviceWebUrl) && !serviceWebUrl.equals(currentWebUrl)) {
 
             logInfo("Federated login: Starting AccountDiscovery ...");
@@ -2745,7 +2745,7 @@ public class ServerClient extends PFComponent {
                 }
             }
 
-            // Mark the federated service for connect
+            // Mark the federation service for connect
             server.markForImmediateConnect();
 
             Waiter w = new Waiter(DEFAULT_SERVER_CONNECT_TIMEOUT_MS);
@@ -2757,7 +2757,7 @@ public class ServerClient extends PFComponent {
             getController().saveConfig();
 
             if (isConnected()) {
-                logInfo("Successfully connected to federated service "
+                logInfo("Successfully connected to federation service "
                         + serviceWebUrl + " / " + server.getNick());
             }
 
@@ -2962,7 +2962,7 @@ public class ServerClient extends PFComponent {
     private class ServiceTicketGenerator implements
             PrivilegedExceptionAction<byte[]> {
         @Override
-        public byte[] run() throws Exception {
+        public byte[] run() {
             try {
                 Oid kerberos5Oid = new Oid("1.2.840.113554.1.2.2");
                 GSSManager gssManager = GSSManager.getInstance();

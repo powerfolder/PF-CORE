@@ -129,9 +129,9 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     }
 
     /**
-     * PF-164: Support federated invites:
+     * PF-164: Support federation invites:
      * <p>
-     * If we're in a federated environment, we have to ask the service of the invitation if
+     * If we're in a federation environment, we have to ask the service of the invitation if
      * FOLDER_AGREE_INVITATION_ENABLED is enabled.
      *
      * @param invitation The invitation.
@@ -142,7 +142,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED.getValueBoolean(getController());
 
         if (invitation.getServer() != null &&
-                ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(getController())) {
+                ConfigurationEntry.SERVER_FEDERATION_ENABLED.getValueBoolean(getController())) {
 
             try {
                 Properties props = ConfigurationLoader
@@ -155,7 +155,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 }
 
             } catch (IOException e) {
-                log.warning("Failed to get config from federated server "
+                log.warning("Failed to get config from federation server "
                         + invitation.getServer().getWebUrl());
                 return serverAgreeInvitationsEnabled;
             }
@@ -276,8 +276,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
     private class AcceptInviteTask implements Runnable {
         @Override
         public void run() {
-            getController().getOSClient().getSecurityService()
-                .acceptInvitation(invitation);
+            getController().getOSClient().getSecurityService().acceptInvitation(invitation);
         }
 
     }

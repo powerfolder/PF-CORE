@@ -4901,8 +4901,8 @@ public class Folder extends PFComponent {
 
     // PFS-638
     private static final long HAS_PERMISSION_CACHE_TIMEOUT = 987L;
-    private final SimpleCache<Member, Boolean> hasReadCache = new SimpleCache<>(Util.createConcurrentHashMap(), HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-    private final SimpleCache<Member, Boolean> hasWriteCache = new SimpleCache<>(Util.createConcurrentHashMap(), HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+    private final SimpleCache<Member, Boolean> hasReadCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
+    private final SimpleCache<Member, Boolean> hasWriteCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
 
     public boolean hasReadPermission(Member member) {
         Boolean hasRead = hasReadCache.getValidEntry(member);

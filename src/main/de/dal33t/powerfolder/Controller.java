@@ -59,7 +59,6 @@ import org.quartz.impl.StdSchedulerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.ExceptionListener;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.file.*;
@@ -90,14 +89,19 @@ public class Controller extends PFComponent {
         .getName());
 
     private static final int MAJOR_VERSION = 11;
-    private static final int MINOR_VERSION = 6;
-    private static final int REVISION_VERSION = 708;
+    private static final int MINOR_VERSION = 7;
+    private static final int REVISION_VERSION = 705;
 
     /**
      * Program version.
      */
     public static final String PROGRAM_VERSION = MAJOR_VERSION + "."
         + MINOR_VERSION + "." + REVISION_VERSION;
+
+    /**
+     * Federation version.
+     */
+    public static final String FEDERATION_VERSION = MAJOR_VERSION + "." + MINOR_VERSION;
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -200,7 +204,7 @@ public class Controller extends PFComponent {
     private Callable<TransferManager> transferManagerFactory = new Callable<TransferManager>()
     {
         @Override
-        public TransferManager call() throws Exception {
+        public TransferManager call() {
             return new TransferManager(Controller.this);
         }
     };
@@ -869,7 +873,7 @@ public class Controller extends PFComponent {
 
         /* Init stuff (moved here from {@link startConfig} */
         additionalConnectionListeners = Collections
-            .synchronizedList(new ArrayList<ConnectionListener>());
+            .synchronizedList(new ArrayList<>());
         started = false;
         shuttingDown = false;
         threadPool = new WrappedScheduledThreadPoolExecutor(
@@ -877,17 +881,14 @@ public class Controller extends PFComponent {
                 "Controller-Thread-"));
 
         // PFI-312
-        PathUtils.setIOExceptionListener(new ExceptionListener() {
-            @Override
-            public void exceptionThrown(Exception e) {
-                if (e instanceof FileSystemException
-                    && e.toString().toLowerCase()
-                        .contains("too many open files"))
-                {
-                    logSevere("Detected I/O Exception: " + e.getMessage());
-                    logSevere("Please adjust limits for open file handles on this server");
-                    exit(1);
-                }
+        PathUtils.setIOExceptionListener(e -> {
+            if (e instanceof FileSystemException
+                && e.toString().toLowerCase()
+                    .contains("too many open files"))
+            {
+                logSevere("Detected I/O Exception: " + e.getMessage());
+                logSevere("Please adjust limits for open file handles on this server");
+                exit(1);
             }
         });
 
@@ -2027,7 +2028,7 @@ public class Controller extends PFComponent {
         }
 
         if (MacUtils.isSupported()) {
-            MacUtils.getInstance().removeAppReOpenedListener(this);
+            MacUtils.getInstance().removeAppReOpenedListener();
         }
 
         if (webClientLogin != null){
