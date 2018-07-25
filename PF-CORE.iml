@@ -481,5 +481,19 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library" scope="RUNTIME">
+      <library name="Native Libraries">
+        <CLASSES />
+        <JAVADOC />
+        <NATIVE>
+          <root url="file://$MODULE_DIR$/src/etc/lin32libs" />
+          <root url="file://$MODULE_DIR$/src/etc/lin64libs" />
+          <root url="file://$MODULE_DIR$/src/etc/mac64libs" />
+          <root url="file://$MODULE_DIR$/src/etc/win32libs" />
+          <root url="file://$MODULE_DIR$/src/etc/win64libs" />
+        </NATIVE>
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

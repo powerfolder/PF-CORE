@@ -2701,6 +2701,7 @@ public class ServerClient extends PFComponent {
      * @return true if the hosting service for the username/account could be found.
      */
     private boolean federatedLoginSuccess() {
+
         String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
             .getValue(getController());
         if (StringUtils.isNotBlank(ecpURL) && !"ext".equals(ecpURL)) {
@@ -2728,7 +2729,7 @@ public class ServerClient extends PFComponent {
         }
 
         // 2. If the the service URL of the hosting server of the username differs from the current server URL of
-        // this client -> load the default config of the discovered server:
+        // this client -> load the default config of the discovered service:
         if (StringUtils.isNotBlank(serviceWebUrl) && !serviceWebUrl.equals(currentWebUrl)) {
 
             logInfo("Federated login: Starting AccountDiscovery ...");
