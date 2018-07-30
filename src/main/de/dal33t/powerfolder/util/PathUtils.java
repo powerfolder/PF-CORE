@@ -1267,10 +1267,16 @@ public class PathUtils {
      *
      * @param fileName  Name to check
      *
-     * @return Either true when an invalid char has been found; otherwise false
+     * @return {@code true} when an invalid char has been found; otherwise {@code false}
      **/
 
     public static boolean containsInvalidChar(String fileName) {
+        /* Check dot files */
+        if (".".equals(fileName) || "..".equals(fileName)) {
+            return true;
+        }
+
+        /* Check list of invalid chars */
         for (int i = 0; i < fileName.length(); i++) {
             char c = fileName.charAt(i);
 
