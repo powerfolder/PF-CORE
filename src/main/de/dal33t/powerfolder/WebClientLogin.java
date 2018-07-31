@@ -55,7 +55,9 @@ public class WebClientLogin extends PFComponent {
             myThread.interrupt();
 
         try {
-            serverSocket.close();
+            if (serverSocket != null) {
+                serverSocket.close();
+            }
         } catch (IOException e) {
             logWarning("Unable to close server socket @ " + serverSocket + " " + e, e);
         }
