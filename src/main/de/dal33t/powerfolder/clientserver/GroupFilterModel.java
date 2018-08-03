@@ -11,8 +11,10 @@ public class GroupFilterModel extends Model {
     private static final long serialVersionUID = 100L;
 
     public static final String PROPERTY_GROUPNAME = "groupname";
+    public static final String PROPERTY_QUERYNAME = "queryname";
 
     private String groupname;
+    private String queryname;
     private String organizationOID = Organization.FILTER_MATCH_ALL;
     private List<String> adminOfOrganizationOIDs;
 
@@ -44,6 +46,18 @@ public class GroupFilterModel extends Model {
             ? groupname.toLowerCase().trim()
             : null;
         firePropertyChange(PROPERTY_GROUPNAME, oldValue, this.groupname);
+    }
+
+    public String getQueryname() {
+        return queryname;
+    }
+
+    public void setQueryname(String queryname) {
+        Object oldValue = getQueryname();
+        this.queryname = queryname != null
+                ? queryname.toLowerCase().trim()
+                : null;
+        firePropertyChange(PROPERTY_QUERYNAME, oldValue, this.queryname);
     }
 
     public String getMemberOfOrganizationOID() {
