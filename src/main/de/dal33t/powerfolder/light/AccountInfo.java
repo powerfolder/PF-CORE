@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.util.intern.Internalizer;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
 import java.io.*;
+import java.util.Collection;
 
 /**
  * Leightweight reference/info object to an {@link Account}
@@ -50,6 +51,8 @@ public class AccountInfo implements Serializable, D2DObject {
     private String displayName;
     @Transient
     private long avatarLastModifiedDate;
+    @Transient
+    private Collection<String> emails;
 
     private AccountInfo() {
         // For hibernate.
@@ -136,6 +139,14 @@ public class AccountInfo implements Serializable, D2DObject {
 
     public void setAvatarLastModifiedDate(long avatarLastModifiedDate) {
         this.avatarLastModifiedDate = avatarLastModifiedDate;
+    }
+
+    public Collection<String> getEmails() {
+        return emails;
+    }
+
+    public void setEmails(Collection<String> emails) {
+        this.emails = emails;
     }
 
     public AccountInfo intern() {
@@ -250,6 +261,11 @@ public class AccountInfo implements Serializable, D2DObject {
       builder.setUsername(this.username);
       if(null != this.displayName) builder.setDisplayName(this.displayName);
       builder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);
+      if (this.emails != null) {
+          for (String email : this.emails) {
+              builder.addEmails(email);
+          }
+      }
       return builder.build();
     }
 }
