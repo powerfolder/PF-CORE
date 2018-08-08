@@ -10,10 +10,8 @@ import de.dal33t.powerfolder.security.Organization;
 public class GroupFilterModel extends Model {
     private static final long serialVersionUID = 100L;
 
-    public static final String PROPERTY_GROUPNAME = "groupname";
     public static final String PROPERTY_QUERYNAME = "queryname";
 
-    private String groupname;
     private String queryname;
     private String organizationOID = Organization.FILTER_MATCH_ALL;
     private List<String> adminOfOrganizationOIDs;
@@ -34,18 +32,6 @@ public class GroupFilterModel extends Model {
 
     public void setMaxResults(int maxResults) {
         this.maxResults = maxResults;
-    }
-
-    public String getGroupname() {
-        return groupname;
-    }
-
-    public void setGroupname(String groupname) {
-        Object oldValue = getGroupname();
-        this.groupname = groupname != null
-            ? groupname.toLowerCase().trim()
-            : null;
-        firePropertyChange(PROPERTY_GROUPNAME, oldValue, this.groupname);
     }
 
     public String getQueryname() {
@@ -93,7 +79,7 @@ public class GroupFilterModel extends Model {
     // Logic
 
     public void reset() {
-        groupname = null;
+        queryname = null;
         maxResults = 0;
         adminOfOrganizationOIDs = null;
         organizationOID = Organization.FILTER_MATCH_ALL;
