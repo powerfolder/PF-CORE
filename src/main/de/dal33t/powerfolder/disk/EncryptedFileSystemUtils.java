@@ -115,9 +115,9 @@ public class EncryptedFileSystemUtils {
      */
 
     public static Path getPhysicalStorageLocation(Path path) {
-        FileSystem fs = path.getFileSystem();
-        if (fs instanceof CryptoFileSystem) {
-            return ((CryptoFileSystem) fs).getPathToVault();
+        CryptoFileSystem fs = (CryptoFileSystem) path.getFileSystem();
+        if (fs != null) {
+            return fs.getPathToVault();
         } else {
             throw new IllegalArgumentException("FileSystem from " + path  + " is not a CryptoFileSystem");
         }
