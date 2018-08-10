@@ -1,13 +1,12 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.d2d.D2DRequestMessage;
 import de.dal33t.powerfolder.protocol.AccountChangeRequestProto;
 
 import java.util.Collection;
 
-public class AccountChangeRequest extends FolderCreateRequest {
+public class AccountChangeRequest extends D2DRequestMessage {
 
     private String firstname;
     private String surname;
