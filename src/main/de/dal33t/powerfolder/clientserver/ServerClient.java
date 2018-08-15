@@ -2888,17 +2888,11 @@ public class ServerClient extends PFComponent {
                 return;
             }
             try {
-                // PFC-2368: Verify login by server too.
-                if (isLoggedIn() && securityService.isLoggedIn()) {
-                    return;
-                }
-            } catch (RemoteCallException e) {
-                logFine("Problems with the connection to: " + getServerString()
-                        + ". " + e);
-                return;
-            }
-            try {
                 if (hasUsername() && hasCredentials()) {
+                    // PFC-2368: Verify login by server too.
+                    if (isLoggedIn() && securityService.isLoggedIn()) {
+                        return;
+                    }
                     logInfo("Auto-Login: Logging in " + username);
                     login0(username, passwordObf, tokenSecret);
                 }
