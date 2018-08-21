@@ -127,14 +127,10 @@ public class PowerFolder {
         LoggingManager.isLogToFile();
 
         // Default exception logger
-        Thread
-            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-            {
-                public void uncaughtException(Thread t, Throwable e) {
-                    e.printStackTrace();
-                    log.log(Level.SEVERE,
-                        "Exception in " + t + ": " + e.toString(), e);
-                }
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+                e.printStackTrace();
+                log.log(Level.SEVERE,
+                    "Exception in " + t + ": " + e.toString(), e);
             });
 
         CommandLine commandLine = parseCommandLine(args);
@@ -314,9 +310,7 @@ public class PowerFolder {
 
         // Not go into console mode if ui is open
         if (!startController) {
-            if (runningInstanceFound) {
-                RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
-            }
+            RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
             return;
         }
 
@@ -359,7 +353,7 @@ public class PowerFolder {
         } while (restartRequested);
     }
 
-    public static CommandLine parseCommandLine(String[] args) {
+    static CommandLine parseCommandLine(String[] args) {
         CommandLineParser parser = new PosixParser();
         try {
             // parse the command line arguments

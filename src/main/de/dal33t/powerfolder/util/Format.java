@@ -36,6 +36,7 @@ import java.util.Locale;
 public class Format {
 
     private static final CanonicalDateFormat CANONICAL_DATE_FORMAT = new CanonicalDateFormat();
+    private static final CanonicalDateWithTimeFormat CANONICAL_DATE_WITH_TIME_FORMAT = new CanonicalDateWithTimeFormat();
     private static final ShortDateFormat SHORT_DATE_FORMAT = new ShortDateFormat();
     private static final ShortTimeFormat SHORT_TIME_FORMAT = new ShortTimeFormat();
     private static final LongTimeFormat LONG_TIME_FORMAT = new LongTimeFormat();
@@ -157,6 +158,10 @@ public class Format {
      */
     public static String formatDateCanonical(Date date) {
         return CANONICAL_DATE_FORMAT.get().format(date);
+    }
+
+    public static String formatDateWithTimeCanonical(Date date) {
+        return CANONICAL_DATE_WITH_TIME_FORMAT.get().format(date);
     }
 
     /**
@@ -316,6 +321,12 @@ public class Format {
     private static class CanonicalDateFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
             return new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH);
+        }
+    }
+
+    private static class CanonicalDateWithTimeFormat extends ThreadLocal<DateFormat> {
+        protected DateFormat initialValue() {
+            return new SimpleDateFormat("dd MMM yyyy H:m", Locale.ENGLISH);
         }
     }
 
