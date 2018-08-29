@@ -335,6 +335,8 @@ public class Controller extends PFComponent {
 
             if (StringUtils.isNotBlank(distributionName)) {
                 distributionName = distributionName.trim();
+                migrateConfigFileIfNecessary(distributionName);
+
                 configName = distributionName + ".config";
             } else {
                 configName = Constants.DEFAULT_CONFIG_FILE;
@@ -342,6 +344,42 @@ public class Controller extends PFComponent {
         }
 
         startConfig(configName);
+    }
+
+    /**
+     * Migrate "old" PowerFolder[-Folder].config, .nodes, .stats, etc. files to "new" <distro-name>.config files.
+     *
+     * @param distributionName The name of the distribution
+     */
+    private void migrateConfigFileIfNecessary(String distributionName) {
+        Path configLocation = getConfigLocationBase();
+        if (configLocation == null) {
+            logInfo("Not migrating config: cannot get config location base directory.");
+            return;
+        }
+
+        Path previousConfigFile = configLocation.resolve(Constants.DEFAULT_CONFIG_FILE);
+
+        if (Files.exists(previousConfigFile)) {
+            String oldFileNamePrefix = Constants.DEFAULT_CONFIG_FILE.replace(".config", "");
+
+            try (DirectoryStream<Path> oldConfigFiles = Files.newDirectoryStream(configLocation, oldFileNamePrefix + "*")) {
+                logFine("Moving " + oldFileNamePrefix + " config files to " + distributionName);
+
+                for (Path file : oldConfigFiles) {
+                    String oldFileName = file.getFileName().toString();
+                    String newFileName = oldFileName
+                        .replace(oldFileNamePrefix, distributionName);
+                    Path newFile = file.getParent().resolve(newFileName);
+
+                    Files.move(file, newFile);
+                }
+            } catch (IOException e) {
+                logWarning("Moving of config files FAILED: " + e.getMessage());
+            }
+        } else {
+            logFine("No config to migrate");
+        }
     }
 
     /** initTranslation
