@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.security.Token;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetDecoder;
@@ -29,11 +34,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.security.Token;
 
 /**
  * Utility class for login helpers
@@ -338,7 +338,7 @@ public class LoginUtil {
             || v.toLowerCase().contains("nutzerkennung");
     }
 
-    private static boolean isUsernameEmailOnly(Controller controller) {
+    public static boolean isUsernameEmailOnly(Controller controller) {
         if (isUsernameAny(controller)) {
             return false;
         }
@@ -349,13 +349,13 @@ public class LoginUtil {
             .getValueBoolean(controller);
     }
 
-    private static boolean isUsernameAny(Controller controller) {
+    public static boolean isUsernameAny(Controller controller) {
         String v = ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
             .getValue(controller);
         return "both".equalsIgnoreCase(v);
     }
 
-    private static boolean isBoolConfValue(Controller controller) {
+    public static boolean isBoolConfValue(Controller controller) {
         String value = ConfigurationEntry.SERVER_USERNAME_IS_EMAIL
             .getValue(controller);
         if (value == null) {

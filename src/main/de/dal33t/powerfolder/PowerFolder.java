@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder;
 
+import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
+import org.apache.commons.cli.*;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,24 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-
-import javax.swing.JOptionPane;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-
-import de.dal33t.powerfolder.util.BrowserLauncher;
-import de.dal33t.powerfolder.util.JavaVersion;
-import de.dal33t.powerfolder.util.MemoryMonitor;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 /**
  * Main class for the PowerFolder application.
@@ -140,14 +127,10 @@ public class PowerFolder {
         LoggingManager.isLogToFile();
 
         // Default exception logger
-        Thread
-            .setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler()
-            {
-                public void uncaughtException(Thread t, Throwable e) {
-                    e.printStackTrace();
-                    log.log(Level.SEVERE,
-                        "Exception in " + t + ": " + e.toString(), e);
-                }
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+                e.printStackTrace();
+                log.log(Level.SEVERE,
+                    "Exception in " + t + ": " + e.toString(), e);
             });
 
         CommandLine commandLine = parseCommandLine(args);
@@ -327,9 +310,7 @@ public class PowerFolder {
 
         // Not go into console mode if ui is open
         if (!startController) {
-            if (runningInstanceFound) {
-                RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
-            }
+            RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
             return;
         }
 
@@ -372,7 +353,7 @@ public class PowerFolder {
         } while (restartRequested);
     }
 
-    public static CommandLine parseCommandLine(String[] args) {
+    static CommandLine parseCommandLine(String[] args) {
         CommandLineParser parser = new PosixParser();
         try {
             // parse the command line arguments
