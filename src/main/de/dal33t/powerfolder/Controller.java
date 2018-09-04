@@ -107,6 +107,9 @@ public class Controller extends PFComponent {
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
 
+    /** Subdir of misc files */
+    private static String miscFilesLocationDirName = Constants.MISC_DIR_NAME;
+
     /** The command line entered by the user when starting the program */
     private CommandLine commandLine;
 
@@ -321,7 +324,6 @@ public class Controller extends PFComponent {
                 configName = Constants.DEFAULT_CONFIG_FILE;
             }
         } else if (StringUtils.isBlank(configName)) {
-
             Properties preConfig = null;
             try {
                 preConfig = ConfigurationLoader
@@ -332,14 +334,71 @@ public class Controller extends PFComponent {
             String distributionName = preConfig != null ? preConfig.getProperty("dist.name") : "";
 
             if (StringUtils.isNotBlank(distributionName)) {
-                distributionName = distributionName.trim();
-                configName = distributionName + ".config";
-            } else {
-                configName = Constants.DEFAULT_CONFIG_FILE;
+                miscFilesLocationDirName = distributionName.trim();
+
+                migrateConfigFileIfNecessary(distributionName);
             }
+            configName = Constants.DEFAULT_CONFIG_FILE;
         }
 
         startConfig(configName);
+    }
+
+    /**
+     * Migrate ~/.PowerFolder to ~/.<dist-name> if the previous Config has the
+     * same {@code dist.name}
+     *
+     * @param distributionName The name of the distribution
+     */
+    private void migrateConfigFileIfNecessary(String distributionName) {
+        Path brandedMiscFilesLocation = getMiscFilesLocation(false);
+        if (Files.exists(brandedMiscFilesLocation)) {
+            log.fine("Using my branded directory at " + brandedMiscFilesLocation.toString());
+            return;
+        }
+
+        // brandedMiscFilesLocation does NOT EXIST
+        log.fine("No branded config dir found");
+
+        Path defaultMiscFilesLocation = brandedMiscFilesLocation
+            .getParent().resolve("." + Constants.MISC_DIR_NAME);
+        if (Files.notExists(defaultMiscFilesLocation)) {
+            log.fine("Also no default config dir found -> create new branded config dir");
+            return;
+        }
+
+        // defaultMiscFilesLocation DOES exist
+        log.fine("Found default config dir at " + defaultMiscFilesLocation.toString());
+
+        Path prevConifgFile = defaultMiscFilesLocation.resolve(Constants.DEFAULT_CONFIG_FILE);
+        Properties prefConfig = new Properties();
+        try (InputStream in = Files.newInputStream(prevConifgFile)) {
+            prefConfig.load(in);
+        } catch (IOException ioe) {
+            log.warning("Could not read " + prevConifgFile.toString()
+                + ". Using new branded config at " + brandedMiscFilesLocation.toString()
+                + ". " + ioe.getMessage());
+            return;
+        }
+
+        String prevDistName = prefConfig.getProperty("dist.name");
+
+        if (StringUtils.isBlank(prevDistName) || !prevDistName.equalsIgnoreCase(distributionName)) {
+            log.fine("Not migrating an empty or different branding "
+                + prevDistName + " then mine " + distributionName);
+            return;
+        }
+
+        // prevDistName is my own
+        log.info("Trying to move " + defaultMiscFilesLocation.toString()
+            + " to " + brandedMiscFilesLocation.toString());
+
+        try {
+            Files.move(defaultMiscFilesLocation, brandedMiscFilesLocation);
+        } catch (IOException ioe) {
+            log.warning("Could not move " + defaultMiscFilesLocation.toString()
+                + " to " + brandedMiscFilesLocation.toString() + ". " + ioe.getMessage());
+        }
     }
 
     /** initTranslation
@@ -2600,24 +2659,27 @@ public class Controller extends PFComponent {
         return null;
     }
 
+    public static Path getMiscFilesLocation() {
+        return getMiscFilesLocation(true);
+    }
+
     /**
-     * Answers the path, where to load/store miscellanouse files created by
+     * Answers the path, where to load/store miscellaneous files created by
      * PowerFolder. e.g. .nodes files
      *
+     * @param create Should the directory be created?
      * @return the file base, a directory
      */
-    public static Path getMiscFilesLocation() {
-        Path base;
+    public static Path getMiscFilesLocation(boolean create) {
         Path unixConfigDir = Paths.get(System.getProperty("user.home"),
-            "." + Constants.MISC_DIR_NAME).toAbsolutePath();
+            "." + miscFilesLocationDirName).toAbsolutePath();
+        Path base = unixConfigDir;
         if (OSUtil.isWindowsSystem()
             && Feature.WINDOWS_MISC_DIR_USE_APP_DATA.isEnabled())
         {
-            String appData;
+            String appData = WinUtils.getAppDataCurrentUser();
             if (Feature.CONFIGURATION_ALL_USERS.isEnabled()) {
                 appData = WinUtils.getAppDataAllUsers();
-            } else {
-                appData = WinUtils.getAppDataCurrentUser();
             }
 
             if (StringUtils.isBlank(appData)) {
@@ -2625,7 +2687,7 @@ public class Controller extends PFComponent {
                 return unixConfigDir;
             }
 
-            Path windowsConfigDir = Paths.get(appData, Constants.MISC_DIR_NAME)
+            Path windowsConfigDir = Paths.get(appData, miscFilesLocationDirName)
                 .toAbsolutePath();
             base = windowsConfigDir;
 
@@ -2634,15 +2696,8 @@ public class Controller extends PFComponent {
                 boolean migrateConfig;
                 if (Files.exists(windowsConfigDir)) {
                     // APPDATA/PowerFolder does not yet contain a config file OR
-                    Filter<Path> filter = new Filter<Path>() {
-                        @Override
-                        public boolean accept(Path entry) {
-                            return entry.getFileName().toString()
-                                .endsWith("config");
-                        }
-                    };
                     try (DirectoryStream<Path> stream = Files
-                        .newDirectoryStream(windowsConfigDir, filter)) {
+                        .newDirectoryStream(windowsConfigDir, "*.config")) {
                         migrateConfig = !stream.iterator().hasNext();
                     } catch (IOException ioe) {
                         log.info(ioe.getMessage());
@@ -2662,10 +2717,8 @@ public class Controller extends PFComponent {
                     }
                 }
             }
-        } else {
-            base = unixConfigDir;
         }
-        if (Files.notExists(base)) {
+        if (create && Files.notExists(base)) {
             try {
                 Files.createDirectories(base);
             } catch (IOException ioe) {
