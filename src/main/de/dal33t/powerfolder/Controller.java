@@ -90,7 +90,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 7;
-    private static final int REVISION_VERSION = 752;
+    private static final int REVISION_VERSION = 753;
 
     /**
      * Program version.
@@ -361,8 +361,14 @@ public class Controller extends PFComponent {
         // brandedMiscFilesLocation does NOT EXIST
         log.fine("No branded config dir found");
 
+        String dirName = "";
+        if (OSUtil.isWindowsSystem()) {
+            dirName = Constants.MISC_DIR_NAME;
+        } else {
+            dirName = "." + Constants.MISC_DIR_NAME;
+        }
         Path defaultMiscFilesLocation = brandedMiscFilesLocation
-            .getParent().resolve("." + Constants.MISC_DIR_NAME);
+            .getParent().resolve(dirName);
         if (Files.notExists(defaultMiscFilesLocation)) {
             log.fine("Also no default config dir found -> create new branded config dir");
             return;
