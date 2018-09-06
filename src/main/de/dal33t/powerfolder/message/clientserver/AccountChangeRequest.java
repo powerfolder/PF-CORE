@@ -4,6 +4,7 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
 import de.dal33t.powerfolder.protocol.AccountChangeRequestProto;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class AccountChangeRequest extends D2DRequestMessage {
@@ -42,7 +43,8 @@ public class AccountChangeRequest extends D2DRequestMessage {
             this.firstname = proto.getFirstname();
             this.surname = proto.getSurname();
             this.telephone = proto.getTelephone();
-
+            this.emails = new ArrayList<>();
+            this.emails.addAll(proto.getEmailsList());
         }
     }
 
@@ -59,7 +61,11 @@ public class AccountChangeRequest extends D2DRequestMessage {
         if (this.firstname != null) builder.setFirstname(this.firstname);
         if (this.surname != null) builder.setSurname(this.surname);
         if (this.firstname != null) builder.setFirstname(this.firstname);
-
+        if (this.emails != null) {
+            for (String email : this.emails) {
+                builder.addEmails(email);
+            }
+        }
         return builder.build();
     }
 
