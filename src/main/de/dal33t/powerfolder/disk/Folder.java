@@ -2229,79 +2229,78 @@ public class Folder extends PFComponent {
     }
 
     private boolean checkRevertLocalChanges(FileInfo fileInfo) {
+
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not checkRevertLocalChanges: " + fileInfo.toDetailString());
             return false;
         }
-        FileInfo newestVersion = fileInfo.getNewestVersion(getController()
-            .getFolderRepository());
+
+        boolean remoteFilesFound = false;
+
+        for (Member member : getConnectedMembers()) {
+            if (!hasWritePermission(member)) {
+                continue;
+            }
+            if (member.hasCompleteFileListFor(currentInfo)) {
+                remoteFilesFound = true;
+                break;
+            }
+        }
+
+        // Only proceed if remote files can be found:
+        if (!remoteFilesFound) {
+            return false;
+        }
+
+        // Only proceed if file is out of sync:
+        FileInfo newestVersion = fileInfo.getNewestVersion(getController().getFolderRepository());
         if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
-            // Ok in sync
+            // Ok in sync - return:
             return false;
         }
-        // http://jira.zyncro.com/browse/SYNC-459
+
+        if (isWarning() && !currentInfo.isMetaFolder()) {
+            logWarning("Reverting local change: "
+                    + fileInfo.toDetailString()
+                    + ". File not found on remote side.");
+        }
+
         if (diskItemFilter.getPatterns().isEmpty()) {
-            // Workaround for race condition during setup and default excludes
-            // have not yet been added.
+            // Workaround for race condition during setup and default excludes have not yet been added:
             return false;
         }
+
         if (diskItemFilter.isExcluded(fileInfo)) {
             // Is excluded from sync. Don't delete. Might be meta-data.
             return false;
         }
+
         getFolderWatcher().addIgnoreFile(fileInfo);
+
         try {
-            if (newestVersion == null) {
-                boolean remoteFilesFound = false;
-                for (Member member : getConnectedMembers()) {
-                    if (!hasWritePermission(member)) {
-                        continue;
-                    }
-                    // Member with write permission
-                    if (member.hasCompleteFileListFor(currentInfo)) {
-                        remoteFilesFound = true;
-                        break;
-                    }
-                }
-                if (!remoteFilesFound) {
-                    // No actual remote file list received yet from member with
-                    // write permission
-                    return false;
-                }
-                if (isWarning() && !currentInfo.isMetaFolder()) {
-                    logWarning("Reverting local change: "
-                        + fileInfo.toDetailString()
-                        + ". File not found on remote side.");
-                }
-            } else {
-                if (isWarning() && !currentInfo.isMetaFolder()) {
-                    logWarning("Reverting local change: "
-                        + fileInfo.toDetailString() + ". Found newer version: "
-                        + newestVersion.toDetailString());
-                }
-            }
-            Path file = fileInfo.getDiskFile(getController()
-                .getFolderRepository());
+            Path file = fileInfo.getDiskFile(getController().getFolderRepository());
+
             if (file == null) {
                 // Local file not found.
                 return false;
             }
+
             synchronized (scanLock) {
                 if (Files.exists(file)) {
                     try {
                         Path problemPath = archiver.getArchiveDir().resolve(
-                            fileInfo.getRelativeName());
+                                fileInfo.getRelativeName());
                         watcher.addIgnoreFile(fileInfo);
                         archiver.archive(fileInfo, file, false);
 
                         Files.deleteIfExists(file);
                         if (!currentInfo.isMetaFolder()) {
                             addProblem(new FolderReadOnlyProblem(this,
-                                problemPath));
+                                    problemPath));
                         }
                     } catch (IOException e) {
                         logWarning("Unable to revert changes on file " + file
-                            + ". Cannot overwrite local change. " + e);
+                                + ". Cannot overwrite local change. " + e);
                         return false;
                     } finally {
                         watcher.removeIgnoreFile(fileInfo);
@@ -2309,8 +2308,8 @@ public class Folder extends PFComponent {
                 } else {
                     if (!currentInfo.isMetaFolder()) {
                         addProblem(new FolderReadOnlyProblem(this, archiver
-                            .getArchiveDir().resolve(
-                                fileInfo.getRelativeName())));
+                                .getArchiveDir().resolve(
+                                        fileInfo.getRelativeName())));
                     }
                 }
                 dao.delete(null, fileInfo);

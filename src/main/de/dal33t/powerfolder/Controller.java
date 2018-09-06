@@ -62,7 +62,6 @@ import java.awt.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.file.*;
-import java.nio.file.DirectoryStream.Filter;
 import java.security.Security;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -360,8 +359,14 @@ public class Controller extends PFComponent {
         // brandedMiscFilesLocation does NOT EXIST
         log.fine("No branded config dir found");
 
+        String dirName = "";
+        if (OSUtil.isWindowsSystem()) {
+            dirName = Constants.MISC_DIR_NAME;
+        } else {
+            dirName = "." + Constants.MISC_DIR_NAME;
+        }
         Path defaultMiscFilesLocation = brandedMiscFilesLocation
-            .getParent().resolve("." + Constants.MISC_DIR_NAME);
+            .getParent().resolve(dirName);
         if (Files.notExists(defaultMiscFilesLocation)) {
             log.fine("Also no default config dir found -> create new branded config dir");
             return;
