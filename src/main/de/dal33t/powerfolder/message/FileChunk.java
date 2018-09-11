@@ -22,7 +22,9 @@ package de.dal33t.powerfolder.message;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
 import de.dal33t.powerfolder.StatusCode;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.FilePartReplyProto;
@@ -38,8 +40,7 @@ import java.io.IOException;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
-public class FileChunk extends Message
-  implements LimitBandwidth, D2DObject
+public class FileChunk extends Message implements LimitBandwidth, D2DObject, D2DEvent
 {
     private static final long serialVersionUID = 100L;
 
@@ -122,4 +123,10 @@ public class FileChunk extends Message
       builder.setReplyStatusCode(StatusCode.OK.getCode());
       return builder.build();
     }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.FILE_PART_REPLY;
+    }
+
 }

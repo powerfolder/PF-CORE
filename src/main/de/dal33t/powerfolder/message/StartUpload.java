@@ -20,7 +20,9 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.UploadStartProto;
@@ -32,7 +34,7 @@ import de.dal33t.powerfolder.protocol.UploadStartProto;
  * @author Dennis "Dante" Waldherr
  * @version $Revision$
  */
-public class StartUpload extends Message implements D2DObject {
+public class StartUpload extends Message implements D2DObject, D2DEvent {
     private static final long serialVersionUID = 100L;
     protected FileInfo fileInfo;
 
@@ -81,4 +83,10 @@ public class StartUpload extends Message implements D2DObject {
         
         return builder.build();
     }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.UPLOAD_START;
+    }
+
 }

@@ -787,7 +787,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      *
      * @return the result of the connection attempt.
      */
-    public ConnectResult completeHandshake() {
+    private ConnectResult completeHandshake() {
         if (!isConnected()) {
             return ConnectResult.failure("Not connected");
         }
@@ -1881,7 +1881,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
     }
 
-    private void processFolderList(FolderList fList, ConnectionHandler fromPeer) {
+    public void processFolderList(FolderList fList, ConnectionHandler fromPeer) {
         try {
             nextFolderList = fList;
             folderJoinLock.lock();
@@ -2734,4 +2734,44 @@ public class Member extends PFComponent implements Comparable<Member> {
     public int compareTo(Member m) {
         return info.id.compareTo(m.info.id);
     }
+
+
+    // -------------------------------------------------------------------------------------
+    // ---------------------------------------- D2D ----------------------------------------
+    // -------------------------------------------------------------------------------------
+
+    public void handshakeFolderList() {
+        synchronized (peerInitializeLock) {
+            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), true)));
+        }
+        peer.sendMessagesAsynchron(new HandshakeCompleted());
+    }
+
+    public void completeHandshakeD2D() {
+        connectionRetries = 0;
+        getController().getNodeManager().connectStateChanged(this);
+        getController().getSecurityManager().nodeAccountStateChanged(this, true);
+
+        // Request files
+        for (Folder folder : getFoldersActuallyJoined()) {
+            if (folder.getSyncProfile().isAutodownload()) {
+                getController().getFolderRepository().getFileRequestor().triggerFileRequesting(folder.getInfo());
+            }
+            if (folder.getSyncProfile().isSyncDeletion()) {
+                folder.triggerSyncRemoteDeletedFiles(Collections.singleton(this), false);
+            }
+        }
+        handshaked = true;
+    }
+
+    public void processFolderListD2D(FolderList folderList) {
+        try {
+            folderJoinLock.lock();
+            lastFolderList = folderList;
+            joinToLocalFolders(folderList, peer);
+        } finally {
+            folderJoinLock.unlock();
+        }
+    }
+
 }

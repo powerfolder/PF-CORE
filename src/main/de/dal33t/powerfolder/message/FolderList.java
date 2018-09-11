@@ -22,9 +22,7 @@ package de.dal33t.powerfolder.message;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.d2d.D2DEvent;
-import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.d2d.NodeEvent;
+import de.dal33t.powerfolder.d2d.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
@@ -296,6 +294,15 @@ public class FolderList extends Message implements D2DObject, D2DEvent
             builder.addFolderInfos((FolderInfoProto.FolderInfo) folderInfo.toD2D());
         }
         return builder.build();
+    }
+
+    @Override
+    public void handle(Member node) {
+        node.processFolderListD2D(this);
+        // Execute additional code during handshake phase
+        if (((D2DSocketConnectionHandler)node.getPeer()).getNodeStateMachine().getCurrentState() == NodeState.OPEN_FOLDER_LIST_WAIT) {
+            node.handshakeFolderList();
+        }
     }
 
     @Override

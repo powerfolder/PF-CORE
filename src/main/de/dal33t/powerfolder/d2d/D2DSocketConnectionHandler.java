@@ -32,7 +32,6 @@ import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
 import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.io.EOFException;
@@ -51,7 +50,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
     implements ConnectionHandler {
 
-    private NodeStateMachine nodeStateMachine = NodeStateMachine.build(null);
+    private NodeStateMachine nodeStateMachine = NodeStateMachine.build();
     // Socket acceptor to accept connection after identity was received
     private ConnectionListener.SocketAcceptor socketAcceptor;
 
@@ -78,7 +77,11 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
         super(controller, socket);
     }
 
-    public ConnectionListener.SocketAcceptor getSocketAcceptor() {
+    public NodeStateMachine getNodeStateMachine() {
+        return nodeStateMachine;
+    }
+
+    private ConnectionListener.SocketAcceptor getSocketAcceptor() {
         return socketAcceptor;
     }
 

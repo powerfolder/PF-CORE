@@ -21,7 +21,11 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.HandshakeCompletedProto;
 
 /**
@@ -30,8 +34,7 @@ import de.dal33t.powerfolder.protocol.HandshakeCompletedProto;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class HandshakeCompleted extends Message
-  implements D2DObject
+public class HandshakeCompleted extends Message implements D2DObject, D2DEvent
 {
     private static final long serialVersionUID = 100L;
 
@@ -68,5 +71,15 @@ public class HandshakeCompleted extends Message
       builder.setClazzName(this.getClass().getSimpleName());
 
       return builder.build();
+    }
+
+    @Override
+    public void handle(Member node) {
+        node.completeHandshakeD2D();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.HANDSHAKE_COMPLETED;
     }
 }

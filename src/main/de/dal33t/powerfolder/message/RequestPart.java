@@ -20,7 +20,9 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.protocol.DataRangeProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
@@ -30,8 +32,7 @@ import de.dal33t.powerfolder.util.Reject;
 
 import java.io.IOException;
 
-public class RequestPart extends Message
-  implements D2DObject
+public class RequestPart extends Message implements D2DObject, D2DEvent
 {
     private static final long serialVersionUID = 100L;
 
@@ -173,4 +174,10 @@ public class RequestPart extends Message
 
       return builder.build();
     }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.FILE_SEARCH_REQUEST;
+    }
+
 }
