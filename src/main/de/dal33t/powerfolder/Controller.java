@@ -762,7 +762,7 @@ public class Controller extends PFComponent {
         // Setup our background working tasks
         setupPeriodicalTasks();
 
-        if (MacUtils.isSupported()) {
+        if (MacUtils.isSupported() && !getMySelf().isServer()) {
             MacUtils macUtils = MacUtils.getInstance();
             if (macUtils != null) {
                 if (isFirstStart()) {
