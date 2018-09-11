@@ -2,12 +2,13 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.StatusCode;
+import de.dal33t.powerfolder.d2d.D2DReplyFromServer;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.protocol.FolderServerNodesReplyProto;
 import de.dal33t.powerfolder.protocol.NodeInfoProto;
 
-public class FolderServerNodesReply extends D2DReplyMessage {
+public class FolderServerNodesReply extends D2DReplyMessage implements D2DReplyFromServer {
 
     private MemberInfo[] nodeInfos;
 

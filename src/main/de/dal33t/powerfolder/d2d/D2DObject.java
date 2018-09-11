@@ -23,6 +23,7 @@ package de.dal33t.powerfolder.d2d;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.message.Message;
 
 public interface
 D2DObject {
@@ -44,7 +45,7 @@ D2DObject {
     AbstractMessage toD2D();
 
     default void handle(Member node) {
+        node.handleMessage((Message)this, node.getPeer());
     }
 
 }
-

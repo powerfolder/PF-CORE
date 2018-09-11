@@ -2,9 +2,11 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.ShareLinkRemoveRequestProto;
 
-public class ShareLinkRemoveRequest extends D2DRequestMessage {
+public class ShareLinkRemoveRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     private String shareLinkId;
 
@@ -59,6 +61,11 @@ public class ShareLinkRemoveRequest extends D2DRequestMessage {
     @Override
     public boolean isValid() {
         return super.isValid() && this.shareLinkId != null;
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.SHARE_LINK_REMOVE_REQUEST;
     }
 
 }

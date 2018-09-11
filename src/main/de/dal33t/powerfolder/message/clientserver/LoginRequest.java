@@ -1,8 +1,10 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.LoginRequestProto;
 
 public class LoginRequest extends D2DRequestMessage implements D2DRequestToServer {
@@ -77,6 +79,11 @@ public class LoginRequest extends D2DRequestMessage implements D2DRequestToServe
     @Override
     public boolean isValid() {
         return super.isValid() && this.username != null && this.password != null;
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.LOGIN_REQUEST;
     }
 
 }

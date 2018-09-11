@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.AccountInfoRequestProto;
 
 public class AccountInfoRequest extends D2DRequestMessage implements D2DRequestToServer {
@@ -63,6 +64,11 @@ public class AccountInfoRequest extends D2DRequestMessage implements D2DRequestT
     @Override
     public boolean isValid() {
         return super.isValid();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.ACCOUNT_INFO_REQUEST;
     }
 
 }

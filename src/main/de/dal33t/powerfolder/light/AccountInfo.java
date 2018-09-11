@@ -20,7 +20,9 @@
 package de.dal33t.powerfolder.light;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.AccountInfoProto;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -38,7 +40,7 @@ import java.util.Collection;
  * @author sprajc
  */
 @Embeddable
-public class AccountInfo implements Serializable, D2DObject {
+public class AccountInfo implements Serializable, D2DObject, D2DEvent {
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_USERNAME = "username";
 
@@ -268,4 +270,10 @@ public class AccountInfo implements Serializable, D2DObject {
       }
       return builder.build();
     }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.ACCOUNT_INFO_REQUEST;
+    }
+
 }

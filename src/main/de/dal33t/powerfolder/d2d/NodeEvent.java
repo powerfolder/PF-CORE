@@ -1,28 +1,37 @@
 package de.dal33t.powerfolder.d2d;
 
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.IdentityReply;
-import de.dal33t.powerfolder.message.clientserver.AccountInfoRequest;
-import de.dal33t.powerfolder.message.clientserver.LoginRequest;
-
 public enum NodeEvent {
 
+    ACCOUNT_CHANGE_REQUEST,
+    ACCOUNT_INFO_REQUEST,
+    ACCOUNT_SEARCH_REQUEST,
+    ACTIVITY_LIST_REQUEST,
+    AVATAR_REQUEST,
+    CERTIFICATE_SIGNING_REQUEST,
+    CREATE_ACCOUNT_REQUEST,
+    FILE_SEARCH_REQUEST,
+    FOLDER_CREATE_REQUEST,
+    FOLDER_LIST,
+    FOLDER_REMOVE_REQUEST,
+    FOLDER_RENAME_REQUEST,
+    FOLDER_SERVER_NODES_REQUEST,
+    GROUP_SEARCH_REQUEST,
     IDENTITY,
     IDENTITY_REPLY,
+    INVITATION_ACCEPT_REQUEST,
+    INVITATION_CREATE_REQUEST,
     LOGIN_REQUEST,
-    ACCOUNT_INFO_REQUEST;
-
-    public static NodeEvent getEnum(D2DObject object) {
-        if (object instanceof Identity) {
-            return IDENTITY;
-        } else if (object instanceof IdentityReply) {
-            return IDENTITY_REPLY;
-        } else if (object instanceof LoginRequest) {
-            return LOGIN_REQUEST;
-        } else if (object instanceof AccountInfoRequest) {
-            return ACCOUNT_INFO_REQUEST;
-        }
-        return IDENTITY;
-    }
+    PING,
+    PONG,
+    PERMISSION_CHANGE_REQUEST,
+    PERMISSION_INFO_REQUEST,
+    PERMISSION_LIST_REQUEST,
+    PERMISSION_REMOVE_REQUEST,
+    SHARE_LINK_CHANGE_REQUEST,
+    SHARE_LINK_CREATE_REQUEST,
+    SHARE_LINK_INFO_REQUEST,
+    SHARE_LINK_LIST_REQUEST,
+    SHARE_LINK_REMOVE_REQUEST,
+    THUMBNAIL_REQUEST;
 
 }

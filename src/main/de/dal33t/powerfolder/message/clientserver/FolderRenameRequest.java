@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
@@ -43,6 +44,11 @@ public class FolderRenameRequest extends FolderCreateRequest {
         if (this.folderInfo != null) builder.setFolderInfo((FolderInfoProto.FolderInfo) this.folderInfo.toD2D());
         if (this.name != null) builder.setName(this.name);
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.FOLDER_RENAME_REQUEST;
     }
 
 }

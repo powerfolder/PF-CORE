@@ -2,9 +2,11 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.FileSearchRequestProto;
 
-public class FileSearchRequest extends D2DRequestMessage {
+public class FileSearchRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     private String folderId;
     private String relativePath;
@@ -70,6 +72,11 @@ public class FileSearchRequest extends D2DRequestMessage {
     @Override
     public boolean isValid() {
         return super.isValid() && this.relativePath != null;
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.FILE_SEARCH_REQUEST;
     }
 
 }

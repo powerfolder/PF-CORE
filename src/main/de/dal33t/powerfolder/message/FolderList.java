@@ -22,7 +22,9 @@ package de.dal33t.powerfolder.message;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
@@ -47,8 +49,7 @@ import java.util.logging.Logger;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.9 $
  */
-public class FolderList extends Message
-  implements D2DObject
+public class FolderList extends Message implements D2DObject, D2DEvent
 {
     private static final long serialVersionUID = 101L;
     private static Logger LOG = Logger.getLogger(FolderList.class.getName());
@@ -297,4 +298,8 @@ public class FolderList extends Message
         return builder.build();
     }
 
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.FOLDER_LIST;
+    }
 }

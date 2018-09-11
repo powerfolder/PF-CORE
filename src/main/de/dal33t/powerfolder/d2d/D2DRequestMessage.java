@@ -23,7 +23,7 @@ package de.dal33t.powerfolder.d2d;
 
 import de.dal33t.powerfolder.message.Message;
 
-public abstract class D2DRequestMessage extends Message implements D2DObject {
+public abstract class D2DRequestMessage extends Message implements D2DObject, D2DEvent {
 
     protected String requestCode;
 

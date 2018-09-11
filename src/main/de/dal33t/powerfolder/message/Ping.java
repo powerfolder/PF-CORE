@@ -25,7 +25,9 @@ import java.io.ObjectOutput;
 
 import com.google.protobuf.AbstractMessage;
 
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.PingProto;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -36,8 +38,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.4 $
  */
-public class Ping extends Message
-    implements D2DObject
+public class Ping extends Message implements D2DObject, D2DEvent
 {
     // #462: implements Externalizable {
     private static final long serialVersionUID = 100L;
@@ -180,5 +181,10 @@ public class Ping extends Message
       }
 
       return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.PING;
     }
 }

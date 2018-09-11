@@ -334,17 +334,17 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                         throw new IOException("Illegal packet size: " + totalSize);
                     }
                     byte[] data = serializer.read(in, totalSize);
-                    Object obj = deserialize(data, totalSize);
-                    if (obj instanceof D2DObject) {
-                        if (obj instanceof Identity) {
+                    Object message = deserialize(data, totalSize);
+                    if (message instanceof D2DObject) {
+                        if (message instanceof Identity) {
                             // I know this is really ugly but ¯\_(ツ)_/¯
                             synchronized (identityWaiter) {
-                                identity = (Identity) obj;
+                                identity = (Identity) message;
                                 identityWaiter.notifyAll();
                             }
                             getSocketAcceptor().acceptConnection(D2DSocketConnectionHandler.this);
                         }
-                        nodeStateMachine.fire(NodeEvent.getEnum((D2DObject) obj), obj);
+                        nodeStateMachine.fire(((D2DEvent) message).getNodeEvent(), message);
                         continue;
                     }
                     lastKeepaliveMessage = new Date();

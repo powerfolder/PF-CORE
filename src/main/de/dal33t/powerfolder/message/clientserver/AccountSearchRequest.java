@@ -2,9 +2,11 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.AccountSearchRequestProto;
 
-public class AccountSearchRequest extends D2DRequestMessage {
+public class AccountSearchRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     private String keyword;
 
@@ -56,6 +58,11 @@ public class AccountSearchRequest extends D2DRequestMessage {
     @Override
     public boolean isValid() {
         return super.isValid() && this.keyword != null;
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.ACCOUNT_SEARCH_REQUEST;
     }
 
 }

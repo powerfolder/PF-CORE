@@ -21,7 +21,9 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.IdentityReplyProto;
 
 /**
@@ -30,8 +32,7 @@ import de.dal33t.powerfolder.protocol.IdentityReplyProto;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public class IdentityReply extends Message
-  implements D2DObject
+public class IdentityReply extends Message implements D2DObject, D2DEvent
 {
     private static final long serialVersionUID = 100L;
 
@@ -114,4 +115,10 @@ public class IdentityReply extends Message
 
       return builder.build();
     }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.IDENTITY_REPLY;
+    }
+
 }

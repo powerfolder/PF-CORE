@@ -21,10 +21,13 @@ public class NodeStateMachine extends AbstractUntypedStateMachine {
 
     static NodeStateMachine build(Member node) {
         UntypedStateMachineBuilder builder = StateMachineBuilderFactory.create(NodeStateMachine.class);
+        // Handshake
         builder.externalTransition().from(NodeState.LISTEN).to(NodeState.OPEN_IDENTITY_REPLY_WAIT).on(NodeEvent.IDENTITY).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_IDENTITY_REPLY_WAIT).to(NodeState.OPEN_LOGIN_REQUEST_WAIT).on(NodeEvent.IDENTITY_REPLY).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_LOGIN_REQUEST_WAIT).to(NodeState.OPEN_ACCOUNT_INFO_REQUEST_WAIT).on(NodeEvent.LOGIN_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_ACCOUNT_INFO_REQUEST_WAIT).to(NodeState.OPEN_FOLDER_LIST_WAIT).on(NodeEvent.ACCOUNT_INFO_REQUEST).callMethod("handle");
+        // Always allow
+        //builder.externalTransition().from("*").to("*").on(NodeEvent.PERMISSION_LIST_REQUEST).callMethod("handle");
         NodeStateMachine nodeStateMachine = (NodeStateMachine) builder.newStateMachine(NodeState.LISTEN);
         nodeStateMachine.node = node;
         return nodeStateMachine;

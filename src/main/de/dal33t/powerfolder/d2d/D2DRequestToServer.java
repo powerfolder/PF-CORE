@@ -7,6 +7,9 @@ public interface D2DRequestToServer extends D2DObject {
 
     @Override
     default void handle(Member node) {
-        node.getController().getNodeManager().messageReceived(node, (Message)this);
+        if (node.getController().getMySelf().isServer()) {
+            node.getController().getNodeManager().messageReceived(node, (Message) this);
+        }
     }
+
 }

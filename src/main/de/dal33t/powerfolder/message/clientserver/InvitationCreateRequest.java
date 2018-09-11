@@ -4,6 +4,8 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
@@ -14,7 +16,7 @@ import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
-public class InvitationCreateRequest extends D2DRequestMessage {
+public class InvitationCreateRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     private static final Logger LOG = Logger.getLogger(InvitationCreateRequest.class.getName());
 
@@ -174,6 +176,11 @@ public class InvitationCreateRequest extends D2DRequestMessage {
     @Override
     public boolean isValid() {
         return super.isValid() && this.permissions != null && this.subjects != null;
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.INVITATION_CREATE_REQUEST;
     }
 
 }
