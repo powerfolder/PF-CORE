@@ -22,6 +22,7 @@
 package de.dal33t.powerfolder.d2d;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.Member;
 
 public interface
 D2DObject {
@@ -32,7 +33,7 @@ D2DObject {
      *
      * @param mesg {@link Message} to use data from
      **/
-    public void initFromD2D(AbstractMessage mesg);
+    void initFromD2D(AbstractMessage mesg);
 
     /**
      * toD2DMessage
@@ -40,6 +41,10 @@ D2DObject {
      *
      * @return Converted {@link AbstractMessage D2D message}
      **/
-    public AbstractMessage toD2D();
+    AbstractMessage toD2D();
+
+    default void handle(Member node) {
+    }
 
 }
+

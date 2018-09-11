@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
@@ -657,7 +658,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         info.setD2dPort(identity.getMemberInfo().getD2dPort());
 
-        return completeHandshake();
+        if (peer instanceof D2DSocketConnectionHandler) {
+            return ConnectResult.success();
+        } else {
+            return completeHandshake();
+        }
     }
 
     /**
@@ -782,7 +787,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      *
      * @return the result of the connection attempt.
      */
-    private ConnectResult completeHandshake() {
+    public ConnectResult completeHandshake() {
         if (!isConnected()) {
             return ConnectResult.failure("Not connected");
         }

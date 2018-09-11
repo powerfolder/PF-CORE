@@ -2,9 +2,10 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
 import de.dal33t.powerfolder.protocol.AccountInfoRequestProto;
 
-public class AccountInfoRequest extends D2DRequestMessage {
+public class AccountInfoRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     private String accountId;
     private String nodeId;

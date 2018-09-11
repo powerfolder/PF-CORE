@@ -24,28 +24,36 @@ package de.dal33t.powerfolder.d2d;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.*;
-import de.dal33t.powerfolder.net.AbstractSocketConnectionHandler;
-import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.net.ConnectionHandler;
-import de.dal33t.powerfolder.net.ConnectionHandlerFactory;
+import de.dal33t.powerfolder.net.*;
 import de.dal33t.powerfolder.protocol.AnyMessageProto;
 import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
+import de.dal33t.powerfolder.transfer.LimitedInputStream;
+import de.dal33t.powerfolder.transfer.LimitedOutputStream;
+import de.dal33t.powerfolder.util.Convert;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.Reject;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InvalidClassException;
+import java.io.InvalidObjectException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.Date;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Handler for relayed connections to other clients. NO encrypted transfer.
- * <p>
- * TRAC #597.
- *
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
- * @version $Revision: 1.72 $
- */
 public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
     implements ConnectionHandler {
+
+    private NodeStateMachine nodeStateMachine = NodeStateMachine.build(null);
+    // Socket acceptor to accept connection after identity was received
+    private ConnectionListener.SocketAcceptor socketAcceptor;
 
     /* Define full packages here; might be required in the future */
     private final String[] PACKAGES = new String[] {
@@ -61,14 +69,53 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
      *
      * @see ConnectionHandlerFactory
      * @param controller
-     *            The {@link controller}
+     *            The {@link Controller}
      * @param socket
-     *            The {@link socket}
-     * @throws ConnectionException
+     *            The {@link Socket}
      **/
 
     public D2DSocketConnectionHandler(Controller controller, Socket socket) {
         super(controller, socket);
+    }
+
+    public ConnectionListener.SocketAcceptor getSocketAcceptor() {
+        return socketAcceptor;
+    }
+
+    public void setSocketAcceptor(ConnectionListener.SocketAcceptor socketAcceptor) {
+        this.socketAcceptor = socketAcceptor;
+    }
+
+    /**
+     * Initializes the connection handler.
+     *
+     * @throws ConnectionException ¯\_(ツ)_/¯
+     */
+    @Override
+    public void init() throws ConnectionException {
+        if (socket == null) {
+            throw new NullPointerException("Socket is null");
+        }
+        if (socket.isClosed() || !socket.isConnected()) {
+            throw new ConnectionException("Connection to peer is closed")
+                    .with(this);
+        }
+        this.started = true;
+        this.identityReply = null;
+        this.messagesToSendQueue = new ConcurrentLinkedQueue<>();
+        this.senderSpawnLock = new ReentrantLock();
+
+        try {
+            out = new LimitedOutputStream(getController().getTransferManager().getOutputLimiter(this), socket.getOutputStream());
+            in = new LimitedInputStream(getController().getTransferManager().getInputLimiter(this), socket.getInputStream());
+            // Start receiver
+            getController().getIOProvider().startIO(new D2DSocketConnectionHandler.Receiver());
+            // Send identity
+            sendMessagesAsynchron(createOwnIdentity());
+        } catch (IOException e) {
+            throw new ConnectionException("Unable to open connection: " + e.getMessage(), e).with(this);
+        }
+        getController().getIOProvider().startKeepAliveCheck(this);
     }
 
     /**
@@ -87,12 +134,11 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
     protected Object deserialize(byte[] data, int len)
         throws ClassNotFoundException, ConnectionException {
 
-        String klassName = "unknown";
-
         if (isFiner()) {
             logFiner("Got message; parsing it..");
         }
 
+        String klassName = "unknown";
         try {
             AnyMessageProto.AnyMessage anyMessage = AnyMessageProto.AnyMessage
                 .parseFrom(data);
@@ -117,8 +163,8 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
 
             /* Try to create D2D message */
             Class<?> klass = Class.forName(klassPkg);
-            Method meth = klass.getMethod("parseFrom", byte[].class);
-            AbstractMessage amesg = (AbstractMessage) meth.invoke(null, data);
+            Method method = klass.getMethod("parseFrom", byte[].class);
+            AbstractMessage abstractMessage = (AbstractMessage) method.invoke(null, (Object) data);
 
             // Translate new names defined in protocol files to old message names
             if (klassName.equals("DownloadAbort")) {
@@ -163,13 +209,13 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                 if(null != klass) break; ///< Exit when done
             }
             
-            meth = klass.getMethod("initFromD2D", AbstractMessage.class);
+            method = klass.getMethod("initFromD2D", AbstractMessage.class);
 
-            Object mesg = klass.newInstance();
+            Object message = klass.newInstance();
 
-            meth.invoke(mesg, amesg); ///< Call initFromD2DMessage
+            method.invoke(message, abstractMessage); ///< Call initFromD2DMessage
 
-            return mesg;
+            return message;
         } catch (NoSuchMethodException | SecurityException
             | IllegalArgumentException | InvocationTargetException
             | InstantiationException | IllegalAccessException
@@ -195,39 +241,39 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
      **/
 
     @Override
-    protected byte[] serialize(Message mesg) throws ConnectionException {
+    protected byte[] serialize(Message message) throws ConnectionException {
         // Block unsupported messages
-        if (mesg instanceof AddFriendNotification) {
-            mesg = new Ping();
-        } else if (mesg instanceof KnownNodes) {
-            mesg = new Ping();
-        } else if (mesg instanceof RelayedMessageExt) {
-            mesg = new Ping();
-        } else if (mesg instanceof Invitation) {
-            mesg = new Ping();
-        } else if (mesg instanceof Problem) {
-            mesg = new Ping();
-        } else if (mesg instanceof RequestNodeList) {
-            mesg = new Ping();
-        } else if (mesg instanceof TransferStatus) {
-            mesg = new Ping();
-        } else if (mesg instanceof UDTMessage) {
-            mesg = new Ping();
+        if (message instanceof AddFriendNotification) {
+            message = new Ping();
+        } else if (message instanceof KnownNodes) {
+            message = new Ping();
+        } else if (message instanceof RelayedMessageExt) {
+            message = new Ping();
+        } else if (message instanceof Invitation) {
+            message = new Ping();
+        } else if (message instanceof Problem) {
+            message = new Ping();
+        } else if (message instanceof RequestNodeList) {
+            message = new Ping();
+        } else if (message instanceof TransferStatus) {
+            message = new Ping();
+        } else if (message instanceof UDTMessage) {
+            message = new Ping();
         }
 
         byte[] data = null;
 
-        if (mesg instanceof D2DObject) {
-            AbstractMessage amesg = ((D2DObject) mesg).toD2D();
+        if (message instanceof D2DObject) {
+            AbstractMessage abstractMessage = ((D2DObject) message).toD2D();
 
             if (isFiner()) {
-                logFiner("Sent " + amesg.getClass().getCanonicalName());
+                logFiner("Sent " + abstractMessage.getClass().getCanonicalName());
             }
 
-            data = amesg.toByteArray();
+            data = abstractMessage.toByteArray();
         } else {
             throw new ConnectionException(
-                "Message " + mesg.getClass().getSimpleName()
+                "Message " + message.getClass().getSimpleName()
                     + " does not implement D2Object").with(this);
         }
 
@@ -246,4 +292,113 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
             getController().getMySelf().getInfo(), getMyMagicId(), false, false,
             this);
     }
+
+    @Override
+    public boolean acceptIdentity(Member node) {
+        this.nodeStateMachine.setNode(node);
+        Reject.ifNull(node, "node is null");
+        member = node;
+        if (isFiner()) {
+            logFiner("Sending accept of identity to " + this);
+        }
+        sendMessagesAsynchron(IdentityReply.accept());
+        return true;
+    }
+
+    /**
+     * Receiver, responsible to deserialize messages
+     *
+     * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
+     * @version $Revision: 1.72 $
+     */
+    class Receiver implements Runnable {
+
+        @Override
+        public void run() {
+            byte[] sizeArr = new byte[4];
+            while (started) {
+                // check connection status
+                if (!isConnected()) {
+                    break;
+                }
+
+                try {
+                    // Read data header, total size
+                    read(in, sizeArr, 0, sizeArr.length);
+                    int totalSize = Convert.convert2Int(sizeArr);
+                    if (!started) {
+                        // Do not process this message
+                        break;
+                    }
+                    if (totalSize <= 0) {
+                        throw new IOException("Illegal packet size: " + totalSize);
+                    }
+                    byte[] data = serializer.read(in, totalSize);
+                    Object obj = deserialize(data, totalSize);
+                    if (obj instanceof D2DObject) {
+                        if (obj instanceof Identity) {
+                            // I know this is really ugly but ¯\_(ツ)_/¯
+                            synchronized (identityWaiter) {
+                                identity = (Identity) obj;
+                                identityWaiter.notifyAll();
+                            }
+                            getSocketAcceptor().acceptConnection(D2DSocketConnectionHandler.this);
+                        }
+                        nodeStateMachine.fire(NodeEvent.getEnum((D2DObject) obj), obj);
+                        continue;
+                    }
+                    lastKeepaliveMessage = new Date();
+                    getController().getTransferManager().getTotalDownloadTrafficCounter().bytesTransferred(totalSize);
+
+                    if (!getController().isStarted() || member == null || !isConnected()) {
+                        break;
+                    }
+                } catch (SocketTimeoutException e) {
+                    logFiner("Socket timeout on read, not disconnecting. " + e);
+                } catch (SocketException | EOFException e) {
+                    logConnectionClose(e);
+                    // connection closed
+                    break;
+                } catch (InvalidClassException e) {
+                    logFiner("InvalidClassException", e);
+                    String from = getMember() != null
+                            ? getMember().getNick()
+                            : this.toString();
+                    logWarning("Received unknown packet/class: "
+                            + e.getMessage() + " from " + from);
+                    // do not break connection
+                } catch (InvalidObjectException e) {
+                    logFiner("InvalidObjectException", e);
+                    String from = getMember() != null
+                            ? getMember().getNick()
+                            : toString();
+                    logWarning("Received invalid object: " + e.getMessage()
+                            + " from " + from);
+                    // do not break connection
+                } catch (IOException e) {
+                    logFiner("IOException", e);
+                    logConnectionClose(e);
+                    break;
+                } catch (ConnectionException e) {
+                    logFiner("ConnectionException", e);
+                    logConnectionClose(e);
+                    break;
+                } catch (ClassNotFoundException e) {
+                    logFiner("ClassNotFoundException", e);
+                    logWarning("Received unknown packet/class: "
+                            + e.getMessage() + " from "
+                            + D2DSocketConnectionHandler.this);
+                    // do not break connection
+                } catch (RuntimeException e) {
+                    logSevere("RuntimeException. " + e, e);
+                    shutdownWithMember();
+                    throw e;
+                }
+            }
+
+            // Shut down
+            shutdownWithMember();
+        }
+    }
+
 }
