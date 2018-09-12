@@ -20,43 +20,26 @@
 package de.dal33t.powerfolder.util.pattern;
 
 import de.dal33t.powerfolder.util.Reject;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Matching on any texts that end with the given pattern.
  */
 public class StartMatchPattern extends AbstractPattern {
 
-    private char[] matchLower;
-    private char[] matchUpper;
-
     /**
-     * Constructor.
-     *
-     * @param patternStringArg
+     * @see AbstractPattern#AbstractPattern(String)
      */
-    public StartMatchPattern(String patternStringArg) {
-        super(patternStringArg);
-        Reject.ifFalse(patternStringArg.indexOf("*") == patternStringArg
+    StartMatchPattern(@NotNull String patternString) {
+        super(patternString.replace("*", ""));
+        Reject.ifFalse(patternString.indexOf("*") == patternString
             .length() - 1,
             "Pattern must end with * and should not contain any other stars");
-        matchLower = getPatternText().replaceAll("\\*", "").toLowerCase()
-            .toCharArray();
-        matchUpper = getPatternText().replaceAll("\\*", "").toUpperCase()
-            .toCharArray();
     }
 
-    public boolean isMatch(String matchString) {
-        if (matchString.length() < matchLower.length) {
-            return false;
-        }
-        for (int i = 0; i < matchLower.length; i++) {
-            char cms = matchString.charAt(i);
-            if (!equalChar(cms, matchLower[i], matchUpper[i])) {
-                return false;
-            }
-        }
-        // MATCH!
-        return true;
+    @Override
+    public boolean isMatch(@NotNull String matchString) {
+        return matchString.toLowerCase().startsWith(patternText);
     }
 
 }
