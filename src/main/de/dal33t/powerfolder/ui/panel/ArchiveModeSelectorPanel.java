@@ -40,6 +40,7 @@ import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.util.Translation;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Panel for displaying and selecting archive mode. Attached are a pair of
@@ -47,28 +48,13 @@ import de.dal33t.powerfolder.util.Translation;
  * version history).
  *
  * @author <a href="mailto:hglasgow@powerfolder.com">Harry Glasgow</a>
- * @version $Revision: 2.01 $
  */
 public class ArchiveModeSelectorPanel extends PFUIComponent {
 
     /**
      * Map of available modes.
      */
-    private static final Set<NameValuePair> PAIRS = new TreeSet<NameValuePair>();
-    static {
-        PAIRS.add(new NameValuePair(0, Translation
-            .get("archive_mode_selector_panel.none"), 0));
-        PAIRS.add(new NameValuePair(1, Translation.get(
-            "archive_mode_selector_panel.version", "1"), 1));
-        PAIRS.add(new NameValuePair(5, Translation.get(
-            "archive_mode_selector_panel.versions", "5"), 5));
-        PAIRS.add(new NameValuePair(9, Translation.get(
-            "archive_mode_selector_panel.versions", "25"), 25));
-        PAIRS.add(new NameValuePair(10, Translation.get(
-            "archive_mode_selector_panel.versions", "100"), 100));
-        PAIRS.add(new NameValuePair(11, Translation
-            .get("archive_mode_selector_panel.unlimited"), -1));
-    }
+    private final Set<NameValuePair> pairs = new TreeSet<>();
 
     private JComboBox<String> archiveCombo;
     private JPanel panel;
@@ -80,8 +66,6 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      *
      * @param controller
      *            the necessary evil...
-     * @param modeModels
-     *            List<ValueModel{ArchiveMode}> that gets notified of mode changes.
      * @param versionModels
      *            List<ValueModel{Integer}> that gets notified of version history
      *            changes.
@@ -98,22 +82,6 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
     }
 
     public ArchiveModeSelectorPanel(Controller controller,
-        ValueModel versionModel,
-        ActionListener purgeListener) {
-        super(controller);
-        versionModels = Collections.singletonList(versionModel);
-        this.purgeListener = purgeListener;
-        initComponents();
-    }
-
-    public ArchiveModeSelectorPanel(Controller controller,
-        List<ValueModel> versionModels) {
-        super(controller);
-        this.versionModels = versionModels;
-        initComponents();
-    }
-
-    public ArchiveModeSelectorPanel(Controller controller,
         ValueModel versionModel) {
         super(controller);
         versionModels = Collections.singletonList(versionModel);
@@ -124,16 +92,16 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      * Set the archive mode and verions history for the panel. Value models are
      * not notified of changes during the set operation.
      *
-     * @param versionHistory
+     * @param versionHistory The number of versions
      */
     public void setArchiveMode(int versionHistory) {
         if (versionHistory == 0) {
             archiveCombo.setSelectedIndex(0); // No Backup
         } else if (versionHistory == -1) {
-            archiveCombo.setSelectedIndex(PAIRS.size() - 1); // Unlimited
+            archiveCombo.setSelectedIndex(pairs.size() - 1); // Unlimited
         } else {
             int index = 0;
-            for (NameValuePair nvp : PAIRS) {
+            for (NameValuePair nvp : pairs) {
                 if (index != 0 && versionHistory <= nvp.getValue()) {
                     archiveCombo.setSelectedIndex(index);
                     return;
@@ -142,7 +110,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
             }
 
             // versionHistory > max ==> Unlimited
-            archiveCombo.setSelectedIndex(PAIRS.size() - 1);
+            archiveCombo.setSelectedIndex(pairs.size() - 1);
         }
 
         // Make sure that the models have the correct values, in case nothing
@@ -153,7 +121,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
     /**
      * Builds panel and returns the component.
      *
-     * @return
+     * @return The complete panel
      */
     public Component getUIComponent() {
         if (panel == null) {
@@ -166,9 +134,24 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      * Initialize the visual components.
      */
     private void initComponents() {
-        String[] names = new String[PAIRS.size()];
+        pairs.clear();
+
+        pairs.add(new NameValuePair(0, Translation
+            .get("archive_mode_selector_panel.none"), 0));
+        pairs.add(new NameValuePair(1, Translation.get(
+            "archive_mode_selector_panel.version", "1"), 1));
+        pairs.add(new NameValuePair(5, Translation.get(
+            "archive_mode_selector_panel.versions", "5"), 5));
+        pairs.add(new NameValuePair(9, Translation.get(
+            "archive_mode_selector_panel.versions", "25"), 25));
+        pairs.add(new NameValuePair(10, Translation.get(
+            "archive_mode_selector_panel.versions", "100"), 100));
+        pairs.add(new NameValuePair(11, Translation
+            .get("archive_mode_selector_panel.unlimited"), -1));
+
+        String[] names = new String[pairs.size()];
         int i = 0;
-        for (NameValuePair pair : PAIRS) {
+        for (NameValuePair pair : pairs) {
             names[i++] = pair.getName();
         }
         archiveCombo = new JComboBox<>(names);
@@ -180,14 +163,14 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
      */
     private void fireChange() {
         int index = archiveCombo.getSelectedIndex();
-        if (index == 0) { // No Backup
+        if (index <= 0) { // No Backup
             for (ValueModel versionModel : versionModels) {
                 versionModel.setValue(0);
             }
         } else {
             for (ValueModel versionModel : versionModels) {
-                versionModel.setValue(PAIRS.toArray(
-                        new NameValuePair[PAIRS.size()])[index].getValue());
+                versionModel.setValue(pairs.toArray(
+                    new NameValuePair[0])[index].getValue());
             }
         }
     }
@@ -254,7 +237,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
             return value;
         }
 
-        public int compareTo(NameValuePair o) {
+        public int compareTo(@NotNull NameValuePair o) {
             return order - o.order;
         }
 
@@ -262,17 +245,13 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
             if (this == obj) {
                 return true;
             }
-            if (obj == null || getClass() != obj.getClass()) {
+            if (!(obj instanceof NameValuePair)) {
                 return false;
             }
 
             NameValuePair that = (NameValuePair) obj;
 
-            if (order != that.order) {
-                return false;
-            }
-
-            return true;
+            return order == that.order;
         }
 
         @Override
