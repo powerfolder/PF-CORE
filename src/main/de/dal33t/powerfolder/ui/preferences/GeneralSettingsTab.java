@@ -19,38 +19,12 @@
  */
 package de.dal33t.powerfolder.ui.preferences;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Locale;
-
-import javax.swing.Action;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-
 import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -71,6 +45,15 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.update.Updater;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
 
 public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
@@ -94,7 +77,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     
     private boolean needsRestart;
 
-    public GeneralSettingsTab(Controller controller) {
+    GeneralSettingsTab(Controller controller) {
         super(controller);
         initComponents();
     }
@@ -164,14 +147,10 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             .getFoldersBasedirString());
 
         // Behavior
-        locationModel.addValueChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateLocationComponents();
-            }
-        });
+        locationModel.addValueChangeListener(evt -> updateLocationComponents());
         locationField = createLocationField();
 
-        archiveCleanupCombo = new JComboBox<String>();
+        archiveCleanupCombo = new JComboBox<>();
         archiveCleanupCombo.addItem(Translation
             .get("preferences.general.archive_cleanup_day")); // 1
         archiveCleanupCombo.addItem(Translation
@@ -324,7 +303,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
     /**
      * Creates a pair of location text field and button.
      *
-     * @return
+     * @return The component containing a text field and button.
      */
     private JComponent createLocationField() {
         FormLayout layout = new FormLayout("140dlu, 3dlu, pref", "pref");
@@ -609,12 +588,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 GenericDialogType.WARN);
 
             if (result == 0) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        getController().getFolderRepository()
-                            .cleanupOldArchiveFiles(true);
-                    }
-                });
+                SwingUtilities.invokeLater(() -> getController().getFolderRepository()
+                    .cleanupOldArchiveFiles(true));
             }
         }
     }
@@ -647,14 +622,6 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private class ChangeAccountAction implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            SwingWorker<Object, Object> logout = new SwingWorker<Object, Object>() {
-                @Override
-                protected Object doInBackground() throws Exception {
-                    getController().getOSClient().logout();
-                    return null;
-                }
-
-            };
             PFWizard.openLoginWizard(getController(), getController()
                 .getOSClient());
         }
