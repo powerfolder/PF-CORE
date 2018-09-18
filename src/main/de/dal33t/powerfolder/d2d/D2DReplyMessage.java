@@ -3,7 +3,7 @@ package de.dal33t.powerfolder.d2d;
 import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.message.Message;
 
-public abstract class D2DReplyMessage extends Message implements D2DObject, D2DEvent {
+public abstract class D2DReplyMessage extends Message implements D2DObject {
 
     protected String replyCode;
     protected StatusCode replyStatusCode;

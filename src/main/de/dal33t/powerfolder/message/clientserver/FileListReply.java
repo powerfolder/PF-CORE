@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.StatusCode;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DReplyFromServer;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.d2d.NodeEvent;
@@ -9,15 +10,17 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileList;
+import de.dal33t.powerfolder.protocol.DirectoryInfoProto;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.FileListReplyProto;
 import de.dal33t.powerfolder.protocol.ShareLinkInfoProto;
 
 import java.util.Collection;
 
-public class FileListReply extends D2DReplyMessage {
+public class FileListReply extends D2DReplyMessage implements D2DEvent {
 
     private Collection<FileInfo> fileInfos;
+    private Collection<DirectoryInfo> directoryInfos;
 
     public FileListReply() {
     }
@@ -31,14 +34,19 @@ public class FileListReply extends D2DReplyMessage {
         initFromD2D(message);
     }
 
-    public FileListReply(String replyCode, StatusCode replyStatusCode, Collection<FileInfo> fileInfos) {
+    public FileListReply(String replyCode, StatusCode replyStatusCode, Collection<FileInfo> fileInfos, Collection<DirectoryInfo> directoryInfos) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.fileInfos = fileInfos;
+        this.directoryInfos = directoryInfos;
     }
 
     public Collection<FileInfo> getFileInfos() {
         return fileInfos;
+    }
+
+    public Collection<DirectoryInfo> getDirectoryInfos() {
+        return directoryInfos;
     }
 
     /**
@@ -53,7 +61,11 @@ public class FileListReply extends D2DReplyMessage {
             this.replyCode = proto.getReplyCode();
             this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             for (FileInfoProto.FileInfo fileInfo : proto.getFileInfosList()) {
-                this.fileInfos.add(new FileInfo(fileInfo));
+                if (fileInfo.getClazzName().equals("DirectoryInfo")) {
+                    this.fileInfos.add(new DirectoryInfo(fileInfo));
+                } else {
+                    this.fileInfos.add(new FileInfo(fileInfo));
+                }
             }
         }
     }
@@ -74,10 +86,14 @@ public class FileListReply extends D2DReplyMessage {
                 builder.addFileInfos((FileInfoProto.FileInfo) fileInfo.toD2D());
             }
         }
+        if (this.directoryInfos != null) {
+            for (DirectoryInfo directoryInfo : this.directoryInfos) {
+                builder.addFileInfos((FileInfoProto.FileInfo) directoryInfo.toD2D());
+            }
+        }
         return builder.build();
     }
 
-    @Override
     public NodeEvent getNodeEvent() {
         return NodeEvent.FILE_LIST_REPLY;
     }

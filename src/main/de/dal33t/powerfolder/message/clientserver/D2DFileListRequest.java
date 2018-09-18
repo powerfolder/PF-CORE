@@ -98,19 +98,18 @@ public class D2DFileListRequest extends D2DRequestMessage {
     @Override
     public void handle(Member node) {
         if (!this.isValid()) {
-            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.FORBIDDEN, null));
+            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.FORBIDDEN, null, null));
         }
         if (this.folderId != null) {
             FolderInfo folderInfo = new FolderInfo("", this.folderId);
             Folder folder = node.getController().getFolderRepository().getFolder(folderInfo);
             if (!folder.hasReadPermission(node)) {
-                node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
+                node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null, null));
             }
             folder.waitForScan();
             Collection<FileInfo> fileInfos = folder.getKnownFiles();
             Collection<DirectoryInfo> directoryInfos = folder.getKnownDirectories();
-            fileInfos.addAll(directoryInfos);
-            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.OK, fileInfos));
+            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.OK, fileInfos, directoryInfos));
         }
     }
 
