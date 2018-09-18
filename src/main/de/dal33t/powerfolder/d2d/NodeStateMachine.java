@@ -37,6 +37,8 @@ public class NodeStateMachine extends AbstractUntypedStateMachine {
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.CERTIFICATE_SIGNING_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.DOWNLOAD_ABORT).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.DOWNLOAD_REQUEST).callMethod("handle");
+        builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FILE_LIST_REPLY).callMethod("handle");
+        builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FILE_LIST_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FILE_PART_REPLY).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FILE_PART_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FILE_SEARCH_REQUEST).callMethod("handle");

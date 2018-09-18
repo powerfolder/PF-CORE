@@ -174,6 +174,8 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                 klassName = "AbortDownload";
             } else if (klassName.equals("DownloadRequest")) {
                 klassName = "RequestDownload";
+            } else if (klassName.equals("FileListRequest")) {
+                klassName = "D2DFileListRequest";
             } else if (klassName.equals("FilePartInfo")) {
                 klassName = "PartInfo";
             } else if (klassName.equals("FilePartInfoList")) {
