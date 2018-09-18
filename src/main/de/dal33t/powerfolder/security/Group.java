@@ -179,6 +179,22 @@ public class Group implements Serializable, D2DObject {
         return Collections.unmodifiableCollection(permissions);
     }
 
+    /**
+     * @see {@link Account#getPermissionFor(FolderInfo)}
+     **/
+    public FolderPermission getPermissionFor(FolderInfo foInfo) {
+        for (Permission perm : permissions) {
+            if (perm instanceof FolderPermission) {
+                FolderPermission foPerm = (FolderPermission) perm;
+                if (foPerm.getFolder().equals(foInfo)) {
+                    return foPerm;
+                }
+            }
+        }
+
+        return FolderPermission.get(foInfo, AccessMode.NO_ACCESS);
+    }
+
     public Collection<FolderInfo> getFolders() {
         Collection<FolderInfo> folder = new ArrayList<FolderInfo>(
             permissions.size());
@@ -374,8 +390,9 @@ public class Group implements Serializable, D2DObject {
         }
     }
     
-    /** toD2D
+    /**
      * Convert to D2D message
+     *
      * @author Christian Oberdörfer <oberdoerfer@powerfolder.com>
      * @return Converted D2D message
      **/
