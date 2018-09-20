@@ -19,9 +19,12 @@
  */
 package de.dal33t.powerfolder.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Class representing a Java version. It follows the java.runtime.version format
- * of &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;update&gt;-b&lt;build&gt;,
+ * of &lt;major&gt;.&lt;minor&gt;.&lt;revision&gt;_&lt;update&gt;-b&lt;build&gt;,
  * eg 1.6.2_10-b12 It implements Comparable&lt;JavaVersion&gt; by traversing the
  * version values.
  */
@@ -31,7 +34,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     private final int major;
     private final int minor;
-    private final int point;
+    private final int revision;
     private final int update;
     private final int build;
 
@@ -40,14 +43,14 @@ public class JavaVersion implements Comparable<JavaVersion> {
      *
      * @param major
      * @param minor
-     * @param point
+     * @param revision
      * @param update
      * @param build
      */
-    public JavaVersion(int major, int minor, int point, int update, int build) {
+    public JavaVersion(int major, int minor, int revision, int update, int build) {
         this.major = major;
         this.minor = minor;
-        this.point = point;
+        this.revision = revision;
         this.update = update;
         this.build = build;
     }
@@ -57,11 +60,11 @@ public class JavaVersion implements Comparable<JavaVersion> {
      *
      * @param major
      * @param minor
-     * @param point
+     * @param revision
      * @param update
      */
-    public JavaVersion(int major, int minor, int point, int update) {
-        this(major, minor, point, update, 0);
+    public JavaVersion(int major, int minor, int revision, int update) {
+        this(major, minor, revision, update, 0);
     }
 
     /**
@@ -69,14 +72,14 @@ public class JavaVersion implements Comparable<JavaVersion> {
      *
      * @param major
      * @param minor
-     * @param point
+     * @param revision
      */
-    public JavaVersion(int major, int minor, int point) {
-        this(major, minor, point, 0, 0);
+    public JavaVersion(int major, int minor, int revision) {
+        this(major, minor, revision, 0, 0);
     }
 
     /**
-     * Constructor, defaulting point, update and build to zero.
+     * Constructor, defaulting revision, update and build to zero.
      *
      * @param major
      * @param minor
@@ -113,12 +116,12 @@ public class JavaVersion implements Comparable<JavaVersion> {
     }
 
     /**
-     * Returns the point value of the version.
+     * Returns the revision value of the version.
      *
      * @return
      */
-    public int getPoint() {
-        return point;
+    public int getRevision() {
+        return revision;
     }
 
     /**
@@ -156,7 +159,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
         if (minor != that.minor) {
             return false;
         }
-        if (point != that.point) {
+        if (revision != that.revision) {
             return false;
         }
         if (update != that.update) {
@@ -174,14 +177,14 @@ public class JavaVersion implements Comparable<JavaVersion> {
     public int hashCode() {
         int result = major;
         result = 31 * result + minor;
-        result = 31 * result + point;
+        result = 31 * result + revision;
         result = 31 * result + build;
         result = 31 * result + update;
         return result;
     }
 
     /**
-     * Compare to another JavaVersion, progressing down major, minor, point,
+     * Compare to another JavaVersion, progressing down major, minor, revision,
      * update and finally build.
      *
      * @param o
@@ -190,7 +193,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
     public int compareTo(JavaVersion o) {
         if (major == o.major) {
             if (minor == o.minor) {
-                if (point == o.point) {
+                if (revision == o.revision) {
                     if (update == o.update) {
                         if (build == o.build) {
                             return 0;
@@ -201,7 +204,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
                         return update - o.update;
                     }
                 } else {
-                    return point - o.point;
+                    return revision - o.revision;
                 }
             } else {
                 return minor - o.minor;
@@ -213,7 +216,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     /**
      * Displays as
-     * &lt;major&gt;.&lt;minor&gt;.&lt;point&gt;_&lt;update&gt;-b&lt;build&gt;
+     * &lt;major&gt;.&lt;minor&gt;.&lt;revision&gt;_&lt;update&gt;-b&lt;build&gt;
      * It skips 'build' and 'update' values if not available (zero).
      *
      * @return
@@ -223,17 +226,17 @@ public class JavaVersion implements Comparable<JavaVersion> {
             if (build > 0) {
                 if (build <= 10) {
                     // build like '-b0x'
-                    return major + "." + minor + '.' + point + '_' + update
+                    return major + "." + minor + '.' + revision + '_' + update
                         + "-b0" + build;
                 } else {
-                    return major + "." + minor + '.' + point + '_' + update
+                    return major + "." + minor + '.' + revision + '_' + update
                         + "-b" + build;
                 }
             } else {
-                return major + "." + minor + '.' + point + '_' + update;
+                return major + "." + minor + '.' + revision + '_' + update;
             }
         } else {
-            return major + "." + minor + '.' + point;
+            return major + "." + minor + '.' + revision;
         }
     }
 
@@ -296,38 +299,30 @@ public class JavaVersion implements Comparable<JavaVersion> {
             throw new IllegalStateException(
                 "Could not parse system version of Java: " + version);
         }
-        String majorString = strings[0];
-        String minorString = strings[1];
 
-        // Defaults
-        String pointString = "0";
-        String updateString = "0";
-        String buildString = "0";
+        Pattern p = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)[_\\+]?(\\d+)[\\-b(\\d+)]?");
+        Matcher m = p.matcher(version);
+        String build = "0", update = "0", revision = "0", minor = "0", major = "0";
 
-        if (strings.length >= 3) {
-            String strings1 = strings[2];
-            if (strings1.contains("_")) {
-                String[] strings2 = strings1.split("_");
-                pointString = strings2[0];
-                if (strings2.length >= 2) {
-                    String[] strings3 = strings2[1].split("\\-b");
-                    updateString = strings3[0];
-                    if (strings3.length >= 2) {
-                        buildString = strings3[1];
-                    }
-                }
-            } else {
-                pointString = strings1;
+        if (m.find()) {
+            int count = m.groupCount();
+
+            switch (count) {
+                case 5:
+                    build = m.group(5);
+                case 4:
+                    update = m.group(4);
+                case 3:
+                    revision = m.group(3);
+                case 2:
+                    minor = m.group(2);
+                case 1:
+                    major = m.group(1);
             }
         }
 
-        // OpenJDK seems to have a non-standard version, so remove after 'point'
-        if (pointString.contains("-")) {
-            pointString = pointString.split("-")[0];
-        }
-
-        return new JavaVersion(Integer.parseInt(majorString), Integer
-            .parseInt(minorString), Integer.parseInt(pointString), Integer
-            .parseInt(updateString), Integer.parseInt(buildString));
+        return new JavaVersion(Integer.parseInt(major), Integer
+            .parseInt(minor), Integer.parseInt(revision), Integer
+            .parseInt(update), Integer.parseInt(build));
     }
 }

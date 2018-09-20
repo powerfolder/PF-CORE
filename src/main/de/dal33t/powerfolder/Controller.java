@@ -90,7 +90,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 14;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 95;
+    private static final int REVISION_VERSION = 103;
 
     /**
      * Program version.
@@ -762,7 +762,7 @@ public class Controller extends PFComponent {
         // Setup our background working tasks
         setupPeriodicalTasks();
 
-        if (MacUtils.isSupported()) {
+        if (MacUtils.isSupported() && !getMySelf().isServer()) {
             MacUtils macUtils = MacUtils.getInstance();
             if (macUtils != null) {
                 if (isFirstStart()) {
