@@ -20,7 +20,6 @@ import java.util.Collection;
 public class FileListReply extends D2DReplyMessage implements D2DEvent {
 
     private Collection<FileInfo> fileInfos;
-    private Collection<DirectoryInfo> directoryInfos;
 
     public FileListReply() {
     }
@@ -34,19 +33,14 @@ public class FileListReply extends D2DReplyMessage implements D2DEvent {
         initFromD2D(message);
     }
 
-    public FileListReply(String replyCode, StatusCode replyStatusCode, Collection<FileInfo> fileInfos, Collection<DirectoryInfo> directoryInfos) {
+    public FileListReply(String replyCode, StatusCode replyStatusCode, Collection<FileInfo> fileInfos) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.fileInfos = fileInfos;
-        this.directoryInfos = directoryInfos;
     }
 
     public Collection<FileInfo> getFileInfos() {
         return fileInfos;
-    }
-
-    public Collection<DirectoryInfo> getDirectoryInfos() {
-        return directoryInfos;
     }
 
     /**
@@ -84,11 +78,6 @@ public class FileListReply extends D2DReplyMessage implements D2DEvent {
         if (this.fileInfos != null) {
             for (FileInfo fileInfo : this.fileInfos) {
                 builder.addFileInfos((FileInfoProto.FileInfo) fileInfo.toD2D());
-            }
-        }
-        if (this.directoryInfos != null) {
-            for (DirectoryInfo directoryInfo : this.directoryInfos) {
-                builder.addFileInfos((FileInfoProto.FileInfo) directoryInfo.toD2D());
             }
         }
         return builder.build();

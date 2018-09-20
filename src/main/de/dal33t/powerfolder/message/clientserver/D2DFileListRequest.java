@@ -4,16 +4,11 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
-import de.dal33t.powerfolder.d2d.D2DRequestToServer;
 import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.message.FileList;
-import de.dal33t.powerfolder.message.FolderRelatedMessage;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.protocol.FileListRequestProto;
 
 import java.util.Collection;
@@ -82,7 +77,7 @@ public class D2DFileListRequest extends D2DRequestMessage {
 
     @Override
     public boolean isValid() {
-        return super.isValid() && this.folderId != null || this.directoryId != null;
+        return super.isValid() && this.folderId != null;
     }
 
     @Override
@@ -98,19 +93,27 @@ public class D2DFileListRequest extends D2DRequestMessage {
     @Override
     public void handle(Member node) {
         if (!this.isValid()) {
-            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.FORBIDDEN, null, null));
+            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.FORBIDDEN, null));
         }
-        if (this.folderId != null) {
-            FolderInfo folderInfo = new FolderInfo("", this.folderId);
-            Folder folder = node.getController().getFolderRepository().getFolder(folderInfo);
-            if (!folder.hasReadPermission(node)) {
-                node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null, null));
-            }
-            folder.waitForScan();
-            Collection<FileInfo> fileInfos = folder.getKnownFiles();
-            Collection<DirectoryInfo> directoryInfos = folder.getKnownDirectories();
-            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.OK, fileInfos, directoryInfos));
+        // Get folder
+        if (this.folderId == null) {
+            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
         }
+        FolderInfo folderInfo = new FolderInfo("", this.folderId);
+        Folder folder = node.getController().getFolderRepository().getFolder(folderInfo);
+        if (!folder.hasReadPermission(node)) {
+            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
+        }
+        folder.waitForScan();
+        // Set criteria
+        FileInfoCriteria fileInfoCriteria = new FileInfoCriteria();
+        fileInfoCriteria.setPath(this.directoryId);
+        fileInfoCriteria.addConnectedAndMyself(folder);
+        if (this.recursive) {
+            fileInfoCriteria.setRecursive(true);
+        }
+        Collection<FileInfo> fileInfos = folder.getDAO().findFilesFast(fileInfoCriteria);
+        node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.OK, fileInfos));
     }
 
 }

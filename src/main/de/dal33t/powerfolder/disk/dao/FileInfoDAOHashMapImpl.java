@@ -387,7 +387,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             if (domain == null) {
                 continue;
             }
-            if (fileInfos.size() >= criteria.getMaxResults()) {
+            if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                 break;
             }
             for (DirectoryInfo directoryInfo : domain.directories.values()) {
