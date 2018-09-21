@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.protocol.PermissionActivityProto;
 import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.security.Account;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -60,7 +61,7 @@ public class PermissionActivity implements D2DObject {
         return permissionType;
     }
 
-    public @NotNull Account getRecipientAccount() {
+    public @Nullable Account getRecipientAccount() {
         return recipientAccount;
     }
 
