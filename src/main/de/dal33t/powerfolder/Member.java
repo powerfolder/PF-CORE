@@ -1987,7 +1987,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @param message
      *            the message to fire
      */
-    private void fireMessageToListeners(Message message) {
+    public void fireMessageToListeners(Message message) {
         getMessageListenerSupport().fireMessage(this, message);
     }
 
@@ -2765,6 +2765,10 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     public void processFolderListD2D(FolderList folderList) {
+        // Fake expectedListMessages since some part of the software still need this parameter set
+        for (FolderInfo folderInfo : folderList.folders) {
+            expectedListMessages.put(folderInfo, -1);
+        }
         try {
             folderJoinLock.lock();
             lastFolderList = folderList;

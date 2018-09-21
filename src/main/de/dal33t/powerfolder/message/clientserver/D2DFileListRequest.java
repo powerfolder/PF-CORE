@@ -101,6 +101,9 @@ public class D2DFileListRequest extends D2DRequestMessage {
         }
         FolderInfo folderInfo = new FolderInfo("", this.folderId);
         Folder folder = node.getController().getFolderRepository().getFolder(folderInfo);
+        if (folder == null) {
+            node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
+        }
         if (!folder.hasReadPermission(node)) {
             node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
         }
