@@ -2,10 +2,11 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.StatusCode;
+import de.dal33t.powerfolder.d2d.D2DReplyFromServer;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.protocol.FileSearchReplyProto;
 
-public class FileSearchReply extends D2DReplyMessage {
+public class FileSearchReply extends D2DReplyMessage implements D2DReplyFromServer {
 
     private String[] fileIds;
 

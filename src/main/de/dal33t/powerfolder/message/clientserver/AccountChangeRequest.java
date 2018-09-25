@@ -2,12 +2,14 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.AccountChangeRequestProto;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class AccountChangeRequest extends D2DRequestMessage {
+public class AccountChangeRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     private String firstname;
     private String surname;
@@ -67,6 +69,11 @@ public class AccountChangeRequest extends D2DRequestMessage {
             }
         }
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.ACCOUNT_CHANGE_REQUEST;
     }
 
 }

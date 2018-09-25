@@ -86,7 +86,9 @@ public class InvitationActivity implements D2DObject {
         builder.setId(this.getId());
         builder.setFolderId(this.getFolderInfo().getId());
         if (this.getPermissionType().toD2D() != null) builder.setPermissionType(this.getPermissionType().toD2D());
-        builder.setFolderId(this.getRecipientAccount().getOID());
+        if (this.getRecipientAccount() != null) {
+            builder.setFolderId(this.getRecipientAccount().getOID());
+        }
         return builder.build();
     }
 

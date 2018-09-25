@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.InvalidProtocolBufferException;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Message;
@@ -52,6 +53,11 @@ public class InvitationAcceptRequest extends InvitationCreateRequest {
         if (this.permissions != null) builder.setPermissionInfo(this.getPermissionInfo());
         builder.setAccept(this.accept);
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.INVITATION_ACCEPT_REQUEST;
     }
 
 }

@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.D2DReplyFromServer;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
@@ -14,7 +15,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import java.io.Serializable;
 import java.util.Map;
 
-public class PermissionListReply extends D2DReplyMessage {
+public class PermissionListReply extends D2DReplyMessage implements D2DReplyFromServer {
 
     private Map<Serializable, FolderPermission> permissions;
     private Map<AccountInfo, FolderPermission> invitations;

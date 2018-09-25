@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.PermissionChangeRequestProto;
 
 public class PermissionChangeRequest extends InvitationCreateRequest {
@@ -33,6 +34,11 @@ public class PermissionChangeRequest extends InvitationCreateRequest {
         if (this.requestCode != null) builder.setRequestCode(this.requestCode);
         if (this.permissions != null) builder.setPermissionInfo(this.getPermissionInfo());
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.PERMISSION_CHANGE_REQUEST;
     }
 
 }

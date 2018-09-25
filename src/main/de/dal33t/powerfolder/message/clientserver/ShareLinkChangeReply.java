@@ -2,9 +2,10 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.StatusCode;
+import de.dal33t.powerfolder.d2d.D2DReplyFromServer;
 import de.dal33t.powerfolder.protocol.ShareLinkChangeReplyProto;
 
-public class ShareLinkChangeReply extends ShareLinkRemoveReply {
+public class ShareLinkChangeReply extends ShareLinkRemoveReply implements D2DReplyFromServer {
 
     public ShareLinkChangeReply(String replyCode, StatusCode replyStatusCode) {
         this.replyCode = replyCode;

@@ -1,10 +1,12 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.ShareLinkChangeRequestProto;
 import de.dal33t.powerfolder.protocol.ShareLinkInfoProto;
 
-public class ShareLinkChangeRequest extends ShareLinkCreateRequest {
+public class ShareLinkChangeRequest extends ShareLinkCreateRequest implements D2DRequestToServer {
 
     /**
      * Init from D2D message
@@ -33,6 +35,11 @@ public class ShareLinkChangeRequest extends ShareLinkCreateRequest {
         if (this.shareLinkInfo != null)
             builder.setShareLinkInfo((ShareLinkInfoProto.ShareLinkInfo) this.shareLinkInfo.toD2D());
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.SHARE_LINK_CHANGE_REQUEST;
     }
 
 }
