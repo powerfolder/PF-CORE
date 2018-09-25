@@ -7,16 +7,20 @@ import de.dal33t.powerfolder.d2d.D2DRequestMessage;
 import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
+import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FileListRequestProto;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class D2DFileListRequest extends D2DRequestMessage {
 
     private String folderId;
-    private String directoryId;
+    private Collection<String> fileIds;
     private boolean recursive;
 
     public D2DFileListRequest() {
@@ -35,8 +39,12 @@ public class D2DFileListRequest extends D2DRequestMessage {
         return folderId;
     }
 
-    public String getDirectoryId() {
-        return directoryId;
+    public Collection<String> getFileIds() {
+        return fileIds;
+    }
+
+    public void setFileIds(Collection<String> fileIds) {
+        this.fileIds = fileIds;
     }
 
     public boolean isRecursive() {
@@ -54,7 +62,8 @@ public class D2DFileListRequest extends D2DRequestMessage {
             FileListRequestProto.FileListRequest proto = (FileListRequestProto.FileListRequest) message;
             this.requestCode = proto.getRequestCode();
             this.folderId = proto.getFolderId();
-            this.directoryId = proto.getDirectoryId();
+            this.fileIds = new CopyOnWriteArrayList<>();
+            this.fileIds.addAll(proto.getFileIdsList());
             this.recursive = proto.getRecursive();
         }
     }
@@ -70,7 +79,11 @@ public class D2DFileListRequest extends D2DRequestMessage {
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.requestCode != null) builder.setRequestCode(this.getRequestCode());
         if (this.folderId != null) builder.setFolderId(this.folderId);
-        if (this.directoryId != null) builder.setDirectoryId(this.directoryId);
+        if (this.fileIds != null) {
+            for (String fileId : this.fileIds) {
+                builder.addFileIds(fileId);
+            }
+        }
         builder.setRecursive(this.recursive);
         return builder.build();
     }
@@ -94,28 +107,55 @@ public class D2DFileListRequest extends D2DRequestMessage {
     public void handle(Member node) {
         if (!this.isValid()) {
             node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.FORBIDDEN, null));
+            return;
         }
         // Get folder
         if (this.folderId == null) {
             node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
+            return;
         }
         FolderInfo folderInfo = new FolderInfo("", this.folderId);
         Folder folder = node.getController().getFolderRepository().getFolder(folderInfo);
         if (folder == null) {
             node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
+            return;
         }
         if (!folder.hasReadPermission(node)) {
             node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
+            return;
         }
         folder.waitForScan();
-        // Set criteria
-        FileInfoCriteria fileInfoCriteria = new FileInfoCriteria();
-        fileInfoCriteria.setPath(this.directoryId);
-        fileInfoCriteria.addConnectedAndMyself(folder);
-        if (this.recursive) {
-            fileInfoCriteria.setRecursive(true);
+        Collection<FileInfo> fileInfos;
+        // If no file IDs are provided, send all file infos of the folder
+        if (this.fileIds == null || this.fileIds.size() == 0) {
+            // Set criteria
+            FileInfoCriteria fileInfoCriteria = new FileInfoCriteria();
+            fileInfoCriteria.addConnectedAndMyself(folder);
+            if (this.recursive) {
+                fileInfoCriteria.setRecursive(true);
+            }
+            fileInfos = folder.getDAO().findFilesFast(fileInfoCriteria);
+        } else {
+            // If file IDs are provided fetch the file infos fo those IDs
+            fileInfos = new ArrayList<>();
+            for (String fileId: this.fileIds) {
+                FileInfo fileInfo = folder.getDAO().find(FileInfoFactory.lookupInstance(folderInfo, fileId), node.getController().getMySelf().getId());
+                if (fileInfo != null) {
+                    fileInfos.add(fileInfo);
+                }
+                // If the file info is a directory info, also add all file infos inside this directory
+                if (fileInfo instanceof DirectoryInfo) {
+                    FileInfoCriteria fileInfoCriteria = new FileInfoCriteria();
+                    fileInfoCriteria.addConnectedAndMyself(folder);
+                    fileInfoCriteria.setPath(fileInfo.getRelativeName());
+                    // Only search recursive if explicitly requested
+                    if (this.recursive) {
+                        fileInfoCriteria.setRecursive(true);
+                    }
+                    fileInfos.addAll(folder.getDAO().findFilesFast(fileInfoCriteria));
+                }
+            }
         }
-        Collection<FileInfo> fileInfos = folder.getDAO().findFilesFast(fileInfoCriteria);
         node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.OK, fileInfos));
     }
 
