@@ -1177,7 +1177,7 @@ public class Account implements Serializable, D2DObject {
         }
 
         if (!emails.isEmpty()) {
-            return emails.get(0);
+            return getEmails().get(0);
         }
 
         return null;
