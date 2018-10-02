@@ -179,9 +179,11 @@ For creation of the installer:
 			<include name="liferay-nativity-1.0.6.jar" />
 
 			<!-- Protobuf -->
-
             <include name="protobuf-java-3.5.0.jar"/>
 			<include name="powerfolder-protobuf-0.1.jar"/>
+
+			<!-- Squirrel -->
+			<include name="squirrel-foundation-0.3.8.jar"/>
 
 			<!-- Encrypted storage - cryptolib/fs -->
 			<include name="cryptomator/commons-codec-1.10.jar" />
