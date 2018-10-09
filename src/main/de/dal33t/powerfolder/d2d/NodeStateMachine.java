@@ -24,6 +24,7 @@ public class NodeStateMachine extends AbstractUntypedStateMachine {
         // Handshake
         builder.externalTransition().from(NodeState.LISTEN).to(NodeState.OPEN_IDENTITY_REPLY_WAIT).on(NodeEvent.IDENTITY).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_IDENTITY_REPLY_WAIT).to(NodeState.OPEN_LOGIN_REQUEST_WAIT).on(NodeEvent.IDENTITY_REPLY).callMethod("handle");
+        builder.externalTransition().from(NodeState.OPEN_LOGIN_REQUEST_WAIT).to(NodeState.OPEN_LOGIN_REQUEST_WAIT).on(NodeEvent.CREATE_ACCOUNT_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_LOGIN_REQUEST_WAIT).to(NodeState.OPEN_ACCOUNT_INFO_REQUEST_WAIT).on(NodeEvent.LOGIN_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_ACCOUNT_INFO_REQUEST_WAIT).to(NodeState.OPEN_FOLDER_LIST_WAIT).on(NodeEvent.ACCOUNT_INFO_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_FOLDER_LIST_WAIT).to(NodeState.OPEN_HANDSHAKE_COMPLETED_WAIT).on(NodeEvent.FOLDER_LIST).callMethod("handle");

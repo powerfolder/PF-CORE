@@ -138,7 +138,7 @@ public class AccountInfoReply extends D2DReplyMessage implements D2DReplyFromSer
                 accountInfoBuilder.addPermissionInfos(permissionInfoBuilder.build());
             }
             if (this.account.getServer() != null && this.account.getServer().getNode() != null)
-                accountInfoBuilder.setHostingNodeId(this.account.getServer().getNode().id);
+                accountInfoBuilder.setHostingServerInfo((ServerInfoProto.ServerInfo) this.account.getServer().toD2D());
             // Inject serverInfos into AccountInfo
             for (Map.Entry<ServerInfo, String> entry : account.getTokens().entrySet()) {
                 ServerInfoProto.ServerInfo serverInfo = (ServerInfoProto.ServerInfo) entry.getKey().toD2D();
