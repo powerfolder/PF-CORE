@@ -1826,6 +1826,9 @@ public class Folder extends PFComponent {
                         member.sendMessagesAsynchron(FileList.create(this,
                             supportExternalizable(member)));
                     } else {
+                        logWarning("Creating empty FileList for " +
+                            currentInfo + " to send to " + member +
+                            " while loading folder db.", new StackDump());
                         member.sendMessagesAsynchron(FileList.createEmpty(
                             currentInfo, supportExternalizable(member)));
                     }
@@ -2627,6 +2630,10 @@ public class Folder extends PFComponent {
                     }
                 }
                 if (member.isCompletelyConnected()) {
+                    logWarning("Creating empty FileList for " +
+                        currentInfo + " to send to " + member +
+                        " while joining folder. MemberRead " + memberRead
+                        + " mySelfRead " + mySelfRead, new StackDump());
                     member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
                         supportExternalizable(member)));
                 }
@@ -2661,6 +2668,9 @@ public class Folder extends PFComponent {
                         supportExternalizable(member));
                 } else {
                     filelistMsgs = new Message[1];
+                    logWarning("Creating empty FileList for " +
+                        currentInfo + " to send to " + member +
+                        " while joining folder. No folder db." , new StackDump());
                     filelistMsgs[0] = FileList.createEmpty(getInfo(),
                         supportExternalizable(member));
                 }
@@ -3495,6 +3505,12 @@ public class Folder extends PFComponent {
         // Update DAO
         if (newList.isNull()) {
             // Delete files in domain and do nothing
+
+            if (dao.hasDomainWithFiles(from.getId()) && !hasWritePermission(getController().getMySelf())) {
+                logWarning("Received empty FileList for " + this + " from " + from + " but there is information about files already. Not deleting previous information!");
+                return;
+            }
+
             dao.deleteDomain(from.getId(), -1);
             return;
         }
