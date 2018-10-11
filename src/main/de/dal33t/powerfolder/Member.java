@@ -2742,7 +2742,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     public void handshakeFolderList() {
         synchronized (peerInitializeLock) {
-            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), true)));
+            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false)));
         }
         peer.sendMessagesAsynchron(new HandshakeCompleted());
     }
