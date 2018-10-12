@@ -421,6 +421,16 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         return null;
     }
 
+    public boolean hasDomainWithFiles(String domain) {
+        String theDomain = StringUtils.isBlank(domain) ? selfDomain : domain;
+
+        Domain d = domains.get(theDomain);
+        if (d == null) {
+            return false;
+        }
+        return !(d.files.isEmpty() && d.directories.isEmpty());
+    }
+
     // Internals **************************************************************
 
     private Domain getDomain(String domain) {

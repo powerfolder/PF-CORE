@@ -475,7 +475,10 @@ public class Folder extends PFComponent {
 
     /**
      * Remove all problems from the list of known problems.
+     *
+     * @deprecated since 14.0
      */
+    @Deprecated
     public void removeAllProblems() {
         List<Problem> list = new ArrayList<>(problems);
         problems.clear();
@@ -1340,8 +1343,8 @@ public class Folder extends PFComponent {
         Path file = getDiskFile(fInfo);
 
         // ignore our database file
-        if (file.getFileName().equals(Constants.DB_FILENAME)
-            || file.getFileName().equals(Constants.DB_BACKUP_FILENAME))
+        if (file.getFileName().toString().equals(Constants.DB_FILENAME)
+            || file.getFileName().toString().equals(Constants.DB_BACKUP_FILENAME))
         {
             logFiner("Ignoring folder database file: " + file);
             return null;
@@ -1670,11 +1673,11 @@ public class Folder extends PFComponent {
             logFine(getName() + ": Already shutdown: Not removeFilesLocal (" + fInfos.size() + "): " + fInfos);
             return;
         }
-        final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
-        Comparator<FileInfo> comparator = new ReverseComparator<FileInfo>(
+        final List<FileInfo> removedFiles = new ArrayList<>();
+        Comparator<FileInfo> comparator = new ReverseComparator<>(
             FileInfoComparator
                 .getComparator(FileInfoComparator.BY_RELATIVE_NAME));
-        Set<FileInfo> dirs = new TreeSet<FileInfo>(comparator);
+        Set<FileInfo> dirs = new TreeSet<>(comparator);
         synchronized (scanLock) {
             for (FileInfo fileInfo : fInfos) {
                 if (fileInfo.isDiretory()) {
@@ -1768,13 +1771,12 @@ public class Folder extends PFComponent {
                     + dbFile.toAbsolutePath());
                 return false;
             }
-            // load files and scan in
-            try (InputStream fIn = new BufferedInputStream(
-                Files.newInputStream(dbFile)); ObjectInputStream in = new ObjectInputStream(fIn)) {
+            try (ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(
+                Files.newInputStream(dbFile))))
+            {
+                // load files and scan in
 
                 FileInfo[] files = (FileInfo[]) in.readObject();
-                // Convert.cleanMemberInfos(getController().getNodeManager(),
-                // files);
                 synchronized (dbAccessLock) {
                     for (int i = 0; i < files.length; i++) {
                         FileInfo fInfo = files[i];
@@ -1823,6 +1825,9 @@ public class Folder extends PFComponent {
                         member.sendMessagesAsynchron(FileList.create(this,
                             supportExternalizable(member)));
                     } else {
+                        logWarning("Creating empty FileList for " +
+                            currentInfo + " to send to " + member +
+                            " while loading folder db.", new StackDump());
                         member.sendMessagesAsynchron(FileList.createEmpty(
                             currentInfo, supportExternalizable(member)));
                     }
@@ -1832,8 +1837,7 @@ public class Folder extends PFComponent {
                 // Now disused, but maintained for backward compatability.
                 try {
                     Object object = in.readObject();
-                    Collection<FileInfo> infos = (Collection<FileInfo>) object;
-                    for (FileInfo info : infos) {
+                    for (FileInfo info : (Collection<FileInfo>) object) {
                         diskItemFilter.addPattern(info.getRelativeName());
                         if (isFiner()) {
                             logFiner("ignore@" + info.getRelativeName());
@@ -2217,9 +2221,7 @@ public class Folder extends PFComponent {
         }
         boolean reverted = false;
         for (FileInfo fileInfo : dao.findAllFiles(null)) {
-            if (checkRevertLocalChanges(fileInfo)) {
-                reverted = true;
-            }
+            reverted |= checkRevertLocalChanges(fileInfo);
         }
         if (reverted) {
             getController().getFolderRepository().getFileRequestor()
@@ -2229,12 +2231,70 @@ public class Folder extends PFComponent {
     }
 
     private boolean checkRevertLocalChanges(FileInfo fileInfo) {
-
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not checkRevertLocalChanges: " + fileInfo.toDetailString());
             return false;
         }
 
+        // Workaround for race condition during setup and default excludes have not yet been added:
+        if (diskItemFilter.getPatterns().isEmpty() || diskItemFilter.isExcluded(fileInfo)) {
+            // Is excluded from sync. Don't delete. Might be meta-data.
+            return false;
+        }
+
+        // Only proceed if remote files can be found:
+        if (!hasCompleteFileListOfAtLeastOneMember()) {
+            return false;
+        }
+
+        // Only proceed if file is out of sync:
+        FileInfo newestVersion = fileInfo.getNewestVersion(getController().getFolderRepository());
+        if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
+            // Ok in sync - return:
+            return false;
+        }
+
+        Path file = fileInfo.getDiskFile(getController().getFolderRepository());
+        if (file == null) {
+            // Local file not found.
+            return false;
+        }
+
+        if (isWarning() && !currentInfo.isMetaFolder()) {
+            logWarning("Reverting local change: "
+                + fileInfo.toDetailString()
+                + ". File not found on remote side.");
+        }
+
+        try {
+            getFolderWatcher().addIgnoreFile(fileInfo);
+
+            synchronized (scanLock) {
+                if (Files.exists(file)) {
+                    // move current version to archive and delete file.
+                    archiver.archive(fileInfo, file, false);
+                    Files.deleteIfExists(file);
+                }
+
+                if (!currentInfo.isMetaFolder()) {
+                    addProblem(new FolderReadOnlyProblem(this,
+                        archiver.getArchiveDir().resolve(
+                            fileInfo.getRelativeName())));
+                }
+
+                dao.delete(null, fileInfo);
+            }
+            return true;
+        } catch (IOException e) {
+            logWarning("Unable to revert changes on file " + file
+                + ". Cannot overwrite local change. " + e);
+            return false;
+        } finally {
+            getFolderWatcher().removeIgnoreFile(fileInfo);
+        }
+    }
+
+    private boolean hasCompleteFileListOfAtLeastOneMember() {
         boolean remoteFilesFound = false;
 
         for (Member member : getConnectedMembers()) {
@@ -2246,78 +2306,7 @@ public class Folder extends PFComponent {
                 break;
             }
         }
-
-        // Only proceed if remote files can be found:
-        if (!remoteFilesFound) {
-            return false;
-        }
-
-        // Only proceed if file is out of sync:
-        FileInfo newestVersion = fileInfo.getNewestVersion(getController().getFolderRepository());
-        if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
-            // Ok in sync - return:
-            return false;
-        }
-
-        if (isWarning() && !currentInfo.isMetaFolder()) {
-            logWarning("Reverting local change: "
-                    + fileInfo.toDetailString()
-                    + ". File not found on remote side.");
-        }
-
-        if (diskItemFilter.getPatterns().isEmpty()) {
-            // Workaround for race condition during setup and default excludes have not yet been added:
-            return false;
-        }
-
-        if (diskItemFilter.isExcluded(fileInfo)) {
-            // Is excluded from sync. Don't delete. Might be meta-data.
-            return false;
-        }
-
-        getFolderWatcher().addIgnoreFile(fileInfo);
-
-        try {
-            Path file = fileInfo.getDiskFile(getController().getFolderRepository());
-
-            if (file == null) {
-                // Local file not found.
-                return false;
-            }
-
-            synchronized (scanLock) {
-                if (Files.exists(file)) {
-                    try {
-                        Path problemPath = archiver.getArchiveDir().resolve(
-                                fileInfo.getRelativeName());
-                        watcher.addIgnoreFile(fileInfo);
-                        archiver.archive(fileInfo, file, false);
-
-                        Files.deleteIfExists(file);
-                        if (!currentInfo.isMetaFolder()) {
-                            addProblem(new FolderReadOnlyProblem(this,
-                                    problemPath));
-                        }
-                    } catch (IOException e) {
-                        logWarning("Unable to revert changes on file " + file
-                                + ". Cannot overwrite local change. " + e);
-                        return false;
-                    } finally {
-                        watcher.removeIgnoreFile(fileInfo);
-                    }
-                } else {
-                    if (!currentInfo.isMetaFolder()) {
-                        addProblem(new FolderReadOnlyProblem(this, archiver
-                                .getArchiveDir().resolve(
-                                        fileInfo.getRelativeName())));
-                    }
-                }
-                dao.delete(null, fileInfo);
-            }
-            return true;
-        } finally {
-            getFolderWatcher().removeIgnoreFile(fileInfo);
-        }
+        return remoteFilesFound;
     }
 
     /**
@@ -2325,7 +2314,9 @@ public class Folder extends PFComponent {
      * desktop.ini
      *
      * PFS-1361
+     * @deprecated since 14.0
      */
+    @Deprecated
     private Path createTimestampedCopy(Path file) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat();
         String targetFilename = PathUtils.removeInvalidFilenameChars(dateFormat
@@ -2367,7 +2358,10 @@ public class Folder extends PFComponent {
      * @param active
      *            true if the desktop shortcut should be created.
      * @return true if succeeded
+     *
+     * @deprecated since 14.0
      */
+    @Deprecated
     public boolean setDesktopShortcut(boolean active) {
         String shortCutName = getName();
         if (getController().isVerbose()) {
@@ -2635,6 +2629,10 @@ public class Folder extends PFComponent {
                     }
                 }
                 if (member.isCompletelyConnected()) {
+                    logWarning("Creating empty FileList for " +
+                        currentInfo + " to send to " + member +
+                        " while joining folder. MemberRead " + memberRead
+                        + " mySelfRead " + mySelfRead, new StackDump());
                     member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
                         supportExternalizable(member)));
                 }
@@ -2669,6 +2667,9 @@ public class Folder extends PFComponent {
                         supportExternalizable(member));
                 } else {
                     filelistMsgs = new Message[1];
+                    logWarning("Creating empty FileList for " +
+                        currentInfo + " to send to " + member +
+                        " while joining folder. No folder db." , new StackDump());
                     filelistMsgs[0] = FileList.createEmpty(getInfo(),
                         supportExternalizable(member));
                 }
@@ -2777,14 +2778,14 @@ public class Folder extends PFComponent {
         if (isFine()) {
             logFine("Loading metafolder members from " + fileInfo + '.');
         }
-        Map<String, MemberInfo> membersMap = new TreeMap<String, MemberInfo>();
+        Map<String, MemberInfo> membersMap = new TreeMap<>();
         Path f = fileInfo.getDiskFile(getController().getFolderRepository());
         if (Files.notExists(f)) {
             return membersMap;
         }
         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(f))) {
             membersMap.putAll((Map<String, MemberInfo>) ois.readObject());
-        } catch (IOException |ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             logWarning("Unable to read members file " + fileInfo + ". " + e);
         }
         if (isFine()) {
@@ -2988,7 +2989,7 @@ public class Folder extends PFComponent {
                 + Arrays.asList(getConnectedMembers()));
         }
 
-        final List<FileInfo> removedFiles = new ArrayList<FileInfo>();
+        final List<FileInfo> removedFiles = new ArrayList<>();
         for (Member member : collection) {
             if (!member.isCompletelyConnected()) {
                 // disconnected go to next member
@@ -3503,6 +3504,12 @@ public class Folder extends PFComponent {
         // Update DAO
         if (newList.isNull()) {
             // Delete files in domain and do nothing
+
+            if (dao.hasDomainWithFiles(from.getId()) && !hasWritePermission(getController().getMySelf())) {
+                logWarning("Received empty FileList for " + this + " from " + from + " but there is information about files already. Not deleting previous information!");
+                return;
+            }
+
             dao.deleteDomain(from.getId(), -1);
             return;
         }
@@ -5243,12 +5250,17 @@ public class Folder extends PFComponent {
 
     /**
      * PFS-1994: Mark this Folder as a Folder which has been moved.
+     * @deprecated since 14.0
      */
-
+    @Deprecated
     public void setMovedFolder(boolean movedFolder){
         isMovedFolder = movedFolder;
     }
 
+    /**
+     * @deprecated since 14.0
+     */
+    @Deprecated
     public boolean isMovedFolder() {
         return isMovedFolder;
     }
