@@ -34,6 +34,10 @@ public class NodeStateMachine extends AbstractUntypedStateMachine {
         builder.externalTransition().from(NodeState.OPEN_FOLDER_LIST_WAIT).to(NodeState.OPEN_HANDSHAKE_COMPLETED_WAIT).on(NodeEvent.FOLDER_LIST).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_HANDSHAKE_COMPLETED_WAIT).to(NodeState.ESTABLISHED).on(NodeEvent.HANDSHAKE_COMPLETED).callMethod("handle");
         // Established
+        // Updates
+        builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FOLDER_LIST).callMethod("handle");
+        builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FOLDER_FILES_CHANGED).callMethod("handle");
+        // Requests
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.ACCOUNT_CHANGE_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.ACCOUNT_INFO_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.ACCOUNT_SEARCH_REQUEST).callMethod("handle");
@@ -48,7 +52,6 @@ public class NodeStateMachine extends AbstractUntypedStateMachine {
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FILE_PART_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FILE_SEARCH_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FOLDER_CREATE_REQUEST).callMethod("handle");
-        builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FOLDER_FILES_CHANGED).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FOLDER_REMOVE_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FOLDER_RENAME_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.FOLDER_SERVER_NODES_REQUEST).callMethod("handle");
@@ -70,9 +73,6 @@ public class NodeStateMachine extends AbstractUntypedStateMachine {
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.UPLOAD_ABORT).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.UPLOAD_START).callMethod("handle");
         builder.externalTransition().from(NodeState.ESTABLISHED).to(NodeState.ESTABLISHED).on(NodeEvent.UPLOAD_STOP).callMethod("handle");
-
-        // Always allow
-        //builder.externalTransition().from("*").to("*").on(NodeEvent.PERMISSION_LIST_REQUEST).callMethod("handle");
         return (NodeStateMachine) builder.newStateMachine(NodeState.LISTEN);
     }
 

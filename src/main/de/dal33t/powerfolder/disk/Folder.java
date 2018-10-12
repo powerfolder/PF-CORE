@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
@@ -2657,7 +2658,8 @@ public class Folder extends PFComponent {
                 + " joined (connected? " + member.isConnected() + ")");
         }
         if (!init) {
-            if (!wasMember && member.isCompletelyConnected()) {
+            // NEVER send file lists without request via D2D protocol
+            if (!wasMember && member.isCompletelyConnected() && !(member.getPeer() instanceof D2DSocketConnectionHandler)) {
                 // FIX for #924
                 waitForScan();
 

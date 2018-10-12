@@ -300,7 +300,11 @@ public class FolderList extends Message implements D2DObject, D2DEvent
     public void handle(Member node) {
         node.processFolderListD2D(this);
         // Execute additional code during handshake phase
-        if (((D2DSocketConnectionHandler)node.getPeer()).getNodeStateMachine().getCurrentState() == NodeState.OPEN_FOLDER_LIST_WAIT) {
+        D2DSocketConnectionHandler d2DSocketConnectionHandler = ((D2DSocketConnectionHandler)node.getPeer());
+        if (d2DSocketConnectionHandler == null) {
+            return;
+        }
+        if (d2DSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_FOLDER_LIST_WAIT) {
             node.handshakeFolderList();
         }
     }
