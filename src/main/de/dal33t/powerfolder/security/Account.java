@@ -893,6 +893,26 @@ public class Account implements Serializable, D2DObject {
         return !authByLDAP() && !authByRADIUS() && !authByShibboleth();
     }
 
+    /**
+     * Get auth type of {@link Account}
+     *
+     * @return Name of the auth type
+     **/
+
+    public String getAuthType() {
+        if (authByShibboleth()) {
+            return "shibboleth";
+        } else if (authByLDAP()) {
+            return "ldap";
+        } else if (authByRADIUS()) {
+            return "radius";
+        } else if (authByDatabase()) {
+            return "database";
+        } else {
+            return "unknown";
+        }
+    }
+
     // PFS-742: TODO Add EXTRA Field for this later
     public boolean isSendEmail() {
         if (StringUtils.isBlank(custom2)) {
