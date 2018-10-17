@@ -19,21 +19,9 @@
  */
 package de.dal33t.powerfolder.ui.folders;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -43,18 +31,30 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FolderMembershipEvent;
+import de.dal33t.powerfolder.event.FolderMembershipListener;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.TransferManagerAdapter;
+import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.FolderCreatePermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
 import de.dal33t.powerfolder.ui.folders.ExpandableFolderModel.Type;
-import de.dal33t.powerfolder.ui.model.BoundPermission;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.UserDirectories;
+
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -79,15 +79,13 @@ public class FoldersList extends PFUIComponent {
 
     private DelayedUpdater transfersUpdater;
     private DelayedUpdater foldersUpdater;
-    @SuppressWarnings("unused")
-    private BoundPermission folderCreatePermission;
 
     /**
      * Constructor
      *
-     * @param controller
+     * @param controller The controller
      */
-    public FoldersList(Controller controller, FoldersTab foldersTab) {
+    FoldersList(Controller controller, FoldersTab foldersTab) {
         super(controller);
         empty = true;
         showTypical = PreferencesEntry.SHOW_TYPICAL_FOLDERS
@@ -98,29 +96,15 @@ public class FoldersList extends PFUIComponent {
         expansionListener = new MyExpansionListener();
         membershipListener = new MyFolderMembershipListener();
 
-        views = new CopyOnWriteArrayList<ExpandableFolderView>();
+        views = new CopyOnWriteArrayList<>();
 
         buildUI();
         getController().getTransferManager().addListener(
             new MyTransferManagerListener());
-
-        folderCreatePermission = new BoundPermission(getController(),
-            FolderCreatePermission.INSTANCE)
-        {
-            @Override
-            public void hasPermission(boolean hasPermission) {
-                showTypical = hasPermission
-                    && PreferencesEntry.SHOW_TYPICAL_FOLDERS
-                        .getValueBoolean(getController());
-                updateFolders();
-            }
-        };
     }
 
     /**
-     * Gets the UI component.
-     *
-     * @return
+     * @return Gets the UI component
      */
     public JPanel getUIComponent() {
         return uiComponent;
@@ -168,11 +152,7 @@ public class FoldersList extends PFUIComponent {
     }
 
     private void updateFolders() {
-        foldersUpdater.schedule(new Runnable() {
-            public void run() {
-                updateFolders0();
-            }
-        });
+        foldersUpdater.schedule(this::updateFolders0);
     }
 
     /**
@@ -191,7 +171,7 @@ public class FoldersList extends PFUIComponent {
         }
 
         // Get combined list of repo and account folders.
-        List<ExpandableFolderModel> localFolders = new ArrayList<ExpandableFolderModel>();
+        List<ExpandableFolderModel> localFolders = new ArrayList<>();
 
         for (Folder folder : repository.getFolders()) {
             FolderInfo folderInfo = folder.getInfo();
@@ -227,7 +207,7 @@ public class FoldersList extends PFUIComponent {
             }
         }
 
-        Collections.sort(localFolders, FolderBeanComparator.INSTANCE);
+        localFolders.sort(FolderBeanComparator.INSTANCE);
 
         empty = localFolders.isEmpty();
 
@@ -248,7 +228,7 @@ public class FoldersList extends PFUIComponent {
             // Remove all folder views, but keep a list to see if any can be
             // recycled in the new display.
             List<ExpandableFolderView> oldViews =
-                    new ArrayList<ExpandableFolderView>();
+                    new ArrayList<>();
             for (ExpandableFolderView view : views) {
                 oldViews.add(view);
                 views.remove(view);
@@ -318,14 +298,12 @@ public class FoldersList extends PFUIComponent {
         views.add(newView);
 
         // Was view expanded before?
-        if (expandedFolderInfo != null
-                && folderBean.getFolderInfo().equals(expandedFolderInfo)) {
+        if (folderBean.getFolderInfo().equals(expandedFolderInfo)) {
             newView.expand();
         }
 
         // Was view focussed before?
-        if (focussedFolderInfo != null
-                && folderBean.getFolderInfo().equals(focussedFolderInfo)) {
+        if (folderBean.getFolderInfo().equals(focussedFolderInfo)) {
             newView.setFocus(true);
         }
 
@@ -337,7 +315,7 @@ public class FoldersList extends PFUIComponent {
     /**
      * Required to make scroller repaint correctly.
      *
-     * @param scrollPane
+     * @param scrollPane The new ScrollPane
      */
     public void setScroller(JScrollPane scrollPane) {
         this.scrollPane = scrollPane;
@@ -365,7 +343,7 @@ public class FoldersList extends PFUIComponent {
     /**
      * This tries to find a view for a FolderInfo and if found, scrolls to it in the list.
      *
-     * @param folderInfo
+     * @param folderInfo The {@link FolderInfo Folder} to scroll to
      */
     public void scrollToFolderInfo(FolderInfo folderInfo) {
 
@@ -544,15 +522,13 @@ public class FoldersList extends PFUIComponent {
 
         private void notifyView(TransferManagerEvent event) {
             final FileInfo fileInfo = event.getFile();
-            transfersUpdater.schedule(new Runnable() {
-                public void run() {
-                    FolderInfo folderInfo = fileInfo.getFolderInfo();
-                    synchronized (views) {
-                        for (ExpandableFolderView view : views) {
-                            if (view.getFolderInfo().equals(folderInfo)) {
-                                view.updateNameLabel();
-                                break;
-                            }
+            transfersUpdater.schedule(() -> {
+                FolderInfo folderInfo = fileInfo.getFolderInfo();
+                synchronized (views) {
+                    for (ExpandableFolderView view : views) {
+                        if (view.getFolderInfo().equals(folderInfo)) {
+                            view.updateNameLabel();
+                            break;
                         }
                     }
                 }
