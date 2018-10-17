@@ -430,25 +430,21 @@ public class ApplicationModel extends PFUIComponent {
     /**
      * Moves the contents of a folder to another via a temporary directory.
      *
-     * @param moveContent
-     * @param originalDirectory
-     * @param newDirectory
-     * @return
+     * @param moveContent Specify if content sould get moved as well
+     * @param originalDirectory The source directory
+     * @param newDirectory The destination directory
+     * @param folder The folder to move
+     * @return {@code null} if everything worked well, an Exception object otherwise.
      */
     private Object transferFolder(boolean moveContent, Path originalDirectory,
         Path newDirectory, Folder folder)
     {
-        try {
-            newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
+        newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
 
+        try {
             // Copy the files to the new local base
             if (Files.notExists(newDirectory)) {
-                try {
-                    Files.createDirectories(newDirectory);
-                } catch (IOException ioe) {
-                    throw new IOException("Failed to create directory: "
-                        + newDirectory + ". " + ioe);
-                }
+                Files.createDirectories(newDirectory);
             }
 
             // Remove the old folder from the repository.
@@ -457,7 +453,7 @@ public class ApplicationModel extends PFUIComponent {
 
             // Move it.
             if (moveContent) {
-                PathUtils.recursiveMove(originalDirectory, newDirectory);
+                PathUtils.recursiveCopy(originalDirectory, newDirectory);
             }
 
             Path commitDir = null;
@@ -488,6 +484,10 @@ public class ApplicationModel extends PFUIComponent {
                 for (String pattern : patterns) {
                     folder.addPattern(pattern);
                 }
+            }
+
+            if (moveContent) {
+                PathUtils.recursiveDelete(originalDirectory);
             }
         } catch (Exception e) {
             return e;
