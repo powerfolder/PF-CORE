@@ -43,9 +43,4 @@ D2DObject {
      * @return Converted {@link AbstractMessage D2D message}
      **/
     AbstractMessage toD2D();
-
-    default void handle(Member node) {
-        node.handleMessage((Message)this, node.getPeer());
-    }
-
 }

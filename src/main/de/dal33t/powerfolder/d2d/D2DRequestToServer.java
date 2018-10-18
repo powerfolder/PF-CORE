@@ -5,7 +5,6 @@ import de.dal33t.powerfolder.message.Message;
 
 public interface D2DRequestToServer extends D2DObject {
 
-    @Override
     default void handle(Member node) {
         if (node.getController().getMySelf().isServer()) {
             node.getController().getNodeManager().messageReceived(node, (Message) this);

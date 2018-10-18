@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.message;
 
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.d2d.D2DObject;
+
 import java.io.Serializable;
 
 /**
@@ -33,5 +36,9 @@ public class Message implements Serializable {
     private static final long serialVersionUID = 100L;
 
     public Message() {
+    }
+
+    public void handle(Member node) {
+        node.handleMessage(this, node.getPeer());
     }
 }

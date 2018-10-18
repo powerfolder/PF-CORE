@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.d2d;
 
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.message.Message;
 import org.squirrelframework.foundation.fsm.StateMachineBuilderFactory;
 import org.squirrelframework.foundation.fsm.UntypedStateMachineBuilder;
 import org.squirrelframework.foundation.fsm.annotation.StateMachineParameters;
@@ -16,7 +17,9 @@ public class NodeStateMachine extends AbstractUntypedStateMachine {
     }
 
     protected void handle(NodeState from, NodeState to, NodeEvent event, D2DObject d2DObject) {
-        d2DObject.handle(this.node);
+        if (d2DObject instanceof Message) {
+            ((Message)d2DObject).handle(this.node);
+        }
     }
 
     static NodeStateMachine build() {
