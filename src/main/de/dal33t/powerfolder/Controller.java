@@ -1471,6 +1471,13 @@ public class Controller extends PFComponent {
             }
         }
 
+        return true;
+    }
+
+    /**
+     * Starts connection listeners for D2D (needs to be called in Server.start after SSl certificates are checked)
+     */
+    public void initializeListenerOnLocalPortD2D() {
         /* Check whether to start D2D, too */
         int port = ConfigurationEntry.NET_PORT_D2D.getValueInt(this);
         if (port > 0) {
@@ -1486,8 +1493,6 @@ public class Controller extends PFComponent {
                 }
             }
         }
-
-        return true;
     }
 
     /**
