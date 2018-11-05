@@ -113,7 +113,10 @@ public enum ConfigurationEntry {
      * folder or change client preferences.
      * <p>
      * TRAC #1979
+     *
+     * @deprecated since 14.0
      */
+    @Deprecated
     SECURITY_PERMISSIONS_STRICT("security.permissions.strict", false),
 
     /**
@@ -383,7 +386,10 @@ public enum ConfigurationEntry {
 
     /**
      * #2448: Option to disable Web access
+     *
+     * @deprecated since 14.0
      */
+    @Deprecated
     WEB_LOGIN_ALLOWED("web.login.allowed", true),
 
     /**
@@ -930,7 +936,16 @@ public enum ConfigurationEntry {
      */
     CONFLICT_DETECTION("conflict.detection", true),
 
-    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true, true),
+    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true, true) {
+        @Override
+        public String getValue(Controller controller) {
+            if (controller.getMySelf().isServer()) {
+                return Boolean.FALSE.toString();
+            } else {
+                return super.getValue(controller);
+            }
+        }
+    },
 
     LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
 
