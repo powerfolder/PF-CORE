@@ -936,7 +936,16 @@ public enum ConfigurationEntry {
      */
     CONFLICT_DETECTION("conflict.detection", true),
 
-    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true, true),
+    LOOK_FOR_FOLDER_CANDIDATES("look.for.folder.candidates", true, true) {
+        @Override
+        public String getValue(Controller controller) {
+            if (controller.getMySelf().isServer()) {
+                return Boolean.FALSE.toString();
+            } else {
+                return super.getValue(controller);
+            }
+        }
+    },
 
     LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
 
