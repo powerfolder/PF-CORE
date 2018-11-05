@@ -1493,6 +1493,16 @@ public class Controller extends PFComponent {
                 }
             }
         }
+        for (ConnectionListener connectionListener : additionalConnectionListeners) {
+            if (connectionListener.useD2D) {
+                try {
+                    connectionListener.start();
+                } catch (ConnectionException e) {
+                    logSevere("Problems starting listener " + connectionListener, e);
+                }
+            }
+        }
+
     }
 
     /**

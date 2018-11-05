@@ -72,7 +72,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private final String interfaceAddress;
     private boolean hasIncomingConnection;
 
-    private final boolean useD2D; ///< Whether to use D2D proto
+    public final boolean useD2D; ///< Whether to use D2D proto
 
     /** ConnectionListener
      * Init connection listener
