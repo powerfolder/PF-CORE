@@ -113,7 +113,10 @@ public enum ConfigurationEntry {
      * folder or change client preferences.
      * <p>
      * TRAC #1979
+     *
+     * @deprecated since 14.0
      */
+    @Deprecated
     SECURITY_PERMISSIONS_STRICT("security.permissions.strict", false),
 
     /**
@@ -383,7 +386,10 @@ public enum ConfigurationEntry {
 
     /**
      * #2448: Option to disable Web access
+     *
+     * @deprecated since 14.0
      */
+    @Deprecated
     WEB_LOGIN_ALLOWED("web.login.allowed", true),
 
     /**
