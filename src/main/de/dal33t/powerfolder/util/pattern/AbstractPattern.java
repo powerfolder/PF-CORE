@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Matching on any texts that end with the given pattern.
  */
@@ -27,67 +29,56 @@ public abstract class AbstractPattern implements Pattern {
     /**
      * Original pattern text.
      */
-    private final String patternText;
+    final String patternText;
 
     /**
      * Constructor.
      *
-     * @param patternStringArg
+     * @param patternString The pattern this class should represent.
      */
-    protected AbstractPattern(String patternStringArg) {
-        patternText = patternStringArg.toLowerCase().trim();
+    AbstractPattern(@NotNull String patternString) {
+        patternText = patternString.toLowerCase().trim();
     }
 
     /*
      * (non-Javadoc)
      * @see de.dal33t.powerfolder.util.pattern.Pattern#getPatternText()
      */
-    public String getPatternText() {
+    @Override
+    public @NotNull String getPatternText() {
         return patternText;
     }
 
     public final boolean equals(Object obj) {
-
         if (this == obj) {
             return true;
         }
 
-        if (obj == null || !(obj instanceof AbstractPattern)) {
+        if (!(obj instanceof AbstractPattern)) {
             return false;
         }
 
-        AbstractPattern that = (AbstractPattern) obj;
-        String thisPatternText = getPatternText();
-        String thatPatternText = that.getPatternText();
-        
-        return  thisPatternText == null
-                ? thatPatternText == null
-                : thisPatternText.equals(thatPatternText);
+        return patternText.equals(((AbstractPattern) obj).patternText);
     }
 
     public final int hashCode() {
-        String patternText = getPatternText();
-        return patternText == null ? 0 : patternText.hashCode();
+        return patternText.hashCode();
     }
 
     // Internal helper ********************************************************
 
     /**
-     * Used to see if a char is an upper or lower case.
+     * Used to see if a char is an upper or lower case character.
      *
-     * @param c
-     * @param cLower
-     * @param cUpper
-     * @return
+     * @param c The character to test
+     * @param cLower A lowercase character
+     * @param cUpper An uppercase character
+     * @return {@code True} if {@code c} equals either {@code cLower} or {@code cUpper}. {@code False} otherwise.
      */
-    protected static boolean equalChar(char c, char cLower, char cUpper) {
+    static boolean equalChar(char c, char cLower, char cUpper) {
         if (c == cLower) {
             return true;
         }
-        if (c == cUpper) {
-            return true;
-        }
-        return false;
+        return c == cUpper;
     }
-
 }

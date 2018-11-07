@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.CreateAccountRequestProto;
 
 public class CreateAccountRequest extends LoginRequest {
@@ -33,6 +34,11 @@ public class CreateAccountRequest extends LoginRequest {
         if (this.username != null) builder.setUsername(this.getUsername());
         if (this.password != null) builder.setPassword(this.getPassword());
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.CREATE_ACCOUNT_REQUEST;
     }
 
 }

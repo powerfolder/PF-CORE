@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder;
 
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
@@ -657,7 +658,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         info.setD2dPort(identity.getMemberInfo().getD2dPort());
 
-        return completeHandshake();
+        if (peer instanceof D2DSocketConnectionHandler) {
+            return ConnectResult.success();
+        } else {
+            return completeHandshake();
+        }
     }
 
     /**
@@ -1031,6 +1036,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                     folder.supportExternalizable(this));
             } else {
                 filelistMsgs = new Message[1];
+                logWarning("Creating empty FileList for " +
+                    folder.getName() + " to send to " + this +
+                    " while sending FileList. No folder db", new StackDump());
                 filelistMsgs[0] = FileList.createEmpty(folder.getInfo(),
                     folder.supportExternalizable(this));
             }
@@ -1051,6 +1059,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                 logFine("Actually joined: " + foldersJoined);
             }
             for (Folder folder : foldersRequested) {
+                logWarning("Creating empty FileList for " +
+                        folder.getName() + " to send to " + this +
+                        " while sending FileList. Requested folder but not joined.",
+                    new StackDump());
                 sendMessagesAsynchron(FileList.createEmpty(folder.getInfo(),
                     folder.supportExternalizable(this)));
             }
@@ -1876,7 +1888,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
     }
 
-    private void processFolderList(FolderList fList, ConnectionHandler fromPeer) {
+    public void processFolderList(FolderList fList, ConnectionHandler fromPeer) {
         try {
             nextFolderList = fList;
             folderJoinLock.lock();
@@ -1982,7 +1994,7 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @param message
      *            the message to fire
      */
-    private void fireMessageToListeners(Message message) {
+    public void fireMessageToListeners(Message message) {
         getMessageListenerSupport().fireMessage(this, message);
     }
 
@@ -2729,4 +2741,48 @@ public class Member extends PFComponent implements Comparable<Member> {
     public int compareTo(Member m) {
         return info.id.compareTo(m.info.id);
     }
+
+
+    // -------------------------------------------------------------------------------------
+    // ---------------------------------------- D2D ----------------------------------------
+    // -------------------------------------------------------------------------------------
+
+    public void handshakeFolderList() {
+        synchronized (peerInitializeLock) {
+            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false)));
+        }
+        peer.sendMessagesAsynchron(new HandshakeCompleted());
+    }
+
+    public void completeHandshakeD2D() {
+        connectionRetries = 0;
+        getController().getNodeManager().connectStateChanged(this);
+        getController().getSecurityManager().nodeAccountStateChanged(this, true);
+
+        // Request files
+        for (Folder folder : getFoldersActuallyJoined()) {
+            if (folder.getSyncProfile().isAutodownload()) {
+                getController().getFolderRepository().getFileRequestor().triggerFileRequesting(folder.getInfo());
+            }
+            if (folder.getSyncProfile().isSyncDeletion()) {
+                folder.triggerSyncRemoteDeletedFiles(Collections.singleton(this), false);
+            }
+        }
+        handshaked = true;
+    }
+
+    public void processFolderListD2D(FolderList folderList) {
+        // Fake expectedListMessages since some part of the software still need this parameter set
+        for (FolderInfo folderInfo : folderList.folders) {
+            expectedListMessages.put(folderInfo, -1);
+        }
+        try {
+            folderJoinLock.lock();
+            lastFolderList = folderList;
+            joinToLocalFolders(folderList, peer);
+        } finally {
+            folderJoinLock.unlock();
+        }
+    }
+
 }

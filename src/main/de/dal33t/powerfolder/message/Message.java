@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.message;
 
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+
 import java.io.Serializable;
 
 /**
@@ -34,4 +38,13 @@ public class Message implements Serializable {
 
     public Message() {
     }
+
+    public void handle(Member node) {
+        if (this instanceof D2DRequestToServer && node.getController().getMySelf().isServer()) {
+            node.getController().getNodeManager().messageReceived(node, (Message) this);
+        } else {
+            node.handleMessage(this, node.getPeer());
+        }
+    }
+
 }

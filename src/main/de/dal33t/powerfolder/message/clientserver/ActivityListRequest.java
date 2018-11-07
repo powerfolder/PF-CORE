@@ -3,11 +3,13 @@ package de.dal33t.powerfolder.message.clientserver;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.activity.domain.ActivityType;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.ActivityListRequestProto;
 
 import java.util.Date;
 
-public class ActivityListRequest extends D2DRequestMessage {
+public class ActivityListRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     private String accountId;
     private ActivityType activityType;
@@ -67,6 +69,11 @@ public class ActivityListRequest extends D2DRequestMessage {
         if (this.activityType != null) builder.setActivityType(this.getActivityType().toD2D());
         if (this.startDate != null) builder.setStartDate(this.getStartDate().getTime());
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.ACTIVITY_LIST_REQUEST;
     }
 
 }

@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
@@ -35,6 +36,11 @@ public class FolderRemoveRequest extends FolderCreateRequest {
         if (this.requestCode != null) builder.setRequestCode(this.getRequestCode());
         if (this.folderInfo != null) builder.setFolderInfo((FolderInfoProto.FolderInfo) this.folderInfo.toD2D());
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.FOLDER_REMOVE_REQUEST;
     }
 
 }

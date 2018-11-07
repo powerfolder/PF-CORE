@@ -1,12 +1,13 @@
 package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
-import de.dal33t.powerfolder.d2d.D2DReplyMessage;
+import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.ShareLinkInfoProto;
 
 import java.util.Date;
 
-public class ShareLinkInfo extends D2DReplyMessage {
+public class ShareLinkInfo extends Message implements D2DObject {
 
     private int downloads;
     private Date expirationDate;

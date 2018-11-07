@@ -237,4 +237,6 @@ public interface FileInfoDAO {
      * @return the total number of bytes in this domain that are in sync
      */
     long bytesInSync(String domain);
+
+    boolean hasDomainWithFiles(String domain);
 }

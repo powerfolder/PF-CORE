@@ -1,11 +1,9 @@
 package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FileListRequestProto;
-import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 
 /**
@@ -13,8 +11,7 @@ import de.dal33t.powerfolder.util.Reject;
  *
  * @author Sprajc
  */
-public class FileListRequest extends FolderRelatedMessage
-  implements D2DObject
+public class FileListRequest extends FolderRelatedMessage implements D2DObject
 {
     private static final long serialVersionUID = 100L;
 
@@ -28,41 +25,27 @@ public class FileListRequest extends FolderRelatedMessage
         return "FileListRequest [folder=" + folder.getLocalizedName() + "/" + folder.id + "]";
     }
 
-    /** initFromD2DMessage
+    /**
      * Init from D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  mesg  Message to use data from
+     *
+     * @param message Message to use data from
      **/
-
     @Override
-    public void
-    initFromD2D(AbstractMessage mesg)
-    {
-      if(mesg instanceof FileListRequestProto.FileListRequest)
-        {
-          FileListRequestProto.FileListRequest proto =
-            (FileListRequestProto.FileListRequest)mesg;
-
-          this.folder = new FolderInfo(proto.getFolderInfo());
-        }
+    public void initFromD2D(AbstractMessage message) {
     }
 
-    /** toD2D
+    /**
      * Convert to D2D message
-     * @author Christoph Kappel <kappel@powerfolder.com>
+     *
      * @return Converted D2D message
      **/
-
     @Override
-    public AbstractMessage
-    toD2D()
-    {
-      FileListRequestProto.FileListRequest.Builder builder =
-        FileListRequestProto.FileListRequest.newBuilder();
-
-      builder.setClazzName(this.getClass().getSimpleName());
-      builder.setFolderInfo((FolderInfoProto.FolderInfo)this.folder.toD2D());
-
-      return builder.build();
+    public AbstractMessage toD2D() {
+        FileListRequestProto.FileListRequest.Builder builder = FileListRequestProto.FileListRequest.newBuilder();
+        builder.setClazzName(this.getClass().getSimpleName());
+        if (this.folder != null) builder.setFolderId(this.folder.id);
+        builder.setRecursive(true);
+        return builder.build();
     }
+
 }

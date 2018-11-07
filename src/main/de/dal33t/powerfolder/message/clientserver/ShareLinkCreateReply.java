@@ -2,11 +2,12 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.StatusCode;
+import de.dal33t.powerfolder.d2d.D2DReplyFromServer;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.protocol.ShareLinkCreateReplyProto;
 import de.dal33t.powerfolder.protocol.ShareLinkInfoProto;
 
-public class ShareLinkCreateReply extends D2DReplyMessage {
+public class ShareLinkCreateReply extends D2DReplyMessage implements D2DReplyFromServer {
 
     private ShareLinkInfo shareLinkInfo;
 

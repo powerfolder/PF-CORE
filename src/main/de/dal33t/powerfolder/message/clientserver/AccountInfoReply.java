@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.StatusCode;
+import de.dal33t.powerfolder.d2d.D2DReplyFromServer;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -12,7 +13,7 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import java.util.Collection;
 import java.util.Map;
 
-public class AccountInfoReply extends D2DReplyMessage {
+public class AccountInfoReply extends D2DReplyMessage implements D2DReplyFromServer {
 
     private Account account;
     private Collection<FolderPermission> invitations;
@@ -137,7 +138,7 @@ public class AccountInfoReply extends D2DReplyMessage {
                 accountInfoBuilder.addPermissionInfos(permissionInfoBuilder.build());
             }
             if (this.account.getServer() != null && this.account.getServer().getNode() != null)
-                accountInfoBuilder.setHostingNodeId(this.account.getServer().getNode().id);
+                accountInfoBuilder.setHostingServerInfo((ServerInfoProto.ServerInfo) this.account.getServer().toD2D());
             // Inject serverInfos into AccountInfo
             for (Map.Entry<ServerInfo, String> entry : account.getTokens().entrySet()) {
                 ServerInfoProto.ServerInfo serverInfo = (ServerInfoProto.ServerInfo) entry.getKey().toD2D();

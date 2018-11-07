@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;

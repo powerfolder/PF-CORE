@@ -2,10 +2,12 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DRequestMessage;
+import de.dal33t.powerfolder.d2d.D2DRequestToServer;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.ShareLinkCreateRequestProto;
 import de.dal33t.powerfolder.protocol.ShareLinkInfoProto;
 
-public class ShareLinkCreateRequest extends D2DRequestMessage {
+public class ShareLinkCreateRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     protected ShareLinkInfo shareLinkInfo;
 
@@ -61,6 +63,11 @@ public class ShareLinkCreateRequest extends D2DRequestMessage {
     @Override
     public boolean isValid() {
         return super.isValid() && this.shareLinkInfo != null;
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.SHARE_LINK_CREATE_REQUEST;
     }
 
 }

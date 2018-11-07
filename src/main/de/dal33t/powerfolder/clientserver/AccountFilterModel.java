@@ -45,6 +45,7 @@ public class AccountFilterModel extends Model {
     private String queryname;
     private String memberOfOrganizationOID = Organization.FILTER_MATCH_ALL;
     private List<String> adminOfOrganizationOID;
+    private boolean reseller;
     private String[] permissionNames;
     private String sortingProperty;
     private String sortingOrder;
@@ -142,6 +143,14 @@ public class AccountFilterModel extends Model {
             adminOfOrganizationOID = new ArrayList<>();
         }
         adminOfOrganizationOID.add(orgOID);
+    }
+
+    public boolean isReseller() {
+        return reseller;
+    }
+
+    public void setReseller(boolean reseller) {
+        this.reseller = reseller;
     }
 
     public String getSortingProperty() {

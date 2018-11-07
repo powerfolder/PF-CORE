@@ -22,7 +22,9 @@ package de.dal33t.powerfolder.message;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.IdentityProto;
@@ -39,8 +41,7 @@ import java.util.Calendar;
  *
  * @version $Revision: 1.6 $
  */
-public class Identity extends Message
-  implements D2DObject
+public class Identity extends Message implements D2DObject, D2DEvent
 {
     private static final long serialVersionUID = 101L;
 
@@ -314,6 +315,11 @@ public class Identity extends Message
         builder.setClazzName(this.getClass().getSimpleName());
         if (this.member != null) builder.setNodeInfo((NodeInfoProto.NodeInfo) this.member.toD2D());
         return builder.build();
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.IDENTITY;
     }
 
 }

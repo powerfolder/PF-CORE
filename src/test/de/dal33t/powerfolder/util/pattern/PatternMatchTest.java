@@ -17,20 +17,12 @@
  *
  * $Id: PatternMatchTest.java 8022 2009-05-21 07:46:07Z harry $
  */
-package de.dal33t.powerfolder.test.util;
+package de.dal33t.powerfolder.util.pattern;
 
 import de.dal33t.powerfolder.Constants;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.pattern.CompiledPattern;
-import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
-import de.dal33t.powerfolder.util.pattern.EndMatchPattern;
-import de.dal33t.powerfolder.util.pattern.ExactMatchPattern;
-import de.dal33t.powerfolder.util.pattern.OfficeTempFilesMatchPattern;
-import de.dal33t.powerfolder.util.pattern.Pattern;
-import de.dal33t.powerfolder.util.pattern.PatternFactory;
-import de.dal33t.powerfolder.util.pattern.StartMatchPattern;
+import junit.framework.TestCase;
 
 public class PatternMatchTest extends TestCase {
 
@@ -239,6 +231,7 @@ public class PatternMatchTest extends TestCase {
 
     public void testPerformance() {
         Profiling.setEnabled(true);
+        int nPatterns = 10000000;
 
         Pattern p1 = new CompiledPattern("SdFgKjH");
         Pattern p2 = new StartMatchPattern("sdfgh*");
@@ -246,50 +239,49 @@ public class PatternMatchTest extends TestCase {
         Pattern p4 = new CompiledPattern("*test*/*name");
         Pattern p5 = new CompiledPattern("c*/huh/*name");
         Pattern p6 = new EndMatchPattern("*thumbs.db");
-        ProfilingEntry pe = Profiling.start("CompiledPattern");
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < nPatterns; i++) {
+            ProfilingEntry pe = Profiling.start("CompiledPattern");
             p1.isMatch("C:\\Programme\\test\\Thumbs.db");
             p2.isMatch("C:\\Programme\\test\\Thumbs.db");
             p3.isMatch("C:\\Programme\\test\\Thumbs.db");
             p4.isMatch("C:\\Programme\\test\\Thumbs.db");
             p5.isMatch("C:\\Programme\\test\\Thumbs.db");
             p6.isMatch("C:\\Programme\\test\\Thumbs.db");
+            Profiling.end(pe);
         }
-        Profiling.end(pe);
 
-        int nPatterns = 10000000;
-        pe = Profiling.start("CompiledPatternThumbsDB");
         Pattern pattern = new CompiledPattern(
             DefaultExcludes.THUMBS_DB.getPattern());
         for (int i = 0; i < nPatterns; i++) {
-            assertTrue(pattern.isMatch("C:\\Programme\\test\\Thumbs.db"));
-            assertFalse(pattern.isMatch("C:\\Programme\\test\\Testfile"));
+            ProfilingEntry pe = Profiling.start("CompiledPatternThumbsDB");
+            pattern.isMatch("C:\\Programme\\test\\Thumbs.db");
+            pattern.isMatch("C:\\Programme\\test\\Testfile");
+            Profiling.end(pe);
         }
-        Profiling.end(pe);
 
-        pe = Profiling.start("EndMatchPatternThumbsDB");
         pattern = new EndMatchPattern(DefaultExcludes.THUMBS_DB.getPattern());
         for (int i = 0; i < nPatterns; i++) {
-            assertTrue(pattern.isMatch("C:\\Programme\\test\\Thumbs.db"));
-            assertFalse(pattern.isMatch("C:\\Programme\\test\\Testfile"));
+            ProfilingEntry pe = Profiling.start("EndMatchPatternThumbsDB");
+            pattern.isMatch("C:\\Programme\\test\\Thumbs.db");
+            pattern.isMatch("C:\\Programme\\test\\Testfile");
+            Profiling.end(pe);
         }
-        Profiling.end(pe);
 
-        pe = Profiling.start("StartMatchPatternThumbsDB");
         pattern = new StartMatchPattern("programme\\test\\*");
         for (int i = 0; i < nPatterns; i++) {
-            assertTrue(pattern.isMatch("Programme\\test\\Thumbs.db"));
-            assertFalse(pattern.isMatch("Users\\test\\Thumbs.db"));
+            ProfilingEntry pe = Profiling.start("StartMatchPatternThumbsDB");
+            pattern.isMatch("Programme\\test\\Thumbs.db");
+            pattern.isMatch("Users\\test\\Thumbs.db");
+            Profiling.end(pe);
         }
-        Profiling.end(pe);
 
-        pe = Profiling.start("OfficeXTempMatchPatternThumbsDB");
         pattern = new OfficeTempFilesMatchPattern(Constants.MS_OFFICE_FILENAME_PREFIX, "*");
         for (int i = 0; i < nPatterns; i++) {
-            assertFalse(pattern.isMatch("Programme\\test\\Thumbs.db"));
-            assertTrue(pattern.isMatch("Users\\test\\~$LAST Quotation.xlsx"));
+            ProfilingEntry pe = Profiling.start("OfficeXTempMatchPatternThumbsDB");
+            pattern.isMatch("Programme\\test\\Thumbs.db");
+            pattern.isMatch("Users\\test\\~$LAST Quotation.xlsx");
+            Profiling.end(pe);
         }
-        Profiling.end(pe);
         System.err.println(Profiling.dumpStats());
     }
 }

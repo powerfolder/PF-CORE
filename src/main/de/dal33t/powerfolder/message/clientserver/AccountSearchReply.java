@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.message.clientserver;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.StatusCode;
+import de.dal33t.powerfolder.d2d.D2DReplyFromServer;
 import de.dal33t.powerfolder.d2d.D2DReplyMessage;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.protocol.AccountInfoProto;
@@ -9,7 +10,7 @@ import de.dal33t.powerfolder.protocol.AccountSearchReplyProto;
 
 import java.util.Collection;
 
-public class AccountSearchReply extends D2DReplyMessage {
+public class AccountSearchReply extends D2DReplyMessage implements D2DReplyFromServer {
 
     private Collection<AccountInfo> accountInfos;
 

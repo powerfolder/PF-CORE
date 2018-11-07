@@ -28,8 +28,20 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.disk.*;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.disk.Lock;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.LockingEvent;
+import de.dal33t.powerfolder.event.LockingListener;
+import de.dal33t.powerfolder.event.NodeManagerAdapter;
+import de.dal33t.powerfolder.event.NodeManagerEvent;
+import de.dal33t.powerfolder.event.OverallFolderStatListener;
+import de.dal33t.powerfolder.event.PausedModeEvent;
+import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
@@ -52,12 +64,13 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.AbstractAction;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -89,7 +102,7 @@ public class ApplicationModel extends PFUIComponent {
      * Constructs a non-initialized application model. Before the model can be
      * used call {@link #initialize()}
      *
-     * @param controller
+     * @param controller The controller
      * @see #initialize()
      */
     public ApplicationModel(final Controller controller) {
@@ -116,7 +129,7 @@ public class ApplicationModel extends PFUIComponent {
 
         licenseModel = new LicenseModel();
         noticesModel = new NoticesModel(getController());
-        syncStatusListeners = new CopyOnWriteArrayList<SyncStatusListener>();
+        syncStatusListeners = new CopyOnWriteArrayList<>();
     }
 
     /**
@@ -365,7 +378,8 @@ public class ApplicationModel extends PFUIComponent {
     /**
      * Confirm that the user really does want to go ahead with the move.
      *
-     * @param newDirectory
+     * @param newDirectory The new directory
+     * @param folder The Folder to move
      * @return true if the user wishes to move.
      */
     private boolean shouldMoveLocal(Path newDirectory, Folder folder) {
@@ -386,8 +400,8 @@ public class ApplicationModel extends PFUIComponent {
      * Do some basic validation. Warn if moving to a folder that has files /
      * directories in it.
      *
-     * @param newDirectory
-     * @return
+     * @param newDirectory The new directory
+     * @return {@code True} if moving should be ok, {@code false} otherwise.
      */
     private boolean checkNewLocalFolder(Path newDirectory) {
 
@@ -403,10 +417,7 @@ public class ApplicationModel extends PFUIComponent {
                 new String[]{Translation.get("general.continue"),
                     Translation.get("general.cancel")}, 1,
                 GenericDialogType.WARN); // Default is cancel.
-            if (result != 0) {
-                // User does not want to move to new folder.
-                return false;
-            }
+            return result == 0;
         }
 
         // All good.
@@ -430,25 +441,21 @@ public class ApplicationModel extends PFUIComponent {
     /**
      * Moves the contents of a folder to another via a temporary directory.
      *
-     * @param moveContent
-     * @param originalDirectory
-     * @param newDirectory
-     * @return
+     * @param moveContent Specify if content sould get moved as well
+     * @param originalDirectory The source directory
+     * @param newDirectory The destination directory
+     * @param folder The folder to move
+     * @return {@code null} if everything worked well, an Exception object otherwise.
      */
     private Object transferFolder(boolean moveContent, Path originalDirectory,
         Path newDirectory, Folder folder)
     {
-        try {
-            newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
+        newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
 
+        try {
             // Copy the files to the new local base
             if (Files.notExists(newDirectory)) {
-                try {
-                    Files.createDirectories(newDirectory);
-                } catch (IOException ioe) {
-                    throw new IOException("Failed to create directory: "
-                        + newDirectory + ". " + ioe);
-                }
+                Files.createDirectories(newDirectory);
             }
 
             // Remove the old folder from the repository.
@@ -457,7 +464,7 @@ public class ApplicationModel extends PFUIComponent {
 
             // Move it.
             if (moveContent) {
-                PathUtils.recursiveMove(originalDirectory, newDirectory);
+                PathUtils.recursiveCopy(originalDirectory, newDirectory);
             }
 
             Path commitDir = null;
@@ -488,6 +495,10 @@ public class ApplicationModel extends PFUIComponent {
                 for (String pattern : patterns) {
                     folder.addPattern(pattern);
                 }
+            }
+
+            if (moveContent) {
+                PathUtils.recursiveDelete(originalDirectory);
             }
         } catch (Exception e) {
             return e;

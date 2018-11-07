@@ -114,7 +114,7 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
      *
      * @param handler
      */
-    protected void acceptConnection(ConnectionHandler handler) {
+    public void acceptConnection(ConnectionHandler handler) {
         try {
             this.handler = handler;
             getController().getNodeManager().acceptConnection(handler);

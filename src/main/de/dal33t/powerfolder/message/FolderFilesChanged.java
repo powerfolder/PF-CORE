@@ -21,14 +21,19 @@ package de.dal33t.powerfolder.message;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.io.Externalizable;
@@ -45,8 +50,7 @@ import java.util.logging.Logger;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.2 $
  */
-public class FolderFilesChanged extends FolderRelatedMessage
-  implements D2DObject
+public class FolderFilesChanged extends FolderRelatedMessage implements D2DObject, D2DEvent
 {
 
     private static final Logger log = Logger.getLogger(FolderFilesChanged.class
@@ -315,4 +319,31 @@ public class FolderFilesChanged extends FolderRelatedMessage
 
       return builder.build();
     }
+
+    @Override
+    public void handle(Member node) {
+        FolderInfo folderInfo = this.folder;
+        if (folderInfo == null) {
+            return;
+        }
+        Folder folder = node.getController().getFolderRepository().getFolder(folderInfo);
+        if (folder == null) {
+            return;
+        }
+        TransferManager transferManager = node.getController().getTransferManager();
+        if (this.getFiles() != null) {
+            for (int i = 0; i < this.getFiles().length; i++) {
+                transferManager.abortDownload(this.getFiles()[i], node);
+            }
+        }
+        folder.fileListChanged(node, this);
+        // ¯\_(ツ)_/¯
+        node.fireMessageToListeners(this);
+    }
+
+    @Override
+    public NodeEvent getNodeEvent() {
+        return NodeEvent.FOLDER_FILES_CHANGED;
+    }
+
 }

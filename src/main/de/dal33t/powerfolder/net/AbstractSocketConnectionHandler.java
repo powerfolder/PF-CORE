@@ -45,34 +45,34 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 {
 
     /** The basic io socket */
-    private final Socket socket;
+    protected final Socket socket;
 
     /** The assigned member */
-    private Member member;
+    protected Member member;
 
     // Our identity
-    private Identity myIdentity;
+    protected Identity myIdentity;
 
     // Identity of remote peer
-    private Identity identity;
-    private IdentityReply identityReply;
+    protected Identity identity;
+    protected IdentityReply identityReply;
     // The magic id, which has been send to the remote peer
     private String myMagicId;
 
-    private LimitedOutputStream out;
-    private LimitedInputStream in;
-    private ByteSerializer serializer;
+    protected LimitedOutputStream out;
+    protected LimitedInputStream in;
+    protected ByteSerializer serializer;
 
     // The send buffer
-    private Queue<Message> messagesToSendQueue;
+    protected Queue<Message> messagesToSendQueue;
 
-    private boolean started;
+    protected boolean started;
     // Flag if client is on lan
     private boolean onLAN;
 
     // Locks
-    private final Object identityWaiter = new Object();
-    private final Object identityAcceptWaiter = new Object();
+    protected final Object identityWaiter = new Object();
+    protected final Object identityAcceptWaiter = new Object();
     // Lock for sending message
     private final Object sendLock = new Object();
 
@@ -85,10 +85,10 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * Lock to ensure that modifications to senders are performed by one thread
      * only.
      */
-    private Lock senderSpawnLock;
+    protected Lock senderSpawnLock;
 
     // Keepalive stuff
-    private Date lastKeepaliveMessage;
+    protected Date lastKeepaliveMessage;
 
     /**
      * If true all bandwidth limits are omitted, if false it's handled message
@@ -419,7 +419,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * @throws IOException
      *             if stream error
      */
-    private void read(InputStream inStr, byte[] buffer, int offset, int size)
+    protected void read(InputStream inStr, byte[] buffer, int offset, int size)
         throws IOException
     {
         StreamUtils.read(inStr, buffer, offset, size);
@@ -631,7 +631,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     /**
      * Waits until we received the remote identity
      */
-    private void waitForRemoteIdentity() {
+    protected void waitForRemoteIdentity() {
         synchronized (identityWaiter) {
             if (identity == null) {
                 // wait for remote identity
@@ -804,7 +804,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      *
      * @param e
      */
-    private void logConnectionClose(Exception e) {
+    protected void logConnectionClose(Exception e) {
         String msg = "Connection closed to "
             + ((member == null) ? this.toString() : member.toString());
 

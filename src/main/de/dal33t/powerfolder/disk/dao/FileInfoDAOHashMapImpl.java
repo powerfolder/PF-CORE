@@ -387,7 +387,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             if (domain == null) {
                 continue;
             }
-            if (fileInfos.size() >= criteria.getMaxResults()) {
+            if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                 break;
             }
             for (DirectoryInfo directoryInfo : domain.directories.values()) {
@@ -419,6 +419,16 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     public FileHistory getFileHistory(FileInfo fileInfo) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public boolean hasDomainWithFiles(String domain) {
+        String theDomain = StringUtils.isBlank(domain) ? selfDomain : domain;
+
+        Domain d = domains.get(theDomain);
+        if (d == null) {
+            return false;
+        }
+        return !(d.files.isEmpty() && d.directories.isEmpty());
     }
 
     // Internals **************************************************************

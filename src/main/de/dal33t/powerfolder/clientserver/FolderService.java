@@ -20,7 +20,10 @@
 package de.dal33t.powerfolder.clientserver;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderStatisticInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
@@ -52,8 +55,7 @@ public interface FolderService {
      */
     void createFolder(FolderInfo foInfo, SyncProfile profile);
 
-    void createFolder(FolderInfo foInfo, SyncProfile profile,
-        Path targetDir);
+    void createFolder(FolderInfo foInfo, SyncProfile profile, Path targetDir);
 
     void createFolder(FolderInfo foInfo, SyncProfile profile,
                       Path targetDir, boolean isEncryptedFolder);

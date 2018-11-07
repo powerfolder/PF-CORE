@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.Reject;
@@ -71,7 +72,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private final String interfaceAddress;
     private boolean hasIncomingConnection;
 
-    private final boolean useD2D; ///< Whether to use D2D proto
+    public final boolean useD2D; ///< Whether to use D2D proto
 
     /** ConnectionListener
      * Init connection listener
@@ -148,10 +149,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 }
             }
             if (useD2D) {
-                // Load truststore
+                // Load trust store
                 KeyStore keyStore = KeyStore.getInstance("JKS");
                 keyStore.load(new FileInputStream(getController().getSslTrustStoreFile().toString()), new char[0]);
-                // Create keymanager
+                // Create key manager
                 KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                 keyManagerFactory.init(keyStore, new char[0]);
                 KeyManager keyManager[] = keyManagerFactory.getKeyManagers();
@@ -510,7 +511,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
         }
     }
 
-    protected class SocketAcceptor extends AbstractAcceptor {
+    public class SocketAcceptor extends AbstractAcceptor {
         protected Socket socket;
 
         protected SocketAcceptor(Socket socket) {
@@ -534,8 +535,14 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 .getConnectionHandlerFactory()
                 .createAndInitSocketConnectionHandler(socket,
                   ConnectionListener.this.useD2D);
-            // Accept node
-            acceptConnection(handler);
+
+            if (handler instanceof D2DSocketConnectionHandler) {
+                // For D2D accepting is done in the message handler
+                ((D2DSocketConnectionHandler) handler).setSocketAcceptor(this);
+            } else {
+                // Accept node
+                acceptConnection(handler);
+            }
         }
 
         @Override
