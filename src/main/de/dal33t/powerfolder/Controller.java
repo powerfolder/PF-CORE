@@ -91,6 +91,7 @@ public class Controller extends PFComponent {
     private static final int MAJOR_VERSION = 11;
     private static final int MINOR_VERSION = 7;
     private static final int REVISION_VERSION = 765;
+    private static final int SPRINT_NUMBER = 1;
 
     /**
      * Program version.
@@ -102,6 +103,8 @@ public class Controller extends PFComponent {
      * Federation version.
      */
     public static final String FEDERATION_VERSION = MAJOR_VERSION + "." + MINOR_VERSION;
+
+    public static final String INCREMENT_VERSION = MAJOR_VERSION + "." + MINOR_VERSION + "." + REVISION_VERSION + "." + SPRINT_NUMBER;
 
     /** general wait time for all threads (5000 is a balanced value) */
     private static final long WAIT_TIME = 5000;
@@ -566,7 +569,7 @@ public class Controller extends PFComponent {
         // Initialize branding/preconfiguration of the client
         initDistribution();
         logFine("Build time: " + getBuildTime());
-        logInfo("Program version " + PROGRAM_VERSION);
+        logInfo("Program version " + INCREMENT_VERSION);
 
         if (getDistribution().getBinaryName().toLowerCase()
             .contains("powerfolder"))
