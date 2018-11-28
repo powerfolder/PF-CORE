@@ -19,13 +19,17 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -156,4 +160,130 @@ public interface AccountService {
      * will be merged.
      */
     List<String> mergeAccounts(Account account, Account... mergeAccounts);
+
+    /**
+     * Update the {@code account's} Email addresses to {@code emails}.
+     * <p>
+     *     This method prioritizes the actions to be done.
+     * </p>
+     * <ol>
+     *     <li>Initiate a merge</li>
+     *     <li>Send verification Emails</li>
+     *     <li>Remove Emails</li>
+     * </ol>
+     * <p>
+     *     I.e. if an Email address is added that initiates a merge of two accounts,
+     *     no lesser action is performed, if verification Emails are sent, no lesser
+     *     action is performed.
+     * </p>
+     *
+     * @param account
+     *     The account to update the Email addresses
+     * @param emails
+     *     The new list of Email addresses
+     * @return An {@link UpdateEmail} to indicate what happened and if the user
+     * has to get active to verify an Email address or to merge two accounts.
+     */
+    UpdateEmail updateEmails(@NotNull Account account, @NotNull String[] emails);
+
+    /**
+     * Status and information about updating Emails of an {@link Account}
+     *
+     * {@code StatusCode StatusCodes} have a special meaning:
+     * <table>
+     *     <thead>
+     *         <tr>
+     *             <td>StatusCode</td>
+     *             <td>Meaning</td>
+     *         </tr>
+     *     </thead>
+     *     <tbody>
+     *         <tr>
+     *             <td>OK(200)</td>
+     *             <td>Only removed Emails</td>
+     *         </tr>
+     *         <tr>
+     *             <td>NO_CONTENT(204)</td>
+     *             <td>Nothing changed</td>
+     *         </tr>
+     *         <tr>
+     *             <td>CONTINUE(100)</td>
+     *             <td>Email verification needed</td>
+     *         </tr>
+     *         <tr>
+     *             <td>PROCESSING(102)</td>
+     *             <td>Merge verification needed</td>
+     *         </tr>
+     *     </tbody>
+     * </table>
+     */
+    class UpdateEmail {
+        List<String> emails = null;
+        final StatusCode status;
+
+
+        // Creation ---
+        private UpdateEmail(@NotNull StatusCode status) {
+            this.status = status;
+        }
+
+        /**
+         * Create an {@link UpdateEmail} with {@link StatusCode#OK}
+         *
+         * @return {@code UpdateEmail} indicating that Emails were removed. May
+         * contain a list of removed addresses.
+         */
+        public static UpdateEmail createRemovedEmails() {
+            return new UpdateEmail(StatusCode.OK);
+        }
+
+        /**
+         * Create an {@link UpdateEmail} with {@link StatusCode#NO_CONTENT}
+         *
+         * @return {@code UpdateEmail} indicating that nothing changed. Does not
+         * contain any further information.
+         */
+        public static UpdateEmail createNothingChanged() {
+            return new UpdateEmail(StatusCode.NO_CONTENT);
+        }
+
+        /**
+         * Create an {@link UpdateEmail} with {@link StatusCode#CONTINUE}
+         *
+         * @return {@code UpdateEmail} indicating that an Email was sent to
+         * those Email addresses. The user has to verify that he/she has access
+         * to those Email accounts. Contains a list of all affected Emails.
+         */
+        public static UpdateEmail createEmailVerificationNeeded() {
+            return new UpdateEmail(StatusCode.CONTINUE);
+        }
+
+        /**
+         * Create an {@link UpdateEmail} with {@link StatusCode#PROCESSING}
+         *
+         * @return {@code UpdateEmail} indicating that the user has to verify to
+         * merge two accounts. Contains the Email of the account to merge.
+         */
+        public static UpdateEmail createMergeVerificationNeeded() {
+            return new UpdateEmail(StatusCode.PROCESSING);
+        }
+        // ---
+
+        // Access ---
+        public StatusCode getStatus() {
+            return status;
+        }
+
+        void addEmail(String email) {
+            if (emails == null) {
+                emails = new ArrayList<>();
+            }
+            emails.add(email);
+        }
+
+        public List<String> getEmails() {
+            return Collections.unmodifiableList(emails);
+        }
+        // ---
+    }
 }
