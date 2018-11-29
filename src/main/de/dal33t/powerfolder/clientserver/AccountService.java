@@ -222,13 +222,25 @@ public interface AccountService {
      * </table>
      */
     class UpdateEmail {
-        List<String> emails = null;
+        final Set<String> emails;
         final StatusCode status;
 
 
         // Creation ---
         private UpdateEmail(@NotNull StatusCode status) {
             this.status = status;
+            this.emails = null;
+        }
+
+        private UpdateEmail(@NotNull StatusCode status, @NotNull String email) {
+            this.status = status;
+            this.emails = new HashSet<>(1);
+            this.emails.add(email);
+        }
+
+        private UpdateEmail(@NotNull StatusCode status, @NotNull Set<String> emails) {
+            this.status = status;
+            this.emails = emails;
         }
 
         /**
