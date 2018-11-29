@@ -199,6 +199,14 @@ public interface AccountService {
      *     </thead>
      *     <tbody>
      *         <tr>
+     *             <td>CONTINUE(100)</td>
+     *             <td>Email verification needed</td>
+     *         </tr>
+     *         <tr>
+     *             <td>PROCESSING(102)</td>
+     *             <td>Merge verification needed</td>
+     *         </tr>
+     *         <tr>
      *             <td>OK(200)</td>
      *             <td>Only removed Emails</td>
      *         </tr>
@@ -207,12 +215,8 @@ public interface AccountService {
      *             <td>Nothing changed</td>
      *         </tr>
      *         <tr>
-     *             <td>CONTINUE(100)</td>
-     *             <td>Email verification needed</td>
-     *         </tr>
-     *         <tr>
-     *             <td>PROCESSING(102)</td>
-     *             <td>Merge verification needed</td>
+     *             <td>FORBIDDEN(403)</td>
+     *             <td>Merge not allowed on this server</td>
      *         </tr>
      *     </tbody>
      * </table>
@@ -245,6 +249,16 @@ public interface AccountService {
          */
         public static UpdateEmail createNothingChanged() {
             return new UpdateEmail(StatusCode.NO_CONTENT);
+        }
+
+        /**
+         * Create an {@link UpdateEmail} with {@link StatusCode#FORBIDDEN}
+         *
+         * @return {@code UpdateEmail} indicating that the operation was not
+         * allowed. Does not contain any further information.
+         */
+        public static UpdateEmail createNotAllowed() {
+            return new UpdateEmail(StatusCode.FORBIDDEN);
         }
 
         /**
