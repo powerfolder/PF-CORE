@@ -288,15 +288,8 @@ public interface AccountService {
             return status;
         }
 
-        void addEmail(String email) {
-            if (emails == null) {
-                emails = new ArrayList<>();
-            }
-            emails.add(email);
-        }
-
-        public List<String> getEmails() {
-            return Collections.unmodifiableList(emails);
+        public Set<String> getEmails() {
+            return emails;
         }
         // ---
     }
