@@ -249,8 +249,8 @@ public interface AccountService {
          * @return {@code UpdateEmail} indicating that Emails were removed. May
          * contain a list of removed addresses.
          */
-        public static UpdateEmail createRemovedEmails() {
-            return new UpdateEmail(StatusCode.OK);
+        public static UpdateEmail createRemovedEmails(@NotNull Set<String> emails) {
+            return new UpdateEmail(StatusCode.OK, emails);
         }
 
         /**
@@ -290,8 +290,8 @@ public interface AccountService {
          * @return {@code UpdateEmail} indicating that the user has to verify to
          * merge two accounts. Contains the Email of the account to merge.
          */
-        public static UpdateEmail createMergeVerificationNeeded() {
-            return new UpdateEmail(StatusCode.PROCESSING);
+        public static UpdateEmail createMergeVerificationNeeded(@NotNull String email) {
+            return new UpdateEmail(StatusCode.PROCESSING, email);
         }
         // ---
 
