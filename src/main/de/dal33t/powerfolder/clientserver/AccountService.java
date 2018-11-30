@@ -185,7 +185,7 @@ public interface AccountService {
      * @return An {@link UpdateEmailResponse} to indicate what happened and if the user
      * has to get active to verify an Email address or to merge two accounts.
      */
-    UpdateEmailResponse updateEmails(@NotNull Account account, @NotNull String[] emails);
+    UpdateEmailResponse updateEmails(@NotNull Account account, @Nullable String[] emails);
 
     /**
      * Status and information about updating Emails of an {@link Account}
