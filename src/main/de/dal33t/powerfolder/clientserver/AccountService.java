@@ -196,28 +196,34 @@ public interface AccountService {
      *         <tr>
      *             <td>StatusCode</td>
      *             <td>Meaning</td>
+     *             <td>Additional Data</td>
      *         </tr>
      *     </thead>
      *     <tbody>
      *         <tr>
      *             <td>CONTINUE(100)</td>
      *             <td>Email verification needed</td>
+     *             <td>A list of Email addresses</td>
      *         </tr>
      *         <tr>
      *             <td>PROCESSING(102)</td>
      *             <td>Merge verification needed</td>
+     *             <td>An Email address of the account to merge</td>
      *         </tr>
      *         <tr>
      *             <td>OK(200)</td>
      *             <td>Only removed Emails</td>
+     *             <td>A list of removed Email addresses</td>
      *         </tr>
      *         <tr>
      *             <td>NO_CONTENT(204)</td>
      *             <td>Nothing changed</td>
+     *             <td>No additional data</td>
      *         </tr>
      *         <tr>
      *             <td>FORBIDDEN(403)</td>
      *             <td>Merge not allowed on this server</td>
+     *             <td>An Email address and a type</td>
      *         </tr>
      *     </tbody>
      * </table>
@@ -261,6 +267,7 @@ public interface AccountService {
         /**
          * Create an {@link UpdateEmailResponse} with {@link StatusCode#OK}
          *
+         * @param emails A set of email addresses that were removed from the account.
          * @return {@code UpdateEmailResponse} indicating that Emails were removed. May
          * contain a list of removed addresses.
          */
@@ -281,27 +288,31 @@ public interface AccountService {
         /**
          * Create an {@link UpdateEmailResponse} with {@link StatusCode#FORBIDDEN}
          *
+         * @param email An email address that was not allowed to be merged or added.
+         * @param type The type of operation that was tried. Either {@code 'merge'} or {@code 'addEmail‘}.
          * @return {@code UpdateEmailResponse} indicating that the operation was not
          * allowed. Does not contain any further information.
          */
-        public static UpdateEmailResponse createNotAllowed(String email, String type) {
+        public static UpdateEmailResponse createNotAllowed(@NotNull String email, @NotNull String type) {
             return new UpdateEmailResponse(StatusCode.FORBIDDEN, email, type);
         }
 
         /**
          * Create an {@link UpdateEmailResponse} with {@link StatusCode#CONTINUE}
          *
+         * @param emails A set of email addresses that need to be verified.
          * @return {@code UpdateEmailResponse} indicating that an Email was sent to
          * those Email addresses. The user has to verify that he/she has access
          * to those Email accounts. Contains a list of all affected Emails.
          */
-        public static UpdateEmailResponse createEmailVerificationNeeded() {
-            return new UpdateEmailResponse(StatusCode.CONTINUE);
+        public static UpdateEmailResponse createEmailVerificationNeeded(@NotNull Set<String> emails) {
+            return new UpdateEmailResponse(StatusCode.CONTINUE, emails);
         }
 
         /**
          * Create an {@link UpdateEmailResponse} with {@link StatusCode#PROCESSING}
          *
+         * @param email An email address of an account that needs to be verified to be merged.
          * @return {@code UpdateEmailResponse} indicating that the user has to verify to
          * merge two accounts. Contains the Email of the account to merge.
          */
