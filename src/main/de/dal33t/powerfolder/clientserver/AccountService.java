@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -222,25 +223,39 @@ public interface AccountService {
      * </table>
      */
     class UpdateEmail {
+        @NotNull
+        final StatusCode  status;
+        @Nullable
         final Set<String> emails;
-        final StatusCode status;
+        @Nullable
+        final String      type;
 
 
         // Creation ---
         private UpdateEmail(@NotNull StatusCode status) {
             this.status = status;
             this.emails = null;
+            this.type   = null;
         }
 
         private UpdateEmail(@NotNull StatusCode status, @NotNull String email) {
             this.status = status;
             this.emails = new HashSet<>(1);
             this.emails.add(email);
+            this.type   = null;
+        }
+
+        private UpdateEmail(@NotNull StatusCode status, @NotNull String email, @NotNull String type) {
+            this.status = status;
+            this.emails = new HashSet<>(1);
+            this.emails.add(email);
+            this.type   = type;
         }
 
         private UpdateEmail(@NotNull StatusCode status, @NotNull Set<String> emails) {
             this.status = status;
             this.emails = emails;
+            this.type   = null;
         }
 
         /**
@@ -269,8 +284,8 @@ public interface AccountService {
          * @return {@code UpdateEmail} indicating that the operation was not
          * allowed. Does not contain any further information.
          */
-        public static UpdateEmail createNotAllowed() {
-            return new UpdateEmail(StatusCode.FORBIDDEN);
+        public static UpdateEmail createNotAllowed(String email, String type) {
+            return new UpdateEmail(StatusCode.FORBIDDEN, email, type);
         }
 
         /**
@@ -296,12 +311,19 @@ public interface AccountService {
         // ---
 
         // Access ---
+        @NotNull
         public StatusCode getStatus() {
             return status;
         }
 
+        @Nullable
         public Set<String> getEmails() {
             return emails;
+        }
+
+        @Nullable
+        public String getType() {
+            return type;
         }
         // ---
     }
