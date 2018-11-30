@@ -182,10 +182,10 @@ public interface AccountService {
      *     The account to update the Email addresses
      * @param emails
      *     The new list of Email addresses
-     * @return An {@link UpdateEmail} to indicate what happened and if the user
+     * @return An {@link UpdateEmailResponse} to indicate what happened and if the user
      * has to get active to verify an Email address or to merge two accounts.
      */
-    UpdateEmail updateEmails(@NotNull Account account, @NotNull String[] emails);
+    UpdateEmailResponse updateEmails(@NotNull Account account, @NotNull String[] emails);
 
     /**
      * Status and information about updating Emails of an {@link Account}
@@ -222,7 +222,7 @@ public interface AccountService {
      *     </tbody>
      * </table>
      */
-    class UpdateEmail {
+    class UpdateEmailResponse {
         @NotNull
         final StatusCode  status;
         @Nullable
@@ -232,81 +232,81 @@ public interface AccountService {
 
 
         // Creation ---
-        private UpdateEmail(@NotNull StatusCode status) {
+        private UpdateEmailResponse(@NotNull StatusCode status) {
             this.status = status;
             this.emails = null;
             this.type   = null;
         }
 
-        private UpdateEmail(@NotNull StatusCode status, @NotNull String email) {
+        private UpdateEmailResponse(@NotNull StatusCode status, @NotNull String email) {
             this.status = status;
             this.emails = new HashSet<>(1);
             this.emails.add(email);
             this.type   = null;
         }
 
-        private UpdateEmail(@NotNull StatusCode status, @NotNull String email, @NotNull String type) {
+        private UpdateEmailResponse(@NotNull StatusCode status, @NotNull String email, @NotNull String type) {
             this.status = status;
             this.emails = new HashSet<>(1);
             this.emails.add(email);
             this.type   = type;
         }
 
-        private UpdateEmail(@NotNull StatusCode status, @NotNull Set<String> emails) {
+        private UpdateEmailResponse(@NotNull StatusCode status, @NotNull Set<String> emails) {
             this.status = status;
             this.emails = emails;
             this.type   = null;
         }
 
         /**
-         * Create an {@link UpdateEmail} with {@link StatusCode#OK}
+         * Create an {@link UpdateEmailResponse} with {@link StatusCode#OK}
          *
-         * @return {@code UpdateEmail} indicating that Emails were removed. May
+         * @return {@code UpdateEmailResponse} indicating that Emails were removed. May
          * contain a list of removed addresses.
          */
-        public static UpdateEmail createRemovedEmails(@NotNull Set<String> emails) {
-            return new UpdateEmail(StatusCode.OK, emails);
+        public static UpdateEmailResponse createRemovedEmails(@NotNull Set<String> emails) {
+            return new UpdateEmailResponse(StatusCode.OK, emails);
         }
 
         /**
-         * Create an {@link UpdateEmail} with {@link StatusCode#NO_CONTENT}
+         * Create an {@link UpdateEmailResponse} with {@link StatusCode#NO_CONTENT}
          *
-         * @return {@code UpdateEmail} indicating that nothing changed. Does not
+         * @return {@code UpdateEmailResponse} indicating that nothing changed. Does not
          * contain any further information.
          */
-        public static UpdateEmail createNothingChanged() {
-            return new UpdateEmail(StatusCode.NO_CONTENT);
+        public static UpdateEmailResponse createNothingChanged() {
+            return new UpdateEmailResponse(StatusCode.NO_CONTENT);
         }
 
         /**
-         * Create an {@link UpdateEmail} with {@link StatusCode#FORBIDDEN}
+         * Create an {@link UpdateEmailResponse} with {@link StatusCode#FORBIDDEN}
          *
-         * @return {@code UpdateEmail} indicating that the operation was not
+         * @return {@code UpdateEmailResponse} indicating that the operation was not
          * allowed. Does not contain any further information.
          */
-        public static UpdateEmail createNotAllowed(String email, String type) {
-            return new UpdateEmail(StatusCode.FORBIDDEN, email, type);
+        public static UpdateEmailResponse createNotAllowed(String email, String type) {
+            return new UpdateEmailResponse(StatusCode.FORBIDDEN, email, type);
         }
 
         /**
-         * Create an {@link UpdateEmail} with {@link StatusCode#CONTINUE}
+         * Create an {@link UpdateEmailResponse} with {@link StatusCode#CONTINUE}
          *
-         * @return {@code UpdateEmail} indicating that an Email was sent to
+         * @return {@code UpdateEmailResponse} indicating that an Email was sent to
          * those Email addresses. The user has to verify that he/she has access
          * to those Email accounts. Contains a list of all affected Emails.
          */
-        public static UpdateEmail createEmailVerificationNeeded() {
-            return new UpdateEmail(StatusCode.CONTINUE);
+        public static UpdateEmailResponse createEmailVerificationNeeded() {
+            return new UpdateEmailResponse(StatusCode.CONTINUE);
         }
 
         /**
-         * Create an {@link UpdateEmail} with {@link StatusCode#PROCESSING}
+         * Create an {@link UpdateEmailResponse} with {@link StatusCode#PROCESSING}
          *
-         * @return {@code UpdateEmail} indicating that the user has to verify to
+         * @return {@code UpdateEmailResponse} indicating that the user has to verify to
          * merge two accounts. Contains the Email of the account to merge.
          */
-        public static UpdateEmail createMergeVerificationNeeded(@NotNull String email) {
-            return new UpdateEmail(StatusCode.PROCESSING, email);
+        public static UpdateEmailResponse createMergeVerificationNeeded(@NotNull String email) {
+            return new UpdateEmailResponse(StatusCode.PROCESSING, email);
         }
         // ---
 
