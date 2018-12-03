@@ -332,7 +332,7 @@ public interface FolderService {
         Collection<FolderInfo> foInfos);
 
     /**
-     * PFS-869: Creating a FileLink for unregistered user uploads.
+     * PFS-869: Creates a FileLink for unregistered user uploads.
      */
     String prepareFileLink(FolderInfo foInfo, String name, String mailAddress, char[] password, Date date);
 
