@@ -41,6 +41,13 @@ import java.util.Set;
  */
 public interface AccountService {
 
+    public static final String TOKEN_INFO = "token_info";
+    public static final String TOKEN_INFO_TYPE = "type";
+    public static final String TOKEN_TYPE_MERGE = "merge";
+    public static final String TOKEN_TYPE_ADD_EMAIL = "addEmail";
+    public static final String TOKEN_INFO_ID = "token";
+    public static final String TOKEN_INFO_ACCOUNT = "account";
+
     /**
      * For internal use. Empty password may never login
      */
