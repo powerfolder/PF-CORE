@@ -128,7 +128,7 @@ public class UpdateEmailResponse {
      * to those Email accounts. Contains a list of all affected Emails.
      */
     public static UpdateEmailResponse createEmailVerificationNeeded(@NotNull Set<String> emails) {
-        return new UpdateEmailResponse(StatusCode.ACCEPTED, emails, TOKEN_TYPE_MERGE);
+        return new UpdateEmailResponse(StatusCode.ACCEPTED, emails, TOKEN_TYPE_ADD_EMAIL);
     }
 
     /**
@@ -139,7 +139,7 @@ public class UpdateEmailResponse {
      * merge two accounts. Contains the Email of the account to merge.
      */
     public static UpdateEmailResponse createMergeVerificationNeeded(@NotNull String email) {
-        return new UpdateEmailResponse(StatusCode.ACCEPTED, email, TOKEN_TYPE_ADD_EMAIL);
+        return new UpdateEmailResponse(StatusCode.ACCEPTED, email, TOKEN_TYPE_MERGE);
     }
     // ---
 
