@@ -8,6 +8,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
+import static de.dal33t.powerfolder.clientserver.AccountService.TOKEN_TYPE_ADD_EMAIL;
+import static de.dal33t.powerfolder.clientserver.AccountService.TOKEN_TYPE_MERGE;
+
 /**
  * Status and information about updating Emails of an {@link Account}
  *
@@ -22,19 +25,14 @@ import java.util.Set;
  *     </thead>
  *     <tbody>
  *         <tr>
- *             <td>CONTINUE(100)</td>
- *             <td>Email verification needed</td>
- *             <td>A list of Email addresses</td>
- *         </tr>
- *         <tr>
- *             <td>PROCESSING(102)</td>
- *             <td>Merge verification needed</td>
- *             <td>An Email address of the account to merge</td>
- *         </tr>
- *         <tr>
  *             <td>OK(200)</td>
  *             <td>Only removed Emails</td>
  *             <td>A list of removed Email addresses</td>
+ *         </tr>
+ *         <tr>
+ *             <td>ACCEPTED(202)</td>
+ *             <td>Merge or Email verification needed (see the type)</td>
+ *             <td>An Email address of the account to merge or a list of Email addresses to be verified and a type indicating merge or add Email</td>
  *         </tr>
  *         <tr>
  *             <td>NO_CONTENT(204)</td>
@@ -51,7 +49,7 @@ import java.util.Set;
  */
 public class UpdateEmailResponse {
     @NotNull
-    private final StatusCode status;
+    private final StatusCode  status;
     @Nullable
     private final Set<String> emails;
     @Nullable
@@ -59,30 +57,33 @@ public class UpdateEmailResponse {
 
 
     // Creation ---
-    private UpdateEmailResponse(@NotNull StatusCode status) {
+    private UpdateEmailResponse(
+        @NotNull StatusCode status)
+    {
         this.status = status;
         this.emails = null;
         this.type   = null;
     }
 
-    private UpdateEmailResponse(@NotNull StatusCode status, @NotNull String email) {
-        this.status = status;
-        this.emails = new HashSet<>(1);
-        this.emails.add(email);
-        this.type   = null;
-    }
-
-    private UpdateEmailResponse(@NotNull StatusCode status, @NotNull String email, @NotNull String type) {
+    private UpdateEmailResponse(
+        @NotNull  StatusCode status,
+        @NotNull  String     email,
+        @Nullable String     type)
+    {
         this.status = status;
         this.emails = new HashSet<>(1);
         this.emails.add(email);
         this.type   = type;
     }
 
-    private UpdateEmailResponse(@NotNull StatusCode status, @NotNull Set<String> emails) {
+    private UpdateEmailResponse(
+        @NotNull  StatusCode  status,
+        @NotNull  Set<String> emails,
+        @Nullable String      type)
+    {
         this.status = status;
         this.emails = emails;
-        this.type   = null;
+        this.type   = type;
     }
 
     /**
@@ -93,7 +94,7 @@ public class UpdateEmailResponse {
      * contain a list of removed addresses.
      */
     public static UpdateEmailResponse createRemovedEmails(@NotNull Set<String> emails) {
-        return new UpdateEmailResponse(StatusCode.OK, emails);
+        return new UpdateEmailResponse(StatusCode.OK, emails, null);
     }
 
     /**
@@ -127,7 +128,7 @@ public class UpdateEmailResponse {
      * to those Email accounts. Contains a list of all affected Emails.
      */
     public static UpdateEmailResponse createEmailVerificationNeeded(@NotNull Set<String> emails) {
-        return new UpdateEmailResponse(StatusCode.CONTINUE, emails);
+        return new UpdateEmailResponse(StatusCode.ACCEPTED, emails, TOKEN_TYPE_MERGE);
     }
 
     /**
@@ -138,7 +139,7 @@ public class UpdateEmailResponse {
      * merge two accounts. Contains the Email of the account to merge.
      */
     public static UpdateEmailResponse createMergeVerificationNeeded(@NotNull String email) {
-        return new UpdateEmailResponse(StatusCode.PROCESSING, email);
+        return new UpdateEmailResponse(StatusCode.ACCEPTED, email, TOKEN_TYPE_ADD_EMAIL);
     }
     // ---
 
