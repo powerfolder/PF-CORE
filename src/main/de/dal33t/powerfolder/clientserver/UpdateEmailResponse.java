@@ -120,7 +120,7 @@ public class UpdateEmailResponse {
     }
 
     /**
-     * Create an {@link UpdateEmailResponse} with {@link StatusCode#CONTINUE}
+     * Create an {@link UpdateEmailResponse} with {@link StatusCode#ACCEPTED}
      *
      * @param emails A set of email addresses that need to be verified.
      * @return {@code UpdateEmailResponse} indicating that an Email was sent to
@@ -132,7 +132,7 @@ public class UpdateEmailResponse {
     }
 
     /**
-     * Create an {@link UpdateEmailResponse} with {@link StatusCode#PROCESSING}
+     * Create an {@link UpdateEmailResponse} with {@link StatusCode#ACCEPTED}
      *
      * @param email An email address of an account that needs to be verified to be merged.
      * @return {@code UpdateEmailResponse} indicating that the user has to verify to
