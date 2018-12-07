@@ -19,14 +19,19 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contains all methods to modify/alter, create or notify Accounts.
@@ -35,6 +40,13 @@ import java.util.List;
  * @version $Revision: 1.5 $
  */
 public interface AccountService {
+
+    public static final String TOKEN_INFO = "token_info";
+    public static final String TOKEN_INFO_TYPE = "type";
+    public static final String TOKEN_TYPE_MERGE = "merge";
+    public static final String TOKEN_TYPE_ADD_EMAIL = "addEmail";
+    public static final String TOKEN_INFO_ID = "token";
+    public static final String TOKEN_INFO_ACCOUNT = "account";
 
     /**
      * For internal use. Empty password may never login
@@ -156,4 +168,30 @@ public interface AccountService {
      * will be merged.
      */
     List<String> mergeAccounts(Account account, Account... mergeAccounts);
+
+    /**
+     * Update the {@code account's} Email addresses to {@code emails}.
+     * <p>
+     *     This method prioritizes the actions to be done.
+     * </p>
+     * <ol>
+     *     <li>Initiate a merge</li>
+     *     <li>Send verification Emails</li>
+     *     <li>Remove Emails</li>
+     * </ol>
+     * <p>
+     *     I.e. if an Email address is added that initiates a merge of two accounts,
+     *     no lesser action is performed, if verification Emails are sent, no lesser
+     *     action is performed.
+     * </p>
+     *
+     * @param account
+     *     The account to update the Email addresses
+     * @param emails
+     *     The new list of Email addresses
+     * @return An {@link UpdateEmailResponse} to indicate what happened and if the user
+     * has to get active to verify an Email address or to merge two accounts.
+     */
+    @NotNull
+    UpdateEmailResponse updateEmails(@NotNull Account account, @Nullable String[] emails);
 }
