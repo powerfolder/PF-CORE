@@ -291,6 +291,9 @@ public class Organization implements Serializable {
 
     public static List<String> prepareDomains(String domain) {
         List<String> domains = new ArrayList<>();
+        if (StringUtils.isBlank(domain)) {
+            return domains;
+        }
         if (StringUtils.countChar(domain, '.') > 1) {
             domains.add(domain);
             while (StringUtils.countChar(domain, '.') > 1) {
