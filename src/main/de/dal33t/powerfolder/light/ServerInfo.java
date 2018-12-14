@@ -50,6 +50,7 @@ public class ServerInfo implements Serializable, D2DObject {
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NODE = "node";
     public static final String PROPERTYNAME_WEB_URL = "webUrl";
+    public static final String PROPERTYNAME_LAST_UP_TIME = "lastUpTime";
 
     @Id
     private String id;
@@ -63,6 +64,7 @@ public class ServerInfo implements Serializable, D2DObject {
     private Date validationReceived;
     private Date validationSend;
     private String federationVersion;
+    private Date lastUpTime;
 
     protected ServerInfo() {
         // NOP - only for Hibernate
@@ -276,9 +278,7 @@ public class ServerInfo implements Serializable, D2DObject {
         this.validationReceived = validationReceived;
     }
 
-    public Date getValidationSend() {
-        return validationSend;
-    }
+    public Date getValidationSend() { return validationSend; }
 
     public void setValidationSend(Date validationSend) {
         this.validationSend = validationSend;
@@ -295,6 +295,12 @@ public class ServerInfo implements Serializable, D2DObject {
     public boolean isValidated() {
         return (validationReceived != null && validationSend != null);
     }
+
+    public Date getLastUpTime() { return lastUpTime; }
+
+    public void setLastUpTime(Date lastUpTime) { this.lastUpTime = lastUpTime; }
+
+    public void updateLastUpTime() { this.lastUpTime = new Date(); }
 
     /**
      * Init from D2D message
