@@ -47,16 +47,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @version $Revision: 1.18 $
  */
 public class FileRequestor extends PFComponent {
-    // 60 seconds
-    private static final long PERIODIC_REQUEST_MS = 1000L * 60;
-    // 30 minutes
-    private static final long WORKER_TIMEOUT = PERIODIC_REQUEST_MS * 30;
     private final Queue<Worker> workerPool;
     private final Queue<Folder> folderQueue;
     private final Queue<FileInfo> pendingRequests;
 
+    private long workerInterval;
+    private long workerTimeout;
+
     public FileRequestor(Controller controller) {
         super(controller);
+        workerInterval = 1000L * ConfigurationEntry.FILE_REQUESTOR_INTERVAL.getValueInt(getController());
+        workerTimeout = workerInterval * 30;
         folderQueue = new ConcurrentLinkedQueue<Folder>();
         pendingRequests = new ConcurrentLinkedQueue<FileInfo>();
         workerPool = new ConcurrentLinkedQueue<Worker>();
@@ -68,7 +69,7 @@ public class FileRequestor extends PFComponent {
     public void start() {
         logFine("Started");
         getController()
-            .scheduleAndRepeat(new PeriodicalTriggerTask(), PERIODIC_REQUEST_MS);
+            .scheduleAndRepeat(new PeriodicalTriggerTask(), workerInterval);
     }
 
     /**
@@ -223,6 +224,10 @@ public class FileRequestor extends PFComponent {
                 logFiner("Not requesting files. No incoming files " + folder);
             }
             return;
+        } else {
+            if (isFine()) {
+                logFine(incomingFiles.size() + " files found by file requestor: " + incomingFiles);
+            }
         }
 
         retrieveNewestVersions(folder, incomingFiles, true);
@@ -405,7 +410,7 @@ public class FileRequestor extends PFComponent {
          */
         private boolean isTimeout() {
             long msSinceLastActivity = System.currentTimeMillis() - lastActivity.getTime();
-            return msSinceLastActivity > WORKER_TIMEOUT;
+            return msSinceLastActivity > workerTimeout;
         }
 
         public void run() {
@@ -452,7 +457,7 @@ public class FileRequestor extends PFComponent {
                 if (isFine()) {
                     long took = System.currentTimeMillis() - start;
                     logFine("Requesting files for " + nFolders + " folder(s) took " + took + "ms.");
-                    if (took > PERIODIC_REQUEST_MS) {
+                    if (took > workerInterval) {
                         logWarning("Requesting files for " + nFolders + " folder(s) took " + took + "ms.");
                     }
                 }

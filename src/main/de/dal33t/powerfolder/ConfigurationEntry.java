@@ -1055,6 +1055,8 @@ public enum ConfigurationEntry {
      */
     FOLDER_WATCHER_DELAY("folder.watcher.delay.seconds", 1),
 
+    FILE_REQUESTOR_INTERVAL("file.requestor.interval.seconds", 60),
+
     /**
      * Enable to copy and delete a newly transfered file instead of moveing.
      */
