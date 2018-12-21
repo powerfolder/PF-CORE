@@ -90,7 +90,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 14;
     private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 115;
+    private static final int REVISION_VERSION = 116;
     private static final int SPRINT_NUMBER = 3;
 
     /**
@@ -1396,6 +1396,10 @@ public class Controller extends PFComponent {
      */
     private void startRConManager() {
         if (RemoteCommandManager.hasRunningInstance()) {
+            // Ignore running instance for clients
+            if (!getMySelf().isServer()) {
+                return;
+            }
             alreadyRunningCheck();
         }
         if (!ConfigurationEntry.NET_RCON_MANAGER.getValueBoolean(this)) {
