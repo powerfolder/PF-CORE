@@ -249,8 +249,7 @@ public class PowerFolder {
             && files.length >= 1 || commandLine.hasOption("e")
             || commandLine.hasOption("r") || commandLine.hasOption("a");
         // Try to start controller
-        boolean startController = !commandContainsRemoteCommands
-            || !runningInstanceFound;
+        boolean startController = !commandContainsRemoteCommands;
         try {
             log.info("PowerFolder v" + Controller.PROGRAM_VERSION);
 
