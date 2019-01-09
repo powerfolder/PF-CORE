@@ -110,13 +110,13 @@ public class UpdateEmailResponse {
     /**
      * Create an {@link UpdateEmailResponse} with {@link StatusCode#FORBIDDEN}
      *
-     * @param email An email address that was not allowed to be merged or added.
+     * @param emails Email addresses that were not allowed to be merged or added.
      * @param type The type of operation that was tried. Either {@code 'merge'} or {@code 'addEmail‘}.
      * @return {@code UpdateEmailResponse} indicating that the operation was not
      * allowed. Does not contain any further information.
      */
-    public static UpdateEmailResponse createNotAllowed(@NotNull String email, @NotNull String type) {
-        return new UpdateEmailResponse(StatusCode.FORBIDDEN, email, type);
+    public static UpdateEmailResponse createNotAllowed(@NotNull Set<String> emails, @NotNull String type) {
+        return new UpdateEmailResponse(StatusCode.FORBIDDEN, emails, type);
     }
 
     /**
@@ -134,12 +134,12 @@ public class UpdateEmailResponse {
     /**
      * Create an {@link UpdateEmailResponse} with {@link StatusCode#ACCEPTED}
      *
-     * @param email An email address of an account that needs to be verified to be merged.
+     * @param emails Email addresses of accounts that need to be verified to be merged.
      * @return {@code UpdateEmailResponse} indicating that the user has to verify to
      * merge two accounts. Contains the Email of the account to merge.
      */
-    public static UpdateEmailResponse createMergeVerificationNeeded(@NotNull String email) {
-        return new UpdateEmailResponse(StatusCode.ACCEPTED, email, TOKEN_TYPE_MERGE);
+    public static UpdateEmailResponse createMergeVerificationNeeded(@NotNull Set<String> emails) {
+        return new UpdateEmailResponse(StatusCode.ACCEPTED, emails, TOKEN_TYPE_MERGE);
     }
     // ---
 
