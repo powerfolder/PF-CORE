@@ -1036,9 +1036,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                     folder.supportExternalizable(this));
             } else {
                 filelistMsgs = new Message[1];
-                logWarning("Creating empty FileList for " +
-                    folder.getName() + " to send to " + this +
-                    " while sending FileList. No folder db", new StackDump());
+                if (isFine()) {
+                    logFine("Creating empty FileList for " +
+                            folder.getName() + " to send to " + this +
+                            " while sending FileList. No folder db", new StackDump());
+                }
                 filelistMsgs[0] = FileList.createEmpty(folder.getInfo(),
                     folder.supportExternalizable(this));
             }
@@ -1059,10 +1061,12 @@ public class Member extends PFComponent implements Comparable<Member> {
                 logFine("Actually joined: " + foldersJoined);
             }
             for (Folder folder : foldersRequested) {
-                logWarning("Creating empty FileList for " +
-                        folder.getName() + " to send to " + this +
-                        " while sending FileList. Requested folder but not joined.",
-                    new StackDump());
+                if (isFine()) {
+                    logFine("Creating empty FileList for " +
+                                    folder.getName() + " to send to " + this +
+                                    " while sending FileList. Requested folder but not joined.",
+                            new StackDump());
+                }
                 sendMessagesAsynchron(FileList.createEmpty(folder.getInfo(),
                     folder.supportExternalizable(this)));
             }
