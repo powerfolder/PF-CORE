@@ -152,11 +152,6 @@ public class ServerClient extends PFComponent {
     private ServerClientListener listenerSupport;
 
     /**
-     * True if client shall download skin
-     */
-    private boolean shallDownloadClientSkin;
-
-    /**
      * PF-102: Federated client login server connect timeout:
      */
     private static final long DEFAULT_SERVER_CONNECT_TIMEOUT_MS = 5000;
@@ -223,7 +218,6 @@ public class ServerClient extends PFComponent {
         this.allowServerChange = allowServerChange;
         this.updateConfig = updateConfig;
         this.supportsQuickLogin = true;
-        this.shallDownloadClientSkin = true;
 
         // Custom server
         String theName = StringUtils.isBlank(name) ? Translation
@@ -835,14 +829,6 @@ public class ServerClient extends PFComponent {
         return childClients;
     }
 
-    public boolean getShallDownloadClientSkin() {
-        return shallDownloadClientSkin;
-    }
-
-    public void setShallDownloadClientSkin(boolean shallDownloadClientSkin) {
-        this.shallDownloadClientSkin = shallDownloadClientSkin;
-    }
-
     // Login ******************************************************************
 
     /**
@@ -1183,37 +1169,6 @@ public class ServerClient extends PFComponent {
                 } else {
                     setAnonAccount();
                     fireLogin(accountDetails, false);
-                }
-                // Retrieve skin from server
-                if (this.shallDownloadClientSkin) {
-                    try {
-                        String skin = this.userService.getClientSkinName(this.getAccountInfo());
-                        if (this.downloadClientSkin(skin)) {
-                            // Update folder skin
-                            PathUtils.updateDesktopIni(getController(), getController().getFolderRepository().getFoldersBasedir());
-                            for (Folder folder : getController().getFolderRepository().getFolders()) {
-                                PathUtils.updateDesktopIni(getController(), folder.getLocalBase());
-                            }
-                            // Update shortcut skin
-                            FolderRepository repo = getController().getFolderRepository();
-                            Path oldBase = repo.getFoldersBasedir();
-                            String oldBaseDirName;
-                            if (oldBase.getFileName() != null) {
-                                oldBaseDirName = oldBase.getFileName().toString();
-                            } else {
-                                oldBaseDirName = oldBase.toString();
-                            }
-                            repo.updateShortcuts(oldBaseDirName);
-                            // Update client skin
-                            getController().shutdownAndRequestRestart();
-                        }
-                    } catch (RemoteCallException e) {
-                        if (e.getCause() instanceof NoSuchMethodException) {
-                            logWarning("Client skinning not supported by server");
-                        } else {
-                            logWarning("Cannot retrieve skin from server: " + e);
-                        }
-                    }
                 }
                 return accountDetails.getAccount();
             } catch (Exception e) {
@@ -1926,10 +1881,7 @@ public class ServerClient extends PFComponent {
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, getUsername());
             ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, token);
             ConfigurationEntry.SERVER_FEDERATED_LOGIN.setValue(config, false);
-            ServerClient serverClient = new ServerClient(getController(), config);
-            // Disable skin download for child clients
-            serverClient.setShallDownloadClientSkin(false);
-            return serverClient;
+            return new ServerClient(getController(), config);
         } catch (IOException e) {
             logWarning("Unable to connect to " + serviceInfo + ". " + e);
             return null;
@@ -2010,163 +1962,6 @@ public class ServerClient extends PFComponent {
                 node.setFriend(true, null);
             }
         }
-    }
-
-    /**
-     * Deletes the entire client skin directory
-     *
-     * @return True if no errors occur
-     */
-    public static boolean resetClientSkin() {
-        Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
-        if (Files.exists(skinPath)) {
-            try {
-                PathUtils.recursiveDelete(skinPath);
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Deletes the clien skin but not the local skin version file
-     *
-     * @return True if no errors occur
-     */
-    private boolean deleteClientSkin() {
-        Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
-        try {
-            PathUtils.recursiveDelete(skinPath.resolve("client"));
-        } catch (IOException e) {
-            logWarning("Cannot delete skin: " + e, e);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Downloads a client skin from the server and stores it in the misc config directory.
-     * If the local and the remote skin version are the same, the download is skipped
-     *
-     * @param skin The name of the skin
-     * @return True if the skin was downloaded correctly
-     */
-    private boolean downloadClientSkin(String skin) {
-        try {
-            // Stop if no skin is given or default skin
-            if (skin == null) {
-                return false;
-            }
-            HttpClient httpClient = Util.createHttpClientBuilder(getController()).build();
-            Path skinPath = Controller.getMiscFilesLocation().resolve("skin");
-            if (skin.equalsIgnoreCase("Bluberry")) {
-                // Delete old skin
-                return resetClientSkin();
-            }
-            String baseUrl = this.getWebURL() + "/skin/";
-            String skinQuery = "?skin=" + URLEncoder.encode(skin);
-            // First check if a skin with a newer version is available
-            Path versionPath = skinPath.resolve("version");
-            String localSkinVersion = "local";
-            String remoteSkinVersion = "remote";
-            // Load local skin version
-            if (Files.exists(versionPath)) {
-                try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
-                    if ((localSkinVersion = bufferedReader.readLine()) == null) {
-                        logWarning("Cannot read local skin version");
-                    }
-                } catch (IOException e) {
-                    logWarning("Cannot read local skin version");
-                }
-            }
-            // Download skin version
-            String urlString = baseUrl + "version" + skinQuery;
-            try {
-                HttpResponse httpResponse = httpClient.execute(new HttpGet(urlString));
-                if (httpResponse.getStatusLine().getStatusCode() != 200) {
-                    logWarning("Cannot read remote skin version");
-                    return false;
-                }
-                PathUtils.copyFromStreamToFile(httpResponse.getEntity().getContent(), versionPath);
-
-            } catch (IOException e) {
-                logWarning("Cannot read remote skin version:" + e, e);
-                return false;
-            }
-            // Load remote skin version
-            try (BufferedReader bufferedReader = Files.newBufferedReader(versionPath)) {
-                if ((remoteSkinVersion = bufferedReader.readLine()) == null) {
-                    logWarning("Cannot read remote skin version");
-                    return false;
-                }
-            } catch (IOException e) {
-                logWarning("Cannot read remote skin version:" + e, e);
-                return false;
-            }
-            // If local and remote skin have the same version, skip the rest
-            if (localSkinVersion.equals(remoteSkinVersion)) {
-                return false;
-            }
-            // Delete old skin
-            if (!deleteClientSkin()) {
-                return false;
-            }
-            // Do not load default skin from server
-            if (!remoteSkinVersion.equals("Bluberry 0")) {
-                // Download skin from server
-                ArrayList<String> files = new ArrayList<String>();
-                files.add("client/icons.properties");
-                files.add("client/Folder.ico");
-                files.add("client/synth.xml");
-                String file = "";
-                for (int i = 0; i < files.size(); i++) {
-                    file = files.get(i);
-                    Path filePath = skinPath.resolve(file);
-                    // Do not return if download of single files fails because
-                    // some icons.properties files may contain false entries
-                    try {
-                        urlString = baseUrl + file + skinQuery;
-                        HttpResponse httpResponse = httpClient.execute(new HttpGet(urlString));
-                        if (httpResponse.getStatusLine().getStatusCode() != 200) {
-                            logFine("Cannot download remote skin file: " + urlString);
-                            resetClientSkin();
-                            return false;
-                        }
-                        PathUtils.copyFromStreamToFile(httpResponse.getEntity().getContent(), filePath);
-                        if (file.equals("client/icons.properties")) {
-                            // Parse the icons file list and add the files to the
-                            // files list
-                            try (BufferedReader bufferedReader = Files.newBufferedReader(filePath)) {
-                                String line;
-                                while ((line = bufferedReader.readLine()) != null) {
-                                    if (line.length() > 2) {
-                                        line = line.substring(line.indexOf("=") + 1);
-                                        files.add(line);
-                                    }
-                                }
-                            }
-                        }
-                    } catch (MalformedURLException e) {
-                        logWarning("Invalid client skin URL: " + e, e);
-                        resetClientSkin();
-                        return false;
-                    } catch (IOException | RuntimeException e) {
-                        logWarning("Cannot download client skin:" + e, e);
-                        resetClientSkin();
-                        return false;
-                    }
-                }
-            }
-        } catch (RuntimeException e) {
-            logSevere("RuntimeException while downloading skin " + skin + ": " + e, e);
-            resetClientSkin();
-            return false;
-        }
-        // Only restart client if everything is OK
-        // If client skin was resetted, the default skin will be loaded at next restart
-        return true;
     }
 
     // Services ***************************************************************

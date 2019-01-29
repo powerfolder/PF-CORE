@@ -44,27 +44,12 @@ public class Origin extends AbstractSyntheticaSkin {
 
     @Override
     public Properties getIconsProperties() {
-        // If properties file exists in skin folder, load it. If it does not exist, load the default properties file from the jar.
-        if (Files.exists(Controller.getMiscFilesLocation().resolve("skin/client/icons.properties"))) {
-            return Icons.addPropertiesFromFile(Icons.loadProperties(ICON_PROPERTIES_FILENAME), Controller.getMiscFilesLocation().resolve("skin/client/icons.properties"));
-        }
-        else {
-            return Icons.loadProperties(ICON_PROPERTIES_FILENAME);
-        }
+        return Icons.loadProperties(ICON_PROPERTIES_FILENAME);
     }
 
     @Override
     public Path getDefaultSynthXMLPath() {
         return Paths.get("/de/dal33t/powerfolder/skin/origin/synth.xml");
-    }
-
-        @Override
-    public Path getSynthXMLPath() {
-        // If XML file exists in skin folder, return it. If it does not exist, return the default XML file from the jar.
-        if (Files.exists(Controller.getMiscFilesLocation().resolve("skin/client/synth.xml"))) {
-            return Controller.getMiscFilesLocation().resolve("skin/client/synth.xml");
-        }
-        return null;
     }
 
 }

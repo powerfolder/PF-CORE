@@ -130,15 +130,6 @@ public interface AccountService {
      */
     void checkAccounts(Collection<Account> accounts);
     
-    
-    /**
-     * Returns the current skin of an account
-     *
-     * @param account The account
-     * @return The current skin of the account
-     */
-    String getClientSkinName(AccountInfo account);
-
     /**
      * Merge one or more accounts into {@code account}.
      * {@code account} will be stored on success.
