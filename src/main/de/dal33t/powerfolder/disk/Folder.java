@@ -24,8 +24,8 @@ import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
-import de.dal33t.powerfolder.disk.problem.*;
 import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.*;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.event.api.DeletedFile;
 import de.dal33t.powerfolder.light.*;
@@ -251,6 +251,17 @@ public class Folder extends PFComponent {
 
         if (localBaseDir.isAbsolute()) {
 
+            // PFS-2695: Fallback if storage location isn't available:
+            if (Files.notExists(localBaseDir)) {
+                logWarning("Could NOT find storage location for folder %s with " +
+                    "localbase %s. Auto creating storage location!", fInfo.getName(), localBaseDir.toString());
+                try {
+                    Files.createDirectories(localBaseDir);
+                } catch (IOException ioe) {
+                    // Ignore.
+                }
+            }
+
             // PFS-1994: Start: Encrypted storage.
             boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
                     || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBaseDir.toString());
@@ -280,10 +291,12 @@ public class Folder extends PFComponent {
                 .resolve(localBaseDir);
 
             logFine("Original path: " + localBaseDir
-                + ". Choosen relative path: " + localBase);
+                + ". Chosen relative path: " + localBase);
         }
 
         if (Files.notExists(localBase)) {
+            logWarning("Could NOT find storage location for folder %s with " +
+                "localbase %s. Auto creating storage location!", fInfo.getName(), localBase.toString());
             try {
                 Files.createDirectories(localBase);
             } catch (IOException ioe) {

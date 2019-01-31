@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
-import org.apache.commons.codec.digest.Crypt;
 import org.cryptomator.cryptofs.CryptoFileSystem;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
@@ -209,13 +208,10 @@ public class EncryptedFileSystemUtils {
 
     private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
 
-         FileSystem fs = CryptoFileSystemProvider.newFileSystem(
-                encDir,
-                CryptoFileSystemProperties.cryptoFileSystemProperties()
-                        .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
-                        .build());
-
-        return fs;
+        return CryptoFileSystemProvider.newFileSystem(
+               encDir,
+               CryptoFileSystemProperties.cryptoFileSystemProperties()
+                       .withPassphrase(ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.getValue(controller))
+                       .build());
     }
-
 }
