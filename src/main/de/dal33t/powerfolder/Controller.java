@@ -331,7 +331,7 @@ public class Controller extends PFComponent {
             preConfig = ConfigurationLoader.loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
         } catch (IOException ignored) {
         }
-        String distributionName = preConfig != null ? preConfig.getProperty("dist.name") : "";
+        String distributionName = preConfig != null && preConfig.containsKey("dist.name") ? preConfig.getProperty("dist.name") : "";
         if (StringUtils.isNotBlank(distributionName)) {
             if (distributionName.equals("PowerFolder Server")) {
                 miscFilesLocationDirName = Constants.MISC_DIR_NAME;
@@ -2161,6 +2161,10 @@ public class Controller extends PFComponent {
 
     public Path getConfigFile() {
         return configFile;
+    }
+
+    public String getConfigFilename() {
+        return configFilename;
     }
 
     public Path getConfigFolderFile() {
