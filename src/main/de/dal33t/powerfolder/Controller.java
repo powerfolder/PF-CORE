@@ -316,6 +316,9 @@ public class Controller extends PFComponent {
         this.commandLine = commandLine;
         // Parse config parameter from command line
         String configName = Constants.DEFAULT_CONFIG_FILE;
+        if (configName.contains(".config")) {
+            configName = configName.replace(".config", "");
+        }
         if (commandLine.hasOption("c")) {
             String optionValue = commandLine.getOptionValue("c");
                 if (StringUtils.isNotBlank(optionValue)) {
@@ -330,72 +333,69 @@ public class Controller extends PFComponent {
         }
         String distributionName = preConfig != null ? preConfig.getProperty("dist.name") : "";
         if (StringUtils.isNotBlank(distributionName)) {
-            miscFilesLocationDirName = distributionName.trim();
-            migrateConfigFileIfNecessary(distributionName);
+            if (distributionName.equals("PowerFolder Server")) {
+                miscFilesLocationDirName = Constants.MISC_DIR_NAME;
+            } else {
+                miscFilesLocationDirName = distributionName.trim();
+                migrateConfigFileIfNecessary(configName);
+            }
         }
         startConfig(configName);
     }
 
     /**
-     * Migrate ~/.PowerFolder to ~/.<dist-name> if the previous Config has the
-     * same {@code dist.name}
+     * Migrate ~/.PowerFolder/<config-name></>.config to ~/.<dist-name>/<config-name>.config </>
+     * if a previous config with the same name exists
      *
-     * @param distributionName The name of the distribution
+     * @param configName The name of the config
      */
-    private void migrateConfigFileIfNecessary(String distributionName) {
-        Path brandedMiscFilesLocation = getMiscFilesLocation(false);
-        if (Files.exists(brandedMiscFilesLocation)) {
-            log.fine("Using my branded directory at " + brandedMiscFilesLocation.toString());
+    private void migrateConfigFileIfNecessary(String configName) {
+        Path configDirLocation = getMiscFilesLocation(false);
+        Path configFileLocation = configDirLocation.resolve(configName + ".config");
+        // Check if configuration file already exists
+        if (Files.exists(configFileLocation)) {
+            log.fine("Using my configuration at " + configFileLocation.toString());
             return;
         }
-
-        // brandedMiscFilesLocation does NOT EXIST
-        log.fine("No branded config dir found");
-
+        // Configuration file does NOT EXIST
+        log.fine("No existing configuration found");
+        // Calculate previous config file location
         String dirName = "";
         if (OSUtil.isWindowsSystem()) {
             dirName = Constants.MISC_DIR_NAME;
         } else {
             dirName = "." + Constants.MISC_DIR_NAME;
         }
-        Path defaultMiscFilesLocation = brandedMiscFilesLocation
-            .getParent().resolve(dirName);
-        if (Files.notExists(defaultMiscFilesLocation)) {
-            log.fine("Also no default config dir found -> create new branded config dir");
+        Path prevConfigDirLocation = configDirLocation.getParent().resolve(dirName);
+        Path prevConfigFileLocation = prevConfigDirLocation.resolve(configName + ".config");
+        if (Files.notExists(prevConfigFileLocation)) {
+            log.fine("Also no previous configuration found-> Creating new configuration");
             return;
         }
-
-        // defaultMiscFilesLocation DOES exist
-        log.fine("Found default config dir at " + defaultMiscFilesLocation.toString());
-
-        Path prevConifgFile = defaultMiscFilesLocation.resolve(Constants.DEFAULT_CONFIG_FILE);
-        Properties prefConfig = new Properties();
-        try (InputStream in = Files.newInputStream(prevConifgFile)) {
-            prefConfig.load(in);
+        // Previous configuration file DOES exist
+        log.fine("Found previous configuration at " + prevConfigFileLocation.toString());
+        // Read previous configuration
+        Properties prevConfig = new Properties();
+        try (InputStream in = Files.newInputStream(prevConfigFileLocation)) {
+            prevConfig.load(in);
         } catch (IOException ioe) {
-            log.warning("Could not read " + prevConifgFile.toString()
-                + ". Using new branded config at " + brandedMiscFilesLocation.toString()
+            log.warning("Could not read " + prevConfigFileLocation.toString()
+                + ". Creating new configuration at " + configFileLocation.toString()
                 + ". " + ioe.getMessage());
             return;
         }
-
-        String prevDistName = prefConfig.getProperty("dist.name");
-
-        if (StringUtils.isBlank(prevDistName) || !prevDistName.equalsIgnoreCase(distributionName)) {
-            log.fine("Not migrating an empty or different branding "
-                + prevDistName + " then mine " + distributionName);
+        // Check if current branding is previous branding
+        String prevDistributionName = prevConfig.getProperty("dist.name");
+        if (StringUtils.isBlank(prevDistributionName) || !prevDistributionName.equalsIgnoreCase(miscFilesLocationDirName)) {
+            log.fine("Not moving an empty or different branding " + prevDistributionName + " than mine " + miscFilesLocationDirName);
             return;
         }
-
-        // prevDistName is my own
-        log.info("Trying to move " + defaultMiscFilesLocation.toString()
-            + " to " + brandedMiscFilesLocation.toString());
-
+        // Migrate
+        log.info("Trying to move " + prevConfigFileLocation.toString() + " to " + configFileLocation.toString());
         try {
-            Files.move(defaultMiscFilesLocation, brandedMiscFilesLocation);
+            Files.move(prevConfigFileLocation, configFileLocation);
         } catch (IOException ioe) {
-            log.warning("Could not move " + defaultMiscFilesLocation.toString()
-                + " to " + brandedMiscFilesLocation.toString() + ". " + ioe.getMessage());
+            log.warning("Could not move " + prevConfigFileLocation.toString() + " to " + configFileLocation.toString() + ". " + ioe.getMessage());
         }
     }
 
