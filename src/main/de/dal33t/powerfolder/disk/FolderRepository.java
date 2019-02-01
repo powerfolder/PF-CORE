@@ -652,98 +652,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                     scanBasedir();
                 }, 10L, 10L, TimeUnit.SECONDS);
 
-        // PFS-1956 -- TODO: remove after release of v14
-        boolean is0byteRecoveryRun = getController().getPreferences()
-                .getBoolean("is0byteRecoveryRun", false);
-        if (!is0byteRecoveryRun && ConfigurationEntry.RECOVER_0BYTE_FILES
-                .getValueBoolean(getController())
-                && !getMySelf().isServer()) {
-            getController().getIOProvider().startIO(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        restoreZeroByteFiles();
-                        getController().getPreferences()
-                                .putBoolean("is0byteRecoveryRun", true);
-                    } catch (RuntimeException re) {
-                        logSevere("An error occured while trying to recover zero byte files: " + re, re);
-                    }
-                }
-            });
-        }
-
         locking.start();
 
         started = true;
-    }
-
-    /**
-     * Restore files that are zero bytes big and changed by the server.
-     * This was an issue with a previous version of the clustering protocol.
-     * PFS-1956 -- TODO: remove after release of v12
-     */
-    private void restoreZeroByteFiles() {
-        logFine("Start recovering 0-byte files.");
-        for (Folder folder : getFolders()) {
-            FileArchiver fa = folder.getFileArchiver();
-
-            for (FileInfo file : folder.getKnownFiles()) {
-                if (file.getSize() > 0) {
-                    continue;
-                }
-                // Only if there is a version in the history and the last
-                // modifier is a server
-                Member lastModifier = file.getModifiedBy()
-                        .getNode(getController(), false);
-                if (lastModifier == null || !lastModifier.isServer()) {
-                    continue;
-                }
-                if (!fa.hasArchivedFileInfo(file)) {
-                    logWarning(
-                            "Found 0 byte file, but no old version available to restore for "
-                                    + file.toDetailString());
-                    continue;
-                }
-                Path fileOnDisk = file.getDiskFile(this);
-                try {
-                    // Check the file size to be 0 bytes
-                    if (Files.size(fileOnDisk) > 0) {
-                        continue;
-                    }
-                    List<FileInfo> history = fa
-                            .getSortedArchivedFilesInfos(file);
-                    if (history.isEmpty()) {
-                        logWarning(
-                                "Found 0 byte file, but no old version available to restore for "
-                                        + file.toDetailString());
-                        continue;
-                    }
-                    FileInfo toRestore = history.get(history.size() - 1);
-                    logFine(file.toDetailString()
-                            + " was lastly changed by a server "
-                            + file.getModifiedBy()
-                            + " and has a size of 0 bytes. Restoring old version: "
-                            + toRestore.toDetailString());
-
-                    // Now, only restore when the version of the file in
-                    // the history is lesser than the version of the
-                    // file itself.
-                    if (toRestore.getVersion() < file.getVersion()) {
-                        logInfo("Restoring previous version of "
-                                + file.toDetailString() + ": "
-                                + toRestore.toDetailString() + " to " + fileOnDisk);
-                        fa.restore(toRestore, fileOnDisk);
-                    } else {
-                        logWarning("Not restoring previous version of "
-                                + file.toDetailString() + ": "
-                                + toRestore.toDetailString() + " to " + fileOnDisk);
-                    }
-                } catch (IOException e) {
-                    logWarning("Unable to restore old file version of "
-                            + file.toDetailString() + ". " + e);
-                }
-            }
-        }
     }
 
     /**
