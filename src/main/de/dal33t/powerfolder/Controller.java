@@ -311,40 +311,30 @@ public class Controller extends PFComponent {
     /**
      * Starts a config with the given command line arguments
      *
-     * @param aCommandLine the command line as specified by the user
+     * @param commandLine the command line as specified by the user
      */
-    void startConfig(CommandLine aCommandLine) {
-
-        commandLine = aCommandLine;
-        String[] configNames = aCommandLine.getOptionValues("c");
-        String configName = configNames != null && configNames.length > 0
-                && StringUtils.isNotBlank(configNames[0]) ? configNames[0] : null;
-
-        if (StringUtils.isNotBlank(configName) &&
-                (configName.startsWith("http:") || configName.startsWith("https:"))) {
-            if (configNames.length > 1) {
-                configName = configNames[1];
-            } else {
-                configName = Constants.DEFAULT_CONFIG_FILE;
-            }
-        } else if (StringUtils.isBlank(configName)) {
-            Properties preConfig = null;
-            try {
-                preConfig = ConfigurationLoader
-                        .loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
-            } catch (IOException e) {
-                // Ignore
-            }
-            String distributionName = preConfig != null ? preConfig.getProperty("dist.name") : "";
-
-            if (StringUtils.isNotBlank(distributionName)) {
-                miscFilesLocationDirName = distributionName.trim();
-
-                migrateConfigFileIfNecessary(distributionName);
-            }
-            configName = Constants.DEFAULT_CONFIG_FILE;
+    void startConfig(CommandLine commandLine) {
+        // Store command line
+        this.commandLine = commandLine;
+        // Parse config parameter from command line
+        String configName = Constants.DEFAULT_CONFIG_FILE;
+        if (commandLine.hasOption("c")) {
+            String optionValue = commandLine.getOptionValue("c");
+                if (StringUtils.isNotBlank(optionValue)) {
+                    configName = optionValue;
+                }
         }
-
+        // Get distribution name
+        Properties preConfig = null;
+        try {
+            preConfig = ConfigurationLoader.loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
+        } catch (IOException ignored) {
+        }
+        String distributionName = preConfig != null ? preConfig.getProperty("dist.name") : "";
+        if (StringUtils.isNotBlank(distributionName)) {
+            miscFilesLocationDirName = distributionName.trim();
+            migrateConfigFileIfNecessary(distributionName);
+        }
         startConfig(configName);
     }
 
@@ -472,15 +462,14 @@ public class Controller extends PFComponent {
      **/
 
     public void start() {
-        boolean isDefaultConfig = Constants.DEFAULT_CONFIG_FILE
-            .startsWith(getConfigName());
-        if (isDefaultConfig) {
-            // To keep compatible with previous versions
-            preferences = Preferences.userNodeForPackage(PowerFolder.class);
-        } else {
-            preferences = Preferences.userNodeForPackage(PowerFolder.class)
-                .node(getConfigName());
-
+        preferences = Preferences.userNodeForPackage(PowerFolder.class);
+        // Append branding name if not default
+        if (!miscFilesLocationDirName.equals(Constants.MISC_DIR_NAME)) {
+            preferences = preferences.node(miscFilesLocationDirName);
+        }
+        // Append config name if not default
+        if (!Constants.DEFAULT_CONFIG_FILE.startsWith(getConfigName())) {
+            preferences = preferences.node(getConfigName());
         }
 
         // initialize logger
