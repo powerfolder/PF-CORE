@@ -164,16 +164,12 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
-      <library>
+      <library name="forms-1.2.0.jar">
         <CLASSES>
-          <root url="file://$MODULE_DIR$/lib/cryptomator" />
+          <root url="jar://$MODULE_DIR$/lib/forms-1.2.0.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/lib/cryptomator" />
-        </SOURCES>
-        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" />
-        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" type="SOURCES" />
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
@@ -267,9 +263,9 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
-      <library name="forms-1.2.0.jar">
+      <library name="junit.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/forms-1.2.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/junit.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -306,6 +302,42 @@
       <library name="bcmail-jdk15on-152.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/bcmail-jdk15on-152.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/httpclient-4.5.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/httpclient-cache-4.5.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/httpcore-4.4.6.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/httpmime-4.5.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -376,13 +408,17 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/squirrel-foundation-0.3.8.jar!/" />
+          <root url="file://$MODULE_DIR$/lib/cryptomator" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/lib/cryptomator" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" type="SOURCES" />
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
@@ -395,12 +431,13 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
-      <library name="junit.jar">
+      <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/junit.jar!/" />
+          <root url="file://$MODULE_DIR$/lib/mockito" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/lib/mockito" recursive="false" />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
@@ -458,18 +495,13 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" exported="" name="httpclient-4.5.7" level="project" />
-    <orderEntry type="library" exported="" name="httpclient-cache-4.5.7" level="project" />
-    <orderEntry type="library" exported="" name="httpcore-4.4.11" level="project" />
-    <orderEntry type="library" exported="" name="httpmime-4.5.7" level="project" />
-    <orderEntry type="module-library" exported="">
+    <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="file://$MODULE_DIR$/lib/mockito" />
+          <root url="jar://$MODULE_DIR$/lib/squirrel-foundation-0.3.8.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-        <jarDirectory url="file://$MODULE_DIR$/lib/mockito" recursive="false" />
       </library>
     </orderEntry>
   </component>
