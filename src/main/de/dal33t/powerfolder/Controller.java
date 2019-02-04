@@ -463,11 +463,15 @@ public class Controller extends PFComponent {
         preferences = Preferences.userNodeForPackage(PowerFolder.class);
         // Append branding name if not default
         if (!miscFilesLocationDirName.equals(Constants.MISC_DIR_NAME)) {
-            preferences = preferences.node(miscFilesLocationDirName);
+            // Node name must be lowercase to match with values set by installer
+            // (see https://stackoverflow.com/a/23632932/5804550)
+            preferences = preferences.node(miscFilesLocationDirName.toLowerCase());
         }
         // Append config name if not default
         if (!Constants.DEFAULT_CONFIG_FILE.startsWith(getConfigName())) {
-            preferences = preferences.node(getConfigName());
+            // Node name must be lowercase to match with values set by installer
+            // (see https://stackoverflow.com/a/23632932/5804550)
+            preferences = preferences.node(getConfigName().toLowerCase());
         }
 
         // initialize logger
