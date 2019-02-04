@@ -312,7 +312,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             path += "/";
         }
         boolean recursive = criteria.isRecursive();
-        Collection<FileInfo> items = new HashSet<>();
+        Collection<FileInfo> items = new HashSet<FileInfo>();
         for (String domainStr : criteria.getDomains()) {
             Domain domain = getDomain(domainStr);
             if (domain == null) {
@@ -322,6 +322,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 || criteria.getType() == Type.FILES_AND_DIRECTORIES)
             {
                 for (DirectoryInfo dInfo : domain.directories.values()) {
+                    // if (filter.isExcluded(dInfo)) {
+                    // continue;
+                    // }
 
                     if (criteria.getMaxResults() > 0
                         && items.size() >= criteria.getMaxResults())
