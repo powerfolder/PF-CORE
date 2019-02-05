@@ -857,6 +857,7 @@ public class Folder extends PFComponent {
                                 }
                             }
                         }
+                        fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
                         // TODO Maybe raise folder-problem....
@@ -2167,6 +2168,7 @@ public class Folder extends PFComponent {
                     fileInfo.getModifiedDate(), fileInfo.getVersion() + 1,
                     fileInfo.getHashes(), fileInfo.isDiretory(),
                     fileInfo.getTags());
+                newFileInfo.setPreviousSize(fileInfo.getSize());
                 brokenExisting.set(i, newFileInfo);
             }
             store(getMySelf(), brokenExisting);
@@ -3730,7 +3732,7 @@ public class Folder extends PFComponent {
                             + remoteFileInfo.toDetailString()
                             + ". Taking over modification infos");
                     }
-
+                    remoteFileInfo.setPreviousSize(remoteFileInfo.getSize());
                     found.add(remoteFileInfo);
                 }
             } else if (!fileCaseSame && dateSame && fileSizeSame) {
@@ -3765,6 +3767,7 @@ public class Folder extends PFComponent {
                     }
 
                     remoteFileInfo = correctFolderInfo(remoteFileInfo);
+                    remoteFileInfo.setPreviousSize(localFileInfo.getSize());
                     found.add(remoteFileInfo);
                 }
             }
