@@ -215,6 +215,11 @@ public class LoginUtil {
      * @return the hashed password and salt.
      */
     public static String hashAndSalt(String password) {
+
+        if (StringUtils.isBlank(password)) {
+            return null;
+        }
+
         String salt = IdGenerator.makeId();
         String digest = getPreferredDigest().getAlgorithm();
         return digest + ':' + salt + ':' + hash(digest, password, salt);

@@ -33,13 +33,13 @@ import de.dal33t.powerfolder.protocol.GroupInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
-import org.hibernate.annotations.*;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.persistence.*;
 import javax.persistence.Entity;
+import javax.persistence.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -646,10 +646,6 @@ public class Account implements Serializable, D2DObject {
 
     public String getOTP() {
         return otp;
-    }
-
-    public boolean isOTPValid() {
-        return LoginUtil.isOTPValid(otp);
     }
 
     public String generateAndSetOTP() {
