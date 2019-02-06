@@ -1617,11 +1617,11 @@ public class TransferManager extends PFComponent {
     }
 
     /**
-     * Addds a file for download if source is not known. Download will be
-     * started when a source is found.
+     * Adds a file for download if source is not known
      *
-     * @param download
-     * @return true if succeeded
+     * @param download The download
+     *
+     * @return True if download was enqueued
      */
     public boolean enquePendingDownload(Download download) {
         Validate.notNull(download);
@@ -1660,9 +1660,9 @@ public class TransferManager extends PFComponent {
 
         if (!contained) {
             logFine("Pending download added for: " + fInfo);
-            firePendingDownloadEnqueud(new TransferManagerEvent(this, download));
+            return true;
         }
-        return true;
+        return false;
     }
 
     public DownloadManagerFactory getDownloadManagerFactory() {
@@ -1701,6 +1701,8 @@ public class TransferManager extends PFComponent {
     public DownloadManager downloadNewestVersion(FileInfo fInfo,
         boolean automatic)
     {
+        Download enqueuedDownload = null;
+        boolean downloadWasEnqueued = false;
         synchronized (downloadRequestLock) {
             Folder folder = fInfo.getFolder(getController()
                 .getFolderRepository());
@@ -1834,26 +1836,32 @@ public class TransferManager extends PFComponent {
                         logFine("Downloading old version while newer is available: "
                             + localFile);
                     }
-                    requestDownload(download, bestSource);
+                    enqueuedDownload = download;
+                    downloadWasEnqueued = requestDownload(download, bestSource);
                 }
             }
 
             if (bestSources == null && !automatic) {
-                // Okay enque as pending download if was manually requested
-                enquePendingDownload(new Download(this, fileToDl, automatic));
-                return null;
+                // Okay enqueue as pending download if was manually requested
+                enqueuedDownload = new Download(this, fileToDl, false);
+                downloadWasEnqueued = enquePendingDownload(enqueuedDownload);
             }
-            return getActiveDownload(fInfo);
         }
+        if (downloadWasEnqueued) {
+            firePendingDownloadEnqueud(new TransferManagerEvent(this, enqueuedDownload));
+            return null;
+        }
+        return getActiveDownload(fInfo);
     }
 
     /**
      * Requests the download from that member
      *
-     * @param download
-     * @param from
-     */
-    private void requestDownload(Download download, Member from) {
+     * @param download The download
+     * @param from The member to request the download from
+     *
+     * @return True if download was enqueued     */
+    private boolean requestDownload(Download download, Member from) {
         FileInfo fInfo = download.getFile();
         // Lock/Disable transfer checker
         DownloadManager man;
@@ -1864,7 +1872,7 @@ public class TransferManager extends PFComponent {
                     logFiner("Already downloading " + fInfo.toDetailString()
                         + " from " + from);
                 }
-                return;
+                return false;
             }
             if (fInfo.isVersionDateAndSizeIdentical(fInfo.getFolder(
                 getController().getFolderRepository()).getFile(fInfo)))
@@ -1874,7 +1882,7 @@ public class TransferManager extends PFComponent {
                     logFiner("Not requesting download, already have latest file version: "
                         + fInfo.toDetailString());
                 }
-                return;
+                return false;
             }
 
             man = dlManagers.get(fInfo);
@@ -1888,7 +1896,7 @@ public class TransferManager extends PFComponent {
                             + man);
                         man.abortAndCleanup();
                     }
-                    return;
+                    return false;
                 }
 
                 try {
@@ -1898,7 +1906,7 @@ public class TransferManager extends PFComponent {
                     man.init(false);
                 } catch (IOException e) {
                     logWarning("IOException while initializing download of " + fInfo.toDetailString() + ": " + e);
-                    return;
+                    return false;
                 }
                 if (dlManagers.put(fInfo, man) != null) {
                     throw new AssertionError("Found old manager!");
@@ -1920,7 +1928,7 @@ public class TransferManager extends PFComponent {
                 logInfo("Aborting download, already have latest file version: "
                     + fInfo.toDetailString());
                 man.abort();
-                return;
+                return false;
             }
             if (man.getSourceFor(from) == null && !man.isDone()
                 && man.canAddSource(from))
@@ -1947,9 +1955,9 @@ public class TransferManager extends PFComponent {
                 logFiner("File really was requested!"
                     + download.getFile().toDetailString());
             }
-            // Fire event
-            fireDownloadRequested(new TransferManagerEvent(this, download));
+            return true;
         }
+        return false;
     }
 
     /**
