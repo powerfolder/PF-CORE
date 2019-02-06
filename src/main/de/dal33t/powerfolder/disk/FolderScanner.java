@@ -595,6 +595,7 @@ public class FolderScanner extends PFComponent {
                                 + Files.size(fileToScan) + ", lastMod: "
                                 + Files.getLastModifiedTime(fileToScan));
                         }
+                        restoredFile.setPreviousSize(exists.getSize());
                         currentScanResult.restoredFiles.add(restoredFile);
                     }
                 } else {
@@ -610,6 +611,7 @@ public class FolderScanner extends PFComponent {
                                 + Files.size(fileToScan) + ", lastMod: "
                                 + Files.getLastModifiedTime(fileToScan));
                         }
+                        changedFile.setPreviousSize(exists.getSize());
                         currentScanResult.changedFiles.add(changedFile);
                     }
                 }
