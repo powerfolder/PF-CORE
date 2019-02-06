@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.lang.ref.Reference;
@@ -89,6 +90,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * The size of the file
      */
     private Long size;
+
+    @NotNull
+    private Long previousSize = 0L;
 
     /**
      * modified info *
@@ -490,6 +494,15 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     @Override
     public long getSize() {
         return size;
+    }
+
+    @NotNull
+    public Long getPreviousSize() {
+        return previousSize;
+    }
+
+    public void setPreviousSize(@NotNull Long previousSize) {
+        this.previousSize = previousSize;
     }
 
     /**
