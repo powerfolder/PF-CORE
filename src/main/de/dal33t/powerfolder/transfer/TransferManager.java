@@ -2105,8 +2105,11 @@ public class TransferManager extends PFComponent {
     {
         removeDownloadManager(manager);
         if (!manager.isRequestedAutomatic()) {
-            enquePendingDownload(new Download(this, manager.getFileInfo(),
-                manager.isRequestedAutomatic()));
+            Download download = new Download(this, manager.getFileInfo(),
+                manager.isRequestedAutomatic());
+            if (enquePendingDownload(download)) {
+                firePendingDownloadEnqueud(new TransferManagerEvent(this, download));
+            }
         }
     }
 
@@ -2574,7 +2577,7 @@ public class TransferManager extends PFComponent {
                     + storedDownloads.size() + "). Cleanup is recommended");
             }
             // #1705: Speed up of start
-            Map<FileInfo, List<DownloadManager>> tempMap = new HashMap<FileInfo, List<DownloadManager>>();
+            Map<FileInfo, List<DownloadManager>> tempMap = new HashMap<>();
             for (Object storedDownload : storedDownloads) {
                 Download download = (Download) storedDownload;
 
@@ -2582,11 +2585,8 @@ public class TransferManager extends PFComponent {
                 download.init(this);
                 if (download.isCompleted()) {
                     List<DownloadManager> dlms = tempMap
-                        .get(download.getFile());
-                    if (dlms == null) {
-                        dlms = new ArrayList<DownloadManager>(1);
-                        tempMap.put(download.getFile(), dlms);
-                    }
+                        .computeIfAbsent(download.getFile(),
+                            k -> new ArrayList<>(1));
 
                     DownloadManager man = null;
                     for (DownloadManager dlm : dlms) {
@@ -2618,7 +2618,9 @@ public class TransferManager extends PFComponent {
                         }
                     }
                 } else if (download.isPending()) {
-                    enquePendingDownload(download);
+                    if (enquePendingDownload(download)) {
+                        firePendingDownloadEnqueud(new TransferManagerEvent(this, download));
+                    }
                 }
             }
 
