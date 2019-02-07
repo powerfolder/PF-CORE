@@ -32,7 +32,7 @@ import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 import org.cryptomator.cryptofs.CryptoFileSystemUri;
 
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
@@ -44,6 +44,9 @@ import java.security.NoSuchAlgorithmException;
  */
 
 public class EncryptedFileSystemUtils {
+
+    private static final String DEFAULT_MASTERKEY_FILENAME = "masterkey.cryptomator";
+    private static final String DEFAULT_MASTERKEY_BACKUP_FILENAME = "masterkey.cryptomator.bkup";
 
     /**
      * Checks if an existing CryptoFileSystem exists for the given path, if not create a new one.
@@ -66,11 +69,18 @@ public class EncryptedFileSystemUtils {
             try {
                 return getCryptoPath(incDir);
             } catch (FileSystemNotFoundException e) {
+
                 FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
+                if (cryptoFS == null) {
+                        throw new FileNotFoundException("Masterkey file missing for encrypted folder at storage " +
+                            "location " + incDir);
+                }
+
                 Path encDir = cryptoFS.getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
                 if (Files.notExists(encDir)) {
                     Files.createDirectories(encDir);
                 }
+
                 return encDir;
             }
         }
@@ -191,22 +201,25 @@ public class EncryptedFileSystemUtils {
      * Checks if the Java Cryptography Extension (JCE) is installed on this host.
      * JCE is mandatory to support AES 256-bit encryption.
      * @return true if a key length with 256-bit is possible.
-     * @throws NoSuchPaddingException
      * @throws NoSuchAlgorithmException
      */
 
-    public static boolean checkJCEinstalled() throws NoSuchPaddingException, NoSuchAlgorithmException {
-        int keyLength = Cipher.getInstance("AES/CBC/PKCS5Padding").getMaxAllowedKeyLength("AES");
-        if (keyLength == 128) {
-            return false;
-        } else {
-            return true;
-        }
+    public static boolean checkJCEinstalled() throws NoSuchAlgorithmException {
+        int keyLength = Cipher.getMaxAllowedKeyLength("AES");
+        return keyLength != 128;
     }
 
     // Internal helper ********************************************************
 
     private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
+
+        // Storage locations for new encrypted folders are completely empty.
+        // After a server restart we reconstruct encrypted container with this method - if the storage location is NOT
+        // empty and NO cryptomator masterkey files are available return null and throw Exception.
+        if (!PathUtils.isEmptyDir(encDir) && (Files.notExists(encDir.resolve(DEFAULT_MASTERKEY_FILENAME)) &&
+            Files.notExists(encDir.resolve(DEFAULT_MASTERKEY_BACKUP_FILENAME)))) {
+            return null;
+        }
 
         return CryptoFileSystemProvider.newFileSystem(
                encDir,

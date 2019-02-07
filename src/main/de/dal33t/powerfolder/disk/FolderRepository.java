@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
@@ -503,102 +502,104 @@ public class FolderRepository extends PFComponent implements Runnable {
      * id. This format allows folders with the same name to be stored.
      */
     private void processV4Format() {
+
         final Properties config = getController().getConfig();
 
         // Find all folder entries.
         Set<String> entryIds = FolderSettings.loadEntryIds(config);
 
         // Load on many processors
-        int loaders = Math.min(Runtime.getRuntime().availableProcessors() - 2,
-                8);
+        int loaders = Math.min(Runtime.getRuntime().availableProcessors() - 2, 8);
         if (loaders <= 0) {
             loaders = 1;
         }
+
         final Semaphore loadPermit = new Semaphore(loaders);
         final AtomicInteger nCreated = new AtomicInteger();
+
         // Scan config for all found folder MD5s.
         for (final String folderEntryId : entryIds) {
+
             try {
                 loadPermit.acquire();
             } catch (InterruptedException e) {
                 logFiner(e);
                 return;
             }
-            Runnable folderCreator = new Runnable() {
-                public void run() {
-                    try {
-                        String folderId = config
-                                .getProperty(PREFIX_V4
-                                        + folderEntryId + ID);
-                        if (StringUtils.isBlank(folderId)) {
-                            logWarning("Folder id blank. Removed illegal folder config entry: "
-                                    + folderEntryId);
-                            removeConfigEntries(folderEntryId);
-                            return;
-                        }
-                        String folderName = FolderSettings.loadFolderName(
-                                getController().getConfig(), folderEntryId);
-                        if (StringUtils.isBlank(folderName)) {
-                            logWarning("Foldername not found."
-                                    + "Removed illegal folder config entry: "
-                                    + folderName + '/' + folderEntryId);
-                            removeConfigEntries(folderEntryId);
-                            return;
-                        }
 
-                        // #2203 Load later if folder id should be taken from
-                        // account.
-                        if (folderId
-                                .contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT)) {
-                            logFine("Folder load scheduled after first login: "
-                                    + folderName + '/' + folderEntryId);
-                            onLoginFolderEntryIds.add(folderEntryId);
-                            return;
-                        }
+            Runnable folderCreator = () -> {
+                try {
+                    String folderId = config
+                            .getProperty(PREFIX_V4
+                                    + folderEntryId + ID);
+                    if (StringUtils.isBlank(folderId)) {
+                        logWarning("Folder id blank. Removed illegal folder config entry: "
+                                + folderEntryId);
+                        removeConfigEntries(folderEntryId);
+                        return;
+                    }
+                    String folderName = FolderSettings.loadFolderName(
+                            getController().getConfig(), folderEntryId);
+                    if (StringUtils.isBlank(folderName)) {
+                        logWarning("Foldername not found."
+                                + "Removed illegal folder config entry: "
+                                + folderName + '/' + folderEntryId);
+                        removeConfigEntries(folderEntryId);
+                        return;
+                    }
 
-                        FolderInfo foInfo = new FolderInfo(folderName, folderId)
-                                .intern();
-                        FolderSettings folderSettings = FolderSettings.load(
-                                getController(), folderEntryId);
+                    // #2203 Load later if folder id should be taken from
+                    // account.
+                    if (folderId
+                            .contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT)) {
+                        logFine("Folder load scheduled after first login: "
+                                + folderName + '/' + folderEntryId);
+                        onLoginFolderEntryIds.add(folderEntryId);
+                        return;
+                    }
 
-                        if (folderSettings == null) {
-                            logWarning("Unable to load folder settings."
-                                    + "Removed folder config entry: " + folderName
-                                    + '/' + folderEntryId);
-                            removeConfigEntries(folderEntryId);
-                            return;
-                        }
+                    FolderInfo foInfo = new FolderInfo(folderName, folderId)
+                            .intern();
+                    FolderSettings folderSettings = FolderSettings.load(
+                            getController(), folderEntryId);
 
-                        // Fix for PFS-2319: Repair broken encrypted folders
-                        if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
+                    if (folderSettings == null) {
+                        logWarning("Unable to load folder settings."
+                                + "Removed folder config entry: " + folderName
+                                + '/' + folderEntryId);
+                        removeConfigEntries(folderEntryId);
+                        return;
+                    }
 
-                            // Construct temporary basePath
-                            folderName = folderName + Constants.FOLDER_ENCRYPTION_SUFFIX;
-                            Path folderDirectoryForRecoveredFolders = getFoldersBasedir().resolve("RECOVERED").resolve(folderName);
-                            Path temporaryBasePath = PathUtils.createEmptyDirectory(folderDirectoryForRecoveredFolders);
+                    // Fix for PFS-2319: Repair broken encrypted folders
+                    if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
 
-                            folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
-                            logWarning("Repaired broken encrypted Folder " + folderName + "/" + foInfo.getId() +
-                                    ". New storage path: " + temporaryBasePath);
-                        }
+                        // Construct temporary basePath
+                        folderName = folderName + Constants.FOLDER_ENCRYPTION_SUFFIX;
+                        Path folderDirectoryForRecoveredFolders = getFoldersBasedir().resolve("RECOVERED").resolve(folderName);
+                        Path temporaryBasePath = PathUtils.createEmptyDirectory(folderDirectoryForRecoveredFolders);
 
-                        // Do not add0 if already added
-                        if (!hasJoinedFolder(foInfo)
-                                && folderSettings != null) {
-                            createFolder(foInfo, folderSettings, false, true);
-                        }
-                    } catch (Exception e) {
-                        logSevere("Problem loading/creating folder #"
-                                + folderEntryId + ". " + e, e);
-                    } finally {
-                        loadPermit.release();
-                        synchronized (nCreated) {
-                            nCreated.incrementAndGet();
-                            nCreated.notify();
-                        }
+                        folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
+                        logWarning("Repaired broken encrypted Folder " + folderName + "/" + foInfo.getId() +
+                                ". New storage path: " + temporaryBasePath);
+                    }
+
+                    // Do not add0 if already added
+                    if (!hasJoinedFolder(foInfo)
+                            && folderSettings != null) {
+                        createFolder(foInfo, folderSettings, false, true);
+                    }
+                } catch (Exception e) {
+                    logWarning("Problem loading/creating folder #" + folderEntryId + ". " + e, e);
+                } finally {
+                    loadPermit.release();
+                    synchronized (nCreated) {
+                        nCreated.incrementAndGet();
+                        nCreated.notify();
                     }
                 }
             };
+
             getController().getIOProvider().startIO(folderCreator);
         }
 

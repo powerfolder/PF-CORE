@@ -30,32 +30,14 @@ import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.beans.ExceptionListener;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.CopyOption;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.DirectoryStream;
+import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.spi.FileSystemProvider;
@@ -431,15 +413,11 @@ public class PathUtils {
     }
 
     public static boolean isEmptyDir(Path path) {
-        return isEmptyDir(path, new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) {
-                return true;
-            }
-        });
+        return isEmptyDir(path, entry -> true);
     }
 
     public static boolean isEmptyDir(Path path, Filter<Path> filter) {
+
         if (path == null) {
             return false;
         }
