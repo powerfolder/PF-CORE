@@ -268,6 +268,15 @@ public class Folder extends PFComponent {
 
             if (isEncrypted) {
                 try {
+                    boolean createNewEncryptedContainer =
+                        EncryptedFileSystemUtils.verifyEncryptedVault(localBaseDir);
+
+                    if (createNewEncryptedContainer) {
+                        logSevere("Masterkey file or encrypted files missing/not complete for encrypted folder at " +
+                            "storage location " + localBaseDir + ". Decryption not possible! " +
+                            "Auto creating new encrypted container!");
+                    }
+
                     localBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), localBaseDir);
                 } catch (IOException | RuntimeException e) {
                     throw new IllegalStateException("Could not initialize CryptoFileSystem for folder " + fInfo.getName(), e);

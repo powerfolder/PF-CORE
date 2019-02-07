@@ -32,7 +32,6 @@ import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 import org.cryptomator.cryptofs.CryptoFileSystemUri;
 
 import javax.crypto.Cipher;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
@@ -47,36 +46,38 @@ public class EncryptedFileSystemUtils {
 
     private static final String DEFAULT_MASTERKEY_FILENAME = "masterkey.cryptomator";
     private static final String DEFAULT_MASTERKEY_BACKUP_FILENAME = "masterkey.cryptomator.bkup";
+    private static final String DEFAULT_ENCRYPTED_ROOT_DIR = "d";
 
     /**
      * Checks if an existing CryptoFileSystem exists for the given path, if not create a new one.
+     *
      * @param controller
-     * @param incDir must (!) be an UnixPath!
+     * @param vaultPath must (!) be an UnixPath!
      * @return root directory of an CryptoFileSystem as CryptoPath.
      * @throws IOException
      */
 
-    public static Path getEncryptedFileSystem(Controller controller, Path incDir) throws IOException {
+    public static Path getEncryptedFileSystem(Controller controller, Path vaultPath) throws IOException {
         Reject.ifNull(controller, "Controller");
-        Reject.ifNull(incDir, "Path");
-        if (isCryptoInstance(incDir)) {
-            Path encDir = incDir.getFileSystem().getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
+        Reject.ifNull(vaultPath, "Path");
+
+        if (isCryptoInstance(vaultPath)) {
+            Path encDir = vaultPath.getFileSystem().getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
             if (Files.notExists(encDir)) {
                 Files.createDirectories(encDir);
             }
-            return incDir;
+
+            return encDir;
         } else {
             try {
-                return getCryptoPath(incDir);
+                return getCryptoPath(vaultPath);
             } catch (FileSystemNotFoundException e) {
 
-                FileSystem cryptoFS = initCryptoFileSystem(controller, incDir);
-                if (cryptoFS == null) {
-                        throw new FileNotFoundException("Masterkey file missing for encrypted folder at storage " +
-                            "location " + incDir);
-                }
+                verifyEncryptedVault(vaultPath);
 
+                FileSystem cryptoFS = initCryptoFileSystem(controller, vaultPath);
                 Path encDir = cryptoFS.getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
+
                 if (Files.notExists(encDir)) {
                     Files.createDirectories(encDir);
                 }
@@ -87,18 +88,54 @@ public class EncryptedFileSystemUtils {
     }
 
     /**
+     * Storage locations for new encrypted folders are completely empty. After a server restart we reconstruct
+     * every encrypted container - if the storage location is NOT empty and NO cryptomator masterkey
+     * files OR no encrypted files at all are available -> delete everything, recreate the the storage location
+     * and initialize a new CryptoFileSystem.
+     *
+     * This method decides whether a new CryptoFileSystem should be created because certain files are missing for a
+     * reconstruction of an existing CryptoFileSystem.
+     *
+     * @param vaultPath The path where the encrypted container is located or will be (re-)created.
+     *
+     * @return true if a complete new CryptoFileSystem creation is necessary, false if a reconstruction is to be made.
+     * @throws IOException
+     */
+
+    static boolean verifyEncryptedVault(Path vaultPath) throws IOException {
+
+        if (isCryptoInstance(vaultPath)) {
+            return false;
+        }
+
+        if (!PathUtils.isEmptyDir(vaultPath) && (Files.notExists(vaultPath.resolve(DEFAULT_MASTERKEY_FILENAME)) &&
+            Files.notExists(vaultPath.resolve(DEFAULT_MASTERKEY_BACKUP_FILENAME)) ||
+            Files.notExists(vaultPath.resolve(DEFAULT_ENCRYPTED_ROOT_DIR))))
+        {
+            PathUtils.recursiveDeleteVisitor(vaultPath);
+            Files.createDirectories(vaultPath);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Checks if storage encryption is activated on this server.
+     *
      * @param controller
      * @return true if storage encryption is activated.
      */
 
     public static boolean isEncryptionActivated(Controller controller){
         Reject.ifNull(controller, "controller");
+
         return ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(controller);
     }
 
     /**
      * Checks if the given UnixPath is a path to an encrypted folder.
+     *
      * @param path must (!) be an UnixPath!
      * @return true if the path contains the keyword ".crypto".
      */
@@ -109,6 +146,7 @@ public class EncryptedFileSystemUtils {
 
     /**
      * Checks if the given path is an CryptoPath.
+     *
      * @param path must (!) be an CryptoPath!
      * @return true if the given path has an CryptoFileSystemProvider.
      */
@@ -119,12 +157,14 @@ public class EncryptedFileSystemUtils {
 
     /**
      * Get the physical storage location of an CryptoFileSystem over the given CryptoPath.
+     *
      * @param path must (!) be an CryptoPath!
      * @return path leading to the physical data from the CryptoFileSystem.
      */
 
     public static Path getPhysicalStorageLocation(Path path) {
         CryptoFileSystem fs = (CryptoFileSystem) path.getFileSystem();
+
         if (fs != null) {
             return fs.getPathToVault();
         } else {
@@ -136,12 +176,14 @@ public class EncryptedFileSystemUtils {
      * This method returns a CryptoPath to a given String, if a CryptoPath exists for this String.
      * IMPORTANT: The given String MUST be an absolute path to the vault of an CryptoFileSystem!
      * E.g. /home/example/PowerFolders/exampleUser/example.crypto.
+     *
      * @param pathToVault
      * @return CryptoPath for the given String, if an CryptoPath for this String exists.
      */
 
     public static Path getCryptoPath(String pathToVault) {
         Reject.ifNull(pathToVault, "Path");
+
         Path cryptoPath = Paths.get(pathToVault);
         try {
             cryptoPath = getCryptoPath(cryptoPath);
@@ -153,12 +195,14 @@ public class EncryptedFileSystemUtils {
 
     /**
      * Returns a CryptoPath to the given UnixPath, if an CryptoPath exists.
+     *
      * @param path must (!) be an UnixPath!
      * @return CryptoPath
      */
 
     public static Path getCryptoPath(Path path) {
         Reject.ifNull(path, "Path");
+
         URI encFolderUri = CryptoFileSystemUri.create(path, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
         path = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
         return path;
@@ -166,11 +210,13 @@ public class EncryptedFileSystemUtils {
 
     /**
      * Sets the passphrase to encrypt the masterkeys from encrypted folders on this server.
+     *
      * @param controller
      */
 
     public static void setEncryptionPassphrase(Controller controller){
         Reject.ifNull(controller, "Controller");
+
         if (!ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.hasValue(controller)) {
             ConfigurationEntry.ENCRYPTED_STORAGE_PASSPHRASE.setValue(controller,
                     IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId() + IdGenerator.makeId());
@@ -186,40 +232,32 @@ public class EncryptedFileSystemUtils {
 
     public static boolean isEmptyCryptoContainerRootDir(Path path) {
         Reject.ifNull(path, "Path");
+
         if (!isCryptoInstance(path)) {
             return false;
         }
-        if (isCryptoInstance(path)
-                && path.endsWith(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)
-                && PathUtils.isEmptyDir(path)) {
-            return true;
-        }
-        return false;
+
+        return isCryptoInstance(path) && path.endsWith(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR) &&
+            PathUtils.isEmptyDir(path);
     }
 
     /**
      * Checks if the Java Cryptography Extension (JCE) is installed on this host.
      * JCE is mandatory to support AES 256-bit encryption.
+     *
      * @return true if a key length with 256-bit is possible.
      * @throws NoSuchAlgorithmException
      */
 
     public static boolean checkJCEinstalled() throws NoSuchAlgorithmException {
         int keyLength = Cipher.getMaxAllowedKeyLength("AES");
+
         return keyLength != 128;
     }
 
     // Internal helper ********************************************************
 
     private static FileSystem initCryptoFileSystem(Controller controller, Path encDir) throws IOException {
-
-        // Storage locations for new encrypted folders are completely empty.
-        // After a server restart we reconstruct encrypted container with this method - if the storage location is NOT
-        // empty and NO cryptomator masterkey files are available return null and throw Exception.
-        if (!PathUtils.isEmptyDir(encDir) && (Files.notExists(encDir.resolve(DEFAULT_MASTERKEY_FILENAME)) &&
-            Files.notExists(encDir.resolve(DEFAULT_MASTERKEY_BACKUP_FILENAME)))) {
-            return null;
-        }
 
         return CryptoFileSystemProvider.newFileSystem(
                encDir,
