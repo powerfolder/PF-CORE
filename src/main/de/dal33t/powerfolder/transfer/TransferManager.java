@@ -1701,8 +1701,9 @@ public class TransferManager extends PFComponent {
     public DownloadManager downloadNewestVersion(FileInfo fInfo,
         boolean automatic)
     {
-        Download enqueuedDownload = null;
+        Download pendingDownload = null;
         boolean downloadWasEnqueued = false;
+        boolean downloadWasRequested = false;
         synchronized (downloadRequestLock) {
             Folder folder = fInfo.getFolder(getController()
                 .getFolderRepository());
@@ -1836,19 +1837,22 @@ public class TransferManager extends PFComponent {
                         logFine("Downloading old version while newer is available: "
                             + localFile);
                     }
-                    enqueuedDownload = download;
-                    downloadWasEnqueued = requestDownload(download, bestSource);
+                    pendingDownload = download;
+                    downloadWasRequested = requestDownload(download, bestSource);
                 }
             }
 
             if (bestSources == null && !automatic) {
                 // Okay enqueue as pending download if was manually requested
-                enqueuedDownload = new Download(this, fileToDl, false);
-                downloadWasEnqueued = enquePendingDownload(enqueuedDownload);
+                pendingDownload = new Download(this, fileToDl, false);
+                downloadWasEnqueued = enquePendingDownload(pendingDownload);
             }
         }
+        if (downloadWasRequested) {
+            fireDownloadRequested(new TransferManagerEvent(this, pendingDownload));
+        }
         if (downloadWasEnqueued) {
-            firePendingDownloadEnqueud(new TransferManagerEvent(this, enqueuedDownload));
+            firePendingDownloadEnqueud(new TransferManagerEvent(this, pendingDownload));
             return null;
         }
         return getActiveDownload(fInfo);
