@@ -1149,7 +1149,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // Set datamodel
+        if (metaFolders.containsKey(folderInfo)) {
+            logSevere("Meta folder " + folderInfo + "already in meta folders list");
+        }
         metaFolders.put(folderInfo, metaFolder);
+        if (folders.containsKey(folderInfo)) {
+            logSevere("Folder " + folderInfo + "already in folders list");
+        }
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 

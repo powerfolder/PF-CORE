@@ -1969,50 +1969,55 @@ public class Folder extends PFComponent {
      * Stores the current file-database to disk
      */
     private synchronized boolean storeFolderDB() {
-        Path dbTempFile = getSystemSubDir().resolve(
-            Constants.DB_FILENAME
-                + PathUtils.removeInvalidFilenameChars(getController()
-                    .getMySelf().getId()) + ".writing");
-        Path dbFile = getSystemSubDir().resolve(Constants.DB_FILENAME);
 
-        // Not longer needed:
-        Path dbFileBackup = getSystemSubDir().resolve(
-            Constants.DB_BACKUP_FILENAME);
+        Path dbTempFile = getSystemSubDir().resolve(
+            Constants.DB_FILENAME +
+                PathUtils.removeInvalidFilenameChars(getController().getMySelf().getId()) + ".writing");
+
         try {
+            if (Files.exists(dbTempFile)) {
+                Files.delete(dbTempFile);
+                logWarning("Deleted existing DB tmp file " + dbTempFile + " for folder " + this.getName() + "/" +
+                    System.identityHashCode(this));
+            }
+
+            Path dbFileBackup = getSystemSubDir().
+                resolve(Constants.DB_BACKUP_FILENAME);
             Files.deleteIfExists(dbFileBackup);
-        } catch (Exception e) {
-            logFine("Unable to delete file " + dbFileBackup + ". " + e);
+
+        } catch (IOException ioe) {
+            logWarning("Unable to delete DB- file backup/temp file from folder: " + this.getName() + "/" +
+                System.identityHashCode(this) + ". Reason: " + ioe);
         }
+
+        Path dbFile = getSystemSubDir().resolve(Constants.DB_FILENAME);
 
         try {
             FileInfo[] diskItems;
             synchronized (dbAccessLock) {
+
                 Collection<FileInfo> files = dao.findAllFiles(null);
                 Collection<DirectoryInfo> dirs = dao.findAllDirectories(null);
+
                 diskItems = new FileInfo[files.size() + dirs.size()];
+
                 int i = 0;
                 for (FileInfo fileInfo : files) {
                     diskItems[i] = fileInfo;
                     i++;
                 }
+
                 for (DirectoryInfo dirInfo : dirs) {
                     diskItems[i] = dirInfo;
                     i++;
                 }
             }
 
-            // Prepare temp file
-            try {
-                Files.deleteIfExists(dbTempFile);
-            } catch (IOException ioe) {
-                logWarning("Failed to delete temp database file: " + dbTempFile
-                    + ". " + ioe);
-            }
             try {
                 Files.createFile(dbTempFile);
             } catch (IOException ioe) {
-                logSevere("Failed to create temp database file: " + dbTempFile
-                    + ". " + ioe);
+                logWarning("Failed to create temp database file " + dbTempFile + " for folder: " +
+                    this.getName() + "/" + System.identityHashCode(this) + ". Reason: " + ioe);
                 return false;
             }
 
@@ -2023,7 +2028,7 @@ public class Folder extends PFComponent {
                 oOut.writeObject(Convert.asMemberInfos(getMembersAsCollection()
                     .toArray(new Member[0])));
                 // Old blacklist. Maintained for backward serialization
-                // compatability. Do not remove.
+                // compatibility. Do not remove.
                 oOut.writeObject(new ArrayList<FileInfo>());
 
                 if (lastScan == null) {
@@ -2057,7 +2062,8 @@ public class Folder extends PFComponent {
                     Files.deleteIfExists(dbTempFile);
                 } catch (IOException e) {
                     logWarning("Failed to copy database file: " + dbFile
-                        + ", temp file: " + dbTempFile);
+                        + ", temp file: " + dbTempFile + " for folder " + this.getName() + "/" +
+                        System.identityHashCode(this));
                     return false;
                 }
             }
@@ -2072,7 +2078,7 @@ public class Folder extends PFComponent {
             // TODO: if something failed shoudn't we try to restore the
             // backup (if backup exists and bd file not after this?
             logWarning(this + ": Unable to write database file "
-                + dbFile.toAbsolutePath() + ". " + e);
+                + dbFile.toAbsolutePath() + " for folder " + this.getName() + "/" + System.identityHashCode(this));
             logFiner(e);
             return false;
         }
