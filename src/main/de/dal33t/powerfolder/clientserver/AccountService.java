@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
-import de.dal33t.powerfolder.StatusCode;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -29,9 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Contains all methods to modify/alter, create or notify Accounts.
@@ -129,7 +126,16 @@ public interface AccountService {
      * @param accounts
      */
     void checkAccounts(Collection<Account> accounts);
-    
+
+    /**
+     * Returns the current skin of an account
+     *
+     * @param account The account
+     * @return The current skin of the account
+     */
+    @Deprecated
+    String getClientSkinName(AccountInfo account);
+
     /**
      * Merge one or more accounts into {@code account}.
      * {@code account} will be stored on success.
