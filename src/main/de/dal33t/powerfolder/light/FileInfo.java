@@ -995,15 +995,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         // PFC-2571: Start
         if (in.readBoolean()) {
             modifiedByAccount = AccountInfo.readExt(in);
-            modifiedByAccount = modifiedByAccount != null ? modifiedByAccount
-                    .intern() : null;
+            if (modifiedByAccount != null) {
+                modifiedByAccount.intern();
+            }
         }
         // PFC-2571: End
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
         long extUID;
-        if (oid == null && hashes == null && tags == null) {
+        if (oid == null && hashes == null && tags == null && modifiedByAccount == null) {
             extUID = extVersion100UID;
         } else {
             extUID = extVersionCurrentUID;
