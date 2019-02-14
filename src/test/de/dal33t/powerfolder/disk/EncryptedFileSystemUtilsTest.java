@@ -1,155 +1,174 @@
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import org.cryptomator.cryptofs.CryptoFileSystem;
-import org.cryptomator.cryptofs.CryptoFileSystemProperties;
-import org.cryptomator.cryptofs.CryptoFileSystemProvider;
-import org.cryptomator.cryptofs.CryptoFileSystemUri;
-import org.junit.Test;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 
-import javax.crypto.Cipher;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.*;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
 
-import static de.dal33t.powerfolder.disk.EncryptedFileSystemUtils.getCryptoPath;
-import static de.dal33t.powerfolder.disk.EncryptedFileSystemUtils.isCryptoInstance;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-/** 
+/**
 * EncryptedFileSystemUtils Test.
-* 
-* @author <a href="mailto:wiegmann@powerfolder.com>Jan Wiegmann</a>
-* @since <pre>Dec 1, 2016</pre> 
-* @version 1.0 
+*
+* @author <a href="mailto:krickl@powerfolder.com>Maximilian Krickl</a>
+* @version 1.0
 */
 
 public class EncryptedFileSystemUtilsTest {
 
-    protected static Path UNENCRYPTED_TESTDIR;
-    protected static Path ENCRYPTED_TESTFOLDER;
+    private Path vaultPath;
+    private Mockery mockery = new Mockery();
+    private Controller controller;
+    private Properties config;
 
-@Before
-public void before() throws Exception {
+    @Before
+    public void before() throws IOException {
+        mockery.setImposteriser(ClassImposteriser.INSTANCE);
+        controller = mockery.mock(Controller.class);
+        config = new Properties();
 
-    // Cleanup
-    TestHelper.cleanTestDir();
-    PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve(
-            "build"));
+        mockery.checking(new Expectations() {{
+            allowing(controller).getConfig(); will(returnValue(config));
+            allowing(controller).saveConfig();
+        }});
 
-    // Get dir to encrypt.
-    UNENCRYPTED_TESTDIR= TestHelper.getTestDir().resolve("dirToEncrypt" + Constants.FOLDER_ENCRYPTION_SUFFIX);
-    Files.createDirectories(UNENCRYPTED_TESTDIR);
+        // Cleanup
+        TestHelper.cleanTestDir();
+        PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve(
+                "build"));
 
-    // Create encrypted container.
-    ENCRYPTED_TESTFOLDER = getEncryptedFileSystem(UNENCRYPTED_TESTDIR);
-}
+        vaultPath = TestHelper.getTestDir().resolve("Folder.crypto");
+        if (Files.notExists(vaultPath)) {
+            Files.createDirectories(vaultPath);
+        }
 
-/**
- * Method: endsWithEncryptionSuffix(String path)
-*/
+        EncryptedFileSystemUtils.setEncryptionPassphrase(controller);
 
-@Test
-public void testIsPhysicalStorageLocation() throws Exception {
-    assertTrue(UNENCRYPTED_TESTDIR.toString().contains(Constants.FOLDER_ENCRYPTION_SUFFIX));
-} 
-
-/**
-* Method: isCryptoInstance(Path path)
-*/
-
-@Test
-public void testIsCryptoInstance() throws Exception {
-    assertTrue(ENCRYPTED_TESTFOLDER.getFileSystem().provider() instanceof CryptoFileSystemProvider);
-} 
-
-/**
-* Method: getPhysicalStorageLocation(Path path)
-*/
-
-@Test
-public void testGetPhysicalStorageLocation() throws Exception {
-    CryptoFileSystem fs = (CryptoFileSystem) ENCRYPTED_TESTFOLDER.getFileSystem();
-    assertTrue(UNENCRYPTED_TESTDIR.equals(fs.getPathToVault()));
-} 
-
-/**
-* Method: getCryptoPath(String pathToVault)
-*/
-
-@Test
-public void testGetCryptoPathString() throws Exception {
-    String UNENCRYPTED_TESTDIR_STRING = UNENCRYPTED_TESTDIR.toString();
-    Path cryptoPath = getCryptoPath(UNENCRYPTED_TESTDIR_STRING);
-    assertTrue(cryptoPath.equals(ENCRYPTED_TESTFOLDER));
-} 
-
-/**
-* Method: getCryptoPath(Path path)
-*/
-
-@Test
-public void testGetCryptoPath() throws Exception {
-    URI encFolderUri = CryptoFileSystemUri.create(UNENCRYPTED_TESTDIR, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
-    Path ENCRYPTED_TESTFOLDER_2 = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
-    assertTrue(ENCRYPTED_TESTFOLDER.equals(ENCRYPTED_TESTFOLDER_2));
-}
-
-    /**
-     * Method: getCryptoPath(Path path)
-     */
-
-    @Test
-    public void testIsCryptoContainerRootDir() throws Exception {
-        URI encFolderUri = CryptoFileSystemUri.create(UNENCRYPTED_TESTDIR, Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
-        Path ENCRYPTED_TESTFOLDER_2 = FileSystems.getFileSystem(encFolderUri).provider().getPath(encFolderUri);
-        assertTrue(EncryptedFileSystemUtils.isEmptyCryptoContainerRootDir(ENCRYPTED_TESTFOLDER_2));
+        assertTrue(PathUtils.isEmptyDir(vaultPath));
     }
 
-/**
-* Method: checkJCEinstalled()
-*/
-
-@Test
-public void testCheckJCEinstalled() throws Exception {
-    int keyLength = Cipher.getInstance("AES/CBC/PKCS5Padding").getMaxAllowedKeyLength("AES");
-    assertFalse(keyLength == 128);
-    assertTrue(keyLength > 128);
-}
-
-    // Internal helper ********************************************************
-
-    private static FileSystem initCryptoFileSystem(Path encDir) throws IOException {
-        FileSystem fs = CryptoFileSystemProvider.newFileSystem(
-                encDir,
-                CryptoFileSystemProperties.cryptoFileSystemProperties()
-                        .withPassphrase("foobar")
-                        .build());
-        return fs;
-    }
-
-    public static Path getEncryptedFileSystem(Path incDir) throws IOException {
-        Reject.ifNull(incDir, "Path");
-        if (isCryptoInstance(incDir)){
-            return incDir;
-        } else {
-            try {
-                return getCryptoPath(incDir);
-            } catch (FileSystemNotFoundException e) {
-                FileSystem cryptoFS = initCryptoFileSystem(incDir);
-                Path encDir = cryptoFS.getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
-                if (!Files.exists(encDir)) {
-                    Files.createDirectories(encDir);
-                }
-                return encDir;
-            }
+    @After
+    public void after() throws IOException {
+        try {
+            EncryptedFileSystemUtils.getCryptoPath(vaultPath).getFileSystem().close();
+        } catch (FileSystemNotFoundException fsnfe) {
+            System.out.println("No FileSystem to close. " + fsnfe + ". This might be right.");
         }
     }
 
+    @Test
+    public void endsWithEncryptionSuffix() {
+        // absolute paths
+        assertTrue(EncryptedFileSystemUtils.endsWithEncryptionSuffix(Paths.get("/folder/base/dir/folderName.crypto")));
+        assertFalse(EncryptedFileSystemUtils.endsWithEncryptionSuffix(Paths.get("/folder/base/dir/folderName.crypto/should/only/end/with/extension")));
+        // relative paths
+        assertTrue(EncryptedFileSystemUtils.endsWithEncryptionSuffix(Paths.get("base/dir/folderName.crypto")));
+        assertFalse(EncryptedFileSystemUtils.endsWithEncryptionSuffix(Paths.get("base/dir/folderName.crypto/should/only/end/with/extension")));
+    }
+
+    @Test
+    public void isEmptyCryptoContainerRootDir() throws IOException {
+        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller,
+            vaultPath);
+
+        assertFalse(EncryptedFileSystemUtils.isEmptyCryptoContainerRootDir(vaultPath));
+        assertTrue(EncryptedFileSystemUtils.isEmptyCryptoContainerRootDir(cryptoPath));
+    }
+
+    @Test
+    public void getEncryptedFileSystem() throws IOException {
+        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller,
+            vaultPath);
+
+        assertTrue(Files.exists(cryptoPath));
+        assertNotEquals(vaultPath, cryptoPath);
+        assertTrue(EncryptedFileSystemUtils.isEmptyCryptoContainerRootDir(cryptoPath));
+    }
+
+    @Test
+    public void getCryptoPath() throws IOException {
+        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller,
+            vaultPath);
+
+        Path otherCryptoPath = EncryptedFileSystemUtils.getCryptoPath(vaultPath);
+
+        assertEquals(cryptoPath.getFileName().toString(), "encDir");
+        assertEquals(otherCryptoPath.getFileName().toString(), "encDir");
+        assertEquals(cryptoPath, otherCryptoPath);
+    }
+
+    @Test
+    public void isCryptoInstance() throws IOException {
+        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
+
+        assertTrue(EncryptedFileSystemUtils.isCryptoInstance(cryptoPath));
+        assertFalse(EncryptedFileSystemUtils.isCryptoInstance(vaultPath));
+    }
+
+    @Test
+    public void getPhysicalStorageLocation() throws IOException {
+        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
+        Path vault = EncryptedFileSystemUtils.getPhysicalStorageLocation(cryptoPath);
+
+        assertEquals(vaultPath, vault);
+
+        try {
+            EncryptedFileSystemUtils.getPhysicalStorageLocation(vaultPath);
+        } catch (IllegalArgumentException iae) {
+            // NOP -- expected
+        }
+    }
+
+    @Test
+    public void verifyEncryptedVault() throws IOException {
+        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
+
+        // Test remove crypto container
+        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
+
+        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(cryptoPath));
+        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
+
+        PathUtils.recursiveDelete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_ENCRYPTED_ROOT_DIR));
+
+        assertTrue(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
+        // ---
+
+        // close the associated crypto file system
+        cryptoPath.getFileSystem().close();
+
+        // Test remove key files
+        cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
+
+        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(cryptoPath));
+        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
+
+        Files.delete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_MASTERKEY_FILENAME));
+        Files.delete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_MASTERKEY_BACKUP_FILENAME));
+
+        assertTrue(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
+        // --
+    }
+
+    @Test
+    public void isEncryptionActivated() {
+        // not testing: If the controller does not correctly return config settings... :shrug:
+    }
+
+    @Test
+    public void setEncryptedPassphrase() {
+        // not testing: If the controller does not correctly return config settings... :shrug:
+    }
 } 
