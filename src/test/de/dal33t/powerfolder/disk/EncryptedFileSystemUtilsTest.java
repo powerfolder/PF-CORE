@@ -132,34 +132,59 @@ public class EncryptedFileSystemUtilsTest {
     }
 
     @Test
-    public void verifyEncryptedVault() throws IOException {
-        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
+    public void isInitializuationRequiredWithVaultPath() throws IOException {
+        assertTrue(EncryptedFileSystemUtils.isInitializationRequired(vaultPath));
+    }
 
-        // Test remove crypto container
-        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
+    @Test
+    public void isInitializuationRequiredMissingRootDir() throws IOException {
+        Path cryptoPath = EncryptedFileSystemUtils
+            .getEncryptedFileSystem(controller, vaultPath);
 
-        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(cryptoPath));
-        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
+        // preconditions
+        assertFalse(EncryptedFileSystemUtils.isInitializationRequired(cryptoPath));
+        assertFalse(EncryptedFileSystemUtils.isInitializationRequired(vaultPath));
 
+        // delete root dir
         PathUtils.recursiveDelete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_ENCRYPTED_ROOT_DIR));
 
-        assertTrue(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
-        // ---
+        // test
+        assertTrue(EncryptedFileSystemUtils.isInitializationRequired(vaultPath));
+    }
 
-        // close the associated crypto file system
-        cryptoPath.getFileSystem().close();
+    @Test
+    public void isInitializuationRequiredMissingKeyFiles() throws IOException {
+        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
 
-        // Test remove key files
-        cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
+        // preconditions
+        assertFalse(EncryptedFileSystemUtils.isInitializationRequired(cryptoPath));
+        assertFalse(EncryptedFileSystemUtils.isInitializationRequired(vaultPath));
 
-        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(cryptoPath));
-        assertFalse(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
-
+        // delete key files
         Files.delete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_MASTERKEY_FILENAME));
         Files.delete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_MASTERKEY_BACKUP_FILENAME));
 
-        assertTrue(EncryptedFileSystemUtils.verifyEncryptedVault(vaultPath));
-        // --
+        // test
+        assertTrue(EncryptedFileSystemUtils.isInitializationRequired(vaultPath));
+    }
+
+    @Test
+    public void isInitializuationRequiredMissingEverything() throws IOException {
+        Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
+
+        // preconditions
+        assertFalse(EncryptedFileSystemUtils.isInitializationRequired(cryptoPath));
+        assertFalse(EncryptedFileSystemUtils.isInitializationRequired(vaultPath));
+
+        // delete root dir
+        PathUtils.recursiveDelete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_ENCRYPTED_ROOT_DIR));
+
+        // delete key files
+        Files.delete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_MASTERKEY_FILENAME));
+        Files.delete(vaultPath.resolve(EncryptedFileSystemUtils.DEFAULT_MASTERKEY_BACKUP_FILENAME));
+
+        // test
+        assertTrue(EncryptedFileSystemUtils.isInitializationRequired(vaultPath));
     }
 
     @Test
