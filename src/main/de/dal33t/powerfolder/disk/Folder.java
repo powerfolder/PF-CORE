@@ -269,12 +269,18 @@ public class Folder extends PFComponent {
             if (isEncrypted && !fInfo.isMetaFolder()) {
                 try {
                     boolean createNewEncryptedContainer =
-                        EncryptedFileSystemUtils.verifyEncryptedVault(localBaseDir);
+                        EncryptedFileSystemUtils.isInitializationRequired(localBaseDir);
 
                     if (createNewEncryptedContainer) {
                         logSevere("Masterkey file or encrypted files missing/not complete for encrypted folder at " +
                             "storage location " + localBaseDir + ". Decryption not possible! " +
                             "Auto creating new encrypted container!");
+                        try {
+                            EncryptedFileSystemUtils.getCryptoPath(localBaseDir)
+                                .getFileSystem().close();
+                        } catch (FileSystemNotFoundException fsne) {
+                            // There was no crypto container -> ignore
+                        }
                     }
 
                     localBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), localBaseDir);
