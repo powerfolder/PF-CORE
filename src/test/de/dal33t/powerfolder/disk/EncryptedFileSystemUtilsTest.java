@@ -126,6 +126,7 @@ public class EncryptedFileSystemUtilsTest {
 
         try {
             EncryptedFileSystemUtils.getPhysicalStorageLocation(vaultPath);
+            fail();
         } catch (IllegalArgumentException iae) {
             // NOP -- expected
         }
