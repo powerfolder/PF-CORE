@@ -266,7 +266,7 @@ public class Folder extends PFComponent {
             boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
                     || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBaseDir);
 
-            if (isEncrypted) {
+            if (isEncrypted && !fInfo.isMetaFolder()) {
                 try {
                     boolean createNewEncryptedContainer =
                         EncryptedFileSystemUtils.verifyEncryptedVault(localBaseDir);
