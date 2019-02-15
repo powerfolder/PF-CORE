@@ -49,7 +49,11 @@ public class EncryptedFileSystemUtilsTest {
         PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve(
                 "build"));
 
-        vaultPath = TestHelper.getTestDir().resolve("Folder.crypto");
+        Path testDir = TestHelper.getTestDir();
+        if (testDir == null) {
+            fail();
+        }
+        vaultPath = testDir.resolve("Folder.crypto");
         if (Files.notExists(vaultPath)) {
             Files.createDirectories(vaultPath);
         }
@@ -133,12 +137,12 @@ public class EncryptedFileSystemUtilsTest {
     }
 
     @Test
-    public void isInitializuationRequiredWithVaultPath() throws IOException {
+    public void isInitializationRequiredWithVaultPath() throws IOException {
         assertTrue(EncryptedFileSystemUtils.isInitializationRequired(vaultPath));
     }
 
     @Test
-    public void isInitializuationRequiredMissingRootDir() throws IOException {
+    public void isInitializationRequiredMissingRootDir() throws IOException {
         Path cryptoPath = EncryptedFileSystemUtils
             .getEncryptedFileSystem(controller, vaultPath);
 
@@ -154,7 +158,7 @@ public class EncryptedFileSystemUtilsTest {
     }
 
     @Test
-    public void isInitializuationRequiredMissingKeyFiles() throws IOException {
+    public void isInitializationRequiredMissingKeyFiles() throws IOException {
         Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
 
         // preconditions
@@ -170,7 +174,7 @@ public class EncryptedFileSystemUtilsTest {
     }
 
     @Test
-    public void isInitializuationRequiredMissingEverything() throws IOException {
+    public void isInitializationRequiredMissingEverything() throws IOException {
         Path cryptoPath = EncryptedFileSystemUtils.getEncryptedFileSystem(controller, vaultPath);
 
         // preconditions
