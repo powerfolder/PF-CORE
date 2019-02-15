@@ -70,7 +70,7 @@ public class EncryptedFileSystemUtils {
                 return getCryptoPath(vaultPath);
             } catch (FileSystemNotFoundException e) {
 
-                verifyEncryptedVault(vaultPath);
+                isInitializationRequired(vaultPath);
 
                 FileSystem cryptoFS = initCryptoFileSystem(controller, vaultPath);
                 Path encDir = cryptoFS.getPath(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR);
@@ -99,18 +99,16 @@ public class EncryptedFileSystemUtils {
      * @throws IOException If deleting the old directories or creating the new directories failed
      */
 
-    static boolean verifyEncryptedVault(Path vaultPath) throws IOException {
+    static boolean isInitializationRequired(Path vaultPath) throws IOException {
 
-        if (isCryptoInstance(vaultPath)) {
+        if (isCryptoInstance(vaultPath) || !endsWithEncryptionSuffix(vaultPath)) {
             return false;
         }
 
-        if (!PathUtils.isEmptyDir(vaultPath)
-            &&
-            (Files.notExists(vaultPath.resolve(DEFAULT_MASTERKEY_FILENAME))
+        if (Files.notExists(vaultPath.resolve(DEFAULT_MASTERKEY_FILENAME))
                 && Files.notExists(vaultPath.resolve(DEFAULT_MASTERKEY_BACKUP_FILENAME))
                 || Files.notExists(vaultPath.resolve(DEFAULT_ENCRYPTED_ROOT_DIR))
-            ))
+            )
         {
             PathUtils.recursiveDeleteVisitor(vaultPath);
             Files.createDirectories(vaultPath);
