@@ -188,7 +188,7 @@ For creation of the installer:
 			<!-- Encrypted storage - cryptolib/fs -->
 			<include name="cryptomator/commons-codec-1.11.jar" />
             <include name="cryptomator/commons-lang3-3.8.1.jar"/>
-            <include name="cryptomator/cryptofs-1.6.2.jar"/>
+            <include name="cryptomator/cryptofs-1.7.0.jar"/>
             <include name="cryptomator/cryptolib-1.2.1.jar"/>
             <include name="cryptomator/dagger-2.21.jar"/>
             <include name="cryptomator/dagger-producers-2.21.jar"/>
