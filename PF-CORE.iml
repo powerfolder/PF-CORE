@@ -72,20 +72,11 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library" exported="">
-      <library name="commons-cli-1.0.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-cli-1.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="module-library" exported="">
-      <library name="looks-2.1.4.jar">
+      <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/looks-2.1.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/commons-cli-1.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -253,19 +244,10 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="commons-compress-1.3.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-compress-1.3.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library" exported="">
-      <library name="junit.jar">
+      <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/junit.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/commons-logging-1.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -281,18 +263,9 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
-      <library name="commons-logging-1.1.3.jar">
+      <library name="looks-2.1.4.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-logging-1.1.3.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library name="fluent-hc-4.3.5.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/fluent-hc-4.3.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/looks-2.1.4.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -302,42 +275,6 @@
       <library name="bcmail-jdk15on-152.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/bcmail-jdk15on-152.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/httpclient-4.5.3.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/httpclient-cache-4.5.3.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/httpcore-4.4.6.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/httpmime-4.5.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -373,20 +310,20 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../PF-PRO/lib-server/hibernate3.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/powerfolder-protobuf-0.1.jar!/" />
         </CLASSES>
-        <JAVADOC>
-          <root url="http://docs.jboss.org/hibernate/stable/core/api/" />
-        </JAVADOC>
+        <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/powerfolder-protobuf-0.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/../PF-PRO/lib-server/hibernate3.jar!/" />
         </CLASSES>
-        <JAVADOC />
+        <JAVADOC>
+          <root url="http://docs.jboss.org/hibernate/stable/core/api/" />
+        </JAVADOC>
         <SOURCES />
       </library>
     </orderEntry>
@@ -402,23 +339,10 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-io-1.3.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/commons-io-2.6.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library>
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/lib/cryptomator" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/lib/cryptomator" />
-        </SOURCES>
-        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" />
-        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" type="SOURCES" />
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
@@ -499,6 +423,82 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/squirrel-foundation-0.3.8.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/httpclient-4.5.7.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/httpclient-cache-4.5.7.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/httpcore-4.4.11.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/httpmime-4.5.7.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-compress-1.18.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="junit.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/junit.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/lib/cryptomator" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/lib/cryptomator" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/lib/cryptomator" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="fluent-hc-4.3.5.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/fluent-hc-4.3.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
