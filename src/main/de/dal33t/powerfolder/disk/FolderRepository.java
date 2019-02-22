@@ -173,8 +173,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         String[] parts = list.split("\\$");
         for (String s : parts) {
             try {
-                if (!EncryptedFileSystemUtils.endsWithEncryptionSuffix(s)) {
-                    Path p = Paths.get(s);
+                Path p = Paths.get(s);
+                if (!EncryptedFileSystemUtils.endsWithEncryptionSuffix(p)) {
                     ignoredFolderDirectories.add(p);
                 }
             } catch (Exception e) {
