@@ -264,17 +264,23 @@ public class Folder extends PFComponent {
 
             // PFS-1994: Start: Encrypted storage.
             boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
-                    || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBaseDir.toString());
+                    || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBaseDir);
 
-            if (isEncrypted) {
+            if (isEncrypted && !fInfo.isMetaFolder()) {
                 try {
                     boolean createNewEncryptedContainer =
-                        EncryptedFileSystemUtils.verifyEncryptedVault(localBaseDir);
+                        EncryptedFileSystemUtils.isInitializationRequired(localBaseDir);
 
                     if (createNewEncryptedContainer) {
                         logSevere("Masterkey file or encrypted files missing/not complete for encrypted folder at " +
                             "storage location " + localBaseDir + ". Decryption not possible! " +
                             "Auto creating new encrypted container!");
+                        try {
+                            EncryptedFileSystemUtils.getCryptoPath(localBaseDir)
+                                .getFileSystem().close();
+                        } catch (FileSystemNotFoundException fsne) {
+                            // There was no crypto container -> ignore
+                        }
                     }
 
                     localBase = EncryptedFileSystemUtils.getEncryptedFileSystem(getController(), localBaseDir);
@@ -1085,7 +1091,7 @@ public class Folder extends PFComponent {
     private boolean autoScanRequired() {
         if (syncProfile.isManualSync()
                 || EncryptedFileSystemUtils.isCryptoInstance(localBase)
-                || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBase.toString())) {
+                || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBase)) {
             return false;
         }
         Date wasLastScan = lastScan;
