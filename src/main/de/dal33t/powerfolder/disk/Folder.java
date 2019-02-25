@@ -272,7 +272,7 @@ public class Folder extends PFComponent {
                         EncryptedFileSystemUtils.isInitializationRequired(localBaseDir);
 
                     if (createNewEncryptedContainer) {
-                        logSevere("Masterkey file or encrypted files missing/not complete for encrypted folder at " +
+                        logFine("Masterkey file or encrypted files missing/not complete for encrypted folder at " +
                             "storage location " + localBaseDir + ". Decryption not possible! " +
                             "Auto creating new encrypted container!");
                         try {
