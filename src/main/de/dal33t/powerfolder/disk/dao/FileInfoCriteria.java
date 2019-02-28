@@ -19,18 +19,14 @@
  */
 package de.dal33t.powerfolder.disk.dao;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+
+import java.util.*;
 
 /**
  * Object that holds criterias to select {@link FileInfo}s from a
@@ -39,12 +35,13 @@ import de.dal33t.powerfolder.util.StringUtils;
  * @author sprajc
  */
 public class FileInfoCriteria {
-    private List<String> domains = new LinkedList<String>();
+    private List<String> domains = new LinkedList<>();
     private String path;
     private boolean recursive;
     private Type type = Type.FILES_AND_DIRECTORIES;
-    private Set<String> keyWords = new HashSet<String>();
+    private Set<String> keyWords = new HashSet<>();
     private int maxResults = -1;
+    private boolean includeDeleted = false;
 
     /**
      * @return the domain(s) to search in.
@@ -201,6 +198,14 @@ public class FileInfoCriteria {
      */
     public void setRecursive(boolean recursive) {
         this.recursive = recursive;
+    }
+
+    public boolean includeDeleted() {
+        return includeDeleted;
+    }
+
+    public void setIncludeDeleted(boolean includeDeleted) {
+        this.includeDeleted = includeDeleted;
     }
 
     @Override

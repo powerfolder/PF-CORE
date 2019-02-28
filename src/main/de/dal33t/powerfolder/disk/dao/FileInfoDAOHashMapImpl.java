@@ -394,7 +394,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                     break;
                 }
-                if (!directoryInfo.isDeleted() && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
+                if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
                     if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, criteria.getKeyWords())) {
                         fileInfos.add(directoryInfo);
                     }
@@ -405,7 +405,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                         break;
                     }
-                    if (!fileInfo.isDeleted() && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
+                    if ((!fileInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
                         if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, criteria.getKeyWords())) {
                             fileInfos.add(fileInfo);
                         }
