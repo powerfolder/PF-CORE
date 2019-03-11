@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.protocol.ServerInfoProto;
 import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -80,9 +79,7 @@ public class ServerInfo implements Serializable, D2DObject {
             // Cluster server
             this.id = node.id;
         } else {
-            // Federated service:
-            Reject.ifBlank(webUrl, "webUrl is blank");
-            webUrl = Util.removeLastSlashFromURI(webUrl.toLowerCase());
+            // Federated service
             this.id = webUrl;
         }
         this.federationVersion = Controller.FEDERATION_VERSION;
