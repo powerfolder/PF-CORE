@@ -287,6 +287,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
                     }
 
                     client.getFolderService().createFolder(folderInfo, null);
+                    getController().getFolderRepository().triggerSynchronizeAllFolderMemberships();
 
                     // Set as default synced folder?
                     attribute = getWizardContext().getAttribute(
