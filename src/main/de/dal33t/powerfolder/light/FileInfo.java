@@ -996,7 +996,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (in.readBoolean()) {
             modifiedByAccount = AccountInfo.readExt(in);
             if (modifiedByAccount != null) {
-                modifiedByAccount.intern();
+                modifiedByAccount = modifiedByAccount.intern();
             }
         }
         // PFC-2571: End
