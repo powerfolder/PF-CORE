@@ -1,0 +1,12 @@
+stages:
+  - run-tests
+    
+run-tests:
+  stage: run-tests
+  script:
+    ant run-tests
+  artifacts:
+    reports:
+      junit: test-reports/raw/TEST-*.xml
+    paths:
+      - test-reports/html/*.html
