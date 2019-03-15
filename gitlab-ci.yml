@@ -1,6 +1,6 @@
 stages:
   - run-tests
-    
+
 run-tests:
   stage: run-tests
   script:
