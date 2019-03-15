@@ -998,8 +998,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             if (modifiedByAccount != null) {
                 modifiedByAccount = modifiedByAccount.intern();
             }
-        } else {
-            modifiedByAccount = null;
         }
         // PFC-2571: End
     }
