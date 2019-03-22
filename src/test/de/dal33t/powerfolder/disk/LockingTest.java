@@ -363,7 +363,7 @@ public class LockingTest extends TwoControllerTestCase {
     }
 
     public void testLockUnlockMultiple() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 25; i++) {
             lockingListenerBart.locked.clear();
             lockingListenerBart.unlocked.clear();
             lockingListenerBart.forbidden.clear();
