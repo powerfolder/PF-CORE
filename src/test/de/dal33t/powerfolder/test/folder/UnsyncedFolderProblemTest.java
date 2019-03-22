@@ -20,11 +20,11 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
     }
 
     public void testSyncOK() {
-        getFolderAtLisa().setSyncWarnSeconds(5);
+        getFolderAtLisa().setSyncWarnSeconds(2);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitMilliSeconds(6000);
+        TestHelper.waitMilliSeconds(2100);
         getFolderAtLisa().checkSync();
         assertEquals(0, getFolderAtLisa().getProblems().size());
         assertNotNull(getFolderAtBart().getLastSyncDate());
@@ -32,7 +32,7 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
     }
 
     public void testSyncFAIL() {
-        getFolderAtLisa().setSyncWarnSeconds(5);
+        getFolderAtLisa().setSyncWarnSeconds(2);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(10, new Condition() {
@@ -45,7 +45,7 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitMilliSeconds(6000);
+        TestHelper.waitMilliSeconds(2100);
         getFolderAtLisa().checkSync();
         assertEquals(1, getFolderAtLisa().getProblems().size());
     }
