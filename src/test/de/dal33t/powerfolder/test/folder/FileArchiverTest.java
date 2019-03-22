@@ -194,7 +194,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
     }
 
     public void testUnlimitedFileArchive() throws IOException {
-        int nVersion = 21;
+        int nVersion = 6;
         getFolderAtBart().setArchiveVersions(-1);
 
         Path f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
