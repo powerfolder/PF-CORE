@@ -786,8 +786,12 @@ public class Controller extends PFComponent {
 
     private void enableFileBrowserIntegration() {
         // PFC-2395: Start
-        fbIntegration = new FileBrowserIntegration(getController());
-        fbIntegration.start();
+        try {
+            fbIntegration = new FileBrowserIntegration(getController());
+            fbIntegration.start();
+        } catch (Throwable t) {
+            logWarning("Unable to start filebrowser integration: " + t, t);
+        }
         // PFC-2395: End
     }
 
