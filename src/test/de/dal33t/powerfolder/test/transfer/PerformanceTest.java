@@ -31,7 +31,7 @@ public class PerformanceTest extends TwoControllerTestCase {
 
     public void testManyFilelistDeltas() throws ConnectionException {
         FolderInfo foInfo = getFolderAtBart().getInfo();
-        for (int i = 0; i < 500000; i++) {
+        for (int i = 0; i < 100000; i++) {
             List<FileInfo> files = new ArrayList<FileInfo>();
             for (int j = 0; j < 1; j++) {
                 FileInfo fInfo = createTestFileInfo(foInfo, j);
