@@ -97,6 +97,8 @@ public enum Feature {
 
     SYSTRAY_ALL_FOLDERS(false),
 
+    FILEBROWSER_INTEGRATION(true),
+
     UI_ENABLED(true),
 
     /**
