@@ -156,7 +156,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         assertAllInSync(1, 12);
     }
 
-    public void testMultipleFilesMultiple() throws Exception {
+    public void xtestMultipleFilesMultiple() throws Exception {
         for (int i = 0; i < 5; i++) {
             testMultipleFiles();
             tearDown();
