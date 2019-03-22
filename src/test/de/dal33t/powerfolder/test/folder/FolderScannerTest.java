@@ -40,7 +40,7 @@ public class FolderScannerTest extends ControllerTestCase {
         setupTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
     }
 
-    public void testScanFilesMultiple() throws Exception {
+    public void xtestScanFilesMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
             testScanFiles();
             tearDown();
@@ -97,7 +97,7 @@ public class FolderScannerTest extends ControllerTestCase {
             countDeleted(getFolder().getKnownFiles()));
 
         // change a file
-        TestHelper.waitMilliSeconds(3000);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(file2);
         result = scanFolderWaitIfBusy(folderScanner);
         assertEquals(ScanResult.ResultState.SCANNED, result.getResultState());
@@ -132,7 +132,7 @@ public class FolderScannerTest extends ControllerTestCase {
             .getFolderRepository().getFolderScanner();
         
         long totalSize = 0;
-        final int nFiles = 10000;
+        final int nFiles = 2000;
         for (int i = 0; i < nFiles; i++) {
             Path f = TestHelper.createRandomFile(getFolder()
                 .getLocalBase(), (long) (Math.random() * 40) + 1);
