@@ -52,7 +52,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.SystemUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
-import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.update.UpdateSetting;
 import org.apache.commons.cli.CommandLine;
 import org.quartz.*;
