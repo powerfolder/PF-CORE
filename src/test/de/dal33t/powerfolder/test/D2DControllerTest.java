@@ -85,7 +85,7 @@ public class D2DControllerTest extends TwoControllerTestCase
         } catch (Exception ignored) {
         }
 
-        Thread.sleep(5000);
+        // Thread.sleep(5000);
 
         //disconnectBartAndLisa();
     }
