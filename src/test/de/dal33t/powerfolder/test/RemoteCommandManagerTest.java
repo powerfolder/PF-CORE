@@ -57,6 +57,8 @@ public class RemoteCommandManagerTest extends TwoControllerTestCase {
                 return getFolderAtLisa().getMembersCount() == 1;
             }
         });
+        assertTrue("PowerFolder already running on port 3458",
+                RemoteCommandManager.hasRunningInstance(3458));
     }
 
     public void testJoinExistingFolder() {
