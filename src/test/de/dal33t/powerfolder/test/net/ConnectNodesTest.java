@@ -46,7 +46,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 public class ConnectNodesTest extends FiveControllerTestCase {
 
     public void testConnectedNodes() {
-        int nTries = OSUtil.isWindowsSystem() ? 50 : 1;
+        int nTries = 10;
         for (int i = 0; i < nTries; i++) {
             boolean connectOk = tryToConnectSimpsons();
 
@@ -160,7 +160,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
 
         // No RECONNECT should happen!
         // Both are not friends so no connect!
-        TestHelper.waitMilliSeconds(10000);
+        TestHelper.waitMilliSeconds(5000);
         assertFalse("Lisa still connected at Homer", lisaAtHomer
             .isCompletelyConnected());
         assertFalse("Homer still connected at Lisa", homerAtLisa
@@ -221,7 +221,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         });
     }
 
-    public void testFolderConnectInternetMultiple() throws Exception {
+    public void xtestFolderConnectInternetMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
             testFolderConnectInternet();
             tearDown();
