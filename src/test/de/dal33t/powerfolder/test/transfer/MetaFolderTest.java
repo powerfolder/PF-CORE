@@ -193,7 +193,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
         Folder bartMetaFolder = contollerBart.getFolderRepository()
             .getMetaFolderForParent(bartFolder.getInfo());
         // Wait for Bart's sync patterns to persist.
-        TestHelper.waitMilliSeconds(31000);
+        TestHelper.waitMilliSeconds(1000);
         scanFolder(bartMetaFolder);
         TestHelper.waitMilliSeconds(1000);
 
