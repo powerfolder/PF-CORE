@@ -138,7 +138,7 @@ public class ControllerTest extends ControllerTestCase {
         throws InterruptedException, ExecutionException
     {
         ConfigurationEntry.FOLDER_WATCHER_ENABLED.setValue(getController(), false);
-        int nFolders = 2000;
+        int nFolders = 500;
         final AtomicInteger maxThreads = new AtomicInteger(0);
         getController().scheduleAndRepeat(() -> { 
             int tCount = ((ScheduledThreadPoolExecutor) getController()
@@ -161,7 +161,7 @@ public class ControllerTest extends ControllerTestCase {
             }
         }
         
-        TestHelper.waitMilliSeconds(5000);
+        TestHelper.waitMilliSeconds(1000);
         System.out.println("Setup completed with " + nFolders + " folders");
 
         for (Folder folder : getController().getFolderRepository()
@@ -169,20 +169,20 @@ public class ControllerTest extends ControllerTestCase {
         {
             folder.getStatistic().scheduleCalculate();
         }
-        TestHelper.waitMilliSeconds(5000);
+        TestHelper.waitMilliSeconds(1000);
         for (Folder folder : getController().getFolderRepository()
             .getFolders(true))
         {
             folder.getStatistic().scheduleCalculate();
         }
-        TestHelper.waitMilliSeconds(5000);
+        TestHelper.waitMilliSeconds(1000);
         for (Folder folder : getController().getFolderRepository()
             .getFolders(true))
         {
             folder.getStatistic().scheduleCalculate();
         }
         
-        TestHelper.waitMilliSeconds(5000);
+        TestHelper.waitMilliSeconds(1000);
         assertTrue("Saw a too big peak in threads in pool: " + maxThreads.get(),
             maxThreads
                 .get() < WrappedScheduledThreadPoolExecutor.WARN_NUMBER_WORKERS);
