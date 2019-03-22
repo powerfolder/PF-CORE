@@ -211,9 +211,9 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         disconnectBartAndLisa();
 
-        TestHelper.waitMilliSeconds(3500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtBart);
-        TestHelper.waitMilliSeconds(3500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtLisa);
 
         scanFolder(getFolderAtBart());
@@ -312,13 +312,13 @@ public class FileUpdateTest extends TwoControllerTestCase {
         disconnectBartAndLisa();
         getFolderAtBart().removeProblem(cp);
 
-        TestHelper.waitMilliSeconds(3500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
-        TestHelper.waitMilliSeconds(3500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
-        TestHelper.waitMilliSeconds(3500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtBart);
         scanFolder(getFolderAtBart());
         fInfoAtBart = fInfoAtBart
@@ -327,7 +327,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             "Expected version at bart 4. Got: " + fInfoAtBart.toDetailString(),
             4, fInfoAtBart.getVersion());
 
-        TestHelper.waitMilliSeconds(3500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtLisa);
         scanFolder(getFolderAtLisa());
         fInfoAtLisa = fInfoAtLisa
@@ -391,7 +391,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        final Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 5000000);
+        final Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 50000000);
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
             @Override
@@ -403,13 +403,13 @@ public class FileUpdateTest extends TwoControllerTestCase {
                 return getFolderAtLisa().getKnownFiles().size() > 0;
             }
         });
-        for (int i = 0; i < 40; i++) {
+        for (int i = 0; i < 10; i++) {
             TestHelper.changeFile(fileAtBart,
                 5000000 + (long) (Math.random() * 10000));
-            TestHelper.waitMilliSeconds(400);
+            TestHelper.waitMilliSeconds(100);
             scanFolder(getFolderAtBart());
         }
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public String message() {
                 Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
@@ -454,11 +454,11 @@ public class FileUpdateTest extends TwoControllerTestCase {
             getFolderAtBart().getLocalBase(), "Test.txt", new byte[0]);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileBart);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileBart);
         scanFolder(getFolderAtBart());
 
@@ -467,12 +467,12 @@ public class FileUpdateTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtBart().getKnownItemCount());
 
         // 2) Create v=1 testfile at lisa (different name case)
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(2100);
         Path fileLisa = TestHelper.createTestFile(
             getFolderAtLisa().getLocalBase(), "test.txt", new byte[0]);
         scanFolder(getFolderAtLisa());
 
-        TestHelper.waitMilliSeconds(2500);
+        TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileLisa, Files.size(fileBart));
         Files.setLastModifiedTime(fileLisa,
             Files.getLastModifiedTime(fileBart));
@@ -484,7 +484,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         // 3) Connect Lisa and Bart and sync
         connectBartAndLisa();
-        TestHelper.waitMilliSeconds(5000);
+        TestHelper.waitMilliSeconds(1000);
 
         assertEquals("Bart has too many files", 1,
             getFolderAtBart().getKnownItemCount());

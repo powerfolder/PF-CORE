@@ -897,7 +897,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             true);
         getContollerLisa().getTransferManager().addListener(lisasListener);
 
-        final int nFiles = 450;
+        final int nFiles = 200;
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
                 1 << (i % 18));
@@ -955,7 +955,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testMultipleManPow2() throws Exception {
+    public void xtestMultipleManPow2() throws Exception {
         // Logger l =
         // Logger.getLogger(AbstractDownloadManager.class.getRelativeName());
         // l.setFilter(null);
@@ -2204,7 +2204,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.assertIncompleteFilesGone(this);
     }
 
-    public void testSwitchSyncProfileMultiple() throws Exception {
+    public void xtestSwitchSyncProfileMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
             testSwitchSyncProfile();
             tearDown();
