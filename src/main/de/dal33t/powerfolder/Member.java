@@ -2094,7 +2094,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (fullList) {
             return allFolders;
         } else if (remoteFolderList == null || peer == null) {
-            return new LinkedList<FolderInfo>();
+            return allFolders;
         } else if (getMySelf().isServer()) {
             Collection<FolderInfo> folders2node = new LinkedList<FolderInfo>();
             if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
@@ -2118,7 +2118,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             return folders2node;
         } else {
-            return new LinkedList<FolderInfo>();
+            return allFolders;
         }
     }
 
