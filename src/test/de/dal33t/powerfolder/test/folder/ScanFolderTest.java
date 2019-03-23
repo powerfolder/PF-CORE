@@ -525,7 +525,7 @@ public class ScanFolderTest extends ControllerTestCase {
      * TOT Notes: This test takes @ 11000 files aprox. 40-107 (86) seconds.
      */
     public void testScanExtremlyManyFiles() throws IOException {
-        final int nFiles = 44000;
+        final int nFiles = 11000;
         List<Path> files = new ArrayList<Path>();
         for (int i = 0; i < nFiles; i++) {
             if (i % 1000 == 0) {
