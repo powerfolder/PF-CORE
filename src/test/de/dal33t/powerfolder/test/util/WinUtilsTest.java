@@ -38,13 +38,12 @@ public class WinUtilsTest extends TestCase {
             return;
         }
         WinUtils wu = WinUtils.getInstance();
-        assertNotNull(
-            "Could not get instance. Is desktoputils.dll in the classpath?", wu);
-        assertNotNull(wu.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));
-        assertNotNull(wu.getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false));
-        assertNotNull(WinUtils.getAppDataAllUsers());
-        assertNotNull(WinUtils.getAppDataCurrentUser());
-        assertNotNull(WinUtils.getProgramInstallationPath());
+        assertNotNull("Could not get instance. Is desktoputils.dll in the classpath?", wu);
+        assertNotNull("CSIDL_STARTUP", wu.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));
+        assertNotNull("CSIDL_PERSONAL", wu.getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false));
+        assertNotNull("AppDataAllUsers", WinUtils.getAppDataAllUsers());
+        assertNotNull("AppDataCurrentUser", WinUtils.getAppDataCurrentUser());
+        assertNotNull("ProgramInstallationPath", WinUtils.getProgramInstallationPath());
     }
 
     public void testLinkCreation() throws IOException {
