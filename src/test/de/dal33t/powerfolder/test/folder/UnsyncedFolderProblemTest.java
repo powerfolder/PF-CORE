@@ -27,6 +27,17 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(2100);
         getFolderAtLisa().checkSync();
         assertEquals(0, getFolderAtLisa().getProblems().size());
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolderAtBart().getLastSyncDate() != null;
+            }
+        });
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return getFolderAtLisa().getLastSyncDate() != null;
+            }
+        });
         assertNotNull(getFolderAtBart().getLastSyncDate());
         assertNotNull(getFolderAtLisa().getLastSyncDate());
     }
