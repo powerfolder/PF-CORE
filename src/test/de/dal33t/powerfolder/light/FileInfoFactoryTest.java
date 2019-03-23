@@ -35,12 +35,8 @@ public class FileInfoFactoryTest extends TestCase {
         returned = FileInfoFactory.decodeIllegalChars(encoded);
         assertEquals(testString, returned);
 
-        String decoded = FileInfoFactory.decodeIllegalChars(testString);
-        returned = FileInfoFactory.encodeIllegalChars(decoded);
-        assertEquals(testString, returned);
-
         testString = "$%$";
-        decoded = FileInfoFactory.decodeIllegalChars(testString);
+        String decoded = FileInfoFactory.decodeIllegalChars(testString);
         System.out.println(decoded);
         returned = FileInfoFactory.encodeIllegalChars(decoded);
         assertEquals(testString, returned);
