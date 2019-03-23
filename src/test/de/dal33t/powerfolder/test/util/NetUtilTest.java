@@ -174,54 +174,54 @@ public class NetUtilTest extends TestCase {
         InetSocketAddress addr = new InetSocketAddress("127.0.0.1", 1337);
         assertFalse(addr.isUnresolved());
 
-        addr = new InetSocketAddress("78.47.119.121", 1337);
-        assertEquals("/78.47.119.121", addr.getAddress().toString());
-        assertEquals("78.47.119.121",
+        addr = new InetSocketAddress("88.198.87.241", 1337);
+        assertEquals("/88.198.87.241", addr.getAddress().toString());
+        assertEquals("88.198.87.241",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
         assertEquals("os005.powerfolder.com", addr.getAddress().getHostName());
-        assertEquals("os005.powerfolder.com/78.47.119.121", addr.getAddress()
+        assertEquals("os005.powerfolder.com/88.198.87.241", addr.getAddress()
             .toString());
         assertEquals("os005.powerfolder.com",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         assertFalse(addr.isUnresolved());
         assertEquals("os005.powerfolder.com", addr.getHostName());
         assertEquals("os005.powerfolder.com", addr.getAddress().getHostName());
-        assertEquals("78.47.119.121", addr.getAddress().getHostAddress());
+        assertEquals("88.198.87.241", addr.getAddress().getHostAddress());
         assertEquals("os005.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
-        addr = new InetSocketAddress("178.63.192.154", 1337);
-        assertEquals("/178.63.192.154", addr.getAddress().toString());
-        assertEquals("178.63.192.154",
+        addr = new InetSocketAddress("88.198.84.130", 1337);
+        assertEquals("/88.198.84.130", addr.getAddress().toString());
+        assertEquals("88.198.84.130",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
         assertEquals("os004.powerfolder.com", addr.getAddress().getHostName());
-        assertEquals("os004.powerfolder.com/178.63.192.154", addr.getAddress()
+        assertEquals("os004.powerfolder.com/88.198.84.130", addr.getAddress()
             .toString());
         assertEquals("os004.powerfolder.com",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         assertFalse(addr.isUnresolved());
         assertEquals("os004.powerfolder.com", addr.getHostName());
         assertEquals("os004.powerfolder.com", addr.getAddress().getHostName());
-        assertEquals("178.63.192.154", addr.getAddress().getHostAddress());
+        assertEquals("88.198.84.130", addr.getAddress().getHostAddress());
         assertEquals("os004.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
-        addr = new InetSocketAddress("178.63.192.153", 1337);
-        assertEquals("/178.63.192.153", addr.getAddress().toString());
-        assertEquals("178.63.192.153",
+        addr = new InetSocketAddress("88.198.84.129", 1337);
+        assertEquals("/88.198.84.129", addr.getAddress().toString());
+        assertEquals("88.198.84.129",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
         assertEquals("os003.powerfolder.com", addr.getAddress().getHostName());
-        assertEquals("os003.powerfolder.com/178.63.192.153", addr.getAddress()
+        assertEquals("os003.powerfolder.com/88.198.84.129", addr.getAddress()
             .toString());
         assertEquals("os003.powerfolder.com",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         assertFalse(addr.isUnresolved());
         assertEquals("os003.powerfolder.com", addr.getHostName());
         assertEquals("os003.powerfolder.com", addr.getAddress().getHostName());
-        assertEquals("178.63.192.153", addr.getAddress().getHostAddress());
+        assertEquals("88.198.84.129", addr.getAddress().getHostAddress());
         assertEquals("os003.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
