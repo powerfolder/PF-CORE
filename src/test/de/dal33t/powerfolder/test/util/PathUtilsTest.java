@@ -480,7 +480,7 @@ public class PathUtilsTest extends TestCase {
         assertEquals(souceSum, targetSum);
         // Should be OK!
 
-        int nFiles = 1000;
+        int nFiles = 250;
         Set<Path> testFiles = new HashSet<Path>();
         // Create a initial folder structure
         Path currentSubDir = source;
