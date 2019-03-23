@@ -1462,25 +1462,15 @@ public class Folder extends PFComponent {
                         return fInfo;
                     }
 
-                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this,
-                        file);
+                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this, file);
                     if (syncFile != null) {
-
-                        if (syncFile.isDeleted()
-                            && !currentInfo.isMetaFolder())
-                        {
-                            return null;
-                        }
-
                         store(getMySelf(), syncFile);
                         if (isFiner()) {
-                            logFiner("Scan file changed: "
-                                + syncFile.toDetailString());
+                            logFiner("Scan file changed: " + syncFile.toDetailString());
                         }
                     } else {
                         if (isFiner()) {
-                            logFiner("Scan file unchanged: "
-                                + localFile.toDetailString());
+                            logFiner("Scan file unchanged: " + localFile.toDetailString());
                         }
                     }
                     return syncFile;
