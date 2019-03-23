@@ -68,11 +68,10 @@ public class WinUtilsTest extends TestCase {
 
     public void testGetAllUserAppData() {
         String appData = WinUtils.getAppDataAllUsers();
-        if (OSUtil.isWindows7System() || OSUtil.isWindowsVistaSystem()) {
-            assertEquals("C:\\ProgramData", appData);
-        } else if (OSUtil.isWindowsSystem()) {
+        if (OSUtil.isWindowsXPSystem() || OSUtil.isWindowsMEorOlder()) {
             assertEquals("C:\\Dokumente und Einstellungen\\All Users", appData);
+        } else if (OSUtil.isWindowsSystem()) {
+            assertEquals("C:\\ProgramData", appData);
         }
-        System.out.println(appData);
     }
 }
