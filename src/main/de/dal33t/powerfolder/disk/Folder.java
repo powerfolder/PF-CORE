@@ -4235,7 +4235,10 @@ public class Folder extends PFComponent {
                     success = true;
                 } catch (IOException ioe) {
                     // PFC-2706: Improved handling of exception.
-                    if (isFine()) {
+                    if (ioe instanceof DirectoryNotEmptyException) {
+                        logWarning("Directory not empty while deleting dir " + file
+                                + ". " + ioe);
+                    } else if (isFine()) {
                         logFine("IOException while deleting file " + file
                             + ". " + ioe);
                     }
