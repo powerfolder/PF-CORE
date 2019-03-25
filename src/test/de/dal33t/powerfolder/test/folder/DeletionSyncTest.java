@@ -65,7 +65,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.HOST_FILES);
     }
 
-    public void testDeleteAndRestoreMultiple() throws Exception {
+    public void xtestDeleteAndRestoreMultiple() throws Exception {
         for (int i = 0; i < 20; i++) {
             testDeleteAndRestore();
             tearDown();
