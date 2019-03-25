@@ -59,7 +59,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
     }
 
     public void testRandomSyncOperations() {
+        getContollerBart().setPaused(true);
         performRandomOperations(100, 70, 0, getFolderAtBart().getLocalBase());
+        getContollerBart().setPaused(false);
         scanFolder(getFolderAtBart());
 
         waitForCompletedDownloads(100, 0, 100, 100, 100);
@@ -218,27 +220,33 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         getFolderAtHomer().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMarge().setSyncProfile(SyncProfile.NO_SYNC);
         getFolderAtMaggie().setSyncProfile(SyncProfile.NO_SYNC);
+        getContollerBart().setPaused(true);
+        getContollerLisa().setPaused(true);
 
         MyTransferManagerListener bartListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartListener);
         Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), "subdirectory/sourcedir/Testfile.txt");
+        assertTrue(Files.exists(fileAtBart));
         scanFolder(getFolderAtBart());
         Path fileAtLisa = getFolderAtLisa().getLocalBase().resolve(
             "subdirectory/Sourcedir/Testfile.txt");
+        assertTrue(Files.exists(fileAtBart));
+        Files.createDirectories(fileAtLisa.getParent());
         Files.copy(fileAtBart, fileAtLisa);
         Files.setLastModifiedTime(fileAtLisa, Files.getLastModifiedTime(fileAtBart));
         scanFolder(getFolderAtLisa());
+
+        getContollerBart().setPaused(false);
+        getContollerLisa().setPaused(false);
         connectSimpsons();
 
-        getContollerBart().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting();
-        getContollerLisa().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting();
-        TestHelper.waitMilliSeconds(500);
+        getContollerBart().getFolderRepository().getFileRequestor().triggerFileRequesting();
+        getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
+        TestHelper.waitMilliSeconds(2000);
 
-        assertEquals("" + getFolderAtBart().getIncomingFiles(), 0,
-            getFolderAtBart().getIncomingFiles().size());
+        assertEquals(getFolderAtBart().getIncomingFiles().toString(),
+                0, getFolderAtBart().getIncomingFiles().size());
         assertEquals(0, getFolderAtLisa().getIncomingFiles().size());
         assertEquals(0, bartListener.uploadRequested);
         assertEquals(0, bartListener.uploadStarted);
@@ -253,10 +261,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertEquals(0, bartListener.downloadBroken);
         assertEquals(0, bartListener.downloadsCompletedRemoved);
 
-        assertEquals(0, getContollerBart().getTransferManager()
-            .getCompletedDownloadsCollection().size());
-        assertEquals(0, getContollerLisa().getTransferManager()
-            .getCompletedDownloadsCollection().size());
+        assertEquals(0, getContollerBart().getTransferManager().getCompletedDownloadsCollection().size());
+        assertEquals(0, getContollerLisa().getTransferManager().getCompletedDownloadsCollection().size());
 
         assertEquals(3, getFolderAtBart().getKnownItemCount());
         assertEquals(3, getFolderAtLisa().getKnownItemCount());
@@ -457,6 +463,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         }
 
         public synchronized void downloadRequested(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             downloadRequested++;
             if (downloadsRequested.contains(event.getFile())) {
                 if (failOnSecondRequest) {
@@ -471,25 +480,40 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         }
 
         public synchronized void downloadQueued(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             downloadQueued++;
             lastEvent = event;
         }
 
         public synchronized void downloadStarted(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             downloadStarted++;
             lastEvent = event;
         }
 
         public synchronized void downloadAborted(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             downloadAborted++;
         }
 
         public synchronized void downloadBroken(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             downloadBroken++;
             lastEvent = event;
         }
 
         public synchronized void downloadCompleted(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             downloadCompleted++;
             lastEvent = event;
         }
@@ -497,6 +521,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         public synchronized void completedDownloadRemoved(
             TransferManagerEvent event)
         {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             downloadsCompletedRemoved++;
             lastEvent = event;
         }
@@ -504,11 +531,17 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         public synchronized void pendingDownloadEnqueued(
                 TransferManagerEvent event)
         {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             pendingDownloadEnqued++;
             lastEvent = event;
         }
 
         public synchronized void uploadRequested(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             uploadRequested++;
             lastEvent = event;
 
@@ -520,21 +553,33 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         }
 
         public synchronized void uploadStarted(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             uploadStarted++;
             lastEvent = event;
         }
 
         public synchronized void uploadAborted(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             uploadAborted++;
             lastEvent = event;
         }
 
         public synchronized void uploadBroken(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             uploadAborted++;
             lastEvent = event;
         }
 
         public synchronized void uploadCompleted(TransferManagerEvent event) {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             uploadCompleted++;
             lastEvent = event;
         }
@@ -546,6 +591,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         public synchronized void completedUploadRemoved(
             TransferManagerEvent event)
         {
+            if (event.getFile().getFolderInfo().isMetaFolder()) {
+                return;
+            }
             uploadsCompletedRemoved++;
             lastEvent = event;
         }
