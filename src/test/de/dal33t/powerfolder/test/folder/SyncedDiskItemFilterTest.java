@@ -15,10 +15,11 @@ public class SyncedDiskItemFilterTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().addDefaultExcludes();
         getFolderAtLisa().addDefaultExcludes();
-        assertEquals(DefaultExcludes.values().length, getFolderAtBart()
-            .getDiskItemFilter().getPatterns().size());
-        assertEquals(DefaultExcludes.values().length, getFolderAtLisa()
-            .getDiskItemFilter().getPatterns().size());
+
+        assertEquals(getFolderAtBart().getDiskItemFilter().getPatterns().toString(),
+                DefaultExcludes.values().length, getFolderAtBart().getDiskItemFilter().getPatterns().size());
+        assertEquals(getFolderAtLisa().getDiskItemFilter().getPatterns().toString(),
+                DefaultExcludes.values().length, getFolderAtLisa().getDiskItemFilter().getPatterns().size());
     }
 
     public void testSyncExcludes() {
@@ -36,5 +37,4 @@ public class SyncedDiskItemFilterTest extends TwoControllerTestCase {
             }
         });
     }
-
 }

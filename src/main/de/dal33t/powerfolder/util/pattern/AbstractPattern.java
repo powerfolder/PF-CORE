@@ -58,11 +58,11 @@ public abstract class AbstractPattern implements Pattern {
             return false;
         }
 
-        return patternText.equals(((AbstractPattern) obj).patternText);
+        return getPatternText().equals(((AbstractPattern) obj).getPatternText());
     }
 
     public final int hashCode() {
-        return patternText.hashCode();
+        return getPatternText().hashCode();
     }
 
     // Internal helper ********************************************************

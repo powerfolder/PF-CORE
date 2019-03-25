@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -26,11 +27,28 @@ import de.dal33t.powerfolder.light.FolderInfo;
 
 public class DiskItemFilterTest extends TestCase {
 
+    public void testOfficePatterns() {
+        DiskItemFilter filter = new DiskItemFilter();
+        int i = 0;
+
+        filter.addPattern(DefaultExcludes.OFFICEX_TEMP.getPattern());
+        i++;
+        assertEquals(i, filter.getPatterns().size());
+
+        filter.addPattern(DefaultExcludes.LIBRE_TEMP.getPattern());
+        i++;
+        assertEquals(i, filter.getPatterns().size());
+
+        filter.addPattern(DefaultExcludes.OFFICE_TEMP.getPattern());
+        i++;
+        assertEquals(i, filter.getPatterns().size());
+    }
+
     public void testPFC2794() {
         DiskItemFilter blacklist = new DiskItemFilter();
         blacklist.addPattern("*.part");
-       assertTrue(blacklist.isExcluded("subdir/download.part"));
-       assertFalse(blacklist.isExcluded("subdir2/eng.CATpart"));
+        assertTrue(blacklist.isExcluded("subdir/download.part"));
+        assertFalse(blacklist.isExcluded("subdir2/eng.CATpart"));
     }
     
     public void testBlackList() {
