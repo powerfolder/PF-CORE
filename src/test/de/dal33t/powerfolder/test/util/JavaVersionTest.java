@@ -57,13 +57,11 @@ public class JavaVersionTest extends TestCase {
      * Test that parse works, and can handle bad text.
      */
     public void testParse() {
-        assertEquals("Parse five", JavaVersion.parse("1.6.0_10-b12").toString(),
-                "1.6.0_10-b12");
-        assertEquals("Parse four", JavaVersion.parse("1.6.2_9").toString(),
-                "1.6.2_9");
-        assertEquals("Parse three", JavaVersion.parse("1.6.6").toString(),
-                "1.6.6");
-        assertEquals("Parse two", JavaVersion.parse("2.6").toString(), "2.6.0");
+
+        assertEquals("Parse two", "2.6.0",JavaVersion.parse("2.6").toString());
+        assertEquals("Parse three",  "1.6.2",JavaVersion.parse("1.6.2").toString());
+        assertEquals("Parse four", "1.6.2_9", JavaVersion.parse("1.6.2_9").toString());
+        assertEquals("Parse five",  "1.6.0_10-b12", JavaVersion.parse("1.6.0_10-b12").toString());
 
         // Swap '_' and '-'
         boolean threwError = false;
