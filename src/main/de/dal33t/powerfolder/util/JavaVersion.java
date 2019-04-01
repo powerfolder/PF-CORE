@@ -201,16 +201,16 @@ public class JavaVersion implements Comparable<JavaVersion> {
                             return build - o.build;
                         }
                     } else {
-                        return update - o.update;
+                        return 100 * update - 100 * o.update;
                     }
                 } else {
-                    return revision - o.revision;
+                    return 10000 * revision - 10000 * o.revision;
                 }
             } else {
-                return minor - o.minor;
+                return 1000000 * minor - 1000000 * o.minor;
             }
         } else {
-            return major - o.major;
+            return 100000000 * major - 100000000 * o.major;
         }
     }
 
@@ -300,7 +300,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
                 "Could not parse system version of Java: " + version);
         }
 
-        Pattern p = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)[_\\+]?(\\d+)[\\-b(\\d+)]?");
+        Pattern p = Pattern.compile("(\\d+)\\.(\\d+)(\\.(\\d+))?(_(\\d+))?(-b(\\d+))?"); // [_\+]?(\d+)[\-b(\d+)]?
         Matcher m = p.matcher(version);
         String build = "0", update = "0", revision = "0", minor = "0", major = "0";
 
@@ -308,18 +308,24 @@ public class JavaVersion implements Comparable<JavaVersion> {
             int count = m.groupCount();
 
             switch (count) {
-                case 5:
-                    build = m.group(5);
+                case 8:
+                    build = m.group(8);
+                case 6:
+                    update = m.group(6);
                 case 4:
-                    update = m.group(4);
-                case 3:
-                    revision = m.group(3);
+                    revision = m.group(4);
                 case 2:
                     minor = m.group(2);
                 case 1:
                     major = m.group(1);
             }
         }
+
+        major = major == null ? "0" : major;
+        minor = minor == null ? "0" : minor;
+        revision = revision == null ? "0" : revision;
+        update = update == null ? "0" : update;
+        build = build == null ? "0" : build;
 
         return new JavaVersion(Integer.parseInt(major), Integer
             .parseInt(minor), Integer.parseInt(revision), Integer
