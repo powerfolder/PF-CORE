@@ -4176,6 +4176,21 @@ public class Folder extends PFComponent {
                     return deleteFileRecursive(storedInfo, path);
                 }
             }
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(file, path -> Files.isRegularFile(path))) {
+                for (Path path : stream) {
+                    FileInfo lookupInstance = FileInfoFactory.lookupInstance(this, path);
+                    FileInfo storedInfo = getFile(lookupInstance);
+                    if (storedInfo == null) {
+                        logInfo("Deleting unknown file: " + lookupInstance);
+                        // Scan new files.
+                        storedInfo = FileInfoFactory.newFile(this, path, null, getMySelf().getInfo(), getController().getOSClient().getAccountInfo(), null, Files.isDirectory(path), null);
+                        getDAO().store(null, storedInfo);
+                    } else {
+                        logInfo("  known file found: " + lookupInstance);
+                    }
+                    deleteFile(storedInfo, path);
+                }
+            }
         }
         return deleteFile(newFileInfo, file);
     }

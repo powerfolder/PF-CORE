@@ -745,11 +745,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // 3) Re-create. Also put unscanned content into it.
         TestHelper.createRandomFile(subdirLisa);
         scanFolder(getFolderAtLisa());
-        TestHelper.createRandomFile(subdirLisa);
+        Path unknownFile = TestHelper.createRandomFile(subdirLisa);
         
         // 4) Delete by method:
         FileInfo subdirInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), subdirLisa);
         getFolderAtLisa().removeFilesLocal(subdirInfo);
+
+        FileInfo unknownFileInfo = FileInfoFactory.lookupInstance(getFolderAtLisa(), unknownFile);
+        assertTrue(getFolderAtLisa().getFileArchiver().hasArchivedFileInfo(unknownFileInfo));
 
         assertTrue("Subdirectory not deleted at lisa: " + subdirLisa,
             Files.notExists(subdirLisa));
