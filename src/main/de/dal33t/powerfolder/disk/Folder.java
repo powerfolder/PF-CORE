@@ -4183,7 +4183,9 @@ public class Folder extends PFComponent {
                     if (storedInfo == null) {
                         logInfo("Deleting unknown file: " + lookupInstance);
                         // Scan new files.
-                        storedInfo = FileInfoFactory.newFile(this, path, null, getMySelf().getInfo(), getController().getOSClient().getAccountInfo(), null, Files.isDirectory(path), null);
+                        storedInfo = FileInfoFactory.newFile(this, path, null, getMySelf().getInfo(),
+                                getController().getMySelf().getAccountInfo(), null, Files.isDirectory(path),
+                                null);
                         getDAO().store(null, storedInfo);
                     } else {
                         logInfo("  known file found: " + lookupInstance);
