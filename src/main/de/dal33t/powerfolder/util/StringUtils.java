@@ -340,4 +340,23 @@ public class StringUtils {
         List<String> seperated = Arrays.asList(string.replaceAll("\\r", "").split("\\n"));
         return seperated;
     }
+
+    /**
+     * Get extension from a given filename.
+     *
+     * @param name The filename.
+     * @return The extension.
+     */
+
+    public static String getExtensionFromFilename(String name) {
+
+        String ext = null;
+        int idx = name.lastIndexOf(".");
+
+        if (-1 != idx) {
+            ext = name.substring(idx + 1);
+        }
+
+        return ext;
+    }
 }
