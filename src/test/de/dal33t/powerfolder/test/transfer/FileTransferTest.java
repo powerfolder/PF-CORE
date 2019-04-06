@@ -22,10 +22,8 @@ package de.dal33t.powerfolder.test.transfer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -245,7 +243,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         Path testFileBart = getFolderAtBart().getLocalBase().resolve(
             "TestFile.txt");
         OutputStream fOut = Files.newOutputStream(testFileBart);
-        byte[] testContent = "This is the contenent of the testfile".getBytes();
+        byte[] testContent = "This is the content of the testfile".getBytes();
         fOut.write(testContent);
         fOut.close();
 
@@ -261,7 +259,8 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public boolean reached() {
-                return 1 == getFolderAtLisa().getKnownItemCount();
+                return 1 == getFolderAtLisa().getKnownItemCount() &&
+                        getContollerBart().getTransferManager().getCompletedUploadsCollection().size() >= 1;
             }
 
             @Override
@@ -288,10 +287,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         // First copy file
         testSmallFileCopy();
 
-        final Path testFile1 = getFolderAtBart().getLocalBase().resolve(
-            "TestFile.txt");
+        final Path testFile1 = getFolderAtBart().getLocalBase().resolve("TestFile.txt");
         OutputStream fOut = Files.newOutputStream(testFile1);
-        fOut.write("-> Next content<-".getBytes());
+        fOut.write("->Updated content<-".getBytes());
         fOut.close();
 
         // Readin file content
@@ -1576,19 +1574,19 @@ public class FileTransferTest extends TwoControllerTestCase {
 
             @Override
             public boolean reached() {
-                try {
-                    return getContollerLisa().getTransferManager()
-                        .countActiveDownloads() > 0
-                        && Files
-                            .newDirectoryStream(
+                try (DirectoryStream<Path> stream = Files
+                        .newDirectoryStream(
                                 getFolderAtLisa().getSystemSubDir().resolve(
-                                    "transfers"), new Filter<Path>() {
+                                        "transfers"), new Filter<Path>() {
                                     @Override
                                     public boolean accept(Path dir) {
                                         return dir.getFileName().toString()
-                                            .contains("(incomplete) ");
+                                                .contains("(incomplete) ");
                                     }
-                                }).iterator().hasNext();
+                                })){
+                    return getContollerLisa().getTransferManager()
+                        .countActiveDownloads() > 0
+                        && stream.iterator().hasNext();
                 } catch (IOException ioe) {
                     return false;
                 }
@@ -1603,16 +1601,19 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         FileInfo fInfo = getFolderAtLisa().getIncomingFiles().iterator().next();
         Path fileLisa = fInfo.getDiskFile(getContollerLisa().getFolderRepository());
-        final Path incompleteFile = Files
-            .newDirectoryStream(
-                getFolderAtLisa().getSystemSubDir().resolve("transfers"),
-                new Filter<Path>() {
-                    @Override
-                    public boolean accept(Path dir) {
-                        return dir.getFileName().toString()
-                            .contains("(incomplete) ");
-                    }
-                }).iterator().next();
+        final Path incompleteFile;
+        try (DirectoryStream<Path> stream = Files
+                .newDirectoryStream(
+                        getFolderAtLisa().getSystemSubDir().resolve("transfers"),
+                        new Filter<Path>() {
+                            @Override
+                            public boolean accept(Path dir) {
+                                return dir.getFileName().toString()
+                                        .contains("(incomplete) ");
+                            }
+                        })){
+            incompleteFile = stream.iterator().next();
+        }
         FileInfo bartFInfo = getFolderAtBart().getKnownFiles().iterator()
             .next();
         Path bartFile = bartFInfo.getDiskFile(getContollerBart()
