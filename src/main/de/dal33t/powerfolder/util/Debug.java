@@ -398,6 +398,9 @@ public class Debug {
                 if (key.toLowerCase().contains("password")) {
                     value = "XXX-erased-XXX";
                 }
+                if (key.toLowerCase().contains("passphrase")) {
+                    value = "XXX-erased-XXX";
+                }
                 if (key.toLowerCase().contains("license")) {
                     value = "XXX-erased-XXX";
                 }
