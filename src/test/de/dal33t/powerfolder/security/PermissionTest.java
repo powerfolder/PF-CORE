@@ -97,4 +97,13 @@ public class PermissionTest extends TestCase {
                 p.implies(ownerPermission));
         }
     }
+
+    public void testAllFoldersAdminPermission() {
+        Account account;
+        account = new AnonymousAccount();
+        account.setUsername("ACCOUNT");
+        account.grant(AdminPermission.INSTANCE);
+        account.grant(AllFoldersAdminPermission.INSTANCE);
+        assertTrue(account.hasAdminPermission(new FolderInfo("xx", "21")));
+    }
 }

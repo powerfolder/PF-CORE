@@ -42,6 +42,9 @@ public class AdminPermission extends SingletonPermission {
         if (impliedPermission instanceof FolderOwnerPermission) {
             return false;
         }
+        if (impliedPermission instanceof AllFoldersAdminPermission) {
+            return false;
+        }
         if (impliedPermission instanceof FolderPermission) {
             return ADMIN_PERMISSION_FOLDER_IMPLICATION != null
                 && ADMIN_PERMISSION_FOLDER_IMPLICATION.implies(this, (FolderPermission) impliedPermission);
