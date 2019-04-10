@@ -19,26 +19,9 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.filechooser.FileFilter;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.clientserver.SendInvitationEmail;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.task.SendMessageTask;
 
@@ -62,26 +45,6 @@ public class InvitationUtil {
         }
         return message.equalsIgnoreCase("Attach a personal message")
             || message.equalsIgnoreCase("Persönliche Nachrichten anhängen");
-    }
-
-    /**
-     * Handles the invitation to mail option
-     *
-     * @param controller
-     *            the controller
-     * @param invitation
-     *            the invitation
-     * @param to
-     *            the destination email address, if null the user is asked for.
-     */
-    public static void invitationByServer(Controller controller,
-        Invitation invitation, String to, boolean ccMe)
-    {
-        Reject.ifNull(controller, "Controller is null");
-        Reject.ifNull(invitation, "Invitation is null");
-
-        controller.getOSClient().getFolderService(invitation.folder).sendInvitationEmail(
-                new SendInvitationEmail(invitation, to, ccMe));
     }
 
     /**

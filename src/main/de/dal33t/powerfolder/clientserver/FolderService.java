@@ -106,7 +106,7 @@ public interface FolderService {
      *            the name of the user to be invited
      * @param invitation
      *            the folder to be invited to
-     * @deprecated Use {@link SendInvitationEmail} instead
+     * @deprecated use {@link #sendInvitation(Invitation, boolean)}
      */
     @Deprecated
     void inviteUser(Invitation invitation, String user);
@@ -122,14 +122,22 @@ public interface FolderService {
 
     /**
      * @param request
+     * @deprecated use {@link #sendInvitation(Invitation, boolean)}
      */
     void sendInvitationEmail(SendInvitationEmail request);
     
     /**
      * @param request
      * @param wait block until send process is finished
+     * @deprecated use {@link #sendInvitation(Invitation, boolean)}
      */
     void sendInvitationEmail(SendInvitationEmail request, boolean wait);
+
+    /**
+     * @param invitation
+     * @param wait block until send process is finished
+     */
+    void sendInvitation(Invitation invitation, boolean wait);
 
     /**
      * Changes the sync profile on the remote server for this folder.

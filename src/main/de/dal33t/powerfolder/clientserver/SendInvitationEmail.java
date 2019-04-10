@@ -31,6 +31,7 @@ import java.io.Serializable;
  * Represents a request to send an invitation to another member by email.
  *
  * @author Dennis "Bytekeeper" Waldherr
+ * @deprecated Use Invitation instead
  */
 public class SendInvitationEmail implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -52,36 +53,6 @@ public class SendInvitationEmail implements Serializable {
         this.recipient = recipient;
         ccMe = false;
         validate();
-    }
-
-    /**
-     * Creates a new request to send an email to the given recipient and the
-     * given carbon copy recipient.
-     *
-     * @param invitation
-     *            the invitation to send
-     * @param recipient
-     *            the recipient's email address
-     * @param ccMe
-     *            add requester as CC recipient
-     */
-    public SendInvitationEmail(Invitation invitation, String recipient,
-        boolean ccMe)
-    {
-        this.invitation = invitation;
-        this.recipient = recipient;
-        this.ccMe = ccMe;
-        validate();
-    }
-
-    public static SendInvitationEmail create(MemberInfo invitorDevice,
-        FolderPermission foPermission, Account invitor, String inviteeName)
-    {
-        Invitation inv = new Invitation(foPermission);
-        inv.setSenderDevice(invitorDevice);
-        inv.setSender(invitor.getUsername());
-        inv.setRecipient(inviteeName);
-        return new SendInvitationEmail(inv, inviteeName);
     }
 
     // Serialization and validation

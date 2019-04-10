@@ -161,8 +161,7 @@ public class SendInvitationsPanel extends PFWizardPanel {
         // Invitation by email
         try {
             invitation.setRecipient(invitee);
-            InvitationUtil.invitationByServer(getController(), invitation,
-                invitee, false);
+            getController().getOSClient().getFolderService(invitation.folder).sendInvitation(invitation, false);
         } catch (RuntimeException e) {
             LOG.log(Level.SEVERE, "Unable to send invitation to " + invitee
                 + ". " + e, e);
