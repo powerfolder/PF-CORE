@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.DateUtil;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.logging.Level;
 
 /**
  * Tests the correct updating of files.
@@ -251,7 +253,9 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
                 try {
-                    return Files.size(fileAtLisa) == Files.size(fileAtBart) && getContollerBart().getTransferManager().getActiveDownloads().isEmpty();
+                    return Files.size(fileAtLisa) == Files.size(fileAtBart) &&
+                            getContollerBart().getTransferManager().getActiveDownloads().isEmpty() &&
+                            getFolderAtBart().getProblems().size() == 1;
                 } catch (IOException ioe) {
                     return true;
                 }
@@ -403,13 +407,14 @@ public class FileUpdateTest extends TwoControllerTestCase {
                 return getFolderAtLisa().getKnownFiles().size() > 0;
             }
         });
+        LoggingManager.setConsoleLogging(Level.FINE);
         for (int i = 0; i < 10; i++) {
             TestHelper.changeFile(fileAtBart,
                 5000000 + (long) (Math.random() * 10000));
             TestHelper.waitMilliSeconds(100);
             scanFolder(getFolderAtBart());
         }
-        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
             @Override
             public String message() {
                 Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
