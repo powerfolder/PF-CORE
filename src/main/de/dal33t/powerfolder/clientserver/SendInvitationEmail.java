@@ -47,7 +47,7 @@ public class SendInvitationEmail implements Serializable {
      * @param recipient
      *            the recipient's email address
      */
-    public SendInvitationEmail(Invitation invitation, String recipient) {
+    private SendInvitationEmail(Invitation invitation, String recipient) {
         this.invitation = invitation;
         this.recipient = recipient;
         ccMe = false;
@@ -87,6 +87,7 @@ public class SendInvitationEmail implements Serializable {
     // Serialization and validation
     private void validate() {
         Reject.ifNull(invitation, "Invitation is null!");
+        Reject.ifFalse(invitation.getRecipient().equalsIgnoreCase(recipient), "Recipients do not match");
     }
 
     /**
