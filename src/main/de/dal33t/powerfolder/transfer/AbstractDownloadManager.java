@@ -19,10 +19,7 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
@@ -951,7 +948,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             return;
         }
 
-        try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(mf))) {
+        try (ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(mf)))) {
             FileInfo fi = (FileInfo) in.readObject();
             if (fi.isVersionDateAndSizeIdentical(fileInfo)) {
                 List<?> content = (List<?>) in.readObject();
@@ -975,7 +972,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         if (filePartsState != null) {
             if (isInfo()) {
-                logInfo("Resuming download - already got "
+                logInfo("Resuming download " + getFileInfo().toDetailString() + " - already got "
                     + filePartsState.countPartStates(filePartsState.getRange(),
                         PartState.AVAILABLE) + " of " + getFileInfo().getSize());
             }
