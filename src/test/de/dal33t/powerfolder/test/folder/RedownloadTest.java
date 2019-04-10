@@ -94,9 +94,9 @@ public class RedownloadTest extends TwoControllerTestCase {
 
         // Scan folders. Bart should see Lisa's file and download.
         scanFolder(folderBart);
-        getContollerBart().getFolderRepository().getFileRequestor()
-            .triggerFileRequesting(folderBart.getInfo());
         scanFolder(folderLisa);
+        getContollerBart().getFolderRepository().getFileRequestor()
+                .triggerFileRequesting(folderBart.getInfo());
 
         // Wait for copy.
         TestHelper.waitForCondition(20, new Condition() {
