@@ -50,5 +50,18 @@ public class FileInfoFactoryTest extends TestCase {
         decoded = FileInfoFactory.decodeIllegalChars(testString);
         returned = FileInfoFactory.encodeIllegalChars(decoded);
         assertEquals(testString, returned);
+
+        testString = "  |||:::*?<>  . ";
+        encoded = FileInfoFactory.encodeIllegalChars(testString);
+        System.out.println(encoded);
+        returned = FileInfoFactory.decodeIllegalChars(encoded);
+        assertEquals(testString, returned);
+
+        testString = "  |||:::*?<>  ";
+        encoded = FileInfoFactory.encodeIllegalChars(testString);
+        System.out.println(encoded);
+        returned = FileInfoFactory.decodeIllegalChars(encoded);
+        System.out.println(returned);
+        assertEquals(testString, returned);
     }
 }

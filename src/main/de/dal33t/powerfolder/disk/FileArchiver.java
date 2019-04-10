@@ -409,7 +409,7 @@ public class FileArchiver {
 
         try (DirectoryStream<Path> files = Files.newDirectoryStream(directory)) {
             for (Path file : files) {
-                if (belongsTo(file.getFileName().toString(), baseName)) {
+                if (belongsTo(FileInfoFactory.decodeIllegalChars(file.getFileName().toString()), baseName)) {
                     ret.add(file);
                 }
             }
@@ -466,14 +466,14 @@ public class FileArchiver {
 
         try (DirectoryStream<Path> files = Files
                 .newDirectoryStream(subdirectory)) {
-            String fn = FileInfoFactory.encodeIllegalChars(fileInfo
-                    .getFilenameOnly());
+            String fn = fileInfo.getFilenameOnly();
 
             // get rid of the extension, if present
             int ind = fn.lastIndexOf('.');
             if (ind > -1) {
                 fn = fn.substring(0, ind);
             }
+            fn = FileInfoFactory.encodeIllegalChars(fn);
 
             for (Path file : files) {
                 if (file.getFileName().toString().startsWith(fn)) {
@@ -512,8 +512,7 @@ public class FileArchiver {
         }
 
         Path target = getArchiveTarget(fileInfo);
-        List<Path> archivedFiles = getArchivedFiles(target.getParent(),
-                FileInfoFactory.encodeIllegalChars(fileInfo.getFilenameOnly()));
+        List<Path> archivedFiles = getArchivedFiles(target.getParent(), fileInfo.getFilenameOnly());
         if (archivedFiles == null || archivedFiles.size() == 0) {
             return Collections.emptyList();
         }
