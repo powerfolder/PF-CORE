@@ -1826,9 +1826,11 @@ public class Folder extends PFComponent {
                         member.sendMessagesAsynchron(FileList.create(this,
                             supportExternalizable(member)));
                     } else {
-                        logWarning("Creating empty FileList for " +
-                            currentInfo + " to send to " + member +
-                            " while loading folder db.", new StackDump());
+                        if (isFine()) {
+                            logFine("Creating empty FileList for " +
+                                    currentInfo + " to send to " + member +
+                                    " while loading folder db.");
+                        }
                         member.sendMessagesAsynchron(FileList.createEmpty(
                             currentInfo, supportExternalizable(member)));
                     }
@@ -2630,10 +2632,12 @@ public class Folder extends PFComponent {
                     }
                 }
                 if (member.isCompletelyConnected()) {
-                    logWarning("Creating empty FileList for " +
-                        currentInfo + " to send to " + member +
-                        " while joining folder. MemberRead " + memberRead
-                        + " mySelfRead " + mySelfRead, new StackDump());
+                    if (isFine()) {
+                        logFine("Creating empty FileList for " +
+                                currentInfo + " to send to " + member +
+                                " while joining folder. MemberRead " + memberRead
+                                + " mySelfRead " + mySelfRead);
+                    }
                     member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
                         supportExternalizable(member)));
                 }
@@ -2668,9 +2672,11 @@ public class Folder extends PFComponent {
                         supportExternalizable(member));
                 } else {
                     filelistMsgs = new Message[1];
-                    logWarning("Creating empty FileList for " +
-                        currentInfo + " to send to " + member +
-                        " while joining folder. No folder db." , new StackDump());
+                    if (isFine()) {
+                        logFine("Creating empty FileList for " +
+                            currentInfo + " to send to " + member +
+                            " while joining folder. No folder db.");
+                    }
                     filelistMsgs[0] = FileList.createEmpty(getInfo(),
                         supportExternalizable(member));
                 }
