@@ -38,7 +38,7 @@ public class ProfilingTest extends TestCase {
     public void testAPI() {
         ProfilingEntry profilingEntry1 = null;
         if (Profiling.ENABLED) {
-            profilingEntry1 = Profiling.start("Test profile 1", "");
+            profilingEntry1 = Profiling.start("Test profile 1");
         }
         try {
 
@@ -52,7 +52,7 @@ public class ProfilingTest extends TestCase {
 
     public void testTiming() {
         Profiling.setEnabled(true);
-        ProfilingEntry profilingEntry1 = Profiling.start("Test profile 1", "");
+        ProfilingEntry profilingEntry1 = Profiling.start("Test profile 1");
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
@@ -62,7 +62,7 @@ public class ProfilingTest extends TestCase {
         assertTrue("elapsedMilliseconds <= 10100", profilingEntry1.elapsedMilliseconds() <= 10100);
         assertTrue(profilingEntry1.getOperationName().equals("Test profile 1"));
 
-        ProfilingEntry profilingEntry2 = Profiling.start("Test profile 2", "");
+        ProfilingEntry profilingEntry2 = Profiling.start("Test profile 2");
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -75,7 +75,7 @@ public class ProfilingTest extends TestCase {
 
     public void testDisabled() {
         Profiling.setEnabled(false);
-        ProfilingEntry profilingEntry1 = Profiling.start("Test profile 1", "");
+        ProfilingEntry profilingEntry1 = Profiling.start("Test profile 1");
         assertNull(profilingEntry1);
     }
 

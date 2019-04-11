@@ -30,7 +30,11 @@ public class ProfilingEntry {
     private long startTime;
 
     public ProfilingEntry(String operationName, String details) {
-        this.operationName = operationName;
+        if (operationName.indexOf('.') > 0) {
+            this.operationName = operationName.substring(operationName.lastIndexOf('.') + 1);
+        } else {
+            this.operationName = operationName;
+        }
         this.details = details;
         startTime = System.currentTimeMillis();
     }

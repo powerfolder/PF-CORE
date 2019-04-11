@@ -79,7 +79,7 @@ public class Profiling {
             return null;
         }
         StackTraceElement[] st = new RuntimeException().getStackTrace();
-        String opName = st[1].getClassName() + ':' + st[1].getMethodName();
+        String opName = st[1].getClassName() + '#' + st[1].getMethodName();
         return new ProfilingEntry(opName, null);
     }
 
@@ -99,18 +99,32 @@ public class Profiling {
 
     /**
      * Start profiling a method invocation.
-     *
-     * @param operationName
+     * @param clazz
+     *            the name of the clazz method is being invoked on.
+     * @param clazz
      *            the name of the method being invoked.
-     * @param details
-     *            method details
      * @return instance of ProfilingeEntry.
      */
-    public static ProfilingEntry start(String operationName, String details) {
+    public static ProfilingEntry start(Class<?> clazz, String method) {
         if (!ENABLED) {
             return null;
         }
-        return new ProfilingEntry(operationName, details);
+        return new ProfilingEntry(clazz.getSimpleName() + "#" + method, null);
+    }
+
+    /**
+     * Start profiling a method invocation.
+     * @param clazz
+     *            the name of the clazz method is being invoked on.
+     * @param clazz
+     *            the name of the method being invoked.
+     * @return instance of ProfilingeEntry.
+     */
+    public static ProfilingEntry start(Class<?> clazz, String method, String add) {
+        if (!ENABLED) {
+            return null;
+        }
+        return new ProfilingEntry(clazz.getSimpleName() + "#" + method + ":" + add, null);
     }
 
     /**
@@ -206,11 +220,15 @@ public class Profiling {
         Collections.sort(keys);
         for (String key : keys) {
             ProfilingStat stat = stats.get(key);
-            sb.append("'" + stat.getOperationName() + "' invocations "
-                + stat.getCount() + " elapsed "
-                + Format.formatTimeframe(stat.getElapsed()) + " average "
-                + Format.formatTimeframe(stat.getElapsed() / stat.getCount())
-                + "\n");
+            String spaces = "";
+            for (int i = 0; i<70-stat.getOperationName().length(); i++) {
+                spaces += " ";
+            }
+            sb.append(stat.getOperationName() + spaces + " \t"
+                + stat.getCount() + "\tinvocations\t"
+                + stat.getElapsed() + "\tms elapsed\t"
+                + stat.getElapsed() / stat.getCount()
+                + "\tms average\n");
         }
         sb.append("============================");
         return sb.toString();
