@@ -1317,8 +1317,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         // Profile this execution.
         ProfilingEntry profilingEntry = null;
         if (Profiling.ENABLED) {
-            profilingEntry = Profiling.start("Member.handleMessage", message
-                .getClass().getSimpleName());
+            profilingEntry = Profiling.start(getClass(), "handleMessage",  message.getClass().getSimpleName());
         }
 
         int expectedTime = -1;
