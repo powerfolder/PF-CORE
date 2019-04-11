@@ -3083,8 +3083,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         private AtomicBoolean canceled = new AtomicBoolean(false);
 
         public void run() {
-            ProfilingEntry pe = Profiling
-                    .start("synchronizeAllFolderMemberships");
+            ProfilingEntry pe = Profiling.start(getClass(), "synchronizeAllFolderMemberships");
             try {
                 if (canceled.get()) {
                     logFine("Not synchronizing Foldermemberships, "
