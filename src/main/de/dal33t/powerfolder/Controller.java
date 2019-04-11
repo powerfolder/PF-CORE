@@ -490,11 +490,13 @@ public class Controller extends PFComponent {
         verbose = ConfigurationEntry.VERBOSE.getValueBoolean(this);
         initLogger();
 
-        if (verbose) {
+        if (ConfigurationEntry.PROFILING.getValueBoolean(this)) {
             ByteSerializer.BENCHMARK = true;
             scheduleAndRepeat(() -> ByteSerializer.printStats(), 600000L, 600000L);
-            Profiling.setEnabled(false);
+
+            Profiling.setEnabled(true);
             Profiling.reset();
+            scheduleAndRepeat(() -> logInfo(Profiling.dumpStats()), 0, 60000L);
         }
 
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
