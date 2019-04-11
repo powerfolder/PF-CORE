@@ -956,6 +956,11 @@ public enum ConfigurationEntry {
     VERBOSE("verbose", false),
 
     /**
+     * PFS-3218: If profiling should be enabled
+     */
+    PROFILING("profiling", false),
+
+    /**
      * The loglevel to write to debug file when verbose=true
      */
     LOG_LEVEL_FILE("log.file.level", Level.FINE.getName(), true),
