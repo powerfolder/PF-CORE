@@ -1516,7 +1516,32 @@ public class Controller extends PFComponent {
                 }
             }
         }
+    }
 
+    /**
+     * Starts single connection listener for D2D with WebSocket
+     */
+    public void initializeListenerOnLoopbackInterfaceD2D() {
+        logInfo("D2D is enabled on loopback interface");
+        boolean listenerOpened;
+        String bindAddress = "127.0.0.1";
+        // Random port (if there is more than one server on the same machine, the port needs to be random anyway)
+        int port = 0;
+        listenerOpened = openListener(bindAddress, port, true);
+        nodeManager.getMySelf().getInfo().setD2dPort(port);
+        if (!listenerOpened) {
+            logSevere("Couldn't bind to D2D port " + port);
+        }
+        for (ConnectionListener connectionListener : additionalConnectionListeners) {
+            if (connectionListener.useD2D) {
+                try {
+                    connectionListener.start();
+                    logInfo("Listening on D2D port " + connectionListener.getLocalAddress().getPort());
+                } catch (ConnectionException e) {
+                    logSevere("Problems starting listener " + connectionListener, e);
+                }
+            }
+        }
     }
 
     /**
