@@ -85,6 +85,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         System.setProperty("user.home", Paths.get("build/test/home")
             .toAbsolutePath().toString());
         Loggable.setLogNickPrefix(true);
+        LoggingManager.setConsoleLogging(Level.WARNING);
         super.setUp();
 
         if ((getContollerBart() != null && getContollerBart().isStarted())
@@ -130,15 +131,14 @@ public abstract class TwoControllerTestCase extends TestCase {
             Paths.get("build/test/ControllerLisa/PowerFolder.config"));
 
         // Start controllers
-        System.out.println("Starting controllers...");
+        System.out.println("-------------- Starting Controllers ----------------");
         startControllerBart();
         startControllerLisa();
 
         TestHelper.waitMilliSeconds(250);
 
-        System.out
-            .println("-------------- Controllers started -----------------");
-        LoggingManager.setConsoleLogging(Level.INFO);
+        System.out.println("-------------- Controllers started -----------------");
+        LoggingManager.setConsoleLogging(Level.WARNING);
     }
 
     @Override

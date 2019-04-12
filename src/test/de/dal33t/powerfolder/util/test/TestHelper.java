@@ -237,8 +237,6 @@ public class TestHelper {
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(testDir)) {
             int count = PathUtils.getNumberOfSiblings(testDir);
-            System.out.println("Cleaning test dir (" + testDir + ") (" + count
-                + " files/dirs)");
 
             for (Path file : stream) {
                 count--;
