@@ -1526,7 +1526,7 @@ public class Account implements Serializable, D2DObject {
      * @return true if the account is on federation remote service.
      */
     public boolean isFederatedAccount() {
-        return getServer().isFederatedService();
+        return getServer() != null && getServer().isFederatedService();
     }
 
     /**
