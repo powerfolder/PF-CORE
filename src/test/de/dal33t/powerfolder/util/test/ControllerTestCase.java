@@ -68,6 +68,7 @@ public abstract class ControllerTestCase extends TestCase {
     protected void setUp() throws Exception {
         System.setProperty("user.home", Paths.get("build/test/home")
             .toAbsolutePath().toString());
+        LoggingManager.setConsoleLogging(Level.WARNING);
         super.setUp();
 
         Feature.setupForTests();
@@ -77,7 +78,7 @@ public abstract class ControllerTestCase extends TestCase {
 
         // Copy fresh configs
         // Start controllers
-        System.out.println("Starting controller...");
+        System.out.println("-------------- Starting Controllers ----------------");
         controller = Controller.createController();
         Path source = Paths.get("src/test-resources/ControllerBart.config");
         Path target = Controller.getMiscFilesLocation().resolve("ControllerBart.config");
@@ -91,8 +92,8 @@ public abstract class ControllerTestCase extends TestCase {
         controller.startConfig("ControllerBart");
         waitForStart(controller);
 
-        System.out.println("Controller started");
-        LoggingManager.setConsoleLogging(Level.INFO);
+        System.out.println("-------------- Controllers started -----------------");
+        LoggingManager.setConsoleLogging(Level.WARNING);
         
         // Let the start settle down.
         TestHelper.waitMilliSeconds(250);
