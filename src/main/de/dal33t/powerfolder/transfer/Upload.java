@@ -209,9 +209,12 @@ public class Upload extends Transfer {
                             if (fileSize <= bufferSize) {
                                 logFine("Using buffer to upload file");
                                 ByteBuffer tempBuffer = ByteBuffer.allocate((int) fileSize);
-                                fileChannel.read(tempBuffer, 0);
-                                fileChannel.close();
-                                fileChannel = null;
+                                FileChannel thisFileChannel = fileChannel;
+                                if (thisFileChannel != null) {
+                                    thisFileChannel.read(tempBuffer, 0);
+                                    thisFileChannel.close();
+                                    fileChannel = null;
+                                }
                                 buffer = tempBuffer.array();
                             }
 

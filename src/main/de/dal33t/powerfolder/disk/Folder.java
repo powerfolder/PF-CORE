@@ -2747,53 +2747,55 @@ public class Folder extends PFComponent {
             logFine("Not writing members. No permission.");
             return;
         }
-        // Update in the meta directory.
-        Path file = metaFolder.localBase.resolve(METAFOLDER_MEMBERS);
-        FileInfo fileInfo = FileInfoFactory.lookupInstance(metaFolder, file);
-        // Read in.
-        Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
-        Map<String, MemberInfo> originalMap = new HashMap<>(membersMap);
-        // Update members with any new ones from this file.
-        for (MemberInfo memberInfo : membersMap.values()) {
-            Member memberCanidate = memberInfo.getNode(getController(), true);
-            if (members.containsKey(memberCanidate)) {
-                continue;
-            }
-            if (!memberInfo.isOnSameNetwork(getController())) {
-                continue;
-            }
-            if (memberCanidate.isConnected() && memberCanidate.isServer()) {
-                // PFS-1144: May not actually member anymore in cluster setup.
-                // NEVER Ever join any member into a folder which is actually
-                // connected already.
-                logFine("(U) Not joining connected server "
-                    + memberCanidate.getNick() + " into folder " + getName());
-                continue;
-            }
-            if (join0(memberInfo)) {
-                logInfo("Discovered new " + memberInfo);
-            }
-        }
-        // Update members map with my members.
-        for (Member member : members.keySet()) {
-            membersMap.put(member.getId(), member.getInfo());
-        }
-        // See if there has been a change to the members map.
-        boolean changed = false;
-        if (originalMap.size() == membersMap.size()) {
-            for (String s : membersMap.keySet()) {
-                if (!originalMap.containsKey(s)) {
-                    changed = true;
-                    break;
+        synchronized (metaFolder.scanLock) {
+            // Update in the meta directory.
+            Path file = metaFolder.localBase.resolve(METAFOLDER_MEMBERS);
+            FileInfo fileInfo = FileInfoFactory.lookupInstance(metaFolder, file);
+            // Read in.
+            Map<String, MemberInfo> membersMap = readMetaFolderMembers(fileInfo);
+            Map<String, MemberInfo> originalMap = new HashMap<>(membersMap);
+            // Update members with any new ones from this file.
+            for (MemberInfo memberInfo : membersMap.values()) {
+                Member memberCanidate = memberInfo.getNode(getController(), true);
+                if (members.containsKey(memberCanidate)) {
+                    continue;
+                }
+                if (!memberInfo.isOnSameNetwork(getController())) {
+                    continue;
+                }
+                if (memberCanidate.isConnected() && memberCanidate.isServer()) {
+                    // PFS-1144: May not actually member anymore in cluster setup.
+                    // NEVER Ever join any member into a folder which is actually
+                    // connected already.
+                    logFine("(U) Not joining connected server "
+                            + memberCanidate.getNick() + " into folder " + getName());
+                    continue;
+                }
+                if (join0(memberInfo)) {
+                    logInfo("Discovered new " + memberInfo);
                 }
             }
-        } else {
-            changed = true;
-        }
-        if (changed && !checkIfDeviceDisconnected()) {
-            // Write back and scan.
-            writewMetaFolderMembers(membersMap, fileInfo);
-            metaFolder.scanChangedFile(fileInfo);
+            // Update members map with my members.
+            for (Member member : members.keySet()) {
+                membersMap.put(member.getId(), member.getInfo());
+            }
+            // See if there has been a change to the members map.
+            boolean changed = false;
+            if (originalMap.size() == membersMap.size()) {
+                for (String s : membersMap.keySet()) {
+                    if (!originalMap.containsKey(s)) {
+                        changed = true;
+                        break;
+                    }
+                }
+            } else {
+                changed = true;
+            }
+            if (changed && !checkIfDeviceDisconnected()) {
+                // Write back and scan.
+                writewMetaFolderMembers(membersMap, fileInfo);
+                metaFolder.scanChangedFile(fileInfo);
+            }
         }
     }
 
@@ -2814,7 +2816,7 @@ public class Folder extends PFComponent {
         if (Files.notExists(f)) {
             return membersMap;
         }
-        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(f))) {
+        try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(f)))) {
             membersMap.putAll((Map<String, MemberInfo>) ois.readObject());
         } catch (IOException | ClassNotFoundException e) {
             logWarning("Unable to read members file " + fileInfo + ". " + e);
@@ -2844,12 +2846,12 @@ public class Folder extends PFComponent {
             }
         }
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(
-            Files.newOutputStream(fileInfo.getDiskFile(getController()
-                .getFolderRepository())))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(
+                    fileInfo.getDiskFile(getController().getFolderRepository()))))) {
             oos.writeObject(membersMap);
         } catch (IOException e) {
-            logSevere(e);
+            logWarning(getName() + ": Unable to write Members meta info to " +
+                    fileInfo.getDiskFile(getController().getFolderRepository()) + ". " + e);
         }
     }
 
