@@ -22,6 +22,37 @@ public class PathUtilsTest extends TestCase {
         Files.createDirectories(baseDir);
     }
 
+    /**
+     * PFS-3239
+     * @throws IOException
+     */
+    public void testReplicatedSubdirs() throws IOException {
+        try {
+            PathUtils.isReplicatedSubdir(baseDir.resolve("nonexisting"));
+            fail("Should fail on non existing");
+        } catch (Exception e) {
+        }
+        try {
+            PathUtils.isReplicatedSubdir(TestHelper.createRandomFile(baseDir));
+            fail("Should fail on files");
+        } catch (Exception e) {
+        }
+        testReplicatedSubdir(false,"dir");
+        testReplicatedSubdir(false, "dir/adirectory/sd/sd/sd/sd");
+        testReplicatedSubdir(false,"dir/adirectory/sd/adirectory/sd/sd");
+        testReplicatedSubdir(true,"dir/adirectory/x/x/x/x/x/x/x/x/x/x");
+        testReplicatedSubdir(false, "dir/adirectory/x/x/x/x/x/x/x/x/x/x/w");
+        testReplicatedSubdir(false,"replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354");
+        testReplicatedSubdir(true,"replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354");
+    }
+
+    private void testReplicatedSubdir(boolean expectReplicated, String dirName) throws IOException {
+        Path dir = baseDir.resolve(dirName);
+        Files.createDirectories(dir);
+        assertEquals("expectReplicated=" + expectReplicated + " for " + dir,
+                expectReplicated, PathUtils.isReplicatedSubdir(dir));
+    }
+
     public void testURLEncoding() {
         String url = "https://www.my-server.com:8822";
         String filename = "PowerFolder" + PathUtils.encodeURLinFilename(url) + ".exe";
