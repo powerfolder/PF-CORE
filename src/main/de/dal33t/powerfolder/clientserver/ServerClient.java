@@ -426,6 +426,24 @@ public class ServerClient extends PFComponent {
     }
 
     /**
+     * If this node is a server of a federated service.
+     *
+     * @param node
+     * @return true if the node is part of a remote federated service cloud.
+     */
+    public boolean isFederatedServer(Member node) {
+        if (isClusterServer(node)) {
+            return false;
+        }
+        for (ServerClient fedClient : childClients.values()) {
+            if (fedClient.isClusterServer(node)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return all KNOWN servers of the cluster
      */
     public Collection<Member> getServersInCluster() {

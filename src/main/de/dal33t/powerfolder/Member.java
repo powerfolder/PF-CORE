@@ -1854,7 +1854,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                         });
                 }
             } else if (message instanceof ConfigurationLoadRequest) {
-                if (isServer()) {
+                boolean isFederated = getController().getOSClient().isFederatedServer(this);
+                if (isServer() && !isFederated) {
                     ConfigurationLoadRequest clr = (ConfigurationLoadRequest) message;
                     if (!getController().getMySelf().isServer()) {
                         ConfigurationLoader
@@ -2581,7 +2582,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (!server) {
                 logFine("Not longer server: " + this);
             } else {
-                logFine("Is server of cluster: " + this);
+                logFine("Is server: " + this);
             }
 
             // #2569: Server 2 server connection. don't wait for folder lists
