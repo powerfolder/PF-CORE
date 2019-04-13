@@ -99,6 +99,35 @@ public class PathUtils {
         }
     }
 
+    private static final int MAX_SUBDIR_REPLICATION = 10;
+
+    /**
+     * Basic detection method for replicated subdirectories.
+     * <P>
+     * PFS-3239
+     * @param path The existing directory to check
+     * @return if the last part of the path is replicated from its parent directory
+     */
+    public static boolean isReplicatedSubdir(Path path) {
+        Reject.ifNull(path, "Path");
+        Reject.ifFalse(Files.isDirectory(path), "Path is not a directory");
+        Path pName = path.getFileName();
+        Path current = path.getParent();
+        int d = 2;
+        while (current != null) {
+            Path currentFN = current.getFileName();
+            if (currentFN == null || !currentFN.equals(pName)) {
+                return false;
+            }
+            if (d >= MAX_SUBDIR_REPLICATION) {
+                return true;
+            }
+            d++;
+            current = current.getParent();
+        }
+        return false;
+    }
+
     /**
      * @param file
      * @return true if this file is the windows desktop.ini
