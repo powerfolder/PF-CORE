@@ -1514,13 +1514,18 @@ public class Folder extends PFComponent {
         }
 
         if (!dirInfo.getFolderInfo().equals(currentInfo)) {
-            logSevere("Unable to scan of directory. not on folder: "
+            logSevere("Unable to scan directory. not on folder: "
                 + dirInfo.toDetailString());
             return;
         }
 
         if (dir.equals(getSystemSubDir0())) {
             logWarning("Ignoring system subdirectory: " + dir);
+            return;
+        }
+
+        if (PathUtils.isReplicatedSubdir(dir)) {
+            logWarning("Unable to scan directory. Replication found: " + dir);
             return;
         }
 
