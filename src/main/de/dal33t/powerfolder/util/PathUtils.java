@@ -111,20 +111,24 @@ public class PathUtils {
      */
     public static boolean isReplicatedSubdir(Path path) {
         Reject.ifNull(path, "Path");
-        Reject.ifFalse(Files.isDirectory(path), "Path is not a directory");
         Path pName = path.getFileName();
         Path current = path.getParent();
-        int d = 2;
-        while (current != null) {
-            Path currentFN = current.getFileName();
-            if (currentFN == null || !currentFN.equals(pName)) {
-                return false;
+        try {
+            int d = 2;
+            while (current != null) {
+                Path currentFN = current.getFileName();
+                if (currentFN == null || !currentFN.equals(pName)) {
+                    return false;
+                }
+                if (d >= MAX_SUBDIR_REPLICATION) {
+                    return true;
+                }
+                d++;
+                current = current.getParent();
             }
-            if (d >= MAX_SUBDIR_REPLICATION) {
-                return true;
-            }
-            d++;
-            current = current.getParent();
+        } catch (RuntimeException e) {
+            log.log(Level.WARNING, "Problem while checking if subdir is replicated: "
+                    + path, e);
         }
         return false;
     }
