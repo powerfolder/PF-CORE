@@ -185,10 +185,6 @@ public class FolderSettings {
         return syncProfile;
     }
 
-    public boolean isCreateInvitationFile() {
-        return false;
-    }
-
     public int getVersions() {
         return versions;
     }
