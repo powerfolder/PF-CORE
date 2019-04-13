@@ -99,7 +99,8 @@ public class PathUtils {
         }
     }
 
-    private static final int MAX_SUBDIR_REPLICATION = 10;
+    // Allow 10 fold replication, but not 11
+    private static final int MAX_SUBDIR_REPLICATION = 11;
 
     /**
      * Basic detection method for replicated subdirectories.

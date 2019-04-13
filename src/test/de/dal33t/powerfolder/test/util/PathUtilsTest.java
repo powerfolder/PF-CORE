@@ -40,10 +40,13 @@ public class PathUtilsTest extends TestCase {
         testReplicatedSubdir(false,"dir");
         testReplicatedSubdir(false, "dir/adirectory/sd/sd/sd/sd");
         testReplicatedSubdir(false,"dir/adirectory/sd/adirectory/sd/sd");
-        testReplicatedSubdir(true,"dir/adirectory/x/x/x/x/x/x/x/x/x/x");
-        testReplicatedSubdir(false, "dir/adirectory/x/x/x/x/x/x/x/x/x/x/w");
-        testReplicatedSubdir(false,"replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354");
-        testReplicatedSubdir(true,"replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354");
+        testReplicatedSubdir(true,"dir/adirectory/x/x/x/x/x/x/x/x/x/x/x");
+        testReplicatedSubdir(false, "dir/adirectory/x/x/x/x/x/x/x/x/x//x/x/x/w");
+        testReplicatedSubdir(false,"replidf4354/replidf4354/replidf4354/replidf4354/" +
+                "replidf4354/replidf4354/replidf4354/replidf4354/replidf4354");
+        testReplicatedSubdir(true,"replidf4354/replidf4354/replidf4354/replidf4354/" +
+                "replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/" +
+                "replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354/replidf4354");
     }
 
     private void testReplicatedSubdir(boolean expectReplicated, String dirName) throws IOException {
