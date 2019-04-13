@@ -34,10 +34,12 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class FolderScannerTest extends ControllerTestCase {
 
+    private FolderScanner folderScanner;
+
     public void setUp() throws Exception {
         super.setUp();
-        // use project profiel so no unwanted scanning
         setupTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
+        folderScanner = getController().getFolderRepository().getFolderScanner();
     }
 
     public void xtestScanFilesMultiple() throws Exception {
@@ -47,13 +49,19 @@ public class FolderScannerTest extends ControllerTestCase {
             setUp();
         }
     }
+    public void testSkipScanOfReplicatedSubdirs() throws Exception {
+        Path replicatedDir = getFolder().getLocalBase().resolve("dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir/dir");
+        Files.createDirectories(replicatedDir);
+        ScanResult result = scanFolderWaitIfBusy(folderScanner);
+        assertTrue(result.isChangeDetected());
+        assertEquals(result.getNewFiles().toString(), 10, result.getNewFiles().size());
+        assertEquals(result.getChangedFiles().toString(), 0, result.getChangedFiles().size());
+        assertEquals(result.getDeletedFiles().toString(), 0, result.getDeletedFiles().size());
+        assertEquals(result.getRestoredFiles().toString(), 0, result.getRestoredFiles().size());
+        assertEquals(10, result.getTotalFilesCount());
+    }
 
     public void testScanFiles() throws Exception {
-        // getController().setPaused(true);
-        final FolderScanner folderScanner = getController()
-            .getFolderRepository().getFolderScanner();
-        // getController().setPaused(false);
-
         Path file1 = TestHelper.createRandomFile(getFolder().getLocalBase());
         assertTrue(Files.exists(file1));
         Path file2 = TestHelper
@@ -128,9 +136,6 @@ public class FolderScannerTest extends ControllerTestCase {
      * @throws IOException
      */
     public void testScanManyFiles() throws IOException {
-        final FolderScanner folderScanner = getController()
-            .getFolderRepository().getFolderScanner();
-        
         long totalSize = 0;
         final int nFiles = 2000;
         for (int i = 0; i < nFiles; i++) {

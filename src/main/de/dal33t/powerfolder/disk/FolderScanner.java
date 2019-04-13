@@ -205,7 +205,7 @@ public class FolderScanner extends PFComponent {
                 return new ScanResult(ScanResult.ResultState.USER_ABORT);
             }
             // from , to
-            tryFindMovementsInCurrentScan(folder);
+            tryFindMovementsInCurrentScan();
             tryFindProblemsInCurrentScan();
 
             // Remove the files that where unable to read.
@@ -468,7 +468,7 @@ public class FolderScanner extends PFComponent {
      * list with the same size and modification date the file is for 99% sure
      * moved. Map<from , to>
      */
-    private void tryFindMovementsInCurrentScan(Folder folder) {
+    private void tryFindMovementsInCurrentScan() {
         if (Feature.CORRECT_MOVEMENT_DETECTION.isDisabled()) {
             return;
         }
@@ -762,7 +762,7 @@ public class FolderScanner extends PFComponent {
                             failure = true;
                             return false;
                         }
-                    } else if (Files.isDirectory(path)) {
+                    } else if (Files.isDirectory(path) && !PathUtils.isReplicatedSubdir(path)) {
                         if (PathUtils.isScannable(path, currentScanningFolder)
                             && !scanDir(path)) {
                             failure = true;
