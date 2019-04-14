@@ -396,6 +396,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
         final Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 50000000);
+        final FileInfo fileInfo = FileInfoFactory.lookupInstance(getFolderAtBart(), fileAtBart);
         scanFolder(getFolderAtBart());
         TestHelper.waitForCondition(70, new ConditionWithMessage() {
             @Override
@@ -407,7 +408,6 @@ public class FileUpdateTest extends TwoControllerTestCase {
                 return getFolderAtLisa().getKnownFiles().size() > 0;
             }
         });
-        LoggingManager.setConsoleLogging(Level.FINE);
         for (int i = 0; i < 10; i++) {
             TestHelper.changeFile(fileAtBart,
                 5000000 + (long) (Math.random() * 10000));
@@ -430,15 +430,31 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
             public boolean reached() {
                 Path fileAtLisa = getFolderAtLisa().getKnownFiles().iterator()
-                    .next()
-                    .getDiskFile(getContollerLisa().getFolderRepository());
+                        .next()
+                        .getDiskFile(getContollerLisa().getFolderRepository());
                 try {
                     return Files.size(fileAtLisa) == Files.size(fileAtBart)
-                        && Files.getLastModifiedTime(fileAtBart).equals(
-                            Files.getLastModifiedTime(fileAtLisa));
+                            && DateUtil.equalsFileDateCrossPlattform(Files.getLastModifiedTime(fileAtBart).toMillis(),
+                            Files.getLastModifiedTime(fileAtLisa).toMillis());
                 } catch (IOException ioe) {
                     return true;
                 }
+            }
+        });
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+
+            @Override
+            public boolean reached() {
+                FileInfo fInfoAtBart = getFolderAtBart().getFile(fileInfo);
+                FileInfo fIfnoAtLisa = getFolderAtLisa().getFile(fileInfo);
+                return fInfoAtBart.getVersion() == fIfnoAtLisa.getVersion() &&
+                        fInfoAtBart.getSize() == fIfnoAtLisa.getSize() &&
+                        DateUtil.equalsFileDateCrossPlattform(fInfoAtBart.getModifiedDate(), fIfnoAtLisa.getModifiedDate());
+            }
+
+            @Override
+            public String message() {
+                return "";
             }
         });
     }

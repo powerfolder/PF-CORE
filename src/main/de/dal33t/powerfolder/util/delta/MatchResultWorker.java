@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.util.delta;
 
+import java.io.BufferedInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -45,7 +46,7 @@ public class MatchResultWorker implements Callable<List<MatchInfo>> {
     }
 
     public List<MatchInfo> call() throws Exception {
-        CountedInputStream in = new CountedInputStream(Files.newInputStream(inFile));
+        CountedInputStream in = new CountedInputStream(new BufferedInputStream(Files.newInputStream(inFile)));
         PartInfoMatcher matcher = null;
         try {
             final long fsize = Files.size(inFile);
