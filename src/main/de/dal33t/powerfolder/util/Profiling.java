@@ -197,7 +197,7 @@ public class Profiling {
 
     public static String dumpStats() {
         if (!ENABLED) {
-            LOG.severe("Unable to dump stats. Profiling is disabled");
+            LOG.warning("Unable to dump stats. Profiling is disabled");
             return "Unable to dump stats. Profiling is disabled";
         }
 
