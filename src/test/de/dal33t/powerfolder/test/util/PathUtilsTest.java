@@ -519,7 +519,7 @@ public class PathUtilsTest extends TestCase {
         PathUtils.recursiveMirror(source, target);
         souceSum = buildCheckSum(source, 0);
         targetSum = buildCheckSum(target, 0);
-        assertEquals(souceSum, targetSum);
+        assertEquals("start: sourceSum=" + souceSum + ". targetSum=" + targetSum, souceSum, targetSum);
         // Should be OK!
 
         int nFiles = 250;
@@ -545,8 +545,6 @@ public class PathUtilsTest extends TestCase {
                         madeDir = false;
                     }
                 } while (!madeDir);
-                System.err.println("New subdir: "
-                    + currentSubDir.toAbsolutePath());
             }
 
             if (!currentSubDir.equals(source)) {
@@ -578,7 +576,7 @@ public class PathUtilsTest extends TestCase {
         PathUtils.recursiveMirror(source, target);
         souceSum = buildCheckSum(source, 0);
         targetSum = buildCheckSum(target, 0);
-        assertEquals(souceSum, targetSum);
+        assertEquals("Stage 2: sourceSum=" + souceSum + ". targetSum=" + targetSum, souceSum, targetSum);
 
         for (int i = 0; i < 100; i++) {
             TestHelper.createRandomFile(target);
@@ -590,7 +588,7 @@ public class PathUtilsTest extends TestCase {
         PathUtils.recursiveMirror(source, target);
         souceSum = buildCheckSum(source, 0);
         targetSum = buildCheckSum(target, 0);
-        assertEquals(souceSum, targetSum);
+        assertEquals("Stage 3: sourceSum=" + souceSum + ". targetSum=" + targetSum,souceSum, targetSum);
 
         final Path tempDir = source.resolve("temp");
         Files.createDirectories(tempDir);
