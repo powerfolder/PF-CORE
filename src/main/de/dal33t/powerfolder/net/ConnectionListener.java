@@ -148,7 +148,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     bind = null;
                 }
             }
-            if (useD2D) {
+            // Use SSL socket for D2D connections on external interfaces
+            if (useD2D && !("127.0.0.1".equals(bind))) {
                 // Load trust store
                 KeyStore keyStore = KeyStore.getInstance("JKS");
                 keyStore.load(new FileInputStream(getController().getSslTrustStoreFile().toString()), new char[0]);
