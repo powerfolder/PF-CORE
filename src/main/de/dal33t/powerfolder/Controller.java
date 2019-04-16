@@ -1505,7 +1505,7 @@ public class Controller extends PFComponent {
                 if (!listenerOpened) {
                     logSevere("Couldn't bind to D2D port " + port);
                 } else {
-                    logInfo("Listening on D2D port " + port);
+                    //logInfo("Listening on D2D port " + port);
                 }
             }
         }
@@ -1538,7 +1538,7 @@ public class Controller extends PFComponent {
             if (connectionListener.useD2D) {
                 try {
                     connectionListener.start();
-                    logInfo("Listening on D2D port " + connectionListener.getLocalAddress().getPort());
+                    //logInfo("Listening on D2D port " + connectionListener.getLocalAddress().getPort());
                 } catch (ConnectionException e) {
                     logSevere("Problems starting listener " + connectionListener, e);
                 }
