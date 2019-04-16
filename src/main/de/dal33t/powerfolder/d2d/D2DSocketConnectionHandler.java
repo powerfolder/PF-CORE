@@ -277,9 +277,8 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
 
             data = abstractMessage.toByteArray();
         } else {
-            throw new ConnectionException(
-                "Message " + message.getClass().getSimpleName()
-                    + " does not implement D2Object").with(this);
+            logWarning("Message " + message.getClass().getSimpleName() + " does not implement D2Object");
+            throw new ConnectionException("Message " + message.getClass().getSimpleName() + " does not implement D2Object").with(this);
         }
 
         return data;

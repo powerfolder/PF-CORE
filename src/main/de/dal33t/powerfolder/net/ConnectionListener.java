@@ -136,10 +136,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
      *             if port is blocked
      */
     private void openServerSocket() throws ConnectionException {
+        InetAddress bAddress = null;
         try {
             logFiner("Opening listener on port " + port);
             String bind = interfaceAddress;
-            InetAddress bAddress = null;
             if (bind != null && !StringUtils.isBlank(bind)) {
                 try {
                     bAddress = InetAddress.getByName(bind);
@@ -173,10 +173,11 @@ public class ConnectionListener extends PFComponent implements Runnable {
             throw new ConnectionException(Translation.get(
                 "dialog.unable_to_open_port", port + ""), e);
         }
-
-        logInfo("Listening for incoming connections on port "
-            + serverSocket.getLocalPort()
-            + (myDyndns != null ? ", own address: " + myDyndns : ""));
+        if (useD2D) {
+            logInfo("Listening for incoming D2D connections on port " + ((InetSocketAddress)serverSocket.getLocalSocketAddress()).getPort() + ", own address: " + bAddress);
+        } else {
+            logInfo("Listening for incoming connections on port " + serverSocket.getLocalPort() + (myDyndns != null ? ", own address: " + myDyndns : ""));
+        }
         // Force correct port setting
         port = serverSocket.getLocalPort();
     }
