@@ -443,6 +443,24 @@ public class ServerClient extends PFComponent {
         return false;
     }
 
+    public ServerClient getChildClient(Member fedServerNode) {
+        if (isClusterServer(fedServerNode)) {
+            logWarning("Is not federated node: " + fedServerNode);
+            return null;
+        }
+        for (ServerClient fedClient : childClients.values()) {
+            if (fedClient.isClusterServer(fedServerNode)) {
+                return fedClient;
+            }
+
+        }
+        return null;
+    }
+
+    public Map<ServerInfo, ServerClient> getChildClients() {
+        return childClients;
+    }
+
     /**
      * @return all KNOWN servers of the cluster
      */
@@ -837,10 +855,6 @@ public class ServerClient extends PFComponent {
                 .getValueBoolean(getController())
                 || getController().isBackupOnly()
                 || !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
-    }
-
-    public Map<ServerInfo, ServerClient> getChildClients() {
-        return childClients;
     }
 
     // Login ******************************************************************
@@ -1862,8 +1876,7 @@ public class ServerClient extends PFComponent {
 
         // PFC-2455 / PFC-2745: Spawn additional Clients
         if (!a.getTokens().isEmpty()) {
-            getController().getNodeManager()
-                    .setNetworkId(Constants.NETWORK_ID_ANY);
+            getController().getNodeManager().setNetworkId(Constants.NETWORK_ID_ANY);
             spawnFedClients(a);
         }
     }
@@ -2197,6 +2210,10 @@ public class ServerClient extends PFComponent {
                     newWebUrl);
         }
         return true;
+    }
+
+    public String getHTTPTunnelURL() {
+        return ConfigurationEntry.SERVER_HTTP_TUNNEL_RPC_URL.getValue(config);
     }
 
     private boolean setServerHTTPTunnelURLInConfig(String newTunnelURL) {
