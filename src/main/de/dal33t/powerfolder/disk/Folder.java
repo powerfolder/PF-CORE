@@ -2661,8 +2661,10 @@ public class Folder extends PFComponent {
                                 " while joining folder. MemberRead " + memberRead
                                 + " mySelfRead " + mySelfRead, new StackDump());
                     }
-                    member.sendMessagesAsynchron(FileList.createEmpty(currentInfo,
-                        supportExternalizable(member)));
+                    // NEVER send file lists without request via D2D protocol
+                    if (!(member.getPeer() instanceof D2DSocketConnectionHandler)) {
+                        member.sendMessagesAsynchron(FileList.createEmpty(currentInfo, supportExternalizable(member)));
+                    }
                 }
                 return false;
             }
