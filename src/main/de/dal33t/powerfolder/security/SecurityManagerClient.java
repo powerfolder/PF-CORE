@@ -507,6 +507,12 @@ public class SecurityManagerClient extends PFComponent implements
     }
 
     private boolean shouldAutoRefresh(Member node) {
+        if (node.isServer()) {
+            if (isFine()) {
+                logFine("Not refreshing account info for server: " + node);
+            }
+            return false;
+        }
         return node.isMySelf() || node.isFriend() || node.hasJoinedAnyFolder()
             || (node.isOnLAN() && node.isCompletelyConnected());
     }
