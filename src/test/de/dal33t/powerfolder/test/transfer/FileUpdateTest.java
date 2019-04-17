@@ -270,6 +270,18 @@ public class FileUpdateTest extends TwoControllerTestCase {
                 }
             }
         });
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "Expected problems at bart: 1. Got: "
+                        + getFolderAtBart().getProblems();
+            }
+
+            @Override
+            public boolean reached() {
+                return getFolderAtBart().getProblems().size() == 1;
+            }
+        });
         // Now Bart should have detected an conflict.
         assertEquals(
             "Expected problems at bart: 1. Got: "
