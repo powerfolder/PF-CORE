@@ -99,6 +99,40 @@ public class PathUtils {
         }
     }
 
+    // Allow 10 fold replication, but not 11
+    private static final int MAX_SUBDIR_REPLICATION = 11;
+
+    /**
+     * Basic detection method for replicated subdirectories.
+     * <P>
+     * PFS-3239
+     * @param path The existing directory to check
+     * @return if the last part of the path is replicated from its parent directory
+     */
+    public static boolean isReplicatedSubdir(Path path) {
+        Reject.ifNull(path, "Path");
+        Path pName = path.getFileName();
+        Path current = path.getParent();
+        try {
+            int d = 2;
+            while (current != null) {
+                Path currentFN = current.getFileName();
+                if (currentFN == null || !currentFN.equals(pName)) {
+                    return false;
+                }
+                if (d >= MAX_SUBDIR_REPLICATION) {
+                    return true;
+                }
+                d++;
+                current = current.getParent();
+            }
+        } catch (RuntimeException e) {
+            log.log(Level.WARNING, "Problem while checking if subdir is replicated: "
+                    + path, e);
+        }
+        return false;
+    }
+
     /**
      * @param file
      * @return true if this file is the windows desktop.ini
