@@ -270,6 +270,26 @@ public abstract class TwoControllerTestCase extends TestCase {
         });
     }
 
+    public void waitForDownloadsCompleted(final int bartsCompletedDownloads, final int lisaCompletedDownloads) {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            public boolean reached() {
+                return getContollerBart().getTransferManager().countCompletedDownloads() == bartsCompletedDownloads &&
+                        getContollerLisa().getTransferManager().countCompletedDownloads() == lisaCompletedDownloads;
+            }
+
+            public String message() {
+                return "bart expected completed downloads=" + bartsCompletedDownloads + " but got="
+                        + getContollerBart().getTransferManager().getCompletedDownloadsCollection()
+                        + ", Active downloads="
+                        + getContollerBart().getTransferManager().getActiveDownloads()+
+                        "; lisas expected completed downloads=" + lisaCompletedDownloads + " but got="
+                        + getContollerLisa().getTransferManager().getCompletedDownloadsCollection()
+                        + ", Active downloads="
+                        + getContollerLisa().getTransferManager().getActiveDownloads();
+            }
+        });
+    }
+
     /**
      * Try to connect controllers.
      *
