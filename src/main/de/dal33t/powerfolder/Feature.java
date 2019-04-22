@@ -97,9 +97,14 @@ public enum Feature {
 
     SYSTRAY_ALL_FOLDERS(false),
 
-    FILEBROWSER_INTEGRATION(true),
+    FILEBROWSER_INTEGRATION(),
 
-    UI_ENABLED(true),
+    UI_ENABLED(),
+
+    /**
+     * Don't active accounts on AccountService#register
+     */
+    REGISTER_DONT_ACTIVATE_ACCOUNTS(),
 
     /**
      * PFS-981: Preserve NTFS file owner while updating file from remote

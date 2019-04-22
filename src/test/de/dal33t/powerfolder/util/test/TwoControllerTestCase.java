@@ -317,6 +317,7 @@ public abstract class TwoControllerTestCase extends TestCase {
                 if (lisasAccount == null || !lisasAccount.isValid()) {
                     fail("Unable to register lisa's user account at bart");
                 }
+                lisasAccount.setActivationDate(new Date());
             }
             if (!client.getAccount().equals(lisasAccount)) {
                 client.login("lisa", "password".toCharArray());
