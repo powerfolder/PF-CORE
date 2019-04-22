@@ -51,6 +51,10 @@ public abstract class FolderAdapter implements FolderListener {
         // Do nothing by default
     }
 
+    public void archivePurged(FolderEvent folderEvent) {
+        // Do nothing by default
+    }
+
     public void filesDeleted(FolderEvent folderEvent) {
         // Do nothing by default
     }

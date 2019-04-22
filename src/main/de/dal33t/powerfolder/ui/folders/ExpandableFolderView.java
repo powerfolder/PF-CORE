@@ -1448,6 +1448,11 @@ public class ExpandableFolderView extends PFUIComponent implements
             doFolderChanges(folderEvent.getFolder());
         }
 
+        @Override
+        public void archivePurged(FolderEvent folderEvent) {
+            doFolderChanges(folderEvent.getFolder());
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

@@ -54,6 +54,13 @@ public interface FolderListener extends CoreListener {
     void archiveSettingsChanged(FolderEvent folderEvent);
 
     /**
+     * When the archive is purged
+     *
+     * @param folderEvent
+     */
+    void archivePurged(FolderEvent folderEvent);
+
+    /**
      * The remote contents of a Folder changed (e.g. a file was added remote or
      * deleted)
      *
