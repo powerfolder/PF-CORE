@@ -1644,7 +1644,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!getMySelf().isServer()) {
             if (!getController().getOSClient().isLoggedIn()) {
                 if (isFine()) {
-                    logFine("Skipping searching for new folders...");
+                    logFine("Skipping searching for new folders... (not logged in)");
                 }
                 return false;
             }
