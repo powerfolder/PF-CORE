@@ -378,50 +378,57 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             return false;
         }
 
-        InetSocketAddress address = new InetSocketAddress(packet.getAddress(),
-            port);
+        InetSocketAddress address = new InetSocketAddress(packet.getAddress(), port);
         receivedBroadcastsFrom.add(packet.getAddress());
         Member node = getController().getNodeManager().getNode(id);
-        if (node != null && !node.isServer() && getController()
-            .getNetworkingMode().equals(NetworkingMode.SERVERONLYMODE))
-        {
-            logFiner("Ignoring broadcasts in server only networking mode");
-            return false;
-        }
-        if (node == null
-            || (!node.isMySelf() && !node.isConnected() && !node.isConnecting()))
-        {
-            logFine("Found user on local network: " + address
-                + ((node != null) ? ", " + node : ""));
-            try {
-                // Don't connect outbound to clients as server.
-                if (getController().isStarted()
-                    && !getController().getMySelf().isServer())
-                {
-                    if (getController().getOSClient().isLoggedIn()
-                        || Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isDisabled())
-                    {
-                        // found another new node!!!
-                        node = getController().connect(address,
-                          isPowerFolderD2DBroadcast(packet));
-                        node.setOnLAN(true);
-                        return true;
-                    }
-                }
-            } catch (ConnectionException e) {
-                logFine("Unable to connect to node on subnet: " + address
-                    + ". " + e);
-                logFiner(e);
-            }
-        } else {
-            if (isFiner()) {
-                logFiner("Node already known: ID: " + id + ", " + node);
-            }
-            // Node must be on lan
-            node.setOnLAN(true);
-        }
 
-        return false;
+        try {
+            // Not started yet. Ignore
+            if (!getController().isStarted()) {
+                return false;
+            }
+
+            // I am a client and not logged in at my server (and pure P2P is disabled)
+            if (!getMySelf().isServer() && !getController().getOSClient().isLoggedIn()
+                    && Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isDisabled()) {
+                return false;
+            }
+
+            if (node != null) {
+                if (node.isMySelf()) {
+                    // Avoid loopback connection
+                    return false;
+                }
+
+                if (node.isConnected() || node.isConnecting()) {
+                    // Avoid duplicate connection attempts
+                    return false;
+                }
+
+                if (getController().getNetworkingMode().equals(NetworkingMode.SERVERONLYMODE) && !node.isServer()) {
+                    // Ignore broadcast of other clients in SERVERONLY mode
+                    return false;
+                }
+
+                if (getMySelf().isServer() && !node.isServer()) {
+                    // Connect to other servers only
+                    return false;
+                }
+            }
+
+            logFine("Connecting to node on LAN: " + address + ((node != null) ? ", " + node : ""));
+            node = getController().connect(address, isPowerFolderD2DBroadcast(packet));
+
+            return true;
+        } catch (ConnectionException e) {
+            logFine("Unable to connect to node on LAN: " + address + ((node != null) ? ", " + node : "") + ". " + e);
+            logFiner(e);
+            return false;
+        } finally {
+            if (node != null) {
+                node.setOnLAN(true);
+            }
+        }
     }
 
     /**
