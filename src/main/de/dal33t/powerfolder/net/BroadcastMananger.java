@@ -191,6 +191,10 @@ public class BroadcastMananger extends PFComponent implements Runnable {
         }
     }
 
+    public void sendBroadcast() {
+        new BroadcastSender().run();
+    }
+
     /**
      * Shuts the manager down
      */
@@ -390,7 +394,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
 
             // I am a client and not logged in at my server (and pure P2P is disabled)
             if (!getMySelf().isServer() && !getController().getOSClient().isLoggedIn()
-                    && Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isDisabled()) {
+                    && Feature.P2P_REQUIRES_LOGIN_AT_SERVER.isEnabled()) {
                 return false;
             }
 

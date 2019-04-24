@@ -695,7 +695,11 @@ public class Controller extends PFComponent {
         setLoadingCompletion(80, 85);
 
         // open broadcast listener
-        openBroadcastManager();
+        if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(this)) {
+            openBroadcastManager();
+        } else {
+            logInfo("Auto client discovery in LAN via broadcast disabled");
+        }
         setLoadingCompletion(85, 90);
 
         // Controller now started
@@ -1302,19 +1306,16 @@ public class Controller extends PFComponent {
         }
     }
 
-    private void openBroadcastManager() {
-        if (ConfigurationEntry.NET_BROADCAST.getValueBoolean(this)) {
-            try {
-                broadcastManager = new BroadcastMananger(this,
-                        ConfigurationEntry.NET_PORT_D2D.getValueInt(this) > 0);
-                broadcastManager.start();
-            } catch (ConnectionException e) {
-                logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
+    public void openBroadcastManager() {
+        Reject.ifFalse(broadcastManager == null, "Broadcast manager already open");
+        try {
+            broadcastManager = new BroadcastMananger(this,
+                    ConfigurationEntry.NET_PORT_D2D.getValueInt(this) > 0);
+            broadcastManager.start();
+        } catch (ConnectionException e) {
+            logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
                     + e.getMessage());
-                logSevere("ConnectionException", e);
-            }
-        } else {
-            logInfo("Auto client discovery in LAN via broadcast disabled");
+            logSevere("ConnectionException", e);
         }
     }
 
