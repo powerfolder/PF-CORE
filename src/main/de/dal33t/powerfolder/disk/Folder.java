@@ -4893,7 +4893,7 @@ public class Folder extends PFComponent {
             Files.setLastModifiedTime(lastSyncFile,
                 FileTime.fromMillis(lastSyncDate.getTime()));
         } catch (Exception e) {
-            logSevere("Unable to update last synced date to " + lastSyncFile + " " + e);
+            logWarning("Unable to update last synced date to " + lastSyncFile + " " + e);
         }
     }
 
