@@ -208,29 +208,6 @@ public class PowerFolder {
         }
 
         JavaVersion jv = JavaVersion.systemVersion();
-
-        if (jv.isOpenJDK()) {
-            Object[] options = {"Open Oracle home page and exit", "Exit"};
-
-            int n = JOptionPane.showOptionDialog(null,
-                "You are using OpenJDK which is unsupported.\n" +
-                "Please install the client with bundled JRE or install the Oracle JRE",
-                "Unsupported JRE",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE,
-                null, options, options[0]);
-
-            if (n == 0) {
-                try {
-                    BrowserLauncher.openURL("http://www.java.com");
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-
-            return;
-        }
-
         // Start: PFS-1721
         if (jv.getMajor() < 10 && jv.getMinor() <= 7) {
             log.severe("You are trying to start using a JRE version lesser or equal to Java 7."
