@@ -58,6 +58,12 @@ public class OnlineStorageSubscription implements Serializable {
     private Date warnedExpirationDate;
     private Date disabledExpirationDate;
 
+    /**
+     * PFS-3171: Maximum number of allowed folders. Values can be: <code>null</code> for unlimited folders,
+     * 0 for no allowed folders at all. or a value >0 for a limit
+     */
+    private Integer maxFolders;
+
     // Logic ******************************************************************
 
     /**
@@ -254,4 +260,19 @@ public class OnlineStorageSubscription implements Serializable {
         return b.toString();
     }
 
+    public Integer getMaxFolders() {
+        return maxFolders;
+    }
+
+    public void setMaxFolders(int maxFolders) {
+        this.maxFolders = Integer.valueOf(maxFolders);
+    }
+
+    public boolean isMaxFoldersUnlimited() {
+        return maxFolders == null || maxFolders.intValue() < 0;
+    }
+
+    public void setMaxFoldersUnlimited() {
+        this.maxFolders = null;
+    }
 }
