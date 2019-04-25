@@ -208,13 +208,7 @@ public class PowerFolder {
         }
 
         JavaVersion jv = JavaVersion.systemVersion();
-        // Start: PFS-1721
-        if (jv.getMajor() < 10 && jv.getMinor() <= 7) {
-            log.severe("You are trying to start using a JRE version lesser or equal to Java 7."
-                + " Please update your JRE to version 8 or above to run.");
-            return;
-        }
-        // End: PFS-1721
+        log.info("Using Java: " + jv);
 
         // The controller.
         Controller controller = Controller.createController();
