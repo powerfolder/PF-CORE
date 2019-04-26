@@ -515,28 +515,7 @@ public class Locking extends PFComponent {
         }
     }
 
-    public class FolderLockListener implements FolderListener {
-
-        @Override
-        public void statisticsCalculated(FolderEvent folderEvent) {
-
-        }
-
-        @Override
-        public void syncProfileChanged(FolderEvent folderEvent) {
-
-        }
-
-        @Override
-        public void archiveSettingsChanged(FolderEvent folderEvent) {
-
-        }
-
-        @Override
-        public void remoteContentsChanged(FolderEvent folderEvent) {
-
-        }
-
+    public class FolderLockListener extends FolderAdapter {
         @Override
         public void scanResultCommitted(FolderEvent folderEvent) {
             if (!ConfigurationEntry.LOCKING_CHANGES_FILE_PERMISSIONS.getValueBoolean(getController())) {
@@ -552,14 +531,6 @@ public class Locking extends PFComponent {
                     setWritableIfFromOtherMember(fileInfo, lock, true);
                 }
             }
-        }
-
-        @Override
-        public void fileChanged(FolderEvent folderEvent) {
-        }
-
-        @Override
-        public void filesDeleted(FolderEvent folderEvent) {
         }
 
         @Override

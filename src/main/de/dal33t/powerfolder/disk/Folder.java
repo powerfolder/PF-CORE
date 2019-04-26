@@ -5085,6 +5085,11 @@ public class Folder extends PFComponent {
         folderListenerSupport.archiveSettingsChanged(folderEvent);
     }
 
+    void fireArchivePurged() {
+        FolderEvent folderEvent = new FolderEvent(this);
+        folderListenerSupport.archivePurged(folderEvent);
+    }
+
     private void fireScanResultCommited(ScanResult scanResult) {
         if (isFiner()) {
             logFiner("fireScanResultCommited: " + this);

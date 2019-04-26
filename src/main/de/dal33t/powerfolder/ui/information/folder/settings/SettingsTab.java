@@ -627,7 +627,7 @@ public class SettingsTab extends PFUIComponent {
 
             if (result == 0) { // Purge
                 try {
-                    folder.getFileArchiver().purge(serverClient.getAccount(), folder);
+                    folder.getFileArchiver().purge(folder, serverClient.getAccount());
                 } catch (IOException e) {
                     logSevere(e);
                     DialogFactory

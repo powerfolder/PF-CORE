@@ -635,8 +635,12 @@ public class FileArchiver {
         return size;
     }
 
-    public void purge(Account account, Folder folder) throws IOException {
+    public void purge(Folder folder, Account account) throws IOException {
+        Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
+
         purge();
+        folder.fireArchivePurged();
+
         String logMessage = "Successfully cleared versioning of folder " + folder.getName() +
                 " by " + account;
         logMessage = size == 0 ? logMessage : logMessage + " (Removed "
@@ -644,7 +648,7 @@ public class FileArchiver {
         log.info(logMessage);
     }
 
-    public void purge() throws IOException {
+    private void purge() throws IOException {
         PathUtils.recursiveDelete(archiveDirectory);
         size = 0L;
         saveSize();

@@ -266,6 +266,10 @@ public class IconOverlayUpdateListener extends PFComponent implements
     }
 
     @Override
+    public void archivePurged(FolderEvent folderEvent) {
+    }
+
+    @Override
     public void remoteContentsChanged(FolderEvent folderEvent) {
     }
 
