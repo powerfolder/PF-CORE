@@ -35,6 +35,7 @@ public class AccountDetails extends Message implements Serializable {
     private static final long serialVersionUID = 100L;
 
     private Account user;
+    // The size INCLUDING archived versions
     private long spaceUsed;
     private Boolean needsToAgreeToS;
 
