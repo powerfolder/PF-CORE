@@ -19,12 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SEND_INVIATION_AFTER_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.SYNC_PROFILE_ATTRIBUTE;
-
 import java.awt.Color;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
@@ -48,6 +42,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import de.dal33t.powerfolder.security.AccessMode;
+import de.dal33t.powerfolder.security.FolderPermission;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -73,6 +69,8 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.*;
 
 /**
  * A wizard panel for choosing a disk location for a single folder, like when processing a join invite.
@@ -177,15 +175,23 @@ public class ChooseDiskLocationPanel extends PFWizardPanel {
         row += 2;
         builder.add(folderSizeLabel, cc.xy(1, row));
 
-        if (getController().getOSClient().isBackupByDefault()
-            && PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
+        FolderInfo foInfo = (FolderInfo) getWizardContext().getAttribute(FOLDERINFO_ATTRIBUTE);
+        boolean joinedByServer = foInfo != null && getController().getOSClient().joinedByServer(foInfo);
+
+        if (getController().getOSClient().isBackupByDefault() &&
+                PreferencesEntry.EXPERT_MODE.getValueBoolean(getController()) &&
+                !joinedByServer) {
             row += 2;
             builder.add(backupByOnlineStorageBox, cc.xy(1, row));
         }
 
+        FolderPermission fp = (FolderPermission) getWizardContext().getAttribute(FOLDER_PERMISSION_ATTRIBUTE);
+        boolean inviteAllowed = fp == null || fp.getMode().equals(AccessMode.ADMIN) || fp.getMode().equals(AccessMode.OWNER);
+
         // Send Invite
-        if (getController().isBackupOnly()
-            || !ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(getController())) {
+        if (getController().isBackupOnly() ||
+                !ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(getController()) ||
+                !inviteAllowed) {
             sendInviteAfterCB.setSelected(false);
         } else {
             row += 2;
