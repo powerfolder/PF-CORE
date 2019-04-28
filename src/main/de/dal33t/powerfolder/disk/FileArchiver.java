@@ -266,7 +266,7 @@ public class FileArchiver {
                 flist.add(p);
             }
         } catch (IOException ioe) {
-            log.warning(ioe.getMessage());
+            log.warning(ioe.toString());
             return false;
         }
 
@@ -281,7 +281,7 @@ public class FileArchiver {
                     try {
                         Files.delete(f);
                     } catch (IOException ioe) {
-                        log.warning(ioe.getMessage());
+                        log.warning(ioe.toString());
                     }
                 }
                 allSuccessful &= thisSuccessfuly;
@@ -414,7 +414,7 @@ public class FileArchiver {
                 }
             }
         } catch (IOException ioe) {
-            log.warning(ioe.getMessage());
+            log.warning(ioe.toString());
         }
 
         return ret;
@@ -481,7 +481,7 @@ public class FileArchiver {
                 }
             }
         } catch (IOException ioe) {
-            log.warning(ioe.getMessage());
+            log.warning(ioe.toString());
         }
 
         return false;
@@ -535,7 +535,7 @@ public class FileArchiver {
                         version, hashes, tags);
                 list.add(archiveFile);
             } catch (IOException ioe) {
-                log.warning(ioe.getMessage());
+                log.warning(ioe.toString());
             }
         }
         // Read-only, so others don't trash this.
@@ -626,7 +626,7 @@ public class FileArchiver {
                 try {
                     s -= Files.size(sizeFile);
                 } catch (IOException ioe) {
-                    log.warning(ioe.getMessage());
+                    log.warning(ioe.toString());
                 }
             }
             size = s;
@@ -676,7 +676,7 @@ public class FileArchiver {
                     cleanupOldArchiveFiles(path, cleanupDate);
                 }
             } catch (IOException ioe) {
-                log.warning(ioe.getMessage());
+                log.warning(ioe.toString());
             }
         } else {
             try {
@@ -689,11 +689,11 @@ public class FileArchiver {
                     try {
                         Files.delete(file);
                     } catch (SecurityException e) {
-                        log.severe("Could not delete archive file " + file);
+                        log.severe("Could not delete archive file " + file + ". " + e);
                     }
                 }
             } catch (IOException ioe) {
-                log.warning("Could not read modification time of " + file);
+                log.warning("Could not read modification time of " + file + ". " + ioe);
             }
         }
     }
