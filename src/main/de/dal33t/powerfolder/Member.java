@@ -1679,7 +1679,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     setConnectedToNetwork(true);
                 } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
                 {
-                    logWarning("Problem received: Node thinks we have a dupe connection to him");
+                    logWarning("Problem received: Node thinks we have a dupe connection to " + this);
                 } else {
                     logWarning("Problem received: " + lastProblem);
                 }
