@@ -809,6 +809,10 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

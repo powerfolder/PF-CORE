@@ -595,6 +595,10 @@ public class LoginPanel extends PFWizardPanel {
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
 
+        public void childClientSpawned(ServerClientEvent event) {
+            updateOnlineStatus();
+        }
+
         public void serverDisconnected(ServerClientEvent event) {
             updateOnlineStatus();
         }

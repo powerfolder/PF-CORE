@@ -130,6 +130,10 @@ public abstract class BoundPermission extends PFComponent {
 
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
+
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+        }
     }
 
     public void dispose() {

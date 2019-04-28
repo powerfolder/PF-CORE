@@ -204,7 +204,7 @@ public class SettingsTab extends PFUIComponent {
     private void loadOnlineArchiveMode() {
         // Do this offline so it does not slow the main display.
         FolderInfo fi = folder == null ? null : folder.getInfo();
-        if (serverClient.isConnected() && serverClient.joinedByCloud(fi)) {
+        if (serverClient.isConnected() && serverClient.joinedByServer(fi)) {
             new MyServerModeSwingWorker(fi).execute();
         } else {
             onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
@@ -791,6 +791,12 @@ public class SettingsTab extends PFUIComponent {
         }
 
         public void nodeServerStatusChanged(ServerClientEvent event) {
+            enableConfigOSAction();
+            loadOnlineArchiveMode();
+        }
+
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
             enableConfigOSAction();
             loadOnlineArchiveMode();
         }

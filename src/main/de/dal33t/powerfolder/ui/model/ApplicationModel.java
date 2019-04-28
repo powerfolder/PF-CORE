@@ -593,6 +593,10 @@ public class ApplicationModel extends PFUIComponent {
             handleSyncStatusChange();
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+            handleSyncStatusChange();
+        }
     }
 
     public NoticesModel getNoticesModel() {

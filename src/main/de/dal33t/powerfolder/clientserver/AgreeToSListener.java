@@ -122,6 +122,11 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
     }
 
     @Override
+    public void childClientSpawned(ServerClientEvent event) {
+        // NOP
+    }
+
+    @Override
     public void nodeServerStatusChanged(ServerClientEvent event) {
         getController().getIOProvider().startIO(new Runnable() {
             @Override
@@ -129,8 +134,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                 if (!event.getClient().isLoggedIn()) {
                     return;
                 }
-                AccountDetails ad = getController().getOSClient()
-                    .refreshAccountDetails();
+                AccountDetails ad = event.getClient().refreshAccountDetails();
                 if (ad.needsToAgreeToS()) {
                     wasPaused = getController().isPaused();
                     agreedOnToS = false;

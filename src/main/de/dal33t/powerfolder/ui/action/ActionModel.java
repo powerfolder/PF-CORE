@@ -96,6 +96,10 @@ public class ActionModel extends PFComponent {
                     .isAllowedToCreateFolders());
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+        }
+
         public void serverConnected(ServerClientEvent event) {
             label.setEnabled(getController().getOSClient()
                     .isAllowedToCreateFolders());

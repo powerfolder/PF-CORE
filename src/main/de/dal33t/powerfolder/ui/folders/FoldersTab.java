@@ -318,6 +318,10 @@ public class FoldersTab extends PFUIComponent {
             updateEmptyLabel();
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+        }
+
         public void serverConnected(ServerClientEvent event) {
             label.setEnabled(getController().getOSClient()
                 .isAllowedToCreateFolders());

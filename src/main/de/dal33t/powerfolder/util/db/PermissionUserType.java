@@ -25,6 +25,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.util.StackDump;
@@ -52,7 +54,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 public class PermissionUserType extends Loggable implements UserType {
 
     private static final int[] sqlTypes = {Types.VARCHAR};
-    private static FolderInfoDAO FOLDER_INFO_DAO = null;
+    private static List<FolderInfoDAO> FOLDER_INFO_DAOS = new LinkedList<>();
 
     public Object assemble(Serializable cached, Object owner)
         throws HibernateException
@@ -105,13 +107,19 @@ public class PermissionUserType extends Loggable implements UserType {
             String fiId = idAndName[0];
             String clazzName = idAndName[1];
 
-            if (FOLDER_INFO_DAO == null) {
+            if (FOLDER_INFO_DAOS.isEmpty()) {
                 throw new IllegalStateException("FolderInfoDAO not set! "
                     + "Maybe server is already shut down or not started?");
             }
 
             // get the associated FolderInfo
-            FolderInfo fdInfo = FOLDER_INFO_DAO.findByID(fiId);
+            FolderInfo fdInfo = null;
+            for (FolderInfoDAO dao: FOLDER_INFO_DAOS) {
+                fdInfo = dao.findByID(fiId);
+                if (fdInfo != null) {
+                    break;
+                }
+            }
 
             if (fdInfo == null) {
                 logSevere("FolderInfo with ID " + fiId + " not found!",
@@ -227,10 +235,14 @@ public class PermissionUserType extends Loggable implements UserType {
     }
 
     public static void setFolderInfoDAO(FolderInfoDAO fdao) {
-        if (FOLDER_INFO_DAO != null && fdao != null) {
-            Logger log = Logger.getLogger(PermissionUserType.class.getName());
-            log.severe("FolderInfoDAO was already set! The reset should not happen!");
+        if (fdao == null) {
+            FOLDER_INFO_DAOS.clear();
+            return;
         }
-        FOLDER_INFO_DAO = fdao;
+        FOLDER_INFO_DAOS.add(0, fdao);
+        if (FOLDER_INFO_DAOS.size() > 1) {
+            Logger log = Logger.getLogger(PermissionUserType.class.getName());
+            log.warning("FolderInfoDAO was already set! The reset should not happen!");
+        }
     }
 }

@@ -199,6 +199,10 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
         public void nodeServerStatusChanged(ServerClientEvent event) {
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

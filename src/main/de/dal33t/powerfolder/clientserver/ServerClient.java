@@ -121,6 +121,9 @@ public class ServerClient extends PFComponent {
      */
     private boolean updateConfig;
 
+    // PFC-3203: Update folder repo with account on login/refresh
+    private boolean updateFolders = true;
+
     /**
      * #2366: Quick login during handshake supported
      */
@@ -1851,6 +1854,21 @@ public class ServerClient extends PFComponent {
      *
      * @return the new account details
      */
+    public void refreshAccountDetails(boolean refreshChildClients) {
+        refreshAccountDetails();
+        if (refreshChildClients) {
+            for (ServerClient childClient : childClients.values()) {
+                childClient.refreshAccountDetails(refreshChildClients);
+            }
+        }
+    }
+
+    /**
+     * Re-loads the account details from server. Should be done if it's likely
+     * that currently logged in account has changed.
+     *
+     * @return the new account details
+     */
     public AccountDetails refreshAccountDetails() {
         AccountDetails newDetails = securityService.getAccountDetails();
         if (newDetails != null) {
@@ -1871,7 +1889,9 @@ public class ServerClient extends PFComponent {
         Account a = ad.getAccount();
         updateServer(a);
         updateFriendsList(a);
-        getController().getFolderRepository().updateFolders(ad);
+        if (updateFolders) {
+            getController().getFolderRepository().updateFolders(ad);
+        }
         scheduleConnectHostingServers();
 
         // PFC-2455 / PFC-2745: Spawn additional Clients
@@ -1890,12 +1910,15 @@ public class ServerClient extends PFComponent {
             if (childClients.containsKey(fedService)) {
                 continue;
             }
-            logInfo("Starting connect to federation service: " + fedService);
+            if (isInfo()) {
+                logInfo("Starting connect to " + fedService);
+            }
             ServerClient client = createNewFedClient(fedService, token);
             client.loadServerNodes();
             client.start();
-            client.loginWithLastKnown();
             childClients.put(fedService, client);
+            fireChildClientSpawned(client);
+            client.loginWithLastKnown();
         }
     }
 
@@ -1908,7 +1931,9 @@ public class ServerClient extends PFComponent {
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, getUsername());
             ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, token);
             ConfigurationEntry.SERVER_FEDERATED_LOGIN.setValue(config, false);
-            return new ServerClient(getController(), config);
+            ServerClient client = new ServerClient(getController(), config);
+            client.updateFolders = false;
+            return client;
         } catch (IOException e) {
             logWarning("Unable to connect to " + serviceInfo + ". " + e);
             return null;
@@ -2049,20 +2074,6 @@ public class ServerClient extends PFComponent {
     }
 
     /**
-     * @param foInfo
-     * @return true if the folder is joined/synced with server of federation
-     * service
-     */
-    public boolean joinedByFederation(FolderInfo foInfo) {
-        for (ServerClient client : childClients.values()) {
-            if (client.joinedByCloud(foInfo)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * @param folder the folder to check.
      * @return true if the cloud has joined the folder.
      */
@@ -2075,30 +2086,40 @@ public class ServerClient extends PFComponent {
                 return true;
             }
         }
+        // PFC-3203: Also check for other servers, possibly federation
+        for (Member member: folder.getMembersAsCollection()) {
+            if (member.isServer()) {
+                return true;
+            }
+        }
         return false;
     }
 
     /**
      * @param foInfo the folder to check.
-     * @return true if the cloud has joined the folder.
+     * @return true if any server has joined the folder.
      */
-    public boolean joinedByCloud(FolderInfo foInfo) {
+    public boolean joinedByServer(FolderInfo foInfo) {
         Folder folder = foInfo.getFolder(getController());
         if (folder != null) {
             return joinedByCloud(folder);
         }
-        boolean folderInCloud = false;
-        FolderList fList = server.getLastFolderList();
-        ConnectionHandler conHan = server.getPeer();
-        if (conHan != null && fList != null) {
-            if (server.getPeer().getMember().getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
-                folderInCloud = fList.contains(foInfo, conHan.getMyMagicId());
-            } else {
-                folderInCloud = fList.contains(foInfo);
+        for (Member server0 : servers) {
+            FolderList fList = server0.getLastFolderList();
+            ConnectionHandler conHan = server0.getPeer();
+            if (conHan != null && fList != null) {
+                if (server0.getPeer().getMember().getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
+                    if (fList.contains(foInfo, conHan.getMyMagicId())) {
+                        return true;
+                    }
+                } else {
+                    if (fList.contains(foInfo)) {
+                        return true;
+                    }
+                }
             }
         }
-        // TODO: #2435
-        return folderInCloud;
+        return false;
     }
 
     private void scheduleConnectHostingServers() {
@@ -2397,6 +2418,10 @@ public class ServerClient extends PFComponent {
 
     private void fireAccountUpdates(AccountDetails details) {
         listenerSupport.accountUpdated(new ServerClientEvent(this, details));
+    }
+
+    private void fireChildClientSpawned(ServerClient childClient) {
+        listenerSupport.childClientSpawned(new ServerClientEvent(childClient));
     }
 
     // General ****************************************************************

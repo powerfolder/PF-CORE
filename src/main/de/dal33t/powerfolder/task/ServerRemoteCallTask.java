@@ -167,6 +167,10 @@ public abstract class ServerRemoteCallTask extends PersistentTask {
             checkAndExecute(event.getClient());
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+        }
+
         public void serverDisconnected(ServerClientEvent event) {
         }
 

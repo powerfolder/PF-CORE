@@ -61,4 +61,11 @@ public interface ServerClientListener extends CoreListener {
      * @see Member#setServer(boolean)
      */
     void nodeServerStatusChanged(ServerClientEvent event);
+
+    /**
+     * PFC-3203: Inform other components, e.g. SecurityManager
+     *
+     * @param event
+     */
+    void childClientSpawned(ServerClientEvent event);
 }

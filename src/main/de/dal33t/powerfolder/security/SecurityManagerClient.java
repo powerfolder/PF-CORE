@@ -127,12 +127,12 @@ public class SecurityManagerClient extends PFComponent implements
         if (!client.isLoggedIn()) {
             return hasPermissionDisconnected(permission);
         }
-        AccountInfo a = m.getAccountInfo();
+        AccountInfo a = getAccountInfo(m);
         if (a == null) {
             // Not logged in
             return false;
         }
-        return hasPermission(m.getAccountInfo(), permission);
+        return hasPermission(getAccountInfo(m), permission);
     }
 
     public boolean hasPermission(Account account, Permission permission) {
@@ -311,6 +311,9 @@ public class SecurityManagerClient extends PFComponent implements
         if (client.isPrimaryServer(node)) {
             return NULL_ACCOUNT;
         }
+        if (node.isServer()) {
+            return NULL_ACCOUNT;
+        }
         if (node.isMySelf() && client.isLoggedIn()) {
             return client.getAccountInfo();
         }
@@ -361,6 +364,19 @@ public class SecurityManagerClient extends PFComponent implements
                 Map<MemberInfo, AccountInfo> res = client.getSecurityService()
                     .getAccountInfos(Collections.singleton(node.getInfo()));
                 aInfo = res.get(node.getInfo());
+                if (aInfo == null) {
+                    for (ServerClient childClient: client.getChildClients().values()) {
+                        res = childClient.getSecurityService().getAccountInfos(Collections.singleton(node.getInfo()));
+                        aInfo = res.get(node.getInfo());
+                        if (aInfo != null) {
+                            if (isFine()) {
+                                logFine("getAccountInfo for " + node + " is " + aInfo +
+                                        " from " + childClient.getServer());
+                            }
+                            break;
+                        }
+                    }
+                }
                 // PFC-2571:
                 if (aInfo != null) {
                     aInfo.intern(true);
@@ -417,6 +433,16 @@ public class SecurityManagerClient extends PFComponent implements
                         res.putAll(client.getSecurityService().getAccountInfos(
                             reqNodes));
                         reqNodes.clear();
+
+                        for (ServerClient childClient: client.getChildClients().values()) {
+                            for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
+                                if (entry.getValue() == null) {
+                                    reqNodes.add(entry.getKey());
+                                }
+                            }
+                            res.putAll(childClient.getSecurityService().getAccountInfos(reqNodes));
+                            reqNodes.clear();
+                        }
                     }
                 }
             }
@@ -432,6 +458,18 @@ public class SecurityManagerClient extends PFComponent implements
                     + nodes.size() + ")");
             }
             res.putAll(client.getSecurityService().getAccountInfos(reqNodes));
+
+            // PFC-3203: Request unknown sessions from federated services
+            for (ServerClient childClient: client.getChildClients().values()) {
+                reqNodes.clear();
+                for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
+                    if (entry.getValue() == null) {
+                        reqNodes.add(entry.getKey());
+                    }
+                }
+                res.putAll(childClient.getSecurityService().getAccountInfos(reqNodes));
+            }
+
             if (isFine()) {
                 logFine("Retrieved " + res.size() + " AccountInfos for "
                     + nodes.size() + " nodes: " + res);
@@ -554,7 +592,7 @@ public class SecurityManagerClient extends PFComponent implements
                 // Myself changed!
                 if (node.isMySelf() && client.isConnected()) {
                     try {
-                        client.refreshAccountDetails();
+                        client.refreshAccountDetails(true);
                     } catch (Exception e) {
                         logWarning("Unable to refresh account details. " + e);
                         logFiner(e);
@@ -608,6 +646,13 @@ public class SecurityManagerClient extends PFComponent implements
         }
 
         public void nodeServerStatusChanged(ServerClientEvent event) {
+        }
+
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+            event.getClient().addListener(this);
+            permissionsCacheAccounts.clear();
+            sessions.clear();
         }
     }
 

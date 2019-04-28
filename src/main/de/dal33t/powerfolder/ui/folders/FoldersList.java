@@ -443,6 +443,13 @@ public class FoldersList extends PFUIComponent {
             }
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+            if (event.getServerNode().hasJoinedAnyFolder()) {
+                updateFolders();
+            }
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

@@ -269,6 +269,11 @@ public class LinkFolderOnlineDialog extends BaseDialog {
             populateOnlineFolders();
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+            populateOnlineFolders();
+        }
+
         public boolean fireInEventDispatchThread() {
             return true;
         }

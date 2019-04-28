@@ -1177,7 +1177,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().getFolderRepository().triggerMaintenance();
 
         // Trigger file requestor
-        fileRequestor.triggerFileRequesting(folder.getInfo());
+        if (folder.hasOwnDatabase()) {
+            fileRequestor.triggerFileRequesting(folder.getInfo());
+        }
 
         // Fire event
         if (fireEvent) {
@@ -1975,7 +1977,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // 1) Create at cloud service
         boolean scheduleCreateOnServer = false;
-        if (client.isBackupByDefault() && !client.joinedByCloud(foInfo)) {
+        if (client.isBackupByDefault() && !client.joinedByServer(foInfo)) {
             // Make sure it is backed up by the server.
             try {
                 // Do it synchronous. Otherwise we might get race conditions.

@@ -477,7 +477,9 @@ public class Folder extends PFComponent {
         if (!getController().isShuttingDown()) {
             getController().setPaused(getController().isPaused());
         }
-        logFiner("Added problem");
+        if (isWarning()) {
+            logWarning(this + ": Added " + problem);
+        }
     }
 
     /**
@@ -582,6 +584,7 @@ public class Folder extends PFComponent {
             }
         }
 
+        boolean hadOwnDatabase = hasOwnDatabase;
         hasOwnDatabase = true;
 
         if (isInfo() || isFine()) {
@@ -636,6 +639,10 @@ public class Folder extends PFComponent {
 
         if (isFiner()) {
             logFiner("commitScanResult DONE");
+        }
+
+        if (!hadOwnDatabase) {
+            getController().getFolderRepository().getFileRequestor().triggerFileRequesting(currentInfo);
         }
     }
 

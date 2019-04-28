@@ -1528,6 +1528,11 @@ public class MainFrame extends PFUIComponent {
         public void nodeServerStatusChanged(ServerClientEvent event) {
             updateOnlineStorageDetails();
         }
+
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+            updateOnlineStorageDetails();
+        }
     }
 
     private class MyLoginAction extends BaseAction {

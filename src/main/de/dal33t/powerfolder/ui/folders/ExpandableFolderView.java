@@ -1605,6 +1605,11 @@ public class ExpandableFolderView extends PFUIComponent implements
             updateSynableItems();
         }
 
+        @Override
+        public void childClientSpawned(ServerClientEvent event) {
+            updateSynableItems();
+        }
+
         private void updateSynableItems() {
             AccountDetails ad = getController().getOSClient()
                 .getAccountDetails();
