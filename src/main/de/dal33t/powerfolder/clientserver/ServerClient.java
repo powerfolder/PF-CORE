@@ -1659,15 +1659,6 @@ public class ServerClient extends PFComponent {
             Member node = friend.getNode(getController(), true);
             node.setFriend(true, null);
         }
-//        // Cleanup old servers:
-//        for (Member node : knownNodes.values()) {
-//            if (isPrimaryServer(node)) {
-//                continue;
-//            }
-//            if (!nodeList.getServersSet().contains(node.getInfo())) {
-//                node.setServer(false);
-//            }
-//        }
 
         Collection<Member> newServers = new CopyOnWriteArrayList<>();
         for (MemberInfo server : nodeList.getServersSet()) {
@@ -2157,9 +2148,12 @@ public class ServerClient extends PFComponent {
 
     private void retrieveAndConnectoClusterServers() {
         try {
-            loadServerNodes();
+            if (!isConnected()) {
+                loadServerNodes();
+                return;
+            }
 
-            if (!isConnected() || !isLoggedIn()) {
+            if (!isLoggedIn()) {
                 return;
             }
 
@@ -2173,8 +2167,16 @@ public class ServerClient extends PFComponent {
                         + folders.length + " folders: " + hostingServers);
             }
             for (MemberInfo hostingServerInfo : hostingServers) {
-                Member hostingServer = hostingServerInfo.getNode(
-                        getController(), true);
+                Member hostingServer = hostingServerInfo.getNode(getController(), false);
+                if (hostingServer == null) {
+                    // NEW server
+                    loadServerNodes();
+                    hostingServer = hostingServerInfo.getNode(getController(), false);
+                    if (hostingServer == null) {
+                        logWarning("Unable to retrieve new server certificate for " + hostingServerInfo);
+                        hostingServer = hostingServerInfo.getNode(getController(), true);
+                    }
+                }
                 hostingServer.updateInfo(hostingServerInfo);
                 hostingServer.setServer(true);
 
