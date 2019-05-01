@@ -2785,7 +2785,7 @@ public class ServerClient extends PFComponent {
             if (hasUsername() && hasCredentials()) {
                 loginProblems++;
                 if (loginProblems > 20) {
-                    logSevere("Got "
+                    logWarning("Got "
                             + loginProblems
                             + " login problems. "
                             + "Not longer auto-logging in to prevent hammering server.");
