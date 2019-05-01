@@ -23,6 +23,7 @@ import com.jgoodies.binding.value.ValueHolder;
 import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.FileInBasePathWarning;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
@@ -386,7 +387,10 @@ public class NoticesModel extends PFUIComponent {
 
         @Override
         public void run() {
-            getController().getOSClient().getSecurityService().declineInvitation(invitation);
+            ServerClient client = getController().getOSClient();
+            if (client.isLoggedIn() && client.getAccount().hasReadPermissions(invitation.getPermission().getFolder())) {
+                client.getSecurityService().declineInvitation(invitation);
+            }
         }
     }
 }

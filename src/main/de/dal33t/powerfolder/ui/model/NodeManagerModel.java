@@ -376,7 +376,6 @@ public class NodeManagerModel extends PFUIComponent {
 
         @Override
         public void childClientSpawned(ServerClientEvent event) {
-            updateNode(event.getServerNode());
         }
 
         public void serverConnected(ServerClientEvent event) {
