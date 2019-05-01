@@ -250,7 +250,7 @@ public class Translation {
             }
             return translation;
         } catch (MissingResourceException e) {
-            if (id != null && !id.startsWith("date_format.")) {
+            if (id != null && !id.startsWith("date_format.") && StringUtils.isNotBlank(id)) {
                 // Only log non-date format errors.
                 // Date format error may occur during logging, prevent
                 // stackoverflow error.
