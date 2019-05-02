@@ -128,6 +128,11 @@ public class Account implements Serializable, D2DObject {
     @JoinColumn(name = "lastLoginFrom_id")
     private MemberInfo lastLoginFrom;
     private boolean proUser;
+    /**
+     * PFS-3171: Maximum number of allowed folders. Values can be: <code>null</code> for unlimited folders,
+     * 0 for no allowed folders at all. or a value >0 for a limit
+     */
+    private Integer maxFolders;
 
     @Column(length = 255)
     @Index(name = "IDX_ACC_FIRSTNAME")
@@ -1240,6 +1245,22 @@ public class Account implements Serializable, D2DObject {
             return true;
         }
         return autoRenewTill.after(new Date());
+    }
+
+    public Integer getMaxFolders() {
+        return maxFolders;
+    }
+
+    public void setMaxFolders(int maxFolders) {
+        this.maxFolders = Integer.valueOf(maxFolders);
+    }
+
+    public boolean isMaxFoldersUnlimited() {
+        return maxFolders == null || maxFolders.intValue() < 0;
+    }
+
+    public void setMaxFoldersUnlimited() {
+        this.maxFolders = null;
     }
 
     public int getAgreedToSVersion() {
