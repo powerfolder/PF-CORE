@@ -1096,7 +1096,7 @@ public class TransferManager extends PFComponent {
 
         updateSpeedLimits();
 
-        logInfo("Upload limit: "
+        logFine("Upload limit: "
             + Format.formatBytesShort(getUploadCPSForWAN()) + "/s");
     }
 
@@ -1122,7 +1122,7 @@ public class TransferManager extends PFComponent {
 
         updateSpeedLimits();
 
-        logInfo("Download limit: "
+        logFine("Download limit: "
             + Format.formatBytesShort(getDownloadCPSForWAN()) + "/s");
     }
 
@@ -1148,7 +1148,7 @@ public class TransferManager extends PFComponent {
 
         updateSpeedLimits();
 
-        logInfo("LAN Upload limit: "
+        logFine("LAN Upload limit: "
             + Format.formatBytesShort(getUploadCPSForLAN()) + "/s");
     }
 
@@ -1171,7 +1171,7 @@ public class TransferManager extends PFComponent {
 
         updateSpeedLimits();
 
-        logInfo("LAN Download limit: "
+        logFine("LAN Download limit: "
             + Format.formatBytesShort(getDownloadCPSForLAN()) + "/s");
     }
 
