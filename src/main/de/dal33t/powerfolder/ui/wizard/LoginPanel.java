@@ -117,7 +117,7 @@ public class LoginPanel extends PFWizardPanel {
         this.nextPanel = nextPanel;
         this.client = client;
         this.showUseOS = showUseOS;
-        LOG.log(Level.INFO, "Opening login wizard");
+        LOG.log(Level.FINE, "Opening login wizard");
     }
 
     public boolean hasNext() {
