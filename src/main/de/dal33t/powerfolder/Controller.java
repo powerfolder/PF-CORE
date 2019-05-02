@@ -1228,7 +1228,7 @@ public class Controller extends PFComponent {
             sched.getContext().put("controller", this);
             sched.start();
         } catch (SchedulerException e) {
-            logWarning("Could not initiate housekeeping: " + e.getMessage());
+            logWarning("Could not initiate housekeeping: " + e.getMessage(), new StackDump());
         }
 
         // Also run housekeeping one minute after start up.
@@ -3073,7 +3073,7 @@ public class Controller extends PFComponent {
             Path file = getMiscFilesLocation().resolve(
                 getConfigName() + ".notices");
             if (Files.exists(file)) {
-                logInfo("Loading notices");
+                logFine("Loading notices from " + file);
                 try (ObjectInputStream inputStream = new ObjectInputStream(
                     Files.newInputStream(file))) {
                     List<Notice> notices = (List<Notice>) inputStream
