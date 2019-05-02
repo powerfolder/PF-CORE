@@ -203,61 +203,34 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
      */
     public JPanel getUIPanel() {
         if (panel == null) {
-            FormLayout layout = new FormLayout(
-                "right:pref, 3dlu, 163dlu, pref:grow",
-                "pref, 10dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 8dlu, pref, 0dlu, pref, 0dlu, pref");
+            FormLayout layout = new FormLayout("right:pref, 3dlu, 163dlu, pref:grow", "pref");
 
             PanelBuilder builder = new PanelBuilder(layout);
-            builder.setBorder(Borders
-                .createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
+            builder.setBorder(Borders.createEmptyBorder("3dlu, 3dlu, 3dlu, 3dlu"));
 
             CellConstraints cc = new CellConstraints();
-            int row = 3;
-
-            // Start: PFC-2385
-            if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
-                row += 2;
-                builder.add(
-                    new JLabel(Translation
-                        .get("preferences.general.mode.title")), cc.xy(1, row));
-                builder.add(modeChooser, cc.xy(3, row));
-            }
-            // End: PFC-2385
+            int row = 1;
             
             // Start: PFC-2631
-            row += 2;
-            builder.add(
-                new JLabel(Translation
-                    .get("exp.preferences.expert.base_dir")), cc.xy(1,
-                    row));
+            builder.addLabel(Translation.get("exp.preferences.expert.base_dir"), cc.xy(1, row));
             builder.add(locationField, cc.xyw(3, row, 2));
             // End: PFC-2631
             
-            row += 2;
-            builder.add(
-                new JLabel(Translation
-                    .get("preferences.general.account_label")), cc
-                    .xy(1, row));
+            row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
+            builder.addLabel(Translation.get("preferences.general.account_label"), cc.xy(1, row));
             builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
 
-            row += 2;
-            builder.add(
-                new JLabel(Translation
-                    .get("preferences.general.nickname")), cc.xy(1,
-                    row));
+            row += 2; builder.appendRelatedComponentsGapRow(); builder.appendRow("pref");
+            builder.addLabel(Translation.get("preferences.general.nickname"), cc.xy(1, row));
             builder.add(nickField, cc.xy(3, row));
 
-            row += 2;
-            builder.add(new JLabel(Translation.get("preferences.general.language")), cc.xy(1, row));
+            row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
+            builder.addLabel(Translation.get("preferences.general.language"), cc.xy(1, row));
             builder.add(languageChooser, cc.xy(3, row));
 
             if (PreferencesEntry.VIEW_ACHIVE.getValueBoolean(getController())) {
-                row += 2;
-                builder
-                    .add(
-                        new JLabel(
-                            Translation
-                                .get("preferences.general.default_archive_mode_text")),
+                row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
+                builder.addLabel(Translation.get("preferences.general.default_archive_mode_text"),
                         cc.xy(1, row, CellConstraints.RIGHT, CellConstraints.TOP));
                 builder.add(
                     threePanel(archiveModeSelectorPanel.getUIComponent(),
@@ -266,32 +239,32 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             }
 
             if (OSUtil.isStartupItemSupported() && runOnStartupBox != null) {
-                builder.appendRow("3dlu");
-                builder.appendRow("pref");
-                row += 2;
-                builder.add(
-                    new JLabel(Translation
-                        .get("preferences.general.start_behavior")),
-                    cc.xy(1, row));
+                row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
+                builder.addLabel(Translation.get("preferences.general.start_behavior"), cc.xy(1, row));
                 builder.add(runOnStartupBox, cc.xyw(3, row, 2));
             }
 
-            row += 2;
-            builder.add(
-                new JLabel(Translation
-                    .get("preferences.general.exit_behavior")), cc
-                    .xy(1, row));
+            row += 2; builder.appendRelatedComponentsGapRow(); builder.appendRow("pref");
+            builder.addLabel(Translation.get("preferences.general.exit_behavior"), cc.xy(1, row));
             builder.add(xBehaviorChooser, cc.xy(3, row));
 
-            row += 2;
+            row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
             builder.add(verboseCB, cc.xy(3, row));
+
+            // Start: PFC-2385
+            if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
+                row += 2; builder.appendRelatedComponentsGapRow(); builder.appendRow("pref");
+                builder.add(modeChooser, cc.xy(3, row));
+            }
+            // End: PFC-2385
+
             // PFC-2461: Completely disable updates via preferences
             if (PreferencesEntry.SHOW_UPDATE.getValueBoolean(getController())) {
-                row += 2;
-                builder.add(new JLabel(Translation.get("preferences.general.check_for_updates_text")), cc.xy(1, row));
+                row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
+                builder.addLabel(Translation.get("preferences.general.check_for_updates_text"), cc.xy(1, row));
                 builder.add(updateCheck, cc.xy(3, row));
 
-                row +=2;
+                row += 2; builder.appendRelatedComponentsGapRow(); builder.appendRow("pref");
                 builder.add(createUpdateCheckPanel(), cc.xyw(3, row, 2));
             }
 

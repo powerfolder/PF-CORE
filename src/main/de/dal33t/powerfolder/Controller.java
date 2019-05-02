@@ -1228,7 +1228,7 @@ public class Controller extends PFComponent {
             sched.getContext().put("controller", this);
             sched.start();
         } catch (SchedulerException e) {
-            logWarning("Could not initiate housekeeping: " + e.getMessage(), new StackDump());
+            logWarning("Could not initiate housekeeping: " + e.getMessage());
         }
 
         // Also run housekeeping one minute after start up.
