@@ -2782,23 +2782,24 @@ public class ServerClient extends PFComponent {
         }
 
         private void autoLogin(Throwable t) {
-            if (hasUsername() && hasCredentials()) {
-                loginProblems++;
-                if (loginProblems > 20) {
-                    logWarning("Got "
-                            + loginProblems
-                            + " login problems. "
-                            + "Not longer auto-logging in to prevent hammering server.");
-                    return;
-                }
-                logWarning("Auto-login for " + username
-                        + " required. Caused by " + t);
-                try {
-                    login0(username, passwordObf, tokenSecret);
-                } catch (Exception e) {
-                    logWarning("Unable to login with " + username + " at "
-                            + getServerString() + ". " + e);
-                }
+            if (!hasUsername() || !hasCredentials() || !isConnected()) {
+                return;
+            }
+            loginProblems++;
+            if (loginProblems > 20) {
+                logWarning("Got "
+                        + loginProblems
+                        + " login problems. "
+                        + "Not longer auto-logging in to prevent hammering server.");
+                return;
+            }
+            logWarning("Auto-login for " + username
+                    + " required. Caused by " + t);
+            try {
+                login0(username, passwordObf, tokenSecret);
+            } catch (Exception e) {
+                logWarning("Unable to login with " + username + " at "
+                        + getServerString() + ". " + e);
             }
         }
     }
