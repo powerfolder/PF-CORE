@@ -4926,6 +4926,11 @@ public class Folder extends PFComponent {
     private final SimpleCache<Member, Boolean> hasReadCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
     private final SimpleCache<Member, Boolean> hasWriteCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
 
+    public void clearNodeCache(Member node) {
+        hasReadCache.invalidate(node);
+        hasWriteCache.invalidate(node);
+    }
+
     public boolean hasReadPermission(Member member) {
         Boolean hasRead = hasReadCache.getValidEntry(member);
         if (hasRead != null) {

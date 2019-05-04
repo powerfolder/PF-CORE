@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -514,6 +515,10 @@ public class SecurityManagerClient extends PFComponent implements
         }
         permissionsCacheAccounts.remove(nullSafeGet(s != null ? s
             .getAccountInfo() : null));
+
+        for (Folder folder : getController().getFolderRepository().getFolders(true)) {
+            folder.clearNodeCache(node);
+        }
     }
 
     /**
