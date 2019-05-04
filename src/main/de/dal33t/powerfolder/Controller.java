@@ -1245,7 +1245,7 @@ public class Controller extends PFComponent {
                 public void run() {
                     logFine(Profiling.dumpStats());
                 }
-            }, 0, 1, TimeUnit.MINUTES);
+            }, 1, 10, TimeUnit.MINUTES);
         }
 
         // ============

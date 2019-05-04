@@ -242,4 +242,23 @@ public class Profiling {
         totalTime = 0;
     }
 
+    public static final String shortenURI(String uri) {
+        try {
+            int start = 0;
+            if (uri.startsWith("/")) {
+                start++;
+            }
+            int first = uri.indexOf('/', start);
+            if (first >= 0) {
+                int second = uri.indexOf('/', first + 1);
+                if (second >= 0) {
+                    uri = uri.substring(0, Math.min(second + 1, uri.length()));
+                }
+            }
+        } catch (RuntimeException e) {
+            LOG.log(Level.WARNING,"Unable to shorten URI " + uri + ". " + e, e);
+        }
+        return uri;
+    }
+
 }

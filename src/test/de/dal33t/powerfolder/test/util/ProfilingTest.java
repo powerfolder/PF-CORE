@@ -30,6 +30,32 @@ public class ProfilingTest extends TestCase {
         Profiling.setEnabled(false);
     }
 
+    public void testURISplit() {
+        assertEquals("/webdav/NAS/",
+                Profiling.shortenURI("/webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/5000/VM-Store/"));
+        assertEquals("/webdav/NAS/",
+                Profiling.shortenURI("/webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/5000/VM-Store"));
+        assertEquals("/webdav/NAS/",
+                Profiling.shortenURI("/webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/"));
+        assertEquals("/webdav/NAS/", Profiling.shortenURI("/webdav/NAS/"));
+        assertEquals("/webdav/NAS", Profiling.shortenURI("/webdav/NAS"));
+        assertEquals("/webdav/", Profiling.shortenURI("/webdav/"));
+        assertEquals("/webdav", Profiling.shortenURI("/webdav"));
+        assertEquals("webdav", Profiling.shortenURI("webdav"));
+
+        assertEquals("webdav/NAS/",
+                Profiling.shortenURI("webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/5000/VM-Store/"));
+        assertEquals("webdav/NAS/", Profiling.shortenURI("webdav/NAS/QNAP"));
+        assertEquals("webdav/NAS/", Profiling.shortenURI("webdav/NAS/"));
+        assertEquals("webdav/NAS", Profiling.shortenURI("webdav/NAS"));
+
+        assertEquals("exe", Profiling.shortenURI("exe"));
+        assertEquals("/newjoinfolder", Profiling.shortenURI("/newjoinfolder"));
+        assertEquals("/wapi/files/",
+                Profiling.shortenURI("/wapi/files/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1/products%2FWB0R5L90S%20(2)/Static_Full_Version/css/plugins"));
+        assertEquals("png/", Profiling.shortenURI("png/"));
+    }
+
     /**
      * To take a look at the API.
      * <p>
