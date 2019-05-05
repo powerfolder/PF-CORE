@@ -1017,7 +1017,6 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isNotBlank(theUsername)) {
             Level l = isConnected() ? Level.INFO : Level.FINE;
             logIt(l, "Logging in with: " + theUsername + (theToken != null ?
-            logIt(l, "Logging in with: " + theUsername + (theToken != null ?
                     (". token: " + theToken.length()) : "") + " to " + getServerString(), null);
         } else {
             logFine("Login without username");
@@ -1898,6 +1897,8 @@ public class ServerClient extends PFComponent {
         }
     }
 
+    private volatile boolean spawnRetrying = false;
+
     private void spawnFedClients(Account a) {
         synchronized (childClients) {
             for (ServerInfo fedService : a.getTokens().keySet()) {
@@ -1913,6 +1914,17 @@ public class ServerClient extends PFComponent {
                 }
                 ServerClient client = createNewFedClient(fedService, token);
                 if (client == null) {
+                    if (!spawnRetrying) {
+                        spawnRetrying = true;
+                        getController().schedule(() -> {
+                            if (!getAccount().equals(a)) {
+                                return;
+                            }
+                            logInfo("Retry connection to federated services");
+                            spawnRetrying = false;
+                            spawnFedClients(a);
+                        }, 1000L * Constants.HOSTING_FOLDERS_REQUEST_INTERVAL);
+                    }
                     // Error
                     return;
                 }
