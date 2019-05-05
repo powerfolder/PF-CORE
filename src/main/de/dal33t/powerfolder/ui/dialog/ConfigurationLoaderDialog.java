@@ -225,7 +225,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             if (StringUtils.isNotBlank(initialText)) {
                 editorField.setText(initialText);
             } else {                
-                editorField.setText("http://");
+                editorField.setText("https://");
             }
             editorField.setCaretPosition(editorField.getText().length());
         } catch (Exception e) {
