@@ -1850,7 +1850,9 @@ public class ServerClient extends PFComponent {
         if (refreshChildClients) {
             for (ServerClient childClient : childClients.values()) {
                 try {
-                    childClient.refreshAccountDetails(false);
+                    if (childClient.isConnected()) {
+                        childClient.refreshAccountDetails(false);
+                    }
                 } catch (RemoteCallException e) {
                     logWarning("Unable to refresh account details from " + getServerString() + ". " + e);
                     logFiner(e);
