@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 
 /**
  * Client to a server.
@@ -245,10 +246,8 @@ public class ServerClient extends PFComponent {
         if (theNode.getReconnectAddress() == null) {
             logSevere("Got server without reconnect address: " + theNode);
         }
-        if (!ProUtil.isSwitchData(controller)) {
-            logInfo("Using server: " + theNode.getNick() + ", ID: "
-                    + theNodeId + " @ " + theNode.getReconnectAddress());
-        }
+        logInfo("Using server: " + theNode.getNick() + ", ID: "
+                + theNodeId + " @ " + theNode.getReconnectAddress());
         init(theNode, allowServerChange);
     }
 
@@ -952,10 +951,7 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isBlank(un)) {
             logFine("Not logging in. Username blank");
         } else {
-            if (!ProUtil.isSwitchData(getController())) {
-                logInfo("Logging into server " + getServerString()
-                        + ". Username: " + un);
-            }
+            logFine("Logging into server " + getServerString() + ". Username: " + un);
             return login0(un, LoginUtil.obfuscate(pw), token);
         }
         // Failed!
@@ -1019,8 +1015,10 @@ public class ServerClient extends PFComponent {
                            String theToken) {
 
         if (StringUtils.isNotBlank(theUsername)) {
-            logInfo("Login with: " + theUsername
-                    + (theToken != null ? (". token: " + theToken.length()) : ""));
+            Level l = isConnected() ? Level.INFO : Level.FINE;
+            logIt(l, "Logging in with: " + theUsername + (theToken != null ?
+            logIt(l, "Logging in with: " + theUsername + (theToken != null ?
+                    (". token: " + theToken.length()) : "") + " to " + getServerString(), null);
         } else {
             logFine("Login without username");
         }
@@ -1129,16 +1127,14 @@ public class ServerClient extends PFComponent {
                 }
 
                 if (!loginOk) {
-                    logWarning("Login to server " + server + " (user "
-                            + theUsername + ") failed!");
+                    logWarning("Login to " + server + " (" + theUsername + ") failed!");
                     setAnonAccount();
                     fireLogin(accountDetails, false);
                     return accountDetails.getAccount();
                 }
                 AccountDetails newAccountDetails = securityService
                         .getAccountDetails();
-                logInfo("Login to server " + server.getReconnectAddress()
-                        + " (user " + theUsername + ") result: "
+                logInfo("Login to " + server.getReconnectAddress() + " (" + theUsername + ") result: "
                         + newAccountDetails);
                 if (newAccountDetails != null) {
                     accountDetails = newAccountDetails;
@@ -1667,13 +1663,13 @@ public class ServerClient extends PFComponent {
             node.setServer(true);
             newServers.add(node);
             if (isInfo() && !servers.contains(node)) {
-                logInfo("Added server: " + node);
+                logFine("Added server: " + node);
             }
         }
         for (Member server : servers) {
             if (!newServers.contains(server) && !isPrimaryServer(server)) {
                 server.setServer(false);
-                logInfo("Removed server: " + server);
+                logFine("Removed server: " + server);
             }
         }
         servers = newServers;
@@ -1903,27 +1899,29 @@ public class ServerClient extends PFComponent {
     }
 
     private void spawnFedClients(Account a) {
-        for (ServerInfo fedService : a.getTokens().keySet()) {
-            String token = a.getToken(fedService);
-            if (Token.isExpired(token)) {
-                continue;
+        synchronized (childClients) {
+            for (ServerInfo fedService : a.getTokens().keySet()) {
+                String token = a.getToken(fedService);
+                if (Token.isExpired(token)) {
+                    continue;
+                }
+                if (childClients.containsKey(fedService)) {
+                    continue;
+                }
+                if (isFine()) {
+                    logFine("Starting connect to " + fedService);
+                }
+                ServerClient client = createNewFedClient(fedService, token);
+                if (client == null) {
+                    // Error
+                    return;
+                }
+                client.loadServerNodes();
+                client.start();
+                childClients.put(fedService, client);
+                fireChildClientSpawned(client);
+                client.loginWithLastKnown();
             }
-            if (childClients.containsKey(fedService)) {
-                continue;
-            }
-            if (isInfo()) {
-                logInfo("Starting connect to " + fedService);
-            }
-            ServerClient client = createNewFedClient(fedService, token);
-            if (client == null) {
-                // Error
-                return;
-            }
-            client.loadServerNodes();
-            client.start();
-            childClients.put(fedService, client);
-            fireChildClientSpawned(client);
-            client.loginWithLastKnown();
         }
     }
 
@@ -2323,9 +2321,15 @@ public class ServerClient extends PFComponent {
                 recentServerSwitches++;
             }
         }
+        boolean init = server == null;
         server = newServerNode;
         server.setServer(true);
-        logInfo("New primary server: " + server.getNick());
+        if (init) {
+            logFine("New primary server: " + server.getNick());
+        } else {
+            logInfo("New primary server: " + server.getNick());
+        }
+
 
         // Why?
         // // Put on friendslist
