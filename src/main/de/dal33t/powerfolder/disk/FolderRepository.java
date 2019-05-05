@@ -2452,8 +2452,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
 
-            logInfo("Syncing folder setup with account permissions("
-                    + a.getFolders().size() + "): " + a.getUsername());
+            if (isFine()) {
+                logFine("Syncing folder setup with account permissions("
+                        + a.getFolders().size() + "): " + a.getUsername());
+            }
             Collection<FolderInfo> created = createLocalFolders(ad);
             if (ConfigurationEntry.SECURITY_PERMISSIONS_STRICT
                     .getValueBoolean(getController())) {
