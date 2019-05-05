@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+import de.dal33t.powerfolder.security.FolderPermission;
 import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -162,19 +163,35 @@ public class TextPanelPanel extends PFWizardPanel {
                     builder.add(openFolderActionLabel.getUIComponent(),
                         cc.xy(1, y));
 
-                    if (ConfigurationEntry.SERVER_INVITE_ENABLED
-                        .getValueBoolean(getController()))
-                    {
+                    if (ConfigurationEntry.SERVER_INVITE_ENABLED.getValueBoolean(getController())) {
                         builder.appendRow("7dlu");
                         y++;
                         builder.appendRow("pref");
                         y++;
-                        ActionLabel sendInviteLabel = new ActionLabel(
-                            getController(), new SendInviteAction(
+                        final ActionLabel sendInviteLabel = new ActionLabel(
+                                getController(), new SendInviteAction(
                                 getController(), folderInfo));
                         sendInviteLabel.convertToBigLabel();
                         builder.add(sendInviteLabel.getUIComponent(),
-                            cc.xy(1, y));
+                                cc.xy(1, y));
+                        sendInviteLabel.setVisible(false);
+
+                        new SwingWorker<Boolean, Boolean>() {
+                            @Override
+                            protected Boolean doInBackground() {
+                                return getController().getSecurityManager().hasPermission(
+                                        getController().getOSClient().getAccount(), FolderPermission.admin(folderInfo));
+                            }
+
+                            @Override
+                            protected void done() {
+                                try {
+                                    sendInviteLabel.setVisible(get());
+                                } catch (Exception e) {
+                                    sendInviteLabel.setVisible(true);
+                                }
+                            }
+                        }.execute();
                     }
                 }
             }
