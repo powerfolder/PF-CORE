@@ -367,6 +367,9 @@ public class SecurityManagerClient extends PFComponent implements
                 aInfo = res.get(node.getInfo());
                 if (aInfo == null) {
                     for (ServerClient childClient: client.getChildClients().values()) {
+                        if (!childClient.isConnected()) {
+                            continue;
+                        }
                         res = childClient.getSecurityService().getAccountInfos(Collections.singleton(node.getInfo()));
                         aInfo = res.get(node.getInfo());
                         if (aInfo != null) {
@@ -436,6 +439,9 @@ public class SecurityManagerClient extends PFComponent implements
                         reqNodes.clear();
 
                         for (ServerClient childClient: client.getChildClients().values()) {
+                            if (!childClient.isConnected()) {
+                                continue;
+                            }
                             for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
                                 if (entry.getValue() == null) {
                                     reqNodes.add(entry.getKey());
@@ -462,6 +468,9 @@ public class SecurityManagerClient extends PFComponent implements
 
             // PFC-3203: Request unknown sessions from federated services
             for (ServerClient childClient: client.getChildClients().values()) {
+                if (!childClient.isConnected()) {
+                    continue;
+                }
                 reqNodes.clear();
                 for (Entry<MemberInfo, AccountInfo> entry : res.entrySet()) {
                     if (entry.getValue() == null) {
