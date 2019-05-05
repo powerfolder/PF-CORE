@@ -40,17 +40,6 @@ public class ProUtil {
     private ProUtil() {
     }
 
-    /**
-     * Remove this hack.
-     *
-     * @param controller
-     * @return
-     */
-    public static final boolean isSwitchData(Controller controller) {
-        return controller.getDistribution().getBinaryName().toLowerCase().trim().contains("switchdata")
-            || controller.getDistribution().getName().toLowerCase().trim().contains("switchdata");
-    }
-
     public static final boolean isServerConfig(Controller controller) {
         return controller.getConfig().get("plugin.server.maintenancefolderid") != null;
     }
