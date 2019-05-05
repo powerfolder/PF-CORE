@@ -57,6 +57,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
     private final Set<NameValuePair> pairs = new TreeSet<>();
 
     private JComboBox<String> archiveCombo;
+    private JButtonMini purgeButton;
     private JPanel panel;
     private List<ValueModel> versionModels; // {Integer}
     private ActionListener purgeListener;
@@ -86,6 +87,11 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
         super(controller);
         versionModels = Collections.singletonList(versionModel);
         initComponents();
+    }
+
+    public void setChangeable(boolean changeable) {
+        archiveCombo.setEnabled(changeable);
+        purgeButton.setVisible(changeable);
     }
 
     /**
@@ -193,7 +199,7 @@ public class ArchiveModeSelectorPanel extends PFUIComponent {
 
         panel.add(archiveCombo, cc.xy(1, 1));
         if (purgeListener != null) {
-            JButtonMini purgeButton = new JButtonMini(Icons
+            purgeButton = new JButtonMini(Icons
                 .getIconById(Icons.DELETE), Translation
                 .get("archive_mode_selector_panel.purge.tip"));
             purgeButton.addActionListener(purgeListener);

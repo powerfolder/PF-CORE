@@ -1001,6 +1001,10 @@ public class SettingsTab extends PFUIComponent {
                     updatingOnlineArchiveMode = true;
                     onlineArchiveModeSelectorPanel.setArchiveMode(perFile);
                     onlineArchiveModeSelectorPanel.getUIComponent().setVisible(true);
+                    boolean hasAdminPermission =
+                            serverClient.getSecurityService().hasPermission(serverClient.getAccountInfo(),
+                                    FolderPermission.admin(folderInfo));
+                    onlineArchiveModeSelectorPanel.setChangeable(hasAdminPermission);
                     onlineLabel.setVisible(true);
                 }
             } catch (Exception e) {
