@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
+import de.dal33t.powerfolder.clientserver.SecurityService;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.event.*;
@@ -649,9 +650,8 @@ public class MembersSimpleTableModel extends PFUIComponent implements
         @Override
         protected Void doInBackground() throws Exception {
             try {
-                getController().getOSClient().getSecurityService()
-                        .setFolderPermission(aInfo, folder.getInfo(),
-                                newPermission);
+                getController().getOSClient().getSecurityService(folder.getInfo())
+                        .setFolderPermission(aInfo, folder.getInfo(), newPermission);
             } catch (SecurityException se) {
                 errorMessage = se.getMessage();
             }
@@ -683,7 +683,7 @@ public class MembersSimpleTableModel extends PFUIComponent implements
         @Override
         protected Void doInBackground() throws Exception {
             logInfo("Setting new default permission: " + newPermission);
-            getController().getOSClient().getSecurityService()
+            getController().getOSClient().getSecurityService(folderInfo)
                 .setDefaultPermission(folderInfo, newPermission);
 
             getController().getFolderRepository()
@@ -708,8 +708,8 @@ public class MembersSimpleTableModel extends PFUIComponent implements
             throws Exception
         {
             refreshFor = folder;
-            defaultPermission = getController().getOSClient()
-                .getSecurityService().getDefaultPermission(folder.getInfo());
+            SecurityService service =  getController().getOSClient().getSecurityService(refreshFor.getInfo());
+            defaultPermission = service.getDefaultPermission(folder.getInfo());
 
             AccountInfo aInfo = getController().getMySelf().getAccountInfo();
             editPermissionsAllowed = false;
@@ -717,15 +717,11 @@ public class MembersSimpleTableModel extends PFUIComponent implements
                 editPermissionsAllowed = getController().getSecurityManager().hasPermission(aInfo,
                     FolderPermission.admin(folder.getInfo()));
             }
-
             try {
-                return getController().getOSClient().getSecurityService()
-                    .getAllFolderPermissions(refreshFor.getInfo());
-            }
-            catch (RemoteCallException rce) {
+                return service.getAllFolderPermissions(refreshFor.getInfo());
+            } catch (RemoteCallException rce) {
                 try {
-                    Map<AccountInfo, FolderPermission> perm = getController().getOSClient()
-                        .getSecurityService().getFolderPermissions(refreshFor.getInfo());
+                    Map<AccountInfo, FolderPermission> perm = service.getFolderPermissions(refreshFor.getInfo());
                     Map<Serializable, FolderPermission> permissionMap = new HashMap<Serializable, FolderPermission>(perm.size());
 
                     for (Entry<AccountInfo, FolderPermission> entry : perm.entrySet()) {

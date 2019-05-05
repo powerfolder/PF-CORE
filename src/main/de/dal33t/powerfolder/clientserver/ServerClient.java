@@ -2032,6 +2032,15 @@ public class ServerClient extends PFComponent {
         return securityService;
     }
 
+    public SecurityService getSecurityService(FolderInfo folderInfo) {
+        Member serverNode = findConnectedServerFor(folderInfo);
+        if (serverNode == null) {
+            // Fallback:
+            return securityService;
+        }
+        return RemoteServiceStubFactory.createRemoteStub(getController(), SecurityService.class, serverNode, throwableHandler);
+    }
+
     public AccountService getAccountService() {
         return userService;
     }
@@ -2041,18 +2050,15 @@ public class ServerClient extends PFComponent {
     }
 
     public FolderService getFolderService(FolderInfo folderInfo) {
-        // PFC-3203: Obsolete:
-        for (Member serverNode : getServersInCluster()) {
-            if (!serverNode.isCompletelyConnected()) {
-                continue;
-            }
-            Folder folder = folderInfo.getFolder(getController());
-            boolean serverOnFolder = folder != null && folder.hasMember(serverNode);
-            if (serverOnFolder || serverNode.hasCompleteFileListFor(folderInfo)) {
-                return RemoteServiceStubFactory.createRemoteStub(getController(), FolderService.class, serverNode, throwableHandler);
-            }
+        Member serverNode = findConnectedServerFor(folderInfo);
+        if (serverNode == null) {
+            // Fallback:
+            return folderService;
         }
-        // PFC-3203: Matches all in federation:
+        return RemoteServiceStubFactory.createRemoteStub(getController(), FolderService.class, serverNode, throwableHandler);
+    }
+
+    private Member findConnectedServerFor(FolderInfo folderInfo) {
         for (Member serverNode : getController().getNodeManager().getNodesAsCollection()) {
             if (!serverNode.isServer() || !serverNode.isCompletelyConnected()) {
                 continue;
@@ -2060,11 +2066,10 @@ public class ServerClient extends PFComponent {
             Folder folder = folderInfo.getFolder(getController());
             boolean serverOnFolder = folder != null && folder.hasMember(serverNode);
             if (serverOnFolder || serverNode.hasCompleteFileListFor(folderInfo)) {
-                return RemoteServiceStubFactory.createRemoteStub(getController(), FolderService.class, serverNode, throwableHandler);
+                return serverNode;
             }
         }
-        // Fallback:
-        return folderService;
+        return null;
     }
 
     // Conviniece *************************************************************
