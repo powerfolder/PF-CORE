@@ -283,7 +283,7 @@ public class NodeManager extends PFComponent {
             return;
         }
         if (Constants.NETWORK_ID_ANY.equals(networkId)) {
-            logInfo("Changing network ID to ANY for federation sync");
+            logFine("Changing network ID to ANY for federation sync");
         }
         ConfigurationEntry.NETWORK_ID.setValue(getController(), networkId);
         getController().getMySelf().getInfo().networkId = networkId;
