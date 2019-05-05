@@ -1846,10 +1846,20 @@ public class ServerClient extends PFComponent {
      * @return the new account details
      */
     public void refreshAccountDetails(boolean refreshChildClients) {
-        refreshAccountDetails();
+        try {
+            refreshAccountDetails();
+        } catch (RemoteCallException e) {
+            logWarning("Unable to refresh account details from " + getServerString() + ". " + e);
+            logFiner(e);
+        }
         if (refreshChildClients) {
             for (ServerClient childClient : childClients.values()) {
-                childClient.refreshAccountDetails(refreshChildClients);
+                try {
+                    childClient.refreshAccountDetails(false);
+                } catch (RemoteCallException e) {
+                    logWarning("Unable to refresh account details from " + getServerString() + ". " + e);
+                    logFiner(e);
+                }
             }
         }
     }
@@ -1905,6 +1915,10 @@ public class ServerClient extends PFComponent {
                 logInfo("Starting connect to " + fedService);
             }
             ServerClient client = createNewFedClient(fedService, token);
+            if (client == null) {
+                // Error
+                return;
+            }
             client.loadServerNodes();
             client.start();
             childClients.put(fedService, client);
