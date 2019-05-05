@@ -2027,8 +2027,20 @@ public class ServerClient extends PFComponent {
     }
 
     public FolderService getFolderService(FolderInfo folderInfo) {
+        // PFC-3203: Obsolete:
         for (Member serverNode : getServersInCluster()) {
             if (!serverNode.isCompletelyConnected()) {
+                continue;
+            }
+            Folder folder = folderInfo.getFolder(getController());
+            boolean serverOnFolder = folder != null && folder.hasMember(serverNode);
+            if (serverOnFolder || serverNode.hasCompleteFileListFor(folderInfo)) {
+                return RemoteServiceStubFactory.createRemoteStub(getController(), FolderService.class, serverNode, throwableHandler);
+            }
+        }
+        // PFC-3203: Matches all in federation:
+        for (Member serverNode : getController().getNodeManager().getNodesAsCollection()) {
+            if (!serverNode.isServer() || !serverNode.isCompletelyConnected()) {
                 continue;
             }
             Folder folder = folderInfo.getFolder(getController());
