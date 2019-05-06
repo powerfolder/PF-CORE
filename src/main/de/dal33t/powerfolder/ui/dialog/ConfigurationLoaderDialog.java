@@ -431,7 +431,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
             if (preConfig != null && !containsServerWeb(preConfig)) {
                 String finalURL = Util.removeLastSlashFromURI(input);
                 if (!finalURL.startsWith("http")) {
-                    finalURL = "http://" + finalURL;
+                    finalURL = "https://" + finalURL;
                 }
                 logWarning("Server web URL not found in client config. Using fallback: "
                     + finalURL);
