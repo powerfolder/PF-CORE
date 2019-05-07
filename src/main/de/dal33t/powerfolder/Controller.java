@@ -279,6 +279,7 @@ public class Controller extends PFComponent {
         System.setProperty("sun.net.inetaddr.ttl", "0");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name",
             "PowerFolder");
+        System.setProperty("illegal-access", "deny");
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         pausedModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(PausedModeListener.class);
