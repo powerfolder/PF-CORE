@@ -460,7 +460,7 @@ public class ServerClient extends PFComponent {
     }
 
     public Map<ServerInfo, ServerClient> getChildClients() {
-        return childClients;
+        return Collections.unmodifiableMap(childClients);
     }
 
     /**
@@ -1895,14 +1895,15 @@ public class ServerClient extends PFComponent {
         // PFC-2455 / PFC-2745: Spawn additional Clients
         if (!a.getTokens().isEmpty()) {
             getController().getNodeManager().setNetworkId(Constants.NETWORK_ID_ANY);
-            spawnFedClients(a);
         }
+        updateChildClients(a);
     }
 
     private volatile boolean spawnRetrying = false;
 
-    private void spawnFedClients(Account a) {
+    private void updateChildClients(Account a) {
         synchronized (childClients) {
+            Map<ServerInfo, ServerClient> ununsed = new HashMap<>(childClients);
             for (ServerInfo fedService : a.getTokens().keySet()) {
                 String token = a.getToken(fedService);
                 if (Token.isExpired(token)) {
@@ -1910,6 +1911,7 @@ public class ServerClient extends PFComponent {
                 }
                 if (childClients.containsKey(fedService)) {
                     ServerClient client = childClients.get(fedService);
+                    ununsed.remove(fedService);
                     if (!token.equals(client.getDeviceToken())) {
                         logInfo("Using new token for " + fedService);
                         ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(client.config, token);
@@ -1930,7 +1932,7 @@ public class ServerClient extends PFComponent {
                             }
                             logInfo("Retry connection to federated services");
                             spawnRetrying = false;
-                            spawnFedClients(a);
+                            updateChildClients(a);
                         }, 1000L * Constants.HOSTING_FOLDERS_REQUEST_INTERVAL);
                     }
                     // Error
@@ -1939,8 +1941,21 @@ public class ServerClient extends PFComponent {
                 client.loadServerNodes();
                 client.start();
                 childClients.put(fedService, client);
+                ununsed.remove(fedService);
                 fireChildClientSpawned(client);
                 client.loginWithLastKnown();
+            }
+            for (ServerInfo unusedService: ununsed.keySet()) {
+                ServerClient client = ununsed.get(unusedService);
+                if (isInfo()) {
+                    logInfo("Logging out from " + client.getServer());
+                }
+                try {
+                    client.logout();
+                } catch (RuntimeException e) {
+                    logWarning("Unable to logout from " + client.getServer() + ". " + e);
+                }
+                childClients.remove(unusedService);
             }
         }
     }
@@ -2644,9 +2659,11 @@ public class ServerClient extends PFComponent {
             loadConfigURL(serviceWebUrl);
 
             // Destroy all child clients:
-            if (!childClients.isEmpty()) {
-                for (ServerClient childClient : childClients.values()) {
-                    childClient.logout();
+            synchronized (childClients) {
+                if (!childClients.isEmpty()) {
+                    for (ServerClient childClient : childClients.values()) {
+                        childClient.logout();
+                    }
                 }
             }
 
