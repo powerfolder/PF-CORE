@@ -1909,6 +1909,12 @@ public class ServerClient extends PFComponent {
                     continue;
                 }
                 if (childClients.containsKey(fedService)) {
+                    ServerClient client = childClients.get(fedService);
+                    if (!token.equals(client.getDeviceToken())) {
+                        logInfo("Using new token for " + fedService);
+                        ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(client.config, token);
+                        client.login(token);
+                    }
                     continue;
                 }
                 if (isFine()) {
@@ -2843,7 +2849,7 @@ public class ServerClient extends PFComponent {
                 return;
             }
             logWarning("Auto-login for " + username
-                    + " required. Caused by " + t);
+                    + " required to " + getServer() + ". Caused by " + t);
             try {
                 login0(username, passwordObf, tokenSecret);
             } catch (Exception e) {
