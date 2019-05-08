@@ -32,6 +32,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.util.Waiter;
 import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -179,8 +180,16 @@ public class TextPanelPanel extends PFWizardPanel {
                         new SwingWorker<Boolean, Boolean>() {
                             @Override
                             protected Boolean doInBackground() {
-                                return getController().getSecurityManager().hasPermission(
-                                        getController().getOSClient().getAccount(), FolderPermission.admin(folderInfo));
+                                Waiter w = new Waiter(5000);
+                                while (!w.isTimeout()) {
+                                    w.waitABit();
+                                    boolean hasPermission = getController().getSecurityManager().hasPermission(
+                                            getController().getOSClient().getAccount(), FolderPermission.admin(folderInfo));
+                                    if (hasPermission) {
+                                        return true;
+                                    }
+                                }
+                                return false;
                             }
 
                             @Override
