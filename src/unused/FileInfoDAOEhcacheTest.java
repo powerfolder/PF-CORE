@@ -1,4 +1,4 @@
-package de.dal33t.powerfolder.test.folder.db;
+package de.dal33t.powerfolder.folder.db;
 
 import java.sql.SQLException;
 import java.util.HashMap;
