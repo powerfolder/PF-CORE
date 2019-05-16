@@ -19,8 +19,7 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RunnableScheduledFuture;
@@ -54,6 +53,9 @@ public class WrappedScheduledThreadPoolExecutor
     private WrapperExecutorService wrappingThreadPool;
     private ThreadPoolExecutor executingThreadPool;
 
+    // Stats
+    private Map<Class, Integer> classCountRunning;
+
     public WrappedScheduledThreadPoolExecutor(int corePoolSize,
         ThreadFactory threadFactory)
     {
@@ -61,6 +63,8 @@ public class WrappedScheduledThreadPoolExecutor
         executingThreadPool = (ThreadPoolExecutor) Executors
             .newCachedThreadPool(threadFactory);
         wrappingThreadPool = new WrapperExecutorService(executingThreadPool);
+        Comparator<Class> classComparator = (Class o1, Class o2) -> o1.getName().compareTo(o2.getName());
+        this.classCountRunning = new TreeMap<>(classComparator);
     }
 
     // Overriding ************************************************************
@@ -170,7 +174,7 @@ public class WrappedScheduledThreadPoolExecutor
 
     
     private void checkBusyness() {
-        if (getActiveCount() >= getPoolSize()) {
+        if (getActiveCount() >= getPoolSize() && getActiveCount() > 0) {
             Level l = Level.FINER;
             if (getActiveCount() > SEVERE_NUMBER_WORKERS) {
                 l = Level.SEVERE;
@@ -178,9 +182,18 @@ public class WrappedScheduledThreadPoolExecutor
                 l = Level.WARNING;
             }
             if (LOG.isLoggable(l)) {
+                StringBuffer b = new StringBuffer("Active:");
+                synchronized (classCountRunning) {
+                    for (Class clazz : classCountRunning.keySet()) {
+                        b.append("\n");
+                        b.append(clazz.getName());
+                        b.append("\t");
+                        b.append(classCountRunning.get(clazz));
+                    }
+                }
                 LOG.log(l,
                     "Scheduled threadpool status: Currently active threads: "
-                        + getActiveCount() + "/" + getPoolSize());
+                        + getActiveCount() + "/" + getPoolSize() + "\n" + b);
             }
         }
     }
@@ -212,6 +225,10 @@ public class WrappedScheduledThreadPoolExecutor
             Reject.ifNull(task, "Runnable to be execute is null");
             this.task = task;
             this.concurrentExecutionAllowed = concurrentExecutionAllowed;
+            synchronized (classCountRunning) {
+                Integer count = classCountRunning.get(task.getClass());
+                classCountRunning.put(task.getClass(), count == null ? 1 : count + 1);
+            }
         }
 
         @Override
@@ -221,10 +238,22 @@ public class WrappedScheduledThreadPoolExecutor
                 if (concurrentExecutionAllowed
                     || running.compareAndSet(false, true))
                 {
+                    ProfilingEntry pe = Profiling.start(task.getClass(), "run");
                     try {
                         task.run();
                     } finally {
+                        Profiling.end(pe);
                         running.set(false);
+
+                        synchronized (classCountRunning) {
+                            Integer count = classCountRunning.get(task.getClass());
+                            count = count == null ? 0 : count--;
+                            if (count == 0) {
+                                classCountRunning.remove(task.getClass());
+                            } else {
+                                classCountRunning.put(task.getClass(), count);
+                            }
+                        }
                     }
                 } else {
                     //LOG.warning("Skipping execution of " + task);
