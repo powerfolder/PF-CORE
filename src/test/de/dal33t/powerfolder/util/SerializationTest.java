@@ -58,37 +58,6 @@ public class SerializationTest extends TestCase {
         }
     }
 
-    public void testMissingFinalFieldDeserialization() throws IOException,
-        ClassNotFoundException
-    {
-        String noField = "%AC%ED%00%05sr%006de.dal33t.powerfolder."
-            + "test.util.SerializationTest%24Test%00%00"
-            + "%00%00%00%00%00%01%02%00%01L%00%04testt%"
-            + "00%12Ljava%2Flang%2FObject%3Bxpsr%00%11j"
-            + "ava.lang.Integer%12%E2%A0%A4%F7%81%878%0"
-            + "2%00%01I%00%05valuexr%00%10java.lang.Num"
-            + "ber%86%AC%95%1D%0B%94%E0%8B%02%00%00xp%0" + "0%00%00%01";
-
-        ByteArrayInputStream bin = new ByteArrayInputStream(URLDecoder.decode(
-            noField, "ISO-8859-1").getBytes("ISO-8859-1"));
-        ObjectInputStream oin = new ObjectInputStream(bin);
-        Test t = (Test) oin.readObject();
-        oin.close();
-
-        // If this is null it means newfield WAS initialized to null by
-        // deserialization
-        assertNull(t.newfield);
-        // If this is true it means supportsNewStuff was initialized by true,
-        // although it SHOULD have been false
-        assertFalse(t.supportsNewStuff);
-        // If this is true it means supportsNewStuff was initialized by true,
-        // although it SHOULD have been false. (yes this is a "bug")
-        assertTrue(t.supportsEvenMore);
-        // Check if it works for Boolean at least.
-        assertNull(t.supportsMucho);
-        assertNotSame(new Test().newfield, t.newfield);
-    }
-
     private static class Test implements Serializable {
         private static final long serialVersionUID = 1L;
         final Object test = 1;
