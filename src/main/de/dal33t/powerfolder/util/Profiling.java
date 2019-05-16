@@ -109,7 +109,11 @@ public class Profiling {
         if (!ENABLED) {
             return null;
         }
-        return new ProfilingEntry(clazz.getSimpleName() + "#" + method, null);
+        String className = clazz.getSimpleName();
+        if (StringUtils.isBlank(className)) {
+            className = clazz.getName();
+        }
+        return new ProfilingEntry(className + "#" + method, null);
     }
 
     /**
@@ -124,7 +128,11 @@ public class Profiling {
         if (!ENABLED) {
             return null;
         }
-        return new ProfilingEntry(clazz.getSimpleName() + "#" + method + ":" + add, null);
+        String className = clazz.getSimpleName();
+        if (StringUtils.isBlank(className)) {
+            className = clazz.getName();
+        }
+        return new ProfilingEntry(className + "#" + method + ":" + add, null);
     }
 
     /**
