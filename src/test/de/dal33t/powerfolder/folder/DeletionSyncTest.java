@@ -292,18 +292,19 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
         for (FileInfo fileInfo : getFolderAtLisa().getKnownFiles()) {
-            assertEquals(1, fileInfo.getVersion());
+            assertEquals("Expected Version 1, but got at lisa: "+ fileInfo.getVersion(), 1, fileInfo.getVersion());
             assertTrue(fileInfo.isDeleted());
         }
 
         // Wait to sync the deletions
         TestHelper.waitMilliSeconds(3000);
+        TestHelper.waitForCondition(10, () -> getFolderAtBart().getStatistic().getTotalSize() == 0);
 
         // Test the correct deletions state at bart
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
         for (FileInfo fileInfo : getFolderAtBart().getKnownFiles()) {
             assertTrue(fileInfo.isDeleted());
-            assertEquals(1, fileInfo.getVersion());
+            assertEquals("Expected Version 1, but got at bart: "+ fileInfo.getVersion(), 1, fileInfo.getVersion());
         }
 
         // Assume only 1 file (=PowerFolder system dir)
