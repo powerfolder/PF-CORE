@@ -40,6 +40,7 @@ public class Profiling {
      */
     public static boolean ENABLED;
 
+    private static long startTime;
     private static long totalTime;
     private static long minimumTime = Long.MAX_VALUE;
     private static long maximumTime;
@@ -193,6 +194,9 @@ public class Profiling {
         }
 
         synchronized (stats) {
+            if (stats.isEmpty()) {
+                startTime = System.currentTimeMillis();
+            }
             ProfilingStat stat = stats.get(operationName);
             if (stat != null) {
                 stat.addElapsed(elapsed);
@@ -212,17 +216,14 @@ public class Profiling {
         StringBuilder sb = new StringBuilder();
 
         sb.append("=== Profiling Statistics ===\n");
+        sb.append("Uptime: " + (System.currentTimeMillis() - startTime) + "ms\n");
         sb.append("Total invocations: " + totalCount + '\n');
-        sb.append("Total elapsed time: " + Format.formatTimeframe(totalTime)
-            + "\n");
+        sb.append("Total elapsed time: " + Format.formatTimeframe(totalTime) + "\n");
         if (totalCount > 0) {
-            sb.append("Avg time: "
-                + Format.formatTimeframe(totalTime / totalCount) + "\n");
+            sb.append("Avg time: " + Format.formatTimeframe(totalTime / totalCount) + "\n");
         }
-        sb.append("Min elapsed time: " + Format.formatTimeframe(minimumTime)
-            + "\n");
-        sb.append("Max elapsed time: " + Format.formatTimeframe(maximumTime)
-            + "\n");
+        sb.append("Min elapsed time: " + Format.formatTimeframe(minimumTime) + "\n");
+        sb.append("Max elapsed time: " + Format.formatTimeframe(maximumTime) + "\n");
         sb.append("\n");
         List<String> keys = new ArrayList<String>(stats.keySet());
         Collections.sort(keys);
