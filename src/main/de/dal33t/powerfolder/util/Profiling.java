@@ -251,6 +251,19 @@ public class Profiling {
     }
 
     public static final String shortenURI(String uri) {
+        if (uri.startsWith("/dl/")
+                || uri.startsWith("/download/")
+                || uri.startsWith("/open/")
+                || uri.startsWith("/webdav/")
+                || uri.startsWith("/thumb/")
+                || uri.startsWith("/getlink/")
+                || uri.startsWith("/avatars/")
+                || uri.startsWith("/filestable/")
+                || uri.startsWith("/onlyoffice/")
+                || uri.startsWith("/editfile/")
+        ) {
+            return uri.substring(0, uri.indexOf('/', 2));
+        }
         try {
             int start = 0;
             if (uri.startsWith("/")) {

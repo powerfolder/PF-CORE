@@ -31,25 +31,28 @@ public class ProfilingTest extends TestCase {
     }
 
     public void testURISplit() {
-        assertEquals("/webdav/NAS/",
+        assertEquals("/webdav",
                 Profiling.shortenURI("/webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/5000/VM-Store/"));
-        assertEquals("/webdav/NAS/",
+        assertEquals("/webdav",
                 Profiling.shortenURI("/webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/5000/VM-Store"));
-        assertEquals("/webdav/NAS/",
+        assertEquals("/webdav",
                 Profiling.shortenURI("/webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/"));
-        assertEquals("/webdav/NAS/", Profiling.shortenURI("/webdav/NAS/"));
-        assertEquals("/webdav/NAS", Profiling.shortenURI("/webdav/NAS"));
-        assertEquals("/webdav/", Profiling.shortenURI("/webdav/"));
+        assertEquals("/webdav", Profiling.shortenURI("/webdav/NAS/"));
+        assertEquals("/webdav", Profiling.shortenURI("/webdav/NAS"));
+        assertEquals("/webdav", Profiling.shortenURI("/webdav/"));
         assertEquals("/webdav", Profiling.shortenURI("/webdav"));
         assertEquals("webdav", Profiling.shortenURI("webdav"));
 
-        assertEquals("webdav/NAS/",
-                Profiling.shortenURI("webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/5000/VM-Store/"));
-        assertEquals("webdav/NAS/", Profiling.shortenURI("webdav/NAS/QNAP"));
-        assertEquals("webdav/NAS/", Profiling.shortenURI("webdav/NAS/"));
-        assertEquals("webdav/NAS", Profiling.shortenURI("webdav/NAS"));
+        assertEquals("/dl", Profiling.shortenURI("/dl/fi7wJvafcztsR4T6q1dvDfZa/"));
+        assertEquals("/open", Profiling.shortenURI("/open/UEItRTNBNWlheUgzSEVRTTZGUkJoV1ItJHBlcnNvbmFsX2ZpbGVz/"));
+        assertEquals("/getlink", Profiling.shortenURI("/getlink/fiU9cByBjrwUpnVxfgggQD7n/"));
+        assertEquals("/avatars", Profiling.shortenURI("/avatars/E3A5iayH3HEQM6FRBhWR"));
+        assertEquals("/filestable", Profiling.shortenURI("/filestable/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1/"));
+        assertEquals("/onlyoffice", Profiling.shortenURI("/onlyoffice/MlFOR0hqMWI3VjY2VlN3WnJoNzlI/#download"));
+        assertEquals("/editfile", Profiling.shortenURI("/editfile/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1/"));
 
-        assertEquals("exe", Profiling.shortenURI("exe"));
+
+                assertEquals("exe", Profiling.shortenURI("exe"));
         assertEquals("/newjoinfolder", Profiling.shortenURI("/newjoinfolder"));
         assertEquals("/wapi/files/",
                 Profiling.shortenURI("/wapi/files/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1/products%2FWB0R5L90S%20(2)/Static_Full_Version/css/plugins"));
