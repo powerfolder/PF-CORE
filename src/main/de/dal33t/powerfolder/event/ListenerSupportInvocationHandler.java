@@ -330,9 +330,9 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
         try {
             listener.invoke(null, method, args);
         } catch (Throwable e) {
-            ListenerSupportFactory.LOG.log(Level.SEVERE,
+            ListenerSupportFactory.LOG.log(Level.WARNING,
                 "Received an exception from listener '" + listener
-                    + "', class '" + listener.getClass().getName() + '\'', e);
+                    + "': " + e, e);
             // Also log original exception
             ListenerSupportFactory.LOG.log(Level.FINER, "", e);
         } finally {
@@ -350,9 +350,9 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
         try {
             method.invoke(listener, args);
         } catch (Exception e) {
-            ListenerSupportFactory.LOG.log(Level.SEVERE,
-                "Received an exception from listener '" + listener
-                    + "', class '" + listener.getClass().getName() + '\'', e);
+            ListenerSupportFactory.LOG.log(Level.WARNING,
+                    "Received an exception from listener '" + listener
+                            + "': " + e, e);
             // Also log original exception
             ListenerSupportFactory.LOG.log(Level.FINER, "", e);
         } finally {
