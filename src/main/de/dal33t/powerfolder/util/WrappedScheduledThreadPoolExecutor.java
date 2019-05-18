@@ -225,10 +225,6 @@ public class WrappedScheduledThreadPoolExecutor
             Reject.ifNull(task, "Runnable to be execute is null");
             this.task = task;
             this.concurrentExecutionAllowed = concurrentExecutionAllowed;
-            synchronized (classCountRunning) {
-                Integer count = classCountRunning.get(task.getClass());
-                classCountRunning.put(task.getClass(), count == null ? 1 : count + 1);
-            }
         }
 
         @Override
@@ -238,13 +234,17 @@ public class WrappedScheduledThreadPoolExecutor
                 if (concurrentExecutionAllowed
                     || running.compareAndSet(false, true))
                 {
-                    ProfilingEntry pe = Profiling.start(task.getClass(), "run");
+                    ProfilingEntry pe = null;
                     try {
+                        synchronized (classCountRunning) {
+                            Integer count = classCountRunning.get(task.getClass());
+                            classCountRunning.put(task.getClass(), count == null ? 1 : count + 1);
+                        }
+                        pe = Profiling.start(task.getClass(), "run");
                         task.run();
                     } finally {
-                        Profiling.end(pe);
                         running.set(false);
-
+                        Profiling.end(pe);
                         synchronized (classCountRunning) {
                             Integer count = classCountRunning.get(task.getClass());
                             count = count == null ? 0 : count--;
