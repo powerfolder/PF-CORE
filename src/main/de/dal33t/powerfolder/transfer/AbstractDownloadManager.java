@@ -164,7 +164,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // illegalState("abortAndCleanup");
         switch (state) {
             case ABORTED :
-                illegalState("abortAndCleanup()");
+                logFine("Already aborted download of " + fileInfo.toDetailString());
                 break;
             case BROKEN :
             case COMPLETED :
