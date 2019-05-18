@@ -1480,6 +1480,13 @@ public class TransferManager extends PFComponent {
     }
 
     /**
+     * @return the number of completed uploads
+     */
+    public int countCompletedUploads() {
+        return completedUploads.size();
+    }
+
+    /**
      * @return an unmodifiable collection reffering to the internal completed
      *         upload list. May change after returned.
      */
