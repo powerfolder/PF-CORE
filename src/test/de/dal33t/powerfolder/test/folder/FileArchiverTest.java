@@ -5,14 +5,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
 
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -194,7 +192,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
     }
 
     public void testUnlimitedFileArchive() throws IOException {
-        int nVersion = 21;
+        int nVersion = 6;
         getFolderAtBart().setArchiveVersions(-1);
 
         Path f = TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
@@ -303,6 +301,39 @@ public class FileArchiverTest extends TwoControllerTestCase {
             }
         });
         assertEquals(0, getFolderAtBart().countProblems());
+    }
+
+    public void testRestoreTimeframe() throws IOException {
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        FileInfo fileInfo = FileInfoFactory.lookupInstance(getFolderAtBart(), fileAtBart);
+        Files.setLastModifiedTime(fileAtBart, FileTime.from(1000, TimeUnit.MILLISECONDS));
+        scanFolder(getFolderAtBart());
+
+        FileInfo fileInfoAtBart = getFolderAtBart().getFile(fileInfo);
+        TestHelper.waitForCondition(10, () -> getFolderAtLisa().getKnownItemCount() == 1);
+        FileInfo fileInfoAtLisa = getFolderAtLisa().getFile(fileInfoAtBart);
+        assertEquals(fileInfoAtBart.getModifiedDate(), fileInfoAtLisa.getModifiedDate());
+
+        TestHelper.waitForCondition(10, () -> getContollerBart().getTransferManager().countCompletedUploads() == 1);
+        Files.delete(fileAtBart);
+        scanFolder(getFolderAtBart());
+        TestHelper.waitForCondition(10, () -> getFolderAtBart().getFile(fileInfo).isDeleted());
+        TestHelper.waitForCondition(10, () -> getFolderAtLisa().getFile(fileInfo).isDeleted());
+        assertTrue(getFolderAtLisa().getFileArchiver().hasArchivedFileInfo(fileInfoAtLisa));
+
+        FileInfo fileInfoAtLisaArchive = getFolderAtLisa().getFileArchiver().getArchivedFilesInfos(fileInfo).iterator().next();
+        fileInfoAtLisa = getFolderAtLisa().getFile(fileInfoAtBart);
+
+        Date originalDate = fileInfoAtLisaArchive.getModifiedDate();
+        Date deletedDate = fileInfoAtLisa.getModifiedDate();
+
+        assertFalse(originalDate.equals(deletedDate));
+
+        System.out.println("fileInfoAtLisa=" + fileInfoAtLisa.toDetailString());
+        System.out.println("fileInfoAtLisaArchive=" + fileInfoAtLisaArchive.toDetailString());
     }
 
     private FileInfo modLisaFile(Path file, final FileInfo fInfo) {
