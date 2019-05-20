@@ -172,7 +172,6 @@ public class WrappedScheduledThreadPoolExecutor
     
     // Internal helper ********************************************************
 
-    
     private void checkBusyness() {
         if (getActiveCount() == 0) {
             return;
