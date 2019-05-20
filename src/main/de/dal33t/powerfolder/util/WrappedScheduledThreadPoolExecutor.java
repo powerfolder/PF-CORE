@@ -44,8 +44,8 @@ public class WrappedScheduledThreadPoolExecutor
     private static final Logger LOG = Logger
         .getLogger(WrappedScheduledThreadPoolExecutor.class.getName());
 
-    public static final int WARN_NUMBER_WORKERS = 750;
-    public static final int SEVERE_NUMBER_WORKERS = 2000;
+    public static final int WARN_NUMBER_WORKERS = 500;
+    public static final int SEVERE_NUMBER_WORKERS = 1500;
     
     /**
      * The threadpool actually executing the scheduled tasks.
@@ -174,27 +174,27 @@ public class WrappedScheduledThreadPoolExecutor
 
     
     private void checkBusyness() {
-        if (getActiveCount() >= getPoolSize() && getActiveCount() > 0) {
-            Level l = Level.FINER;
-            if (getActiveCount() > SEVERE_NUMBER_WORKERS) {
-                l = Level.SEVERE;
-            } else if (getActiveCount() > WARN_NUMBER_WORKERS) {
-                l = Level.WARNING;
-            }
-            if (LOG.isLoggable(l)) {
-                StringBuffer b = new StringBuffer("Active:");
-                synchronized (classCountRunning) {
-                    for (Class clazz : classCountRunning.keySet()) {
-                        b.append("\n");
-                        b.append(clazz.getName());
-                        b.append("\t");
-                        b.append(classCountRunning.get(clazz));
-                    }
+        if (getActiveCount() == 0) {
+            return;
+        }
+        Level l = Level.FINER;
+        if (getActiveCount() > SEVERE_NUMBER_WORKERS) {
+            l = Level.SEVERE;
+        } else if (getActiveCount() > WARN_NUMBER_WORKERS) {
+            l = Level.WARNING;
+        }
+        if (LOG.isLoggable(l)) {
+            StringBuffer b = new StringBuffer("Active tasks:");
+            synchronized (classCountRunning) {
+                for (Class clazz : classCountRunning.keySet()) {
+                    b.append("\n");
+                    b.append(clazz.getName());
+                    b.append("\t");
+                    b.append(classCountRunning.get(clazz));
                 }
-                LOG.log(l,
-                    "Scheduled threadpool status: Currently active threads: "
-                        + getActiveCount() + "/" + getPoolSize() + "\n" + b);
             }
+            LOG.log(l, "Scheduled threadpool status: Currently active threads: "
+                            + getActiveCount() + "/" + getPoolSize() + "\n" + b);
         }
     }
     
@@ -247,7 +247,8 @@ public class WrappedScheduledThreadPoolExecutor
                         Profiling.end(pe);
                         synchronized (classCountRunning) {
                             Integer count = classCountRunning.get(task.getClass());
-                            count = count == null ? 0 : count--;
+                            count = count == null ? 1 : count;
+                            count--;
                             if (count == 0) {
                                 classCountRunning.remove(task.getClass());
                             } else {
