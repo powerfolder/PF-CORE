@@ -137,7 +137,7 @@ public class Convert {
      * modified values of files comparable. All millisecond precision will be
      * lost
      * <p>
-     * FIXME Sometime produces diffrent result like comparing with
+     * FIXME Sometime produces different result like comparing with
      * <code>Util#equalsFileDateCrossPlattform(long, long)</code>.
      *
      * @see Util#equalsFileDateCrossPlattform(long, long)
