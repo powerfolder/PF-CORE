@@ -7,9 +7,7 @@ import org.junit.Test;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -25,6 +23,42 @@ public class FormatTest {
     @After
     public void tearDown(){
         Locale.setDefault(defaultLocale);
+    }
+
+    @Test
+    public void formatBytesMinMaxValuesTest(){
+        assertEquals("8,388,608 TBytes", Format.formatBytes(Long.MAX_VALUE));
+        assertEquals("-9,223,372,036,854,776,000 Bytes",Format.formatBytes(Long.MIN_VALUE));
+        assertEquals("0 Bytes", Format.formatBytes(0L));
+    }
+
+    @Test
+    public void formatBytesObjectParameterTest() {
+        Long longObject = new Long(1024);
+        assertEquals("1 kBytes", Format.formatBytes(longObject));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void formatBytesNullInputsTest() {
+        //Method does not handle null as a parameter
+        Long longObject = null;
+        Format.formatBytes(longObject);
+    }
+
+    @Test
+    public void formatBytesOtherTypesTest() {
+        int integer = 10240;
+        assertEquals("10 kBytes", Format.formatBytes(integer));
+        short numberShort = 2048;
+        assertEquals("2 kBytes", Format.formatBytes(numberShort));
+    }
+
+    @Test
+    public void formatBytesFloatingPointDivisionTest() {
+        long twoAndAHalfKb = 2560;
+        assertEquals("2.5 kB", Format.formatBytesShort(twoAndAHalfKb));
+        long tenMbAndSome = 11408506;
+        assertEquals("10.88 MB", Format.formatBytesShort(tenMbAndSome));
     }
 
     @Test
@@ -73,6 +107,40 @@ public class FormatTest {
         assertEquals("2 TBytes", Format.formatBytes(twoTbytes));
     }
 
+    @Test
+    public void formatBytesShortMinMaxValuesTest(){
+        assertEquals("8,388,608 TB", Format.formatBytesShort(Long.MAX_VALUE));
+        assertEquals("?? kB",Format.formatBytesShort(Long.MIN_VALUE));
+        assertEquals("0 kB", Format.formatBytesShort(0L));
+    }
+
+    @Test
+    public void formatBytesShortObjectParameterTest() {
+        Long longObject = new Long(1024);
+        assertEquals("1 kB", Format.formatBytesShort(longObject));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void formatBytesShortNullInputsTest() {
+        Long longObject = null;
+        Format.formatBytesShort(longObject);
+    }
+
+    @Test
+    public void formatBytesShortOtherTypesTest() {
+        int integer = 1024000;
+        assertEquals("1,000 kB", Format.formatBytesShort(integer));
+        short numberShort = 4096;
+        assertEquals("4 kB", Format.formatBytesShort(numberShort));
+    }
+
+    @Test
+    public void formatBytesShortFloatingPointDivisionTest() {
+        long twoMbAndSome = 2560000;
+        assertEquals("2.44 MB", Format.formatBytesShort(twoMbAndSome));
+        long oneTbAndSome = 1140850600000L;
+        assertEquals("1.04 TB", Format.formatBytesShort(oneTbAndSome));
+    }
 
 
     @Test
@@ -121,6 +189,21 @@ public class FormatTest {
 
     }
 
+    @Test(expected = NullPointerException.class)
+    public void formatTimeFrameNullArgumentTest() {
+        Long millis = null;
+        Format.formatTimeframe(millis);
+    }
+
+    @Test
+    public void formatTimeFrameOtherArguments() {
+        Long millis = new Long(1000L * 60 * 2 + 1234);
+        assertEquals("2m", Format.formatTimeframe(millis));
+        int value = (1000 * 60 * 60 * 2 + 134231);
+        assertEquals("2h", Format.formatTimeframe(value));
+        double doubleValue = 1000 * 60 * 60 * 2 + 99900000.12342;
+        assertEquals("29h",Format.formatTimeframe((long) doubleValue));
+    }
 
     @Test
     public void formatTimeFrameReturnMillisecondsTest() {
@@ -163,12 +246,15 @@ public class FormatTest {
     }
 
     @Test
-    public void formatTimeLongTest() {
+    public void formatTimeLongNullValueTest() {
         Date date = null;
         assertNull(Format.formatTimeLong(date));
+    }
 
-        date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("K:mm:ss aa zzz");
+    @Test
+    public void formatTimeLongTest() {
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss aa zzz");
 
         assertEquals(simpleDateFormat.format(date), Format.formatTimeLong(date));
 
@@ -180,12 +266,25 @@ public class FormatTest {
     }
 
     @Test
-    public void formatTimeShortTest() {
+    public void formatTimeLongOtherValuesTest() {
+        Date dateBefore1970 = new Date();
+        dateBefore1970.setTime(-1000000000);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss aa zzz");
+
+        assertEquals(simpleDateFormat.format(dateBefore1970) ,Format.formatTimeLong(dateBefore1970));
+
+    }
+
+    @Test
+    public void formatTimeShortNullInputTest() {
         Date date = null;
         assertNull(Format.formatTimeShort(date));
+    }
 
-        date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("K:mm aa");
+    @Test
+    public void formatTimeShortTest() {
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
 
         assertEquals(simpleDateFormat.format(date), Format.formatTimeShort(date));
 
@@ -195,6 +294,18 @@ public class FormatTest {
 
         assertEquals(simpleDateFormat.format(calendar.getTime()), Format.formatTimeShort(calendar.getTime()));
     }
+
+    @Test
+    public void formatTimeShortOtherValuesTest() {
+
+        Date dateBefore1970 = new Date();
+        dateBefore1970.setTime(-100000000000000L);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
+
+        assertEquals(simpleDateFormat.format(dateBefore1970) ,Format.formatTimeShort(dateBefore1970));
+
+    }
+
 
     @Test
     public void formatDateCanonicalTest() {
@@ -254,20 +365,36 @@ public class FormatTest {
         }
     }
 
-    @Test(expected = ParseException.class)
-    public void parseDateCanonicalExceptionTest() throws ParseException {
+    @Test
+    public void parseDateCannonicalDifferentInputs() {
+        List<String> strings = Arrays.asList("!@#$%^^&*()", "{}:,./;", "±!~", "Testing", "", "28 03 2019", "123-12345-1234", "123");
+        for (String string : strings) {
+            try {
+                Format.parseDateCanonical(string);
+                fail("Exception not thrown when it should");
+            } catch (ParseException e) {
+                //It's supposed to throw this exception
+            }
+        }
+    }
 
-        String stringToParse = "This is a test string";
+    @Test(expected = NullPointerException.class)
+    public void parseDateCannonicalNullInputTest() throws ParseException {
+        //Method does not handle null as a parameter
+        String stringToParse = null;
         Format.parseDateCanonical(stringToParse);
+    }
 
+    @Test
+    public void formatDateShortRenderTodayYesterdayTrueNullInputTest() {
+        Date date = null;
+        assertNull(Format.formatDateShort(date, true));
     }
 
     @Test
     public void formatDateShortRenderTodayYesterdayTrueTest() {
-        Date date = null;
-        assertNull(Format.formatDateShort(date, true));
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("K:mm aa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
         Date today = new Date();
 
         assertEquals("Today " + simpleDateFormat.format(today), Format.formatDateShort(today, true));
@@ -285,7 +412,7 @@ public class FormatTest {
 
         assertEquals("Yesterday " + simpleDateFormat.format(yesterday), Format.formatDateShort(yesterday, true));
 
-        SimpleDateFormat format = new SimpleDateFormat("M/d/yy K:mm aa");
+        SimpleDateFormat format = new SimpleDateFormat("M/d/yy h:mm aa");
 
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, 48);
@@ -299,8 +426,10 @@ public class FormatTest {
         Date date = null;
         assertNull(Format.formatDateShort(date, false));
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M/d/yy K:mm aa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M/d/yy h:mm aa");
         Date today = new Date();
+        today.setTime(-7200000);
+        System.out.println(today);
         assertEquals(simpleDateFormat.format(today), Format.formatDateShort(today, false));
 
         Calendar calendar = Calendar.getInstance();
@@ -319,11 +448,14 @@ public class FormatTest {
     }
 
     @Test
-    public void formatDateShortTest() {
+    public void formatDateShortNullInputTest() {
         Date date = null;
         assertNull(Format.formatDateShort(date, true));
+    }
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("K:mm aa");
+    @Test
+    public void formatDateShortTest() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
         Date today = new Date();
         assertEquals("Today " + simpleDateFormat.format(today), Format.formatDateShort(today));
 
@@ -339,8 +471,8 @@ public class FormatTest {
         Date yesterday = calendar.getTime();
 
         assertEquals("Yesterday " + simpleDateFormat.format(yesterday), Format.formatDateShort(yesterday));
-    }
 
+    }
 
     @Test
     public void formatDecimalTest() {
@@ -351,13 +483,50 @@ public class FormatTest {
         assertEquals(numberFormat.format(-2230.009D), Format.formatDecimal(-2230.009D));
     }
 
+    @Test(expected = NullPointerException.class)
+    public void formatDecimalNullInputTest() {
+        //Method does not handle null as a parameter
+        Double number = null;
+        Format.formatDecimal(number);
+    }
+
     @Test
-    public void formatLong() {
+    public void formatDecimalMinMaxValuesTest() {
+        assertEquals("179,769,313,486,231,570" +
+                ",000,000,000,000,000,000,000,000,000," +
+                "000,000,000,000,000,000,000,000,000,000,000," +
+                "000,000,000,000,000,000,000,000,000,000,000,000," +
+                "000,000,000,000,000,000,000,000,000,000,000,000,000," +
+                "000,000,000,000,000,000,000,000,000,000,000,000,000,000," +
+                "000,000,000,000,000,000,000,000,000,000,000,000,000,000,000," +
+                "000,000,000,000,000,000,000,000,000,000,000,000,000,000,000," +
+                "000,000,000,000,000,000,000,000", Format.formatDecimal(Double.MAX_VALUE));
+        assertEquals("0", Format.formatDecimal(Double.MIN_VALUE));
+        assertEquals("∞", Format.formatDecimal(Double.POSITIVE_INFINITY));
+        assertEquals("-∞", Format.formatDecimal(Double.NEGATIVE_INFINITY));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void formatLongNullInputTest(){
+        //Method does not handle null as a parameter
+        Long number = null;
+        Format.formatLong(number);
+    }
+
+    @Test
+    public void formatLongTest() {
         NumberFormat numberFormat = NumberFormat.getIntegerInstance();
         assertEquals(numberFormat.format(25000L), Format.formatLong(25000L));
         assertEquals(numberFormat.format(12345678L),Format.formatLong(12345678L));
         assertEquals(numberFormat.format(-8234000L), Format.formatLong(-8234000L));
 
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void formatPercentNullInputTest() {
+        //Method does not handle null as a parameter
+        Double number = null;
+        Format.formatPercent(number);
     }
 
     @Test
@@ -376,9 +545,25 @@ public class FormatTest {
     }
 
     @Test
-    public void formatBoolean() {
+    public void formatPercentOtherValuesTest() {
+        assertEquals("100%", Format.formatPercent(Double.MAX_VALUE));
+        assertEquals("0%", Format.formatPercent(Double.MIN_VALUE));
+        //Possible defect, infinity > 100.0 so maybe it should return 100%
+        assertEquals("100%", Double.POSITIVE_INFINITY);
+        assertEquals("0%", Double.NEGATIVE_INFINITY);
+    }
+
+    @Test
+    public void formatBooleanTest() {
         assertEquals(Translation.get("general.yes"), Format.formatBoolean(true));
         assertEquals(Translation.get("general.no"), Format.formatBoolean(false));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void formatBooleanNullAsInputTest() {
+        //Method does not handle null as a parameter
+        Boolean someBoolean = null;
+        Format.formatBoolean(someBoolean);
     }
 
     @Test
@@ -405,4 +590,17 @@ public class FormatTest {
 
     }
 
+    @Test(expected = NullPointerException.class)
+    public void formatDeltaTimeNullInputTest() {
+        Long someLong = null;
+        Format.formatDeltaTime(someLong);
+    }
+
+    @Test
+    public void formatDeltaTimeMinMaxValuesTest() {
+        assertEquals("106751991167 days",Format.formatDeltaTime(Long.MAX_VALUE));
+        //Possible defect since 0 or negative value of delta time should theoretically mean that all time has passed
+        assertEquals("Less than one minute", Format.formatDeltaTime(Long.MIN_VALUE));
+        assertEquals("Less than one minute", Format.formatDeltaTime(0));
+    }
 }
