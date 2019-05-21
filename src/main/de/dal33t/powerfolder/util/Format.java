@@ -301,7 +301,7 @@ public class Format {
                     .out().toString();
             }
             long minutes = dt / 60 / 1000;
-            if (minutes >= 1) {
+            if (minutes > 1) {
                 return f
                     .format(
                         Translation.get("format.n.minutes",
