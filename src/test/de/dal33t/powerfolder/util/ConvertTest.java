@@ -112,38 +112,4 @@ public class ConvertTest {
         assertEquals(1999999999999998000L, Convert.convertToGlobalPrecision(date.getTime()));
 
     }
-
-    @Test(expected = NullPointerException.class)
-    public void cleanFolderInfosRepoNullTest() {
-        FolderRepository repository = null;
-        FileInfo[] fileInfos = new FileInfo[5];
-        Convert.cleanFolderInfos(repository,fileInfos);
-    }
-
-
-    @Test(expected = NullPointerException.class)
-    public void cleanFolderInfosFileInfosNullTest() {
-        Controller controller = new Controller();
-        FolderRepository repository = new FolderRepository(controller);
-
-        FileInfo[] fileInfos = null;
-        Convert.cleanFolderInfos(repository,fileInfos);
-    }
-
-
-    @Test(expected = NullPointerException.class)
-    public void cleanMemberInfosNodeManagerNullTest() {
-        NodeManager nodeManager = null;
-        FileInfo[] fileInfo = new FileInfo[4];
-        Convert.cleanMemberInfos(nodeManager, fileInfo);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void cleanMemberInfosFileInfoNullTest(){
-        Controller controller = new Controller();
-        NodeManager nodeManager = new NodeManager(controller);
-
-        FileInfo[] fileInfo = null;
-        Convert.cleanMemberInfos(nodeManager, fileInfo);
-    }
 }
