@@ -152,6 +152,7 @@ public class ServerInfo implements Serializable, D2DObject {
 
     public void setNode(MemberInfo node) {
         Reject.ifNull(node, "Node is null");
+        Reject.ifTrue(isFederatedService(), "Not allowed to set node");
         this.node = node;
         this.id = node.id;
     }
