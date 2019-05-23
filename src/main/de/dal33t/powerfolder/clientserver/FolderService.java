@@ -186,6 +186,14 @@ public interface FolderService {
     // Server archive calls ***************************************************
 
     /**
+     * If the folder has deleted files which are restorable
+     *
+     * @param folderInfo
+     * @return
+     */
+    public boolean hasDeletedFiles(FolderInfo folderInfo);
+
+    /**
      * Retrieves a List of existing FileInfos for an archived file.
      *
      * @param fileInfo
