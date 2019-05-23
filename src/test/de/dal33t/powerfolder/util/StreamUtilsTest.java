@@ -1,37 +1,30 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
-*
-* This file is part of PowerFolder.
-*
-* PowerFolder is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation.
-*
-* PowerFolder is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
-*
-* $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
-*/
-package de.dal33t.powerfolder.util;
+ * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ */
+package de.dal33t.powerfolder.test.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import de.dal33t.powerfolder.util.StreamUtils;
+import de.dal33t.powerfolder.util.test.TestHelper;
+import junit.framework.TestCase;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.StreamUtils;
-import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class StreamUtilsTest extends TestCase {
 
@@ -51,11 +44,26 @@ public class StreamUtilsTest extends TestCase {
     public void testFileCopy() throws IOException {
         Files.createDirectories(Paths.get("build/test"));
         Path inFile = TestHelper.createRandomFile(Paths.get(
-            "build/test/randomfile.txt"));
+                "build/test/randomfile.txt"));
         Path outFile = Paths.get("build/test/randomfile_out.txt");
         OutputStream out = Files.newOutputStream(outFile);
         StreamUtils.copyToStream(inFile, out);
         out.close();
+        assertTrue(Files.exists(outFile));
+        assertEquals(Files.size(inFile), Files.size(outFile));
+        Files.delete(inFile);
+    }
+
+    public void testCopyStreamCrypto() throws IOException {
+        Files.createDirectories(Paths.get("build/test"));
+
+        Path inFile = TestHelper.createRandomFile(Paths.get("build/test/randomfile.crypto"));
+        Path outFile = Paths.get("build/test/randomfile_out.crypto");
+
+        OutputStream outputStream = Files.newOutputStream(outFile);
+        StreamUtils.copyToStream(inFile, outputStream);
+        outputStream.close();
+
         assertTrue(Files.exists(outFile));
         assertEquals(Files.size(inFile), Files.size(outFile));
         Files.delete(inFile);
@@ -73,13 +81,82 @@ public class StreamUtilsTest extends TestCase {
         assertEquals(10, read);
     }
 
+
+    public void testReadIndexOutOfBoundsOffset() throws IOException {
+        PipedInputStream inputStream = new PipedInputStream();
+        PipedOutputStream outputStream = new PipedOutputStream();
+
+        inputStream.connect(outputStream);
+
+        new WriterThread("1234567890".getBytes(), 5000, outputStream, true).start();
+
+        byte[] buf = new byte[1000];
+        try {
+            int read = StreamUtils.read(inputStream, buf, -10, 10);
+            fail("Exception was not thrown when offset is < 0");
+        } catch (IndexOutOfBoundsException e){
+            // It's expected to throw an exception since offset is < 0
+        }
+    }
+
+    public void testReadIndexOutOfBoundsLength() throws IOException {
+        PipedInputStream inputStream = new PipedInputStream();
+        PipedOutputStream outputStream = new PipedOutputStream();
+
+        inputStream.connect(outputStream);
+
+        new WriterThread("1234567890".getBytes(), 5000, outputStream, true).start();
+
+        byte[] buf = new byte[1000];
+        try {
+            int read = StreamUtils.read(inputStream, buf, 0, -1);
+            fail("Exception was not thrown when size is < 0");
+        } catch (IndexOutOfBoundsException e){
+            // It's expected to throw an exception since offset is < 0
+        }
+    }
+
+    public void testReadIndexOutOfBoundsLengthSmallerThanArray() throws IOException {
+        PipedInputStream inputStream = new PipedInputStream();
+        PipedOutputStream outputStream = new PipedOutputStream();
+
+        inputStream.connect(outputStream);
+
+        new WriterThread("1234567890".getBytes(), 5000, outputStream, true).start();
+
+        byte[] buf = new byte[5];
+        try {
+            //size - nTotalRead (20 - 0 = 20) > buf.length - offset (5-0 = 5)
+            int read = StreamUtils.read(inputStream, buf, 0, 20);
+            fail("Exception was not thrown when size is < 0");
+        } catch (IndexOutOfBoundsException e){
+            // It's expected to throw an exception since offset is < 0
+        }
+    }
+
+    public void testReadEndOfFile() throws IOException {
+        PipedInputStream in = new PipedInputStream();
+        PipedOutputStream out = new PipedOutputStream();
+        in.connect(out);
+
+        new WriterThread("12345".getBytes(), 5000, out, true).start();
+
+        byte[] buf = new byte[1000];
+        try {
+            int read = StreamUtils.read(in, buf, 0, 10);
+            fail("Should have thrown EOF exception because InputStream.read returned -1");
+        } catch (EOFException e) {
+            //OK since there will be nothing more to read
+        }
+    }
+
     public void testReadFail() throws IOException {
         PipedInputStream in = new PipedInputStream();
         PipedOutputStream out = new PipedOutputStream();
         in.connect(out);
 
         new WriterThread("1234567890123456789".getBytes(), 2000, out, true)
-            .start();
+                .start();
 
         byte[] buf = new byte[1000];
         int read = 0;
@@ -110,9 +187,61 @@ public class StreamUtilsTest extends TestCase {
         long read = StreamUtils.copyToStream(in, bOut, testLength - 1000);
         byte[] output = bOut.toByteArray();
         assertEquals("Too much data written sto stream!", testLength - 1000,
-            output.length);
+                output.length);
         assertEquals(new String(buf, 0, testLength - 1000), new String(output));
         assertEquals(testLength - 1000, read);
+    }
+
+    public void testReadIntoByteArrayNullInputStream(){
+        try {
+            StreamUtils.readIntoByteArray(null);
+            fail("Did not throw null pointer exception when input stream was null");
+        } catch (NullPointerException e){
+            //OK Since it is expected to
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void testReadIntoByteArrayOk() throws IOException {
+        byte[] array = new byte[99];
+        for (int i = 0; i < 99; i++) {
+            array[i] = (byte) i;
+        }
+        InputStream inputStream = new ByteArrayInputStream(array);
+        byte[] out = StreamUtils.readIntoByteArray(inputStream);
+        for (int index = 0; index < 99; index++) {
+            assertEquals(array[index], out[index]);
+        }
+    }
+
+    public void testReadIntOk() throws IOException {
+        PipedInputStream in = new PipedInputStream();
+        PipedOutputStream out = new PipedOutputStream();
+        in.connect(out);
+
+        byte[] bytes = {1,2,3,4};
+        new WriterThread(bytes, 10000, out, false).start();
+
+        int read = StreamUtils.readInt(in);
+        assertEquals(16909060, read);
+    }
+
+    public void testReadIntThreeElements() throws IOException {
+        PipedInputStream in = new PipedInputStream();
+        PipedOutputStream out = new PipedOutputStream();
+        in.connect(out);
+
+        byte[] bytes = {1,2,3};
+        new WriterThread(bytes, 10000, out, false).start();
+
+        try {
+            int read = StreamUtils.readInt(in);
+            fail("Did not throw IO exception");
+        } catch (IOException e){
+            //OK, supposed to throw IOException
+            out.close();
+        }
     }
 
     private boolean byteArrayEquals(byte[] b1, byte[] b2) {
@@ -134,7 +263,7 @@ public class StreamUtilsTest extends TestCase {
         private boolean close;
 
         private WriterThread(byte[] buf, long waitTime, OutputStream out,
-            boolean close)
+                             boolean close)
         {
             super();
             this.buf = buf;
