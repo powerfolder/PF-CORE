@@ -1,3 +1,20 @@
+/*
+ * Copyright 2004 - 2019 Christian Sprajc. All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.dal33t.powerfolder.util;
 
 import org.junit.After;
@@ -548,9 +565,8 @@ public class FormatTest {
     public void formatPercentOtherValuesTest() {
         assertEquals("100%", Format.formatPercent(Double.MAX_VALUE));
         assertEquals("0%", Format.formatPercent(Double.MIN_VALUE));
-        //Possible defect, infinity > 100.0 so maybe it should return 100%
-        assertEquals("100%", Double.POSITIVE_INFINITY);
-        assertEquals("0%", Double.NEGATIVE_INFINITY);
+        assertEquals(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 0);
+        assertEquals(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, 0);
     }
 
     @Test
