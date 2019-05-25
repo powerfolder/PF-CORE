@@ -193,12 +193,13 @@ public class Util {
      * @return true if the input is a valid email address.
      */
     public static boolean isValidEmail(String email) {
-
         if (StringUtils.isBlank(email)) {
             return false;
         }
-
-        Pattern p = Pattern.compile(".+@.+(\\.[a-z]+)?");
+        email = email.toLowerCase().trim();
+        Pattern p;
+        // RFC 5322 http://emailregex.com/
+        p = Pattern.compile("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])");
         Matcher m = p.matcher(email);
         return m.matches();
     }
@@ -465,15 +466,11 @@ public class Util {
         }
         InputStream in = null;
         try {
-            Object content = url.getContent();
-            if (!(content instanceof InputStream)) {
-                LOG.severe("Unable to get content from " + url
-                    + ". content is of type " + content.getClass().getName());
+            in = url.openStream();
+            StringBuilder buf = new StringBuilder();
+            if (in.available() == 0) {
                 return null;
             }
-            in = (InputStream) content;
-
-            StringBuilder buf = new StringBuilder();
             while (in.available() > 0) {
                 buf.append((char) in.read());
             }
@@ -582,6 +579,9 @@ public class Util {
      */
 
     public static boolean compareIpAddresses(byte[] ip1, byte[] ip2) {
+        if (ip1.length != ip2.length) {
+            return false;
+        }
         for (int i = 0; i < ip1.length; i++) {
             if (ip1[i] != ip2[i]) {
                 return true;
