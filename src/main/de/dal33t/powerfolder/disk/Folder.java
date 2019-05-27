@@ -2077,7 +2077,7 @@ public class Folder extends PFComponent {
             }
 
             if (isFine()) {
-                logFine("Successfully wrote folder database file ("
+                logFine(this + ": Successfully wrote folder database file ("
                     + diskItems.length + " disk items)");
             }
 
@@ -4096,7 +4096,7 @@ public class Folder extends PFComponent {
                 logFine(toString() + " disconnected storage/device "
                     + getLocalBase() + ". Reconnecting...");
             } else {
-                logInfo(toString() + " disconnected storage/device "
+                logWarning(toString() + " disconnected storage/device "
                     + getLocalBase() + ". Reconnecting...");
             }
             if (!getController().getFolderRepository()
