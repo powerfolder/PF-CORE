@@ -63,11 +63,16 @@ public class LoginUtilTest extends TestCase {
         String url = "http://localhost:8080";
         String username = "TestUser";
         char[] password = {'p','a','s','s','A','1','!','w', 'o', 'R', 'd'};
-        System.out.println(LoginUtil.decorateURL(url, username, password));
 
         assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + username + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.endcodeForURL(LoginUtil.obfuscate(password)),
                 LoginUtil.decorateURL(url, username, password));
 
+    }
+
+    public void testDecorateUrlException() {
+        String nullString = null;
+        char[] nullChars = null;
+        assertNull(LoginUtil.decorateURL(nullString, nullString, nullChars));
     }
 
     public void testDecorateUrlObfuscatedEmptyUser() {
@@ -460,4 +465,61 @@ public class LoginUtilTest extends TestCase {
         assertFalse(LoginUtil.satisfiesUnixPolicy("abc123"));
         assertTrue(LoginUtil.satisfiesUnixPolicy("ABC123abc!"));
     }
+
+    public void testGetDigestException() {
+        try {
+            LoginUtil.hash("asdasd", "testing", "zxc");
+            fail("Did not throw runtime exception when digest was not available");
+        } catch (RuntimeException e){
+            //OK
+        }
+    }
+
+    public void testControllerNotStarter() {
+        Controller controller = new Controller();
+        try {
+            LoginUtil.getUsernameText(controller);
+            fail("Did not throw NullPointerException but controller config was null");
+        } catch (NullPointerException e){
+            //OK
+        }
+
+        try {
+            LoginUtil.isValidUsername(controller, "someUser");
+            fail("Did not throw NullPointerException but controller config was null");
+        } catch (NullPointerException e){
+            //OK
+        }
+
+
+        try {
+            LoginUtil.isUsernameEmailOnly(controller);
+            fail("Did not throw NullPointerException but controller config was null");
+        } catch (NullPointerException e){
+            //OK
+        }
+
+        try {
+            LoginUtil.isUsernameAny(controller);
+            fail("Did not throw NullPointerException but controller config was null");
+        } catch (NullPointerException e){
+            //OK
+        }
+
+        try {
+            LoginUtil.isBoolConfValue(controller);
+            fail("Did not throw NullPointerException but controller config was null");
+        } catch (NullPointerException e){
+            //OK
+        }
+
+        try {
+            LoginUtil.getInviteUsernameLabel(controller);
+            fail("Did not throw NullPointerException but controller config was null");
+        } catch (NullPointerException e){
+            //OK
+        }
+    }
+
+
 }
