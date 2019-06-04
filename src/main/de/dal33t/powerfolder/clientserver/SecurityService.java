@@ -265,11 +265,4 @@ public interface SecurityService {
      * @return The ServerInfo the account is hosted on.
      */
     ServerInfo getHostingService(String username);
-
-    /**
-     * PF-102: Checks if the server supports federation.
-     *
-     * @return true if the server supports federation.
-     */
-    boolean isFederatedService();
 }
