@@ -20,9 +20,14 @@
 package de.dal33t.powerfolder.util.test;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -33,6 +38,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -72,6 +78,9 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
 
     // Activate encrypted storage for this test.
     protected static final boolean isEncryptedStorageTest = false;
+
+    // Controller ID -> Config
+    protected Map<String, Properties> configs = new HashMap<>();
 
     /**
      * The test folder info.
@@ -131,14 +140,45 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
                 "build/test/Controller" + id);
 
 
-        PathUtils.copyFile(Paths.get("src/test-resources/Controller" + id + ".config"),
+        Path configFile = Paths.get("build/test/Controller" + id + "/PowerFolder.config");
+        PathUtils.copyFile(Paths.get("src/test-resources/Controller" + id + ".config"), configFile);
 
-            Paths.get("build/test/Controller" + id + "/PowerFolder.config"));
+        // Add configs
+        Properties config = configs.get(id);
+        if (config != null) {
+            try (Reader r = Files.newBufferedReader(configFile, Convert.UTF8)) {
+                config.load(r );
+            }
 
+            try (Writer w = Files.newBufferedWriter(configFile)) {
+                config.store(w, id);
+            }
+        }
 
         PathUtils.recursiveDelete(miscDic);
 
         startController(id, "build/test/Controller" + id + "/PowerFolder");
+    }
+
+    /**
+     * Set a configuration entry pre-start.
+     *
+     * @param key
+     * @param value
+     * @param controllerIDs the controllers to set the config to. null/not set for all
+     */
+    protected void setConfig(String key, Object value, String... controllerIDs) {
+        if (controllerIDs == null || controllerIDs.length == 0) {
+            controllerIDs = new String[] {BART_ID, HOMER_ID, MARGE_ID, LISA_ID, MAGGIE_ID};
+        }
+        for (String controllerID : controllerIDs) {
+            Properties config = configs.get(controllerID);
+            if (config == null) {
+                config = new Properties();
+                configs.put(controllerID, config);
+            }
+            config.put(key, value);
+        }
     }
 
     /**
