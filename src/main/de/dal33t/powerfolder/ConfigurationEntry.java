@@ -531,6 +531,11 @@ public enum ConfigurationEntry {
     SERVER_USERNAME_IS_EMAIL("server.username.isemail", "both"),
 
     /**
+     * PFS-3212: Validate invite input
+     */
+    SERVER_INVITE_VALIDATE_EMAIL_ENABLED("server.invite.validate_email.enabled", false),
+
+    /**
      * Username for connection
      */
     SERVER_CONNECT_USERNAME("server.connect.username"),
