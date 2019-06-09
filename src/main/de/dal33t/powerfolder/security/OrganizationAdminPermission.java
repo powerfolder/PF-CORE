@@ -44,6 +44,10 @@ public class OrganizationAdminPermission implements Permission, D2DObject {
     public OrganizationAdminPermission(String organizationOID) {
         this.organizationOID = organizationOID;
     }
+
+    public static OrganizationAdminPermission of(String organizationOID) {
+        return new OrganizationAdminPermission(organizationOID);
+    }
     
     /**
      * Init from D2D message
