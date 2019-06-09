@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.util.Translation;
 public class AgreeToSListener extends PFComponent implements ServerClientListener {
 
     private boolean wasPaused = false;
+    private boolean changedPause = false;
     private boolean agreedOnToS = true;
     private ToSNotice tosn;
 
@@ -67,6 +68,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
             if (event.getAccountDetails().needsToAgreeToS()) {
                 wasPaused = getController().isPaused();
                 agreedOnToS = false;
+                changedPause = true;
                 getController().setPaused(true);
                 getController().getUIController().getApplicationModel()
                     .getNoticesModel().handleNotice(tosn);
@@ -100,7 +102,9 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
     @Override
     public void accountUpdated(ServerClientEvent event) {
         if (!event.getAccountDetails().needsToAgreeToS()) {
-            getController().setPaused(wasPaused);
+            if (changedPause) {
+                getController().setPaused(wasPaused);
+            }
             getController().getUIController().getApplicationModel()
                 .getNoticesModel().clearNotice(tosn);
             agreedOnToS = true;
