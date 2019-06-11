@@ -12,6 +12,7 @@ public class LoginReply extends D2DReplyMessage implements D2DReplyFromServer {
 
     protected String replyCode;
     private ServerInfo redirectServerInfo;
+    private String token;
 
     public LoginReply() {
     }
@@ -25,6 +26,12 @@ public class LoginReply extends D2DReplyMessage implements D2DReplyFromServer {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.redirectServerInfo = redirectServerInfo;
+    }
+
+    public LoginReply(String replyCode, StatusCode replyStatusCode, String token) {
+        this.replyCode = replyCode;
+        this.replyStatusCode = replyStatusCode;
+        this.token = token;
     }
 
     /**
@@ -63,6 +70,7 @@ public class LoginReply extends D2DReplyMessage implements D2DReplyFromServer {
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
         builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.redirectServerInfo != null) builder.setRedirectServerInfo((ServerInfoProto.ServerInfo) this.redirectServerInfo.toD2D());
+        if (this.token != null) builder.setToken(this.token);
         return builder.build();
     }
 
