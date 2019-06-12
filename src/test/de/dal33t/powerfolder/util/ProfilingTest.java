@@ -50,9 +50,15 @@ public class ProfilingTest extends TestCase {
         assertEquals("/filestable", Profiling.shortenURI("/filestable/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1/"));
         assertEquals("/onlyoffice", Profiling.shortenURI("/onlyoffice/MlFOR0hqMWI3VjY2VlN3WnJoNzlI/#download"));
         assertEquals("/editfile", Profiling.shortenURI("/editfile/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1/"));
+        assertEquals("/upload", Profiling.shortenURI("/upload/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
+        assertEquals("/ul", Profiling.shortenURI("/ul/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
+        assertEquals("/gallery", Profiling.shortenURI("/gallery/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
+        assertEquals("/settings", Profiling.shortenURI("/settings/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
+        assertEquals("/filesjson", Profiling.shortenURI("/filesjson/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
+        assertEquals("/folderstable", Profiling.shortenURI("/folderstable/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
+        assertEquals("/files", Profiling.shortenURI("/files/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
 
-
-                assertEquals("exe", Profiling.shortenURI("exe"));
+        assertEquals("exe", Profiling.shortenURI("exe"));
         assertEquals("/newjoinfolder", Profiling.shortenURI("/newjoinfolder"));
         assertEquals("/wapi/files/",
                 Profiling.shortenURI("/wapi/files/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1/products%2FWB0R5L90S%20(2)/Static_Full_Version/css/plugins"));

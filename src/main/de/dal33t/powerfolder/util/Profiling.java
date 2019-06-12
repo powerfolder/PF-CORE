@@ -262,6 +262,13 @@ public class Profiling {
                 || uri.startsWith("/filestable/")
                 || uri.startsWith("/onlyoffice/")
                 || uri.startsWith("/editfile/")
+                || uri.startsWith("/upload/")
+                || uri.startsWith("/ul/")
+                || uri.startsWith("/gallery/")
+                || uri.startsWith("/settings/")
+                || uri.startsWith("/filesjson/")
+                || uri.startsWith("/files/")
+                || uri.startsWith("/folderstable/")
         ) {
             return uri.substring(0, uri.indexOf('/', 2));
         }
