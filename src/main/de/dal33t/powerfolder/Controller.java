@@ -497,7 +497,7 @@ public class Controller extends PFComponent {
 
             Profiling.setEnabled(true);
             Profiling.reset();
-            scheduleAndRepeat(() -> logInfo(Profiling.dumpStats()), 600000L, 600000L);
+            scheduleAndRepeat(() -> logInfo(Profiling.dumpStats()), 1000L * 60, 1000L * 60 * 60);
         }
 
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
