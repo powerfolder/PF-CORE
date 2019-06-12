@@ -172,8 +172,13 @@ public class WrappedScheduledThreadPoolExecutor
     
     // Internal helper ********************************************************
 
+    private Date lastDump = new Date(System.currentTimeMillis() - 1000L * 30);
+
     private void checkBusyness() {
         if (getActiveCount() == 0) {
+            return;
+        }
+        if (lastDump.after(new Date(System.currentTimeMillis() - 1000L * 30))) {
             return;
         }
         Level l = Level.FINER;
@@ -194,6 +199,7 @@ public class WrappedScheduledThreadPoolExecutor
             }
             LOG.log(l, "Scheduled threadpool status: Currently active threads: "
                             + getActiveCount() + "/" + getPoolSize() + "\n" + b);
+            lastDump = new Date();
         }
     }
     
