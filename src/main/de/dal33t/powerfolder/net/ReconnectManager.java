@@ -38,7 +38,6 @@ import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
@@ -214,11 +213,9 @@ public class ReconnectManager extends PFComponent {
             reconnectionQueue.clear();
 
             // Servers should not connect to clients
-            if (!Controller.IS_SERVER) {
-                for (Member node : getController().getNodeManager().getNodesAsCollection()) {
-                    if (shouldBeAddedToReconQueue(node)) {
-                        reconnectionQueue.add(node);
-                    }
+            for (Member node : getController().getNodeManager().getNodesAsCollection()) {
+                if (shouldBeAddedToReconQueue(node)) {
+                    reconnectionQueue.add(node);
                 }
             }
 
@@ -248,6 +245,9 @@ public class ReconnectManager extends PFComponent {
     private boolean shouldBeAddedToReconQueue(Member node) {
         Reject.ifNull(node, "Node is null");
         if (!started) {
+            return false;
+        }
+        if (getMySelf().isServer()) {
             return false;
         }
         if (node.getInfo().isInvalid(getController())) {

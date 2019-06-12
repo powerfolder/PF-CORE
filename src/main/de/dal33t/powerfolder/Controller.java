@@ -112,16 +112,6 @@ public class Controller extends PFComponent {
     /** Subdir of misc files */
     private static String miscFilesLocationDirName = Constants.MISC_DIR_NAME;
 
-    public static boolean IS_SERVER;
-
-    static {
-        try {
-            IS_SERVER = ClassLoader.getSystemClassLoader().loadClass("de.dal33t.powerfolder.distribution.Server") != null;
-        } catch (ClassNotFoundException e) {
-            IS_SERVER = false;
-        }
-    }
-
     /** The command line entered by the user when starting the program */
     private CommandLine commandLine;
 
