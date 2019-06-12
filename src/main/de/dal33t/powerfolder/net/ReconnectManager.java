@@ -138,6 +138,10 @@ public class ReconnectManager extends PFComponent {
             // Skip, not necessary.
             return;
         }
+        if (getMySelf().isServer() && !node.isServer()) {
+            // PFS-3125: Never connect outbound to clients
+            return;
+        }
         synchronized (reconnectionQueue) {
             // Remove node
             reconnectionQueue.remove(node);
