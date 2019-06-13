@@ -1,38 +1,38 @@
 stages:
-	- test
+  - test
 
 test-Linux:
-	stage: test
-	tags:
-		- Linux
-	script:
-		ant run-tests
-	artifacts:
-		reports:
-			junit: test-reports/raw/TEST-*.xml
-		paths:
-			- test-reports/html/*.html
+  stage: test
+  tags:
+    - Linux
+  script:
+    ant run-tests
+  artifacts:
+    reports:
+      junit: test-reports/raw/TEST-*.xml
+    paths:
+      - test-reports/html/*.html
 
 test-macOS:
-	stage: test
-	tags:
-		- macOS
-	script:
-		ant run-tests
-	artifacts:
-		reports:
-			junit: test-reports/raw/TEST-*.xml
-		paths:
-			- test-reports/html/*.html
+  stage: test
+  tags:
+    - macOS
+  script:
+    ant run-tests
+  artifacts:
+    reports:
+      junit: test-reports/raw/TEST-*.xml
+    paths:
+      - test-reports/html/*.html
 
 test-Windows:
-	stage: test
-	tags:
-		- Windows
-	script:
-		ant run-tests
-	artifacts:
-		reports:
-			junit: test-reports/raw/TEST-*.xml
-		paths:
-			- test-reports/html/*.html
+  stage: test
+  tags:
+    - Windows
+  script:
+    ant run-tests
+  artifacts:
+    reports:
+      junit: test-reports/raw/TEST-*.xml
+    paths:
+      - test-reports/html/*.html
