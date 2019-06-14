@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.Permission;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -111,6 +112,14 @@ public interface SecurityService {
      *         have an expiration date.
      */
     String requestToken();
+
+    /**
+     * Request a number of tokens for an iOS device
+     *
+     * @param nodeIds The node IDs to request tokens for
+     * @return The requested tokens
+     */
+    @Nullable Collection<String> requestTokensiOS(@Nullable Collection<String> nodeIds);
 
     /**
      * PFS-1685

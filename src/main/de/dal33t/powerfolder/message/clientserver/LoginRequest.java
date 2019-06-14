@@ -7,12 +7,16 @@ import de.dal33t.powerfolder.d2d.D2DRequestToServer;
 import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.protocol.LoginRequestProto;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class LoginRequest extends D2DRequestMessage implements D2DRequestToServer {
 
     protected String username;
     protected String password;
     protected String token;
-    protected long tosVersion;
+    private long tosVersion;
+    private Collection<String> nodeIds;
 
     public LoginRequest() {
     }
@@ -42,6 +46,10 @@ public class LoginRequest extends D2DRequestMessage implements D2DRequestToServe
         return tosVersion;
     }
 
+    public Collection<String> getNodeIds() {
+        return nodeIds;
+    }
+
     /**
      * Init from D2D message
      *
@@ -56,6 +64,8 @@ public class LoginRequest extends D2DRequestMessage implements D2DRequestToServe
             this.password = proto.getPassword();
             this.token = proto.getToken();
             this.tosVersion = proto.getTosVersion();
+            this.nodeIds = new ArrayList<>();
+            this.nodeIds.addAll(proto.getNodeIdsList());
         }
     }
 
@@ -73,6 +83,11 @@ public class LoginRequest extends D2DRequestMessage implements D2DRequestToServe
         if (this.password != null) builder.setPassword(this.getPassword());
         if (this.token != null) builder.setToken(this.getToken());
         builder.setTosVersion(this.tosVersion);
+        if (this.nodeIds != null) {
+            for (String nodeId : this.nodeIds) {
+                builder.addNodeIds(nodeId);
+            }
+        }
         return builder.build();
     }
 

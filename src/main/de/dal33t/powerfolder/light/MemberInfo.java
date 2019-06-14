@@ -153,6 +153,10 @@ public class MemberInfo implements Serializable, D2DObject {
         return id;
     }
 
+    public String getNetworkId() {
+        return networkId;
+    }
+
     public String getNick() {
         return nick;
     }
