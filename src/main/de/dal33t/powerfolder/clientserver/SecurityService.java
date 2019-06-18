@@ -116,10 +116,9 @@ public interface SecurityService {
     /**
      * Request a number of tokens for an iOS device
      *
-     * @param nodeIds The node IDs to request tokens for
-     * @return The requested tokens
+     * @return The requested tokens. Mapped nodeID -> tokenSecret
      */
-    @Nullable Collection<String> requestTokensiOS(@Nullable Collection<String> nodeIds);
+    @Nullable Map<String, String> requestTokensIOS();
 
     /**
      * PFS-1685
