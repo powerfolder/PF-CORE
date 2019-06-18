@@ -58,6 +58,11 @@ public class MemberInfo implements Serializable, D2DObject {
     private static final long serialVersionUID = 100L;
     public static Internalizer<MemberInfo> INTERNALIZER;
 
+    public static final String NODEID_IOS_PREFIX = "iOS_";
+    public static final String NODEID_HOST_APP_SUFFIX = "_HA";
+    public static final String NODEID_SHELL_EXTENSIONS_SUFFIX = "_SE";
+    public static final String NODEID_FILE_PROVIDER_SUFFIX = "_FP";
+
     public static final String PROPERTYNAME_NICK = "nick";
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_CONNECT_ADDRESS = "connectAddress";
@@ -147,6 +152,14 @@ public class MemberInfo implements Serializable, D2DObject {
 
     public void setD2dPort(int d2dPort) {
         this.d2dPort = d2dPort;
+    }
+
+    public boolean isIOS() {
+        return id.startsWith(NODEID_IOS_PREFIX);
+    }
+
+    public boolean isIOSHostApp() {
+        return isIOS() && id.endsWith(NODEID_HOST_APP_SUFFIX);
     }
 
     public String getId() {
