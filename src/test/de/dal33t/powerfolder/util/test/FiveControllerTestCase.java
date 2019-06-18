@@ -139,19 +139,21 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         Path miscDic = Controller.getMiscFilesLocation().resolve(
                 "build/test/Controller" + id);
 
-
         Path configFile = Paths.get("build/test/Controller" + id + "/PowerFolder.config");
         PathUtils.copyFile(Paths.get("src/test-resources/Controller" + id + ".config"), configFile);
 
         // Add configs
-        Properties config = configs.get(id);
-        if (config != null) {
+        Properties additionalConfig = configs.get(id);
+        if (additionalConfig != null) {
+            Properties baseConfig;
             try (Reader r = Files.newBufferedReader(configFile, Convert.UTF8)) {
-                config.load(r );
+                baseConfig = new Properties();
+                baseConfig.load(r);
+                baseConfig.putAll(additionalConfig);
             }
 
             try (Writer w = Files.newBufferedWriter(configFile)) {
-                config.store(w, id);
+                baseConfig.store(w, id);
             }
         }
 
