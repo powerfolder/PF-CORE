@@ -65,7 +65,6 @@ public class LoginRequest extends D2DRequestMessage implements D2DRequestToServe
             this.token = proto.getToken();
             this.tosVersion = proto.getTosVersion();
             this.nodeIds = new ArrayList<>();
-            this.nodeIds.addAll(proto.getNodeIdsList());
         }
     }
 
@@ -83,11 +82,6 @@ public class LoginRequest extends D2DRequestMessage implements D2DRequestToServe
         if (this.password != null) builder.setPassword(this.getPassword());
         if (this.token != null) builder.setToken(this.getToken());
         builder.setTosVersion(this.tosVersion);
-        if (this.nodeIds != null) {
-            for (String nodeId : this.nodeIds) {
-                builder.addNodeIds(nodeId);
-            }
-        }
         return builder.build();
     }
 

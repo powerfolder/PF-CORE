@@ -10,12 +10,13 @@ import de.dal33t.powerfolder.protocol.ServerInfoProto;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 public class LoginReply extends D2DReplyMessage implements D2DReplyFromServer {
 
     protected String replyCode;
     private ServerInfo redirectServerInfo;
-    private Collection<String> tokens;
+    private Map<String, String> tokens;
 
     public LoginReply() {
     }
@@ -31,7 +32,7 @@ public class LoginReply extends D2DReplyMessage implements D2DReplyFromServer {
         this.redirectServerInfo = redirectServerInfo;
     }
 
-    public LoginReply(String replyCode, StatusCode replyStatusCode, Collection<String> tokens) {
+    public LoginReply(String replyCode, StatusCode replyStatusCode, Map<String, String> tokens) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.tokens = tokens;
@@ -58,8 +59,7 @@ public class LoginReply extends D2DReplyMessage implements D2DReplyFromServer {
             this.replyCode = proto.getReplyCode();
             this.replyStatusCode = StatusCode.getEnum(proto.getReplyStatusCode());
             this.redirectServerInfo = new ServerInfo(proto.getRedirectServerInfo());
-            this.tokens = new ArrayList<>();
-            this.tokens.addAll(proto.getTokensList());
+            this.tokens = proto.getTokensMap();
         }
     }
 
@@ -75,11 +75,7 @@ public class LoginReply extends D2DReplyMessage implements D2DReplyFromServer {
         if (this.replyCode != null) builder.setReplyCode(this.replyCode);
         builder.setReplyStatusCode(this.replyStatusCode.getCode());
         if (this.redirectServerInfo != null) builder.setRedirectServerInfo((ServerInfoProto.ServerInfo) this.redirectServerInfo.toD2D());
-        if (this.tokens != null) {
-            for (String token : this.tokens) {
-                builder.addTokens(token);
-            }
-        }
+        if (this.tokens != null) builder.putAllTokens(this.tokens);
         return builder.build();
     }
 
