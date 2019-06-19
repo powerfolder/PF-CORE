@@ -982,4 +982,18 @@ public class Util {
         }
         return builder;
     }
+
+    public static final boolean isMySQLDeadlock(Exception e) {
+        String text = e.toString().toLowerCase();
+        if (e.getCause() != null && e.getCause().getMessage() != null) {
+            text += e.getCause().getMessage().toLowerCase();
+            if (e.getCause().getCause() != null && e.getCause().getCause().getMessage() != null) {
+                text += e.getCause().getCause().getMessage();
+            }
+        }
+        return text.contains("wsrep detected")
+                || text.contains("conflict")
+                || text.contains("deadlock")
+                || text.contains("eadlock found");
+    }
 }
