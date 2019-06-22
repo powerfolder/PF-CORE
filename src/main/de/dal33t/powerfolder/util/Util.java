@@ -983,7 +983,7 @@ public class Util {
         return builder;
     }
 
-    public static final boolean isMySQLDeadlock(Exception e) {
+    public static final boolean isMySQLDeadlock(Throwable e) {
         String text = e.toString().toLowerCase();
         if (e.getCause() != null && e.getCause().getMessage() != null) {
             text += e.getCause().getMessage().toLowerCase();

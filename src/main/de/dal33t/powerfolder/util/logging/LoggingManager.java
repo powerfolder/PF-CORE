@@ -43,6 +43,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.handlers.BufferedHandler;
 import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
 import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
@@ -119,6 +120,15 @@ public class LoggingManager {
             {
                 return false;
             }
+
+            // PFS-3277
+            if (loggerName.contains("JDBCTransaction")
+                    && record.getThrown() != null
+                    && Util.isMySQLDeadlock(record.getThrown()))
+            {
+                return false;
+            }
+
             // PFS-2199:
             if (loggerName.contains("SchemaExport")
                 && record.getLevel() == Level.SEVERE
