@@ -4457,7 +4457,7 @@ public class Folder extends PFComponent {
             logFiner("No Incoming files");
         } else {
             if (isFine()) {
-                logFine((incomingCount != null ? "" : "Aprox. ")
+                logFine(getName() + ":" + (incomingCount != null ? "" : "Aprox. ")
                     + incomingFiles.size() + " incoming files");
             }
         }
