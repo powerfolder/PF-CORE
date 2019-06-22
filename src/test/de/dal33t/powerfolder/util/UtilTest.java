@@ -952,4 +952,11 @@ public class UtilTest extends TestCase {
                     "Fatal problem: UTF-8 encoding not found").initCause(e);
         }
     }
+
+    public void testMySQLDeadlock() {
+        assertFalse(Util.isMySQLDeadlock(new RuntimeException()));
+        assertTrue(Util.isMySQLDeadlock(new RuntimeException("Problem while comitting to database. org.hibernate.TransactionException: JDBC commit failed com.mysql.jdbc.exceptions.jdbc4.MySQLTransactionRollbackException: WSREP detected deadlock/conflict and aborted the transaction. Try restarting the transaction")));
+        assertTrue(Util.isMySQLDeadlock(new RuntimeException("JDBC commit failed com.mysql.jdbc.exceptions.jdbc4.MySQLTransactionRollbackException: WSREP detected deadlock/conflict and aborted the transaction. Try restarting the transaction")));
+        assertTrue(Util.isMySQLDeadlock(new RuntimeException("WSREP detected deadlock/conflict and aborted the transaction. Try restarting the transaction")));
+    }
 }

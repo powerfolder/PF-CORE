@@ -122,12 +122,13 @@ public class LoggingManager {
             }
 
             // PFS-3277
-            if (loggerName.contains("JDBCTransaction")
+            if ((loggerName.contains("JDBCTransaction") || loggerName.contains("JDBCExceptionReporter"))
                     && record.getThrown() != null
                     && Util.isMySQLDeadlock(record.getThrown()))
             {
                 return false;
             }
+            // FIXME: Also logs: WARN   [JDBCExceptionReporter]: SQL Error: 1213, SQLState: 40001
 
             // PFS-2199:
             if (loggerName.contains("SchemaExport")
