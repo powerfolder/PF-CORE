@@ -214,32 +214,40 @@ public class Profiling {
         }
 
         StringBuilder sb = new StringBuilder();
-
         sb.append("=== Profiling Statistics ===\n");
-        sb.append("Uptime: " + (System.currentTimeMillis() - startTime) + "ms\n");
-        sb.append("Total invocations: " + totalCount + '\n');
-        sb.append("Total elapsed time: " + Format.formatTimeframe(totalTime) + "\n");
-        if (totalCount > 0) {
-            sb.append("Avg time: " + Format.formatTimeframe(totalTime / totalCount) + "\n");
-        }
-        sb.append("Min elapsed time: " + Format.formatTimeframe(minimumTime) + "\n");
-        sb.append("Max elapsed time: " + Format.formatTimeframe(maximumTime) + "\n");
-        sb.append("\n");
-        List<String> keys = new ArrayList<String>(stats.keySet());
-        Collections.sort(keys);
-        for (String key : keys) {
-            ProfilingStat stat = stats.get(key);
-            String spaces = "";
-            for (int i = 0; i<70-stat.getOperationName().length(); i++) {
-                spaces += " ";
+        try {
+            sb.append("Uptime: " + Format.formatTimeframe((System.currentTimeMillis() - startTime)) + "\n");
+            sb.append("Total invocations: " + totalCount + '\n');
+            sb.append("Total elapsed time: " + Format.formatTimeframe(totalTime) + "\n");
+            if (totalCount > 0) {
+                sb.append("Avg time: " + Format.formatTimeframe(totalTime / totalCount) + "\n");
             }
-            sb.append(stat.getOperationName() + spaces + " \t"
-                + stat.getCount() + "\tinvocations\t"
-                + stat.getElapsed() + "\tms elapsed\t"
-                + stat.getElapsed() / stat.getCount()
-                + "\tms average\n");
+            sb.append("Min elapsed time: " + Format.formatTimeframe(minimumTime) + "\n");
+            sb.append("Max elapsed time: " + Format.formatTimeframe(maximumTime) + "\n");
+            sb.append("\n");
+            List<String> keys = new ArrayList<String>(stats.keySet());
+            Collections.sort(keys);
+            for (String key : keys) {
+                ProfilingStat stat = stats.get(key);
+                String spaces = "";
+                for (int i = 0; i < 70 - stat.getOperationName().length(); i++) {
+                    spaces += " ";
+                }
+                long msSinceStart = System.currentTimeMillis() - startTime;
+                double invPerMS = ((double) stat.getCount()) / msSinceStart;
+                int invPerHour = (int) (invPerMS * 1000L * 60 * 60);
+                sb.append(stat.getOperationName() + spaces + " \t"
+                        + stat.getCount() + "\tinvocations\t"
+                        + invPerHour + "\tinvocations per hour\t"
+                        + stat.getElapsed() + "\tms elapsed\t"
+                        + stat.getElapsed() / stat.getCount()
+                        + "\tms average\n");
+            }
+            sb.append("============================");
+        } catch (Throwable t) {
+            sb.append("Error generating:\n");
+            sb.append(t.toString());
         }
-        sb.append("============================");
         return sb.toString();
     }
 
