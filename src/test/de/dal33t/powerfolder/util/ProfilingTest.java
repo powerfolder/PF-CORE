@@ -57,6 +57,7 @@ public class ProfilingTest extends TestCase {
         assertEquals("/filesjson", Profiling.shortenURI("/filesjson/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/folderstable", Profiling.shortenURI("/folderstable/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/files", Profiling.shortenURI("/files/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
+        assertEquals("/player", Profiling.shortenURI("/player/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1"));
 
         assertEquals("exe", Profiling.shortenURI("exe"));
         assertEquals("/newjoinfolder", Profiling.shortenURI("/newjoinfolder"));

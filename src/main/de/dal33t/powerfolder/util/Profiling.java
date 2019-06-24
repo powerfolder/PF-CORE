@@ -277,6 +277,7 @@ public class Profiling {
                 || uri.startsWith("/filesjson/")
                 || uri.startsWith("/files/")
                 || uri.startsWith("/folderstable/")
+                || uri.startsWith("/player/")
         ) {
             return uri.substring(0, uri.indexOf('/', 2));
         }
