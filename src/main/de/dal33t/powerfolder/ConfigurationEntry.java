@@ -373,14 +373,19 @@ public enum ConfigurationEntry {
     SERVER_LOGIN_SKIP_RETRY("server.skip.auto.login", 1000),
 
     /**
-     * PFS-2425: Federated login.
-     */
-    SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
-
-    /**
      * Server federation support.
      */
     SERVER_FEDERATION_ENABLED("server.federation.enabled", false),
+
+    /**
+     * PFS-2817: Disable sharing.
+     */
+    SERVER_FEDERATED_SHARING("server.federation.sharing_enabled", true),
+
+    /**
+     * PFS-2425: Federated login.
+     */
+    SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
 
     // Server WEB settings ****************************************************
 

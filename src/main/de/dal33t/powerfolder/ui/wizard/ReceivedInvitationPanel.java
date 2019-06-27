@@ -119,32 +119,7 @@ public class ReceivedInvitationPanel extends PFWizardPanel {
                 .getSuggestedLocalBase(getController()).toAbsolutePath().toString(),
                 new FolderCreatePanel(getController()));
 
-        boolean serverAgreeInvitationsEnabled =
-                ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED.getValueBoolean(getController());
-
-        // Start: PF-164: Federated invites:
-        if (invitation.getServer() != null &&
-                ConfigurationEntry.SERVER_FEDERATION_ENABLED.getValueBoolean(getController())) {
-
-            try {
-                Properties props = ConfigurationLoader
-                        .loadPreConfiguration(invitation.getServer().getWebUrl());
-                String agreeInvitations = (String) props.get(ConfigurationEntry.FOLDER_AGREE_INVITATION_ENABLED
-                        .getConfigKey());
-
-                if (StringUtils.isNotBlank(agreeInvitations)) {
-                    serverAgreeInvitationsEnabled = Boolean.parseBoolean(agreeInvitations);
-                }
-
-            } catch (IOException e) {
-                log.warning("Failed to get config from federated server "
-                        + invitation.getServer().getWebUrl());
-            }
-        }
-        // End: PF-164: Federated invites:
-
-        if (serverAgreeInvitationsEnabled)
-        {
+        if (serverAgreeInvitationEnabled(invitation)) {
             return new SwingWorkerPanel(getController(), new AcceptInviteTask(),
                     Translation.get(""), Translation.get(""),
                     next);
