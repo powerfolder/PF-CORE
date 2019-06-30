@@ -32,6 +32,8 @@ import java.util.logging.Level;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.FolderWatcher;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -50,7 +52,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 /**
  * Tests file transfer between nodes.
  *
- * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
 public class FileTransferTest extends TwoControllerTestCase {
@@ -2304,6 +2306,48 @@ public class FileTransferTest extends TwoControllerTestCase {
         });
 
         TestHelper.assertIncompleteFilesGone(this);
+    }
+
+    /**
+     * PFC-3213
+     */
+    public void testLongPaths() {
+        Folder folderAtLisa = getFolderAtLisa();
+        Path lisasPath = folderAtLisa.getLocalBase();
+        getContollerLisa().getFolderRepository().removeFolder(folderAtLisa, false);
+        lisasPath = lisasPath.getParent().resolve("lisaslongernameforthefolderfarlongerthanexpected");
+        FolderSettings fs = new FolderSettings(lisasPath, SyncProfile.AUTOMATIC_SYNCHRONIZATION, 0);
+        getContollerLisa().getFolderRepository().createFolder(folderAtLisa.getInfo(), fs);
+        assertNotNull(getFolderAtLisa());
+
+        String fn = "file11111/name2222/getting3333/very4444/long5555/here6666/maybe7777/even8888/tooo9999/long100/" +
+                "file11111/name2222/getting3333/very4444/long5555/here6666/file.txt";
+        //assertTrue(fn.length() > 260);
+        Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), fn);
+        assertTrue(fileAtBart.toString(), fileAtBart.toString().length() < 260);
+        scanFolder(getFolderAtBart());
+        FileInfo fileInfo = getFolderAtBart().getFile(FileInfoFactory.lookupInstance(getFolderAtBart(), fileAtBart));
+        TestHelper.waitForCondition(10,
+                () -> getContollerLisa().getTransferManager().getCompletedDownload(fileInfo) != null);
+        Path fileAtLisa = fileInfo.getDiskFile(getContollerLisa().getFolderRepository());
+        assertTrue(fileAtLisa.toString(), fileAtLisa.toString().length() > 260);
+        // ------ Now we have the situation: Lisas Path is too long
+        assertTrue(countDeletedItems(getFolderAtBart()) == 0);
+        assertTrue(countDeletedItems(getFolderAtLisa()) == 0);
+        scanFolder(getFolderAtBart());
+        scanFolder(getFolderAtLisa());
+        assertTrue(countDeletedItems(getFolderAtBart()) == 0);
+        assertTrue(countDeletedItems(getFolderAtLisa()) == 0);
+    }
+
+    private int countDeletedItems(Folder folder) {
+        int d = 0;
+        for (FileInfo fileInfo: folder.getKnownFiles()) {
+            if (fileInfo.isDeleted()) {
+                d++;
+            }
+        }
+        return d;
     }
 
     /**
