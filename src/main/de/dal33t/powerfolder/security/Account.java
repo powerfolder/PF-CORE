@@ -1768,7 +1768,7 @@ public class Account implements Serializable, D2DObject {
         if (this.firstname != null) builder.setFirstname(this.firstname);
         if (this.surname != null) builder.setSurname(this.surname);
         if (this.telephone != null) builder.setTelephone(this.telephone);
-        for (String email : this.emails) {
+        for (String email : this.getEmails()) {
             builder.addEmails(email);
         }
         if (this.organizationOID != null) builder.setOrganizationId(this.organizationOID);
