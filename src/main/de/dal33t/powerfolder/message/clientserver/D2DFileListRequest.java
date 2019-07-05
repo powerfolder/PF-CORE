@@ -139,7 +139,8 @@ public class D2DFileListRequest extends D2DRequestMessage {
             // If file IDs are provided fetch the file infos fo those IDs
             fileInfos = new ArrayList<>();
             for (String fileId: this.fileIds) {
-                FileInfo fileInfo = folder.getDAO().find(FileInfoFactory.lookupInstance(folderInfo, fileId), node.getController().getMySelf().getId());
+                String fileName = fileId.replaceFirst(folderId + "/", "");
+                FileInfo fileInfo = folder.getDAO().find(FileInfoFactory.lookupInstance(folderInfo, fileName), node.getController().getMySelf().getId());
                 if (fileInfo != null) {
                     fileInfos.add(fileInfo);
                 }
