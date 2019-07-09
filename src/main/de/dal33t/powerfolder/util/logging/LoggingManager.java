@@ -123,8 +123,7 @@ public class LoggingManager {
 
             // PFS-3277
             if ((loggerName.contains("JDBCTransaction") || loggerName.contains("JDBCExceptionReporter"))
-                    && record.getThrown() != null
-                    && Util.isMySQLDeadlock(record.getThrown()))
+                    && Util.isMySQLDeadlock(record))
             {
                 return false;
             }

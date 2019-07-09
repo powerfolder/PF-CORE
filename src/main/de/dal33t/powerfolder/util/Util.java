@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -983,6 +984,11 @@ public class Util {
         return builder;
     }
 
+    public static final boolean isMySQLDeadlock(LogRecord lr) {
+        return (lr.getMessage() != null && isMySQLDeadlock(lr.getMessage().toLowerCase()))
+                || (lr.getThrown() != null && isMySQLDeadlock(lr.getThrown()));
+    }
+
     public static final boolean isMySQLDeadlock(Throwable e) {
         String text = e.toString().toLowerCase();
         if (e.getCause() != null && e.getCause().getMessage() != null) {
@@ -991,6 +997,10 @@ public class Util {
                 text += e.getCause().getCause().getMessage();
             }
         }
+        return isMySQLDeadlock(text);
+    }
+
+    private static final boolean isMySQLDeadlock(String text) {
         return text.contains("wsrep detected")
                 || text.contains("conflict")
                 || text.contains("deadlock")
