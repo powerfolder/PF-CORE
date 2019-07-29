@@ -119,8 +119,15 @@ public interface FolderService {
     /**
      * @param request
      * @param wait block until send process is finished
+     * @deprecated use {@link #sendInvitation(Invitation, boolean)}
      */
     void sendInvitationEmail(SendInvitationEmail request, boolean wait);
+
+    /**
+     * @param invitation
+     * @param wait block until send process is finished
+     */
+    void sendInvitation(Invitation invitation, boolean wait);
 
     /**
      * Changes the sync profile on the remote server for this folder.
