@@ -2504,4 +2504,16 @@ public class PathUtilsTest extends TestCase {
 
     }
 
+    /**
+     * PFS-3092
+     * @throws IOException
+     */
+    public void testMoveReplication() throws IOException {
+        Path source = baseDir.resolve("build/pf_data/users/XXX/Allgemeine MentorInnenqualifizierung/ABC/Material");
+        Files.createDirectories(source);
+        TestHelper.createRandomFile(source);
+
+        Path target = baseDir.resolve("build/pf_data/users/XXX/Allgemeine MentorInnenqualifizierung/ABC/Material/Material Quellen");
+        PathUtils.recursiveCopyVisitor(source, target);
+    }
 }

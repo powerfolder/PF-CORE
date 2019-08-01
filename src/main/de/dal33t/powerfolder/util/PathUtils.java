@@ -1735,6 +1735,9 @@ public class PathUtils {
             throw new FileAlreadyExistsException("Copy from " + sourceDirectory + " to " + targetDirectory
                     + " failed! Target directory already exists " + targetDirectory);
         }
+        if (isSubdirectory(sourceDirectory, targetDirectory)) {
+            throw new IOException("Target " + targetDirectory + " must not be a subdirectory of source " + sourceDirectory);
+        }
 
         try {
             Files.walkFileTree(sourceDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
