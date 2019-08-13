@@ -1531,6 +1531,11 @@ public class Folder extends PFComponent {
             return;
         }
 
+        Path expected = dirInfo.getDiskFile(getController().getFolderRepository());
+        if (!expected.equals(dir)) {
+            logWarning("Metadata mismatch: " + dirInfo.toDetailString() + ". Expected at " + expected + ". Got " + dir);
+        }
+
         if (PathUtils.isReplicatedSubdir(dir)) {
             logWarning("Unable to scan directory. Replication found: " + dir);
             return;
