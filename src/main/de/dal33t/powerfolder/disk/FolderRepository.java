@@ -509,7 +509,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         Set<String> entryIds = FolderSettings.loadEntryIds(config);
 
         // Load on many processors
-        int loaders = Math.min(Runtime.getRuntime().availableProcessors() - 2, 8);
+        int loaders = Runtime.getRuntime().availableProcessors() - 2;
         if (loaders <= 0) {
             loaders = 1;
         }
