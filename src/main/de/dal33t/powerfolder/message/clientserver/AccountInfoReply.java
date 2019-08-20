@@ -22,6 +22,7 @@ public class AccountInfoReply extends D2DReplyMessage implements D2DReplyFromSer
     private long usedQuota;
     private long backupQuota;
     private long freeQuota;
+    private int maxFolders;
     private String organizationName;
     private AccountInfo accountInfo;
 
@@ -33,7 +34,7 @@ public class AccountInfoReply extends D2DReplyMessage implements D2DReplyFromSer
         this.replyStatusCode = replyStatusCode;
     }
 
-    public AccountInfoReply(String replyCode, StatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, Map<String, String> folderMapping, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota, String organizationName) {
+    public AccountInfoReply(String replyCode, StatusCode replyStatusCode, Account account, Collection<FolderPermission> invitations, Map<String, String> folderMapping, long avatarLastModifiedDate, long usedQuota, long backupQuota, long freeQuota, int maxFolders, String organizationName) {
         this.replyCode = replyCode;
         this.replyStatusCode = replyStatusCode;
         this.account = account;
@@ -43,6 +44,7 @@ public class AccountInfoReply extends D2DReplyMessage implements D2DReplyFromSer
         this.usedQuota = usedQuota;
         this.backupQuota = backupQuota;
         this.freeQuota = freeQuota;
+        this.maxFolders = maxFolders;
         this.organizationName = organizationName;
     }
 
@@ -157,6 +159,7 @@ public class AccountInfoReply extends D2DReplyMessage implements D2DReplyFromSer
             accountInfoBuilder.setUsedQuota(this.usedQuota);
             accountInfoBuilder.setBackupQuota(this.backupQuota);
             accountInfoBuilder.setFreeQuota(this.freeQuota);
+            accountInfoBuilder.setMaxFolders(this.maxFolders);
             // Inject organization name into AccountInfo
             if (this.organizationName != null) accountInfoBuilder.setOrganizationId(this.organizationName);
             // Add AccountInfo to message
