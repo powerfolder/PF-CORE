@@ -499,11 +499,14 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     private void fixPFS3334() {
         String tm = ConfigurationEntry.DEFAULT_TRANSFER_MODE.getValue(getController());
-        if (StringUtils.isNotBlank(tm)) {
+        // folder.scan.continuous
+        // folder.scan.24.hours
+        if (StringUtils.isNotBlank(tm) && !tm.equals("folder.scan.continuous") && !tm.equals("folder.scan.24.hours")) {
             return;
         }
+
         // Reset to default
-        logWarning("PFS-3334: Fixing default transfer mode");
+        logInfo("PFS-3334: Fixing default transfer mode");
 
         final Properties config = getController().getConfig();
         ConfigurationEntry.DEFAULT_TRANSFER_MODE.setValue(config,
@@ -519,7 +522,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (folderSettings.getSyncProfile().equals(SyncProfile.MANUAL_SYNCHRONIZATION)) {
                 String folderName = FolderSettings.loadFolderName(
                         getController().getConfig(), folderEntryId);
-                logWarning("Fixed transfer mode for folder " + folderName + ". EntryID: " + folderEntryId);
+                logWarning("PFS-3334: Fixed transfer mode for folder " + folderName + ". EntryID: " + folderEntryId);
                 config.setProperty(PREFIX_V4 + folderEntryId + SYNC_PROFILE,
                         ConfigurationEntry.DEFAULT_TRANSFER_MODE.getValue(config));
             }
