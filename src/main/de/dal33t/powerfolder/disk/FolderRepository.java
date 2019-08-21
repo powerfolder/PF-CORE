@@ -62,8 +62,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.ID;
-import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
+import static de.dal33t.powerfolder.disk.FolderSettings.*;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -226,6 +225,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void init() {
         initFoldersBasedir();
 
+        fixPFS3334();
         processV4Format();
 
         // Maintain link
@@ -495,6 +495,37 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().saveConfig();
 
         return ok;
+    }
+
+    private void fixPFS3334() {
+        String tm = ConfigurationEntry.DEFAULT_TRANSFER_MODE.getValue(getController());
+        if (StringUtils.isNotBlank(tm)) {
+            return;
+        }
+        // Reset to default
+        logWarning("PFS-3334: Fixing default transfer mode");
+
+        final Properties config = getController().getConfig();
+        ConfigurationEntry.DEFAULT_TRANSFER_MODE.setValue(config,
+                ConfigurationEntry.DEFAULT_TRANSFER_MODE.getDefaultValue());
+
+        // Find all folder entries.
+        Set<String> entryIds = FolderSettings.loadEntryIds(config);
+
+        for (final String folderEntryId : entryIds) {
+            FolderSettings folderSettings = FolderSettings.load(
+                    getController(), folderEntryId);
+            // false,false,false,false,0,false,12,0,m,Manual Sync,false
+            if (folderSettings.getSyncProfile().equals(SyncProfile.MANUAL_SYNCHRONIZATION)) {
+                String folderName = FolderSettings.loadFolderName(
+                        getController().getConfig(), folderEntryId);
+                logWarning("Fixed transfer mode for folder " + folderName + ". EntryID: " + folderEntryId);
+                config.setProperty(PREFIX_V4 + folderEntryId + SYNC_PROFILE,
+                        ConfigurationEntry.DEFAULT_TRANSFER_MODE.getValue(config));
+            }
+        }
+        logWarning("PFS-3334: Fixed default transfer mode. All back to normal.");
+        getController().saveConfig();
     }
 
     /**
