@@ -45,6 +45,7 @@ import de.dal33t.powerfolder.util.collection.CompositeCollection;
 import de.dal33t.powerfolder.util.compare.FolderComparator;
 import de.dal33t.powerfolder.util.os.LinuxUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.Spacetree;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
@@ -231,6 +232,15 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Maintain link
         if (getController().isFirstStart()) {
             createShortcuts();
+        }
+
+        if (Spacetree.isSupported(getController())) {
+            try {
+                Spacetree st = Spacetree.create(getController());
+                st.install();
+            } catch (Exception e) {
+                logWarning("Unable to setup space tree icon integration into Windows-Explorer. " + e.getMessage(), e);
+            }
         }
 
         tidyOldLinks();
@@ -735,6 +745,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         metaFolders.clear();
 
         locking.shutdown();
+
+        try {
+            if (Spacetree.isSupported(getController())) {
+                Spacetree.uninstall();
+            }
+        } catch (Exception e) {
+            logWarning("Unable to uninstall Spacetree Windows-Explorer integration. " + e.getMessage(), e);
+        }
 
         logFine("Stopped");
     }
