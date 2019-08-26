@@ -387,6 +387,11 @@ public enum ConfigurationEntry {
      */
     SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
 
+    /**
+     * PFS-3335: Merge accounts in federation
+     */
+    SERVER_FEDERATED_MERGE("server.federation.auto_merge_accounts", false),
+
     // Server WEB settings ****************************************************
 
     /**
