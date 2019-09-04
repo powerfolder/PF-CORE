@@ -437,7 +437,7 @@ public class Folder extends PFComponent {
         archiver.setVersionsPerFile(folderSettings.getVersions());
 
         watcher = new FolderWatcher(this);
-        
+
         // PFS-457: Make sure the new patterns are broadcasted
         List<String> newPatterns = diskItemFilter.getPatterns();
         if (!newPatterns.equals(oldPatterns)) {
@@ -1703,31 +1703,19 @@ public class Folder extends PFComponent {
             return;
         }
         final List<FileInfo> removedFiles = new ArrayList<>();
-        Comparator<FileInfo> comparator = new ReverseComparator<>(
-            FileInfoComparator
-                .getComparator(FileInfoComparator.BY_RELATIVE_NAME));
-        Set<FileInfo> dirs = new TreeSet<>(comparator);
         synchronized (scanLock) {
             for (FileInfo fileInfo : fInfos) {
                 if (fileInfo.isDiretory()) {
-                    dirs.add(fileInfo);
-                    continue;
+                    FileInfoCriteria c = new FileInfoCriteria();
+                    c.addMySelf(this);
+                    c.setPath((DirectoryInfo) fileInfo);
+                    logInfo("Deleting directory: " + fileInfo);
+                    removeFilesLocal(dao.findFiles(c));
                 }
-                FileInfo deletedFileInfo = removeFileLocal(fileInfo);
-                if (deletedFileInfo != null) {
-                    removedFiles.add(deletedFileInfo);
-                }
-            }
-            for (FileInfo dirInfo : dirs) {
-                FileInfoCriteria c = new FileInfoCriteria();
-                c.addMySelf(this);
-                c.setPath((DirectoryInfo) dirInfo);
-                logInfo("Deleting directory: " + dirInfo);
-                removeFilesLocal(dao.findFiles(c));
-                FileInfo deletedDirInfo = removeFileLocal(dirInfo);
-                if (deletedDirInfo != null) {
-                    removedFiles.add(deletedDirInfo);
-                }
+                    FileInfo deletedFileInfo = removeFileLocal(fileInfo);
+                    if (deletedFileInfo != null) {
+                        removedFiles.add(deletedFileInfo);
+                    }
             }
         }
 
@@ -2370,7 +2358,7 @@ public class Folder extends PFComponent {
     /**
      * Set the needed folder/file attributes on windows systems, if we have a
      * desktop.ini
-     * 
+     *
      * @param desktopIni
      */
     private void makeFolderIcon(Path desktopIni) {
@@ -2875,7 +2863,7 @@ public class Folder extends PFComponent {
             return true;
         }
         if (isFine()) {
-            logFine("Waiting to complete scan of " + getName());            
+            logFine("Waiting to complete scan of " + getName());
         }
         ScanResult.ResultState resultState = lastScanResultState;
         while (isScanning() && resultState == lastScanResultState) {
@@ -3062,7 +3050,7 @@ public class Folder extends PFComponent {
                 for (FileInfo remoteFile : fileList) {
                     handleFileDeletion(remoteFile, force, member, removedFiles,
                         0);
-                    
+
                     // PFC-2695: Prevent long running threads
                     n++;
                     if (n % 100 == 0 && !member.isCompletelyConnected()) {
@@ -4151,7 +4139,7 @@ public class Folder extends PFComponent {
     public String getName() {
         return currentInfo.getName();
     }
-    
+
     public String getLocalizedName() {
         return currentInfo.getLocalizedName();
     }
@@ -4253,7 +4241,7 @@ public class Folder extends PFComponent {
         try {
             watcher.addIgnoreFile(newFileInfo);
             synchronized (scanLock) {
-                if (fileInfo != null && fileInfo.isFile() && Files.exists(file))
+                if (fileInfo != null  && Files.exists(file))
                 {
                     if (currentInfo.isMetaFolder() && fileInfo.getRelativeName()
                             .startsWith(METAFOLDER_LOCKS_DIR)) {
