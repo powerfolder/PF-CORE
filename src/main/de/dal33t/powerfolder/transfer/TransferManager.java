@@ -227,19 +227,6 @@ public class TransferManager extends PFComponent {
         setDownloadCPSForWAN(getConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_WAN));
         setUploadCPSForLAN(getConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_LAN));
         setDownloadCPSForLAN(getConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_LAN));
-
-        if (getMaxFileChunkSize() > OLD_MAX_CHUNK_SIZE) {
-            logWarning("Max filechunk size set to "
-                + Format.formatBytes(getMaxFileChunkSize())
-                + ". Can only communicate with clients"
-                + " running version 3.1.7 or higher.");
-        }
-        if (getMaxRequestsQueued() > OLD_MAX_REQUESTS_QUEUED) {
-            logWarning("Max request queue size set to "
-                + getMaxRequestsQueued()
-                + ". Can only communicate with clients"
-                + " running version 3.1.7 or higher.");
-        }
     }
 
     /**
