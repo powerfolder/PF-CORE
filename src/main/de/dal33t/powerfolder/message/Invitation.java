@@ -136,6 +136,7 @@ public class Invitation extends FolderRelatedMessage
      * accepted/declined by a remote federated service. We need this variable to determine whether or not an
      * invitation request needs to be sent in ServerSecurityService#accept-/declineInvitation.
      */
+    @Deprecated
     @Transient
     private boolean handledByFederatedService;
 
