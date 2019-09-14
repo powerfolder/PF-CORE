@@ -638,6 +638,11 @@ public class FileArchiver {
     public void purge(Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
 
+        for (FileInfo fileInfo:folder.getKnownFiles()) {
+            if (fileInfo.isDeleted()) {
+                folder.getDAO().delete(null,fileInfo);
+            }
+        }
         purge();
         folder.fireArchivePurged();
 
