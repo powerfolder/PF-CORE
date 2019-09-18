@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.Lock;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
@@ -103,11 +104,13 @@ public class MetaFolderDataHandler extends PFComponent {
         final MemberInfo lockMember = lock.getMemberInfo();
         final MemberInfo remoteMember = fileInfo.getModifiedBy();
 
-        if (lockMember == null || remoteMember == null) {
+        if (lockMember == null || remoteMember == null || !lockMember.getNode(getController(), true).isMySelf()) {
             return;
         }
 
         if (!lockMember.equals(remoteMember)) {
+            AccountInfo accountInfo = remoteMember.getNode(getController(), true).getAccountInfo();
+            String overrideBy = accountInfo != null ? accountInfo.getDisplayName() : remoteMember.nick;
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() {
@@ -120,7 +123,7 @@ public class MetaFolderDataHandler extends PFComponent {
                                     getController(),
                                     Translation.get("dialog.lock.removed_by_other_member.title"),
                                     Translation.get("dialog.lock.removed_by_other_member.message",
-                                            fileInfo.getFilenameOnly(), remoteMember.nick),
+                                            fileInfo.getFilenameOnly(), overrideBy),
                                     new String[]{"OK"},
                                     0, GenericDialogType.WARN);
 
