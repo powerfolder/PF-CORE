@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
+import de.dal33t.powerfolder.security.Token;
 import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
@@ -406,7 +407,9 @@ public class LoginPanel extends PFWizardPanel {
                 passwordField.setText(new String(LoginUtil.deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
                         .getValue(getController()))));
             } else if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasNonBlankValue(getController())) {
-                passwordField.setText(TOKEN_PLACEHOLDER);
+                if (!Token.isExpired(client.getDeviceToken())) {
+                    passwordField.setText(TOKEN_PLACEHOLDER);
+                }
             }
         } else if (client.isConnected()) {
             usernameField.setText(client.getUsername());
