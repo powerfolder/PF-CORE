@@ -44,10 +44,7 @@ import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -379,6 +376,12 @@ public class LoginPanel extends PFWizardPanel {
                     listLoaded = true;
 
                     updateButtons();
+                    idPSelectBox.addItemListener(new ItemListener() {
+                        @Override
+                        public void itemStateChanged(ItemEvent e) {
+                            updateButtons();
+                        }
+                    });
 
                     return null;
                 }
@@ -554,6 +557,14 @@ public class LoginPanel extends PFWizardPanel {
 
                 LoginUtil.clear(pw);
                 if (!loginOk) {
+                    if (isShibbolethIDPMissing()) {
+                        JDialog diag = getWizardDialog();
+                        diag.setVisible(false);
+                        diag.dispose();
+                        PFWizard.openLoginWizard(getController(), client);
+                        return;
+                    }
+
                     throw new SecurityException(
                         Translation
                             .get("online_storage.account_data"));
@@ -575,6 +586,19 @@ public class LoginPanel extends PFWizardPanel {
                     : e.getMessage());
             }
         }
+    }
+
+    private boolean isShibbolethIDPMissing(){
+        if (!ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                .hasNonBlankValue(getController())){
+            return false;
+        }
+        return !ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.hasNonBlankValue(getController());
+    }
+
+    private JDialog getWizardDialog() {
+        return (JDialog) getWizardContext().getAttribute(
+                WizardContextAttributes.DIALOG_ATTRIBUTE);
     }
 
     private class MyServerClientListner implements ServerClientListener {

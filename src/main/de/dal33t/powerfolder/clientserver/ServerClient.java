@@ -1198,9 +1198,11 @@ public class ServerClient extends PFComponent {
                 }
                 return accountDetails.getAccount();
             } catch (Exception e) {
-                logWarning("Unable to login: " + e);
-                if (e instanceof RuntimeException) {
-                    logWarning(e);
+                if (!(e instanceof IdPMissingException)) {
+                    logWarning("Unable to login: " + e);
+                    if (e instanceof RuntimeException) {
+                        logWarning(e);
+                    }
                 }
                 if (isShibbolethLogin()) {
                     // PFC-2534: Start
@@ -1372,7 +1374,7 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isBlank(idpURLString)) {
             shibUsername = null;
             shibToken = null;
-            throw new SecurityException("Your organization is unreachable");
+            throw new IdPMissingException();
         } else if (userChanged) {
             shibUsername = null;
             shibToken = null;
