@@ -4897,7 +4897,9 @@ public class Folder extends PFComponent {
             return;
         }
         try {
-            Files.createFile(lastSyncFile);
+            if (Files.notExists(lastSyncFile)) {
+                Files.createFile(lastSyncFile);
+            }
         } catch (IOException e) {
             // Ignore.
         }
