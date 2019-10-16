@@ -43,8 +43,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         super(controller);
         tosn = new ToSNotice(Translation.get("dialog.tos.title"),
             Translation.get("dialog.tos.summary"),
-            Translation.get("dialog.tos.text"),
-            controller.getOSClient().getToSURL());
+            Translation.get("dialog.tos.text"));
     }
 
     @Override
@@ -83,7 +82,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                     @Override
                     public void run() {
                         try {
-                            BrowserLauncher.openURL(client.getToSURL());
+                            BrowserLauncher.openURL(client.getLoginURLWithCredentials());
                         } catch (IOException ioe) {
                             logWarning("Could not open browser to view ToS. " + ioe);
                         }
@@ -152,13 +151,10 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
 
     private class ToSNotice extends WarningNotice {
         private static final long serialVersionUID = 100L;
-        private final String tosURL;
 
-        ToSNotice(String title, String summary, String message,
-            String tosURL)
+        ToSNotice(String title, String summary, String message)
         {
             super(title, summary, message);
-            this.tosURL = tosURL;
         }
 
         @Override
@@ -175,7 +171,8 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                         @Override
                         public void run() {
                             try {
-                                BrowserLauncher.openURL(tosURL);
+                                String url = controller.getOSClient().getLoginURLWithCredentials();
+                                BrowserLauncher.openURL(url);
                             } catch (IOException ioe) {
                                 logWarning(
                                     "Could not open browser to view ToS. "
