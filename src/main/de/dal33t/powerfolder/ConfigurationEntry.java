@@ -202,7 +202,7 @@ public enum ConfigurationEntry {
     /**
      * Quickstart guides to PowerFolder
      */
-    PROVIDER_QUICKSTART_URL("provider.url.quickstart", "https://wiki.powerfolder.com/display/PFC/Getting+started"),
+    PROVIDER_QUICKSTART_URL("provider.url.quickstart", "https://powerfolder.atlassian.net/wiki/spaces/PF/pages/301965/Getting+started"),
 
     /**
      * URL of the PowerFolder Support
@@ -218,14 +218,14 @@ public enum ConfigurationEntry {
     /**
      * URL where bugs or tickets can be filed.
      */
-    PROVIDER_SUPPORT_FILE_TICKET_URL("provider.url.ticket", "https://www.powerfolder.com/support/index.php?/Tickets/Submit"),
+    PROVIDER_SUPPORT_FILE_TICKET_URL("provider.url.ticket", "https://powerfolder.atlassian.net/servicedesk"),
 
     /**
      * URL of the PowerFolder Pro page.
      * <p>
      * Recommended use: {@link ProUtil#getBuyNowURL(Controller)}
      */
-    PROVIDER_BUY_URL("provider.url.buy", "https://powerfolder.com/buynow.html"),
+    PROVIDER_BUY_URL("provider.url.buy", "https://www.powerfolder.com/pricing"),
 
     /**
      * URL where the contact form resides
