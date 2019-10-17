@@ -12,4 +12,4 @@
 !define APPSUPPORT "https://wiki.powerfolder.com"
 !define APPUNINSTALL "https://www.powerfolder.com"
 !define APPDOCU "https://wiki.powerfolder.com"
-!define APPBUY "https://www.powerfolder.com/buynow.html"
+!define APPBUY "https://www.powerfolder.com/pricing"
