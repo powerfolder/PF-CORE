@@ -380,7 +380,7 @@ public class UtilTest extends TestCase {
 
     public void testCopyResourceFileExistsNoOverwrite() throws IOException {
         //First, copy the file to make sure it's already there
-        File source = new File("bin/" + Constants.GETTING_STARTED_GUIDE_FILENAME);
+        File source = new File("src/etc/" + Constants.GETTING_STARTED_GUIDE_FILENAME);
         File destination = new File("build/" + Constants.GETTING_STARTED_GUIDE_FILENAME);
 
         FileUtils.copyFile(source, destination);
@@ -464,6 +464,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testSetClipboardContentsOk() throws IOException, UnsupportedFlavorException {
+        assumeTrue(isWindows());
 
         Util.setClipboardContents("This is a test string");
         String valueFromKeyboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
@@ -509,6 +510,8 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsNull() {
+        assumeTrue(isWindows());
+
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         //Creating a new transferable to return null, so that clipboard.getContents returns null
         clipboard.setContents(new Transferable() {
@@ -539,6 +542,8 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsUnsupportedFlavor() throws IOException {
+        assumeTrue(isWindows());
+
         BufferedImage image = new BufferedImage(1,2,3);
 
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new Transferable() {
