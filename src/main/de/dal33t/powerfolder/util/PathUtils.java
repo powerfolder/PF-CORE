@@ -984,6 +984,9 @@ public class PathUtils {
      */
     public static boolean isSubdirectory(Path parent, Path targetChild) {
         String parentPathString = parent.toAbsolutePath().toString();
+        if (targetChild.getParent() == null) {
+            return false;
+        }
         String childPathString = targetChild.getParent().toAbsolutePath()
                 .toString();
 

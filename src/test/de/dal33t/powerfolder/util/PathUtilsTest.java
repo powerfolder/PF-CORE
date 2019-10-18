@@ -28,6 +28,7 @@ import java.util.zip.ZipOutputStream;
 
 import static com.liferay.nativity.util.OSDetector.isWindows;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 public class PathUtilsTest extends TestCase {
 
@@ -1886,6 +1887,7 @@ public class PathUtilsTest extends TestCase {
     }
 
     public void testSetAttributeOnWindowsIoException() throws IOException {
+        assumeTrue(isWindows());
         File file = new File("build/test/myFile.txt");
         assertTrue(PathUtils.setAttributesOnWindows(file.toPath(), null, true));
         assertTrue(PathUtils.setAttributesOnWindows(file.toPath(), true, null));
@@ -2514,6 +2516,12 @@ public class PathUtilsTest extends TestCase {
         TestHelper.createRandomFile(source);
 
         Path target = baseDir.resolve("build/pf_data/users/XXX/Allgemeine MentorInnenqualifizierung/ABC/Material/Material Quellen");
-        PathUtils.recursiveCopyVisitor(source, target);
+        try {
+            PathUtils.recursiveCopyVisitor(source, target);
+            fail("Copy parent dir into subdirectory must fail");
+        } catch (IOException e) {
+            // MUST be thrown
+        }
+
     }
 }
