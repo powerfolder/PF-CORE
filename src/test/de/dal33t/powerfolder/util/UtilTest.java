@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import junit.framework.TestCase;
@@ -71,6 +72,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testEqualsRelativeCase() {
+        assumeTrue(FileInfo.IGNORE_CASE);
         assertTrue(Util.equalsRelativeName("Test","test"));
         assertTrue(Util.equalsRelativeName("ThIsIsAtEsTsTrInG", "thisIsATestString"));
         assertTrue(Util.equalsRelativeName("   A", "   a"));
