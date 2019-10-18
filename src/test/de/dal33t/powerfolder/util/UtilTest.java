@@ -44,6 +44,9 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 
+import static com.liferay.nativity.util.OSDetector.isWindows;
+import static org.junit.Assume.assumeTrue;
+
 public class UtilTest extends TestCase {
 
     public void testEqualsRelativeNameNull() {
@@ -319,7 +322,8 @@ public class UtilTest extends TestCase {
                 "net.bindaddress=127.0.0.1\n" +
                 "random-port=false\n" +
                 "net.port=3457\n" +
-                "net.broadcast=false");
+                "net.broadcast=false\n" +
+                "disableui=true");
 
         writer.close();
 
@@ -485,6 +489,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsOk() {
+        assumeTrue(isWindows());
 
         StringSelection stringSelection = new StringSelection("This is some text");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
