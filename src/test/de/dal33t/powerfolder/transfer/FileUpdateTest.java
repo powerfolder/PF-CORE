@@ -35,6 +35,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
+import static org.junit.Assume.assumeTrue;
+
 /**
  * Tests the correct updating of files.
  *
@@ -471,11 +473,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
     // PFC-2758
     public void testIdenticalDateAndSizeHandling() throws IOException {
-        if (!FileInfo.IGNORE_CASE) {
-            fail("FileInfo.IGNORE_CASE=" + FileInfo.IGNORE_CASE
-                + ". Unable to test");
-            return;
-        }
+        assumeTrue(FileInfo.IGNORE_CASE);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         disconnectBartAndLisa();
