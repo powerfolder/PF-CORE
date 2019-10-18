@@ -547,7 +547,7 @@ public class Account implements Serializable, D2DObject {
             for (Permission p : g.getPermissions()) {
                 if (p instanceof FolderPermission) {
                     FolderPermission fp = (FolderPermission) p;
-                    if (fp.getFolder() != null) {
+                    if (fp.getFolder() != null && !folderInfos.contains(fp.getFolder())) {
                         folderInfos.add(fp.getFolder());
                     }
                 }

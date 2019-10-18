@@ -4264,7 +4264,7 @@ public class Folder extends PFComponent {
                     try {
                         archiver.archive(fileInfo, file, false);
                     } catch (IOException e) {
-                        logSevere("Unable to move file to archive: " + file
+                        logWarning("Unable to move file to archive: " + file
                             + ". " + e, e);
                     }
                 }
@@ -4897,7 +4897,9 @@ public class Folder extends PFComponent {
             return;
         }
         try {
-            Files.createFile(lastSyncFile);
+            if (Files.notExists(lastSyncFile)) {
+                Files.createFile(lastSyncFile);
+            }
         } catch (IOException e) {
             // Ignore.
         }

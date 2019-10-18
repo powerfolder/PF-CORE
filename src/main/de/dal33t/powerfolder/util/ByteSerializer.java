@@ -150,8 +150,12 @@ public class ByteSerializer extends Loggable {
             && !target.getClass().getName().contains("ClusterCacheUpdate"))
         {
             if (isFine()) {
+                String targetStr = target.toString();
+                if (targetStr.length() > 500) {
+                    targetStr = targetStr.substring(0, 500);
+                }
                 logFine("Send buffer exceeds 256KB! "
-                        + Format.formatBytes(byteOut.size()) + ". Message: " + target);
+                        + Format.formatBytes(byteOut.size()) + ". Message: " + targetStr);
             }
         }
 

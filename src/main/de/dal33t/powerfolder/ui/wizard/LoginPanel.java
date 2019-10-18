@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
+import de.dal33t.powerfolder.security.Token;
 import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
@@ -43,10 +44,7 @@ import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -378,6 +376,12 @@ public class LoginPanel extends PFWizardPanel {
                     listLoaded = true;
 
                     updateButtons();
+                    idPSelectBox.addItemListener(new ItemListener() {
+                        @Override
+                        public void itemStateChanged(ItemEvent e) {
+                            updateButtons();
+                        }
+                    });
 
                     return null;
                 }
@@ -406,7 +410,9 @@ public class LoginPanel extends PFWizardPanel {
                 passwordField.setText(new String(LoginUtil.deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
                         .getValue(getController()))));
             } else if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasNonBlankValue(getController())) {
-                passwordField.setText(TOKEN_PLACEHOLDER);
+                if (!Token.isExpired(client.getDeviceToken())) {
+                    passwordField.setText(TOKEN_PLACEHOLDER);
+                }
             }
         } else if (client.isConnected()) {
             usernameField.setText(client.getUsername());
@@ -551,6 +557,14 @@ public class LoginPanel extends PFWizardPanel {
 
                 LoginUtil.clear(pw);
                 if (!loginOk) {
+                    if (isShibbolethIDPMissing()) {
+                        JDialog diag = getWizardDialog();
+                        diag.setVisible(false);
+                        diag.dispose();
+                        PFWizard.openLoginWizard(getController(), client);
+                        return;
+                    }
+
                     throw new SecurityException(
                         Translation
                             .get("online_storage.account_data"));
@@ -572,6 +586,19 @@ public class LoginPanel extends PFWizardPanel {
                     : e.getMessage());
             }
         }
+    }
+
+    private boolean isShibbolethIDPMissing(){
+        if (!ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                .hasNonBlankValue(getController())){
+            return false;
+        }
+        return !ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.hasNonBlankValue(getController());
+    }
+
+    private JDialog getWizardDialog() {
+        return (JDialog) getWizardContext().getAttribute(
+                WizardContextAttributes.DIALOG_ATTRIBUTE);
     }
 
     private class MyServerClientListner implements ServerClientListener {

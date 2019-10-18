@@ -18,6 +18,8 @@
 package de.dal33t.powerfolder.clientserver;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
@@ -43,8 +45,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         super(controller);
         tosn = new ToSNotice(Translation.get("dialog.tos.title"),
             Translation.get("dialog.tos.summary"),
-            Translation.get("dialog.tos.text"),
-            controller.getOSClient().getToSURL());
+            Translation.get("dialog.tos.text"));
     }
 
     @Override
@@ -83,7 +84,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                     @Override
                     public void run() {
                         try {
-                            BrowserLauncher.openURL(client.getToSURL());
+                            BrowserLauncher.openURL(client.getLoginURLWithCredentials());
                         } catch (IOException ioe) {
                             logWarning("Could not open browser to view ToS. " + ioe);
                         }
@@ -150,40 +151,34 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         });
     }
 
-    private class ToSNotice extends WarningNotice {
+    private static class ToSNotice extends WarningNotice {
         private static final long serialVersionUID = 100L;
-        private final String tosURL;
 
-        ToSNotice(String title, String summary, String message,
-            String tosURL)
+        ToSNotice(String title, String summary, String message)
         {
             super(title, summary, message);
-            this.tosURL = tosURL;
         }
 
         @Override
         public Runnable getPayload(Controller controller) {
-            return new Runnable() {
-
-                @Override
-                public void run() {
-                    DialogFactory.genericDialog(getController(), getTitle(),
+            return () -> {
+                DialogFactory.genericDialog(controller, getTitle(),
                         getMessage(), new String[]{"OK"}, 0,
                         GenericDialogType.INFO);
 
-                    getController().getIOProvider().startIO(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                BrowserLauncher.openURL(tosURL);
-                            } catch (IOException ioe) {
-                                logWarning(
+                controller.getIOProvider().startIO(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String url = controller.getOSClient().getLoginURLWithCredentials();
+                            BrowserLauncher.openURL(url);
+                        } catch (IOException ioe) {
+                            Logger.getLogger(ToSNotice.class.getName()).log(Level.WARNING,
                                     "Could not open browser to view ToS. "
-                                        + ioe);
-                            }
+                                            + ioe);
                         }
-                    });
-                }
+                    }
+                });
             };
         }
     }
