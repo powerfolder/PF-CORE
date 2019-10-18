@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
+import org.junit.Test;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -1864,11 +1865,13 @@ public class PathUtilsTest extends TestCase {
     }
 
     public void testSetAttributeOnWindowsNull() {
+        assumeTrue(isWindows());
         File file = new File("build/test/myFile.txt");
         assertTrue(PathUtils.setAttributesOnWindows(file.toPath(), null, null));
     }
 
     public void testSetAttributeOnWindowsHidden() throws IOException {
+        assumeTrue(isWindows());
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
         PathUtils.setAttributesOnWindows(file.toPath(), true, null);
@@ -1878,6 +1881,7 @@ public class PathUtilsTest extends TestCase {
     }
 
     public void testSetAttributeOnWindowsSystem() throws IOException {
+        assumeTrue(isWindows());
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
         PathUtils.setAttributesOnWindows(file.toPath(), null, true);
@@ -2402,6 +2406,7 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testCopyFromStreamToFileDeleteException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
