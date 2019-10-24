@@ -1761,7 +1761,7 @@ public class TransferManager extends PFComponent {
             try {
                 FileStore store = Files.getFileStore(folder.getLocalBase());
                 spaceOnFileStore = store.getUsableSpace();
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 logInfo(
                     "Could not get the usable space for " + folder.toString()
                         + " located at " + folder.getLocalBase().toString());
