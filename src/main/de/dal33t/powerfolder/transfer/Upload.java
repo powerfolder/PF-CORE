@@ -207,7 +207,7 @@ public class Upload extends Transfer {
                             long fileSize = Files.size(inputFile);
 
                             if (fileSize <= bufferSize) {
-                                logFine("Using buffer to upload file");
+                                logFine("Using buffer to upload file " + inputFile);
                                 ByteBuffer tempBuffer = ByteBuffer.allocate((int) fileSize);
                                 FileChannel thisFileChannel = fileChannel;
                                 if (thisFileChannel != null) {
@@ -513,7 +513,7 @@ public class Upload extends Transfer {
             logWarning(f + ": IOException: " + e);
             throw new TransferException(e);
         } catch (ConnectionException e) {
-            logWarning("Connectiopn problem while uploading. " + e.toString());
+            logWarning("Connection problem while uploading. " + e.toString());
             if (isFiner()) {
                 logFiner("ConnectionException", e);
             }
