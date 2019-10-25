@@ -117,7 +117,12 @@ public enum ConfigurationEntry {
      * @deprecated since 14.0
      */
     @Deprecated
-    SECURITY_PERMISSIONS_STRICT("security.permissions.strict", false),
+    SECURITY_PERMISSIONS_STRICT("security.permissions.strict", false){
+        @Override
+        public Boolean getValueBoolean(Properties config) {
+            return Boolean.FALSE;
+        }
+    },
 
     /**
      * Don't show the FolderAdminPermission
