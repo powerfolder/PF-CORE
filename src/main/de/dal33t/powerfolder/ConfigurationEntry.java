@@ -210,6 +210,16 @@ public enum ConfigurationEntry {
     PROVIDER_SUPPORT_URL("provider.url.support", "https://wiki.powerfolder.com"),
 
     /**
+     * URL of the PowerFolder Accessibility
+     */
+    PROVIDER_ACCESSIBILITY_URL("provider.url.accessibility", ""),
+
+    /**
+     * URL of the PowerFolder Cookies policy
+     */
+    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", ""),
+
+    /**
      * Whether to show support url in application menu
      */
 
