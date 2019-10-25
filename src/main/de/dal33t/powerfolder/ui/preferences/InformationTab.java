@@ -186,7 +186,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
 
             file.close();
         } catch (Exception e) {
-            logInfo("Build date/time works only from jar.");
+            logFine("Build date/time works only from jar.");
             buildTime = "n/a";
             buildDate = "n/a";
         }
