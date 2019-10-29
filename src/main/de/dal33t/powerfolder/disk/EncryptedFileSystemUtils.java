@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.Reject;
 import org.cryptomator.cryptofs.CryptoFileSystem;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
@@ -137,7 +138,8 @@ public class EncryptedFileSystemUtils {
      */
 
     public static boolean endsWithEncryptionSuffix(@NotNull Path path) {
-        return path.getFileName().toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
+        Reject.ifNull(path, "Path is null");
+        return path.getFileName() != null ? path.getFileName().toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX) : false;
     }
 
     /**

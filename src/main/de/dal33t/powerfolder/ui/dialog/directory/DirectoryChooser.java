@@ -161,13 +161,16 @@ public class DirectoryChooser extends BaseDialog {
      */
 
     private boolean checkPathAndWarn(Path path) {
-        Path parentPath = null;
+        Path checkpath = null;
 
         /* Check given path */
         if (null != path) {
-            parentPath = path.getParent();
+            checkpath = path.getParent();
+            if (checkpath == null) {
+                checkpath = path;
+            }
 
-            if (null != parentPath && parentPath.toFile().canWrite()) {
+            if (null != checkpath && Files.isWritable(checkpath)) {
                 return true;
             }
         }

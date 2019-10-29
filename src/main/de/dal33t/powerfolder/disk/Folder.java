@@ -316,7 +316,7 @@ public class Folder extends PFComponent {
             "Folder cannot be located at base directory for all folders");
 
         // PFS-2319 / PFS-2227
-        if (!EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
+        if (!EncryptedFileSystemUtils.isCryptoInstance(localBase) && localBase.getFileName() != null) {
             String filename = localBase.getFileName().toString();
             if (filename.equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR.substring(1)) ||
                     localBase.toString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
@@ -719,8 +719,8 @@ public class Folder extends PFComponent {
                     "Local base dir not available " + localBase.toAbsolutePath());
         } else if (!Files.isDirectory(localBase)) {
             if (!quiet) {
-                logSevere(" not able to create folder(" + getName()
-                    + "), (sub) dir (" + localBase + ") is no dir");
+                logSevere("Not able to create folder " + getName()
+                    + ", (sub) dir (" + localBase + ") is no dir");
             }
             throw new FolderException(currentInfo, Translation.get(
                 "foldercreate.error.unable_to_open",
