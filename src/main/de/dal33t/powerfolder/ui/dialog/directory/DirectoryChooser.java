@@ -178,7 +178,7 @@ public class DirectoryChooser extends BaseDialog {
         DialogFactory.genericDialog(getController(),
                 Translation.get("dialog.directorychooser.new.description"),
                 Translation.get("dialog.directorychooser.error.insufficient_permissions",
-                        (null == parentPath ? "" : parentPath.toString())),
+                        (null == checkpath ? "" : checkpath.toString())),
                 GenericDialogType.WARN);
 
         return false;
