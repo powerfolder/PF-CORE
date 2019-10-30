@@ -419,7 +419,9 @@ public class LoginPanel extends PFWizardPanel {
             if (!client.isPasswordEmpty()) {
                 passwordField.setText(client.getPasswordClearText());
             } else if (client.isTokenLogin()) {
-                passwordField.setText(TOKEN_PLACEHOLDER);
+                if (!Token.isExpired(client.getDeviceToken())) {
+                    passwordField.setText(TOKEN_PLACEHOLDER);
+                }
             }
         }
 
@@ -614,7 +616,9 @@ public class LoginPanel extends PFWizardPanel {
             if (!client.isPasswordEmpty()) {
                 passwordField.setText(client.getPasswordClearText());
             } else if (client.isTokenLogin()) {
-                passwordField.setText(TOKEN_PLACEHOLDER);
+                if (!Token.isExpired(client.getDeviceToken())) {
+                    passwordField.setText(TOKEN_PLACEHOLDER);
+                }
             }
             updateOnlineStatus();
         }
