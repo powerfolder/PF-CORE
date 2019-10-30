@@ -1512,6 +1512,7 @@ public class Folder extends PFComponent {
      */
     public void scanDirectory(FileInfo dirInfo, Path dir) {
         Reject.ifNull(dirInfo, "DirInfo is null");
+        Reject.ifTrue(dirInfo.isLookupInstance(), "Scanning lookup instances not implemented");
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not scanDirectory: " + dirInfo.toDetailString() + " at " + dir);
             return;
