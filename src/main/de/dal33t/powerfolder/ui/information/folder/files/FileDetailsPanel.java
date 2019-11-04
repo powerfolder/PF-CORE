@@ -190,10 +190,12 @@ public class FileDetailsPanel extends PFUIComponent {
 
         sourcesField.setText(sourcesText.toString());
 
-        localCopyAtField
-            .setText(diskFile != null ? diskFile.toAbsolutePath().toString() : "- "
-                + Translation.get("general.not_available") + " -");
-        localCopyAtField.setCaretPosition(0);
+        String localCopyAtText = diskFile != null ? diskFile.toAbsolutePath().toString() : "- "
+                + Translation.get("general.not_available") + " -";
+        if (localCopyAtField.getText() == null || !localCopyAtField.getText().equals(localCopyAtText)) {
+            localCopyAtField.setText(localCopyAtText);
+            localCopyAtField.setCaretPosition(0);
+        }
     }
 
     // Helper code ************************************************************
