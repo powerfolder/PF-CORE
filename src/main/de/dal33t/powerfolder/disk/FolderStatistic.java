@@ -59,7 +59,6 @@ public class FolderStatistic extends PFComponent {
     private final Folder folder;
     private final long delay;
 
-    private volatile boolean valid = false;
     private volatile FolderStatisticInfo calculating;
     private volatile FolderStatisticInfo current;
     private SimpleTimeEstimator estimator;
@@ -100,19 +99,10 @@ public class FolderStatistic extends PFComponent {
             Path file = folder.getSystemSubDir().resolve(Folder.FOLDER_STATISTIC);
             // Load cached disk results
             current = FolderStatisticInfo.load(file);
-            valid = true;
         }
         if (current == null) {
             current = new FolderStatisticInfo(folder.getInfo());
-            valid = false;
         }
-    }
-
-    /**
-     * @return true if the contents are up to date and contain valid figures.
-     */
-    public boolean isValid() {
-        return valid;
     }
 
     // package protected called from Folder
@@ -216,7 +206,6 @@ public class FolderStatistic extends PFComponent {
             current.getPartialSyncStatMap());
         current = calculating;
         calculating = null;
-        valid = true;
 
         if (!folder.isDeviceDisconnected()) {
             Path tempFile = folder.getSystemSubDir().resolve(
