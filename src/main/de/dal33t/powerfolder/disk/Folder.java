@@ -1475,6 +1475,7 @@ public class Folder extends PFComponent {
                         if (isFiner()) {
                             logFiner("Scan file changed: " + syncFile.toDetailString());
                         }
+                        syncFile.setPreviousSize(localFile.getSize());
                     } else {
                         if (isFiner()) {
                             logFiner("Scan file unchanged: " + localFile.toDetailString());
