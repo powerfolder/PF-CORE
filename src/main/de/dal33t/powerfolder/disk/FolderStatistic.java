@@ -246,7 +246,7 @@ public class FolderStatistic extends PFComponent {
         if (isFine()) {
             long took = System.currentTimeMillis() - startTime;
             double perf = took != 0 ? (current.getAnalyzedFiles() / took) : 0;
-            logFine("Recalculation completed (" + current.getAnalyzedFiles()
+            logFine(folder.getName() + ": Recalculation completed (" + current.getAnalyzedFiles()
                 + " Files analyzed) in " + took + "ms. Performance: " + perf
                 + " ana/ms. Sync: " + getHarmonizedSyncPercentage());
         }
