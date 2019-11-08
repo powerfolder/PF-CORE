@@ -558,7 +558,18 @@ public enum ConfigurationEntry {
     /**
      * PFS-3212: Validate invite input
      */
-    SERVER_INVITE_VALIDATE_EMAIL_ENABLED("server.invite.validate_email.enabled", false),
+    SERVER_INVITE_VALIDATE_EMAIL_ENABLED("server.invite.validate_email.enabled", false) {
+        @Override
+        public Boolean getValueBoolean(Controller controller) {
+            if (SERVER_USERNAME_IS_EMAIL.hasNonBlankValue(controller)) {
+                boolean usernameIsEmail = "true".equalsIgnoreCase(SERVER_USERNAME_IS_EMAIL.getValue(controller));
+                if (usernameIsEmail) {
+                    return true;
+                }
+            }
+            return super.getValueBoolean(controller);
+        }
+    },
 
     /**
      * Username for connection
