@@ -20,10 +20,13 @@
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
+import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
+
+import java.nio.file.Path;
 
 public class DiskItemFilterTest extends TestCase {
 
@@ -132,5 +135,25 @@ public class DiskItemFilterTest extends TestCase {
         }
         long took = System.currentTimeMillis() - start;
         System.err.println("Took " + took + "ms");
+    }
+
+    /**
+     * Test for PF-1153
+     */
+    public void testSaveLoadDefaultExcludes() {
+        DiskItemFilter filter = new DiskItemFilter();
+        for (DefaultExcludes defExclude: DefaultExcludes.values()) {
+            filter.addPattern(defExclude.getPattern());
+        }
+        Path p = TestHelper.getTestDir().resolve("ignore.patterns");
+        filter.savePatternsTo(TestHelper.getTestDir().resolve("ignore.patterns"), false);
+        System.out.println(p);
+
+        filter = new DiskItemFilter();
+        filter.loadPatternsFrom(p, false);
+
+        for (DefaultExcludes defExclude: DefaultExcludes.values()) {
+            assertTrue(defExclude.getPattern(), filter.getPatterns().contains(defExclude.getPattern()));
+        }
     }
 }
