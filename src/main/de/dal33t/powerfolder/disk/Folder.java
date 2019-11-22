@@ -1990,10 +1990,15 @@ public class Folder extends PFComponent {
                 PathUtils.removeInvalidFilenameChars(getController().getMySelf().getId()) + ".writing");
 
         try {
-            if (Files.exists(dbTempFile)) {
+            Waiter w = new Waiter(5000);
+            while (Files.exists(dbTempFile) && !w.isTimeout()) {
                 Files.delete(dbTempFile);
-                logWarning("Deleted existing DB tmp file " + dbTempFile + " for folder " + this.getName() + "/" +
-                    System.identityHashCode(this));
+                boolean exists = Files.exists(dbTempFile);
+                logInfo("Deleted existing DB tmp file " + dbTempFile + " for folder " + this.getName() + "/" +
+                    getId() + ". Deleted? " + exists);
+                if (exists) {
+                    w.waitABit();
+                }
             }
 
             Path dbFileBackup = getSystemSubDir().
