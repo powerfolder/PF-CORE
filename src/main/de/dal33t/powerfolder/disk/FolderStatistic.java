@@ -25,9 +25,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
-import de.dal33t.powerfolder.util.SimpleTimeEstimator;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -172,6 +170,7 @@ public class FolderStatistic extends PFComponent {
             return;
         }
         long startTime = System.currentTimeMillis();
+        ProfilingEntry pe = Profiling.start();
         // clear statistics before
         calculating = new FolderStatisticInfo(folder.getInfo());
 
@@ -250,6 +249,8 @@ public class FolderStatistic extends PFComponent {
                 + " Files analyzed) in " + took + "ms. Performance: " + perf
                 + " ana/ms. Sync: " + getHarmonizedSyncPercentage());
         }
+
+        Profiling.end(pe);
 
         // Fire event
         folder.notifyStatisticsCalculated();
