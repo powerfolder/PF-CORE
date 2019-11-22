@@ -919,7 +919,11 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!ok) {
             String reason = "Disconnecting. Did not receive the full filelists for "
                 + foldersJoined.size() + " folders: " + foldersJoined;
-            logWarning(getNick() + ": " + reason);
+            if (isServer()) {
+                logWarning(getNick() + ": " + reason);
+            } else {
+                logFine(getNick() + ": " + reason);
+            }
             if (isFine()) {
                 for (Folder folder : foldersJoined) {
                     logFine("Got filelist for " + folder.getName() + " ? "
