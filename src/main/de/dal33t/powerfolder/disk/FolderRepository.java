@@ -1246,6 +1246,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         removeFromIgnoredFolders(folder);
 
+        WrappedScheduledThreadPoolExecutor.setWarningLevel(getFoldersCount());
+
         return folder;
     }
 
