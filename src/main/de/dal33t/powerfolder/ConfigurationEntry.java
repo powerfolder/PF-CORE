@@ -1084,7 +1084,7 @@ public enum ConfigurationEntry {
      * change to the folder happened. Applies to large folders only, that host
      * more files than {@link FolderStatistic#MAX_ITEMS}
      */
-    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", 30),
+    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", 60),
 
     /**
      * The maximum time powerfolder keeps the folder database dirty in memory

@@ -52,7 +52,7 @@ public class FolderStatistic extends PFComponent {
      * to a maximum that can be configured in
      * {@link ConfigurationEntry#FOLDER_STATS_CALC_TIME}
      */
-    private static final int MAX_ITEMS = 5000;
+    private static final int MAX_ITEMS = 2500;
 
     private final Folder folder;
     private final long delay;
@@ -120,7 +120,7 @@ public class FolderStatistic extends PFComponent {
             return -1L;
         }
         if (current.getAnalyzedFiles() < MAX_ITEMS) {
-            return setCalculateIn(2000);
+            return setCalculateIn(4000);
         } else {
             return setCalculateIn(delay);
         }
