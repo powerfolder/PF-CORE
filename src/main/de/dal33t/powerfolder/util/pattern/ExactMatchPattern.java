@@ -20,24 +20,40 @@
 package de.dal33t.powerfolder.util.pattern;
 
 import de.dal33t.powerfolder.util.Reject;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Matching on any texts exactly identical with the given pattern.
  */
 public class ExactMatchPattern extends AbstractPattern {
 
+    private char[] matchLower;
+    private char[] matchUpper;
+
     /**
-     * @see AbstractPattern#AbstractPattern(String)
+     * Constructor.
+     *
+     * @param patternStringArg
      */
-    ExactMatchPattern(@NotNull String patternString) {
-        super(patternString);
-        Reject.ifFalse(!patternString.contains("*"),
+    public ExactMatchPattern(String patternStringArg) {
+        super(patternStringArg);
+        Reject.ifFalse(patternStringArg.indexOf("*") == -1,
             "Pattern must not contain any stars");
+        matchLower = getPatternText().toLowerCase().toCharArray();
+        matchUpper = getPatternText().toUpperCase().toCharArray();
     }
 
-    @Override
-    public boolean isMatch(@NotNull String matchString) {
-        return patternText.equalsIgnoreCase(matchString);
+    public boolean isMatch(String matchString) {
+        if (matchString.length() != matchLower.length) {
+            // Not same length
+            return false;
+        }
+        for (int i = 0; i < matchLower.length; i++) {
+            char cms = matchString.charAt(i);
+            if (!equalChar(cms, matchLower[i], matchUpper[i])) {
+                return false;
+            }
+        }
+        // MATCH!
+        return true;
     }
 }

@@ -19,10 +19,10 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
-import de.dal33t.powerfolder.Constants;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.logging.Logger;
+
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Factory to retrieve the pattern match implementation which is most performant
@@ -34,38 +34,40 @@ public class PatternFactory {
     private static Logger LOG = Logger
         .getLogger(PatternFactory.class.getName());
 
-    private PatternFactory() {}
+    private PatternFactory() {
+    }
 
     /**
      * Auto-chooses fastest implementation of pattern algo.
      *
-     * @param patternText The pattern
+     * @param patternText
      * @return a pattern implementation for the given pattern text.
      */
-    public static @NotNull Pattern createPattern(@NotNull String patternText) {
-        if (!patternText.contains("*")) {
+    public static Pattern createPattern(String patternText) {
+        Reject.ifNull(patternText, "patternText");
+        if (patternText.indexOf('*') == -1) {
             return new ExactMatchPattern(patternText);
         } else if (patternText.lastIndexOf('*') == 0) {
             return new EndMatchPattern(patternText);
         } else if (patternText.indexOf('*') == patternText.length() - 1) {
             return new StartMatchPattern(patternText);
-        } else if (patternText.equalsIgnoreCase(
+        } else if (patternText.toLowerCase().equalsIgnoreCase(
             DefaultExcludes.OFFICE_TEMP.getPattern()))
         {
-            // This is a heuristic but much quicker implementation for ignoring
+            // This is a heuristisc but much quicker implementation for ignoring
             // office temp files.
             return new OfficeTempFilesMatchPattern("~", "*.tmp");
-        } else if (patternText.equalsIgnoreCase(
+        } else if (patternText.toLowerCase().equalsIgnoreCase(
             DefaultExcludes.OFFICEX_TEMP.getPattern()))
         {
-            // This is a heuristic but much quicker implementation for ignoring
+            // This is a heuristisc but much quicker implementation for ignoring
             // officex temp files.
             return new OfficeTempFilesMatchPattern(Constants.MS_OFFICE_FILENAME_PREFIX, "*");
-        } else if (patternText.equalsIgnoreCase(
+        } else if (patternText.toLowerCase().equalsIgnoreCase(
             DefaultExcludes.LIBRE_TEMP.getPattern()))
         {
-            // This is a heuristic but much quicker implementation for ignoring
-            // libre/openoffice temp files.
+            // This is a heuristisc but much quicker implementation for ignoring
+            // officex temp files.
             return new OfficeTempFilesMatchPattern(Constants.LIBRE_OFFICE_FILENAME_PREFIX, "*");
         } else {
             // Fallback solution: Works for all, but is not optimized.

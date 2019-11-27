@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Matching on any texts that end with the given pattern.
  */
@@ -28,11 +26,11 @@ public interface Pattern {
     /**
      * @return the pattern text, e.g. "*thumbs.db"
      */
-    @NotNull String getPatternText();
+    String getPatternText();
 
     /**
-     * @param matchString The string to check against this pattern
+     * @param matchString
      * @return true if this pattern matches on the matchString. false if not.
      */
-    boolean isMatch(@NotNull String matchString);
+    boolean isMatch(String matchString);
 }
