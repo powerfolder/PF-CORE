@@ -42,6 +42,7 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.dal33t.powerfolder.util.pattern.Pattern;
 import de.dal33t.powerfolder.util.pattern.PatternFactory;
 
@@ -114,55 +115,78 @@ public class DiskItemFilter {
      *            patterns.
      */
     public void loadPatternsFrom(Path file, boolean markDirtyIfChanged) {
-        if (Files.exists(file)) {
-            try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
-                Set<Pattern> tempPatterns = new HashSet<Pattern>();
-                String readPattern;
-                while ((readPattern = reader.readLine()) != null) {
-                    String trimmedPattern = readPattern.trim();
-                    if (trimmedPattern.length() > 0
-                        && !trimmedPattern.equals(PATTERN_IGNORE_ALL))
-                    {
-                        tempPatterns.add(createPattern(trimmedPattern));
+        if (Files.notExists(file)) {
+            return;
+        }
+        int fixed = 0;
+        try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+            Set<Pattern> tempPatterns = new HashSet<Pattern>();
+            String readPattern;
+            while ((readPattern = reader.readLine()) != null) {
+                String trimmedPattern = readPattern.trim();
+
+                // Start PFC-3080/PF-1153
+                for (DefaultExcludes defPattern : DefaultExcludes.values()) {
+                    if (!defPattern.getPattern().contains("*")) {
+                        continue;
+                    }
+                    String brokenPattern = defPattern.getPattern().replace("*", "");
+                    if (trimmedPattern.equalsIgnoreCase(brokenPattern)) {
+                        trimmedPattern = defPattern.getPattern();
+                        log.fine(file + ": Fixing pattern: " + brokenPattern + " to " + defPattern.getPattern());
+                        fixed++;
                     }
                 }
+                // Subdirs
+                if (trimmedPattern.endsWith("/")) {
+                    trimmedPattern += "*";
+                }
+                // End PFC-3080/PF-1153
 
-                // Did anything change?
-                boolean allTheSame = true;
-                if (tempPatterns.size() == patterns.size()) {
-                    for (Pattern tempPattern : tempPatterns) {
-                        if (!patterns.contains(tempPattern)) {
-                            allTheSame = false;
-                            break;
-                        }
-                    }
-                } else {
-                    allTheSame = false;
+                if (trimmedPattern.length() > 0
+                        && !trimmedPattern.equals(PATTERN_IGNORE_ALL)) {
+                    tempPatterns.add(createPattern(trimmedPattern));
                 }
-
-                if (allTheSame) {
-                    // No change at all.
-                    log.fine("Received a pattern file identical to own, so ignoring it.");
-                    return;
-                }
-
-                // Something changed. Redo the patterns.
-                log.fine("Received a pattern file different to own, so loading it.");
-                for (Pattern oldPattern : patterns) {
-                    patterns.remove(oldPattern);
-                    listenerSupport.patternRemoved(new PatternChangedEvent(
-                        this, oldPattern.getPatternText(), false));
-                }
-                for (Pattern newPattern : tempPatterns) {
-                    patterns.add(newPattern);
-                    listenerSupport.patternAdded(new PatternChangedEvent(this,
-                        newPattern.getPatternText(), true));
-                }
-                dirty = markDirtyIfChanged;
-            } catch (IOException ioe) {
-                log.log(Level.SEVERE, "Problem loading pattern from " + file
-                    + ". " + ioe);
             }
+
+            // Did anything change?
+            boolean allTheSame = true;
+            if (tempPatterns.size() == patterns.size()) {
+                for (Pattern tempPattern : tempPatterns) {
+                    if (!patterns.contains(tempPattern)) {
+                        allTheSame = false;
+                        break;
+                    }
+                }
+            } else {
+                allTheSame = false;
+            }
+
+            if (allTheSame) {
+                // No change at all.
+                log.fine("Received a pattern file identical to own, so ignoring it.");
+                return;
+            }
+
+            // Something changed. Redo the patterns.
+            log.fine("Received a pattern file different to own, so loading it.");
+            for (Pattern oldPattern : patterns) {
+                patterns.remove(oldPattern);
+                listenerSupport.patternRemoved(new PatternChangedEvent(
+                        this, oldPattern.getPatternText(), false));
+            }
+            for (Pattern newPattern : tempPatterns) {
+                patterns.add(newPattern);
+                listenerSupport.patternAdded(new PatternChangedEvent(this,
+                        newPattern.getPatternText(), true));
+            }
+            dirty = markDirtyIfChanged;
+        } catch (IOException ioe) {
+            log.log(Level.SEVERE, "Problem loading pattern from " + file
+                    + ". " + ioe);
+        }
+        if (fixed > 0) {
+            log.fine(file + ": Fixed " + fixed + " ignore patterns.");
         }
     }
 

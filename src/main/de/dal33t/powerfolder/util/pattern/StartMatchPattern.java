@@ -41,7 +41,7 @@ public class StartMatchPattern extends AbstractPattern {
             "Pattern must end with * and should not contain any other stars");
         matchLower = getPatternText().replaceAll("\\*", "").toLowerCase()
             .toCharArray();
-        matchUpper = getPatternText().replaceAll("\\*", "").toUpperCase()
+        matchUpper = getPatternText().replaceAll("\\*", "").replace("ß", "s").toUpperCase()
             .toCharArray();
     }
 

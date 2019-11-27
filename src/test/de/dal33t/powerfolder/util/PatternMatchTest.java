@@ -17,12 +17,10 @@
  *
  * $Id: PatternMatchTest.java 8022 2009-05-21 07:46:07Z harry $
  */
-package de.dal33t.powerfolder.test.util;
+package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Constants;
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.pattern.CompiledPattern;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.dal33t.powerfolder.util.pattern.EndMatchPattern;
@@ -235,6 +233,11 @@ public class PatternMatchTest extends TestCase {
             .isMatch("x\\~!@#$%^-&()_+={}][:';,.<>|y"));
         assertTrue(new StartMatchPattern("baaaa*")
             .isMatch("baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+
+        assertTrue(new StartMatchPattern("friesenstraße 36-papenburg/*")
+                .isMatch("Friesenstraße 36-Papenburg/file.txt"));
+        assertTrue(new StartMatchPattern("friesenstraße 36-papenburg/*")
+                .isMatch("Friesenstraße 36-Papenburg/*"));
     }
 
     public void testPerformance() {
