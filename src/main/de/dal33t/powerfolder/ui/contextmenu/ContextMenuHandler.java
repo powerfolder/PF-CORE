@@ -218,7 +218,8 @@ public class ContextMenuHandler extends PFComponent implements
             }
 
             if ((containsDirectoryInfoPath || containsFileInfoPath)
-                && pathNames.length == 1)
+                && pathNames.length == 1
+                && getController().getOSClient().getAccount().hasAdminPermission(found.getFolderInfo()))
             {
                 pfMainItem.addContextMenuItem(shareLinkItem);
             }
