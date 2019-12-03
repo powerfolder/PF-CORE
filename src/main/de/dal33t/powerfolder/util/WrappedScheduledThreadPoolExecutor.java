@@ -249,24 +249,21 @@ public class WrappedScheduledThreadPoolExecutor
                 {
                     ProfilingEntry pe = null;
                     try {
-                        synchronized (classCountRunning) {
-                            Integer count = classCountRunning.get(task.getClass());
-                            classCountRunning.put(task.getClass(), count == null ? 1 : count + 1);
-                        }
+                        Integer count = classCountRunning.get(task.getClass());
+                        classCountRunning.put(task.getClass(), count == null ? 1 : count + 1);
                         pe = Profiling.start(task.getClass(), "run");
                         task.run();
                     } finally {
                         running.set(false);
                         Profiling.end(pe);
-                        synchronized (classCountRunning) {
-                            Integer count = classCountRunning.get(task.getClass());
-                            count = count == null ? 1 : count;
-                            count--;
-                            if (count == 0) {
-                                classCountRunning.remove(task.getClass());
-                            } else {
-                                classCountRunning.put(task.getClass(), count);
-                            }
+                        // PF-1791: Remove synchronized blocks. Trade off. Causes lots of locks otherwise
+                        Integer count = classCountRunning.get(task.getClass());
+                        count = count == null ? 1 : count;
+                        count--;
+                        if (count == 0) {
+                            classCountRunning.remove(task.getClass());
+                        } else {
+                            classCountRunning.put(task.getClass(), count);
                         }
                     }
                 } else {
