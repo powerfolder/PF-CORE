@@ -192,19 +192,16 @@ public class Profiling {
         if (elapsed > maximumTime) {
             maximumTime = elapsed;
         }
-
-        synchronized (stats) {
-            if (stats.isEmpty()) {
-                startTime = System.currentTimeMillis();
-            }
-            ProfilingStat stat = stats.get(operationName);
-            if (stat != null) {
-                stat.addElapsed(elapsed);
-                return;
-            }
-            stat = new ProfilingStat(operationName, elapsed);
+        if (stats.isEmpty()) {
+            startTime = System.currentTimeMillis();
+        }
+        // Don't use synchronized lock, may deteriorate performance. Reduces accuracy, it is a trade off...
+        ProfilingStat stat = stats.get(operationName);
+        if (stat == null) {
+            stat = new ProfilingStat(operationName);
             stats.put(operationName, stat);
         }
+        stat.addElapsed(elapsed);
     }
 
     public static String dumpStats() {
