@@ -67,7 +67,7 @@ public class WrappedScheduledThreadPoolExecutor
             .newCachedThreadPool(threadFactory);
         wrappingThreadPool = new WrapperExecutorService(executingThreadPool);
         Comparator<Class> classComparator = (Class o1, Class o2) -> o1.getName().compareTo(o2.getName());
-        this.classCountRunning = new TreeMap<>(classComparator);
+        this.classCountRunning = Collections.synchronizedMap(new TreeMap<>(classComparator));
     }
 
     public static void setWarningLevel(int nThreads){
