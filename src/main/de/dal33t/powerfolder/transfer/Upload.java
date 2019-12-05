@@ -296,6 +296,9 @@ public class Upload extends Transfer {
                     closeIO();
                     if (!isBroken() && !aborted) {
                         getTransferManager().setCompleted(Upload.this);
+                    } else {
+                        getTransferManager().uploadBroken(Upload.this, TransferProblem.TRANSFER_EXCEPTION,
+                                "Upload broken or aborted while sending parts");
                     }
                 } catch (TransferException e) {
                     closeIO();
