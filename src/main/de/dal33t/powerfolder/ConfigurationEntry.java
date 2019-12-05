@@ -1104,14 +1104,14 @@ public enum ConfigurationEntry {
     FILE_REQUESTOR_INTERVAL("file.requestor.interval.seconds", 60),
 
     /**
-     * Enable to copy and delete a newly transfered file instead of moveing.
+     * Enable to copy and delete a newly transfered file instead of moving.
      */
     FOLDER_COPY_AFTER_TRANSFER("folder.copy_after_transfer.enabled", false, true),
 
     /**
-     * The number of seconds between db maintenance (1 hour).
+     * The number of seconds between db maintenance (once a day).
      */
-    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 3600),
+    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 86400),
 
     /**
      * The age of a deleted file until it gets removed by the folder db
