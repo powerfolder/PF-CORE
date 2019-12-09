@@ -390,10 +390,6 @@ public class Debug {
             for (Object sortedConfigKey : sortedConfigKeys) {
                 String key = (String) sortedConfigKey;
                 String value = config.getProperty(key);
-                // Erase folder ids, keep it secret!
-                if (key.indexOf(ID) >= 5) {
-                    value = "XXX-erased-XXX";
-                }
                 // Erase all passwords
                 if (key.toLowerCase().contains("password")) {
                     value = "XXX-erased-XXX";
