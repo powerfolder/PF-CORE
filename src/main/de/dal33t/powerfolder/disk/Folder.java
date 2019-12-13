@@ -2840,7 +2840,9 @@ public class Folder extends PFComponent {
         try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(f)))) {
             membersMap.putAll((Map<String, MemberInfo>) ois.readObject());
         } catch (IOException | ClassNotFoundException e) {
-            logWarning("Unable to read members file " + fileInfo + ". " + e);
+            logFine("Unable to read members file " + fileInfo + ". Ignoring. " + e);
+        } catch (RuntimeException e) {
+            logWarning("Exception while read members file " + fileInfo + ". Ignoring. " + e);
         }
         if (isFine()) {
             logFine("Loaded " + membersMap.size() + " metafolder members.");
@@ -2873,6 +2875,9 @@ public class Folder extends PFComponent {
         } catch (IOException e) {
             logWarning(getName() + ": Unable to write Members meta info to " +
                     fileInfo.getDiskFile(getController().getFolderRepository()) + ". " + e);
+        } catch (RuntimeException e) {
+            logWarning(getName() + ": Unable to write Members meta info to " +
+                    fileInfo.getDiskFile(getController().getFolderRepository()) + ". " + e, e);
         }
     }
 
