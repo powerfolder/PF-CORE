@@ -568,6 +568,9 @@ public class NodeManager extends PFComponent {
         if (isFiner()) {
             logFiner("Removing " + node.getNick() + " from nodelist");
         }
+        if (node.isConnected()) {
+            logInfo("Disconnecting " + node.getNick());
+        }
         // Shut down node
         node.shutdown();
 
@@ -1193,9 +1196,11 @@ public class NodeManager extends PFComponent {
         if (node == null) {
             throw new NullPointerException("Node is null");
         }
-        // logFiner("Adding new node: " + node);
 
         Member oldNode = knownNodes.get(node.getId());
+        if (oldNode == node) {
+            return;
+        }
         if (oldNode != null) {
             logFine("Overwriting old node: " + oldNode + " with " + node);
             removeNode(oldNode);

@@ -919,7 +919,11 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!ok) {
             String reason = "Disconnecting. Did not receive the full filelists for "
                 + foldersJoined.size() + " folders: " + foldersJoined;
-            logWarning(getNick() + ": " + reason);
+            if (isServer()) {
+                logWarning(getNick() + ": " + reason);
+            } else {
+                logFine(getNick() + ": " + reason);
+            }
             if (isFine()) {
                 for (Folder folder : foldersJoined) {
                     logFine("Got filelist for " + folder.getName() + " ? "
@@ -950,8 +954,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             }
             shutdown();
-            if (message != null && isWarning()) {
-                logWarning(message);
+            if (message != null && isFine()) {
+                logFine(message);
             }
             return ConnectResult.failure(message);
         } else if (isFiner()) {
@@ -1127,8 +1131,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 + (waiter.getWaitTimeMS() / (1000 * 60))
                 + " minutes) while waiting for filelist from " + info);
         }
-        if (!isConnected()) {
-            logWarning(getNick() + ": Disconnected while waiting for filelist");
+        if (!isConnected() && isFine()) {
+            logFine(getNick() + ": Disconnected while waiting for filelist");
         }
         return fileListsCompleted;
     }

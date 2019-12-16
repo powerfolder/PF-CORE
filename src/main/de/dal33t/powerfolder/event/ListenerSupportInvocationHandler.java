@@ -325,7 +325,7 @@ class ListenerSupportInvocationHandler<T> implements InvocationHandler {
     {
         ProfilingEntry profilingEntry = null;
         if (Profiling.ENABLED) {
-            profilingEntry = Profiling.start(listener.getClass(), method.getName());
+            profilingEntry = Profiling.start(listener.getRef().getClass(), method.getName());
         }
         try {
             listener.invoke(null, method, args);

@@ -169,7 +169,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(bartMetaFolder.getLocalBase(),
             "MetaTestFile.txt");
         scanFolder(bartMetaFolder);
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitForCondition(10, () -> lisaOriginalMetaCount + 1 == lisaMetaFolder.getKnownFiles().size());
         assertEquals(
             "lisa metafolder file count wrong: "
                 + lisaMetaFolder.getKnownFiles(), lisaOriginalMetaCount + 1,
@@ -195,7 +195,8 @@ public class MetaFolderTest extends TwoControllerTestCase {
         // Wait for Bart's sync patterns to persist.
         TestHelper.waitMilliSeconds(1000);
         scanFolder(bartMetaFolder);
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitForCondition(10, () -> initialSize + 1 == lisaFolder
+                .getDiskItemFilter().getPatterns().size());
 
         assertEquals("Wrong number of patterns", initialSize + 1, lisaFolder
             .getDiskItemFilter().getPatterns().size());

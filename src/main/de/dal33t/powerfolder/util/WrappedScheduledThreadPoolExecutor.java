@@ -44,8 +44,11 @@ public class WrappedScheduledThreadPoolExecutor
     private static final Logger LOG = Logger
         .getLogger(WrappedScheduledThreadPoolExecutor.class.getName());
 
-    public static final int WARN_NUMBER_WORKERS = 500;
-    public static final int SEVERE_NUMBER_WORKERS = 1500;
+    public static int WARN_NUMBER_WORKERS;
+    public static int SEVERE_NUMBER_WORKERS;
+    static {
+        setWarningLevel(500);
+    }
     
     /**
      * The threadpool actually executing the scheduled tasks.
@@ -64,7 +67,12 @@ public class WrappedScheduledThreadPoolExecutor
             .newCachedThreadPool(threadFactory);
         wrappingThreadPool = new WrapperExecutorService(executingThreadPool);
         Comparator<Class> classComparator = (Class o1, Class o2) -> o1.getName().compareTo(o2.getName());
-        this.classCountRunning = new TreeMap<>(classComparator);
+        this.classCountRunning = Collections.synchronizedMap(new TreeMap<>(classComparator));
+    }
+
+    public static void setWarningLevel(int nThreads){
+        WARN_NUMBER_WORKERS = Math.max(500, nThreads);
+        SEVERE_NUMBER_WORKERS = 3 * WARN_NUMBER_WORKERS;
     }
 
     // Overriding ************************************************************
@@ -241,24 +249,21 @@ public class WrappedScheduledThreadPoolExecutor
                 {
                     ProfilingEntry pe = null;
                     try {
-                        synchronized (classCountRunning) {
-                            Integer count = classCountRunning.get(task.getClass());
-                            classCountRunning.put(task.getClass(), count == null ? 1 : count + 1);
-                        }
+                        Integer count = classCountRunning.get(task.getClass());
+                        classCountRunning.put(task.getClass(), count == null ? 1 : count + 1);
                         pe = Profiling.start(task.getClass(), "run");
                         task.run();
                     } finally {
                         running.set(false);
                         Profiling.end(pe);
-                        synchronized (classCountRunning) {
-                            Integer count = classCountRunning.get(task.getClass());
-                            count = count == null ? 1 : count;
-                            count--;
-                            if (count == 0) {
-                                classCountRunning.remove(task.getClass());
-                            } else {
-                                classCountRunning.put(task.getClass(), count);
-                            }
+                        // PF-1791: Remove synchronized blocks. Trade off. Causes lots of locks otherwise
+                        Integer count = classCountRunning.get(task.getClass());
+                        count = count == null ? 1 : count;
+                        count--;
+                        if (count == 0) {
+                            classCountRunning.remove(task.getClass());
+                        } else {
+                            classCountRunning.put(task.getClass(), count);
                         }
                     }
                 } else {

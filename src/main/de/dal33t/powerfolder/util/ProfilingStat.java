@@ -30,9 +30,8 @@ public class ProfilingStat {
     private final AtomicLong count = new AtomicLong();
     private final AtomicLong elapsed = new AtomicLong();
 
-    public ProfilingStat(String operationName, long elapsed) {
+    public ProfilingStat(String operationName) {
         this.operationName = operationName;
-        addElapsed(elapsed);
     }
 
     public void addElapsed (long delta) {

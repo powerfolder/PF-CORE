@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.security;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
@@ -526,6 +527,15 @@ public class Account implements Serializable, D2DObject {
             }
         }
         return folders;
+    }
+
+    public FolderInfo getFolderPersonalFiles() {
+        for (FolderInfo folderInfo : getFoldersCharged()) {
+            if (folderInfo.getName().equals(Constants.FOLDER_PERSONAL_FILES)) {
+                return folderInfo;
+            }
+        }
+        return null;
     }
 
     /**

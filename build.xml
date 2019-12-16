@@ -65,6 +65,7 @@ For creation of the installer:
 		<condition property="outputdirset">
 			<isset property="output.dir" />
 		</condition>
+		<property name="Debug" value="on"/>
 	</target>
 
 	<!-- if output dir not set we use the default current dir -->
@@ -235,7 +236,7 @@ For creation of the installer:
 	<target name="compile" depends="init">
 		<mkdir dir="${build.dir}" />
 
-		<javac destdir="${build.dir}" source="1.8" target="1.8" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="off">
+		<javac destdir="${build.dir}" source="1.8" target="1.8" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" debuglevel="lines" deprecation="off">
 			<classpath>
 				<fileset refid="libs" />
 				<fileset refid="testlibs" />

@@ -20,25 +20,49 @@
 package de.dal33t.powerfolder.util.pattern;
 
 import de.dal33t.powerfolder.util.Reject;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Matching on any texts that end with the given pattern.
  */
 public class EndMatchPattern extends AbstractPattern {
 
+    private char[] matchLower;
+    private char[] matchUpper;
+
     /**
-     * @see AbstractPattern#AbstractPattern(String)
+     * Constructor.
+     *
+     * @param patternStringArg
      */
-    EndMatchPattern(@NotNull String patternString) {
-        super(patternString.replace("*", ""));
-        Reject.ifFalse(patternString.lastIndexOf("*") == 0,
+    public EndMatchPattern(String patternStringArg) {
+        super(patternStringArg);
+        Reject.ifFalse(patternStringArg.lastIndexOf("*") == 0,
             "Pattern must start with * and should not contain any other stars");
+        matchLower = getPatternText().replaceAll("\\*", "").toLowerCase()
+            .toCharArray();
+        matchUpper = getPatternText().replaceAll("\\*", "").toUpperCase()
+            .toCharArray();
     }
 
-    @Override
-    public boolean isMatch(@NotNull String matchString) {
-        return matchString.toLowerCase().endsWith(patternText);
+    public boolean isMatch(String matchString) {
+        int matchIndex = matchString.length() - 1;
+        if (matchIndex == -1) {
+            // Special case. Match "*" to ""
+            return matchLower.length == 0;
+        }
+        if (matchString.length() < matchLower.length) {
+            // Impossible
+            return false;
+        }
+        for (int i = matchLower.length - 1; i >= 0; i--) {
+            char cms = matchString.charAt(matchIndex);
+            if (!equalChar(cms, matchLower[i], matchUpper[i])) {
+                return false;
+            }
+            matchIndex--;
+        }
+        // MATCH!
+        return true;
     }
 
 }

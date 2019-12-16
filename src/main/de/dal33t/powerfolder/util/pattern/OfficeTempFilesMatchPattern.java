@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Matching on any texts that ends with the given pattern
  */
@@ -43,14 +41,13 @@ public class OfficeTempFilesMatchPattern extends EndMatchPattern {
         this.matchEnd = !endPattern.equals("*");
     }
 
-    public boolean isMatch(@NotNull String matchString) {
+    public boolean isMatch(String matchString) {
         if (matchEnd && !super.isMatch(matchString)) {
             return false;
         }
         return matchString.indexOf(startStr) >= 0;
     }
 
-    @NotNull
     public String getPatternText() {
         // startstring: ~
         // superpattern: *.tmp

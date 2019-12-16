@@ -19,8 +19,6 @@
  */
 package de.dal33t.powerfolder.util.pattern;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Compiling pattern matcher that uses compiled parts to match '*' characters to
  * any text. So 'a*c' would match 'ac', 'abc', 'asdfkhc', etc.
@@ -38,13 +36,15 @@ public class CompiledPattern extends AbstractPattern {
     private boolean lastStar;
 
     /**
-     * @see AbstractPattern#AbstractPattern(String)
+     * Constructor.
+     *
+     * @param patternStringArg
      */
-    CompiledPattern(String patternString) {
-        super(patternString);
+    public CompiledPattern(String patternStringArg) {
+        super(patternStringArg);
 
         // Everything is case-insensitive.
-        patternString = patternString.toLowerCase().trim();
+        String patternString = patternStringArg.toLowerCase().trim();
 
         // If it starts with a '*', we can scan forward to find an initial
         // match.
@@ -70,8 +70,7 @@ public class CompiledPattern extends AbstractPattern {
         }
     }
 
-    @Override
-    public boolean isMatch(@NotNull String matchString) {
+    public boolean isMatch(String matchString) {
         int index = 0;
         for (int i = 0; i < partsLower.length; i++) {
             index = indexOf(matchString, i, index);
@@ -90,7 +89,7 @@ public class CompiledPattern extends AbstractPattern {
                 return false;
             }
         }
-        return true;
+        return index != -1;
     }
 
     private int indexOf(String source, int partNo, int fromIndex) {

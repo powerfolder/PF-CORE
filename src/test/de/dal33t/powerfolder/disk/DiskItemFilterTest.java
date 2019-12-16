@@ -156,4 +156,9 @@ public class DiskItemFilterTest extends TestCase {
             assertTrue(defExclude.getPattern(), filter.getPatterns().contains(defExclude.getPattern()));
         }
     }
+
+    public void testPF1153() {
+        DiskItemFilter filter = new DiskItemFilter();
+        filter.addPattern("Friesenstraße 36-Papenburg/*");
+    }
 }

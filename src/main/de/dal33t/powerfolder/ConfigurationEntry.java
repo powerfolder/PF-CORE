@@ -1084,7 +1084,7 @@ public enum ConfigurationEntry {
      * change to the folder happened. Applies to large folders only, that host
      * more files than {@link FolderStatistic#MAX_ITEMS}
      */
-    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", 30),
+    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", 60),
 
     /**
      * The maximum time powerfolder keeps the folder database dirty in memory
@@ -1104,14 +1104,14 @@ public enum ConfigurationEntry {
     FILE_REQUESTOR_INTERVAL("file.requestor.interval.seconds", 60),
 
     /**
-     * Enable to copy and delete a newly transfered file instead of moveing.
+     * Enable to copy and delete a newly transfered file instead of moving.
      */
     FOLDER_COPY_AFTER_TRANSFER("folder.copy_after_transfer.enabled", false, true),
 
     /**
-     * The number of seconds between db maintenance (1 hour).
+     * The number of seconds between db maintenance (once a day).
      */
-    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 3600),
+    DB_MAINTENANCE_SECONDS("filedb.maintenance.seconds", 86400),
 
     /**
      * The age of a deleted file until it gets removed by the folder db
