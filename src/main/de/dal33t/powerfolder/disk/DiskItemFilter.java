@@ -182,7 +182,7 @@ public class DiskItemFilter {
             }
             dirty = markDirtyIfChanged;
         } catch (IOException ioe) {
-            log.log(Level.SEVERE, "Problem loading pattern from " + file
+            log.log(Level.WARNING, "Problem loading pattern from " + file
                     + ". " + ioe);
         }
         if (fixed > 0) {
