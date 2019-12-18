@@ -1203,7 +1203,8 @@ public class Account implements Serializable, D2DObject {
      * @return A mail address related to this account.
      */
     public String getEmail() {
-        if (Util.isValidEmail(username)) {
+        if (Util.isValidEmail(username)
+                && !authByShibboleth()) {
             return username;
         }
 
