@@ -41,6 +41,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.hibernate.StaleStateException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -1005,5 +1006,20 @@ public class Util {
                 || text.contains("conflict")
                 || text.contains("deadlock")
                 || text.contains("eadlock found");
+    }
+
+    /**
+     * PFS-3467
+     * @param t
+     * @return true if the exception or any cause is {@link StaleStateException}
+     */
+    public static final boolean isStaleStateException(Throwable t) {
+        while (t != null) {
+            if (t instanceof StaleStateException) {
+                return true;
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 }
