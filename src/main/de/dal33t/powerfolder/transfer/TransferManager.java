@@ -1237,7 +1237,7 @@ public class TransferManager extends PFComponent {
             return null;
         }
         if (!folder.hasReadPermission(from)) {
-            logWarning("No Read permission: " + from + " on " + folder);
+            logWarning("No Read permission for " + from.getAccountInfo() + " device " + from + " on " + folder);
             return null;
         }
 
