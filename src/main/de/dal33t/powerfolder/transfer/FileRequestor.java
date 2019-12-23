@@ -31,10 +31,7 @@ import de.dal33t.powerfolder.light.FileHistory.Conflict;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.FileHistoryReply;
-import de.dal33t.powerfolder.util.ProblemUtil;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
-import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.*;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -485,6 +482,7 @@ public class FileRequestor extends PFComponent {
             for (Worker worker : workerPool) {
                 if (worker.isTimeout()) {
                     logWarning("Worker timed out detected. Restarting... " + worker);
+                    logWarning(Debug.dumpCurrentStacktraces(false));
                     worker.stopped = true;
                 }
             }
