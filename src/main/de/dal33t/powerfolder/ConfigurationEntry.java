@@ -309,13 +309,13 @@ public enum ConfigurationEntry {
      * recommended. At leat host or ID of a server has to be set to connect to a
      * server.
      */
-    SERVER_NODEID("server.nodeid", "WEBSERVICE03"),
+    SERVER_NODEID("server.nodeid", "WEBSERVICE006"),
 
     /**
      * The optional server hostname to connect to. Example:
      * server.powerfolder.com:1234
      */
-    SERVER_HOST("server.host", "os003.powerfolder.com:1337"),
+    SERVER_HOST("server.host", "os006.powerfolder.com:1337"),
 
     /**
      * The D2D port of the server
