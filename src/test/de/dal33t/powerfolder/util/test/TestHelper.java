@@ -53,7 +53,7 @@ public class TestHelper {
     public static final String DEV_SYSTEM_CONNECT_STRING = "relay001.node.powerfolder.com";
 
     public static final InetSocketAddress ONLINE_STORAGE_ADDRESS = new InetSocketAddress(
-        "access.powerfolder.com", 1337);
+        "my.powerfolder.com", 1337);
 
     private static final Collection<Controller> STARTED_CONTROLLER = Collections
         .synchronizedCollection(new ArrayList<Controller>());
