@@ -318,7 +318,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 assertTrue(pegasus.isCompletelyConnected());
                 pegasus.shutdown();
 
-                final Member os003 = getContollerBart().connect(
+                final Member server = getContollerBart().connect(
                     TestHelper.ONLINE_STORAGE_ADDRESS);
                 TestHelper.waitForCondition(10, new ConditionWithMessage() {
                     public String message() {
@@ -326,13 +326,13 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                     }
 
                     public boolean reached() {
-                        return os003.isCompletelyConnected();
+                        return server.isCompletelyConnected();
                     }
                 });
-                assertTrue(os003.isCompletelyConnected());
+                assertTrue(server.isCompletelyConnected());
 
                 ServerClient client = new ServerClient(getContollerBart());
-                client.setServer(os003, false);
+                client.setServer(server, false);
                 assertTrue(client.isConnected());
                 Account a = client.login("junit@powerfolder.com", Util
                     .toCharArray("asdfgh12"));
@@ -344,8 +344,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 assertTrue(a.isValid());
                 client.getSecurityService().getFolderPermissions(
                     new FolderInfo("xx", "xx43kljkfjdffewlkjk345j4kj5öjöj"));
-                assertTrue(os003.isCompletelyConnected());
-                os003.shutdown();
+                assertTrue(server.isCompletelyConnected());
+                server.shutdown();
             } catch (ConnectionException e) {
                 e.printStackTrace();
                 fail(e.toString());
