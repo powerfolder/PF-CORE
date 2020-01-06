@@ -41,6 +41,10 @@ public class OrganizationAdminPermission implements Permission, D2DObject {
     private static final long serialVersionUID = 100L;
     private String organizationOID;
 
+    public OrganizationAdminPermission(Organization organization) {
+        this.organizationOID = organization.getOID();
+    }
+
     public OrganizationAdminPermission(String organizationOID) {
         this.organizationOID = organizationOID;
     }
