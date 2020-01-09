@@ -1002,6 +1002,29 @@ public class PathUtilsTest extends TestCase {
     }
 
     /**
+     * PFS-3482
+     * @throws IOException
+     */
+    public void testMoveDirectory() throws IOException {
+        Path testDir = Paths.get("build/test").toAbsolutePath();
+        Path sourceDir = testDir.resolve("source");
+        Files.createDirectories(sourceDir);
+        TestHelper.createRandomFile(sourceDir);
+        TestHelper.createRandomFile(sourceDir);
+        TestHelper.createRandomFile(sourceDir);
+        Files.createDirectories(sourceDir.resolve("subdir"));
+
+        Path targetDir = testDir.resolve("target");
+        Files.move(sourceDir, targetDir);
+
+        assertTrue(Files.notExists(sourceDir));
+        assertTrue(Files.exists(targetDir));
+        assertTrue(Files.exists(targetDir.resolve("subdir")));
+        assertTrue(PathUtils.hasContents(targetDir));
+        assertTrue(PathUtils.hasFiles(targetDir));
+    }
+
+    /**
      * Copy build/test/a to build/test/a Should not be permitted.
      *
      * @throws IOException
