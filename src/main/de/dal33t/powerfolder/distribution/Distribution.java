@@ -56,11 +56,6 @@ public interface Distribution {
     public boolean isBrandedClient();
 
     /**
-     * @return true if the credentials in the about box should be shown.
-     */
-    boolean showCredentials();
-
-    /**
      * @return true if this distribution is allowed to choose from different
      *         skins.
      */

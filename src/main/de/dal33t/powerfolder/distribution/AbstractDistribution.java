@@ -49,10 +49,6 @@ public abstract class AbstractDistribution extends Loggable implements
 
     private Controller controller;
 
-    public boolean showCredentials() {
-        return false;
-    }
-
     public void init(Controller controller) {
         this.controller = controller;
     }

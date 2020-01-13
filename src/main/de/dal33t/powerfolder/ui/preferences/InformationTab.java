@@ -61,10 +61,6 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 public class InformationTab extends PFComponent implements PreferenceTab {
 
     private static final int HEADER_FONT_SIZE = 16;
-
-    private String buildDate;
-    private String buildTime;
-
     private JPanel panel;
 
     public InformationTab(Controller controller) {
@@ -88,14 +84,8 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         return true;
     }
 
-    private static JPanel createTeamPanel() {
-    return createTextBox(
-        Translation.get("exp.preferences.information.team"),
-        "Bernhard Rutkowsky\nCecilia Saltori\nChristian Sprajc\nDennis Waldherr\nFlorian Lahr\nHarry Glasgow\n");
-    }
 
     private void initComponents() {
-        readDateTimeFromJar();
         FormLayout layout = new FormLayout(
             "pref:grow, pref:grow, pref:grow",
             "fill:pref:grow, fill:pref:grow, fill:pref:grow");
@@ -104,10 +94,6 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         builder.add(createGeneralBox(), cc.xywh(1, 1, 2, 1));
         builder.add(createPowerFolderBox(), cc.xy(1, 2));
         builder.add(createSystemBox(), cc.xy(2, 2));
-        if (getController().getDistribution().showCredentials()) {
-            builder.add(createTeamPanel(), cc.xy(3, 1));
-            builder.add(createTranslators(), cc.xy(3, 2));
-        }
 
         panel = builder.getPanel();
     }
@@ -146,52 +132,6 @@ public class InformationTab extends PFComponent implements PreferenceTab {
         return activateButton;
     }
 
-    private static JPanel createTranslators() {
-        return createTextBox(
-            Translation.get("exp.preferences.information.translators"),
-            "Bayan El Ameen\n" + "Cecilia Saltori\n" + "Javier Isassi\n"
-                + "Keblo\n" + "Olle Wikstrom\n" + "Zhang Jia\n ");
-    }
-
-    /**
-     * Reads the date and time from the jarfile manifest "BuildDateTime"
-     * property. This is set by build.xml when ant creates the jar file
-     *
-     * @see #buildDate
-     * @see #buildTime
-     */
-    private void readDateTimeFromJar() {
-        try {
-            Path jar = Paths.get(getController().getJARName());
-            JarFile file = new JarFile(jar.toFile());
-            Manifest mf = file.getManifest();
-            Attributes attr = mf.getMainAttributes();
-
-            logFine(attr.getValue("BuildDateTime"));
-
-            String buildDateTimeString = attr.getValue("BuildDateTime");
-            SimpleDateFormat parser = new SimpleDateFormat();
-            // must match the format in build.xml
-            parser.applyPattern("MMMM/dd/yyyy hh:mm:ss a, z");
-            Date buildDateTime = parser.parse(buildDateTimeString);
-
-            SimpleDateFormat localizedFormatter = new SimpleDateFormat(
-                "HH:mm:ss z", Translation.getActiveLocale());
-
-            buildTime = localizedFormatter.format(buildDateTime);
-            // localizedFormatter.applyPattern("dd MMMM yyyy");
-            localizedFormatter.applyPattern(Translation
-                .get("general.localized_date_format"));
-            buildDate = localizedFormatter.format(buildDateTime);
-
-            file.close();
-        } catch (Exception e) {
-            logFine("Build date/time works only from jar.");
-            buildTime = "n/a";
-            buildDate = "n/a";
-        }
-    }
-
     private long calculateTotalLocalSharedSize() {
         long totalSize = 0;
         for (Folder folder : getController().getFolderRepository().getFolders())
@@ -202,11 +142,6 @@ public class InformationTab extends PFComponent implements PreferenceTab {
     }
 
     private JPanel createSystemBox() {
-
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-
-        long dbSize = Debug.countDataitems(getController());
-
         return createTextBox(
             Translation.get("exp.preferences.information.your_system_title"),
             Translation.get("exp.preferences.information.your_system_java_version",
@@ -218,9 +153,6 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                 + (OSUtil.is64BitPlatform() ? "64bit" : "32bit")
                 + ')'
                 + '\n'
-                + Translation.get("exp.preferences.information.screen",
-                    String.valueOf(dim.width), String.valueOf(dim.height))
-                + '\n'
                 + Translation.get(
                     "exp.preferences.information.power_folder_max",
                     String
@@ -229,31 +161,11 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                 + Translation.get(
                     "exp.preferences.information.power_folder_used",
                     String
-                        .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024))
-                + '\n'
-                + Translation.get(
-                    "exp.preferences.information.power_folder_data_size",
-                    Format.formatBytesShort(calculateTotalLocalSharedSize()))
-                + '\n'
-                + Translation.get(
-                    "exp.preferences.information.power_folder_db_size", String.valueOf(dbSize)));
-    }
-
-    private String readLicense() {
-        Account a = getController().getOSClient().getAccount();
-        if (a.getAutoRenewDevices() > 0 && a.getAutoRenewTill() != null) {
-            Object licKey = getController().getUIController()
-                .getApplicationModel().getLicenseModel().getLicenseKeyModel()
-                .getValue();
-            return licKey != null ? Translation.get(
-                "exp.preferences.information.power_folder_license",
-                licKey.toString()) : "";
-        }
-        return "";
+                        .valueOf(Runtime.getRuntime().totalMemory() / 1024 / 1024)));
     }
 
     private JPanel createPowerFolderBox() {
-        String config = getController().getConfig().getProperty("config.url");
+        String config = getController().getConfig().getProperty("config.url", "Default");
         if (config != null) {
             int lastSlash = config.lastIndexOf("/");
             int lastDot = config.lastIndexOf(".config");
@@ -264,6 +176,7 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                 config = "Default";
             }
         }
+        long dbSize = Debug.countDataitems(getController());
 
         return createTextBox(
                 Translation.get("general.application.name"),
@@ -271,19 +184,18 @@ public class InformationTab extends PFComponent implements PreferenceTab {
                         Controller.PROGRAM_VERSION)
                         + '\n'
                         + Translation.get(
-                        "exp.preferences.information.power_folder_build_date", buildDate)
-                        + '\n'
-                        + Translation.get(
-                        "exp.preferences.information.power_folder_build_time", buildTime)
-                        + '\n'
-                        + Translation.get(
                         "exp.preferences.information.power_folder_distribution",
                         getController().getDistribution().getName()) + '\n'
                         + Translation.get("exp.preferences.information.config_name", config)
-                        + '\n' +
-                        readLicense(),
-                createActivateButton()
-                );
+                        + '\n'
+                        + Translation.get(
+                        "exp.preferences.information.power_folder_data_size",
+                        Format.formatBytesShort(calculateTotalLocalSharedSize()))
+                        + '\n'
+                        + Translation.get(
+                        "exp.preferences.information.power_folder_db_size", String.valueOf(dbSize))
+                ,createActivateButton()
+        );
 
     }
 

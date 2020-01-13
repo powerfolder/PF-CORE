@@ -54,9 +54,4 @@ public class PowerFolderBasic extends AbstractDistribution {
     public boolean allowSkinChange() {
         return false;
     }
-
-    @Override
-    public boolean showCredentials() {
-        return true;
-    }
 }
