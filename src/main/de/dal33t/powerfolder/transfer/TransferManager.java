@@ -631,7 +631,8 @@ public class TransferManager extends PFComponent {
         Level l = Level.WARNING;
         if (transferProblem == TransferProblem.NODE_DISCONNECTED
             || transferProblem == TransferProblem.PAUSED
-            || transferProblem == TransferProblem.OLD_UPLOAD)
+            || transferProblem == TransferProblem.OLD_UPLOAD
+            || upload.getFile().getFolderInfo().isMetaFolder())
         {
             l = Level.FINE;
         }
