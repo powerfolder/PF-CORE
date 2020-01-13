@@ -304,20 +304,7 @@ public class UIUtil {
      * @param opacity
      */
     public static void applyTranslucency(Window window, Float opacity) {
-        try {
-            Class<?> clazz = Class.forName("com.sun.awt.AWTUtilities");
-            Method m = clazz.getMethod("setWindowOpacity", Window.class,
-                Float.TYPE);
-            m.invoke(clazz, window, opacity);
-        } catch (NoSuchMethodException e) {
-            log.warning(e.getMessage());
-        } catch (InvocationTargetException e) {
-            log.warning(e.getMessage());
-        } catch (ClassNotFoundException e) {
-            log.warning(e.getMessage());
-        } catch (IllegalAccessException e) {
-            log.warning(e.getMessage());
-        }
+        window.setOpacity(opacity);
     }
 
     /**

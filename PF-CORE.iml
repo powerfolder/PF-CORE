@@ -190,24 +190,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library name="synthetica.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/synthetica/synthetica.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" exported="">
-      <library name="syntheticaAddons.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/synthetica/syntheticaAddons.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library">
       <library name="ejb3-persistence.jar">
         <CLASSES>
@@ -504,5 +486,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" name="synthetica" level="project" />
+    <orderEntry type="library" exported="" name="syntheticaAddons" level="project" />
   </component>
 </module>
