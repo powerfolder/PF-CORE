@@ -865,24 +865,17 @@ public class Folder extends PFComponent {
                 FileArchiver arch = archiver;
                 if (arch != null) {
                     try {
-                        FileInfo oldLocalFileInfo = fInfo
-                            .getLocalFileInfo(getController()
-                                .getFolderRepository());
+                        FileInfo oldLocalFileInfo = fInfo.getLocalFileInfo(getController().getFolderRepository());
                         if (oldLocalFileInfo != null) {
-                            arch.archive(oldLocalFileInfo, targetFile, false);
-
-                            if (!currentInfo.isMetaFolder()
-                                && ConfigurationEntry.CONFLICT_DETECTION
-                                    .getValueBoolean(getController()))
-                            {
+                            if (ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController())
+                                && !currentInfo.isMetaFolder()) {
                                 try {
-                                    doSimpleConflictDetection(fInfo,
-                                        oldLocalFileInfo);
+                                    doSimpleConflictDetection(fInfo, oldLocalFileInfo, targetFile);
                                 } catch (Exception e) {
-                                    logSevere("Problem withe conflict detection. "
-                                        + e);
+                                    logSevere("Problem withe conflict detection. " + e);
                                 }
                             }
+                            arch.archive(oldLocalFileInfo, targetFile, false);
                         }
                         fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                     } catch (IOException e) {
@@ -997,7 +990,7 @@ public class Folder extends PFComponent {
     }
 
     private FileInfo doSimpleConflictDetection(FileInfo fInfo,
-        FileInfo oldLocalFileInfo)
+        FileInfo oldLocalFileInfo, Path oldFilePath)
     {
         boolean conflict = oldLocalFileInfo.getVersion() == fInfo.getVersion()
             && fInfo.isNewerThan(oldLocalFileInfo)
@@ -1017,9 +1010,29 @@ public class Folder extends PFComponent {
                 return null;
             }
             logWarning("Conflict detected on file " + fInfo.toDetailString()
-                + ". old: " + oldLocalFileInfo.toDetailString());
-            // Really basic raw conflict detection.
-            addProblem(new FileConflictProblem(fInfo));
+                    + ". old: " + oldLocalFileInfo.toDetailString());
+
+            String suffix = "_";
+            suffix += oldLocalFileInfo.getVersion();
+            suffix += "_";
+            suffix += DateFormat.getDateTimeInstance().format(oldLocalFileInfo.getModifiedDate());
+            suffix = suffix.replaceAll(" ", "_");
+            String fn = fInfo.getFilenameOnly();
+            int dot = fn.lastIndexOf('.');
+            if (dot >= 0) {
+                fn = fn.substring(0, dot) + suffix + fn.substring(dot);
+            } else {
+                fn += suffix;
+            }
+            Path conflictCopyPath = oldFilePath.getParent().resolve(PathUtils.removeInvalidFilenameChars(fn));
+            try {
+                Files.copy(oldFilePath, conflictCopyPath);
+                FileInfo conflictCopyInfo = FileInfoFactory.lookupInstance(this, conflictCopyPath);
+                scanChangedFile(conflictCopyInfo);
+            } catch (IOException e) {
+                logWarning("Unable to create copy of conflicting file to " + conflictCopyPath + ". " + e);
+                addProblem(new FileConflictProblem(fInfo));
+            }
         }
         return null;
     }

@@ -203,7 +203,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             .next().getDiskFile(getContollerLisa().getFolderRepository());
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
-                return Files.exists(fileAtLisa);
+                return Files.exists(fileAtLisa) && getContollerBart().getTransferManager().getActiveUploads().isEmpty();
             }
 
             public String message() {
@@ -253,9 +253,9 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(5, new ConditionWithMessage() {
             public boolean reached() {
                 try {
-                    return Files.size(fileAtLisa) == Files.size(fileAtBart) &&
-                            getContollerBart().getTransferManager().getActiveDownloads().isEmpty() &&
-                            getFolderAtBart().getProblems().size() == 1;
+                    return Files.size(fileAtLisa) == Files.size(fileAtBart)
+                            && getContollerBart().getTransferManager().getActiveDownloads().isEmpty()
+                            && getContollerLisa().getTransferManager().getActiveDownloads().isEmpty();
                 } catch (IOException ioe) {
                     return true;
                 }
@@ -270,32 +270,15 @@ public class FileUpdateTest extends TwoControllerTestCase {
                 }
             }
         });
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
-            @Override
-            public String message() {
-                return "Expected problems at bart: 1. Got: "
-                        + getFolderAtBart().getProblems();
-            }
-
-            @Override
-            public boolean reached() {
-                return getFolderAtBart().getProblems().size() == 1;
-            }
-        });
-        // Now Bart should have detected an conflict.
+        // Bart should not longer raise problems
         assertEquals(
-            "Expected problems at bart: 1. Got: "
+            "Expected problems at bart: 0. Got: "
                 + getFolderAtBart().getProblems(),
-            1, getFolderAtBart().getProblems().size());
+            0, getFolderAtBart().getProblems().size());
         assertEquals(
             "Expected problems at lisa: 0. Got: "
                 + getFolderAtLisa().getProblems(),
             0, getFolderAtLisa().getProblems().size());
-        Problem p = getFolderAtBart().getProblems().iterator().next();
-        assertTrue("No conflicts detected: " + getFolderAtBart().getProblems(),
-            p instanceof FileConflictProblem);
-        FileConflictProblem cp = (FileConflictProblem) p;
-        assertEquals(fInfoAtLisa, cp.getFileInfo());
         assertTrue("Old file not in archive @ bart: " + fInfoAtBart,
             getFolderAtBart().getFileArchiver()
                 .hasArchivedFileInfo(fInfoAtBart));
@@ -310,10 +293,12 @@ public class FileUpdateTest extends TwoControllerTestCase {
             fInfoArchivedAtBart.getModifiedDate());
 
         // The old copy should have been distributed.
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
             public boolean reached() {
-                return getFolderAtBart().getKnownItemCount() == 1
-                    && getFolderAtLisa().getKnownItemCount() == 1;
+                return getFolderAtBart().getKnownItemCount() == 2
+                    && getFolderAtLisa().getKnownItemCount() == 2
+                        && getContollerBart().getTransferManager().getActiveDownloads().isEmpty()
+                        && getContollerLisa().getTransferManager().getActiveDownloads().isEmpty();
             }
 
             public String message() {
@@ -326,7 +311,6 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         // Second case: version is lower, but last modification date if newer
         disconnectBartAndLisa();
-        getFolderAtBart().removeProblem(cp);
 
         TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtBart);
@@ -362,7 +346,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
         connectBartAndLisa();
         // The old copy should have been distributed.
-        TestHelper.waitForCondition(70, new ConditionWithMessage() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
 
             public boolean reached() {
                 // Hack: #2557
@@ -370,9 +354,11 @@ public class FileUpdateTest extends TwoControllerTestCase {
                     .triggerFileRequesting();
                 getContollerLisa().getFolderRepository().getFileRequestor()
                     .triggerFileRequesting();
-                return getFolderAtBart().getKnownItemCount() == 1
-                    && getFolderAtLisa().getKnownItemCount() == 1
-                    && !getFolderAtLisa().getProblems().isEmpty();
+                return getFolderAtBart().getKnownItemCount() == 3
+                    && getFolderAtLisa().getKnownItemCount() == 3
+                    && getFolderAtLisa().getProblems().isEmpty()
+                        && getContollerBart().getTransferManager().getActiveDownloads().isEmpty()
+                        && getContollerLisa().getTransferManager().getActiveDownloads().isEmpty();
             }
 
             public String message() {
@@ -383,12 +369,10 @@ public class FileUpdateTest extends TwoControllerTestCase {
                     + " Problems at lisa: " + getFolderAtLisa().getProblems();
             }
         });
-        p = getFolderAtLisa().getProblems().iterator().next();
-        assertTrue("No conflicts detected: " + getFolderAtLisa().getProblems(),
-            p instanceof FileConflictProblem);
-        cp = (FileConflictProblem) p;
-        assertEquals(fInfoAtLisa, cp.getFileInfo());
-
+        assertEquals(
+                "Expected problems at lisa: 0. Got: "
+                        + getFolderAtLisa().getProblems(),
+                0, getFolderAtLisa().getProblems().size());
         assertTrue("Old file not in archive @ lisa: " + fInfoAtLisa,
             getFolderAtLisa().getFileArchiver()
                 .hasArchivedFileInfo(fInfoAtLisa));
