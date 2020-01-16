@@ -252,8 +252,7 @@ public class MultiOnlineStorageSetupPanel extends PFWizardPanel {
         }
 
         for (FolderInfo folderInfo : folderInfoList) {
-            folderProfileMap.put(folderInfo,
-                SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+            folderProfileMap.put(folderInfo, SyncProfile.getDefault(getController()));
             // Suggest user dir.
             Path dirSuggestion;
             if (userDirs.get(folderInfo.getLocalizedName()) == null) {

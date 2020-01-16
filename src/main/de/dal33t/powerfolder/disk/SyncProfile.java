@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import java.util.logging.Logger;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.message.Invitation;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -499,6 +501,16 @@ public class SyncProfile implements Serializable {
         String defFieldList = ConfigurationEntry.DEFAULT_TRANSFER_MODE
             .getValue(controller);
         try {
+            if (ConfigurationEntry.UNC_TRANSFER_MODE.hasNonBlankValue(controller)
+                    && PathUtils.isNetworkPath(controller.getFolderRepository().getFoldersBasedir())) {
+                defFieldList = ConfigurationEntry.UNC_TRANSFER_MODE.getValue(controller);
+            }
+        } catch (IOException e) {
+            Logger.getLogger(SyncProfile.class.getName()).severe(
+                    "Unable to get default transfer mode for network drive "
+                            + ConfigurationEntry.UNC_TRANSFER_MODE.getValue(controller) + ". " + e);
+        }
+        try {
             return SyncProfile.getSyncProfileByFieldList(defFieldList);
         } catch (Exception e) {
             Logger.getLogger(SyncProfile.class.getName()).severe(
@@ -622,4 +634,13 @@ public class SyncProfile implements Serializable {
         return configuration.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return "SyncProfile{" +
+                "profileId='" + profileId + '\'' +
+                ", custom=" + custom +
+                ", profileId='" + profileId + '\'' +
+                ", configuration=" + configuration +
+                '}';
+    }
 }
