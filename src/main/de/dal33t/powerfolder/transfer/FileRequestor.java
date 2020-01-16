@@ -55,9 +55,9 @@ public class FileRequestor extends PFComponent {
         super(controller);
         workerInterval = 1000L * ConfigurationEntry.FILE_REQUESTOR_INTERVAL.getValueInt(getController());
         workerTimeout = workerInterval * 30;
-        folderQueue = new ConcurrentLinkedQueue<Folder>();
-        pendingRequests = new ConcurrentLinkedQueue<FileInfo>();
-        workerPool = new ConcurrentLinkedQueue<Worker>();
+        folderQueue = new ConcurrentLinkedQueue<>();
+        pendingRequests = new ConcurrentLinkedQueue<>();
+        workerPool = new ConcurrentLinkedQueue<>();
     }
 
     /**
@@ -81,6 +81,9 @@ public class FileRequestor extends PFComponent {
         Folder folder = foInfo.getFolder(getController());
         if (folder == null) {
             logWarning("Folder not joined, not requesting files: " + foInfo);
+            return;
+        }
+        if (folderQueue.contains(folder)) {
             return;
         }
         synchronized (folderQueue) {
