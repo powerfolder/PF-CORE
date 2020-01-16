@@ -796,13 +796,11 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             + state;
 
         setState(InternalState.CHECKING_FILE_VALIDITY);
-        tm.doWork(new Runnable() {
-            public void run() {
-                if (checkCompleted()) {
-                    setCompleted();
-                } else {
-                    setBroken(TransferProblem.MD5_ERROR, "File hash mismatch");
-                }
+        tm.doWork(() -> {
+            if (checkCompleted()) {
+                setCompleted();
+            } else {
+                setBroken(TransferProblem.MD5_ERROR, "File hash mismatch");
             }
         });
     }
