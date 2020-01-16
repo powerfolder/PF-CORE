@@ -70,17 +70,12 @@ public class ScanResult {
     public ScanResult(boolean initFields) {
         resultState = ResultState.SCANNED;
         if (initFields) {
-            newFiles = Collections.synchronizedList(new ArrayList<FileInfo>());
-            changedFiles = Collections
-                .synchronizedList(new ArrayList<FileInfo>());
-            deletedFiles = Collections
-                .synchronizedList(new ArrayList<FileInfo>());
-            movedFiles = Collections
-                .synchronizedMap(new HashMap<FileInfo, FileInfo>());
-            restoredFiles = Collections
-                .synchronizedList(new ArrayList<FileInfo>());
-            problemFiles = Collections
-                .synchronizedMap(new HashMap<FileInfo, List<Problem>>());
+            newFiles = Collections.synchronizedList(new ArrayList<>());
+            changedFiles = Collections.synchronizedList(new ArrayList<>());
+            deletedFiles = Collections.synchronizedList(new ArrayList<>());
+            movedFiles = Collections.synchronizedMap(new HashMap<>());
+            restoredFiles = Collections.synchronizedList(new ArrayList<>());
+            problemFiles = Collections.synchronizedMap(new HashMap<>());
         }
     }
 
