@@ -286,6 +286,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     public String getLocalizedName() {
+        if (name == null) {
+            return null;
+        }
         return name
             .replace(Constants.FOLDER_PUBLIC_SHARED_FILES,
                 Translation.get("general.public_shared_files"))
