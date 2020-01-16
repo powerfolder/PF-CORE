@@ -3607,6 +3607,22 @@ public class Folder extends PFComponent {
             syncRemoteDeletedFiles(Collections.singleton(from), false);
         }
 
+        // PFC-3240: Passive mode. Detect and adjust changes if sent by remote/server and appeared in basedir
+        if (syncProfile.isManualSync()) {
+            for (int i = 0; i < newList.files.length; i++) {
+                FileInfo remoteFileInfo = newList.files[i];
+                FileInfo localFileInfo = getFile(remoteFileInfo);
+                Path fPath = getDiskFile(remoteFileInfo);
+                if (localFileInfo != null && remoteFileInfo.isVersionDateAndSizeIdentical(remoteFileInfo)) {
+                    continue;
+                }
+                if (remoteFileInfo.inSyncWithDisk(fPath)) {
+                    logInfo("Sync match by metadata: " + remoteFileInfo.toDetailString() + " @ " + fPath);
+                    store(null, remoteFileInfo);
+                }
+            }
+        }
+
         // Logging
         writeFilelist(from);
 
@@ -3692,6 +3708,22 @@ public class Folder extends PFComponent {
             && from.isCompletelyConnected())
         {
             syncRemoteDeletedFiles(Collections.singleton(from), false);
+        }
+
+        // PFC-3240: Passive mode. Detect and adjust changes if sent by remote/server and appeared in basedir
+        if (syncProfile.isManualSync()) {
+            for (int i = 0; i < changes.getFiles().length; i++) {
+                FileInfo remoteFileInfo = changes.getFiles()[i];
+                FileInfo localFileInfo = getFile(remoteFileInfo);
+                Path fPath = getDiskFile(remoteFileInfo);
+                if (localFileInfo != null && remoteFileInfo.isVersionDateAndSizeIdentical(remoteFileInfo)) {
+                    continue;
+                }
+                if (remoteFileInfo.inSyncWithDisk(fPath)) {
+                    logInfo("Sync match by metadata: " + remoteFileInfo.toDetailString() + " @ " + fPath);
+                    store(null, remoteFileInfo);
+                }
+            }
         }
 
         // Fire event
