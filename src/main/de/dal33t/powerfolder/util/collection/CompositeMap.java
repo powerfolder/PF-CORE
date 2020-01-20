@@ -55,7 +55,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
      * Create a new, empty, CompositeMap.
      */
     public CompositeMap() {
-        this(null);
+        this((Map<K, V>) null);
     }
 
     /**
