@@ -151,16 +151,6 @@ public class UIController extends PFComponent {
     public UIController(Controller controller) {
         super(controller);
 
-        String[] li = {"Licensee=PowerFolder", "LicenseRegistrationNumber=235363175", "Product=Synthetica",
-                "LicenseType=Small Business License", "ExpireDate=--.--.----", "MaxVersion=2.32.999"};
-        UIManager.put("Synthetica.license.info", li);
-        UIManager.put("Synthetica.license.key", "2DFF8275-2F698B64-21153E8E-B71AD474");
-
-        String[] li2 = {"Licensee=PowerFolder", "LicenseRegistrationNumber=235363175", "Product=SyntheticaAddons",
-                "LicenseType=Small Business License", "ExpireDate=--.--.----", "MaxVersion=1.13.999"};
-        UIManager.put("SyntheticaAddons.license.info", li2);
-        UIManager.put("SyntheticaAddons.license.key", "832A83CE-BBFAC5B8-69F31D8E-9463FC1D");
-
         activeFrame = new AtomicInteger();
         statusUpdater = new DelayedUpdater(getController(), 1000L);
 
@@ -760,6 +750,16 @@ public class UIController extends PFComponent {
         } catch (UnsupportedLookAndFeelException | ParseException e) {
             logWarning("Failed to set look and feel for skin " + activeSkin.getName(), e);
         }
+
+        String[] li = {"Licensee=PowerFolder", "LicenseRegistrationNumber=235363175", "Product=Synthetica",
+                "LicenseType=Small Business License", "ExpireDate=--.--.----", "MaxVersion=2.32.999"};
+        UIManager.put("Synthetica.license.info", li);
+        UIManager.put("Synthetica.license.key", "2DFF8275-2F698B64-21153E8E-B71AD474");
+
+        String[] li2 = {"Licensee=PowerFolder", "LicenseRegistrationNumber=235363175", "Product=SyntheticaAddons",
+                "LicenseType=Small Business License", "ExpireDate=--.--.----", "MaxVersion=1.13.999"};
+        UIManager.put("SyntheticaAddons.license.info", li2);
+        UIManager.put("SyntheticaAddons.license.key", "832A83CE-BBFAC5B8-69F31D8E-9463FC1D");
     }
 
     /**
