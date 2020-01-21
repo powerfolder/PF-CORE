@@ -92,8 +92,12 @@ public class SimpleCache<K, E> extends Loggable {
         return p.getSecond();
     }
     
-    public void invalidate(K key) {
-        cache.remove(key);
+    public E invalidate(K key) {
+        Pair<Date, E> p = cache.remove(key);
+        if (p == null) {
+            return null;
+        }
+        return p.getSecond();
     }
 
     public void invalidateEntry(Visitor<E> entryFilter) {
