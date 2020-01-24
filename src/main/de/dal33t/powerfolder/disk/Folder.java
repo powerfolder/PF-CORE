@@ -3608,17 +3608,17 @@ public class Folder extends PFComponent {
         }
 
         // PFC-3240: Passive mode. Detect and adjust changes if sent by remote/server and appeared in basedir
-        if (syncProfile.isManualSync()) {
+        if (!isSevere() && syncProfile.isManualSync()) {
             for (int i = 0; i < newList.files.length; i++) {
                 FileInfo remoteFileInfo = newList.files[i];
                 FileInfo localFileInfo = getFile(remoteFileInfo);
                 Path fPath = getDiskFile(remoteFileInfo);
-                if (localFileInfo != null && remoteFileInfo.isVersionDateAndSizeIdentical(remoteFileInfo)) {
+                if (localFileInfo != null && remoteFileInfo.isVersionDateAndSizeIdentical(localFileInfo)) {
                     continue;
                 }
                 if (remoteFileInfo.inSyncWithDisk(fPath)) {
                     logInfo("Sync match by metadata: " + remoteFileInfo.toDetailString() + " @ " + fPath);
-                    store(null, remoteFileInfo);
+                    store(getMySelf(), remoteFileInfo);
                 }
             }
         }
