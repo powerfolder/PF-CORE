@@ -3613,7 +3613,9 @@ public class Folder extends PFComponent {
                 FileInfo remoteFileInfo = newList.files[i];
                 FileInfo localFileInfo = getFile(remoteFileInfo);
                 Path fPath = getDiskFile(remoteFileInfo);
-                if (localFileInfo != null && remoteFileInfo.isVersionDateAndSizeIdentical(localFileInfo)) {
+                if (localFileInfo != null &&
+                        (remoteFileInfo.isVersionDateAndSizeIdentical(localFileInfo)
+                                || localFileInfo.isNewerThan(remoteFileInfo))) {
                     continue;
                 }
                 if (remoteFileInfo.inSyncWithDisk(fPath)) {
@@ -3716,7 +3718,9 @@ public class Folder extends PFComponent {
                 FileInfo remoteFileInfo = changes.getFiles()[i];
                 FileInfo localFileInfo = getFile(remoteFileInfo);
                 Path fPath = getDiskFile(remoteFileInfo);
-                if (localFileInfo != null && remoteFileInfo.isVersionDateAndSizeIdentical(localFileInfo)) {
+                if (localFileInfo != null &&
+                        (remoteFileInfo.isVersionDateAndSizeIdentical(localFileInfo)
+                                || localFileInfo.isNewerThan(remoteFileInfo))) {
                     continue;
                 }
                 if (remoteFileInfo.inSyncWithDisk(fPath)) {
