@@ -89,9 +89,9 @@ public class Controller extends PFComponent {
         .getName());
 
     private static final int MAJOR_VERSION = 14;
-    private static final int MINOR_VERSION = 12;
-    private static final int REVISION_VERSION = 101;
-    private static final int SPRINT_NUMBER = 21;
+    private static final int MINOR_VERSION = 13;
+    private static final int REVISION_VERSION = 1;
+    private static final int SPRINT_NUMBER = 22;
 
     /**
      * Program version.
