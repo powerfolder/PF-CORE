@@ -2410,34 +2410,6 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Creates or removes a desktop shortcut for this folder. currently only
-     * available on windows systems.
-     *
-     * @param active
-     *            true if the desktop shortcut should be created.
-     * @return true if succeeded
-     *
-     * @deprecated since 14.0
-     */
-    @Deprecated
-    public boolean setDesktopShortcut(boolean active) {
-        String shortCutName = getName();
-        if (getController().isVerbose()) {
-            shortCutName = '[' + getMySelf().getNick() + "] "
-                + shortCutName;
-        }
-
-        if (active) {
-            return Util.createDesktopShortcut(shortCutName,
-                localBase);
-        }
-
-        // Remove shortcuts to folder if not wanted
-        Util.removeDesktopShortcut(shortCutName);
-        return false;
-    }
-
-    /**
      * Deletes the desktop shortcut of the folder if set in prefs.
      */
     public void removeDesktopShortcut() {
