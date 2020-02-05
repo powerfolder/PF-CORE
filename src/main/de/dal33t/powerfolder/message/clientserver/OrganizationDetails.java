@@ -12,16 +12,15 @@ public class OrganizationDetails implements Serializable {
 
     private Organization organization;
     private long users;
+    private long assignedSpace;
     private Collection<Account> resellers;
     private boolean resellerOrg;
 
-    // Add later if necessary:
-    // private long spaceUsed;
-
-    public OrganizationDetails(Organization organization, long users, boolean resellerOrg, Collection<Account> resellers) {
+    public OrganizationDetails(Organization organization, long users, long assignedSpace, boolean resellerOrg, Collection<Account> resellers) {
         super();
         this.organization = organization;
         this.users = users;
+        this.assignedSpace = assignedSpace;
         this.resellerOrg = resellerOrg;
         this.resellers = resellers;
     }
@@ -32,6 +31,10 @@ public class OrganizationDetails implements Serializable {
 
     public long getUsers() {
         return users;
+    }
+
+    public long getAssignedSpace() {
+        return assignedSpace;
     }
 
     public boolean isNoOrganization() {
