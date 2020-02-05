@@ -256,11 +256,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 path = base.getRoot();
             }
             String shortcutName = path.toString();
-            if (Util.isDesktopShortcut(shortcutName)) {
-                Util.removeDesktopShortcut(shortcutName);
+            if (!Util.isDesktopShortcut(shortcutName)) {
+                Util.createDesktopShortcut(shortcutName, getController()
+                        .getFolderRepository().getFoldersBasedir());
             }
-            Util.createDesktopShortcut(shortcutName, getController()
-                    .getFolderRepository().getFoldersBasedir());
+
         }
         if (PreferencesEntry.CREATE_FAVORITES_SHORTCUT
                 .getValueBoolean(getController())) {
