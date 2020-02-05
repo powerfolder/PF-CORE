@@ -122,13 +122,14 @@ public class DebugInformationCard extends InformationCard {
                     Object selectedItem = logLevelCombo.getSelectedItem();
                     LoggingManager.setDocumentLogging((Level) selectedItem,
                         getController());
+                    LoggingManager.setFileLogging(LoggingManager.getDocumentLoggingLevel(),
+                            ConfigurationEntry.LOG_FILE_ROTATE.getValueBoolean(getController()));
+                    LoggingManager.resetFileLogging();
                 } else if (e.getSource() == logToFileCheckBox) {
                     if (logToFileCheckBox.isSelected()) {
-                        LoggingManager.setFileLogging(LoggingManager
-                            .getDocumentLoggingLevel(),
-                            ConfigurationEntry.LOG_LEVEL_CONSOLE
-                                .getValueBoolean(getController()));// need to
-                                                                   // check
+                        LoggingManager.setFileLogging(LoggingManager.getDocumentLoggingLevel(),
+                            ConfigurationEntry.LOG_FILE_ROTATE.getValueBoolean(getController()));
+                        LoggingManager.resetFileLogging();
                     }
                 } else if (e.getSource() == scrollLockCheckBox) {
                     textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());
