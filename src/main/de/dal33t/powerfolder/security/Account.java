@@ -144,11 +144,6 @@ public class Account implements Serializable, D2DObject {
     @Column(length = 255)
     private String telephone;
 
-    // PFS-605
-    private String custom1;
-    private String custom2;
-    private String custom3;
-
     // PFS-1656
     @Column(length = 4000)
     private String jsonData;
@@ -252,6 +247,10 @@ public class Account implements Serializable, D2DObject {
 
     @Embedded
     @Fetch(FetchMode.JOIN)
+    private CustomFields customFields;
+
+    @Embedded
+    @Fetch(FetchMode.JOIN)
     private OnlineStorageSubscription osSubscription;
 
     private int agreedToSVersion;
@@ -266,6 +265,7 @@ public class Account implements Serializable, D2DObject {
         this.oid = oid;
         this.permissions = new CopyOnWriteArrayList<Permission>();
         this.osSubscription = new OnlineStorageSubscription();
+        this.customFields = new CustomFields();
         this.licenseKeyFiles = new CopyOnWriteArrayList<>();
         this.computers = new CopyOnWriteArrayList<>();
         this.licenseKeyFileList = new CopyOnWriteArrayList<>();
@@ -810,28 +810,35 @@ public class Account implements Serializable, D2DObject {
         this.telephone = telephone;
     }
 
+    public CustomFields getCustomFields() {
+        if (customFields == null) {
+            customFields = new CustomFields();
+        }
+        return customFields;
+    }
+
     public String getCustom1() {
-        return custom1;
+        return getCustomFields().getCustom1();
     }
 
     public void setCustom1(String custom1) {
-        this.custom1 = custom1;
+        getCustomFields().setCustom1(custom1);
     }
 
     public String getCustom2() {
-        return custom2;
+        return  getCustomFields().getCustom2();
     }
 
     public void setCustom2(String custom2) {
-        this.custom2 = custom2;
+        getCustomFields().setCustom2(custom2);
     }
 
     public String getCustom3() {
-        return custom3;
+        return  getCustomFields().getCustom3();
     }
 
     public void setCustom3(String custom3) {
-        this.custom3 = custom3;
+        getCustomFields().setCustom3(custom3);
     }
 
     public String getJSONData() {
@@ -926,17 +933,17 @@ public class Account implements Serializable, D2DObject {
 
     // PFS-742: TODO Add EXTRA Field for this later
     public boolean isSendEmail() {
-        if (StringUtils.isBlank(custom2)) {
+        if (StringUtils.isBlank(getCustom2())) {
             return true;
         }
-        return !custom2.toUpperCase().contains("NOEMAIL");
+        return !getCustom2().toUpperCase().contains("NOEMAIL");
     }
 
     public void setSendEmail(boolean sendEmail) {
         if (!sendEmail) {
-            custom2 = "NOEMAIL";
+            setCustom2("NOEMAIL");
         } else {
-            custom2 = null;
+            setCustom2(null);
         }
     }
 
