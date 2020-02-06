@@ -122,6 +122,10 @@ public class Organization implements Serializable {
      */
     private boolean isRestrictedToDomain;
 
+    @Embedded
+    @Fetch(FetchMode.JOIN)
+    private CustomFields customFields;
+
     public Organization() {
         // Generate unique id
         this(IdGenerator.makeId());
@@ -132,6 +136,7 @@ public class Organization implements Serializable {
         this.oid = oid;
         this.osSubscription = new OnlineStorageSubscription();
         this.domains = new CopyOnWriteArrayList<>();
+        this.customFields = new CustomFields();
     }
 
     public String getOID() {
@@ -311,6 +316,13 @@ public class Organization implements Serializable {
         }
 
         return domains;
+    }
+
+    public CustomFields getCustomFields() {
+        if (customFields == null) {
+            customFields = new CustomFields();
+        }
+        return customFields;
     }
 
     @Override
