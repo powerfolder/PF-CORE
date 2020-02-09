@@ -400,7 +400,7 @@ public class Debug {
                 if (key.toLowerCase().contains("license")) {
                     value = "XXX-erased-XXX";
                 }
-                b.append(key + "=" + value);
+                b.append("\n" + key + "=" + value);
             }
             b.append('\n');
 
