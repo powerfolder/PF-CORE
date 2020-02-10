@@ -247,7 +247,8 @@ public class FolderStatistic extends PFComponent {
             double perf = took != 0 ? (current.getAnalyzedFiles() / took) : 0;
             logFine(folder.getName() + ": Recalculation completed (" + current.getAnalyzedFiles()
                 + " Files analyzed) in " + took + "ms. Performance: " + perf
-                + " ana/ms. Sync: " + getHarmonizedSyncPercentage());
+                + " ana/ms. Sync: " + getHarmonizedSyncPercentage() +
+                    ". Local count: " + folder.getStatistic().getLocalFilesCount() + ". Local size: " + folder.getStatistic().getLocalSize());
         }
 
         Profiling.end(pe);
