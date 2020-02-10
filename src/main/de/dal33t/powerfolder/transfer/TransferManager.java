@@ -1441,7 +1441,9 @@ public class TransferManager extends PFComponent {
      * @param uploadPerformer
      */
     void perfomUpload(Runnable uploadPerformer) {
-        threadPool.submit(uploadPerformer);
+        if (!threadPool.isTerminated() && !threadPool.isShutdown()) {
+            threadPool.submit(uploadPerformer);
+        }
     }
 
     /**
@@ -1450,7 +1452,9 @@ public class TransferManager extends PFComponent {
      * @param worker
      */
     void doWork(Runnable worker) {
-        threadPool.submit(worker);
+        if (!threadPool.isTerminated() && !threadPool.isShutdown()) {
+            threadPool.submit(worker);
+        }
     }
 
     /**
