@@ -55,20 +55,14 @@ public class LookAndFeelSupport {
         UIManager.setLookAndFeel(laf);
         SyntheticaLookAndFeel.setFont("Dialog", 11);
 
-        String[] li = {"Licensee=PowerFolder",
-            "LicenseRegistrationNumber=235363175", "Product=Synthetica",
-            "LicenseType=Small Business License", "ExpireDate=--.--.----",
-            "MaxVersion=2.999.999"};
+        String[] li = {"Licensee=PowerFolder", "LicenseRegistrationNumber=235363175", "Product=Synthetica",
+                "LicenseType=Small Business License", "ExpireDate=--.--.----", "MaxVersion=2.32.999"};
         UIManager.put("Synthetica.license.info", li);
-        UIManager.put("Synthetica.license.key",
-            "F9F97345-122DDD91-51799FCC-1FBD8BFE-0AA74328");
+        UIManager.put("Synthetica.license.key", "2DFF8275-2F698B64-21153E8E-B71AD474");
 
-        String[] li2 = {"Licensee=PowerFolder",
-            "LicenseRegistrationNumber=235363175", "Product=SyntheticaAddons",
-            "LicenseType=Small Business License", "ExpireDate=--.--.----",
-            "MaxVersion=1.999.999"};
+        String[] li2 = {"Licensee=PowerFolder", "LicenseRegistrationNumber=235363175", "Product=SyntheticaAddons",
+                "LicenseType=Small Business License", "ExpireDate=--.--.----", "MaxVersion=1.13.999"};
         UIManager.put("SyntheticaAddons.license.info", li2);
-        UIManager.put("SyntheticaAddons.license.key",
-            "D2835DDA-42275CF2-AEBBC5F0-22160074-00AF231A");
+        UIManager.put("SyntheticaAddons.license.key", "832A83CE-BBFAC5B8-69F31D8E-9463FC1D");
     }
 }
