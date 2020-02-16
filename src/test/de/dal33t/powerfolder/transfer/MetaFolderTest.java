@@ -174,8 +174,10 @@ public class MetaFolderTest extends TwoControllerTestCase {
             "lisa metafolder file count wrong: "
                 + lisaMetaFolder.getKnownFiles(), lisaOriginalMetaCount + 1,
             lisaMetaFolder.getKnownFiles().size());
+        TestHelper.waitForCondition(10, () -> lisaMetaFolder
+                .getKnownFiles().iterator().next().diskFileExists(contollerLisa));
         assertTrue("lisa metafolder file does not exist", lisaMetaFolder
-            .getKnownFiles().iterator().next().diskFileExists(contollerLisa));
+                .getKnownFiles().iterator().next().diskFileExists(contollerLisa));
     }
 
     /**
