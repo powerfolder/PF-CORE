@@ -2324,20 +2324,20 @@ public class FileTransferTest extends TwoControllerTestCase {
                 "file11111/name2222/getting3333/very4444/long5555/here6666/file.txt";
         //assertTrue(fn.length() > 260);
         Path fileAtBart = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), fn);
-        assertTrue(fileAtBart.toString(), fileAtBart.toString().length() < 260);
+        assertTrue("Barts filename is too long " + fileAtBart.toString(), fileAtBart.toString().length() < 260);
         scanFolder(getFolderAtBart());
         FileInfo fileInfo = getFolderAtBart().getFile(FileInfoFactory.lookupInstance(getFolderAtBart(), fileAtBart));
         TestHelper.waitForCondition(10,
                 () -> getContollerLisa().getTransferManager().getCompletedDownload(fileInfo) != null);
         Path fileAtLisa = fileInfo.getDiskFile(getContollerLisa().getFolderRepository());
-        assertTrue(fileAtLisa.toString(), fileAtLisa.toString().length() > 260);
+        assertTrue("Lisas filename is too short " + fileAtLisa.toString(), fileAtLisa.toString().length() > 260);
         // ------ Now we have the situation: Lisas Path is too long
-        assertTrue(countDeletedItems(getFolderAtBart()) == 0);
-        assertTrue(countDeletedItems(getFolderAtLisa()) == 0);
+        assertTrue("Deleted items at bart be 0", countDeletedItems(getFolderAtBart()) == 0);
+        assertTrue("Deleted items at lisa be 0", countDeletedItems(getFolderAtLisa()) == 0);
         scanFolder(getFolderAtBart());
         scanFolder(getFolderAtLisa());
-        assertTrue(countDeletedItems(getFolderAtBart()) == 0);
-        assertTrue(countDeletedItems(getFolderAtLisa()) == 0);
+        assertTrue("Deleted items after scan at bart be 0", countDeletedItems(getFolderAtBart()) == 0);
+        assertTrue("Deleted items after scan at lisa be 0", countDeletedItems(getFolderAtLisa()) == 0);
     }
 
     private int countDeletedItems(Folder folder) {
