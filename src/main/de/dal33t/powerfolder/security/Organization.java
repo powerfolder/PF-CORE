@@ -345,4 +345,8 @@ public class Organization implements Serializable {
         return Objects.equals(oid, that.oid);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(oid);
+    }
 }
