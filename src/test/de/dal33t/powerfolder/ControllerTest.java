@@ -94,13 +94,13 @@ public class ControllerTest extends ControllerTestCase {
     {
         getController().getThreadPool().schedule(new Runnable() {
             public void run() {
-                throw new NullPointerException("Broken code");
+                throw new NullPointerException("Intentionally broken code for test throwing exception");
             }
         }, 0, TimeUnit.MILLISECONDS);
 
         getController().getThreadPool().scheduleWithFixedDelay(new Runnable() {
             public void run() {
-                throw new NullPointerException("Broken code");
+                throw new NullPointerException("Intentionally broken code for test throwing exception");
             }
         }, 0, 1, TimeUnit.MILLISECONDS);
 
