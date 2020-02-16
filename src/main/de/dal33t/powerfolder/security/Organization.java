@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
@@ -330,6 +331,18 @@ public class Organization implements Serializable {
         return "Organization [oid=" + oid + ", name=" + name + ", maxUsers="
             + maxUsers + ", osSubscription=" + osSubscription + ", notes="
             + notes + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Organization that = (Organization) o;
+        return Objects.equals(oid, that.oid);
     }
 
 }
