@@ -730,7 +730,7 @@ public class Controller extends PFComponent {
             openUI();
         }
 
-        if (!this.getMySelf().isServer() && Feature.FILEBROWSER_INTEGRATION.isEnabled()) {
+        if (!this.getMySelf().isServer() && Feature.FILEBROWSER_INTEGRATION.isEnabled() && isUIEnabled()) {
             enableFileBrowserIntegration();
         }
 
