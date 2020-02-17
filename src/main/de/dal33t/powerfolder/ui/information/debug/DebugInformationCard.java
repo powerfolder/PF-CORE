@@ -119,16 +119,21 @@ public class DebugInformationCard extends InformationCard {
         ItemListener itemListener = new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getSource() == logLevelCombo) {
-                    Object selectedItem = logLevelCombo.getSelectedItem();
-                    LoggingManager.setDocumentLogging((Level) selectedItem,
-                        getController());
+                    Level newLevel = (Level) logLevelCombo.getSelectedItem();
+                    LoggingManager.setDocumentLogging(newLevel, getController());
+                    ConfigurationEntry.LOG_LEVEL_FILE.setValue(getController(), newLevel.getName());
+                    LoggingManager.setFileLogging(newLevel,
+                            ConfigurationEntry.LOG_FILE_ROTATE.getValueBoolean(getController()));
+                    LoggingManager.resetFileLogging();
+                    getController().saveConfig();
                 } else if (e.getSource() == logToFileCheckBox) {
                     if (logToFileCheckBox.isSelected()) {
-                        LoggingManager.setFileLogging(LoggingManager
-                            .getDocumentLoggingLevel(),
-                            ConfigurationEntry.LOG_LEVEL_CONSOLE
-                                .getValueBoolean(getController()));// need to
-                                                                   // check
+                        Level level = LoggingManager.getDocumentLoggingLevel();
+                        ConfigurationEntry.LOG_LEVEL_FILE.setValue(getController(), level.getName());
+                        LoggingManager.setFileLogging(level,
+                                ConfigurationEntry.LOG_FILE_ROTATE.getValueBoolean(getController()));
+                        LoggingManager.resetFileLogging();
+                        getController().saveConfig();
                     }
                 } else if (e.getSource() == scrollLockCheckBox) {
                     textPanel.setAutoScroll(!scrollLockCheckBox.isSelected());

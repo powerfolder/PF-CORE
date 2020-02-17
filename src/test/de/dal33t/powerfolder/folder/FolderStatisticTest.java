@@ -66,7 +66,6 @@ public class FolderStatisticTest extends FiveControllerTestCase {
 
     public void tearDown() throws Exception {
         super.tearDown();
-        System.out.println(Profiling.dumpStats());
     }
 
     /**

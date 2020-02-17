@@ -163,6 +163,14 @@ public class FolderStatistic extends PFComponent {
      * @private public because for test
      */
     public synchronized void calculate0() {
+        calculate0(true);
+    }
+    /**
+     * Calculates the statistics
+     *
+     * @private public because for test
+     */
+    public synchronized void calculate0(boolean writeToDisk) {
         if (isFiner()) {
             logFiner("-------------Recalculation statistics on " + folder);
         }
@@ -206,7 +214,7 @@ public class FolderStatistic extends PFComponent {
         current = calculating;
         calculating = null;
 
-        if (!folder.isDeviceDisconnected()) {
+        if (writeToDisk && !folder.isDeviceDisconnected()) {
             Path tempFile = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC + ".writing");
             Path file = folder.getSystemSubDir().resolve(
@@ -247,7 +255,8 @@ public class FolderStatistic extends PFComponent {
             double perf = took != 0 ? (current.getAnalyzedFiles() / took) : 0;
             logFine(folder.getName() + ": Recalculation completed (" + current.getAnalyzedFiles()
                 + " Files analyzed) in " + took + "ms. Performance: " + perf
-                + " ana/ms. Sync: " + getHarmonizedSyncPercentage());
+                + " ana/ms. Sync: " + getHarmonizedSyncPercentage() +
+                    ". Local count: " + folder.getStatistic().getLocalFilesCount() + ". Local size: " + folder.getStatistic().getLocalSize());
         }
 
         Profiling.end(pe);

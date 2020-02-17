@@ -461,8 +461,6 @@ public class ScanFolderTest extends ControllerTestCase {
                         // Ignore.
                     }
                 } while (!madeDir);
-                System.err.println("New subdir: "
-                    + currentSubDir.toAbsolutePath());
             }
 
             if (!currentSubDir.equals(getFolder().getLocalBase())) {

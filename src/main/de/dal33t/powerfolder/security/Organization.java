@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
@@ -122,6 +123,10 @@ public class Organization implements Serializable {
      */
     private boolean isRestrictedToDomain;
 
+    @Embedded
+    @Fetch(FetchMode.JOIN)
+    private CustomFields customFields;
+
     public Organization() {
         // Generate unique id
         this(IdGenerator.makeId());
@@ -132,6 +137,7 @@ public class Organization implements Serializable {
         this.oid = oid;
         this.osSubscription = new OnlineStorageSubscription();
         this.domains = new CopyOnWriteArrayList<>();
+        this.customFields = new CustomFields();
     }
 
     public String getOID() {
@@ -313,6 +319,13 @@ public class Organization implements Serializable {
         return domains;
     }
 
+    public CustomFields getCustomFields() {
+        if (customFields == null) {
+            customFields = new CustomFields();
+        }
+        return customFields;
+    }
+
     @Override
     public String toString() {
         return "Organization [oid=" + oid + ", name=" + name + ", maxUsers="
@@ -320,4 +333,20 @@ public class Organization implements Serializable {
             + notes + "]";
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Organization that = (Organization) o;
+        return Objects.equals(oid, that.oid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(oid);
+    }
 }
