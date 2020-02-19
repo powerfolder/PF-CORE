@@ -85,8 +85,13 @@ public class Format {
     public static String formatBytesShort(long bytes) {
         double number = bytes;
 
-        number /= 1024;
-        String suffix = "kB";
+        String suffix = "bytes";
+
+        if (number >= 1024) {
+            number /= 1024;
+            suffix = "kB";
+        }
+
         if (number >= 1024) {
             number /= 1024;
             suffix = "MB";
