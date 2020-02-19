@@ -26,6 +26,7 @@ import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
@@ -38,11 +39,10 @@ import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.util.update.ManuallyInvokedUpdateHandler;
+import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.update.Updater;
 
@@ -51,7 +51,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 
@@ -509,9 +511,85 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             oldBaseDirName = oldBase.toString();
         }
         String newFolderBaseString = (String) locationModel.getValue();
-        repo.setFoldersBasedir(newFolderBaseString);
+        Path newFoldersBasePath = Paths.get(newFolderBaseString);
+
         if (!StringUtils.isEqual(oldFolderBaseString, newFolderBaseString)) {
-            repo.updateShortcuts(oldBaseDirName);
+            long size = 0;
+            long items = 0;
+            int folders = 0;
+            for (Folder folder: repo.getFolders()) {
+                if (!PathUtils.isSubdirectory(repo.getFoldersBasedir(), folder.getLocalBase())) {
+                    logWarning("Skipping: " + folder + " @ " + folder.getLocalBase());
+                    continue;
+                }
+                size += folder.getStatistic().getLocalSize();
+                items += folder.getKnownItemCount();
+                folders++;
+            }
+            // Preconditions:
+            int result;
+            if (folders > 0) {
+                String warning = "";
+                try {
+                    if (!newFoldersBasePath.getFileSystem().equals(oldBase.getFileSystem())) {
+                        long availableSpace = newFoldersBasePath.getFileSystem().getFileStores().iterator().next().getUsableSpace();
+                        if (availableSpace < size) {
+                            warning = "Insufficient space on target directory";
+                        }
+                    }
+                } catch (IOException e) {
+                    logWarning("Unable to access " + newFoldersBasePath + ": " + e);
+                    warning = "Unable to access target directory";
+                }
+                String[] options;
+                if (StringUtils.isBlank(warning)) {
+                    options = new String[]{Translation.get("general.yes"), Translation.get("general.no"),
+                            Translation.get("general.cancel")};
+                } else {
+                    options = new String[]{Translation.get("general.no"), Translation.get("general.cancel")};
+                }
+                result = DialogFactory.genericDialog(getController(),
+                        Translation.get("settings_tab.move_basedir_title"),
+                        Translation.get("settings_tab.move_basedir_message",
+                                oldFolderBaseString, newFolderBaseString,
+                                String.valueOf(folders), String.valueOf(items), Format.formatBytesShort(size), warning),
+                       options, 0,
+                        GenericDialogType.QUESTION);
+            } else {
+                // No move required
+                result = 1;
+            }
+            // 0 = YES
+            // 1 = NO
+            // 2 = cancel
+            if (result == 0 || result == 1) {
+                if (result == 0) {
+                    // Move it
+                    new MoveFoldersWorker(newFoldersBasePath).start();
+                } else {
+                    // Remove getting started
+                    Path gsFile = repo.getFoldersBasedir().resolve(Constants.GETTING_STARTED_GUIDE_FILENAME);
+                    if (Files.exists(gsFile)) {
+                        try {
+                            Files.delete(gsFile);
+                        } catch (IOException e) {
+                            logFine("Unable to delete " + gsFile);
+                        }
+                    }
+
+                    // Finalize it:
+                    repo.setFoldersBasedir(newFolderBaseString);
+                    repo.updateShortcuts(oldBaseDirName);
+                }
+            } else {
+                // Cancel
+                locationModel.setValue(oldFolderBaseString);
+            }
+
+            // Move:
+            // On Failure? Retry? Abort
+            // 12 GB of 25 GB moved.
+
         }
 
         
@@ -662,4 +740,59 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         return combo;
     }
 
+    // Working classes ********************************************************
+
+    private final class MoveFoldersWorker extends ActivityVisualizationWorker {
+        private final Path newFoldersBasePath;
+
+        private MoveFoldersWorker(Path newFoldersBasePath) {
+            super(getUIController());
+            this.newFoldersBasePath = newFoldersBasePath;
+        }
+
+        @Override
+        protected String getTitle() {
+            return Translation.get("settings_tab.working.title");
+        }
+
+        @Override
+        protected String getWorkingText() {
+            return Translation.get("settings_tab.working.title");
+        }
+
+        @Override
+        public Object construct() {
+            FolderRepository repo = getController().getFolderRepository();
+            repo.setSuspendNewFolderSearch(true);
+            for (Folder folder: repo.getFolders()) {
+                if (!PathUtils.isSubdirectory(repo.getFoldersBasedir(), folder.getLocalBase())) {
+                    continue;
+                }
+                Path newFolderBaseDir = newFoldersBasePath.resolve(folder.getLocalBase().getFileName());
+                if (folder.getLocalBase().equals(newFolderBaseDir)) {
+                    continue;
+                }
+                logInfo("Moving " + folder.getName() + " from " + folder.getLocalBase() + " to " + newFolderBaseDir);
+                repo.moveLocalFolder(folder, newFolderBaseDir);
+            }
+            repo.setSuspendNewFolderSearch(false);
+
+            // Remove getting started
+            Path gsFile = repo.getFoldersBasedir().resolve(Constants.GETTING_STARTED_GUIDE_FILENAME);
+            if (Files.exists(gsFile)) {
+                try {
+                    Files.delete(gsFile);
+                } catch (IOException e) {
+                    logFine("Unable to delete " + gsFile);
+                }
+            }
+
+            // Finalize it:
+            String oldBaseDirName = repo.getFoldersBasedir().getFileName().toString();
+            repo.setFoldersBasedir(newFoldersBasePath.toString());
+            repo.updateShortcuts(oldBaseDirName);
+
+            return null;
+        }
+    }
 }
