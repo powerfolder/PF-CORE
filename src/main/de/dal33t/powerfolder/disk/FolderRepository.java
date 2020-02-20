@@ -2831,7 +2831,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (getController().isUIEnabled() && ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController()) && !checkDiskSpace(ad)) {
             ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(), false);
             getController().saveConfig();
-            Notice notice = new WarningNotice(Translation.get("disc_space_warning.title"), Translation.get("disc_space_warning.summary"), null);
+            Notice notice = new WarningNotice(Translation.get("disc_space_warning.title"), Translation.get("disc_space_warning.summary"), Translation.get("disc_space_warning.summary"));
             getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(notice);
         }
         if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS
