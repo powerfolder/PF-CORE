@@ -2687,7 +2687,7 @@ public class Folder extends PFComponent {
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
         if (!wasMember && isInfo() && !init && !currentInfo.isMetaFolder()) {
-            logInfo(getName() + ": Member " + member.getNick()
+            logInfo(getLocalizedName() + ": Member " + member.getNick()
                 + " joined (connected? " + member.isConnected() + ")");
         }
         if (!init) {
