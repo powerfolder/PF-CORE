@@ -522,41 +522,46 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     logWarning("Skipping: " + folder + " @ " + folder.getLocalBase());
                     continue;
                 }
-                size += folder.getStatistic().getLocalSize();
+                size += folder.getStatistic().getTotalSize();
                 items += folder.getKnownItemCount();
                 folders++;
             }
             // Preconditions:
             int result;
             if (folders > 0) {
-                String warning = "";
+                boolean failed = false;
                 try {
-                    if (!newFoldersBasePath.getFileSystem().equals(oldBase.getFileSystem())) {
-                        long availableSpace = newFoldersBasePath.getFileSystem().getFileStores().iterator().next().getUsableSpace();
+                    if (!Files.getFileStore(repo.getFoldersBasedir()).equals(Files.getFileStore(newFoldersBasePath))) {
+                        long availableSpace = Files.getFileStore(newFoldersBasePath).getUsableSpace();
                         if (availableSpace < size) {
-                            warning = "Insufficient space on target directory";
+                            // Failed to move the following directories:
+                            DialogFactory.genericDialog(getController(), Translation.get("settings_tab.move_basedir_error_title"),
+                                    Translation.get("settings_tab.move_basedir_error_message_space", newFolderBaseString), GenericDialogType.ERROR);
+                            failed = true;
                         }
                     }
                 } catch (IOException e) {
                     logWarning("Unable to access " + newFoldersBasePath + ": " + e);
-                    warning = "Unable to access target directory";
+                    DialogFactory.genericDialog(getController(), Translation.get("settings_tab.move_basedir_error_title"),
+                            Translation.get("settings_tab.move_basedir_error_message_access", newFolderBaseString, e.toString()), GenericDialogType.ERROR);
+                    failed = true;
                 }
-                String[] options;
-                if (StringUtils.isBlank(warning)) {
-                    options = new String[]{Translation.get("general.yes"), Translation.get("general.no"),
+                if (!failed) {
+                    String[] options = new String[]{Translation.get("general.yes"), Translation.get("general.no"),
                             Translation.get("general.cancel")};
+                    result = DialogFactory.genericDialog(getController(),
+                            Translation.get("settings_tab.move_basedir_title"),
+                            Translation.get("settings_tab.move_basedir_message",
+                                    oldFolderBaseString, newFolderBaseString,
+                                    String.valueOf(folders), String.valueOf(items), Format.formatBytesShort(size)),
+                            options, 0,
+                            GenericDialogType.QUESTION);
                 } else {
-                    options = new String[]{Translation.get("general.no"), Translation.get("general.cancel")};
+                    // Cancel
+                    result = 2;
                 }
-                result = DialogFactory.genericDialog(getController(),
-                        Translation.get("settings_tab.move_basedir_title"),
-                        Translation.get("settings_tab.move_basedir_message",
-                                oldFolderBaseString, newFolderBaseString,
-                                String.valueOf(folders), String.valueOf(items), Format.formatBytesShort(size), warning),
-                       options, 0,
-                        GenericDialogType.QUESTION);
             } else {
-                // No move required
+                // No. Move not required
                 result = 1;
             }
             // 0 = YES
@@ -744,6 +749,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
     private final class MoveFoldersWorker extends ActivityVisualizationWorker {
         private final Path newFoldersBasePath;
+        private String failed = "";
 
         private MoveFoldersWorker(Path newFoldersBasePath) {
             super(getUIController());
@@ -757,7 +763,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
         @Override
         protected String getWorkingText() {
-            return Translation.get("settings_tab.working.title");
+            return Translation.get("settings_tab.working.description");
         }
 
         @Override
@@ -773,7 +779,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                     continue;
                 }
                 logInfo("Moving " + folder.getName() + " from " + folder.getLocalBase() + " to " + newFolderBaseDir);
-                repo.moveLocalFolder(folder, newFolderBaseDir);
+                if (repo.moveLocalFolder(folder, newFolderBaseDir) == null) {
+                    failed += folder.getLocalizedName() + "\n";
+                }
             }
             repo.setSuspendNewFolderSearch(false);
 
@@ -793,6 +801,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             repo.updateShortcuts(oldBaseDirName);
 
             return null;
+        }
+
+        @Override
+        public void finished() {
+            if (StringUtils.isBlank(failed)) {
+                return;
+            }
+            // Failed to move the following directories:
+            DialogFactory.genericDialog(getController(), Translation.get("settings_tab.move_basedir_error_title"),
+                    Translation.get("settings_tab.move_basedir_error_message_list", failed), GenericDialogType.ERROR);
         }
     }
 }
