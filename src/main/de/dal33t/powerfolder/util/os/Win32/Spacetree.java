@@ -98,7 +98,7 @@ public class Spacetree {
     public static void uninstall() throws IOException {
         regDelete("HKCU\\Software\\Classes\\CLSID\\" + CLSID + " /f");
         regDelete("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Desktop\\NameSpace\\" + CLSID + " /f");
-        regDelete("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel /f");
+        // regDelete("HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\HideDesktopIcons\\NewStartPanel /f");
     }
 
     private static void regAddCLSID(String param) throws IOException {
