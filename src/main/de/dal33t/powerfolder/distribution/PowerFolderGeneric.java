@@ -10,6 +10,7 @@ import de.dal33t.powerfolder.util.ConfigurationLoader;
 
 public class PowerFolderGeneric extends AbstractDistribution {
     public static final String DEFAULT_WEB_DOWNLOAD_CLIENT_URL = "http://download.powerfolder.com/pro/win/PowerFolder_Generic_Latest_Installer.exe";
+    public static final String WEB_DOWNLOAD_X64_MSI_CLIENT_URL = "http://download.powerfolder.com/pro/win/PowerFolder_Generic_Latest_Installer.msi";
     public static final String WEB_MAC_CLIENT_URL = "http://download.powerfolder.com/pro/mac/PowerFolder_Generic_Latest_Mac.dmg";
     public static final String WEB_LINUX_CLIENT_URL = "http://download.powerfolder.com/pro/linux/PowerFolder_Generic_Latest_Linux.tar.gz";
     public static final String WEB_LINUX_CLIENT_DEB_32_URL = "http://download.powerfolder.com/pro/linux/PowerFolder_Generic_Latest_i386.deb";
