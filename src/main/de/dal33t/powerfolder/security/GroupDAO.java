@@ -13,6 +13,7 @@ import de.dal33t.powerfolder.util.db.GenericDAO;
 public interface GroupDAO extends GenericDAO<Group> {
 
     /**
+     * @deprecated use findByName many groups can have the same name
      * Find a group by its name.
      * 
      * @param groupname
@@ -20,6 +21,7 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return the group referenced by {@code name}, or {@code null} if it was
      *         not found.
      */
+    @Deprecated
     Group findByGroupname(String groupname);
 
      /**
@@ -120,4 +122,14 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return a list of all groups that were imported from an LDAP/AD server.
      */
     List<Group> getLdapGroups(String groupSearchBase);
+
+    /**
+     * Find all the groups matching name.
+     *
+     * @param name The group's name
+     * @return the list of  groups  referenced by {@code name}, or {@code null} if it was
+     *         not found.
+     */
+
+    Collection<Group> findByName(String name);
 }
