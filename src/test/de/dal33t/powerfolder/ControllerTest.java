@@ -43,7 +43,7 @@ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class ControllerTest extends ControllerTestCase {
+public final class ControllerTest extends ControllerTestCase {
     private volatile boolean run;
 
     public void testActionMemoryLeak() {
