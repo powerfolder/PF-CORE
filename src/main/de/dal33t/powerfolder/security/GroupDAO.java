@@ -12,18 +12,6 @@ import de.dal33t.powerfolder.util.db.GenericDAO;
  */
 public interface GroupDAO extends GenericDAO<Group> {
 
-    /**
-     * @deprecated use findByName many groups can have the same name
-     * Find a group by its name.
-     * 
-     * @param groupname
-     *            The group's name
-     * @return the group referenced by {@code name}, or {@code null} if it was
-     *         not found.
-     */
-    @Deprecated
-    Group findByGroupname(String groupname);
-
      /**
      * Finds all accounts by their organization ID.
      *
