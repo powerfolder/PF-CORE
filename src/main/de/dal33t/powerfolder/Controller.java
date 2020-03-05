@@ -95,8 +95,7 @@ public class Controller extends PFComponent {
     /**
      * Program version.
      */
-    public static final String PROGRAM_VERSION = MAJOR_VERSION + "."
-        + MINOR_VERSION + "." + REVISION_VERSION;
+    public static final String PROGRAM_VERSION = MAJOR_VERSION + "." + MINOR_VERSION + "." + REVISION_VERSION;
 
     /**
      * Federation version.
@@ -1300,9 +1299,8 @@ public class Controller extends PFComponent {
                     ConfigurationEntry.NET_PORT_D2D.getValueInt(this) > 0);
             broadcastManager.start();
         } catch (ConnectionException e) {
-            logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
+            logWarning("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
                     + e.getMessage());
-            logSevere("ConnectionException", e);
         }
     }
 

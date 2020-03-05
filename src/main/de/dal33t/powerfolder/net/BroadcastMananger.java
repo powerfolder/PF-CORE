@@ -131,12 +131,11 @@ public class BroadcastMananger extends PFComponent implements Runnable {
      *             if the broadcast manager could not be initalized.
      */
     public void start() throws ConnectionException {
+        String bindIP = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
         try {
             // open multicast socket
             socket = new MulticastSocket(DEFAULT_BROADCAST_PORT);
-
             InetAddress bindAddr = null;
-            String bindIP = ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(getController())[0];
             if (!StringUtils.isEmpty(bindIP)) {
                 bindAddr = InetAddress.getByName(bindIP);
             } else if (OSUtil.isWindowsSystem()) {
@@ -176,7 +175,8 @@ public class BroadcastMananger extends PFComponent implements Runnable {
              */
             socket.setBroadcast(true);
         } catch (IOException e) {
-            throw new ConnectionException("Unable to open broadcast socket", e);
+            logWarning("Unable to open broadcast socket " + bindIP + ". " + e);
+            throw new ConnectionException("Unable to open broadcast socket " + bindIP + ". " + e.getMessage(), e);
         }
 
         myThread = new Thread(this, "Subnet broadcast manager, port "
