@@ -2,6 +2,7 @@ package edu.kit.scc.dei.ecplean;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.logging.Level;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -71,6 +72,9 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         try {
             httpResponse = getHttpClient().execute(httpGet);
             responseBody = EntityUtils.toString(httpResponse.getEntity());
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer("responseBody: " + responseBody);
+            }
         } catch (IOException | ParseException e) {
             LOG.warning("Initial SP Request failed. " + e);
             throw new ECPAuthenticationException(e);
@@ -80,7 +84,7 @@ public class ECPAuthenticator extends ECPAuthenticatorBase {
         try {
             initResponse = buildDocumentFromString(responseBody);
         } catch (IOException | SAXException | ParserConfigurationException e) {
-            LOG.warning("Parsing SP Request failed. " + e);
+            LOG.warning("Parsing SP Request failed. " + e + ". of content: " + responseBody);
             throw new ECPAuthenticationException(e);
         }
 
