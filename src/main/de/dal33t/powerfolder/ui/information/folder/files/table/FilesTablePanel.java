@@ -63,6 +63,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
+import de.dal33t.powerfolder.ui.contextmenu.ShareFileNotificationHandler;
 import de.dal33t.powerfolder.ui.information.HasDetailsPanel;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilterListener;
@@ -79,6 +80,7 @@ import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
@@ -874,10 +876,17 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                 if (diskItem instanceof FileInfo) {
                     final FileInfo fileInfo = (FileInfo) diskItem;
                     // Open in backgroud
-                    BrowserLauncher.open(getController(), new URLProducer() {
-                        public String url() {
-                            return getController().getOSClient()
-                                .getFileLinkURLWithCredentials(fileInfo);
+                    getController().getIOProvider().startIO(new Runnable() {
+                        @Override
+                        public void run() {
+                            String previousEntry = Util.getClipboardContents();
+                            String url = getController().getOSClient().
+                                    getFolderService(fileInfo.getFolderInfo()).getDownloadLink(fileInfo);
+                            Util.setClipboardContents(url);
+
+                            ShareFileNotificationHandler handler = new ShareFileNotificationHandler(
+                                    getController(), fileInfo, previousEntry);
+                            handler.show();
                         }
                     });
                 }
