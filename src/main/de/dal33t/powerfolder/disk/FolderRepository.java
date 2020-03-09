@@ -237,7 +237,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Spacetree.isSupported(getController())) {
             try {
                 Spacetree st = Spacetree.create(getController());
-                st.install();
+                if (st != null) {
+                    st.install();
+                }
             } catch (Exception e) {
                 logWarning("Unable to setup space tree icon integration into Windows-Explorer. " + e.getMessage(), e);
             }

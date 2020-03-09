@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 public class Spacetree {
     private static final String CLSID = "{5107667c-149a-47c8-b0c9-e4bf9132f17d}";
@@ -52,6 +53,10 @@ public class Spacetree {
         Path pathToExe = WinUtils.getProgramInstallationPath().resolve(exeName);
 
         Path baseDir = controller.getFolderRepository().getFoldersBasedir();
+        if (Files.notExists(pathToExe)) {
+            Logger.getLogger(Spacetree.class.getName()).warning("Unable to install. Not found: " + pathToExe);
+            return null;
+        }
         return new Spacetree(name, pathToExe, baseDir);
     }
 
