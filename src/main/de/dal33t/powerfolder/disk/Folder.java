@@ -2272,6 +2272,12 @@ public class Folder extends PFComponent {
 
     private void checkRevertLocalChanges() {
         if (!isRevertLocalChanges()) {
+            // PFC-3107:
+            for (Problem p: getProblems()) {
+                if (p instanceof FolderReadOnlyProblem) {
+                    removeProblem(p);
+                }
+            }
             return;
         }
         if (isFine()) {
@@ -2309,6 +2315,11 @@ public class Folder extends PFComponent {
         FileInfo newestVersion = fileInfo.getNewestVersion(getController().getFolderRepository());
         if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
             // Ok in sync - return:
+            return false;
+        }
+
+        // PFC-3107: Check again
+        if (!hasCompleteFileListOfAtLeastOneMember()) {
             return false;
         }
 
