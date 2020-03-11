@@ -363,7 +363,7 @@ public class Download extends Transfer {
             getPartner().sendMessagesAsynchron(new StopUpload(getFile()));
         }
 
-        getTransferManager().setCompleted(Download.this);
+        getTransferManager().doWork(() -> getTransferManager().setCompleted(Download.this));
     }
 
     /**
