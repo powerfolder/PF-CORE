@@ -78,9 +78,8 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
- * to extend PFComponent so you always have a reference to the main
- * {@link Controller}.
- * @
+ * to extend PFComponent so you always have a reference to the main {@link Controller}.
+ *
  * @author Christian Sprajc
  * @version $Revision: 1.107 $
  */
