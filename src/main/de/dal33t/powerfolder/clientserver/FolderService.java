@@ -274,9 +274,16 @@ public interface FolderService {
 
     /**
      * @param foInfo
-     * @return true if this folder is joined by the remote side.
+     * @return true if this folder is currently hosted on this server
      */
     boolean hasJoined(FolderInfo foInfo);
+
+    /**
+     *
+     * @param foInfo
+     * @return true if the folder is stored on this service
+     */
+    boolean isStoredInCloud(FolderInfo foInfo);
 
     /**
      * The web DAV URL of a folder.
