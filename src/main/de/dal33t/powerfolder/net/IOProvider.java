@@ -162,9 +162,7 @@ public class IOProvider extends PFComponent {
                 + oom.toString(), oom);
             logSevere("Shutting down java virtual machine. Exit code: 107");
             
-            if (oom.getMessage() != null && oom.getMessage().toLowerCase()
-                .contains("unable to create new native thread"))
-            {
+            if (oom.getMessage() != null && oom.getMessage().toLowerCase().contains("thread")) {
                 logWarning("Current threads: ");
                 logWarning(Debug.dumpCurrentStacktraces(false));
             }
