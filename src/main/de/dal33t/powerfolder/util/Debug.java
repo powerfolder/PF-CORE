@@ -527,7 +527,7 @@ public class Debug {
             return;
         }
         b.append(f);
-        b.append(", ID: XXX-erased-XXX");
+        b.append(", ID: " + f.getId());
         b.append(", files: " + f.getKnownItemCount() + ", size: "
             + Format.formatBytes(f.getStatistic().getLocalSize())
             + ", members: " + f.getMembersCount() + ", mode: "
