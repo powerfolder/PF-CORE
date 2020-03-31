@@ -563,7 +563,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         assert filePartsState == null;
 
         if (filePartsState != null) {
-            logSevere("FilePartsState should've been null, but was "
+            logWarning("FilePartsState should've been null, but was "
                 + filePartsState + " on " + fileInfo.toDetailString());
             Debug.dumpCurrentStackTrace();
         }
