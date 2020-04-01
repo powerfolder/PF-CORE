@@ -565,7 +565,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         if (filePartsState != null) {
             logWarning("FilePartsState should've been null, but was "
                 + filePartsState + " on " + fileInfo.toDetailString());
-            Debug.dumpCurrentStackTrace();
+            logInfo(Debug.getCurrentStackTrace());
         }
 
         filePartsState = state;
