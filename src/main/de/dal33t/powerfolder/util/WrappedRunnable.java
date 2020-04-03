@@ -68,12 +68,14 @@ public class WrappedRunnable implements Runnable {
             throw oom;
         } catch (Error t) {
             t.printStackTrace();
-            LOG.log(Level.SEVERE, "Error in " + deligate + ": " + t.toString(),
-                t);
+            LOG.log(Level.SEVERE, "Error in " + deligate + ": " + t.toString(), t);
             throw t;
         } catch (HibernateException he) {
             LOG.log(Level.SEVERE,
-                "Database connection problem: " + he.getMessage());
+                    "Database connection problem: " + he.getMessage());
+        } catch (Waiter.WaiterInterruptedException e) {
+            // Shutdown
+            LOG.log(Level.INFO, "Interrupted " + deligate);
         } catch (RuntimeException t) {
             t.printStackTrace();
             LOG.log(Level.SEVERE,
