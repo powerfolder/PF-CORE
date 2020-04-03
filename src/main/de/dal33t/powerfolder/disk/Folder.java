@@ -2865,8 +2865,12 @@ public class Folder extends PFComponent {
             }
         }
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(
-                    fileInfo.getDiskFile(getController().getFolderRepository()))))) {
+        Path p = fileInfo.getDiskFile(getController().getFolderRepository());
+        if (p == null) {
+            // Shutdown
+            return;
+        }
+        try (ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(p)))) {
             oos.writeObject(membersMap);
         } catch (IOException e) {
             logWarning(getName() + ": Unable to write Members meta info to " +
