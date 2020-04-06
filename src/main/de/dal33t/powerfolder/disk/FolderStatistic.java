@@ -204,7 +204,7 @@ public class FolderStatistic extends PFComponent {
         calculating.setArchiveSize(folder.getFileArchiver().getSize());
         long archiveTook = System.currentTimeMillis() - archiveStart;
         if (archiveTook > 1000L * 60 && isWarning()) {
-            logWarning("Calculating archive size took " + (archiveTook / 1000)
+            logWarning(folder + ": Calculating archive size took " + (archiveTook / 1000)
                 + "s");
         }
 
