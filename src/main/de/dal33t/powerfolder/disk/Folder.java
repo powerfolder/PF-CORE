@@ -4289,7 +4289,7 @@ public class Folder extends PFComponent {
             String msg = "Deleting file "
                 + (fileInfo != null ? fileInfo.toDetailString() : newFileInfo)
                 + ((archiver.getVersionsPerFile() > 0)
-                    ? " moving to version history"
+                    ? " by " + newFileInfo.getModifiedByAccount() + ", moving to version history"
                     : "");
             if (currentInfo.isMetaFolder()) {
                 logFine(msg);
