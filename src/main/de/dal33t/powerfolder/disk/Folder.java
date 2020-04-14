@@ -2892,7 +2892,7 @@ public class Folder extends PFComponent {
         ScanResult.ResultState resultState = lastScanResultState;
         while (isScanning() && resultState == lastScanResultState) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 return false;
             }
