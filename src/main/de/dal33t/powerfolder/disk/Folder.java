@@ -2865,8 +2865,12 @@ public class Folder extends PFComponent {
             }
         }
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(
-                    fileInfo.getDiskFile(getController().getFolderRepository()))))) {
+        Path p = fileInfo.getDiskFile(getController().getFolderRepository());
+        if (p == null) {
+            // Shutdown
+            return;
+        }
+        try (ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(p)))) {
             oos.writeObject(membersMap);
         } catch (IOException e) {
             logWarning(getName() + ": Unable to write Members meta info to " +
@@ -2888,7 +2892,7 @@ public class Folder extends PFComponent {
         ScanResult.ResultState resultState = lastScanResultState;
         while (isScanning() && resultState == lastScanResultState) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 return false;
             }
@@ -4285,7 +4289,7 @@ public class Folder extends PFComponent {
             String msg = "Deleting file "
                 + (fileInfo != null ? fileInfo.toDetailString() : newFileInfo)
                 + ((archiver.getVersionsPerFile() > 0)
-                    ? " moving to version history"
+                    ? " by " + newFileInfo.getModifiedByAccount() + ", moving to version history"
                     : "");
             if (currentInfo.isMetaFolder()) {
                 logFine(msg);

@@ -78,8 +78,9 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 
 /**
  * Central class gives access to all core components in PowerFolder. Make sure
- * to extend PFComponent so you always have a reference to the main {@link Controller}.
- *
+ * to extend PFComponent so you always have a reference to the main
+ * {@link Controller}.
+ * @
  * @author Christian Sprajc
  * @version $Revision: 1.107 $
  */
@@ -87,9 +88,9 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 15;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 101;
-    private static final int SPRINT_NUMBER = 23;
+    private static final int MINOR_VERSION = 2;
+    private static final int REVISION_VERSION = 100;
+    private static final int SPRINT_NUMBER = 24;
 
     /**
      * Program version.

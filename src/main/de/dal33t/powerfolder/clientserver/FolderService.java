@@ -274,9 +274,16 @@ public interface FolderService {
 
     /**
      * @param foInfo
-     * @return true if this folder is joined by the remote side.
+     * @return true if this folder is currently hosted on this server
      */
     boolean hasJoined(FolderInfo foInfo);
+
+    /**
+     *
+     * @param foInfo
+     * @return true if the folder is stored on this service
+     */
+    boolean isStoredInCloud(FolderInfo foInfo);
 
     /**
      * The web DAV URL of a folder.
@@ -351,8 +358,6 @@ public interface FolderService {
      * PFS-869: Creates a FileLink for unregistered user uploads.
      */
     String prepareFileLink(FolderInfo foInfo, String name, String mailAddress, char[] password, Date date);
-
-    void startFileLinkUploadMailTask(String fileLinkID, String uploaderMailAddress, String uploaderUserName);
 
     /**
      * Checks if the storage path of a folder is correct (default)
