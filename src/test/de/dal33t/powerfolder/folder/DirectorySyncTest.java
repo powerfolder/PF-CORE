@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -301,6 +302,20 @@ public class DirectorySyncTest extends FiveControllerTestCase {
         assertFilesAndDirs(getFolderAtMarge(), createdDirs, 0);
         assertFilesAndDirs(getFolderAtLisa(), createdDirs, 0);
         assertFilesAndDirs(getFolderAtMaggie(), createdDirs, 0);
+    }
+
+    public void testScanDirectory() {
+        Path dirBart = getFolderAtBart().getLocalBase().resolve("testDir");
+        try {
+            Files.createDirectory(dirBart);
+        } catch (IOException ioe) {
+            fail(ioe.getMessage());
+        }
+        FileInfo dirInfo = FileInfoFactory.newFile(getFolderAtBart(), dirBart, null, null, null, null, true, null);
+        getFolderAtBart().scanDirectory(dirInfo, dirBart);
+        assertFilesAndDirs(getFolderAtBart(), 1, 0);
+        TestHelper.waitForCondition(5, () -> getFolderAtLisa().getKnownItemCount() >= 1);
+        assertFilesAndDirs(getFolderAtLisa(), 1, 0);
     }
 
     private void assertFilesAndDirs(final Folder folder,

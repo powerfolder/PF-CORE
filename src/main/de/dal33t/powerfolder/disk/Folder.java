@@ -1586,8 +1586,10 @@ public class Folder extends PFComponent {
             watcher.removeIgnoreFile(dirInfo);
         }
 
-        store(getMySelf(), correctFolderInfo(dirInfo));
+        FileInfo finalDirInfo = correctFolderInfo(dirInfo);
+        store(getMySelf(), finalDirInfo);
         setDBDirty();
+        broadcastMessages(useExt -> new Message[] {FolderFilesChanged.create(finalDirInfo, useExt)});
     }
 
     /**
