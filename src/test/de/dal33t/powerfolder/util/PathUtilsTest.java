@@ -2463,6 +2463,7 @@ public class PathUtilsTest extends TestCase {
         assertTrue(toDir.setWritable(true));
     }
 
+    @Test
     public void testRecursiveDeleteException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
