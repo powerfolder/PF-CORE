@@ -46,6 +46,7 @@ public class PathUtilsTest extends TestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testReplicatedSubdirs() throws IOException {
         PathUtils.isReplicatedSubdir(baseDir.resolve("nonexisting"));
         PathUtils.isReplicatedSubdir(TestHelper.createRandomFile(baseDir)); // Is OK on files
@@ -83,6 +84,7 @@ public class PathUtilsTest extends TestCase {
                 expectReplicated, PathUtils.isReplicatedSubdir(dir));
     }
 
+    @Test
     public void testURLEncoding() {
         String url = "https://www.my-server.com:8822";
         String filename = "PowerFolder" + PathUtils.encodeURLinFilename(url) + ".exe";
@@ -95,6 +97,7 @@ public class PathUtilsTest extends TestCase {
         assertEquals(url, actual);
     }
 
+    @Test
     public void testZipFile() throws IOException {
         byte[] b = new byte[1024 * 1024 * 3];
         for (int i = 0; i < 1024 * 100; i++) {
@@ -114,6 +117,7 @@ public class PathUtilsTest extends TestCase {
         assertTrue(Files.exists(zip));
     }
 
+    @Test
     public void testFileInDirectory() {
 
         Path testDir = TestHelper.getTestDir();
@@ -215,6 +219,7 @@ public class PathUtilsTest extends TestCase {
         assertEquals("", PathUtils.removeInvalidFilenameChars("....."));
     }
 
+    @Test
     public void testGetValidEmptyDirectoryWithRawName() throws IOException {
         Path baseDir = Paths.get("build/test").toAbsolutePath();
         PathUtils.recursiveDelete(baseDir);
@@ -822,6 +827,7 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testRecursiveMoveVisitor() throws IOException {
 
         Path testDir = Paths.get("build/test").toAbsolutePath();
@@ -904,6 +910,7 @@ public class PathUtilsTest extends TestCase {
         assertTrue(Files.notExists(source.resolve("sub").resolve("d")));
     }
 
+    @Test
     public void testRecursiveMoveVisitorFail() throws IOException {
         Path testDir = Paths.get("build/test").toAbsolutePath();
 
@@ -1005,6 +1012,7 @@ public class PathUtilsTest extends TestCase {
      * PFS-3482
      * @throws IOException
      */
+    @Test
     public void testMoveDirectory() throws IOException {
         Path testDir = Paths.get("build/test").toAbsolutePath();
         Path sourceDir = testDir.resolve("source");
@@ -1029,6 +1037,7 @@ public class PathUtilsTest extends TestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testRecursiveCopyVisitor() throws IOException {
         Path testDir = Paths.get("build/test").toAbsolutePath();
 
@@ -1202,6 +1211,7 @@ public class PathUtilsTest extends TestCase {
      *
      * @throws IOException
      */
+    @Test
     public void testRecursiveDeleteVisitor() throws IOException {
 
         // Setup base dir with dirs and files.
@@ -1223,6 +1233,7 @@ public class PathUtilsTest extends TestCase {
         assertFalse(Files.exists(dir.resolve("sub").resolve("d")));
     }
 
+    @Test
     public void testIsDesktopIniNull() {
         Path file = null;
         try {
@@ -1233,6 +1244,7 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testIsDesktopIniOk() {
         Path path = new File(PathUtils.DESKTOP_INI_FILENAME).toPath();
         assertTrue(PathUtils.isDesktopIni(path));
@@ -1244,6 +1256,7 @@ public class PathUtilsTest extends TestCase {
         assertFalse(PathUtils.isDesktopIni(stillNotDesktopIni));
     }
 
+    @Test
     public void testIsValidZipFileNull() {
         Path file = null;
         try {
@@ -1362,6 +1375,7 @@ public class PathUtilsTest extends TestCase {
         FileUtils.deleteDirectory(secondDirectory);
     }
 
+    @Test
     public void testRecursiveMoveCopyFallbackVisitorCreatesDirectories() throws IOException {
 
         File sourceDirectory = new File("build/directoryOne");
@@ -1452,6 +1466,7 @@ public class PathUtilsTest extends TestCase {
         assertFalse(result);
     }
 
+    @Test
     public void testIsEmptyDirIoException() {
         File directory = new File("build/test/myDirectory");
         boolean result = PathUtils.isEmptyDir(directory.toPath(), new Filter<Path>() {
@@ -1492,6 +1507,7 @@ public class PathUtilsTest extends TestCase {
         FileUtils.deleteDirectory(directory);
     }
 
+    @Test
     public void testIsEmptyDirOneArgument() throws IOException {
         File directory = new File("build/test/myDirectory");
         directory.mkdir();
@@ -1589,6 +1605,7 @@ public class PathUtilsTest extends TestCase {
         assertFalse(PathUtils.containsInvalidChar("test-simpsons_Testing.csv"));
     }
 
+    @Test
     public void testRemoveInvalidCharsNullFilename() {
         File file = new File("/");
         Path path = file.toPath();
@@ -1645,6 +1662,7 @@ public class PathUtilsTest extends TestCase {
         fileInputStream.close();
     }
 
+    @Test
     public void testRawCopyOk() throws IOException {
         File file = new File("build/test/file.txt");
         file.createNewFile();
@@ -1814,6 +1832,7 @@ public class PathUtilsTest extends TestCase {
         output.close();
     }
 
+    @Test
     public void testNCopyStreamFileChannelFileChannelOk() throws IOException {
         File inputFile = new File("build/test/firstFile.txt");
         inputFile.createNewFile();
@@ -1887,6 +1906,7 @@ public class PathUtilsTest extends TestCase {
         output.close();
     }
 
+    @Test
     public void testSetAttributeOnWindowsNull() {
         assumeTrue(isWindows());
         File file = new File("build/test/myFile.txt");
@@ -1913,6 +1933,7 @@ public class PathUtilsTest extends TestCase {
         assertEquals(false, Files.getAttribute(file.toPath(), "dos:system") );
     }
 
+    @Test
     public void testSetAttributeOnWindowsIoException() throws IOException {
         assumeTrue(isWindows());
         File file = new File("build/test/myFile.txt");
@@ -1920,6 +1941,7 @@ public class PathUtilsTest extends TestCase {
         assertTrue(PathUtils.setAttributesOnWindows(file.toPath(), true, null));
     }
 
+    @Test
     public void testRecursiveMoveDirectories() throws IOException {
         File sourceDirectory = new File("build/test/directoryOne");
         sourceDirectory.mkdir();
@@ -1942,7 +1964,8 @@ public class PathUtilsTest extends TestCase {
         assertTrue(thirdFile.exists());
     }
 
-    public void testRecursiveMoveFiles() throws IOException {
+
+    @Test void testRecursiveMoveFiles() throws IOException {
         File sourceFile = new File("build/test/fileOne.txt");
         sourceFile.createNewFile();
         FileWriter fileWriter = new FileWriter(sourceFile);
@@ -1956,7 +1979,8 @@ public class PathUtilsTest extends TestCase {
         assertEquals(fileSize, targetFile.length());
     }
 
-    public void testRecursiveMoveFilesUnsupported() throws IOException {
+
+    @Test    public void testRecursiveMoveFilesUnsupported() throws IOException {
         File sourceDirectory = new File("build/test/directoryOne");
         sourceDirectory.mkdir();
 
@@ -1973,6 +1997,8 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+
+    @Test
     public void testDeleteDesktopIni() throws IOException {
         File directory = new File("build/test/directoryOne");
         directory.mkdir();
@@ -1983,6 +2009,7 @@ public class PathUtilsTest extends TestCase {
         assertEquals(false, Files.getAttribute(directory.toPath(),"dos:system"));
     }
 
+    @Test
     public void testMaintainDesktopIniRecent() throws IOException {
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
@@ -2003,6 +2030,8 @@ public class PathUtilsTest extends TestCase {
         assertEquals(lastModified, desktopIniFile.lastModified());
     }
 
+
+    @Test
     public void testMaintainDesktopIniLastModifiedPfIconFalse() throws IOException {
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
@@ -2022,6 +2051,7 @@ public class PathUtilsTest extends TestCase {
         assertFalse(desktopIniFile.exists());
     }
 
+    @Test
     public void testMaintainDesktopIniLastModifiedPfIconTrue() throws IOException {
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
@@ -2052,6 +2082,8 @@ public class PathUtilsTest extends TestCase {
         assertTrue(desktopIniFile.isHidden());
     }
 
+
+    @Test
     public void testGetDiskFileName(){
         assertEquals("/text/myFile", PathUtils.getDiskFileName("build","/text/myFile"));
         assertEquals("myFile", PathUtils.getDiskFileName("build/text/","myFile"));
@@ -2059,6 +2091,8 @@ public class PathUtilsTest extends TestCase {
         assertEquals("myFile.csv", PathUtils.getDiskFileName("C:/Builds/Testing","myFile.csv"));
     }
 
+
+    @Test
     public void testDigest() throws IOException, NoSuchAlgorithmException, InterruptedException {
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
@@ -2081,6 +2115,7 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testOpenFileNull() {
         Path path = null;
         try {
@@ -2091,18 +2126,24 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+
+    @Test
     public void testOpenFile() throws IOException {
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
         assertTrue(PathUtils.openFile(file.toPath()));
     }
 
+
+    @Test
     public void testOpenDirectory() {
         File directory = new File("build/test/directoryOne");
         directory.mkdir();
         assertTrue(PathUtils.openFile(directory.toPath()));
     }
 
+
+    @Test
     public void testOpenFileIfExists() throws IOException {
         File nonExistent = new File("build/test/otherFile.pdf");
         assertFalse(PathUtils.openFileIfExists(nonExistent.toPath()));
@@ -2112,6 +2153,8 @@ public class PathUtilsTest extends TestCase {
         assertFalse(PathUtils.openFileIfExists(nonExistent.toPath()));
     }
 
+
+    @Test
     public void testIsWebDavFolder() {
         File someFile = new File("build/test/folder" + Constants.FOLDER_WEBDAV_SUFFIX);
         assertTrue(PathUtils.isWebDAVFolder(someFile.toPath()));
@@ -2126,6 +2169,8 @@ public class PathUtilsTest extends TestCase {
         assertTrue(PathUtils.isWebDAVFolder(someFile.toPath()));
     }
 
+
+    @Test
     public void testIsScannableNull() {
         Controller controller = new Controller();
         String nullString = null;
@@ -2142,6 +2187,7 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testIsScannable() throws IOException {
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
@@ -2165,6 +2211,7 @@ public class PathUtilsTest extends TestCase {
 
     }
 
+    @Test
     public void testIsScannableMetaFolder() throws IOException {
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
@@ -2183,6 +2230,7 @@ public class PathUtilsTest extends TestCase {
 
     }
 
+    @Test
     public void testCreateEmptyDirectory() {
         File baseDir = new File("build/test/base.directory");
         baseDir.mkdir();
@@ -2206,6 +2254,8 @@ public class PathUtilsTest extends TestCase {
 //        }
 //    }
 
+
+    @Test
     public void testCopyFileCryptoException() throws IOException {
         Path storageLocation = Paths.get("build/test/vault");
         Files.createDirectories(storageLocation);
@@ -2230,6 +2280,7 @@ public class PathUtilsTest extends TestCase {
 
     }
 
+    @Test
     public void testGetNumberOfSiblingsException() {
         Path base = new File("build/test/asdasdasd").toPath();
         Filter<Path> pathFilter = new Filter<Path>() {
@@ -2243,6 +2294,8 @@ public class PathUtilsTest extends TestCase {
         assertEquals(0, numberOfSiblings);
     }
 
+
+    @Test
     public void testCopyFromStreamToFileNull() throws IOException {
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
@@ -2264,6 +2317,8 @@ public class PathUtilsTest extends TestCase {
         inputStream.close();
     }
 
+
+    @Test
     public void testRawCopyIOExceptions() throws IOException {
         File file = new File("build/test/firstfile.txt");
         file.createNewFile();
@@ -2295,6 +2350,8 @@ public class PathUtilsTest extends TestCase {
 
     }
 
+
+    @Test
     public void testRecurrsiveMirrorUnsupported() throws IOException {
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
@@ -2327,6 +2384,7 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testZipFileIllegal() throws IOException {
         File directory = new File("build/test/myDir");
         directory.mkdir();
@@ -2342,6 +2400,8 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+
+    @Test
     public void testRecursiveMoveCopyFallbackVisitor() throws IOException {
         File firstDirectory = new File("build/test/first");
         File secondDirectory = new File("build/test/second");
@@ -2355,6 +2415,8 @@ public class PathUtilsTest extends TestCase {
     }
 
 
+
+    @Test
     public void testRecursiveDeleteVisitorException() {
         try {
             PathUtils.recursiveDeleteVisitor(Paths.get("build/test/asdads"));
@@ -2364,6 +2426,8 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+
+    @Test
     public void testRecursiveMoveDirectoryException() {
         try {
             PathUtils.recursiveMoveVisitor(Paths.get("/asdasdad"), Paths.get("sqweqeqweq"));
@@ -2373,6 +2437,7 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+    @Test
     public void testRecursiveCopyVisitorException() {
         try {
             PathUtils.recursiveCopyVisitor(Paths.get("/asdasdad"), Paths.get("sqweqeqweq"));
@@ -2382,6 +2447,8 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+
+    @Test
     public void testCreateEmptyDirException() {
         File file = new File("/");
         try {
@@ -2392,6 +2459,8 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+
+    @Test
     public void testCopyFromStreamToFileExceptions() throws IOException {
         File file = new File("build/test/asdasdasd/qwerqwerqwerasd");
         Path toPath = file.toPath();
@@ -2407,6 +2476,8 @@ public class PathUtilsTest extends TestCase {
         }
     }
 
+
+    @Test
     public void testRecursiveCopyUnsupported() throws IOException {
         File directory = new File("build/test/myDir");
         directory.mkdir();
@@ -2485,6 +2556,7 @@ public class PathUtilsTest extends TestCase {
         assertTrue(directoryRo.setWritable(true));
     }
 
+    @Test
     public void testRecursiveMirrorException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
@@ -2511,6 +2583,7 @@ public class PathUtilsTest extends TestCase {
         assertTrue(targetDir.setWritable(true));
     }
 
+    @Test
     public void testHasFilesException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
@@ -2539,6 +2612,8 @@ public class PathUtilsTest extends TestCase {
      * PFS-3092
      * @throws IOException
      */
+
+    @Test
     public void testMoveReplication() throws IOException {
         Path source = baseDir.resolve("build/pf_data/users/XXX/Allgemeine MentorInnenqualifizierung/ABC/Material");
         Files.createDirectories(source);
