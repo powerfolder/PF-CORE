@@ -1965,7 +1965,8 @@ public class PathUtilsTest extends TestCase {
     }
 
 
-    @Test void testRecursiveMoveFiles() throws IOException {
+    @Test
+    public void testRecursiveMoveFiles() throws IOException {
         File sourceFile = new File("build/test/fileOne.txt");
         sourceFile.createNewFile();
         FileWriter fileWriter = new FileWriter(sourceFile);
@@ -1979,8 +1980,8 @@ public class PathUtilsTest extends TestCase {
         assertEquals(fileSize, targetFile.length());
     }
 
-
-    @Test    public void testRecursiveMoveFilesUnsupported() throws IOException {
+    @Test
+    public void testRecursiveMoveFilesUnsupported() throws IOException {
         File sourceDirectory = new File("build/test/directoryOne");
         sourceDirectory.mkdir();
 
