@@ -332,7 +332,7 @@ public class UtilTest extends TestCase {
         File newFile = new File("build/test/second.config");
         newFile.createNewFile();
         FileWriter newWriter = new FileWriter(newFile);
-        newWriter.write("net.bindaddress=127.0.0.1");
+        newWriter.write("net.bindaddress=127.0.0.1\ndisableui=true");
 
         newWriter.close();
 
