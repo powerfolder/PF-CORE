@@ -127,8 +127,8 @@ public class FormatTest {
     @Test
     public void formatBytesShortMinMaxValuesTest(){
         assertEquals("8,388,608 TB", Format.formatBytesShort(Long.MAX_VALUE));
-        assertEquals("?? kB",Format.formatBytesShort(Long.MIN_VALUE));
-        assertEquals("0 kB", Format.formatBytesShort(0L));
+        assertEquals("?? B",Format.formatBytesShort(Long.MIN_VALUE));
+        assertEquals("0 B", Format.formatBytesShort(0L));
     }
 
     @Test
@@ -202,7 +202,7 @@ public class FormatTest {
     @Test
     public void formatBytesShortReturnUnknownTest() {
         long unknownBytes = -250L;
-        assertEquals("?? kB", Format.formatBytesShort(unknownBytes));
+        assertEquals("?? B", Format.formatBytesShort(unknownBytes));
 
     }
 
