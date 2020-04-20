@@ -3962,10 +3962,10 @@ public class Folder extends PFComponent {
         }
         if (tries > 1) {
             if (success) {
-                logWarning("Was able to write folder database, but only after "
+                logFine("Was able to write folder database, but only after "
                     + tries + " trys.");
             } else {
-                logSevere("Was NOT able to write folder database, even after "
+                logWarning("Was NOT able to write folder database, even after "
                     + tries + " trys.");
             }
         }
