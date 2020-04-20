@@ -2832,7 +2832,7 @@ public class Folder extends PFComponent {
         }
         Map<String, MemberInfo> membersMap = new TreeMap<>();
         Path f = fileInfo.getDiskFile(getController().getFolderRepository());
-        if (Files.notExists(f)) {
+        if (f == null || Files.notExists(f)) {
             return membersMap;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(f)))) {
