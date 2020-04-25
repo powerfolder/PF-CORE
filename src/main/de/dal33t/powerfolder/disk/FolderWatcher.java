@@ -231,7 +231,7 @@ public class FolderWatcher extends PFComponent {
             try {
                 List<FileInfo> fileInfos = new LinkedList<FileInfo>();
                 if (folder.checkIfDeviceDisconnected()) {
-                    logFine("Device disconnected while scanning " + folder
+                    logFine("Storage disconnected while scanning " + folder
                         + ": " + folder.getLocalBase());
                     dirtyFiles.clear();
                     return;
