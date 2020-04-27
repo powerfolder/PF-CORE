@@ -2334,7 +2334,7 @@ public class Folder extends PFComponent {
         if (isWarning() && !currentInfo.isMetaFolder()) {
             logWarning("Reverting local change: "
                 + fileInfo.toDetailString()
-                + ". File not found on remote side.");
+                + ". File not found on remote side. Newest version: " + newestVersion);
         }
 
         try {
