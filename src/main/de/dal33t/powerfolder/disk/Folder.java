@@ -73,7 +73,6 @@ public class Folder extends PFComponent {
     public static final String FOLDER_STATISTIC = "FolderStatistic";
 
     private static final int FIVE_MINUTES = 60 * 5;
-    //private static final int THIRTY_SECONDS = 30;
 
     /** The base location of the folder. */
     private Path localBase;
@@ -169,11 +168,6 @@ public class Folder extends PFComponent {
      */
     private volatile boolean dirty;
 
-    /**
-     * The FileInfos that have problems inlcuding the desciptions of the
-     * problems. DISABLED
-     */
-    // private Map<FileInfo, List<FilenameProblem>> problemFiles;
     /** The statistic for this folder */
     private final FolderStatistic statistic;
 
@@ -212,11 +206,6 @@ public class Folder extends PFComponent {
     private int syncWarnSeconds;
     private Persister persister;
     private ScheduledFuture<?> persisterFuture;
-
-    /**
-     * PFS-1994: Mark this folder as a folder which has been moved.
-     */
-    private boolean isMovedFolder;
 
     /**
      * Constructor for folder.
@@ -2378,26 +2367,6 @@ public class Folder extends PFComponent {
             }
         }
         return remoteFilesFound;
-    }
-
-    /**
-     * Set the needed folder/file attributes on windows systems, if we have a
-     * desktop.ini
-     *
-     * PFS-1361
-     * @deprecated since 14.0
-     */
-    @Deprecated
-    private Path createTimestampedCopy(Path file) throws IOException {
-        DateFormat dateFormat = new SimpleDateFormat();
-        String targetFilename = PathUtils.removeInvalidFilenameChars(dateFormat
-            .format(new Date()).replace(":", "_"));
-        targetFilename += " ";
-        targetFilename += file.getFileName().toString();
-        Path target = file.getParent().resolve(targetFilename);
-        addPattern("*" + targetFilename);
-        Files.copy(file, target);
-        return target;
     }
 
     /**
@@ -5376,23 +5345,6 @@ public class Folder extends PFComponent {
             return "FolderPersister for '" + Folder.this;
         }
 
-    }
-
-    /**
-     * PFS-1994: Mark this Folder as a Folder which has been moved.
-     * @deprecated since 14.0
-     */
-    @Deprecated
-    public void setMovedFolder(boolean movedFolder){
-        isMovedFolder = movedFolder;
-    }
-
-    /**
-     * @deprecated since 14.0
-     */
-    @Deprecated
-    public boolean isMovedFolder() {
-        return isMovedFolder;
     }
 
 }
