@@ -449,7 +449,7 @@ public class Util {
                 return true;
             }
         } catch (Exception e) {
-            LOG.warning("Couldn't create shortcut " + linkPath.toAbsolutePath());
+            LOG.fine("Couldn't remove shortcut " + linkPath);
             LOG.log(Level.FINER, "IOException", e);
         }
 
