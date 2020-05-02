@@ -422,7 +422,9 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean removeDesktopShortcut(String shortcutName) {
-        LOG.finer("Removing desktop shortcut: " + shortcutName);
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("Removing desktop shortcut: " + shortcutName);
+        }
 
         Path linkPath = null;
 
@@ -450,7 +452,7 @@ public class Util {
             }
         } catch (Exception e) {
             LOG.fine("Couldn't remove shortcut " + linkPath);
-            LOG.log(Level.FINER, "IOException", e);
+            LOG.log(Level.FINER, "Exception", e);
         }
 
         return false;
