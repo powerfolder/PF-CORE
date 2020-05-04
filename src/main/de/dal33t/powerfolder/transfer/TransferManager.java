@@ -1288,7 +1288,7 @@ public class TransferManager extends PFComponent {
         if (!fileInSyncWithDb) {
             logWarning("File not in sync with db: '" + dl.file.toDetailString()
                 + "', but I have "
-                + (localFile != null ? localFile.toDetailString() : ""));
+                + (localFile != null ? localFile.toDetailString() : "none"));
             return null;
         }
 
