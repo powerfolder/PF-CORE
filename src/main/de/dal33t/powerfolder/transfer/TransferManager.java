@@ -1232,7 +1232,7 @@ public class TransferManager extends PFComponent {
         Folder folder = dl.file
             .getFolder(getController().getFolderRepository());
         if (folder == null) {
-            logWarning("Received illegal download request from "
+            logFine("Received illegal download request from "
                 + from.getNick() + ". Not longer on folder "
                 + dl.file.getFolderInfo());
             return null;
