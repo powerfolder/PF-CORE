@@ -477,7 +477,7 @@ public class Folder extends PFComponent {
         if (!getController().isShuttingDown()) {
             getController().setPaused(getController().isPaused());
         }
-        if (isWarning()) {
+        if (isWarning() && !currentInfo.isMetaFolder()) {
             logWarning(this + ": Added " + problem);
         }
     }
