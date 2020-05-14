@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FileBrowserIntegration;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
@@ -495,8 +496,11 @@ public class Controller extends PFComponent {
         long totalMemory = runtime.totalMemory();
         logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
-        if (!Desktop.isDesktopSupported() && isUIEnabled()) {
-            logWarning("Desktop utility not supported");
+        if (isUIEnabled()) {
+            LookAndFeelSupport.setSyntheticaLicense();
+            if (!Desktop.isDesktopSupported()) {
+                logWarning("Desktop utility not supported");
+            }
         }
 
         // If we have a new config. clear the preferences.

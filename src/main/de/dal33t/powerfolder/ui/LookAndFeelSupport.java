@@ -52,9 +52,13 @@ public class LookAndFeelSupport {
     public static void setLookAndFeel(LookAndFeel laf)
         throws UnsupportedLookAndFeelException
     {
+        setSyntheticaLicense();
         UIManager.setLookAndFeel(laf);
         SyntheticaLookAndFeel.setFont("Dialog", 11);
+        setSyntheticaLicense();
+    }
 
+    public static final void setSyntheticaLicense() {
         String[] li = {"Licensee=PowerFolder", "LicenseRegistrationNumber=235363175", "Product=Synthetica",
                 "LicenseType=Small Business License", "ExpireDate=--.--.----", "MaxVersion=2.32.999"};
         UIManager.put("Synthetica.license.info", li);
