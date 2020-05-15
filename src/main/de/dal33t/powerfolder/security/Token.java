@@ -100,15 +100,6 @@ public class Token {
         return new Token(validTo, fedService, null, null);
     }
 
-    public static Token newOcmFilterToken(ServerInfo ocmProvider) {
-        Reject.ifNull(ocmProvider, "Service null");
-        Reject.ifFalse(ocmProvider.isFederatedService(),
-                "Not a federation service");
-        Date validTo = new Date(System.currentTimeMillis() + OCM_TOKEN_TIMEOUT);
-        return new Token(validTo, ocmProvider, null, null);
-    }
-
-
     /**
      * PFS-2296
      */
