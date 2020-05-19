@@ -805,16 +805,27 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
      * @param e
      */
     protected void logConnectionClose(Exception e) {
+        Member logMember = member;
+        Identity thisIdentity = identity;
+        if (logMember == null && thisIdentity != null) {
+            logMember = thisIdentity.getMemberInfo().getNode(getController(), true);
+        }
         String msg = "Connection closed to "
-            + ((member == null) ? this.toString() : member.toString());
-
+                + ((logMember == null) ? this.toString() : logMember.toString());
         if (e instanceof ConnectionException) {
-            msg += ". Cause: " + ((ConnectionException) e).getCause();
+            msg += ". Cause: " + e.getCause();
         } else if (e != null) {
             msg += ". Cause: " + e.toString();
         }
-        logFiner(msg);
-        logFiner("Exception", e);
+        boolean isServer = logMember != null && logMember.isServer();
+        if (isWarning() && isServer) {
+            logWarning(msg);
+        } else if (isFine()) {
+            logFine(msg);
+        }
+        if (isFiner()) {
+            logFiner("Exception", e);
+        }
     }
 
     // General ****************************************************************
