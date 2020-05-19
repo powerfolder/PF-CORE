@@ -21,6 +21,9 @@ package de.dal33t.powerfolder.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -260,14 +263,10 @@ public class DateUtil {
         if ("9223372036854775807".equals(stringDate)) {
             return null;
         }
-
         Date newDate = null;
         try {
-            // ISO-8601 timeformat: 2015-09-22T13:32:32.084Z
-            Calendar cal = javax.xml.bind.DatatypeConverter
-                .parseDateTime(stringDate);
-            cal.setLenient(false);
-            newDate = cal.getTime();
+            TemporalAccessor ta = DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(stringDate);
+            newDate = Date.from(Instant.from(ta));
         } catch (RuntimeException rte) {
             try {
                 long expDate = Long.parseLong(stringDate);

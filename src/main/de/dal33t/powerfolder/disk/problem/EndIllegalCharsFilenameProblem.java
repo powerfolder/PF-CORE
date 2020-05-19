@@ -70,4 +70,11 @@ public class EndIllegalCharsFilenameProblem extends ResolvableProblem {
         return Translation.get("filename_problem.ends_with_illegal_char.soln_desc");
     }
 
+    @Override
+    public String toString() {
+        return "EndIllegalCharsFilenameProblem{" +
+                "fileInfo=" + fileInfo +
+                ", description='" + description + '\'' +
+                '}';
+    }
 }

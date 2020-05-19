@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FileBrowserIntegration;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
@@ -88,9 +89,9 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 15;
-    private static final int MINOR_VERSION = 2;
+    private static final int MINOR_VERSION = 3;
     private static final int REVISION_VERSION = 100;
-    private static final int SPRINT_NUMBER = 24;
+    private static final int SPRINT_NUMBER = 25;
 
     /**
      * Program version.
@@ -495,8 +496,11 @@ public class Controller extends PFComponent {
         long totalMemory = runtime.totalMemory();
         logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
-        if (!Desktop.isDesktopSupported() && isUIEnabled()) {
-            logWarning("Desktop utility not supported");
+        if (isUIEnabled()) {
+            LookAndFeelSupport.setSyntheticaLicense();
+            if (!Desktop.isDesktopSupported()) {
+                logWarning("Desktop utility not supported");
+            }
         }
 
         // If we have a new config. clear the preferences.
@@ -1214,7 +1218,7 @@ public class Controller extends PFComponent {
             sched.getContext().put("controller", this);
             sched.start();
         } catch (SchedulerException e) {
-            logWarning("Could not initiate housekeeping: " + e.getMessage());
+            logFine("Could not initiate housekeeping: " + e.getMessage());
         }
 
         // Also run housekeeping one minute after start up.

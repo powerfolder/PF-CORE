@@ -55,6 +55,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
@@ -477,7 +478,7 @@ public class Folder extends PFComponent {
         if (!getController().isShuttingDown()) {
             getController().setPaused(getController().isPaused());
         }
-        if (isWarning()) {
+        if (isWarning() && !currentInfo.isMetaFolder()) {
             logWarning(this + ": Added " + problem);
         }
     }
@@ -1586,8 +1587,10 @@ public class Folder extends PFComponent {
             watcher.removeIgnoreFile(dirInfo);
         }
 
-        store(getMySelf(), correctFolderInfo(dirInfo));
+        FileInfo finalDirInfo = correctFolderInfo(dirInfo);
+        store(getMySelf(), finalDirInfo);
         setDBDirty();
+        broadcastMessages(useExt -> new Message[] {FolderFilesChanged.create(finalDirInfo, useExt)});
     }
 
     /**
@@ -2332,7 +2335,7 @@ public class Folder extends PFComponent {
         if (isWarning() && !currentInfo.isMetaFolder()) {
             logWarning("Reverting local change: "
                 + fileInfo.toDetailString()
-                + ". File not found on remote side.");
+                + ". File not found on remote side. Newest version: " + newestVersion);
         }
 
         try {
@@ -2698,8 +2701,11 @@ public class Folder extends PFComponent {
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
         if (!wasMember && isInfo() && !init && !currentInfo.isMetaFolder()) {
-            logInfo(getLocalizedName() + ": Member " + member.getNick()
-                + " joined (connected? " + member.isConnected() + ")");
+            Level l = member.isConnected() ? Level.INFO : Level.FINE;
+            if (isLog(l)) {
+                logIt(l, this + ": Member " + member.getNick()
+                        + " joined (connected? " + member.isConnected() + ")", null);
+            }
         }
         if (!init) {
             // NEVER send file lists without request via D2D protocol
@@ -2830,7 +2836,7 @@ public class Folder extends PFComponent {
         }
         Map<String, MemberInfo> membersMap = new TreeMap<>();
         Path f = fileInfo.getDiskFile(getController().getFolderRepository());
-        if (Files.notExists(f)) {
+        if (f == null || Files.notExists(f)) {
             return membersMap;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(f)))) {
@@ -3960,10 +3966,10 @@ public class Folder extends PFComponent {
         }
         if (tries > 1) {
             if (success) {
-                logWarning("Was able to write folder database, but only after "
+                logFine("Was able to write folder database, but only after "
                     + tries + " trys.");
             } else {
-                logSevere("Was NOT able to write folder database, even after "
+                logWarning("Was NOT able to write folder database, even after "
                     + tries + " trys.");
             }
         }

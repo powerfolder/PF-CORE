@@ -88,6 +88,15 @@ public interface FolderService {
         boolean removePermission);
 
     /**
+     * PFS-3572
+     *
+     * @param folderInfo
+     * @param archiveVersions
+     * @param encrypt
+     */
+    void replicateFolder(FolderInfo folderInfo, int archiveVersions, boolean encrypt);
+
+    /**
      * #854 - PFS-486
      *
      * @param foInfo

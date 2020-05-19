@@ -1232,7 +1232,7 @@ public class TransferManager extends PFComponent {
         Folder folder = dl.file
             .getFolder(getController().getFolderRepository());
         if (folder == null) {
-            logWarning("Received illegal download request from "
+            logFine("Received illegal download request from "
                 + from.getNick() + ". Not longer on folder "
                 + dl.file.getFolderInfo());
             return null;
@@ -1288,7 +1288,7 @@ public class TransferManager extends PFComponent {
         if (!fileInSyncWithDb) {
             logWarning("File not in sync with db: '" + dl.file.toDetailString()
                 + "', but I have "
-                + (localFile != null ? localFile.toDetailString() : ""));
+                + (localFile != null ? localFile.toDetailString() : "none"));
             return null;
         }
 

@@ -52,7 +52,7 @@ public class WrappedRunnable implements Runnable {
             // PFS-1722
             oom.printStackTrace();
             LOG.log(Level.SEVERE,
-                "Out of memory in " + deligate + ": " + oom.toString(), oom);
+                "Out of memory or process/resource limits reached in " + deligate + ": " + oom.toString(), oom);
             LOG.log(Level.SEVERE,
                 "Shutting down java virtual machine. Exit code: 107");
 

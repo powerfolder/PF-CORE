@@ -46,6 +46,7 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.handlers.BufferedHandler;
 import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
+import de.dal33t.powerfolder.util.logging.handlers.CountingHandler;
 import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
 
 /**
@@ -73,6 +74,9 @@ public class LoggingManager {
 
     /** The buffer handler */
     private static final BufferedHandler bufferedHandler;
+
+    /** For counting */
+    private static final CountingHandler countingHandler;
 
     /** The file handler */
     private static FileHandler fileHandler;
@@ -191,13 +195,18 @@ public class LoggingManager {
         consoleHandler = new ConsoleHandler();
         documentHandler = new DocumentHandler();
         bufferedHandler = new BufferedHandler(200);
+        countingHandler = new CountingHandler();
         syslogHandler = new SyslogHandler();
 
         rootLogger.setFilter(DEFAULT_FILTER);
         consoleHandler.setFilter(DEFAULT_FILTER);
         documentHandler.setFilter(DEFAULT_FILTER);
         bufferedHandler.setFilter(DEFAULT_FILTER);
+        countingHandler.setFilter(DEFAULT_FILTER);
         syslogHandler.setFilter(DEFAULT_FILTER);
+
+        countingHandler.setLevel(Level.WARNING);
+        rootLogger.addHandler(countingHandler);
     }
 
     /**
@@ -348,6 +357,10 @@ public class LoggingManager {
      */
     public static BufferedHandler getBufferedHandler() {
         return bufferedHandler;
+    }
+
+    public static CountingHandler getCountingHandler() {
+        return countingHandler;
     }
 
     /**

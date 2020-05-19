@@ -1370,8 +1370,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // #2569
                 if (isWarning()
                     && !isServer()
-                    && ((fList.folders != null && fList.folders.length > 100) || (fList.secretFolders != null && fList.secretFolders.length > 100))
-                    && getController().getFolderRepository().getFoldersCount() < 100)
+                    && ((fList.folders != null && fList.folders.length > 500) || (fList.secretFolders != null && fList.secretFolders.length > 500))
+                    && getController().getFolderRepository().getFoldersCount() < 500)
                 {
                     logWarning(getNick() + ": Received large " + fList);
                 }

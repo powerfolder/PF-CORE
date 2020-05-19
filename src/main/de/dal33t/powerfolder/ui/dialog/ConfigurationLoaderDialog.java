@@ -38,6 +38,7 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -355,6 +356,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
     }
 
     private class LoadingWorking extends SwingWorker {
+        private Throwable t;
         @Override
         public Object construct() throws IOException {
             Properties preConfig = null;
@@ -363,6 +365,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                 preConfig = loadFromInput(input);
             } catch (IOException e) {
                 logWarning("Unable to load config from " + input + ": " + e);
+                t = e;
                 if (StringUtils.isNotBlank(input) && input.indexOf(":", 7) < 0)
                 {
                     try {
@@ -445,6 +448,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
         public void finished() {
             Properties preConfig = (Properties) get();
             Throwable t = getThrowable();
+            if (t == null) {
+                t = this.t;
+            }
             String errorMsg = null;
             if (preConfig == null) {
                 errorMsg = Translation
@@ -462,6 +468,9 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                     } else if (t instanceof UnknownHostException) {
                         errorMsg = Translation
                             .get("config.loader.dialog.error.host.notfound");
+                    } else if (t instanceof SSLHandshakeException) {
+                        errorMsg = Translation
+                                .get("config.loader.dialog.error.ssl");
                     } else {
                         errorMsg = t.getMessage();
                     }

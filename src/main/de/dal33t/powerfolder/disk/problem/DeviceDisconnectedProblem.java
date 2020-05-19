@@ -7,12 +7,16 @@ import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
+import java.util.Date;
+
 public class DeviceDisconnectedProblem extends ResolvableProblem {
     private final FolderInfo folderInfo;
+    private final Date created;
 
     public DeviceDisconnectedProblem(FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "Folder");
         this.folderInfo = folderInfo;
+        this.created = new Date();
     }
 
     @Override
@@ -29,6 +33,17 @@ public class DeviceDisconnectedProblem extends ResolvableProblem {
         return folderInfo.getFolder(controller);
     }
 
+    public Date getCreated() {
+        return created;
+    }
+
+    @Override
+    public String toString() {
+        return "StorageDisconnectedProblem{" +
+                "folderInfo=" + folderInfo +
+                ", since=" + created +
+                '}';
+    }
 
     @Override
     public Runnable resolution(final Controller controller) {

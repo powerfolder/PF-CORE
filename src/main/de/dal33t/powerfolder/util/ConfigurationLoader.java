@@ -484,16 +484,17 @@ public class ConfigurationLoader {
             if (key.endsWith(SUFFIX_OVERWRITE)) {
                 continue;
             }
+            boolean overwriteThis = overwrite;
             try {
                 String owStr = preConfig.getProperty(key + SUFFIX_OVERWRITE);
                 if (StringUtils.isNotBlank(owStr)) {
-                    overwrite = Boolean.valueOf(owStr);
+                    overwriteThis = Boolean.valueOf(owStr);
                 }
             } catch (RuntimeException e) {
                 LOG.warning("Unable to parse entry '" + key + ".overwrite': " + e);
             }
 
-            if (!targetConfig.containsKey(key) || overwrite) {
+            if (!targetConfig.containsKey(key) || overwriteThis) {
                 Object oldValue = targetConfig.setProperty(key, value);
                 if (!key.startsWith(PREFERENCES_PREFIX)
                     && !value.equals(oldValue))
@@ -550,17 +551,18 @@ public class ConfigurationLoader {
             boolean entryMissing = "-XXWEIRED-DEFAULT-VALUE"
                 .equals(targetPreferences.get(key, "-XXWEIRED-DEFAULT-VALUE"));
 
+            boolean overwriteThis = overwrite;
             // PFC-2747 / PFS-1574
             try {
                 String owStr = preConfig.getProperty(key + SUFFIX_OVERWRITE);
                 if (StringUtils.isNotBlank(owStr)) {
-                    overwrite = Boolean.valueOf(owStr);
+                    overwriteThis = Boolean.valueOf(owStr);
                 }
             } catch (RuntimeException e) {
                 LOG.warning("Unable to parse entry '" + key + ".overwrite': " + e);
             }
 
-            if (entryMissing || overwrite) {
+            if (entryMissing || overwriteThis) {
                 targetPreferences.put(key, value);
                 n++;
                 LOG.finer("Preconfigured " + key + "=" + value);
