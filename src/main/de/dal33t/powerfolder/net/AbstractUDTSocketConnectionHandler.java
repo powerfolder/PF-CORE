@@ -808,7 +808,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         } else if (e != null) {
             msg += ". Cause: " + e.toString();
         }
-        boolean isServer = logMember != null && logMember.isServer();
+        boolean isServer = logMember != null && logMember.isServer() && !logMember.isMySelf();
         if (isWarning() && isServer) {
             logWarning(msg);
         } else if (isFine()) {
