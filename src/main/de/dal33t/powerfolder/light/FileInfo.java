@@ -833,7 +833,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     @Override
     public String toString() {
-        return '[' + folderInfo.getName() + "]:" + (deleted ? "(del) /" : "/")
+        return '[' + folderInfo.getName() + '/' + folderInfo.getId() + "]:" + (deleted ? "(del) /" : "/")
                 + fileName;
     }
 
