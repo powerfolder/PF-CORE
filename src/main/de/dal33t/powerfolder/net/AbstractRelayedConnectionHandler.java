@@ -859,13 +859,19 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         }
         String msg = "Connection closed to "
                 + ((logMember == null) ? this.toString() : logMember.toString());
-        if (e instanceof ConnectionException) {
-            msg += ". Cause: " + e.getCause();
-        } else if (e != null) {
-            msg += ". Cause: " + e.toString();
+
+        boolean logWarning = logMember != null && (logMember.isServer() && !logMember.isMySelf() && !logMember.isConnected());
+        msg += ". Caused by ";
+        if (logMember != null && logMember.getLastProblem() != null) {
+            msg += logMember.getLastProblem();
+            msg += ", ";
         }
-        boolean isServer = logMember != null && logMember.isServer();
-        if (isWarning() && isServer) {
+        if (e instanceof ConnectionException) {
+            msg += e.getCause();
+        } else if (e != null) {
+            msg += e.toString();
+        }
+        if (isWarning() && logWarning) {
             logWarning(msg);
         } else if (isFine()) {
             logFine(msg);
