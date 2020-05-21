@@ -804,7 +804,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         String msg = "Connection closed to "
                 + ((logMember == null) ? this.toString() : logMember.toString());
 
-        boolean isServer = logMember != null && logMember.isServer() && !logMember.isMySelf();
+        boolean logWarning = logMember != null && (logMember.isServer() && !logMember.isMySelf() && !logMember.isConnected());
         msg += ". Caused by ";
         if (logMember != null && logMember.getLastProblem() != null) {
             msg += logMember.getLastProblem();
@@ -815,7 +815,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         } else if (e != null) {
             msg += e.toString();
         }
-        if (isWarning() && isServer) {
+        if (isWarning() && logWarning) {
             logWarning(msg);
         } else if (isFine()) {
             logFine(msg);
