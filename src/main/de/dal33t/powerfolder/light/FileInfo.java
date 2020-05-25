@@ -913,6 +913,14 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(folderInfo, "FolderInfo is null");
     }
 
+    /**
+     * PFS-3537 Temporary change
+     * @param by
+     */
+    public void increaseVersion(int by) {
+        version += by;
+    }
+
     // Serialization optimization *********************************************
 
     private void readObject(ObjectInputStream in) throws IOException,
