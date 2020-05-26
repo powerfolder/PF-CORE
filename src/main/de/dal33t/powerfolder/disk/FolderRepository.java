@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
@@ -701,7 +702,81 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         locking.start();
 
+        // PFS-3618 / PFS-1956
+        boolean is0byteRecoveryRun = getController().getPreferences()
+                .getBoolean("is0byteRecoveryRun", false);
+        if (!is0byteRecoveryRun && ConfigurationEntry.RECOVER_0BYTE_FILES
+                .getValueBoolean(getController())
+                && !getController().getMySelf().isServer())
+        {
+            getController().getIOProvider().startIO(() -> {
+                try {
+                    restoreZeroByteFiles();
+                    getController().getPreferences()
+                            .putBoolean("is0byteRecoveryRun", true);
+                } catch (RuntimeException re) {
+                    logSevere("An error occured while trying to recover zero byte files: " + re, re);
+                }
+            });
+        }
+
         started = true;
+    }
+
+    /**
+     * Restore files that are zero bytes big and changed by the server.
+     * This was an issue with a previous version of the clustering protocol.
+     * PFS-1956
+     */
+    private void restoreZeroByteFiles() {
+        logFine("Start recovering 0-byte files.");
+        for (Folder folder : getFolders()) {
+            FileArchiver fa = folder.getFileArchiver();
+
+            for (FileInfo file : folder.getKnownFiles()) {
+                logFine("Checking for " + file);
+
+                // Only if there is a version in the history and the last modifier is a server
+                if (fa.hasArchivedFileInfo(file) && file.getModifiedBy()
+                        .getNode(getController(), false).isServer())
+                {
+                    Path fileOnDisk = file.getDiskFile(this);
+                    try {
+                        // Check the file size to be 0 bytes
+                        if (Files.size(fileOnDisk) == 0) {
+                            logFine(
+                                    file + " has archived file and was lastly changed by a server "
+                                            + file.getModifiedBy()
+                                            + " and has a size of 0 bytes");
+                            List<FileInfo> history = fa.getSortedArchivedFilesInfos(file);
+                            if (history.isEmpty()) {
+                                logFine("No history of file " + file);
+                                continue;
+                            }
+                            FileInfo toRestore = history.get(history.size() - 1);
+
+                            // Now, only restore when the version of the file in
+                            // the history is lesser than the version of the
+                            // file itself.
+                            if (toRestore.getVersion() < file.getVersion()) {
+                                logInfo(
+                                        "Restoring " + file + " to previous version "
+                                                + toRestore.getVersion());
+                                fa.restore(toRestore, fileOnDisk);
+                            } else {
+                                logFine("Not restoring " + file
+                                        + " with version " + file.getVersion()
+                                        + " to " + toRestore.getVersion());
+                            }
+                        }
+                    } catch (IOException e) {
+                        logWarning(
+                                "Could not check file size while trying to restore last version of "
+                                        + file, e);
+                    }
+                }
+            }
+        }
     }
 
     /**

@@ -543,6 +543,22 @@ public class FileArchiver {
     }
 
     /**
+     * Calls {@link #getArchivedFilesInfos(FileInfo)} and sorts the returned
+     * list according to the version number.
+     *
+     * @param fileInfo
+     *            The file to get the archived versions of.
+     * @return A alpha-numerically ascending sorted list of all versions of
+     *         {@code fileInfo} in the history.
+     */
+    public List<FileInfo> getSortedArchivedFilesInfos(FileInfo fileInfo) {
+        List<FileInfo> versions = new ArrayList<>(getArchivedFilesInfos(fileInfo));
+        versions.sort(Comparator.comparingInt(FileInfo::getVersion));
+        return versions;
+    }
+
+
+    /**
      * @param fileInfo The file to get the archived version of.
      * @return The path to the file in the history.
      */
