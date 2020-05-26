@@ -737,8 +737,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logFine("Checking for " + file);
 
                 // Only if there is a version in the history and the last modifier is a server
-                if (fa.hasArchivedFileInfo(file) && file.getModifiedBy()
-                        .getNode(getController(), false).isServer())
+                if (file.getModifiedBy().getNode(getController(), true).isServer()
+                        && file.getModifiedByAccount() == null && fa.hasArchivedFileInfo(file))
                 {
                     Path fileOnDisk = file.getDiskFile(this);
                     try {
