@@ -511,7 +511,7 @@ public class Locking extends PFComponent {
         FileInfo lockFileInfo = FileInfoFactory.lookupInstance(metaFolder,
             lockFile);
         if (metaFolder.scanChangedFile(lockFileInfo) == null) {
-            logWarning("Scanning of lock file not necessary: " + lockFileInfo);
+            logFine("Scanning of lock file not necessary: " + lockFileInfo);
         }
     }
 

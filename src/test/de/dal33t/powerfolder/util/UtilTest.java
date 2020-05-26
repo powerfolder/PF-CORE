@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.nio.file.Path;
+import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -49,6 +50,13 @@ import static com.liferay.nativity.util.OSDetector.isWindows;
 import static org.junit.Assume.assumeTrue;
 
 public class UtilTest extends TestCase {
+
+    public void testNormalization() {
+        assertFalse("NFD", Normalizer.isNormalized("ä", Normalizer.Form.NFD));
+        assertTrue("NFC", Normalizer.isNormalized("ä", Normalizer.Form.NFC));
+        assertFalse("NFKD", Normalizer.isNormalized("ä", Normalizer.Form.NFKD));
+        assertTrue("NFKC", Normalizer.isNormalized("ä", Normalizer.Form.NFKC));
+    }
 
     public void testEqualsRelativeNameNull() {
         assertFalse(Util.equalsRelativeName("Test", null));
@@ -332,7 +340,7 @@ public class UtilTest extends TestCase {
         File newFile = new File("build/test/second.config");
         newFile.createNewFile();
         FileWriter newWriter = new FileWriter(newFile);
-        newWriter.write("net.bindaddress=127.0.0.1");
+        newWriter.write("net.bindaddress=127.0.0.1\ndisableui=true");
 
         newWriter.close();
 

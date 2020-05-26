@@ -216,7 +216,7 @@ public final class FileInfoFactory {
         try {
             date = Files.getLastModifiedTime(localFile).toMillis();
         } catch (IOException ioe) {
-            LOG.fine(ioe.getMessage());
+            LOG.fine(ioe.toString());
         }
 
         if (directory) {
@@ -227,7 +227,7 @@ public final class FileInfoFactory {
             try {
                 size = Files.size(localFile);
             } catch (IOException ioe) {
-                LOG.fine(ioe.getMessage());
+                LOG.fine(ioe.toString());
             }
             return new FileInfo(
                 buildFileName(folder.getLocalBase(), localFile), oid, size,
@@ -283,7 +283,7 @@ public final class FileInfoFactory {
                         + original.toDetailString());
             }
         } catch (IOException ioe) {
-            LOG.warning(ioe.getMessage());
+            LOG.warning(ioe.toString());
             return null;
         }
     }

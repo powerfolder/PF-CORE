@@ -84,7 +84,7 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
 
     public final void run() {
         if (!getController().getNodeManager().isStarted()) {
-            logWarning("NodeManager already shut down. "
+            logWarning("NodeManager not started. "
                 + "Closing incoming connection attempt: " + this);
             return;
         }

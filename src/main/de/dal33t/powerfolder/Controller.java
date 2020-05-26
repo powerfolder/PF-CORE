@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FileBrowserIntegration;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
@@ -85,19 +86,17 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
  * @version $Revision: 1.107 $
  */
 public class Controller extends PFComponent {
-    private static final Logger log = Logger.getLogger(Controller.class
-        .getName());
+    private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 15;
-    private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 101;
-    private static final int SPRINT_NUMBER = 22;
+    private static final int MINOR_VERSION = 3;
+    private static final int REVISION_VERSION = 102;
+    private static final int SPRINT_NUMBER = 25;
 
     /**
      * Program version.
      */
-    public static final String PROGRAM_VERSION = MAJOR_VERSION + "."
-        + MINOR_VERSION + "." + REVISION_VERSION;
+    public static final String PROGRAM_VERSION = MAJOR_VERSION + "." + MINOR_VERSION + "." + REVISION_VERSION;
 
     /**
      * Federation version.
@@ -497,8 +496,11 @@ public class Controller extends PFComponent {
         long totalMemory = runtime.totalMemory();
         logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
-        if (!Desktop.isDesktopSupported() && isUIEnabled()) {
-            logWarning("Desktop utility not supported");
+        if (isUIEnabled()) {
+            LookAndFeelSupport.setSyntheticaLicense();
+            if (!Desktop.isDesktopSupported()) {
+                logWarning("Desktop utility not supported");
+            }
         }
 
         // If we have a new config. clear the preferences.
@@ -1216,7 +1218,7 @@ public class Controller extends PFComponent {
             sched.getContext().put("controller", this);
             sched.start();
         } catch (SchedulerException e) {
-            logWarning("Could not initiate housekeeping: " + e.getMessage());
+            logFine("Could not initiate housekeeping: " + e.getMessage());
         }
 
         // Also run housekeeping one minute after start up.
@@ -1301,9 +1303,8 @@ public class Controller extends PFComponent {
                     ConfigurationEntry.NET_PORT_D2D.getValueInt(this) > 0);
             broadcastManager.start();
         } catch (ConnectionException e) {
-            logSevere("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
+            logWarning("Unable to open broadcast manager, you wont automatically connect to clients on LAN: "
                     + e.getMessage());
-            logSevere("ConnectionException", e);
         }
     }
 

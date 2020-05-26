@@ -242,9 +242,21 @@ public class Debug {
             b.append("\nOS: " + System.getProperty("os.name"));
             b.append("\nJava: " + JavaVersion.systemVersion().toString() + " ("
                 + System.getProperty("java.vendor") + ')');
-
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());
+            double uptimeDays = ((double) c.getUptime()) / 1000 / 60 / 60 / 24;
+            int nWarnings = LoggingManager.getCountingHandler().countWarnings();
+            b.append("\nWarnings: ");
+            b.append(nWarnings);
+            b.append(" total (~");
+            b.append(Math.round(nWarnings / uptimeDays));
+            b.append(" per day)");
+            int nSevere = LoggingManager.getCountingHandler().countSevere();
+            b.append("\nSevere: ");
+            b.append(nSevere);
+            b.append(" total (~");
+            b.append(Math.round(nSevere / uptimeDays));
+            b.append(" per day)");
 
             double upKBS = c.getTransferManager()
                 .getTotalUploadTrafficCounter().calculateCurrentKBS();
@@ -527,7 +539,7 @@ public class Debug {
             return;
         }
         b.append(f);
-        b.append(", ID: XXX-erased-XXX");
+        b.append(", ID: " + f.getId());
         b.append(", files: " + f.getKnownItemCount() + ", size: "
             + Format.formatBytes(f.getStatistic().getLocalSize())
             + ", members: " + f.getMembersCount() + ", mode: "

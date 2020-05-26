@@ -33,10 +33,10 @@ import java.awt.event.ActionEvent;
  * 
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-class ShareFileNotificationHandler extends NotificationHandlerBase {
+public class ShareFileNotificationHandler extends NotificationHandlerBase {
 
-    ShareFileNotificationHandler(final Controller controller,
-        final FileInfo fInfo, final String previousClipboardContents)
+    public ShareFileNotificationHandler(final Controller controller,
+                                        final FileInfo fInfo, final String previousClipboardContents)
     {
         super(controller);
 

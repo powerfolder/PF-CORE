@@ -237,7 +237,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (Spacetree.isSupported(getController())) {
             try {
                 Spacetree st = Spacetree.create(getController());
-                st.install();
+                if (st != null) {
+                    st.install();
+                }
             } catch (Exception e) {
                 logWarning("Unable to setup space tree icon integration into Windows-Explorer. " + e.getMessage(), e);
             }
@@ -1202,11 +1204,11 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Set datamodel
         if (metaFolders.containsKey(folderInfo)) {
-            logSevere("Meta folder " + folderInfo + "already in meta folders list");
+            logWarning("Meta " + folderInfo + " already in meta folders list");
         }
         metaFolders.put(folderInfo, metaFolder);
         if (folders.containsKey(folderInfo)) {
-            logSevere("Folder " + folderInfo + "already in folders list");
+            logWarning(folderInfo + "already in folders list");
         }
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
@@ -2466,6 +2468,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         try {
+            scanBasedirLock.lock();
             for (FolderInfo foInfo : a.getFolders()) {
                 Folder folder = folders.get(foInfo);
                 if (folder == null) {
@@ -2545,6 +2548,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         } finally {
+            scanBasedirLock.unlock();
             accountSyncLock.unlock();
         }
     }
@@ -2561,6 +2565,11 @@ public class FolderRepository extends PFComponent implements Runnable {
          * 3. unencrypted Folder -> encrypted Folder
          */
 
+        if (folder.getLocalBase().equals(targetPath)) {
+            logInfo("Source and target path of folder are same. doing nothing: "
+                    + folder.getLocalBase() + " and " + targetPath);
+            return null;
+        }
         if (sourceEncrypted && !targetEncrypted) {
             logWarning("Not allowed to move encrypted folder to unencrypted target directory. From: "
                     + folder.getLocalBase() + " to " + targetPath);
@@ -2574,7 +2583,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
                 localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
             }
-            logInfo("Not moving folder " + folder + " to new directory "
+            logWarning("Not moving folder " + folder.getLocalizedName() + " to new directory "
                     + targetPath.toString()
                     + ". The new directory is not empty. "
                     + "Keeping the old directory " + localBase);
@@ -2824,7 +2833,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (getController().isUIEnabled() && ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController()) && !checkDiskSpace(ad)) {
             ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(), false);
             getController().saveConfig();
-            Notice notice = new WarningNotice(Translation.get("disc_space_warning.title"), Translation.get("disc_space_warning.summary"), null);
+            Notice notice = new WarningNotice(Translation.get("disc_space_warning.title"), Translation.get("disc_space_warning.summary"), Translation.get("disc_space_warning.summary"));
             getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(notice);
         }
         if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS

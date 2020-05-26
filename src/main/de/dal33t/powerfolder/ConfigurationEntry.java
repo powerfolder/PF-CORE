@@ -297,7 +297,7 @@ public enum ConfigurationEntry {
         public String getValue(Controller controller) {
             String str = super.getValue(controller);
             if (str != null && str.toLowerCase().trim()
-                    .startsWith("https://access.powerfolder.com/node/os")) {
+                    .startsWith("https://access.powerfolder.com")) {
                 return getDefaultValue();
             }
             return str;
@@ -315,7 +315,22 @@ public enum ConfigurationEntry {
      * The optional server hostname to connect to. Example:
      * server.powerfolder.com:1234
      */
-    SERVER_HOST("server.host", "os006.powerfolder.com:1337"),
+    SERVER_HOST("server.host", "os006.powerfolder.com:1337") {
+        @Override
+        public String getValue(Controller controller) {
+            String str = super.getValue(controller);
+            if (str == null) {
+                return str;
+            }
+            str = str.toLowerCase().trim();
+            if (str.startsWith("os003.powerfolder.com")
+                    || str.startsWith("os004.powerfolder.com")
+                    || str.startsWith("os005.powerfolder.com")) {
+                return getDefaultValue();
+            }
+            return str;
+        }
+    },
 
     /**
      * The D2D port of the server
@@ -1101,7 +1116,7 @@ public enum ConfigurationEntry {
      */
     FOLDER_WATCHER_DELAY("folder.watcher.delay.seconds", 1),
 
-    FILE_REQUESTOR_INTERVAL("file.requestor.interval.seconds", 60),
+    FILE_REQUESTOR_INTERVAL("file.requestor.interval.seconds", 300),
 
     /**
      * Enable to copy and delete a newly transfered file instead of moving.

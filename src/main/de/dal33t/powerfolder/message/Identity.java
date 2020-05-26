@@ -174,7 +174,7 @@ public class Identity extends Message implements D2DObject, D2DEvent
         // #2569
         this.requestFullFolderlist = controller.getMySelf().isServer();
 
-        this.configurationURL = controller.getConfig().getProperty("config.url");
+        this.configurationURL = ConfigurationEntry.CONFIG_URL.getValue(controller);
     }
 
     /**

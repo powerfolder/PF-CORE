@@ -856,15 +856,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         } else {
             str.append("-n/a-");
         }
-        str.append(") by '");
-        if (modifiedByAccount == null) {
-            if (modifiedBy != null) {
-                str.append(modifiedBy.nick);
-            }
-        } else {
+        str.append(") by ");
+        if (modifiedByAccount != null) {
             str.append(modifiedByAccount.getUsername());
+        } else {
+            str.append("(unknown)");
         }
-        str.append('\'');
         if (modifiedBy != null) {
             str.append(" on ");
             str.append(modifiedBy.nick);

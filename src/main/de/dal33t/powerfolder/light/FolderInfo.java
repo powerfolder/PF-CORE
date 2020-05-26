@@ -251,7 +251,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     @Override
     public String toString() {
-        return "Folder '" + name + '\'';
+        return "Folder " + name + '/' + id;
     }
 
     // Serialization optimization *********************************************

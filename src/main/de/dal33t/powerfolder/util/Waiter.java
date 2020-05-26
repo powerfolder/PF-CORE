@@ -71,8 +71,14 @@ public class Waiter {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("Waiter was interrupted @ "
+            throw new WaiterInterruptedException("Waiter was interrupted @ "
                 + Thread.currentThread().getName(), e);
+        }
+    }
+
+    public static final class WaiterInterruptedException extends RuntimeException {
+        public WaiterInterruptedException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

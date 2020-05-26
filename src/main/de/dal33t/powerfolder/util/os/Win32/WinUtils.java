@@ -237,10 +237,12 @@ public class WinUtils extends Loggable {
     public void setPFStartup(boolean setup, Controller controller)
         throws IOException, UnsupportedOperationException
     {
-        Path pfile = Paths.get(System.getProperty("java.class.path"))
-            .getParent()
-            .resolve(controller.getDistribution().getBinaryName() + ".exe");
-        if (Files.notExists(pfile)) {
+        Path programFiles = getProgramInstallationPath();
+        Path pfile = null;
+        if (programFiles != null) {
+            pfile = programFiles.resolve(controller.getDistribution().getBinaryName() + ".exe");
+        }
+        if (pfile == null || Files.notExists(pfile)) {
             pfile = Paths.get(controller.getDistribution().getBinaryName()
                 + ".exe").toAbsolutePath();
             if (Files.notExists(pfile)) {
@@ -254,12 +256,8 @@ public class WinUtils extends Loggable {
             return;
         }
         logFiner("Found " + pfile.toAbsolutePath());
-        String shortCutname = controller.getDistribution().getName()
-            + Constants.LINK_EXTENSION;
-        Path pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),
-            shortCutname);
-        Path pflnkAll = Paths.get(getSystemFolderPath(CSIDL_COMMON_STARTUP,
-            false), shortCutname);
+        String shortCutname = controller.getDistribution().getName() + Constants.LINK_EXTENSION;
+        Path pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false), shortCutname);
         if (setup) {
             ShellLink sl = new ShellLink("--minimized",
                 Translation.get("winutils.shortcut.description"),
@@ -270,21 +268,14 @@ public class WinUtils extends Loggable {
             logInfo("Deleting startup link.");
             try {
                 Files.deleteIfExists(pflnk);
-                Files.deleteIfExists(pflnkAll);
-
                 // PFC-2164: Fallback. Also delete binary name links
                 shortCutname = controller.getDistribution().getBinaryName()
                     + Constants.LINK_EXTENSION;
                 pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),
                     shortCutname);
-                pflnkAll = Paths.get(
-                    getSystemFolderPath(CSIDL_COMMON_STARTUP, false), shortCutname);
-
                 Files.deleteIfExists(pflnk);
-                Files.deleteIfExists(pflnkAll);
             } catch (IOException ioe) {
-                logInfo("Could not delete files '" + pflnk.toAbsolutePath()
-                    + "' and '" + pflnkAll.toAbsolutePath() + "'", ioe);
+                logInfo("Could not delete file " + pflnk.toAbsolutePath() + ". " + ioe);
             }
         }
     }
@@ -294,20 +285,11 @@ public class WinUtils extends Loggable {
      * @return @code True if the start up item is set, @code false otherwise.
      */
     public boolean hasPFStartup(Controller controller) {
-        String shortCutname = controller.getDistribution().getName()
-            + Constants.LINK_EXTENSION;
-        Path pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),
-            shortCutname);
-        Path pflnkAll = Paths.get(getSystemFolderPath(CSIDL_COMMON_STARTUP,
-            false), shortCutname);
-        String shortCutname2 = controller.getDistribution().getBinaryName()
-            + Constants.LINK_EXTENSION;
-        Path pflnk2 = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false),
-            shortCutname2);
-        Path pflnkAll2 = Paths.get(getSystemFolderPath(CSIDL_COMMON_STARTUP,
-            false), shortCutname2);
-        return Files.exists(pflnk) || Files.exists(pflnkAll) || Files.exists(pflnk2)
-            || Files.exists(pflnkAll2);
+        String shortCutname = controller.getDistribution().getName() + Constants.LINK_EXTENSION;
+        Path pflnk = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false), shortCutname);
+        String shortCutname2 = controller.getDistribution().getBinaryName() + Constants.LINK_EXTENSION;
+        Path pflnk2 = Paths.get(getSystemFolderPath(CSIDL_STARTUP, false), shortCutname2);
+        return Files.exists(pflnk) || Files.exists(pflnk2);
     }
 
     /**

@@ -339,16 +339,6 @@ public class PFWizard extends PFUIComponent {
         {
             dialog.setVisible(false);
         } else {
-            // For OS X, force the application to be shown
-            if (OSUtil.isMacOS()) {
-                ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-                ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("AppleScript");
-                try {
-                    scriptEngine.eval("tell me to activate");
-                } catch (ScriptException e) {
-                    // Do nothing
-                }
-            }
             dialog.setVisible(true);
         }
     }

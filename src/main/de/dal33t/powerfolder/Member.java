@@ -1370,8 +1370,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 // #2569
                 if (isWarning()
                     && !isServer()
-                    && ((fList.folders != null && fList.folders.length > 100) || (fList.secretFolders != null && fList.secretFolders.length > 100))
-                    && getController().getFolderRepository().getFoldersCount() < 100)
+                    && ((fList.folders != null && fList.folders.length > 500) || (fList.secretFolders != null && fList.secretFolders.length > 500))
+                    && getController().getFolderRepository().getFoldersCount() < 500)
                 {
                     logWarning(getNick() + ": Received large " + fList);
                 }
@@ -1615,9 +1615,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 final FolderFilesChanged changes = (FolderFilesChanged) message;
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {
-                    logWarning("Disconnecting: Received folder changes, but not received the full filelist from "
-                        + getNick() + ": " + changes);
-                    shutdown();
+                    // Ignoring: Caused by SCAN during connect. we will get the full filelist later:
+                    logFine("Received folder changes, but not received the full filelist from "
+                        + getNick() + ". Ignoring: " + changes);
                     return;
                 }
                 nExpected -= 1;

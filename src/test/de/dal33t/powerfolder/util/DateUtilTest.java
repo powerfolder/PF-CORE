@@ -28,7 +28,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.DateUtil;
+import org.junit.Test;
 
 public class DateUtilTest extends TestCase {
 
@@ -170,5 +170,46 @@ public class DateUtilTest extends TestCase {
         assertTrue(DateUtil.isMoreThanNDaysAfter(d1, d2, 10));
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 30));
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 26));
+    }
+
+    @Test
+    public void testParseDate() throws ParseException {
+        assertNull(DateUtil.parseDate("9223372036854775807"));
+        assertNull(DateUtil.parseDate("0"));
+
+        // Mon Jan 01 00:00:00 UTC 1601
+        assertEquals(1, 1, 1601, 0, 0, 0, DateUtil.parseDate("1"));
+
+        // 2015-09-22T13:32:32.084Z
+        assertEquals(22, 9, 2015, 13, 32, 32, DateUtil.parseDate("2015-09-22T13:32:32.084Z"));
+
+        // 2013-04-03T17:04:39.9430000+03:00. +3 on UTC
+        assertEquals(3, 4, 2013, 14, 4, 39, DateUtil.parseDate("2013-04-03T17:04:39.9430000+03:00"));
+
+        // Souce: https://en.wikipedia.org/wiki/ISO_8601
+        assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-04-23T12:50:40+00:00"));
+        assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-04-23T12:50:40Z"));
+
+        // Unsupported variants at the moment:
+        // assertEquals(23, 4, 2020, 0, 0, 0, DateUtil.parseDate("2020-04-23"));
+        // assertEquals(23, 4, 2020, 0, 0, 0, DateUtil.parseDate("2020-04-23"));
+        // assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("20200423T125040Z"));
+        // assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("--04-23[1]"));
+        // assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-W17"));
+        // assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-114"));
+    }
+
+    private void assertEquals(int day, int month, int year, int hour, int minutes, int seconds, Date actual) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(actual);
+        c.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+        assertEquals(day, c.get(GregorianCalendar.DAY_OF_MONTH));
+        assertEquals(month, c.get(GregorianCalendar.MONTH) + 1);
+        assertEquals(year, c.get(GregorianCalendar.YEAR));
+
+        assertEquals(hour, c.get(GregorianCalendar.HOUR_OF_DAY));
+        assertEquals(minutes, c.get(GregorianCalendar.MINUTE));
+        assertEquals(seconds, c.get(GregorianCalendar.SECOND));
     }
 }
