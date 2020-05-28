@@ -181,9 +181,6 @@ public class FolderScanner extends PFComponent {
 
         try {
             currentScanningFolder = folder;
-            if (isFiner()) {
-                logFiner("Scan of folder: " + folder.getName() + " start");
-            }
             long started = System.currentTimeMillis();
             // Debug.dumpThreadStacks();
 
@@ -194,6 +191,9 @@ public class FolderScanner extends PFComponent {
             }
             for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
                 remaining.put(fInfo.getRelativeName(), fInfo);
+            }
+            if (isFiner()) {
+                logFiner("Scan of folder: " + folder.getName() + " start. Items in FileDB: " + remaining.size());
             }
             if (!scan(base) || failure) {
                 // if false there was an IOError
@@ -542,10 +542,6 @@ public class FolderScanner extends PFComponent {
      *
      * @param fileToScan
      *            the disk file to examine.
-     * @param currentDirName
-     *            The location the use when creating a FileInfo. This is that
-     *            same for each file in the same directory and so not neccesary
-     *            to "calculate" this per file.
      * @return true on success and false on IOError (disk failure or file
      *         removed in the meantime)
      */
@@ -624,7 +620,8 @@ public class FolderScanner extends PFComponent {
                     directory, null);
                 currentScanResult.newFiles.add(info);
                 if (isFiner()) {
-                    logFiner("New found: " + info.toDetailString());
+                    logFiner("New found: " + filename + " @ " + fileToScan + ". Result: " + info.toDetailString()
+                            + ". Remaining know items: " + remaining.size());
                 }
             }
 

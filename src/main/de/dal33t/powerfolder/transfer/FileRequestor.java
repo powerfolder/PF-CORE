@@ -171,7 +171,7 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (isFiner()) {
-            logFiner("Requesting files (autodownload), has own DB? "
+            logFiner(folder + ": Requesting files (autodownload), has own DB? "
                 + folder.hasOwnDatabase());
         }
 
