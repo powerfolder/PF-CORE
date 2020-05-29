@@ -3084,7 +3084,7 @@ public class Folder extends PFComponent {
                     // PFC-2695: Prevent long running threads
                     n++;
                     if (n % 100 == 0 && !member.isCompletelyConnected()) {
-                        logWarning("Device " + member.getNick()
+                        logFine("Device " + member.getNick()
                             + " disconnected while syncing deletions.");
                         break;
                     }
@@ -3115,7 +3115,7 @@ public class Folder extends PFComponent {
                         // PFC-2695: Prevent long running threads
                         n++;
                         if (n % 100 == 0 && !member.isCompletelyConnected()) {
-                            logWarning("Device " + member.getNick()
+                            logFine("Device " + member.getNick()
                                 + " disconnected while syncing deletions.");
                             break;
                         }
