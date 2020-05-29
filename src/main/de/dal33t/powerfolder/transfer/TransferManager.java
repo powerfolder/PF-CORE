@@ -627,19 +627,11 @@ public class TransferManager extends PFComponent {
     {
         // Ensure shutdown
         upload.shutdown();
-        
-        Level l = Level.WARNING;
-        if (transferProblem == TransferProblem.NODE_DISCONNECTED
-            || transferProblem == TransferProblem.PAUSED
-            || transferProblem == TransferProblem.OLD_UPLOAD
-            || upload.getFile().getFolderInfo().isMetaFolder())
-        {
-            l = Level.FINE;
-        }
-        if (isLog(l)) {
-            logIt(l, "Upload broken: " + upload + ' '
+
+        if (isFine()) {
+            logFine("Upload broken: " + upload + ' '
                 + (transferProblem == null ? "" : transferProblem) + ": "
-                + problemInformation, null);
+                + problemInformation);
         }
         
         uploadsLock.lock();
