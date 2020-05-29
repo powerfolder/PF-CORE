@@ -119,11 +119,7 @@ public class FileArchiver {
 
         if (Files.exists(target)) {
             // PFS-1794: Happens 2136x
-            if (log.isLoggable(Level.WARNING)
-                    && !fileInfo.inSyncWithDisk(target)) {
-                log.warning("File " + fileInfo.toDetailString()
-                        + " seems to be archived already, doing nothing.");
-            } else if (log.isLoggable(Level.FINE)) {
+            if (log.isLoggable(Level.FINE) {
                 log.fine("File " + fileInfo.toDetailString()
                         + " seems to be archived already, doing nothing.");
             }
