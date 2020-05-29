@@ -687,7 +687,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         }
 
         if (identityReply == null) {
-            logWarning("Did not receive a identity reply after " + took
+            logFine("Did not receive a identity reply after " + took
                 + "s. Connected? " + isConnected() + ". remote id: " + identity);
             member = null;
             return false;
