@@ -116,8 +116,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public void delete(String domain, FileInfo info) {
-        if (isFiner()) {
-            logFiner(info.getFolderInfo() + ": Deleting in " + domain + " " + info.toDetailString());
+        if (isInfo()) {
+            logInfo(info.getFolderInfo() + ": Deleting in " + domain + " " + info.toDetailString());
         }
         if (info.isFile()) {
             getDomain(domain).files.remove(info);
@@ -128,8 +128,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
 
     public void deleteDomain(String domain, int newInitialSize) {
         String theDomain = StringUtils.isBlank(domain) ? selfDomain : domain;
-        if (isFiner()) {
-            logFiner("Deleting domain " + domain + ". newInitialSize=" + newInitialSize);
+        if (isInfo()) {
+            logInfo("Deleting domain " + domain + ". newInitialSize=" + newInitialSize);
         }
         domains.remove(theDomain);
         if (newInitialSize > 0) {
@@ -256,8 +256,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public void stop() {
-        if (isFiner()) {
-            logFiner("Stopping. Clearing domains");
+        if (isInfo()) {
+            logInfo("Stopping. Clearing domains");
         }
         domains.clear();
     }
@@ -272,15 +272,15 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         for (FileInfo fileInfo : infos) {
 
             if (fileInfo.isFile()) {
-                if (isFiner()) {
-                    logFiner("Storing file: " + fileInfo.toDetailString());
+                if (isInfo()) {
+                    logInfo("Storing file: " + fileInfo.toDetailString());
                 }
                 d.files.put(fileInfo, fileInfo);
                 // Make sure not dir is left with name name.
                 d.directories.remove(fileInfo);
             } else {
-                if (isFiner()) {
-                    logFiner("Storing directory: " + fileInfo.toDetailString());
+                if (isInfo()) {
+                    logInfo("Storing directory: " + fileInfo.toDetailString());
                 }
                 d.directories.put((DirectoryInfo) fileInfo,
                     (DirectoryInfo) fileInfo);
