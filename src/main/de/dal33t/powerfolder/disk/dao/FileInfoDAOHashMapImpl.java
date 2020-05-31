@@ -116,16 +116,21 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public void delete(String domain, FileInfo info) {
+        if (isFiner()) {
+            logFiner(info.getFolderInfo() + ": Deleting in " + domain + " " + info.toDetailString());
+        }
         if (info.isFile()) {
             getDomain(domain).files.remove(info);
         } else {
-            logWarning("Deleting directory: " + info.toDetailString());
             getDomain(domain).directories.remove(info);
         }
     }
 
     public void deleteDomain(String domain, int newInitialSize) {
         String theDomain = StringUtils.isBlank(domain) ? selfDomain : domain;
+        if (isFiner()) {
+            logFiner("Deleting domain " + domain + ". newInitialSize=" + newInitialSize);
+        }
         domains.remove(theDomain);
         if (newInitialSize > 0) {
             domains.put(theDomain, new Domain(newInitialSize));
@@ -251,6 +256,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public void stop() {
+        if (isFiner()) {
+            logFiner("Stopping. Clearing domains");
+        }
         domains.clear();
     }
 
@@ -262,7 +270,11 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         Domain d = getDomain(domain);
 
         for (FileInfo fileInfo : infos) {
+
             if (fileInfo.isFile()) {
+                if (isFiner()) {
+                    logFiner("Storing file: " + fileInfo.toDetailString());
+                }
                 d.files.put(fileInfo, fileInfo);
                 // Make sure not dir is left with name name.
                 d.directories.remove(fileInfo);
