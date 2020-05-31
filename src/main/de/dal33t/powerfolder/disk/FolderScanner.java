@@ -619,8 +619,8 @@ public class FolderScanner extends PFComponent {
                     getController().getMySelf().getAccountInfo(), null,
                     directory, null);
                 currentScanResult.newFiles.add(info);
-                if (isFiner()) {
-                    logFiner("New found: " + filename + " @ " + fileToScan + ". Result: " + info.toDetailString()
+                if (isInfo()) {
+                    logInfo("New found: " + filename + " @ " + fileToScan + ". Result: " + info.toDetailString()
                             + ". Remaining know items: " + remaining.size());
                 }
             }
