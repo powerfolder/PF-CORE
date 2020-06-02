@@ -273,22 +273,25 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         for (FileInfo fileInfo : infos) {
 
             if (fileInfo.isFile()) {
-                if (isInfo()) {
-                    if (fileInfo.getModifiedByAccount() != null) {
-                        logInfo("Storing file: " + fileInfo.toDetailString());
-                    } else {
-                        logWarning("Storing file without account " + fileInfo.toDetailString(), new StackDump());
+                if (fileInfo.getFolderInfo().isMetaFolder()) {
+                    if (isInfo()) {
+                        if (fileInfo.getModifiedByAccount() != null) {
+                            logInfo("Storing file: " + fileInfo.toDetailString());
+                        } else {
+                            logWarning("Storing file without account " + fileInfo.toDetailString(), new StackDump());
+                        }
                     }
-
                 }
                 d.files.put(fileInfo, fileInfo);
                 // Make sure not dir is left with name name.
                 d.directories.remove(fileInfo);
             } else {
-                if (fileInfo.getModifiedByAccount() != null) {
-                    logInfo("Storing directory: " + fileInfo.toDetailString());
-                } else {
-                    logWarning("Storing directory without account " + fileInfo.toDetailString(), new StackDump());
+                if (fileInfo.getFolderInfo().isMetaFolder()) {
+                    if (fileInfo.getModifiedByAccount() != null) {
+                        logInfo("Storing directory: " + fileInfo.toDetailString());
+                    } else {
+                        logWarning("Storing directory without account " + fileInfo.toDetailString(), new StackDump());
+                    }
                 }
                 d.directories.put((DirectoryInfo) fileInfo,
                     (DirectoryInfo) fileInfo);
