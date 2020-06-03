@@ -6,6 +6,7 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -272,15 +273,25 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         for (FileInfo fileInfo : infos) {
 
             if (fileInfo.isFile()) {
-                if (isInfo()) {
-                    logInfo("Storing file: " + fileInfo.toDetailString());
+                if (fileInfo.getFolderInfo().isMetaFolder()) {
+                    if (isInfo()) {
+                        if (fileInfo.getModifiedByAccount() != null) {
+                            logInfo("Storing file: " + fileInfo.toDetailString());
+                        } else {
+                            logWarning("Storing file without account " + fileInfo.toDetailString(), new StackDump());
+                        }
+                    }
                 }
                 d.files.put(fileInfo, fileInfo);
                 // Make sure not dir is left with name name.
                 d.directories.remove(fileInfo);
             } else {
-                if (isInfo()) {
-                    logInfo("Storing directory: " + fileInfo.toDetailString());
+                if (fileInfo.getFolderInfo().isMetaFolder()) {
+                    if (fileInfo.getModifiedByAccount() != null) {
+                        logInfo("Storing directory: " + fileInfo.toDetailString());
+                    } else {
+                        logWarning("Storing directory without account " + fileInfo.toDetailString(), new StackDump());
+                    }
                 }
                 d.directories.put((DirectoryInfo) fileInfo,
                     (DirectoryInfo) fileInfo);
