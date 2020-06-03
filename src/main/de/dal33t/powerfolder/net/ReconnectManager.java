@@ -134,7 +134,7 @@ public class ReconnectManager extends PFComponent {
         if (isFiner()) {
             logFiner("Marking node for immediate reconnect: " + node);
         }
-        if (node.isConnected() || node.isConnecting()) {
+        if (node.isConnected() || node.isConnecting() || node.isMySelf()) {
             // Skip, not necessary.
             return;
         }
@@ -509,7 +509,8 @@ public class ReconnectManager extends PFComponent {
 
                         currentNode = reconnectionQueue.remove(0);
                         if (currentNode.isConnected()
-                            || currentNode.isConnecting())
+                            || currentNode.isConnecting()
+                            || currentNode.isMySelf())
                         {
                             // Already reconnecting. Skip
                             if (isFiner()) {

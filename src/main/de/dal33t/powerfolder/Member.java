@@ -530,6 +530,14 @@ public class Member extends PFComponent implements Comparable<Member> {
         MemberInfo remoteMemberInfo = identity != null ? identity
             .getMemberInfo() : null;
 
+        if (remoteMemberInfo != null && remoteMemberInfo.matches(getMySelf())) {
+            logFine("Loopback connection detected to " + newPeer
+                    + ", disconnecting");
+            newPeer.shutdown();
+            throw new InvalidIdentityException("Loopback connection detected to "
+                    + newPeer + ", disconnecting", newPeer);
+        }
+
         // #1373
         if (remoteMemberInfo != null
             && !remoteMemberInfo.isOnSameNetwork(getController()))
@@ -1204,6 +1212,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Shuts the member and its connection down
      */
     public void shutdown() {
+        if (isMySelf()) {
+            return;
+        }
         boolean wasHandshaked = handshaked;
 
         shutdownPeer();
