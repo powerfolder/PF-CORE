@@ -192,8 +192,8 @@ public class FolderScanner extends PFComponent {
             for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
                 remaining.put(fInfo.getRelativeName(), fInfo);
             }
-            if (isWarning() && remaining.isEmpty()) {
-                logWarning("Scan of folder: " + folder.getName() + " start. Items known in FileDB: " + remaining.size());
+            if (isFiner()) {
+                logFiner("Scan of folder: " + folder.getName() + " start. Items in FileDB: " + remaining.size());
             }
             if (!scan(base) || failure) {
                 // if false there was an IOError

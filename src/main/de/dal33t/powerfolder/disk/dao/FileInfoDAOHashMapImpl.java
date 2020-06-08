@@ -6,7 +6,6 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -117,8 +116,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public void delete(String domain, FileInfo info) {
-        if (isInfo()) {
-            logInfo(info.getFolderInfo() + ": Deleting in " + domain + " " + info.toDetailString());
+        if (isFiner()) {
+            logFiner(info.getFolderInfo() + ": Deleting in " + domain + " " + info.toDetailString());
         }
         if (info.isFile()) {
             getDomain(domain).files.remove(info);
@@ -129,8 +128,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
 
     public void deleteDomain(String domain, int newInitialSize) {
         String theDomain = StringUtils.isBlank(domain) ? selfDomain : domain;
-        if (isInfo()) {
-            logInfo("Deleting domain " + domain + ". newInitialSize=" + newInitialSize);
+        if (isFiner()) {
+            logFiner("Deleting domain " + domain + ". newInitialSize=" + newInitialSize);
         }
         domains.remove(theDomain);
         if (newInitialSize > 0) {
@@ -257,8 +256,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public void stop() {
-        if (isInfo()) {
-            logInfo("Stopping. Clearing domains");
+        if (isFiner()) {
+            logFiner("Stopping. Clearing domains");
         }
         domains.clear();
     }
@@ -273,25 +272,15 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         for (FileInfo fileInfo : infos) {
 
             if (fileInfo.isFile()) {
-                if (fileInfo.getFolderInfo().isMetaFolder()) {
-                    if (isInfo()) {
-                        if (fileInfo.getModifiedByAccount() != null) {
-                            logInfo("Storing file: " + fileInfo.toDetailString());
-                        } else {
-                            logWarning("Storing file without account " + fileInfo.toDetailString(), new StackDump());
-                        }
-                    }
+                if (isFiner()) {
+                    logFiner("Storing file: " + fileInfo.toDetailString());
                 }
                 d.files.put(fileInfo, fileInfo);
                 // Make sure not dir is left with name name.
                 d.directories.remove(fileInfo);
             } else {
-                if (fileInfo.getFolderInfo().isMetaFolder()) {
-                    if (fileInfo.getModifiedByAccount() != null) {
-                        logInfo("Storing directory: " + fileInfo.toDetailString());
-                    } else {
-                        logWarning("Storing directory without account " + fileInfo.toDetailString(), new StackDump());
-                    }
+                if (isFiner()) {
+                    logFiner("Storing directory: " + fileInfo.toDetailString());
                 }
                 d.directories.put((DirectoryInfo) fileInfo,
                     (DirectoryInfo) fileInfo);
