@@ -1543,7 +1543,7 @@ public class Folder extends PFComponent {
         }
 
         if (dir.equals(getSystemSubDir0())) {
-            logWarning("Ignoring system subdirectory: " + dir);
+            logFine("Ignoring system subdirectory: " + dir);
             return;
         }
 
