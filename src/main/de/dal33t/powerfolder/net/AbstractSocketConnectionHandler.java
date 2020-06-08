@@ -813,7 +813,13 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         String msg = "Connection closed to "
                 + ((logMember == null) ? this.toString() : logMember.toString());
 
-        boolean logWarning = logMember != null && (logMember.isServer() && !logMember.isMySelf() && !logMember.isConnected());
+        boolean logWarning = logMember != null
+                && logMember.isServer()
+                && !logMember.isMySelf()
+                && !logMember.isConnected()
+                && !getController().isShuttingDown()
+                && getController().isStarted();
+
         msg += ". Caused by ";
         if (logMember != null && logMember.getLastProblem() != null) {
             msg += logMember.getLastProblem();
