@@ -1584,7 +1584,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 // Send filelist of joined folders
                                 logInfo("Resending file list of "
                                     + targetFolder.getName() + " to "
-                                    + getNick());
+                                    + getNick() + " (" + getUsername() + ")");
                                 Message[] filelistMsgs = FileList.create(
                                     targetFolder, targetFolder
                                         .supportExternalizable(Member.this));
@@ -2615,6 +2615,14 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
     }
 
+    public String getUsername() {
+        AccountInfo accountInfo = getAccountInfo();
+        if (accountInfo == null) {
+            return null;
+        }
+        return accountInfo.getUsername();
+    }
+
     /**
      * @return the account info of the user logged in at the remote node.
      */
@@ -2625,7 +2633,6 @@ public class Member extends PFComponent implements Comparable<Member> {
     public boolean updateInfo(MemberInfo newInfo) {
         return updateInfo(newInfo, false);
     }
-
 
     /**
      * Updates connection information, if the other is more 'valueble'.
