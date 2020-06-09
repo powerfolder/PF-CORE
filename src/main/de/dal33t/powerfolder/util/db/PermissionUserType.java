@@ -93,6 +93,7 @@ public class PermissionUserType extends Loggable implements UserType {
     {
         Permission p = null;
         String permissionID = rs.getString(names[0]);
+        Exception outE = null;
 
         if (StringUtils.isBlank(permissionID)) {
             if (isFiner()) {
@@ -190,13 +191,14 @@ public class PermissionUserType extends Loggable implements UserType {
                 }
                 p = (Permission) pObj;
             } catch (Exception e) {
-                logWarning("Unable to resolve permission: " + permissionID + ". " + e);
+                outE = e;
+                logFine("Unable to resolve permission: " + permissionID + ". " + e, e);
             }
         }
 
         if (p == null) {
             // This may happen on a downgrade.
-            logWarning("Unknown permission with ID: " + permissionID);
+            logWarning("Unknown permission with ID: " + permissionID + ". " + outE);
             return new UnknownPermission(permissionID);
         }
 
