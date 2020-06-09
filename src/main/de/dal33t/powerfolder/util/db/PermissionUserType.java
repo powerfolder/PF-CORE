@@ -190,13 +190,13 @@ public class PermissionUserType extends Loggable implements UserType {
                 }
                 p = (Permission) pObj;
             } catch (Exception e) {
-                logSevere("Unable to resolve permission: " + permissionID + ". " + e);
+                logWarning("Unable to resolve permission: " + permissionID + ". " + e);
             }
         }
 
         if (p == null) {
             // This may happen on a downgrade.
-            logSevere("Unknown permission with ID: " + permissionID);
+            logWarning("Unknown permission with ID: " + permissionID);
             return new UnknownPermission(permissionID);
         }
 
