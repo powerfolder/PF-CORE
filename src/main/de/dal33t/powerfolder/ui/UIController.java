@@ -618,6 +618,12 @@ public class UIController extends PFComponent {
                 openUI.setLabel(Translation.get("systray.show"));
                 openUI.setActionCommand(COMMAND_OPEN_UI);
             }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                openUI.setLabel(Translation.get("systray.hide"));
+                openUI.setActionCommand(COMMAND_HIDE_UI);
+            }
         });
 
         // Load initial folders in menu.

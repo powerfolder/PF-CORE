@@ -181,42 +181,78 @@ public class Icons {
         "systray_sync03_lowres.icon", "systray_sync04_lowres.icon", "systray_sync05_lowres.icon",
         "systray_sync06_lowres.icon", "systray_sync07_lowres.icon", "systray_sync08_lowres.icon",
         "systray_sync09_lowres.icon", "systray_sync10_lowres.icon", "systray_sync11_lowres.icon"};
+    private static final String[] SYSTRAY_SYNC_ANIMATION_LOW_LIGHT_RES = {
+            "systray_sync00_lowres_light.icon", "systray_sync01_lowres_light.icon", "systray_sync02_lowres_light.icon",
+            "systray_sync03_lowres_light.icon", "systray_sync04_lowres_light.icon", "systray_sync05_lowres_light.icon",
+            "systray_sync06_lowres_light.icon", "systray_sync07_lowres_light.icon", "systray_sync08_lowres_light.icon",
+            "systray_sync09_lowres_light.icon", "systray_sync10_lowres_light.icon", "systray_sync11_lowres_light.icon"};
 
     private static final String[] SYSTRAY_SYNC_ANIMATION_HI_RES = {
         "systray_sync00_hires.icon", "systray_sync01_hires.icon", "systray_sync02_hires.icon",
         "systray_sync03_hires.icon", "systray_sync04_hires.icon", "systray_sync05_hires.icon",
         "systray_sync06_hires.icon", "systray_sync07_hires.icon", "systray_sync08_hires.icon",
         "systray_sync09_hires.icon", "systray_sync10_hires.icon", "systray_sync11_hires.icon"};
+    private static final String[] SYSTRAY_SYNC_ANIMATION_HI_LIGHT_RES = {
+            "systray_sync00_hires_light.icon", "systray_sync01_hires_light.icon", "systray_sync02_hires_light.icon",
+            "systray_sync03_hires_light.icon", "systray_sync04_hires_light.icon", "systray_sync05_hires_light.icon",
+            "systray_sync06_hires_light.icon", "systray_sync07_hires_light.icon", "systray_sync08_hires_light.icon",
+            "systray_sync09_hires_light.icon", "systray_sync10_hires_light.icon", "systray_sync11_hires_light.icon"};
 
     public static final String SYSTRAY_SYNC_COMPLETE;
     private static final String SYSTRAY_SYNC_COMPLETE_LOW_RES = "systray_sync_complete_lowres.icon";
     private static final String SYSTRAY_SYNC_COMPLETE_HIGH_RES = "systray_sync_complete_hires.icon";
+    private static final String SYSTRAY_SYNC_COMPLETE_LOW_LIGHT_RES = "systray_sync_complete_lowres_light.icon";
+    private static final String SYSTRAY_SYNC_COMPLETE_HIGH_LIGHT_RES = "systray_sync_complete_hires_light.icon";
 
     public static final String SYSTRAY_SYNC_INCOMPLETE;
     private static final String SYSTRAY_SYNC_INCOMPLETE_LOW_RES = "systray_sync_incomplete_lowres.icon";
     private static final String SYSTRAY_SYNC_INCOMPLETE_HIGH_RES = "systray_sync_incomplete_hires.icon";
+    private static final String SYSTRAY_SYNC_INCOMPLETE_LOW_LIGHT_RES = "systray_sync_incomplete_lowres_light.icon";
+    private static final String SYSTRAY_SYNC_INCOMPLETE_HIGH_LIGHT_RES = "systray_sync_incomplete_hires_light.icon";
 
     public static final String SYSTRAY_WARNING;
     private static final String SYSTRAY_WARNING_LOW_RES = "systray_warning_lowres.icon";
     private static final String SYSTRAY_WARNING_HIGH_RES = "systray_warning_hires.icon";
+    private static final String SYSTRAY_WARNING_LOW_LIGHT_RES = "systray_warning_lowres_light.icon";
+    private static final String SYSTRAY_WARNING_HIGH_LIGHT_RES = "systray_warning_hires_light.icon";
 
     public static final String SYSTRAY_PAUSE;
     private static final String SYSTRAY_PAUSE_LOW_RES = "systray_pause_lowres.icon";
     private static final String SYSTRAY_PAUSE_HIGH_RES = "systray_pause_hires.icon";
+    private static final String SYSTRAY_PAUSE_LOW_LIGHT_RES = "systray_pause_lowres_light.icon";
+    private static final String SYSTRAY_PAUSE_HIGH_LIGHT_RES = "systray_pause_hires_light.icon";
 
     static {
         if (!TrayIconManager.isHiRes()) {
-            SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_LOW_RES;
-            SYSTRAY_SYNC_COMPLETE = SYSTRAY_SYNC_COMPLETE_LOW_RES;
-            SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_LOW_RES;
-            SYSTRAY_WARNING = SYSTRAY_WARNING_LOW_RES;
-            SYSTRAY_PAUSE = SYSTRAY_PAUSE_LOW_RES;
+            if (!TrayIconManager.isMacMenuBarDarkMode()) {
+                SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_LOW_RES;
+                SYSTRAY_SYNC_COMPLETE = SYSTRAY_SYNC_COMPLETE_LOW_RES;
+                SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_LOW_RES;
+                SYSTRAY_WARNING = SYSTRAY_WARNING_LOW_RES;
+                SYSTRAY_PAUSE = SYSTRAY_PAUSE_LOW_RES;
+            }
+            else {
+                SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_LOW_LIGHT_RES;
+                SYSTRAY_SYNC_COMPLETE = SYSTRAY_SYNC_COMPLETE_LOW_LIGHT_RES;
+                SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_LOW_LIGHT_RES;
+                SYSTRAY_WARNING = SYSTRAY_WARNING_LOW_LIGHT_RES;
+                SYSTRAY_PAUSE = SYSTRAY_PAUSE_LOW_LIGHT_RES;
+            }
         } else {
-            SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_HI_RES;
-            SYSTRAY_SYNC_COMPLETE = SYSTRAY_SYNC_COMPLETE_HIGH_RES;
-            SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_HIGH_RES;
-            SYSTRAY_WARNING = SYSTRAY_WARNING_HIGH_RES;
-            SYSTRAY_PAUSE = SYSTRAY_PAUSE_HIGH_RES;
+            if (!TrayIconManager.isMacMenuBarDarkMode()) {
+                SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_HI_RES;
+                SYSTRAY_SYNC_COMPLETE = SYSTRAY_SYNC_COMPLETE_HIGH_RES;
+                SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_HIGH_RES;
+                SYSTRAY_WARNING = SYSTRAY_WARNING_HIGH_RES;
+                SYSTRAY_PAUSE = SYSTRAY_PAUSE_HIGH_RES;
+            }
+            else {
+                SYSTRAY_SYNC_ANIMATION = SYSTRAY_SYNC_ANIMATION_HI_LIGHT_RES;
+                SYSTRAY_SYNC_COMPLETE = SYSTRAY_SYNC_COMPLETE_HIGH_LIGHT_RES;
+                SYSTRAY_SYNC_INCOMPLETE = SYSTRAY_SYNC_INCOMPLETE_HIGH_LIGHT_RES;
+                SYSTRAY_WARNING = SYSTRAY_WARNING_HIGH_LIGHT_RES;
+                SYSTRAY_PAUSE = SYSTRAY_PAUSE_HIGH_LIGHT_RES;
+            }
         }
     }
 
@@ -1063,6 +1099,30 @@ public class Icons {
                 }
             }
         }
+    }
+
+    public static Image getGrayImage(Image image) {
+//        ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+//        ColorConvertOp colorConvertOp = new ColorConvertOp(colorSpace, null);
+//
+//        BufferedImage src = toBufferedImage(image);
+//
+//        BufferedImage des = colorConvertOp.filter(src, null);
+
+        BufferedImage src = toBufferedImage(image);
+
+        BufferedImage result = new BufferedImage(src.getWidth(), src.getHeight(),
+                BufferedImage.TYPE_BYTE_BINARY);
+
+//        Graphics2D graphic = result.createGraphics();
+//        graphic.drawImage(src, 0, 0, Color,WHITE, null);
+//        graphic.dispose();
+
+//        Graphics g = src.getGraphics();
+//        g.drawImage(colorImage, 0, 0, null);
+//        g.dispose();
+
+        return result;
     }
 
 }
