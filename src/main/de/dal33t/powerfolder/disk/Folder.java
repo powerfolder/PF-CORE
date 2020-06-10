@@ -3552,6 +3552,7 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
+        Reject.ifTrue(from.isMySelf(), "Not allowed to process FileList for myself");
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not fileListChanged: " + newList + " received from " + from);
             return;
@@ -3631,6 +3632,7 @@ public class Folder extends PFComponent {
      * @param changes
      */
     public void fileListChanged(Member from, FolderFilesChanged changes) {
+        Reject.ifTrue(from.isMySelf(), "Not allowed to process FolderFilesChanged for myself");
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not fileListChanged: " + changes + " received from " + from);
             return;
