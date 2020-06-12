@@ -167,5 +167,6 @@ public enum Feature {
         // Feature.DETECT_UPDATE_BY_VERSION.enable();
         // Feature.CORRECT_MOVEMENT_DETECTION.enable();
         Feature.INTERNAL_USE.enable();
+        Feature.CLUSTER_FAST_SWITCH.enable();
     }
 }
