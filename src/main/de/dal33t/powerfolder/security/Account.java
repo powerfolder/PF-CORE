@@ -685,6 +685,9 @@ public class Account implements Serializable, D2DObject {
         Reject.ifNull(fedServiceInfo, "fedServiceInfo");
         Reject.ifFalse(fedServiceInfo.isFederatedService(),
                 "Setting token only possible for federation services");
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine(username + ": setToken for " + fedServiceInfo + " to " + tokenSecret);
+        }
         tokens.put(fedServiceInfo, tokenSecret);
     }
 
