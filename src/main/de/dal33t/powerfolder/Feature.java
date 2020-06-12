@@ -55,6 +55,11 @@ public enum Feature {
     CLUSTER_NODES_CONNECT,
 
     /**
+     * PFS-3576: Fast switch during login
+     */
+    CLUSTER_FAST_SWITCH,
+
+    /**
      * If disabled all peers will be detected as on LAN.
      */
     CORRECT_LAN_DETECTION,
