@@ -1514,7 +1514,7 @@ public class Controller extends PFComponent {
      * Starts single connection listener for D2D with WebSocket
      */
     public void initializeListenerOnLoopbackInterfaceD2D() {
-        logInfo("D2D is enabled on loopback interface");
+        logFine("D2D is enabled on loopback interface");
         boolean listenerOpened;
         String bindAddress = "127.0.0.1";
         // Random port (if there is more than one server on the same machine, the port needs to be random anyway)

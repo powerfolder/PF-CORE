@@ -173,10 +173,12 @@ public class ConnectionListener extends PFComponent implements Runnable {
             throw new ConnectionException(Translation.get(
                 "dialog.unable_to_open_port", port + ""), e);
         }
-        if (useD2D) {
-            logInfo("Listening for incoming D2D connections on port " + ((InetSocketAddress)serverSocket.getLocalSocketAddress()).getPort() + ", own address: " + bAddress);
-        } else {
-            logInfo("Listening for incoming connections on port " + serverSocket.getLocalPort() + (myDyndns != null ? ", own address: " + myDyndns : ""));
+        if (isFine()) {
+            if (useD2D) {
+                logFine("Listening for incoming D2D connections on port " + ((InetSocketAddress)serverSocket.getLocalSocketAddress()).getPort() + ", own address: " + bAddress);
+            } else {
+                logFine("Listening for incoming connections on port " + serverSocket.getLocalPort() + (myDyndns != null ? ", own address: " + myDyndns : ""));
+            }
         }
         // Force correct port setting
         port = serverSocket.getLocalPort();
