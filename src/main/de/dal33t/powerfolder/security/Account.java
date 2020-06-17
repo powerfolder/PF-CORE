@@ -1196,6 +1196,9 @@ public class Account implements Serializable, D2DObject {
         // Create list of emails without LDAP search context information
         List<String> result = new ArrayList<>();
         for (String email : emails) {
+            if (email == null) {
+                continue;
+            }
             int index = email.indexOf(':');
             if (index > 0) {
                 result.add(email.substring(0, index));
