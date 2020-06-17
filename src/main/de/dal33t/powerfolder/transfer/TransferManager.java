@@ -1253,7 +1253,13 @@ public class TransferManager extends PFComponent {
             }
             // This should free up an otherwise waiting for download partner
             if (folder.scanAllowedNow()) {
-                folder.scanChangedFile(dl.file);
+                try {
+                    folder.scanChangedFile(dl.file);
+                } catch (IllegalStateException e) {
+                    logWarning(dl.file.toDetailString() + ": Unable to queue file for upload. " + e);
+                } catch (RuntimeException e) {
+                    logWarning(dl.file.toDetailString() + ": Unable to queue file for upload. " + e, e);
+                }
             } else {
                 if (isWarning()) {
                     if (Files.exists(diskFile)) {
