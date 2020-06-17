@@ -311,8 +311,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             diskFileDeleted = Files.notExists(diskFile);
             if (!diskFileDeleted) {
                 log.warning("Could not access file attributes of file "
-                        + diskFile.toAbsolutePath().toString() + "\n"
-                        + toDetailString() + "\n" + e.toString());
+                        + diskFile.toAbsolutePath().toString() + ", "
+                        + toDetailString() + ", " + e.toString());
                 return false;
             }
             attrs = null;
@@ -337,8 +337,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                 diskIsDirectory = (Boolean) attrs.get("isDirectory");
             } catch (Exception e) {
                 log.warning("Could not access file attributes of file "
-                        + diskFile.toAbsolutePath().toString() + "\n"
-                        + toDetailString() + "\n" + e.toString());
+                        + diskFile.toAbsolutePath().toString() + ", "
+                        + toDetailString() + ", " + e.toString());
                 return false;
             }
 
