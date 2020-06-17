@@ -135,6 +135,12 @@ public class LoggingManager {
                 }
             }
 
+            if (loggerName.contains("AbstractBatcher")) {
+                if (Util.isStaleStateException(record.getThrown())) {
+                    return false;
+                }
+            }
+
             // PFS-2199:
             if (loggerName.contains("SchemaExport")
                 && record.getLevel() == Level.SEVERE

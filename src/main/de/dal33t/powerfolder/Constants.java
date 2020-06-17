@@ -17,6 +17,9 @@
  */
 package de.dal33t.powerfolder;
 
+import java.util.Arrays;
+import java.util.List;
+
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
@@ -434,6 +437,10 @@ public class Constants {
     
     public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
     public static final String LIBRE_OFFICE_FILENAME_PREFIX = ".~lock.";
+
+
+    public static final List<String> SUPPORTED_LANGUAGES = Arrays.asList("en","de");
+
 
     private Constants() {
         // No instance allowed

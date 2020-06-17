@@ -1017,11 +1017,19 @@ public class Util {
      */
     public static final boolean isStaleStateException(Throwable t) {
         while (t != null) {
-            if (t instanceof StaleStateException) {
+            if (t instanceof StaleStateException || t.toString().contains("StaleStateException")) {
                 return true;
             }
             t = t.getCause();
         }
         return false;
+    }
+
+    public static final Throwable getRootCause(Throwable t) {
+        Throwable root = t;
+        while (root.getCause() != null) {
+            root = root.getCause();
+        }
+        return root;
     }
 }

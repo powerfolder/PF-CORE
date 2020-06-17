@@ -2861,13 +2861,13 @@ public class ServerClient extends PFComponent {
             }
             loginProblems++;
             if (loginProblems > 20) {
-                logWarning("Got "
+                logFine("Got "
                         + loginProblems
                         + " login problems. "
                         + "Not longer auto-logging in to prevent hammering server.");
                 return;
             }
-            logWarning("Auto-login for " + username
+            logInfo("Auto-login for " + username
                     + " required to " + getServer() + ". Caused by " + t);
             try {
                 login0(username, passwordObf, tokenSecret);

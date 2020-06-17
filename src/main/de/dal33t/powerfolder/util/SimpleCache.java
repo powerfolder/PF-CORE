@@ -110,6 +110,10 @@ public class SimpleCache<K, E> extends Loggable {
         }
     }
 
+    public void invalidateAll() {
+        cache.clear();
+    }
+
     public int getCacheHits() {
         return cacheHits.get();
     }

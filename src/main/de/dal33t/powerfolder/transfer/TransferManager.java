@@ -627,19 +627,11 @@ public class TransferManager extends PFComponent {
     {
         // Ensure shutdown
         upload.shutdown();
-        
-        Level l = Level.WARNING;
-        if (transferProblem == TransferProblem.NODE_DISCONNECTED
-            || transferProblem == TransferProblem.PAUSED
-            || transferProblem == TransferProblem.OLD_UPLOAD
-            || upload.getFile().getFolderInfo().isMetaFolder())
-        {
-            l = Level.FINE;
-        }
-        if (isLog(l)) {
-            logIt(l, "Upload broken: " + upload + ' '
+
+        if (isFine()) {
+            logFine("Upload broken: " + upload + ' '
                 + (transferProblem == null ? "" : transferProblem) + ": "
-                + problemInformation, null);
+                + problemInformation);
         }
         
         uploadsLock.lock();
@@ -1261,7 +1253,13 @@ public class TransferManager extends PFComponent {
             }
             // This should free up an otherwise waiting for download partner
             if (folder.scanAllowedNow()) {
-                folder.scanChangedFile(dl.file);
+                try {
+                    folder.scanChangedFile(dl.file);
+                } catch (IllegalStateException e) {
+                    logWarning(dl.file.toDetailString() + ": Unable to queue file for upload. " + e);
+                } catch (RuntimeException e) {
+                    logWarning(dl.file.toDetailString() + ": Unable to queue file for upload. " + e, e);
+                }
             } else {
                 if (isWarning()) {
                     if (Files.exists(diskFile)) {

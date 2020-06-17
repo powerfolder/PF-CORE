@@ -387,8 +387,13 @@ public class Token {
 
     @Override
     public String toString() {
-        return "Token [id=" + id + ", secrect=" + secrect + ", revoked="
-                + revoked + ", validTo=" + validTo + ", nodeInfo=" + nodeInfo
-                + ", accountInfo=" + accountInfo + "]";
+        return "Token [id=" + id
+                + ", account=" + accountInfo
+                + ", device=" + nodeInfo
+                + ", service=" + serviceInfo
+                + ", validTo=" + validTo
+                + ", revoked=" + revoked
+                + ", secrect=" + secrect
+                + "]";
     }
 }
