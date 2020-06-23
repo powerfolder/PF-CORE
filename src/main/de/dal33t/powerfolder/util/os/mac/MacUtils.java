@@ -105,7 +105,9 @@ public class MacUtils extends Loggable {
      * @param controller
      */
     public void setAppReOpenedListener(final Controller controller) {
+
         try {
+
             // Load the class com.apple.eawt.Application
             Class<?> appClass = Class.forName("com.apple.eawt.Application");
 
@@ -113,17 +115,33 @@ public class MacUtils extends Loggable {
             Method getApplication = appClass
                 .getDeclaredMethod("getApplication");
 
+
             // Get the addAppEventListener method of com.apple.eawt.Application
-            Method addAppEventListener = appClass.getMethod(
-                "addAppEventListener", Class
-                    .forName("com.apple.eawt.AppEventListener"));
+            Method addAppEventListener;
+            try {
+                addAppEventListener = appClass.getMethod(
+                        "addAppEventListener",
+                        Class.forName("com.apple.eawt.AppEventListener"));
+            } catch (Exception e) {
+                addAppEventListener = appClass.getMethod(
+                        "addAppEventListener",
+                        Class.forName("java.awt.desktop.SystemEventListener"));
+            }
 
             // Get the Interface of AppReOpenedListener
-            Class<?> appReOpenedListener = Class
-                .forName("com.apple.eawt.AppReOpenedListener");
+            Class<?> appReOpenedListener;
+            try {
+                appReOpenedListener = Class
+                        .forName("com.apple.eawt.AppReOpenedListener");
+            } catch (Exception e) {
+                appReOpenedListener = Class
+                        .forName("java.awt.desktop.AppReopenedListener");
+            }
+
 
             // Get the acutal Application instance
             application = getApplication.invoke(null, new Object[0]);
+
 
             // The functionallity that should be executed
             InvocationHandler openFrame = new InvocationHandler() {
@@ -135,19 +153,21 @@ public class MacUtils extends Loggable {
                     if (!controller.isUIEnabled()) {
                         return null;
                     }
-
                     controller.getUIController().getMainFrame().toFront();
                     return null;
                     }
             };
+
 
             // Associate the InvocationHandler with the AppReOpenedListener Interface
             reOpenedListener = Proxy.newProxyInstance(
                 appReOpenedListener.getClassLoader(),
                 new Class<?>[]{appReOpenedListener}, openFrame);
 
+
             // Add the InvocationHandler as AppReOpenedListener
             addAppEventListener.invoke(application, reOpenedListener);
+
         } catch (ClassNotFoundException | SecurityException
             | NoSuchMethodException | IllegalAccessException
             | IllegalArgumentException | InvocationTargetException e)
@@ -155,6 +175,7 @@ public class MacUtils extends Loggable {
             logWarning("Could not add the AppReOpenedListener: " + e);
             e.printStackTrace();
         }
+
     }
 
     /**
