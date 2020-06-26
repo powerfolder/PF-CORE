@@ -190,9 +190,16 @@ public class MacUtils extends Loggable {
             // Load the class com.apple.eawt.Application
             Class<?> appClass = Class.forName("com.apple.eawt.Application");
 
-            Method removeAppEventListener = appClass.getMethod(
-                "removeAppEventListener", Class
-                .forName("com.apple.eawt.AppEventListener"));
+            Method removeAppEventListener;
+            try {
+                removeAppEventListener = appClass.getMethod(
+                        "removeAppEventListener", Class
+                                .forName("com.apple.eawt.AppEventListener"));
+            } catch (Exception e) {
+                removeAppEventListener = appClass.getMethod(
+                        "removeAppEventListener", Class
+                                .forName("java.awt.desktop.SystemEventListener"));
+            }
 
             removeAppEventListener.invoke(application, reOpenedListener);
         } catch (ClassNotFoundException | NoSuchMethodException
