@@ -73,6 +73,7 @@ public class FileBrowserIntegration extends PFComponent {
      */
     public boolean start() {
         logFine("Starting file browser integration");
+
         if (nc == null) {
             nc = NativityControlUtil.getNativityControl();
 
@@ -95,6 +96,7 @@ public class FileBrowserIntegration extends PFComponent {
                 iconControl, iconOverlayHandler);
         }
 
+
         // Initializing context menu
         if (PreferencesEntry.ENABLE_CONTEXT_MENU
             .getValueBoolean(getController()))
@@ -109,9 +111,11 @@ public class FileBrowserIntegration extends PFComponent {
         for (Folder folder : repo.getFolders()) {
             folder.addFolderListener(updateListener);
         }
+
         repo.addFolderRepositoryListener(updateListener);
         repo.getLocking().addListener(updateListener);
         getController().getTransferManager().addListener(updateListener);
+
 
         // Actually set up and connect to the native shell extension
         if (OSUtil.isWindowsSystem()) {
@@ -121,6 +125,7 @@ public class FileBrowserIntegration extends PFComponent {
             logFine("Connect file browser integration to OS X");
             return fbApple();
         }
+
 
         return false;
     }
@@ -150,9 +155,9 @@ public class FileBrowserIntegration extends PFComponent {
             Path lockedIcon = resourcesPath
                 .resolve(IconOverlayIndex.LOCKED_OVERLAY.getFilename());
 
+
             logFine("Registering icons");
             nc.addSocketOpenListener(new SocketOpenListener() {
-
                 @Override
                 public void onSocketOpen() {
                     iconControl.registerIconWithId(okIcon.toString(),
@@ -190,10 +195,10 @@ public class FileBrowserIntegration extends PFComponent {
                         for (String vol : volumes) {
                             logInfo("Base directory for Finder Sync: " + vol);
                         }
+
                     } catch (RuntimeException | IOException e) {
                         logWarning(
-                            "Error while determening the base volume paths to register for Finder Sync. "
-                                + e,
+                            "Error while determening the base volume paths to register for Finder Sync. " + e,
                             e);
                     }
 
@@ -207,7 +212,9 @@ public class FileBrowserIntegration extends PFComponent {
                 return false;
             }
 
+
             logFine("Connected to finder sync.");
+
 
             try {
                 logFine("Auto enabling extension.");
@@ -218,6 +225,7 @@ public class FileBrowserIntegration extends PFComponent {
                 cmd[2] = "use";
                 cmd[3] = "-i";
                 cmd[4] = "com.liferay.nativity.LiferayFinderSync";
+
                 Runtime.getRuntime().exec(cmd);
             } catch (Exception e) {
                 logWarning(
@@ -226,6 +234,7 @@ public class FileBrowserIntegration extends PFComponent {
             }
 
             return true;
+
         } catch (Exception re) {
             logWarning("Could not start finder sync. " + re);
             return false;
@@ -244,6 +253,7 @@ public class FileBrowserIntegration extends PFComponent {
                 logWarning("Could not connect to shell extensions!");
                 return false;
             }
+
             nc.setFilterFolder("");
             iconControl.enableFileIcons();
             logFine("Connected to shell extensions.");

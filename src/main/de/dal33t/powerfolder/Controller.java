@@ -732,9 +732,11 @@ public class Controller extends PFComponent {
             openUI();
         }
 
+
         if (!this.getMySelf().isServer() && Feature.FILEBROWSER_INTEGRATION.isEnabled() && isUIEnabled()) {
             enableFileBrowserIntegration();
         }
+
 
         // Load anything that was not handled last time.
         loadPersistentObjects();
@@ -764,6 +766,7 @@ public class Controller extends PFComponent {
         // Setup our background working tasks
         setupPeriodicalTasks();
 
+
         if (MacUtils.isSupported() && !getMySelf().isServer()) {
             MacUtils macUtils = MacUtils.getInstance();
             if (macUtils != null) {
@@ -782,6 +785,7 @@ public class Controller extends PFComponent {
 
     private void enableFileBrowserIntegration() {
         // PFC-2395: Start
+
         try {
             fbIntegration = new FileBrowserIntegration(getController());
             fbIntegration.start();
