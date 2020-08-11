@@ -2917,7 +2917,7 @@ public class Folder extends PFComponent {
             // Skip if not member
             return;
         }
-        logFine("Member left " + member);
+        logFine(this + " left by " + member);
 
         // remove files of this member in our datastructure
         dao.deleteDomain(member.getId(), -1);
