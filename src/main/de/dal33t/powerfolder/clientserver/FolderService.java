@@ -88,6 +88,15 @@ public interface FolderService {
         boolean removePermission);
 
     /**
+     * Leave a folder
+     *
+     * @param folderInfo
+     *
+     */
+    void leaveFolder(FolderInfo folderInfo);
+
+
+    /**
      * PFS-3572
      *
      * @param folderInfo
