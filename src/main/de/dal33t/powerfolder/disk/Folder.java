@@ -2374,6 +2374,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (member.hasCompleteFileListFor(currentInfo)) {
+                if (getDAO().count(member.getId(), false, false) == 0 && getKnownItemCount() > 0) {
+                    logInfo(this + ": Empty filelist from " + member + ". Known local items " + getKnownItemCount());
+                    continue;
+                }
                 remoteFilesFound = true;
                 break;
             }
