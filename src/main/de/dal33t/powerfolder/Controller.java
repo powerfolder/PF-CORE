@@ -89,9 +89,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 15;
-    private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 105;
-    private static final int SPRINT_NUMBER = 27;
+    private static final int MINOR_VERSION = 5;
+    private static final int REVISION_VERSION = 100;
+
+    private static final int SPRINT_NUMBER = 28;
 
     /**
      * Program version.

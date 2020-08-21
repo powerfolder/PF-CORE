@@ -1312,7 +1312,7 @@ public class Account implements Serializable, D2DObject {
 
     @Override
     public String toString() {
-        return "Account '" + username + "', " + permissions.size()
+        return "Account " + username + "/" + oid + ", " + permissions.size()
                 + " permissions";
     }
 

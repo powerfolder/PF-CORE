@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -52,13 +52,23 @@ public class RedownloadTest extends TwoControllerTestCase {
         // Set up Bart & Lisa with a file in the folder.
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         scanFolder(folderBart);
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "Bart known files: " + folderBart.getKnownFiles().size();
+            }
+
             public boolean reached() {
                 return folderBart.getKnownFiles().size() == 1;
             }
         });
         scanFolder(folderLisa);
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "Lisa known files: " + folderLisa.getKnownFiles().size();
+            }
+
             public boolean reached() {
                 return folderLisa.getKnownFiles().size() == 1;
             }
@@ -99,7 +109,12 @@ public class RedownloadTest extends TwoControllerTestCase {
                 .triggerFileRequesting(folderBart.getInfo());
 
         // Wait for copy.
-        TestHelper.waitForCondition(20, new Condition() {
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "Bart file exists: " + Files.exists(testFileBart) + ", Bart known files: " + folderBart.getKnownItemCount();
+            }
+
             public boolean reached() {
                 return Files.exists(testFileBart)
                     && folderBart.getKnownItemCount() == 1;

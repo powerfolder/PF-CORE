@@ -2374,6 +2374,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (member.hasCompleteFileListFor(currentInfo)) {
+                if (getDAO().count(member.getId(), false, false) == 0 && getKnownItemCount() > 0) {
+                    logInfo(this + ": Empty filelist from " + member + ". Known local items " + getKnownItemCount());
+                    continue;
+                }
                 remoteFilesFound = true;
                 break;
             }
@@ -2917,7 +2921,7 @@ public class Folder extends PFComponent {
             // Skip if not member
             return;
         }
-        logFine("Member left " + member);
+        logFine(this + " left by " + member);
 
         // remove files of this member in our datastructure
         dao.deleteDomain(member.getId(), -1);

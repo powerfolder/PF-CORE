@@ -274,14 +274,14 @@ public class ByteSerializer extends Loggable {
                 result = deserialize0(base, !expectCompression);
             } catch (StreamCorruptedException e2) {
                 LOG.log(Level.WARNING, "While deserializing "
-                    + (expectCompression ? "   compressed" : "uncompressed")
+                    + (expectCompression ? "compressed" : "uncompressed")
                     + ": " + e);
                 if (!e2.toString().toLowerCase()
                     .contains("invalid stream header: 1f8b0800"))
                 {
                     LOG.log(Level.WARNING, "While deserializing "
                         + (!expectCompression
-                            ? "   compressed"
+                            ? "compressed"
                             : "uncompressed") + ": " + e2);
                 }
                 throw e2;

@@ -2066,8 +2066,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         assertEquals(1, getFolderAtBart().getKnownItemCount());
         binfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertTrue(binfo.isNewerThan(getFolderAtLisa().getKnownFiles().iterator().next()));
-        connectBartAndLisa();
         scanFolder(getFolderAtLisa());
+        connectBartAndLisa();
 
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override

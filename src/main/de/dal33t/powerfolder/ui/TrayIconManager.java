@@ -313,6 +313,9 @@ public class TrayIconManager extends PFComponent {
     }
 
     public static boolean isMacMenuBarDarkMode() {
+        if (!OSUtil.isMacOS()) {
+            return false;
+        }
         try {
             // check for exit status only. Once there are more modes than "dark" and "default", we might need to analyze string contents..
             final Process proc = Runtime.getRuntime().exec(new String[] {"defaults", "read", "-g", "AppleInterfaceStyle"});

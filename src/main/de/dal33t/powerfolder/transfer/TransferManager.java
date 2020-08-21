@@ -587,19 +587,9 @@ public class TransferManager extends PFComponent {
     void downloadBroken(Download download, TransferProblem problem,
         String problemInfo)
     {
-        Level l = Level.WARNING;
-        if (problem == TransferProblem.NODE_DISCONNECTED
-                || problem == TransferProblem.PAUSED
-                || problem == TransferProblem.OLD_UPLOAD
-                || problem == TransferProblem.BROKEN_DOWNLOAD)
-        {
-            l = Level.FINE;
-        }
-        if (isLog(l)) {
-            logIt(l,
-                "Download broken: " + download + ' '
-                    + (problem == null ? "" : problem) + ": " + problemInfo,
-                null);
+        if (isFine()) {
+            logFine("Download broken: " + download + ' '
+                    + (problem == null ? "" : problem) + ": " + problemInfo);
         }
 
         download.setTransferProblem(problem);
