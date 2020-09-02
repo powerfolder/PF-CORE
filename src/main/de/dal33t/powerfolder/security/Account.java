@@ -1254,6 +1254,9 @@ public class Account implements Serializable, D2DObject {
         if (!authByDatabase()) {
             return false;
         }
+        if (isFederatedAccount()) {
+            return false;
+        }
         return osSubscription.getStorageSize() <= 0;
     }
 
