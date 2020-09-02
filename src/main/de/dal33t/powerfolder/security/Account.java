@@ -1377,6 +1377,10 @@ public class Account implements Serializable, D2DObject {
             this.ldapDN = account.ldapDN;
         }
 
+        if (StringUtils.isBlank(this.basePath)) {
+            this.basePath = account.basePath;
+        }
+
         if (StringUtils.isBlank(this.shibbolethPersistentID)) {
             this.shibbolethPersistentID = account.shibbolethPersistentID;
         }
