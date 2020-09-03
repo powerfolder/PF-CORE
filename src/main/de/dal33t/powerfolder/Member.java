@@ -1887,8 +1887,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                             + message);
                     }
                 } else {
-                    logWarning("Ignoring reload config request from non server: "
-                        + message);
+                    if (isFederated) {
+                        logFine("Ignoring reload config request from federated server: " + message);
+                    } else {
+                        logWarning("Ignoring reload config request from non server: " + message);
+                    }
                 }
             } else {
                 if (isFiner()) {
