@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.security.SecurityManagerClient;
 import de.dal33t.powerfolder.task.PersistentTaskManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.ui.FileBrowserIntegration;
+import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.UIController;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.dialog.UIUnLockDialog;
@@ -88,9 +89,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 15;
-    private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 9;
-    private static final int SPRINT_NUMBER = 25;
+    private static final int MINOR_VERSION = 6;
+    private static final int REVISION_VERSION = 13;
+
+    private static final int SPRINT_NUMBER = 29;
 
     /**
      * Program version.
@@ -495,8 +497,11 @@ public class Controller extends PFComponent {
         long totalMemory = runtime.totalMemory();
         logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
-        if (!Desktop.isDesktopSupported() && isUIEnabled()) {
-            logWarning("Desktop utility not supported");
+        if (isUIEnabled()) {
+            LookAndFeelSupport.setSyntheticaLicense();
+            if (!Desktop.isDesktopSupported()) {
+                logWarning("Desktop utility not supported");
+            }
         }
 
         // If we have a new config. clear the preferences.
@@ -1510,7 +1515,7 @@ public class Controller extends PFComponent {
      * Starts single connection listener for D2D with WebSocket
      */
     public void initializeListenerOnLoopbackInterfaceD2D() {
-        logInfo("D2D is enabled on loopback interface");
+        logFine("D2D is enabled on loopback interface");
         boolean listenerOpened;
         String bindAddress = "127.0.0.1";
         // Random port (if there is more than one server on the same machine, the port needs to be random anyway)

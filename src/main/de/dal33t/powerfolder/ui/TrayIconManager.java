@@ -252,6 +252,12 @@ public class TrayIconManager extends PFComponent {
         atomicSyncing.set(syncing);
 
         trayIcon.setImage(image);
+//        if (!isMacMenuBarDarkMode())
+//            trayIcon.setImage(image);
+//        else
+//            trayIcon.setImage(Icons.getGrayImage(image));
+
+
         trayIcon.setToolTip(tooltip.toString());
     }
 
@@ -303,6 +309,25 @@ public class TrayIconManager extends PFComponent {
                     spinIcon();
                 }
             });
+        }
+    }
+
+    public static boolean isMacMenuBarDarkMode() {
+        if (!OSUtil.isMacOS()) {
+            return false;
+        }
+        try {
+            // check for exit status only. Once there are more modes than "dark" and "default", we might need to analyze string contents..
+            final Process proc = Runtime.getRuntime().exec(new String[] {"defaults", "read", "-g", "AppleInterfaceStyle"});
+            proc.waitFor(100, TimeUnit.MILLISECONDS);
+            return proc.exitValue() == 0;
+        } catch (IOException | InterruptedException | IllegalThreadStateException ex) {
+            // IllegalThreadStateException thrown by proc.exitValue(), if process didn't terminate
+            // log.warn("Could not determine, whether 'dark mode' is being used. Falling back to default (light) mode.");
+            Logger.getLogger(TrayIconManager.class.getName()).warning(
+                    "Could not determine, whether 'dark mode' is being used. Falling back to default (light) mode."
+                            + ex);
+            return false;
         }
     }
 }

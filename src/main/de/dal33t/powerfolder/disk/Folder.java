@@ -55,6 +55,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
 
@@ -466,7 +467,7 @@ public class Folder extends PFComponent {
         if (!getController().isShuttingDown()) {
             getController().setPaused(getController().isPaused());
         }
-        if (isWarning()) {
+        if (isWarning() && !currentInfo.isMetaFolder()) {
             logWarning(this + ": Added " + problem);
         }
     }
@@ -1531,7 +1532,7 @@ public class Folder extends PFComponent {
         }
 
         if (dir.equals(getSystemSubDir0())) {
-            logWarning("Ignoring system subdirectory: " + dir);
+            logFine("Ignoring system subdirectory: " + dir);
             return;
         }
 
@@ -2362,6 +2363,10 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (member.hasCompleteFileListFor(currentInfo)) {
+                if (getDAO().count(member.getId(), false, false) == 0 && getKnownItemCount() > 0) {
+                    logInfo(this + ": Empty filelist from " + member + ". Known local items " + getKnownItemCount());
+                    continue;
+                }
                 remoteFilesFound = true;
                 break;
             }
@@ -2669,8 +2674,11 @@ public class Folder extends PFComponent {
         // member will be joined, here on local
         boolean wasMember = members.put(member, member) != null;
         if (!wasMember && isInfo() && !init && !currentInfo.isMetaFolder()) {
-            logInfo(getLocalizedName() + ": Member " + member.getNick()
-                + " joined (connected? " + member.isConnected() + ")");
+            Level l = member.isConnected() ? Level.INFO : Level.FINE;
+            if (isLog(l)) {
+                logIt(l, this + ": Member " + member.getNick()
+                        + " joined (connected? " + member.isConnected() + ")", null);
+            }
         }
         if (!init) {
             // NEVER send file lists without request via D2D protocol
@@ -2882,7 +2890,7 @@ public class Folder extends PFComponent {
             // Skip if not member
             return;
         }
-        logFine("Member left " + member);
+        logFine(this + " left by " + member);
 
         // remove files of this member in our datastructure
         dao.deleteDomain(member.getId(), -1);
@@ -3049,7 +3057,7 @@ public class Folder extends PFComponent {
                     // PFC-2695: Prevent long running threads
                     n++;
                     if (n % 100 == 0 && !member.isCompletelyConnected()) {
-                        logWarning("Device " + member.getNick()
+                        logFine("Device " + member.getNick()
                             + " disconnected while syncing deletions.");
                         break;
                     }
@@ -3080,7 +3088,7 @@ public class Folder extends PFComponent {
                         // PFC-2695: Prevent long running threads
                         n++;
                         if (n % 100 == 0 && !member.isCompletelyConnected()) {
-                            logWarning("Device " + member.getNick()
+                            logFine("Device " + member.getNick()
                                 + " disconnected while syncing deletions.");
                             break;
                         }
@@ -3105,250 +3113,250 @@ public class Folder extends PFComponent {
     }
 
     private void handleFileDeletion(FileInfo remoteFile, boolean force,
-        Member member, List<FileInfo> removedFiles, int nTried)
-    {
-        if (!remoteFile.isDeleted()) {
-            // Not interesting...
-            return;
-        }
-        if (shutdown) {
-            logFine(getName() + ": Already shutdown: Not handleFileDeletion: " + remoteFile.toDetailString() + " received from " + member);
-            return;
-        }
-        boolean syncFromMemberAllowed = syncProfile.isSyncDeletion() || force;
-        if (!syncFromMemberAllowed) {
-            // Not allowed to sync
-            return;
-        }
-
-        FileInfo localFile = getFile(remoteFile);
-        if (localFile != null && !remoteFile.isNewerThan(localFile)) {
-            // Remote file is not newer = we are up to date.
-            return;
-        }
-
-        // Ignored? Skip!
-        if (diskItemFilter.isExcluded(remoteFile)) {
-            return;
-        }
-
-        // Add to local file to database if was deleted on remote
-        if (localFile == null) {
-            long removeBefore = System.currentTimeMillis()
-                - 1000L
-                * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
-                    .getValueInt(getController());
-            if (remoteFile.getModifiedDate().getTime() > removeBefore) {
-                if (isFine()) {
-                    logFine("Taking over deletion file info: "
-                        + remoteFile.toDetailString());
-                }
-                // Take over info
-                remoteFile = correctFolderInfo(remoteFile);
-                store(getMySelf(), remoteFile);
-                localFile = getFile(remoteFile);
-                // File has been marked as removed at our side
-                removedFiles.add(localFile);
-            }
-            return;
-        }
-        if (localFile.isDeleted()) {
-            if (remoteFile.isNewerThan(localFile)) {
-                if (isFine()) {
-                    logFine("Taking over new deletion file info: "
-                        + remoteFile.toDetailString());
-                }
-                // Take over modification infos
-                remoteFile = correctFolderInfo(remoteFile);
-                store(getMySelf(), remoteFile);
-                localFile = getFile(remoteFile);
-                removedFiles.add(localFile);
-            }
-            return;
-        }
-
-        // Local file NOT deleted / still existing. So do a local delete
-        Path localCopy = localFile.getDiskFile(getController()
-            .getFolderRepository());
-        if (!localFile.inSyncWithDisk(localCopy)) {
-            if (isFine()) {
-                logFine("Not deleting file from member " + member
-                    + ", local file not in sync with disk: "
-                    + localFile.toDetailString() + " at "
-                    + localCopy.toAbsolutePath());
-            }
-
-            // PFC-2692: Check if storage is still connected.
-            if (isDeviceDisconnected() || checkIfDeviceDisconnected()) {
+                                    Member member, List<FileInfo> removedFiles, int nTried) {
+        try {
+            if (!remoteFile.isDeleted()) {
+                // Not interesting...
                 return;
             }
-            if (scanAllowedNow()
-                && (localFile = scanChangedFile(localFile)) != null
-                && nTried < 10)
-            {
-                // PFC-2706 / PFC-2705
-                if (remoteFile.getFolderInfo().isMetaFolder()
-                        && localFile.inSyncWithDisk(localCopy))
-                {
-                    MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
-                        getController());
-                    mfdh.handleMetaFolderFileInfo(remoteFile);
-                }
-
-                // Scan an trigger a sync of deletions later (again).
-                handleFileDeletion(remoteFile, force, member, removedFiles,
-                    ++nTried);
+            if (shutdown) {
+                logFine(getName() + ": Already shutdown: Not handleFileDeletion: " + remoteFile.toDetailString() + " received from " + member);
+                return;
             }
-            return;
-        }
-
-        if (isInfo()) {
-            // PFC-2434
-            String by = "n/a";
-            if (remoteFile.getModifiedBy() != null) {
-                AccountInfo aInfo = remoteFile.getModifiedBy()
-                    .getNode(getController(), true).getAccountInfo();
-                if (aInfo != null) {
-                    by = aInfo.getDisplayName();
-                }
+            boolean syncFromMemberAllowed = syncProfile.isSyncDeletion() || force;
+            if (!syncFromMemberAllowed) {
+                // Not allowed to sync
+                return;
             }
-            String msg = "File " + localFile.toDetailString() + " was deleted by "
-                + by + ": " + remoteFile.toDetailString()
-                + " , deleting local at " + localCopy.toAbsolutePath();
-            if (currentInfo.isMetaFolder()) {
-                logFine(msg);
-            } else {
-                logInfo(msg);
+
+            FileInfo localFile = getFile(remoteFile);
+            if (localFile != null && !remoteFile.isNewerThan(localFile)) {
+                // Remote file is not newer = we are up to date.
+                return;
             }
-        }
 
-        // Abort transfers on file.
-        if (remoteFile.isFile()) {
-            getController().getTransferManager().breakTransfers(remoteFile);
-        }
+            // Ignored? Skip!
+            if (diskItemFilter.isExcluded(remoteFile)) {
+                return;
+            }
 
-        if (Files.exists(localCopy)) {
-            synchronized (scanLock) {
-                if (localFile.isDiretory()) {
+            // Add to local file to database if was deleted on remote
+            if (localFile == null) {
+                long removeBefore = System.currentTimeMillis()
+                        - 1000L
+                        * ConfigurationEntry.MAX_FILEINFO_DELETED_AGE_SECONDS
+                        .getValueInt(getController());
+                if (remoteFile.getModifiedDate().getTime() > removeBefore) {
                     if (isFine()) {
-                        logFine("Deleting directory from remote: "
-                            + localFile.toDetailString());
+                        logFine("Taking over deletion file info: "
+                                + remoteFile.toDetailString());
                     }
-                    watcher.addIgnoreFile(localFile);
+                    // Take over info
+                    remoteFile = correctFolderInfo(remoteFile);
+                    store(getMySelf(), remoteFile);
+                    localFile = getFile(remoteFile);
+                    // File has been marked as removed at our side
+                    removedFiles.add(localFile);
+                }
+                return;
+            }
+            if (localFile.isDeleted()) {
+                if (remoteFile.isNewerThan(localFile)) {
+                    if (isFine()) {
+                        logFine("Taking over new deletion file info: "
+                                + remoteFile.toDetailString());
+                    }
+                    // Take over modification infos
+                    remoteFile = correctFolderInfo(remoteFile);
+                    store(getMySelf(), remoteFile);
+                    localFile = getFile(remoteFile);
+                    removedFiles.add(localFile);
+                }
+                return;
+            }
 
-                    try {
-                        Files.delete(localCopy);
-                    } catch (IOException ioe) {
-                        // PFS-1821
-                        FileInfoCriteria c = new FileInfoCriteria();
-                        c.addMySelf(this);
-                        c.setPath((DirectoryInfo) localFile);
-                        Collection<FileInfo> filesInDir = getDAO()
-                            .findFiles(c);
-                        for (FileInfo fileInfo : filesInDir) {
-                            if (!fileInfo.isDeleted()) {
-                                // PFS-2147:
-                                removeFileLocal(fileInfo);
-                                if (isInfo()) {
-                                    logInfo(
-                                        "Deleted file in deleted directory: "
-                                            + fileInfo.toDetailString()
-                                            + ". Directory: "
-                                            + fileInfo.toDetailString()
-                                            + ". Message: "
-                                            + ioe.toString());
-                                }
-                            }
+            // Local file NOT deleted / still existing. So do a local delete
+            Path localCopy = localFile.getDiskFile(getController()
+                    .getFolderRepository());
+            if (!localFile.inSyncWithDisk(localCopy)) {
+                if (isFine()) {
+                    logFine("Not deleting file from member " + member
+                            + ", local file not in sync with disk: "
+                            + localFile.toDetailString() + " at "
+                            + localCopy.toAbsolutePath());
+                }
+
+                // PFC-2692: Check if storage is still connected.
+                if (isDeviceDisconnected() || checkIfDeviceDisconnected()) {
+                    return;
+                }
+                if (scanAllowedNow()
+                        && (localFile = scanChangedFile(localFile)) != null
+                        && nTried < 10) {
+                    // PFC-2706 / PFC-2705
+                    if (remoteFile.getFolderInfo().isMetaFolder()
+                            && localFile.inSyncWithDisk(localCopy)) {
+                        MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
+                                getController());
+                        mfdh.handleMetaFolderFileInfo(remoteFile);
+                    }
+
+                    // Scan an trigger a sync of deletions later (again).
+                    handleFileDeletion(remoteFile, force, member, removedFiles,
+                            ++nTried);
+                }
+                return;
+            }
+
+            if (isInfo()) {
+                // PFC-2434
+                String by = "n/a";
+                if (remoteFile.getModifiedBy() != null) {
+                    AccountInfo aInfo = remoteFile.getModifiedBy()
+                            .getNode(getController(), true).getAccountInfo();
+                    if (aInfo != null) {
+                        by = aInfo.getDisplayName();
+                    }
+                }
+                String msg = "File " + localFile.toDetailString() + " was deleted by "
+                        + by + ": " + remoteFile.toDetailString()
+                        + " , deleting local at " + localCopy.toAbsolutePath();
+                if (currentInfo.isMetaFolder()) {
+                    logFine(msg);
+                } else {
+                    logInfo(msg);
+                }
+            }
+
+            // Abort transfers on file.
+            if (remoteFile.isFile()) {
+                getController().getTransferManager().breakTransfers(remoteFile);
+            }
+
+            if (Files.exists(localCopy)) {
+                synchronized (scanLock) {
+                    if (localFile.isDiretory()) {
+                        if (isFine()) {
+                            logFine("Deleting directory from remote: "
+                                    + localFile.toDetailString());
                         }
-                        // #1977
-                        try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
-                            for (Path path : remaining) {
-                                String name = path.toString().toLowerCase();
-                                if (name.endsWith("thumbs.db")
-                                    || name.endsWith(".ds_store")
-                                    || name.endsWith("desktop.ini")
-                                    || name.startsWith(
-                                        Constants.MS_OFFICE_FILENAME_PREFIX)
-                                    || name.startsWith(
-                                        Constants.LIBRE_OFFICE_FILENAME_PREFIX))
-                                {
-                                    Files.delete(path);
-                                }
-                            }
-                        } catch (IOException e) {
-                            logFine(
-                                "Unable to delete files in deleted directory "
-                                    + localCopy + ": " + e.getMessage());
-                            return;
-                        }
+                        watcher.addIgnoreFile(localFile);
 
                         try {
                             Files.delete(localCopy);
-                        }
-                        catch (IOException ioe2) {
-                            if (isWarning()) {
-                                int count = 0;
-                                StringBuilder sb = new StringBuilder();
-                                sb.append("[");
-                                try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
-                                    for (Path path : remaining) {
-                                        sb.append(path.toString());
-                                        sb.append(", ");
-                                        count++;
+                        } catch (IOException ioe) {
+                            // PFS-1821
+                            FileInfoCriteria c = new FileInfoCriteria();
+                            c.addMySelf(this);
+                            c.setPath((DirectoryInfo) localFile);
+                            Collection<FileInfo> filesInDir = getDAO()
+                                    .findFiles(c);
+                            for (FileInfo fileInfo : filesInDir) {
+                                if (!fileInfo.isDeleted()) {
+                                    // PFS-2147:
+                                    removeFileLocal(fileInfo);
+                                    if (isInfo()) {
+                                        logInfo(
+                                                "Deleted file in deleted directory: "
+                                                        + fileInfo.toDetailString()
+                                                        + ". Directory: "
+                                                        + fileInfo.toDetailString()
+                                                        + ". Message: "
+                                                        + ioe.toString());
                                     }
                                 }
-                                catch (IOException e) {
-                                    logInfo(e.getMessage());
-                                }
-                                sb.append("]");
-
-                                String contentStr = count > 0
-                                    ? sb.toString()
-                                        : "(unable to access)";
-                                    logFine("Unable to delete directory locally: "
-                                        + localCopy
-                                        + ". Info: "
-                                        + localFile.toDetailString()
-                                        + ". contents: " + contentStr);
                             }
-                            // Skip. Dir was not actually deleted /
-                            // could not sync
+                            // #1977
+                            try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
+                                for (Path path : remaining) {
+                                    String name = path.toString().toLowerCase();
+                                    if (name.endsWith("thumbs.db")
+                                            || name.endsWith(".ds_store")
+                                            || name.endsWith("desktop.ini")
+                                            || name.startsWith(
+                                            Constants.MS_OFFICE_FILENAME_PREFIX)
+                                            || name.startsWith(
+                                            Constants.LIBRE_OFFICE_FILENAME_PREFIX)) {
+                                        Files.delete(path);
+                                    }
+                                }
+                            } catch (IOException e) {
+                                logFine(
+                                        "Unable to delete files in deleted directory "
+                                                + localCopy + ": " + e.getMessage());
+                                return;
+                            }
+
+                            try {
+                                Files.delete(localCopy);
+                            } catch (IOException ioe2) {
+                                if (isWarning()) {
+                                    int count = 0;
+                                    StringBuilder sb = new StringBuilder();
+                                    sb.append("[");
+                                    try (DirectoryStream<Path> remaining = Files.newDirectoryStream(localCopy)) {
+                                        for (Path path : remaining) {
+                                            sb.append(path.toString());
+                                            sb.append(", ");
+                                            count++;
+                                        }
+                                    } catch (IOException e) {
+                                        logInfo(e.getMessage());
+                                    }
+                                    sb.append("]");
+
+                                    String contentStr = count > 0
+                                            ? sb.toString()
+                                            : "(unable to access)";
+                                    logFine("Unable to delete directory locally: "
+                                            + localCopy
+                                            + ". Info: "
+                                            + localFile.toDetailString()
+                                            + ". contents: " + contentStr);
+                                }
+                                // Skip. Dir was not actually deleted /
+                                // could not sync
+                                return;
+                            }
+                        } finally {
+                            watcher.removeIgnoreFile(localFile);
+                        }
+
+                    } else if (localFile.isFile()) {
+
+                        if (!deleteFile(localFile, localCopy, remoteFile)) {
+                            logWarning("Unable to delete local file "
+                                    + localCopy.toAbsolutePath() + ". "
+                                    + localFile.toDetailString());
+                            if (nTried < 10) {
+                                // Re-try again, at least 10 times.
+                                handleFileDeletion(remoteFile, force, member,
+                                        removedFiles, ++nTried);
+                            }
                             return;
+                        } else {
+                            if (remoteFile.getFolderInfo().isMetaFolder()) {
+                                MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
+                                        getController());
+                                mfdh.handleMetaFolderFileInfo(remoteFile);
+                            }
                         }
-                    } finally {
-                        watcher.removeIgnoreFile(localFile);
-                    }
-
-                } else if (localFile.isFile()) {
-
-                    if (!deleteFile(localFile, localCopy, remoteFile)) {
-                        logWarning("Unable to delete local file "
-                            + localCopy.toAbsolutePath() + ". "
-                            + localFile.toDetailString());
-                        if (nTried < 10) {
-                            // Re-try again, at least 10 times.
-                            handleFileDeletion(remoteFile, force, member,
-                                removedFiles, ++nTried);
-                        }
-                        return;
                     } else {
-                        if (remoteFile.getFolderInfo().isMetaFolder()) {
-                            MetaFolderDataHandler mfdh = new MetaFolderDataHandler(
-                                getController());
-                            mfdh.handleMetaFolderFileInfo(remoteFile);
-                        }
+                        logSevere("Unable to apply remote deletion: "
+                                + localFile.toDetailString());
                     }
-                } else {
-                    logSevere("Unable to apply remote deletion: "
-                        + localFile.toDetailString());
                 }
             }
-        }
 
-        // File has been removed
-        // Changed localFile -> remoteFile
-        removedFiles.add(remoteFile);
-        store(getMySelf(), remoteFile);
+            // File has been removed
+            // Changed localFile -> remoteFile
+            removedFiles.add(remoteFile);
+            store(getMySelf(), remoteFile);
+        } catch (IllegalStateException e) {
+            logWarning(remoteFile.toDetailString() + ": Unable to locally delete deleted file. " + e);
+        } catch (RuntimeException e) {
+            logWarning(remoteFile.toDetailString() + ": Unable to locally delete deleted file. " + e, e);
+        }
     }
 
     /**
@@ -3517,6 +3525,7 @@ public class Folder extends PFComponent {
      * @param newList
      */
     public void fileListChanged(Member from, FileList newList) {
+        Reject.ifTrue(from.isMySelf(), "Not allowed to process FileList for myself");
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not fileListChanged: " + newList + " received from " + from);
             return;
@@ -3596,6 +3605,7 @@ public class Folder extends PFComponent {
      * @param changes
      */
     public void fileListChanged(Member from, FolderFilesChanged changes) {
+        Reject.ifTrue(from.isMySelf(), "Not allowed to process FolderFilesChanged for myself");
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not fileListChanged: " + changes + " received from " + from);
             return;
@@ -4410,8 +4420,10 @@ public class Folder extends PFComponent {
                                 .getFolderRepository());
                         if (localFile.isNewerThan(newestFileInfo)) {
                             // Ignore/Rever local files
-                            logWarning("Local change detected, but has no write permission: "
-                                + localFile.toDetailString());
+                            if (!newestFileInfo.getFolderInfo().isMetaFolder()) {
+                                logWarning("Local change detected, but has no write permission: "
+                                        + localFile.toDetailString());
+                            }
                             localFile = null;
                         }
                     }

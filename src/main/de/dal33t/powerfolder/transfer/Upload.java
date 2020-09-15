@@ -516,7 +516,7 @@ public class Upload extends Transfer {
             logWarning(f + ": IOException: " + e);
             throw new TransferException(e);
         } catch (ConnectionException e) {
-            logWarning("Connection problem while uploading. " + e.toString());
+            logFine("Connection problem while uploading. " + e.toString());
             if (isFiner()) {
                 logFiner("ConnectionException", e);
             }

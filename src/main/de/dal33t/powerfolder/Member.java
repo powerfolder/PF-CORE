@@ -530,6 +530,14 @@ public class Member extends PFComponent implements Comparable<Member> {
         MemberInfo remoteMemberInfo = identity != null ? identity
             .getMemberInfo() : null;
 
+        if (remoteMemberInfo != null && remoteMemberInfo.matches(getMySelf())) {
+            logFine("Loopback connection detected to " + newPeer
+                    + ", disconnecting");
+            newPeer.shutdown();
+            throw new InvalidIdentityException("Loopback connection detected to "
+                    + newPeer + ", disconnecting", newPeer);
+        }
+
         // #1373
         if (remoteMemberInfo != null
             && !remoteMemberInfo.isOnSameNetwork(getController()))
@@ -1204,6 +1212,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      * Shuts the member and its connection down
      */
     public void shutdown() {
+        if (isMySelf()) {
+            return;
+        }
         boolean wasHandshaked = handshaked;
 
         shutdownPeer();
@@ -1573,7 +1584,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 // Send filelist of joined folders
                                 logInfo("Resending file list of "
                                     + targetFolder.getName() + " to "
-                                    + getNick());
+                                    + getNick() + " (" + getUsername() + ")");
                                 Message[] filelistMsgs = FileList.create(
                                     targetFolder, targetFolder
                                         .supportExternalizable(Member.this));
@@ -1683,7 +1694,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                     setConnectedToNetwork(true);
                 } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
                 {
-                    logWarning("Problem received: Node thinks we have a dupe connection to " + this);
+                    if (getMySelf().isServer()) {
+                        logFine("Problem received: Node thinks we have a dupe connection to " + this);
+                    } else {
+                        logWarning("Problem received: Node thinks we have a dupe connection to " + this);
+                    }
                 } else {
                     logWarning("Problem received: " + lastProblem);
                 }
@@ -1872,8 +1887,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                             + message);
                     }
                 } else {
-                    logWarning("Ignoring reload config request from non server: "
-                        + message);
+                    if (isFederated) {
+                        logFine("Ignoring reload config request from federated server: " + message);
+                    } else {
+                        logWarning("Ignoring reload config request from non server: " + message);
+                    }
                 }
             } else {
                 if (isFiner()) {
@@ -2600,6 +2618,14 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
     }
 
+    public String getUsername() {
+        AccountInfo accountInfo = getAccountInfo();
+        if (accountInfo == null) {
+            return null;
+        }
+        return accountInfo.getUsername();
+    }
+
     /**
      * @return the account info of the user logged in at the remote node.
      */
@@ -2610,7 +2636,6 @@ public class Member extends PFComponent implements Comparable<Member> {
     public boolean updateInfo(MemberInfo newInfo) {
         return updateInfo(newInfo, false);
     }
-
 
     /**
      * Updates connection information, if the other is more 'valueble'.

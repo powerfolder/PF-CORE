@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.NetworkingMode;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
@@ -297,6 +298,32 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         } catch (InvalidIdentityException e) {
             // OK!
         }
+    }
+
+    /**
+     * PFS-3616
+     */
+    public void testLoopbackConnection() {
+        // Prepare folder
+        FolderInfo foInfo = joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION, false);
+        Folder folder = foInfo.getFolder(getContollerLisa());
+        TestHelper.createRandomFile(folder.getLocalBase());
+        TestHelper.scanFolder(folder);
+        assertFalse(folder.getKnownFiles().isEmpty());
+
+        getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
+        // Reconnect manager has to be started therefore!
+        getContollerLisa().getReconnectManager().start();
+        try {
+            assertFalse(getContollerLisa().getMySelf().reconnect().isSuccess());
+            fail("Loopback connection should fail");
+        } catch (InvalidIdentityException e) {
+            // Expected
+        }
+
+        // File DB intact:
+        assertFalse(folder.getKnownFiles().isEmpty());
     }
 
     public void noTestPublicInfrastructureConnect() {

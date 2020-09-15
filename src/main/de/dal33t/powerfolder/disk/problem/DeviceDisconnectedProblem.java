@@ -38,6 +38,14 @@ public class DeviceDisconnectedProblem extends ResolvableProblem {
     }
 
     @Override
+    public String toString() {
+        return "StorageDisconnectedProblem{" +
+                "folderInfo=" + folderInfo +
+                ", since=" + created +
+                '}';
+    }
+
+    @Override
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {

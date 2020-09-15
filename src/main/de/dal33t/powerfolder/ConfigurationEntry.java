@@ -554,6 +554,11 @@ public enum ConfigurationEntry {
     FOLDER_AGREE_INVITATION_ENABLED("folder.agree.invitation.enabled", false),
 
     /**
+     * PF-1790 Subfolder sharing enabled
+     */
+    FOLDER_SHARE_SUBFOLDER_ENABLED("folder.share.subfolder.enabled", false),
+
+    /**
      * PFS-798: If invitor can invite "external" non existing users (e.g. not in LDAP nor in DB).
      * Will create a new user account with server default settings for invitee.
      */

@@ -685,6 +685,9 @@ public class Account implements Serializable, D2DObject {
         Reject.ifNull(fedServiceInfo, "fedServiceInfo");
         Reject.ifFalse(fedServiceInfo.isFederatedService(),
                 "Setting token only possible for federation services");
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine(username + ": setToken for " + fedServiceInfo + " to " + tokenSecret);
+        }
         tokens.put(fedServiceInfo, tokenSecret);
     }
 
@@ -1193,6 +1196,9 @@ public class Account implements Serializable, D2DObject {
         // Create list of emails without LDAP search context information
         List<String> result = new ArrayList<>();
         for (String email : emails) {
+            if (email == null) {
+                continue;
+            }
             int index = email.indexOf(':');
             if (index > 0) {
                 result.add(email.substring(0, index));
@@ -1246,6 +1252,9 @@ public class Account implements Serializable, D2DObject {
 
     public boolean isLimitedUser() {
         if (!authByDatabase()) {
+            return false;
+        }
+        if (isFederatedAccount()) {
             return false;
         }
         return osSubscription.getStorageSize() <= 0;
@@ -1306,7 +1315,7 @@ public class Account implements Serializable, D2DObject {
 
     @Override
     public String toString() {
-        return "Account '" + username + "', " + permissions.size()
+        return "Account " + username + "/" + oid + ", " + permissions.size()
                 + " permissions";
     }
 
@@ -1369,6 +1378,10 @@ public class Account implements Serializable, D2DObject {
 
         if (StringUtils.isBlank(this.ldapDN)) {
             this.ldapDN = account.ldapDN;
+        }
+
+        if (StringUtils.isBlank(this.basePath)) {
+            this.basePath = account.basePath;
         }
 
         if (StringUtils.isBlank(this.shibbolethPersistentID)) {

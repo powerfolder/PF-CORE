@@ -422,7 +422,9 @@ public class Util {
      * @return true if succeeded
      */
     public static boolean removeDesktopShortcut(String shortcutName) {
-        LOG.finer("Removing desktop shortcut: " + shortcutName);
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("Removing desktop shortcut: " + shortcutName);
+        }
 
         Path linkPath = null;
 
@@ -449,8 +451,8 @@ public class Util {
                 return true;
             }
         } catch (Exception e) {
-            LOG.warning("Couldn't create shortcut " + linkPath.toAbsolutePath());
-            LOG.log(Level.FINER, "IOException", e);
+            LOG.fine("Couldn't remove shortcut " + linkPath);
+            LOG.log(Level.FINER, "Exception", e);
         }
 
         return false;
@@ -1015,11 +1017,19 @@ public class Util {
      */
     public static final boolean isStaleStateException(Throwable t) {
         while (t != null) {
-            if (t instanceof StaleStateException) {
+            if (t instanceof StaleStateException || t.toString().contains("StaleStateException")) {
                 return true;
             }
             t = t.getCause();
         }
         return false;
+    }
+
+    public static final Throwable getRootCause(Throwable t) {
+        Throwable root = t;
+        while (root.getCause() != null) {
+            root = root.getCause();
+        }
+        return root;
     }
 }

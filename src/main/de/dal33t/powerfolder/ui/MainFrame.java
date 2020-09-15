@@ -1053,6 +1053,7 @@ public class MainFrame extends PFUIComponent {
             getUIComponent().setVisible(false);
         } else {
             setFrameMode(FrameMode.MINIMIZED);
+            // getUIComponent().setVisible(false);
         }
         // }
     }
@@ -1118,10 +1119,10 @@ public class MainFrame extends PFUIComponent {
              *            to get the window back.
              */
             if(LinuxUtil.isNotKDE()) {
-                getUIController().hideChildPanels();
-                if (OSUtil.isSystraySupported()) {
-                    uiComponent.setVisible(false);
-                }
+//                getUIController().hideChildPanels();
+//                if (OSUtil.isSystraySupported()) {
+//                    //uiComponent.setVisible(false);
+//                }
             }
         }
     }

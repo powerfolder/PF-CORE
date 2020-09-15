@@ -537,26 +537,28 @@ public abstract class AbstractDownloadManager extends PFComponent implements
     }
 
     protected synchronized void setCompleted() {
-        assert !isCompleted();
-
-        // Might be broken/aborted in the mean time
-        if (isDone()) {
-            return;
-        }
-
-        if (isInfo()) {
-            if (fileInfo.getFolderInfo().isMetaFolder()) {
-                logFine("Download completed: " + fileInfo.toDetailString());
-            } else {
-                logInfo("Download completed: " + fileInfo.toDetailString());
+        try {
+            // Might be broken/aborted in the mean time
+            if (isDone()) {
+                return;
             }
-        }
 
-        setTransferState(TransferState.DONE, 1);
-        setState(InternalState.COMPLETED);
-        shutdown();
-        deleteMetaData();
-        tm.setCompleted(AbstractDownloadManager.this);
+            if (isInfo()) {
+                if (fileInfo.getFolderInfo().isMetaFolder()) {
+                    logFine("Download completed: " + fileInfo.toDetailString());
+                } else {
+                    logInfo("Download completed: " + fileInfo.toDetailString());
+                }
+            }
+
+            setTransferState(TransferState.DONE, 1);
+            setState(InternalState.COMPLETED);
+            shutdown();
+            deleteMetaData();
+            tm.setCompleted(AbstractDownloadManager.this);
+        } catch (RuntimeException e) {
+            logWarning("Exception while completing download of " + fileInfo.toDetailString(), e);
+        }
     }
 
     protected synchronized void setFilePartsState(FilePartsState state) {

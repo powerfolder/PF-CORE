@@ -119,11 +119,7 @@ public class FileArchiver {
 
         if (Files.exists(target)) {
             // PFS-1794: Happens 2136x
-            if (log.isLoggable(Level.WARNING)
-                    && !fileInfo.inSyncWithDisk(target)) {
-                log.warning("File " + fileInfo.toDetailString()
-                        + " seems to be archived already, doing nothing.");
-            } else if (log.isLoggable(Level.FINE)) {
+            if (log.isLoggable(Level.FINE)) {
                 log.fine("File " + fileInfo.toDetailString()
                         + " seems to be archived already, doing nothing.");
             }
@@ -541,6 +537,22 @@ public class FileArchiver {
         // Read-only, so others don't trash this.
         return Collections.unmodifiableList(list);
     }
+
+    /**
+     * Calls {@link #getArchivedFilesInfos(FileInfo)} and sorts the returned
+     * list according to the version number.
+     *
+     * @param fileInfo
+     *            The file to get the archived versions of.
+     * @return A alpha-numerically ascending sorted list of all versions of
+     *         {@code fileInfo} in the history.
+     */
+    public List<FileInfo> getSortedArchivedFilesInfos(FileInfo fileInfo) {
+        List<FileInfo> versions = new ArrayList<>(getArchivedFilesInfos(fileInfo));
+        versions.sort(Comparator.comparingInt(FileInfo::getVersion));
+        return versions;
+    }
+
 
     /**
      * @param fileInfo The file to get the archived version of.

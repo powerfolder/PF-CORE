@@ -587,19 +587,9 @@ public class TransferManager extends PFComponent {
     void downloadBroken(Download download, TransferProblem problem,
         String problemInfo)
     {
-        Level l = Level.WARNING;
-        if (problem == TransferProblem.NODE_DISCONNECTED
-                || problem == TransferProblem.PAUSED
-                || problem == TransferProblem.OLD_UPLOAD
-                || problem == TransferProblem.BROKEN_DOWNLOAD)
-        {
-            l = Level.FINE;
-        }
-        if (isLog(l)) {
-            logIt(l,
-                "Download broken: " + download + ' '
-                    + (problem == null ? "" : problem) + ": " + problemInfo,
-                null);
+        if (isFine()) {
+            logFine("Download broken: " + download + ' '
+                    + (problem == null ? "" : problem) + ": " + problemInfo);
         }
 
         download.setTransferProblem(problem);
@@ -627,19 +617,11 @@ public class TransferManager extends PFComponent {
     {
         // Ensure shutdown
         upload.shutdown();
-        
-        Level l = Level.WARNING;
-        if (transferProblem == TransferProblem.NODE_DISCONNECTED
-            || transferProblem == TransferProblem.PAUSED
-            || transferProblem == TransferProblem.OLD_UPLOAD
-            || upload.getFile().getFolderInfo().isMetaFolder())
-        {
-            l = Level.FINE;
-        }
-        if (isLog(l)) {
-            logIt(l, "Upload broken: " + upload + ' '
+
+        if (isFine()) {
+            logFine("Upload broken: " + upload + ' '
                 + (transferProblem == null ? "" : transferProblem) + ": "
-                + problemInformation, null);
+                + problemInformation);
         }
         
         uploadsLock.lock();
@@ -1232,7 +1214,7 @@ public class TransferManager extends PFComponent {
         Folder folder = dl.file
             .getFolder(getController().getFolderRepository());
         if (folder == null) {
-            logWarning("Received illegal download request from "
+            logFine("Received illegal download request from "
                 + from.getNick() + ". Not longer on folder "
                 + dl.file.getFolderInfo());
             return null;
@@ -1261,7 +1243,13 @@ public class TransferManager extends PFComponent {
             }
             // This should free up an otherwise waiting for download partner
             if (folder.scanAllowedNow()) {
-                folder.scanChangedFile(dl.file);
+                try {
+                    folder.scanChangedFile(dl.file);
+                } catch (IllegalStateException e) {
+                    logWarning(dl.file.toDetailString() + ": Unable to queue file for upload. " + e);
+                } catch (RuntimeException e) {
+                    logWarning(dl.file.toDetailString() + ": Unable to queue file for upload. " + e, e);
+                }
             } else {
                 if (isWarning()) {
                     if (Files.exists(diskFile)) {
@@ -1288,7 +1276,7 @@ public class TransferManager extends PFComponent {
         if (!fileInSyncWithDb) {
             logWarning("File not in sync with db: '" + dl.file.toDetailString()
                 + "', but I have "
-                + (localFile != null ? localFile.toDetailString() : ""));
+                + (localFile != null ? localFile.toDetailString() : "none"));
             return null;
         }
 

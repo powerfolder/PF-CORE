@@ -56,7 +56,7 @@ public class FolderDatabaseProblem extends ResolvableProblem {
     }
 
     public String getResolutionDescription() {
-        return Translation.get("folder_problem.folderdb.soln_desc");
+        return Translation.get("folder_problem.folderdb.description");
     }
 
     /**
