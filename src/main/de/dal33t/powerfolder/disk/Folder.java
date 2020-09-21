@@ -4451,8 +4451,10 @@ public class Folder extends PFComponent {
                                 .getFolderRepository());
                         if (localFile.isNewerThan(newestFileInfo)) {
                             // Ignore/Rever local files
-                            logWarning("Local change detected, but has no write permission: "
-                                + localFile.toDetailString());
+                            if (!newestFileInfo.getFolderInfo().isMetaFolder()) {
+                                logWarning("Local change detected, but has no write permission: "
+                                        + localFile.toDetailString());
+                            }
                             localFile = null;
                         }
                     }
