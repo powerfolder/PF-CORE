@@ -30,8 +30,9 @@ public class LookAheadObjectInputStream extends ObjectInputStream {
         }
         if (!AntiSerializationVulnerability.isWhitelisted(desc.getName())) {
             LOG.log(Level.WARNING,
-                "Unauthorized deserialization attempt: " + desc.getName(),
-                new StackDump());
+                "Unauthorized deserialization attempt: " + desc.getName());
+            LOG.log(Level.FINE,
+                    "Unauthorized deserialization attempt: " + desc.getName(), new StackDump());
             throw new InvalidClassException(
                 "Unauthorized deserialization attempt", desc.getName());
         }
