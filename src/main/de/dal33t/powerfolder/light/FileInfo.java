@@ -1008,7 +1008,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     public void writeExternal(ObjectOutput out) throws IOException {
         long extUID;
-        if (oid == null && hashes == null && tags == null) {
+        if (oid == null && hashes == null && tags == null && modifiedByAccount == null) {
             extUID = extVersion100UID;
         } else {
             extUID = extVersionCurrentUID;
