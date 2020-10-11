@@ -1419,6 +1419,9 @@ public class Folder extends PFComponent {
                         if (modByAccount == null) {
                             modByAccount = getMySelf().getAccountInfo();
                         }
+                        if (modByAccount == null && fInfo.getModifiedByAccount() != null){
+                            modByAccount = fInfo.getModifiedByAccount();
+                        }
                         Date modDate;
                         long size;
                         boolean deleted;
