@@ -1413,9 +1413,12 @@ public class Folder extends PFComponent {
                         }
                         Member fromDevice = modByDevice.getNode(
                             getController(), false);
-                        AccountInfo modByAccount = fromDevice != null
-                            ? fromDevice.getAccountInfo()
-                            : null;
+                        AccountInfo modByAccount = fInfo.getModifiedByAccount();
+                        if (modByAccount == null) {
+                            modByAccount = fromDevice != null
+                                    ? fromDevice.getAccountInfo()
+                                    : null;
+                        }
                         if (modByAccount == null) {
                             modByAccount = getMySelf().getAccountInfo();
                         }
