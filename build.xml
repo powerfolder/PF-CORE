@@ -65,6 +65,7 @@ For creation of the installer:
 		<condition property="outputdirset">
 			<isset property="output.dir" />
 		</condition>
+		<property name="InstallerSignProgram" value="lib-build/signtool.exe" />
 		<property name="Debug" value="on"/>
 	</target>
 
