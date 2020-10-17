@@ -1660,7 +1660,7 @@ public class ServerClient extends PFComponent {
         Collection<Member> newServers = new CopyOnWriteArrayList<>();
         for (MemberInfo server : nodeList.getServersSet()) {
             Member node = server.getNode(getController(), true);
-            node.updateInfo(server);
+            node.updateInfo(server, true);
             node.setServer(true);
             newServers.add(node);
             if (isInfo() && !servers.contains(node)) {

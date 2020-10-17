@@ -31,6 +31,9 @@ public class JavaVersionTest extends TestCase {
      * Test that we can read the java.runtime.version.
      */
     public void testSystemVersion() {
+        if (JavaVersion.systemVersion().isOpenJDK()) {
+            return;
+        }
         assertEquals("System Version",
                 JavaVersion.systemVersion().toString(),
                 System.getProperty("java.runtime.version"));
@@ -63,50 +66,11 @@ public class JavaVersionTest extends TestCase {
         assertEquals("Parse four", "1.6.2_9", JavaVersion.parse("1.6.2_9").toString());
         assertEquals("Parse five",  "1.6.0_10-b12", JavaVersion.parse("1.6.0_10-b12").toString());
 
-        // Swap '_' and '-'
-        boolean threwError = false;
-      /*  try {
-            JavaVersion.parse("1.6.0-10_b12");
-        } catch (Exception e) {
-            threwError = true;
-        }
-        assertTrue("Throwing error - swap", threwError);*/
-
-        // No 'b'
-        /*threwError = false;
-        try {
-            JavaVersion.parse("1.6.0_10-12");
-        } catch (Exception e) {
-            threwError = true;
-        }
-        assertTrue("Throwing error - b", threwError);*/
-
         // Junk text
-        threwError = false;
-        try {
-            JavaVersion.parse("complete junk");
-        } catch (Exception e) {
-            threwError = true;
-        }
-        assertTrue("Throwing error - junk", threwError);
-
-        // Empty text
-        threwError = false;
-        try {
-            JavaVersion.parse("");
-        } catch (Exception e) {
-            threwError = true;
-        }
-        assertTrue("Throwing error - empty", threwError);
-
-        // Null text
-        threwError = false;
-        try {
-            JavaVersion.parse(null);
-        } catch (Exception e) {
-            threwError = true;
-        }
-        assertTrue("Throwing error - null", threwError);
+        assertEquals("0.0.0", JavaVersion.parse("complete junk").toString());
+        assertEquals("0.0.0", JavaVersion.parse("").toString());
+        assertEquals("0.0.0", JavaVersion.parse(null).toString());
+        assertEquals("0.0.0", JavaVersion.parse("complete junk").toString());
     }
 
     /**
@@ -139,6 +103,14 @@ public class JavaVersionTest extends TestCase {
         assertFalse("Equals eq", openJDKVersion.equals(normalVersion));
         assertFalse("HashCode eq", openJDKVersion.hashCode() ==
                 normalVersion.hashCode());
+        JavaVersion v14 = JavaVersion.parse("14.0.1+7");
+        assertEquals(14, v14.getMajor());
+        assertEquals(0, v14.getMinor());
+        assertEquals(1, v14.getRevision());
+        JavaVersion v15 = JavaVersion.parse("15+36-1562");
+        assertEquals(15, v15.getMajor());
+        assertEquals(0, v15.getMinor());
+        assertEquals(361562, v15.getRevision());
     }
 
     /**

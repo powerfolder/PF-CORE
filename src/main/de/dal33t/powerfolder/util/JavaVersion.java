@@ -19,9 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Class representing a Java version. It follows the java.runtime.version format
  * of &lt;major&gt;.&lt;minor&gt;.&lt;revision&gt;_&lt;update&gt;-b&lt;build&gt;,
@@ -294,41 +291,81 @@ public class JavaVersion implements Comparable<JavaVersion> {
      * @return
      */
     public static JavaVersion parse(String version) {
-        String[] strings = version.split("\\.");
-        if (strings.length < 2) {
-            throw new IllegalStateException(
-                "Could not parse system version of Java: " + version);
-        }
+        String[] strings = version != null ? version.split("(\\.|_)") : new String[] {"0", "0"};
 
-        Pattern p = Pattern.compile("(\\d+)\\.(\\d+)(\\.(\\d+))?(_(\\d+))?(-b(\\d+))?"); // [_\+]?(\d+)[\-b(\d+)]?
-        Matcher m = p.matcher(version);
-        String build = "0", update = "0", revision = "0", minor = "0", major = "0";
+        int major = 0;
+        int minor = 0;
+        int revision = 0;
+        int update = 0;
+        int build = 0;
 
-        if (m.find()) {
-            int count = m.groupCount();
+        Segment s = new Segment(strings[0]);
+        major = s.number;
 
-            switch (count) {
-                case 8:
-                    build = m.group(8);
-                case 6:
-                    update = m.group(6);
-                case 4:
-                    revision = m.group(4);
-                case 2:
-                    minor = m.group(2);
-                case 1:
-                    major = m.group(1);
+        if (strings.length > 1) {
+            s = new Segment(strings[1]);
+            minor = s.number;
+            if (s.containsAdditionalNumber()) {
+                update = s.additionalNumber;
+            }
+        } else {
+            if (s.containsAdditionalNumber()) {
+                revision = s.additionalNumber;
             }
         }
 
-        major = major == null ? "0" : major;
-        minor = minor == null ? "0" : minor;
-        revision = revision == null ? "0" : revision;
-        update = update == null ? "0" : update;
-        build = build == null ? "0" : build;
+        if (strings.length > 2) {
+            s = new Segment(strings[2]);
+            revision = s.number;
+            if (s.containsAdditionalNumber()) {
+                update = s.additionalNumber;
+            }
+        }
 
-        return new JavaVersion(Integer.parseInt(major), Integer
-            .parseInt(minor), Integer.parseInt(revision), Integer
-            .parseInt(update), Integer.parseInt(build));
+        if (strings.length > 3) {
+            s = new Segment(strings[3]);
+            update = s.number;
+            if (s.containsAdditionalNumber()) {
+                build = s.additionalNumber;
+            }
+        }
+
+        return new JavaVersion(major, minor, revision, update, build);
+    }
+
+    private static class Segment {
+        private int number;
+        private int additionalNumber = -1;
+
+        private boolean containsAdditionalNumber() {
+            return additionalNumber >= 0;
+        }
+
+        private Segment(String versionPart) {
+            try {
+                try {
+                    number = Integer.valueOf(versionPart);
+                } catch (NumberFormatException e) {
+                    String[] split = new String[]{"0", "0"};
+                    if (versionPart.contains("+")) {
+                        split = versionPart.split("\\+");
+                    } else if (versionPart.contains("_")) {
+                        split = versionPart.split("_");
+                    } else if (versionPart.contains("-b")) {
+                        split = versionPart.split("-b");
+                    }
+                    number = Integer.valueOf(split[0]);
+                    String buildStr = split[1]
+                            .replaceAll("-", "")
+                            .replaceAll("\\+", "")
+                            .replaceAll("b", "")
+                            .replaceAll("_", "_");
+                    additionalNumber = Integer.valueOf(buildStr);
+                }
+            } catch (RuntimeException e) {
+                System.err.println("Failed to parse java version part: " + versionPart + ". " + e);
+                e.printStackTrace();
+            }
+        }
     }
 }

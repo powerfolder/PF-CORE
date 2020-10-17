@@ -551,7 +551,7 @@ public enum ConfigurationEntry {
     /**
      * PFS-871: The user has to agree to invitations, if enabled
      */
-    FOLDER_AGREE_INVITATION_ENABLED("folder.agree.invitation.enabled", false),
+    FOLDER_AGREE_INVITATION_ENABLED("folder.agree.invitation.enabled", true),
 
     /**
      * PF-1790 Subfolder sharing enabled

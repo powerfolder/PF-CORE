@@ -2639,8 +2639,6 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     /**
      * Updates connection information, if the other is more 'valueble'.
-     * <p>
-     * TODO CLEAN UP THIS MESS!!!! -> Define behaviour and write tests.
      *
      * @param newInfo
      *            The new MemberInfo to use if more valueble

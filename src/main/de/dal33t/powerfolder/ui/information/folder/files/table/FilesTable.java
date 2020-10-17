@@ -362,11 +362,10 @@ public class FilesTable extends JTable {
                         if (ConfigurationEntry.MEMBERS_ENABLED.getValueBoolean(controller)) {
                             MemberInfo member = fileInfo.getModifiedBy();
                             AccountInfo aInfo = fileInfo.getModifiedByAccount();
-                            String displayName = "Web";
-                            if (aInfo != null) {
-                                displayName = aInfo.getDisplayName();
+                            myValue = aInfo != null ? aInfo.getDisplayName() : "";
+                            if (!member.getNode(controller, true).isServer()) {
+                                setToolTipText(myValue + " on " + member.nick);
                             }
-                            myValue = displayName + " @ " + member.nick;
                             setHorizontalAlignment(LEFT);
                         }
                         break;
