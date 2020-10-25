@@ -1881,7 +1881,7 @@ public class PathUtils {
         try {
             Files.walkFileTree(sourceDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 
-                    new SimpleFileVisitor<>() {
+                    new SimpleFileVisitor<Path>() {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                             Path oldDir = sourceDirectory.relativize(dir);
