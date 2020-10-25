@@ -36,8 +36,10 @@ public class PathUtilsTest extends TestCase {
     private Path baseDir = Paths.get("build/test").toAbsolutePath();
 
     @Override
-    public void tearDown() throws IOException {
-        PathUtils.recursiveDeleteVisitor(baseDir);
+    public void setUp() throws IOException {
+        if (Files.exists(baseDir)) {
+            PathUtils.recursiveDeleteVisitor(baseDir);
+        }
         Files.createDirectories(baseDir);
     }
 
@@ -1400,16 +1402,21 @@ public class PathUtilsTest extends TestCase {
         File targetDirectory = new File("build/directoryTwo");
         File firstFile = new File("build/directoryOne/myFile.txt");
         firstFile.createNewFile();
+        long firstMod = firstFile.lastModified();
         File secondFile = new File("build/directoryOne/anotherFile.pdf");
         secondFile.createNewFile();
         File thirdFile = new File("build/directoryOne/yetAnotherFile.docx");
         thirdFile.createNewFile();
 
+        // Wait to check if modified date is same
+        TestHelper.waitMilliSeconds(500);
         PathUtils.recursiveMoveCopyFallbackVisitor(sourceDirectory.toPath(), targetDirectory.toPath());
 
         assertTrue(new File("build/directoryTwo/myFile.txt").exists());
         assertTrue(new File("build/directoryTwo/anotherFile.pdf").exists());
         assertTrue(new File("build/directoryTwo/yetAnotherFile.docx").exists());
+
+        assertEquals(firstMod, new File("build/directoryTwo/myFile.txt").lastModified());
 
         assertFalse(firstFile.exists());
         assertFalse(secondFile.exists());

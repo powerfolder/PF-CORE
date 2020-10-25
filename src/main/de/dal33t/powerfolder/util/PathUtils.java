@@ -1881,12 +1881,18 @@ public class PathUtils {
         try {
             Files.walkFileTree(sourceDirectory, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
 
-                    new SimpleFileVisitor<Path>() {
+                    new SimpleFileVisitor<>() {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                            Path newDir = targetDirectory.resolve(sourceDirectory.relativize(dir).toString());
+                            Path oldDir = sourceDirectory.relativize(dir);
+                            Path newDir = targetDirectory.resolve(oldDir.toString());
                             if (Files.notExists(newDir)) {
                                 Files.createDirectories(newDir);
+                                try {
+                                    Files.setLastModifiedTime(newDir, Files.getLastModifiedTime(oldDir));
+                                } catch (IOException e) {
+                                    log.warning("Unable to set same modification date to new dir " + newDir + ". from " + oldDir + ". " + e);
+                                }
                             }
                             return CONTINUE;
                         }
@@ -1899,8 +1905,14 @@ public class PathUtils {
                             } catch (NoSuchFileException e) {
                                 log.warning("Source file not available while move: " + file + " to " + newFile + ": " + e);
                             } catch (IOException e) {
-                                log.warning("Coping file. Not able to move file " + file + " to " + newFile + ": " + e);
-                                Files.copy(file, newFile);
+                                log.fine("Coping file. Not able to move file " + file + " to " + newFile + ": " + e);
+                                try {
+                                    Files.copy(file, newFile);
+                                    Files.setLastModifiedTime(newFile, Files.getLastModifiedTime(file));
+                                    Files.delete(file);
+                                } catch (IOException e2) {
+                                    log.warning("Unable to copy new file " + newFile + " from " + file + ". " + e2);
+                                }
                             }
                             return CONTINUE;
                         }
