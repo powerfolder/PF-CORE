@@ -556,7 +556,7 @@ For creation of the installer:
 
 	<!-- API Docs generation -->
 	<target name="api-docs" depends="compile" description="Creates the API Documentation">
-		<javadoc sourcepath="${main.src.dir}" destdir="${javadoc.dir}" access="${javadoc.access}" author="true" version="true" use="true" windowtitle="PowerFolder API Documentation" Overview="${main.src.dir}/overview.html">
+		<javadoc sourcepath="${main.src.dir}" destdir="${javadoc.dir}" author="true" version="true" use="true" windowtitle="PowerFolder API Documentation" Overview="${main.src.dir}/overview.html">
 			<classpath>
 				<pathelement location="${build.dir}" />
 			</classpath>
