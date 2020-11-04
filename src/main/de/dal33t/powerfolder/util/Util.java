@@ -358,13 +358,18 @@ public class Util {
     }
 
     public static boolean isDesktopShortcut(String shortcutName) {
-        WinUtils util = WinUtils.getInstance();
-        if (util == null) {
+        try {
+            WinUtils util = WinUtils.getInstance();
+            if (util == null) {
+                return false;
+            }
+            Path scut = Paths.get(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
+                    false), shortcutName + Constants.LINK_EXTENSION);
+            return Files.exists(scut);
+        } catch (Exception e) {
+            LOG.warning("Unable to detect desktop shortcut to: " + shortcutName + ". " + e);
             return false;
         }
-        Path scut = Paths.get(util.getSystemFolderPath(WinUtils.CSIDL_DESKTOP,
-            false), shortcutName + Constants.LINK_EXTENSION);
-        return Files.exists(scut);
     }
 
     /**
@@ -407,7 +412,7 @@ public class Util {
                     return true;
                 }
             }
-       } catch (IOException e) {
+       } catch (Exception e) {
             LOG.warning("Couldn't create shortcut " + shortcutTarget.toAbsolutePath());
             LOG.log(Level.FINER, "IOException", e);
        }
