@@ -7,8 +7,6 @@
 Debug=on
 #give NO warnings during compilation (off/on)
 NoCompileWarnings=off
-#warn on deprecated (on/off)
-Deprecation=on
 
 #javac 1.5 specific warnings:
 #give (a lot of) unchecked warnings  (-unchecked/unchecked)
