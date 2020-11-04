@@ -1889,9 +1889,9 @@ public class PathUtils {
                             if (Files.notExists(newDir)) {
                                 Files.createDirectories(newDir);
                                 try {
-                                    Files.setLastModifiedTime(newDir, Files.getLastModifiedTime(oldDir));
+                                    Files.setLastModifiedTime(newDir, Files.getLastModifiedTime(dir));
                                 } catch (IOException e) {
-                                    log.warning("Unable to set same modification date to new dir " + newDir + ". from " + oldDir + ". " + e);
+                                    log.warning("Unable to set same modification date to new dir " + newDir + ". from " + dir + ". " + e);
                                 }
                             }
                             return CONTINUE;
