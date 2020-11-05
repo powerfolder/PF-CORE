@@ -550,8 +550,9 @@ public class Util {
         String result = null;
         try {
             // FIX1: Corrected relative filenames including path separator /
-            result = URLEncoder.encode(aURLFragment, "UTF-8").replace("%2F",
-                "/");
+            result = URLEncoder.encode(aURLFragment, "UTF-8")
+                    .replaceAll("\\+", "%20")
+                    .replaceAll("%2F", "/");
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException("UTF-8 not supported", ex);
         }
