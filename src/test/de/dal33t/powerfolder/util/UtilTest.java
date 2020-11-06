@@ -475,7 +475,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testSetClipboardContentsOk() throws IOException, UnsupportedFlavorException {
-        assumeTrue(isWindows());
+        assumeTrue("Windows system required to run this test", isWindows());
 
         Util.setClipboardContents("This is a test string");
         String valueFromKeyboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
@@ -503,7 +503,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsOk() {
-        assumeTrue(isWindows());
+        assumeTrue("Windows system required to run this test", isWindows());
 
         StringSelection stringSelection = new StringSelection("This is some text");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
@@ -521,7 +521,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsNull() {
-        assumeTrue(isWindows());
+        assumeTrue("Windows system required to run this test", isWindows());
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         //Creating a new transferable to return null, so that clipboard.getContents returns null
@@ -553,7 +553,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsUnsupportedFlavor() throws IOException {
-        assumeTrue(isWindows());
+        assumeTrue("Windows system required to run this test", isWindows());
 
         BufferedImage image = new BufferedImage(1,2,3);
 
