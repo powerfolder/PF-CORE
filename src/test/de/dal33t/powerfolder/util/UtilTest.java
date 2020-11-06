@@ -326,6 +326,7 @@ public class UtilTest extends TestCase {
     public void testUseSwarming() throws ConnectionException, IOException {
 
         File file = new File("build/test/first.config");
+        file.getParentFile().mkdirs();
         file.createNewFile();
         FileWriter writer = new FileWriter(file);
         writer.write("\n" +
@@ -444,6 +445,7 @@ public class UtilTest extends TestCase {
 
     public void testGetUrlOkFile() throws IOException {
         File file = new File("build/test/someFile.html");
+        file.getParentFile().mkdirs();
         file.createNewFile();
 
         FileWriter fileWriter = new FileWriter(file);
@@ -463,6 +465,7 @@ public class UtilTest extends TestCase {
 
     public void testGetUrlNotInputStream() throws IOException {
         File file = new File("build/test/someFile.jpeg");
+        file.getParentFile().mkdirs();
         file.createNewFile();
 
         URL url = file.toURI().toURL();
@@ -584,7 +587,7 @@ public class UtilTest extends TestCase {
         assertEquals("%21%40%23%24%25%5E%26*", Util.endcodeForURL("!@#$%^&*"));
         assertEquals("test%2Ctesting", Util.endcodeForURL("test,testing"));
         assertEquals("ThisIsATest", Util.endcodeForURL("ThisIsATest"));
-        assertEquals("+++", Util.endcodeForURL("   "));
+        assertEquals("%20%20%20", Util.endcodeForURL("   "));
         assertEquals("1234567", Util.endcodeForURL("1234567"));
     }
 
@@ -870,6 +873,7 @@ public class UtilTest extends TestCase {
 
     public void testCreateHttpBuilderProxyHost() throws IOException {
         File file = new File("build/test/first.config");
+        file.getParentFile().mkdirs();
         file.createNewFile();
         FileWriter writer = new FileWriter(file);
         writer.write("\n" +
