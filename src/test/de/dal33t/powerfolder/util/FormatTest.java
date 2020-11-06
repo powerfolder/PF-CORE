@@ -25,6 +25,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.prefs.Preferences;
 
 import static org.junit.Assert.*;
 
@@ -35,10 +36,12 @@ public class FormatTest {
     @Before
     public void setUp(){
         Locale.setDefault(Locale.US);
+        Preferences.userNodeForPackage(Translation.class).put("locale", "en");
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
+        Preferences.userNodeForPackage(Translation.class).remove("locale");
         Locale.setDefault(defaultLocale);
     }
 

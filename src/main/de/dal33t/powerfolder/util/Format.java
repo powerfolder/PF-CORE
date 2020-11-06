@@ -229,7 +229,11 @@ public class Format {
         }
 
         // Otherwise use default format
-        return SHORT_DATE_FORMAT.get().format(date);
+        String result = SHORT_DATE_FORMAT.get().format(date);
+        // PFC-3235: Fixes weird behaviour of open jdk:
+        // Expected :11/8/20 4:31 PM
+        // Actual   :11/8/20, 4:31 PM
+        return result.replaceAll(",", "");
     }
 
     /**
