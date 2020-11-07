@@ -1823,4 +1823,30 @@ public class Account implements Serializable, D2DObject {
         }
         return builder.build();
     }
+
+    public String getETHAddress() {
+        try {
+            if (!getJSONObject().has("ethAddress")) {
+                return null;
+            }
+            return getJSONObject().getString("ethAddress");
+        } catch (JSONException e) {
+            LOG.warning(e.toString());
+            return null;
+        }
+    }
+
+    public void setETHAddress(String ethAddress) {
+        JSONObject jsonObject = getJSONObject();
+        if (StringUtils.isNotBlank(ethAddress)) {
+            try {
+                jsonObject.put("ethAddress", ethAddress);
+            } catch (JSONException e) {
+                LOG.warning(e.toString());
+            }
+        } else {
+            jsonObject.remove("ethAddress");
+        }
+        setJSONObject(jsonObject);
+    }
 }
