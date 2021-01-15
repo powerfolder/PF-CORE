@@ -292,7 +292,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             return;
         }
         if (isFiner()) {
-            logFiner("Shutting down");
+            logInfo("Shutting down", new StackDump());
         }
         // if (isConnected() && started) {
         // // Send "EOF" if possible, the last thing you see
