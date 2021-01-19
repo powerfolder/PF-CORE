@@ -292,7 +292,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             return;
         }
         if (isFiner()) {
-            logFiner("Shutting down");
+            logInfo("Shutting down", new StackDump());
         }
         // if (isConnected() && started) {
         // // Send "EOF" if possible, the last thing you see
@@ -1070,11 +1070,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         + " from " + from);
                     // do not break connection
                 } catch (IOException e) {
-                    logFiner("IOException", e);
+                    logWarning("IOException", e);
                     logConnectionClose(e);
                     break;
                 } catch (ConnectionException e) {
-                    logFiner("ConnectionException", e);
+                    logWarning("ConnectionException", e);
                     logConnectionClose(e);
                     break;
                 } catch (ClassNotFoundException e) {
