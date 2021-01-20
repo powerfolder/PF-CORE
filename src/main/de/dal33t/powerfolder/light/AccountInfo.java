@@ -215,8 +215,9 @@ public class AccountInfo implements Serializable, D2DObject, D2DEvent {
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeLong(extVersionUID);
-        out.writeUTF(oid);
-        out.writeUTF(username);
+        // PFS-3742
+        out.writeUTF(oid != null ? oid : "");
+        out.writeUTF(username != null ? username : "");
         if (displayName != null) {
             out.writeBoolean(true);
             out.writeUTF(displayName);
