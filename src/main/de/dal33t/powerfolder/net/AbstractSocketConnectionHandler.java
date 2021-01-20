@@ -1070,11 +1070,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         + " from " + from);
                     // do not break connection
                 } catch (IOException e) {
-                    logWarning("IOException", e);
+                    logFiner("IOException", e);
                     logConnectionClose(e);
                     break;
                 } catch (ConnectionException e) {
-                    logWarning("ConnectionException", e);
+                    logFiner("ConnectionException", e);
                     logConnectionClose(e);
                     break;
                 } catch (ClassNotFoundException e) {
