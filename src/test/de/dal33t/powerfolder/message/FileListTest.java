@@ -19,17 +19,18 @@
  */
 package de.dal33t.powerfolder.message;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import de.dal33t.powerfolder.light.*;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 
 /**
@@ -138,6 +139,16 @@ public class FileListTest extends TestCase {
         for (int i = 0; i < 10; i++) {
             testDeltaSplittingRemoved((int) (Math.random() * 1000 * i));
         }
+    }
+
+    public void testSerialization() throws IOException, ClassNotFoundException {
+        FileInfo testFileInfo = FileInfoFactory.unmarshallExistingFile(createRandomFolderInfo(),
+                "subdir/fileName", "oid", 1, new MemberInfo("nick", "id", "networkid"),
+                new AccountInfo(null, null), new Date(), 1, "hashes", false, "tags");
+
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bOut);
+        testFileInfo.writeExternal(out);
     }
 
     /**
