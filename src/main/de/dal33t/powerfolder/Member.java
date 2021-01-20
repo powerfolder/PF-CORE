@@ -1061,7 +1061,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 try {
                     sendMessage(message);
                 } catch (ConnectionException e) {
-                    logInfo("sendFilelists, shutdown. " + e, e);
                     shutdown();
                     return null;
                 }
