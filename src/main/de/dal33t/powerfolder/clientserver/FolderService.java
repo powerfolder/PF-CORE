@@ -286,6 +286,14 @@ public interface FolderService {
      */
     boolean purgeArchive(FolderInfo foInfo);
 
+    /**
+     * To empty/purge the file/directory from the  online stored archive.
+     *
+     * @param foInfo
+     * @return if succeeded
+     */
+    boolean purgeFromArchive(FileInfo foInfo);
+
     int getVersionsPerFile(FolderInfo foInfo);
 
     // Information ************************************************************
