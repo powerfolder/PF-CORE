@@ -2863,14 +2863,12 @@ public class Controller extends PFComponent {
             Object[] options = {Translation
                 .get("dialog.already_running.show_button")};
             int exitOption = 0;
-            if (verbose) {
-                options = new Object[]{
-                    Translation
-                        .get("dialog.already_running.start_button"),
-                    Translation
-                        .get("dialog.already_running.exit_button")};
-                exitOption = 1;
-            }
+            options = new Object[]{
+                Translation
+                    .get("dialog.already_running.start_button"),
+                Translation
+                    .get("dialog.already_running.exit_button")};
+            exitOption = 1;
             if (JOptionPane.showOptionDialog(parent,
                 Translation.get("dialog.already_running.warning"),
                 Translation.get("dialog.already_running.title"),
