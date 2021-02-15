@@ -2878,8 +2878,6 @@ public class Controller extends PFComponent {
               // Try to bring existing instance to the foreground.
                 RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
                 exit(1);
-            } else {
-                exit(1);
             }
         } else {
             // If no gui show error but start anyways
