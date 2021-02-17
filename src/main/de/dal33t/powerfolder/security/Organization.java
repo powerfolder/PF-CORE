@@ -50,6 +50,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
+
 /**
  * PFS-779: Domain object for PFS-779: Organization wide admin role to manage
  * user accounts per "admin domain"/Organization - Multitenancy -
@@ -331,6 +333,10 @@ public class Organization implements Serializable {
             customFields = new CustomFields();
         }
         return customFields;
+    }
+
+    public boolean hasBranding() {
+        return isNotBlank(color1);
     }
 
     public void setColor1(String color1) {
