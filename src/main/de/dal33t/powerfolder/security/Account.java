@@ -1444,6 +1444,10 @@ public class Account implements Serializable, D2DObject {
                 this.lastLoginDate = account.lastLoginDate;
             }
         }
+
+        if (account.agreedToSVersion > agreedToSVersion) {
+            agreedToSVersion = account.agreedToSVersion;
+        }
     }
 
     /**
