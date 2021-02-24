@@ -30,7 +30,11 @@ import org.apache.commons.io.FileUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -256,7 +260,7 @@ public class FileArchiver {
 
         boolean allSuccessful = true;
 
-        Set<Path> flist = new HashSet<Path>();
+        Set<Path> flist = new HashSet<>();
         try (DirectoryStream<Path> file = Files.newDirectoryStream(dir)) {
             for (Path p : file) {
                 flist.add(p);
@@ -266,7 +270,7 @@ public class FileArchiver {
             return false;
         }
 
-        Map<String, Collection<Path>> fileMap = new HashMap<String, Collection<Path>>();
+        Map<String, Collection<Path>> fileMap = new HashMap<>();
         for (Path f : flist) {
             if (f.getFileName().toString().equals(SIZE_INFO_FILE)) {
                 continue;
@@ -287,7 +291,7 @@ public class FileArchiver {
                 checked.add(vf);
                 Collection<Path> files = fileMap.get(baseName);
                 if (files == null) {
-                    files = new LinkedList<Path>();
+                    files = new LinkedList<>();
                     fileMap.put(baseName, files);
                 }
                 files.add(f);
@@ -401,7 +405,7 @@ public class FileArchiver {
 
     private static List<Path> getArchivedFiles(Path directory,
                                                final String baseName) {
-        List<Path> ret = new ArrayList<Path>();
+        List<Path> ret = new ArrayList<>();
 
         try (DirectoryStream<Path> files = Files.newDirectoryStream(directory)) {
             for (Path file : files) {
@@ -512,7 +516,7 @@ public class FileArchiver {
         if (archivedFiles == null || archivedFiles.size() == 0) {
             return Collections.emptyList();
         }
-        List<FileInfo> list = new ArrayList<FileInfo>();
+        List<FileInfo> list = new ArrayList<>();
         FolderInfo foInfo = fileInfo.getFolderInfo();
         for (Path file : archivedFiles) {
             try {
@@ -647,10 +651,16 @@ public class FileArchiver {
         return size;
     }
 
+    /**
+     * Purge the whole folder
+     * @param folder
+     * @param account
+     * @throws IOException
+     */
     public void purge(Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
 
-        purge();
+        purge(archiveDirectory);
         folder.fireArchivePurged();
 
         String logMessage = "Successfully cleared versioning of folder " + folder.getName() +
@@ -660,8 +670,33 @@ public class FileArchiver {
         log.info(logMessage);
     }
 
-    private void purge() throws IOException {
-        PathUtils.recursiveDelete(archiveDirectory);
+    /**
+     * purge a specific file or directory
+     * @param fileInfo
+     * @param folder
+     * @param account
+     * @throws IOException
+     */
+    public void purge(FileInfo fileInfo, Folder folder, Account account) throws IOException {
+        Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
+
+        if (fileInfo.isDiretory()) {
+            purge(archiveDirectory.resolve(fileInfo.getRelativeName()));
+        } else {
+            for (FileInfo archivedFileInfo : getArchivedFilesInfos(fileInfo)) {
+                purge(getArchivedFile(archivedFileInfo));
+            }
+        }
+        folder.fireArchivePurged();
+        String logMessage =
+            "Successfully cleared versioning of " + (fileInfo.isDiretory() ? "Directory" : "File") + fileInfo.getRelativeName() + " by " + account;
+        logMessage = size == 0 ? logMessage : logMessage + " (Removed "
+            + FileUtils.byteCountToDisplaySize(size) + ")";
+        log.info(logMessage);
+    }
+
+    private void purge(Path path) throws IOException {
+        PathUtils.recursiveDelete(path);
         size = 0L;
         saveSize();
     }

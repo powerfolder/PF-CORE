@@ -89,10 +89,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 15;
-    private static final int MINOR_VERSION = 7;
-    private static final int REVISION_VERSION = 103;
+    private static final int MINOR_VERSION = 8;
+    private static final int REVISION_VERSION = 100;
 
-    private static final int SPRINT_NUMBER = 30;
+    private static final int SPRINT_NUMBER = 31;
 
     /**
      * Program version.
@@ -1396,11 +1396,6 @@ public class Controller extends PFComponent {
      */
     private void startRConManager() {
         if (RemoteCommandManager.hasRunningInstance()) {
-            // Ignore running instance for clients
-            if (!getMySelf().isServer()) {
-                // XXX
-                return;
-            }
             alreadyRunningCheck();
         }
         if (!ConfigurationEntry.NET_RCON_MANAGER.getValueBoolean(this)) {
@@ -2868,14 +2863,12 @@ public class Controller extends PFComponent {
             Object[] options = {Translation
                 .get("dialog.already_running.show_button")};
             int exitOption = 0;
-            if (verbose) {
-                options = new Object[]{
-                    Translation
-                        .get("dialog.already_running.start_button"),
-                    Translation
-                        .get("dialog.already_running.exit_button")};
-                exitOption = 1;
-            }
+            options = new Object[]{
+                Translation
+                    .get("dialog.already_running.start_button"),
+                Translation
+                    .get("dialog.already_running.exit_button")};
+            exitOption = 1;
             if (JOptionPane.showOptionDialog(parent,
                 Translation.get("dialog.already_running.warning"),
                 Translation.get("dialog.already_running.title"),
@@ -2884,8 +2877,6 @@ public class Controller extends PFComponent {
             { // exit pressed
               // Try to bring existing instance to the foreground.
                 RemoteCommandManager.sendCommand(RemoteCommandManager.SHOW_UI);
-                exit(1);
-            } else {
                 exit(1);
             }
         } else {

@@ -1403,7 +1403,9 @@ public enum ConfigurationEntry {
      */
     WDNAS_CLIENT("wdnas.client", false),
 
-    LOCKING_CHANGES_FILE_PERMISSIONS("locking.changes.file_permissions", false);
+    LOCKING_CHANGES_FILE_PERMISSIONS("locking.changes.file_permissions", false),
+
+    SCU_ENABLED("scu.enabled", false);
 
     // Methods/Constructors ***************************************************
 

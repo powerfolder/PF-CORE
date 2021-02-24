@@ -128,6 +128,13 @@ public interface AccountService {
     void checkAccounts(Collection<Account> accounts);
 
     /**
+     * PFS-3210
+     *
+     * @param accountDetails
+     */
+    void enableAccount(AccountDetails accountDetails);
+
+    /**
      * Returns the current skin of an account
      *
      * @param account The account
