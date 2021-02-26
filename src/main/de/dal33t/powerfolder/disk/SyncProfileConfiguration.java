@@ -339,7 +339,7 @@ public class SyncProfileConfiguration implements Serializable {
                 ", dailyHour=" + dailyHour +
                 ", dailyDay=" + dailyDay +
                 ", regularTimeType='" + regularTimeType + '\'' +
-                ", instantSync=" + instantSync +
+                ", instantScan=" + instantSync +
                 '}';
     }
 }
