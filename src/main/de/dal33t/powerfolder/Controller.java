@@ -88,9 +88,9 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
-    private static final int MAJOR_VERSION = 16;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 100;
+    private static final int MAJOR_VERSION = 15;
+    private static final int MINOR_VERSION = 8;
+    private static final int REVISION_VERSION = 101;
 
     private static final int SPRINT_NUMBER = 31;
 
