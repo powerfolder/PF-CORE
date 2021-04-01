@@ -265,7 +265,7 @@ public class PFWizard extends PFUIComponent {
             Translation.get("wizard.pfwizard.login_title"), tiny);
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,
             Translation.get("wizard.finish.os_login_title"),
-            Translation.get("wizard.finish.os_login_text"), true);
+            Translation.get("wizard.finish.os_login_text"), false);
         wizard.open(new LoginPanel(controller, client, nextFinishPanel, false));
     }
 
