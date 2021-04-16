@@ -32,7 +32,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Waiter;
 import jwf.WizardPanel;
 
@@ -62,7 +61,6 @@ public class TextPanelPanel extends PFWizardPanel {
     private boolean autoFadeOut;
     private String title;
     private String text;
-    private WizardPanel nextPanel;
 
     public TextPanelPanel(Controller controller, String title, String text) {
         this(controller, title, text, false);
@@ -78,7 +76,7 @@ public class TextPanelPanel extends PFWizardPanel {
     }
 
     public boolean hasNext() {
-        return true;
+        return false;
     }
 
     @Override
@@ -110,11 +108,11 @@ public class TextPanelPanel extends PFWizardPanel {
     }
 
     public WizardPanel next() {
-        return nextPanel = new FileSyncSetupPanel(getController());
+        return null;
     }
 
     public boolean canFinish() {
-        return false;
+        return true;
     }
 
     public boolean canCancel() {

@@ -256,17 +256,15 @@ public class PFWizard extends PFUIComponent {
         wizard.open(panel);
     }
 
-    public static void openLoginWizard(Controller controller,
-        ServerClient client)
+    public static void openLoginWizard(Controller controller,ServerClient client)
     {
         boolean tiny = ConfigurationEntry.SHOW_TINY_WIZARDS
-            .getValueBoolean(controller);
-        PFWizard wizard = new PFWizard(controller,
-            Translation.get("wizard.pfwizard.login_title"), tiny);
-        WizardPanel nextFinishPanel = new TextPanelPanel(controller,
-            Translation.get("wizard.finish.os_login_title"),
-            Translation.get("wizard.finish.os_login_text"), false);
-        wizard.open(new LoginPanel(controller, client, nextFinishPanel, false));
+                .getValueBoolean(controller);
+        PFWizard wizard = new PFWizard(controller, Translation.get("wizard.pfwizard.login_title"), tiny);
+        WizardPanel nextFinishPanel = new TextPanelPanel(controller,Translation.get("wizard.finish.os_login_title"),
+                Translation.get("wizard.finish.os_login_text"), true);
+        WizardPanel nextPanel = new FileSyncSetupPanel(controller,nextFinishPanel);
+        wizard.open(new LoginPanel(controller, client, nextPanel, false));
     }
 
     /**

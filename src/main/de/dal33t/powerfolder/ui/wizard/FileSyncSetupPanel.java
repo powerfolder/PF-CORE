@@ -26,14 +26,13 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
-import de.dal33t.powerfolder.util.UserDirectory;
 import jwf.WizardPanel;
 
 import javax.swing.*;
@@ -54,11 +53,13 @@ public class FileSyncSetupPanel extends PFWizardPanel {
     private JTextField syncNetDriveField;
     private JTextField locationTF;
     private ValueModel locationModel;
+    private WizardPanel nextFinishPanel;
 
-    public FileSyncSetupPanel(Controller controller)
+    public FileSyncSetupPanel(Controller controller,WizardPanel nextFinishPanel)
     {
         super(controller);
-
+        Reject.ifNull(nextFinishPanel, "NextFinishPanel is null");
+        this.nextFinishPanel = nextFinishPanel;
     }
     @Override
     protected void afterDisplay() {
@@ -67,12 +68,12 @@ public class FileSyncSetupPanel extends PFWizardPanel {
 
     @Override
     public boolean hasNext() {
-        return false;
+        return true;
     }
 
     @Override
     public WizardPanel next() {
-        return null;
+        return nextFinishPanel;
     }
 
     @Override
@@ -82,7 +83,7 @@ public class FileSyncSetupPanel extends PFWizardPanel {
 
     @Override
     public boolean canFinish() {
-        return true;
+        return false;
     }
 
     @Override
