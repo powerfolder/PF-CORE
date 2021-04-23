@@ -30,7 +30,9 @@ import java.util.logging.Logger;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
+import de.dal33t.powerfolder.util.StackDump;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Index;
@@ -61,11 +63,25 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NAME = "name";
+    public static final String PROPERTYNAME_VERSION = "version";
+    public static final String PROPERTYNAME_PARENT = "parent";
 
     @Index(name="IDX_FOLDER_NAME")
     private String name;
     @Id
     public String id;
+
+    /**
+     * PFC-3136: Version number of this folder
+     */
+    @Transient
+    private int version;
+
+    /**
+     * PF-1790: The parent location of this folder. null if top level
+     */
+    @Transient
+    private DirectoryInfo parent;
 
     /**
      * The cached hash info.
@@ -251,12 +267,12 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     @Override
     public String toString() {
-        return "Folder " + name + '/' + id;
+        return "Folder " + name + '/' + id + '/' + version + (parent != null ? "@" + parent : "");
     }
 
     // Serialization optimization *********************************************
 
-    private static final long extVersionUID = 100L;
+    private static final long extVersionUID = 101L;
 
     public static FolderInfo readExt(ObjectInput in) throws IOException,
         ClassNotFoundException
@@ -270,19 +286,58 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != extVersionUID) {
+        if (extUID != 100L && extUID != extVersionUID) {
             throw new InvalidClassException(this.getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
                     + ", expected: " + extVersionUID);
         }
         id = in.readUTF();
         name = in.readUTF();
+        if (extUID == 100L) {
+            return;
+        }
+        version = in.readInt();
+        if (in.readBoolean()) {
+            parent = (DirectoryInfo) FileInfoFactory.readExt(in);
+        }
+        Logger.getLogger(FolderInfo.class.getName()).log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeLong(extVersionUID);
+        writeExternal(out, true);
+    }
+
+    public void writeExternal(ObjectOutput out, boolean includeVersionAndParent) throws IOException {
+        boolean requiresNewProtocol = version > 0 || parent != null;
+        if (includeVersionAndParent) {
+            includeVersionAndParent = requiresNewProtocol;
+        } else if (requiresNewProtocol) {
+            Logger.getLogger(FolderInfo.class.getName()).log(Level.WARNING,
+                    this + ": writeExternal would require new protocol, using backward compatibility.", new StackDump());
+        }
+        if (includeVersionAndParent) {
+            out.writeLong(extVersionUID);
+        } else {
+            // Use old protocol
+            out.writeLong(100L);
+        }
         out.writeUTF(id);
         out.writeUTF(name);
+        if (!includeVersionAndParent) {
+            return;
+        }
+        if (includeVersionAndParent) {
+            Logger.getLogger(FolderInfo.class.getName()).log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
+        }
+        if (version > 0) {
+            out.writeInt(version);
+        }
+        if (parent != null) {
+            out.writeBoolean(true);
+            parent.writeExternal(out);
+        } else {
+            out.writeBoolean(false);
+        }
     }
 
     public String getLocalizedName() {

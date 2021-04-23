@@ -32,7 +32,7 @@ import java.util.Collection;
  */
 public class FolderListExt extends FolderList implements Externalizable {
     private static final long serialVersionUID = -3861676003458215175L;
-    private static final long extVersionUID = 101L;
+    private static final long extVersionUID = 102L;
 
     private final long writeExtVersionUID;
 
@@ -47,17 +47,17 @@ public class FolderListExt extends FolderList implements Externalizable {
         writeExtVersionUID = 100L;
     }
 
-    public FolderListExt(Collection<FolderInfo> allFolders)
+    public FolderListExt(Collection<FolderInfo> allFolders, boolean includeVersionAndParent)
     {
         super(allFolders);
-        writeExtVersionUID = extVersionUID;
+        writeExtVersionUID = includeVersionAndParent ? extVersionUID : 101L;
     }
 
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != extVersionUID && extUID != 100) {
+        if (extUID != extVersionUID && extUID != 101 && extUID != 100) {
             throw new InvalidClassException(this.getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
                     + ", supported: " + extVersionUID + " and 100");
@@ -102,7 +102,7 @@ public class FolderListExt extends FolderList implements Externalizable {
         if (folders != null) {
             out.writeInt(folders.length);
             for (FolderInfo foInfo : folders) {
-                foInfo.writeExternal(out);
+                foInfo.writeExternal(out, writeExtVersionUID == extVersionUID);
             }
         }
     }

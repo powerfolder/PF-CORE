@@ -1024,7 +1024,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         ExternalizableUtil.writeDate(out, lastModifiedDate);
         out.writeInt(version);
         out.writeBoolean(deleted);
-        ExternalizableUtil.writeFolderInfo(out, folderInfo);
+        ExternalizableUtil.writeFolderInfo(out, folderInfo, false);
 
         if (extUID == extVersion100UID) {
             return;

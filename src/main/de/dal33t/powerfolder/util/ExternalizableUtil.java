@@ -140,14 +140,15 @@ public class ExternalizableUtil {
      *
      * @param out
      * @param foInfo
+     * @param includeVersionAndParent if version and parent information should be included
      * @throws IOException
      */
-    public static void writeFolderInfo(ObjectOutput out, FolderInfo foInfo)
+    public static void writeFolderInfo(ObjectOutput out, FolderInfo foInfo, boolean includeVersionAndParent)
         throws IOException
     {
         out.writeBoolean(foInfo != null);
         if (foInfo != null) {
-            foInfo.writeExternal(out);
+            foInfo.writeExternal(out, includeVersionAndParent);
         }
     }
 

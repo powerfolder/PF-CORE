@@ -72,7 +72,7 @@ public class FileListExt extends FileList implements Externalizable {
 
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeLong(extVersionUID);
-        ExternalizableUtil.writeFolderInfo(out, folder);
+        ExternalizableUtil.writeFolderInfo(out, folder, false);
         out.writeInt(nFollowingDeltas);
         out.writeBoolean(files != null);
         if (files != null) {

@@ -131,9 +131,10 @@ public class Identity extends Message implements D2DObject, D2DEvent
     public static final int PROTOCOL_VERSION_110 = 110;
     public static final int PROTOCOL_VERSION_111 = 111;
     public static final int PROTOCOL_VERSION_112 = 112;
+    public static final int PROTOCOL_VERSION_113 = 113;
 
     // Never make this static
-    private int protocolVersion = PROTOCOL_VERSION_112;
+    private int protocolVersion = PROTOCOL_VERSION_113;
 
     private boolean requestFullFolderlist;
 

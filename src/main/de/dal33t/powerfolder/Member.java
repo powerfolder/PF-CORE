@@ -836,7 +836,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 folderList = new FolderListExt(folders2node, peer.getRemoteMagicId());
             } else {
-                folderList = new FolderListExt(folders2node);
+                boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
+                folderList = new FolderListExt(folders2node, includeVersionAndParent);
             }
             if (isFiner()) {
                 logFiner("Sending CH " + folderList);
@@ -1949,7 +1950,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                     myFolderList = new FolderListExt(folders2node, remoteMagicId);
                 } else {
-                    myFolderList = new FolderListExt(folders2node);
+                    boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
+                    myFolderList = new FolderListExt(folders2node, includeVersionAndParent);
                 }
                 if (isFine()) {
                     logFine("Sending HM " + myFolderList);
@@ -2092,7 +2094,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
             } else {
-                myFolderList = new FolderListExt(folders2node);
+                boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
+                myFolderList = new FolderListExt(folders2node, includeVersionAndParent);
             }
             if (isFiner()) {
                 logFiner("Sending SFM " + myFolderList);
@@ -2780,7 +2783,8 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     public void handshakeFolderList() {
         synchronized (peerInitializeLock) {
-            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false)));
+            boolean includeVersionAndParent = true;
+            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false), includeVersionAndParent));
         }
         peer.sendMessagesAsynchron(new HandshakeCompleted());
     }
