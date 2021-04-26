@@ -104,6 +104,18 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         hash = hashCode0();
     }
 
+    public static FolderInfo newFolder(String name, String id) {
+        return new FolderInfo(name, id);
+    }
+
+    public static FolderInfo rename(FolderInfo originalFolderInfo) {
+        FolderInfo newFolderInfo = new FolderInfo();
+        newFolderInfo.id = originalFolderInfo.id;
+        newFolderInfo.name = originalFolderInfo.name;
+        newFolderInfo.version = originalFolderInfo.version + 1;
+        return newFolderInfo;
+    }
+
     /**
      * PFS-1129: Account relative backup folder. Name must be unique.
      *
