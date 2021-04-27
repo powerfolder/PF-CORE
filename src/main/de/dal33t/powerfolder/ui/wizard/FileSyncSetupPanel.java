@@ -24,11 +24,9 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -66,7 +64,7 @@ public class FileSyncSetupPanel extends PFWizardPanel {
     private ValueModel locationModel;
     private WizardPanel nextFinishPanel;
     private ServerClient serverClient;
-    private  String webDAVURL;
+    private String webDAVURL;
     private Date lastFetch;
 
 
@@ -89,7 +87,10 @@ public class FileSyncSetupPanel extends PFWizardPanel {
 
     @Override
     public WizardPanel next() {
-        return nextFinishPanel;
+        return new SwingWorkerPanel(getController(), new WebDAVConnectionTask(),
+                Translation.get("wizard.login_online_storage.logging_in"),
+                Translation.get("wizard.login_online_storage.logging_in.text"),
+                nextFinishPanel);
     }
 
     @Override
@@ -119,10 +120,6 @@ public class FileSyncSetupPanel extends PFWizardPanel {
         locationModel.addValueChangeListener(evt -> updateLocationComponents());
         locationField = createLocationField();
         syncNetDriveField = new JTextField();
-        syncNetDriveField.setName("networkDriveField");
-        webDAVURL = ConfigurationEntry.SERVER_WEB_URL.getValue(getController()) + "/webdav";
-        syncNetDriveField.setEditable(false);
-        syncNetDriveField.setDisabledTextColor(Color.GRAY);
     }
 
     @Override
@@ -140,29 +137,20 @@ public class FileSyncSetupPanel extends PFWizardPanel {
         row += 2;
         builder.appendUnrelatedComponentsGapRow();
         builder.appendRow("pref");
-        JLabel localDrive = new JLabel("Location");
+        JLabel localDrive = new JLabel(Translation.get("wizard.file_sync.location_label"));
         builder.add(localDrive, cc.xy(1, row));
         builder.add(locationField, cc.xyw(3, row, 3));
-//        JLabel networkDriveLabel = new JLabel("Network Drive Url");
-//        networkDriveLabel.setVisible(false);
-//        builder.add(networkDriveLabel, cc.xy(1, row));
-//        builder.add(syncNetDriveField, cc.xyw(3, row, 3));
 
         syncThisComRadioButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                networkDriveLabel.setVisible(false);
                 localDrive.setVisible(true);
                 Component[] components = builder.getPanel().getComponents();
                 for (Component component : components) {
                     String name = component.getName();
                     if (name != null) {
-                        if (name.equals("networkDriveField")) {
-                            component.setVisible(false);
-                        }
                         if (name.equals("locationField")) {
                             component.setVisible(true);
-//                                locationModel.setValue(getController().getMySelf().getNick());
                         }
                     }
                 }
@@ -171,16 +159,11 @@ public class FileSyncSetupPanel extends PFWizardPanel {
         syncNetDriveRadioButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                networkDriveLabel.setVisible(true);
                 localDrive.setVisible(false);
                 Component[] components = builder.getPanel().getComponents();
                 for (Component component : components) {
                     String name = component.getName();
                     if (name != null) {
-//                        if (name.equals("networkDriveField")) {
-//                            component.setVisible(true);
-//                        }
-                        createWebdavConnection();
                         if (name.equals("locationField")) {
                             component.setVisible(false);
                         }
@@ -192,9 +175,14 @@ public class FileSyncSetupPanel extends PFWizardPanel {
         return builder.getPanel();
     }
 
+    private class WebDAVConnectionTask implements Runnable {
+        public void run() {
+            createWebdavConnection();
+        }
+    }
+
     private void createWebdavConnection() {
-        ActivityVisualizationWorker worker = new ActivityVisualizationWorker(getController().getUIController())
-        {
+        ActivityVisualizationWorker worker = new ActivityVisualizationWorker(getController().getUIController()) {
             protected String getTitle() {
                 return Translation.get("exp_folder_view.webdav_title");
             }
@@ -205,10 +193,9 @@ public class FileSyncSetupPanel extends PFWizardPanel {
 
             public Object construct() throws Throwable {
                 try {
-//                    createWebDAVURL();
-
+                    webDAVURL = serverClient.getWebURL() + "/webdav/";
                     /* Handle different OSes */
-                    if(OSUtil.isLinux()) {
+                    if (OSUtil.isLinux()) {
                         return LinuxUtil.mountWebDAV(serverClient, webDAVURL);
                     } else {
                         WinUtils util = WinUtils.getInstance();
@@ -275,19 +262,7 @@ public class FileSyncSetupPanel extends PFWizardPanel {
         };
         worker.start();
     }
-//    private synchronized String createWebDAVURL() {
-//        if (!serverClient.isConnected() || !serverClient.isLoggedIn()) {
-//            return null;
-//        }
-//        if (webDAVURL == null) {
-//            webDAVURL = serverClient.getFolderService(folderInfo).getWebDAVURL(folderInfo);
-//            if (webDAVURL == null) {
-//                // Don't fetch again. It's simply not available.
-//                webDAVURL = "";
-//            }
-//        }
-//        return webDAVURL;
-//    }
+
     /**
      * Creates a pair of location text field and button.
      *
