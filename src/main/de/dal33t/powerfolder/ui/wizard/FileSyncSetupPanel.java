@@ -24,9 +24,11 @@ import com.jgoodies.binding.value.ValueModel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -78,6 +80,18 @@ public class FileSyncSetupPanel extends PFWizardPanel {
     @Override
     protected void afterDisplay() {
         super.afterDisplay();
+        // 1) Precodition: If user has already setup the sync, do not ask again
+        if (getController().getFolderRepository().getFoldersCount() > 0) {
+            getWizard().next();
+            return;
+        }
+        // 2) Precondition: Space is insufficient to hold all data on default base path
+        AccountDetails ad = serverClient.getAccountDetails();
+        if (ad.getAccount().isValid() && getController().getFolderRepository().sufficientDiskSpaceAvailable(ad)) {
+            if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController())) {
+                getWizard().next();
+            }
+        }
     }
 
     @Override
