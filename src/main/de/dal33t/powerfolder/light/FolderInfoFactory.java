@@ -56,7 +56,7 @@ public class FolderInfoFactory {
     }
 
     public static FolderInfo newTopFolder(String name) {
-        return newTopFolder(name, IdGenerator.makeFolderId());
+        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, null);
     }
 
     public static FolderInfo newTopFolder(String id, String name) {
@@ -64,7 +64,7 @@ public class FolderInfoFactory {
     }
 
     public static FolderInfo newFolder(String name, DirectoryInfo parent) {
-        return newFolder(name, IdGenerator.makeFolderId(), parent);
+        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, parent);
     }
 
     public static FolderInfo newFolder(String id, String name, DirectoryInfo parent) {

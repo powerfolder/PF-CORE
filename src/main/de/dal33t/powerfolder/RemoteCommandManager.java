@@ -608,11 +608,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
         // ID
         String id = config.get(FOLDER_SCRIPT_CONFIG_ID);
-        boolean createInvitationFile = false;
-        if (StringUtils.isEmpty(id)) {
-            id = IdGenerator.makeFolderId();
-            createInvitationFile = true;
-        }
 
         if (ConfigurationEntry.FOLDER_CREATE_AVOID_DUPES
             .getValueBoolean(getController()))
@@ -638,7 +633,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         boolean backupByServer = "true".equals(config
             .get(FOLDER_SCRIPT_CONFIG_BACKUP_BY_SERVER));
 
-        FolderInfo foInfo = newTopFolder(id, name);
+        FolderInfo foInfo;
+        if (StringUtils.isBlank(id)) {
+            foInfo = newTopFolder(name);
+        } else {
+            foInfo = newTopFolder(id, name);
+        }
 
         String dlScript = config.get(FOLDER_SCRIPT_CONFIG_DL_SCRIPT);
 
