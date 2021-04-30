@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.wizard;
 
 import static de.dal33t.powerfolder.disk.SyncProfile.AUTOMATIC_SYNCHRONIZATION;
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FILE_COUNT;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
@@ -60,6 +61,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -516,9 +518,7 @@ public class ChooseMultiDiskLocationPanel extends PFWizardPanel {
     }
 
     private static FolderInfo createFolderInfo(String name) {
-        // Create new folder info
-        String folderId = IdGenerator.makeFolderId();
-        return new FolderInfo(name, folderId);
+        return newTopFolder(name);
     }
 
     public void link(Path file, String folderName) {

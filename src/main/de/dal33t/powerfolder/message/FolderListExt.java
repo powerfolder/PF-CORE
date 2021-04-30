@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.message;
 
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 
 import java.io.*;
 import java.util.Collection;
@@ -68,7 +69,7 @@ public class FolderListExt extends FolderList implements Externalizable {
             secretFolders = new FolderInfo[len];
             for (int i = 0; i < secretFolders.length; i++) {
                 // Dummy objects. Name must never be used.
-                secretFolders[i] = new FolderInfo(null, in.readUTF());
+                secretFolders[i] = FolderInfoFactory.lookupInstance(in.readUTF());
             }
         }
 

@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_LOCAL_BASE;
@@ -83,8 +84,7 @@ public class ConfirmDiskLocationPanel extends PFWizardPanel {
             // NOTE: this is more or less a copy of FolderSetupPanel next(), for
             // non experts.
             // Changes may need to be applied to both.
-            FolderInfo folderInfo = new FolderInfo(initialFolderName,
-                IdGenerator.makeFolderId());
+            FolderInfo folderInfo = newTopFolder(initialFolderName);
             getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
 
             // Set sync profile

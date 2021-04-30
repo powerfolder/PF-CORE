@@ -19,7 +19,10 @@
 package de.dal33t.powerfolder.light;
 
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.StackDump;
 
+import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -40,7 +43,7 @@ public class FolderInfoFactory {
      * @return a FolderInfo object use to lookup other FolderInfo instances by ID
      */
     public static FolderInfo lookupInstance(String folderID) {
-        return new FolderInfo("", folderID);
+        return new FolderInfo("", folderID, -1, null);
     }
 
     /**
@@ -49,19 +52,59 @@ public class FolderInfoFactory {
      * @return a FolderInfo object use to lookup other FolderInfo instances by ID
      */
     public static FolderInfo lookupInstance(String folderID, String name) {
-        return new FolderInfo(name, folderID);
+        return new FolderInfo(name, folderID, -1, null);
+    }
+
+    public static FolderInfo newTopFolder(String name) {
+        return newTopFolder(name, IdGenerator.makeFolderId());
+    }
+
+    public static FolderInfo newTopFolder(String id, String name) {
+        return new FolderInfo(name, id, 0, null);
     }
 
     public static FolderInfo newFolder(String name, DirectoryInfo parent) {
-        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, parent);
+        return newFolder(name, IdGenerator.makeFolderId(), parent);
     }
 
-    public static FolderInfo rename(FolderInfo originalFolderInfo) {
+    public static FolderInfo newFolder(String id, String name, DirectoryInfo parent) {
+        return new FolderInfo(name, id, 0, parent);
+    }
+
+    public static FolderInfo unmarshallExistingTopFolder(String id, String name, int version) {
+        return new FolderInfo(name, id, version, null).intern();
+    }
+
+    public static FolderInfo backupFolderOfAccount(String name, AccountInfo aInfo)
+    {
+        return new FolderInfo(name, "PB-" + aInfo.getOID() + "-" + name);
+    }
+
+    public static FolderInfo rename(FolderInfo originalFolderInfo, String newName) {
+        if (originalFolderInfo.getName().equals(newName)) {
+            return originalFolderInfo;
+        }
+        int version;
+        if (originalFolderInfo.isLookupInstance()) {
+            version = 0;
+            LOG.log(Level.WARNING, originalFolderInfo + ": Renaming from lookup instance is discouraged, but used.", new StackDump());
+        } else {
+            version = originalFolderInfo.getVersion() + 1;
+        }
         return new FolderInfo(
-                originalFolderInfo.getName(),
+                newName,
                 originalFolderInfo.getId(),
-                originalFolderInfo.getVersion() + 1,
+                version,
                 originalFolderInfo.getParent()
-        );
+        ).intern(true);
+    }
+
+    // TODO: Read/Write as file
+
+    public static FolderInfo newRandomTopFolderForTest() {
+        return unmarshallExistingTopFolder(
+                IdGenerator.makeFolderId(),
+                "TestFolder / " + UUID.randomUUID(),
+                (int) (1000000L * Math.random()));
     }
 }

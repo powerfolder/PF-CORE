@@ -49,6 +49,9 @@ import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
 import de.dal33t.powerfolder.util.intern.Internalizer;
 
+import static de.dal33t.powerfolder.light.FolderInfoFactory.lookupInstance;
+import static de.dal33t.powerfolder.light.FolderInfoFactory.unmarshallExistingTopFolder;
+
 /**
  * A Folder hash info
  *
@@ -139,11 +142,15 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return id != null && id.startsWith(Constants.METAFOLDER_ID_PREFIX);
     }
 
+    public boolean isLookupInstance() {
+        return version < 0;
+    }
+
     /**
-     * @return the {@link FolderInfo} of the PARENT folder if this is a meta
+     * @return the lookup {@link FolderInfo} of the PARENT folder if this is a meta
      *         folder.
      */
-    public FolderInfo getParentFolderInfo() {
+    public FolderInfo lookupParentFolderInfo() {
         if (!isMetaFolder()) {
             Logger.getLogger(FolderInfo.class.getName()).log(
                 Level.WARNING,
@@ -158,7 +165,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             i = name.indexOf(Constants.METAFOLDER_ID_PREFIX);
             String folderName = name.substring(i
                 + Constants.METAFOLDER_ID_PREFIX.length());
-            return new FolderInfo(folderName, folderId).intern();
+            return lookupInstance(folderId, name);
         } catch (Exception e) {
             Logger.getLogger(FolderInfo.class.getName()).log(Level.WARNING,
                 "Unable to get parent folder info for meta-folder: " + this, e);
@@ -170,14 +177,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * @return the meta-folder info for this folder
      */
     public FolderInfo getMetaFolderInfo() {
-        if (isMetaFolder()) {
-            Logger.getLogger(FolderInfo.class.getName()).log(Level.WARNING,
-                "Tried to retrieve meta-folder for meta-folder: " + this,
-                new RuntimeException("from here"));
-            return this;
-        }
-        return new FolderInfo(Constants.METAFOLDER_ID_PREFIX + name,
-            Constants.METAFOLDER_ID_PREFIX + id);
+        return unmarshallExistingTopFolder(
+                Constants.METAFOLDER_ID_PREFIX + id,
+                Constants.METAFOLDER_ID_PREFIX + name,
+                version);
     }
 
     public String getId() {
@@ -189,6 +192,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     public int getVersion() {
+        if (isLookupInstance()) {
+            // Safeguard, never hand out -1
+            return 0;
+        }
         return version;
     }
 

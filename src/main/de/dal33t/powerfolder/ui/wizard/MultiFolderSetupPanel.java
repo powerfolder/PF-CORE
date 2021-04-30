@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 
 import java.awt.event.ItemEvent;
@@ -244,7 +245,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     private static void createFolderInfo(FolderCreateItem item) {
         // Default sync folder has user name...
         String name = PathUtils.getSuggestedFolderName(item.getLocalBase());
-        FolderInfo folderInfo = new FolderInfo(name, IdGenerator.makeFolderId());
+        FolderInfo folderInfo = newTopFolder(name);
         item.setFolderInfo(folderInfo);
     }
 

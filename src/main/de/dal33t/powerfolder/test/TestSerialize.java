@@ -26,11 +26,7 @@ import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.FileList;
 import de.dal33t.powerfolder.message.Message;
@@ -108,7 +104,6 @@ generateFolderInfo(),
     }
 
     private static FolderInfo generateFolderInfo() {
-        return new FolderInfo("TestFolder" + Math.random(), IdGenerator
-            .makeFolderId());
+        return FolderInfoFactory.newRandomTopFolderForTest();
     }
 }

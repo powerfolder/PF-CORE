@@ -408,10 +408,8 @@ public class Locking extends PFComponent {
         originalFileName = originalFileName.replace(Folder.METAFOLDER_LOCKS_DIR
                 + "/", "");
         originalFileName = originalFileName.replace(LOCK_FILE_EXT, "");
-        FolderInfo origFoInfo = lockFileInfo.getFolderInfo()
-                .getParentFolderInfo();
-        return FileInfoFactory.lookupInstance(origFoInfo,
-                originalFileName);
+        FolderInfo origFoInfo = lockFileInfo.getFolderInfo().lookupParentFolderInfo();
+        return FileInfoFactory.lookupInstance(origFoInfo, originalFileName);
     }
 
     /**

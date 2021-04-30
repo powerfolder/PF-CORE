@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
@@ -65,6 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.*;
+import static de.dal33t.powerfolder.light.FolderInfoFactory.lookupInstance;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -605,8 +607,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                         return;
                     }
 
-                    FolderInfo foInfo = new FolderInfo(folderName, folderId)
-                            .intern();
+                    // TODO: Read from system directory?
+                    FolderInfo foInfo = lookupInstance(folderId, folderName);
                     FolderSettings folderSettings = FolderSettings.load(
                             getController(), folderEntryId);
 
@@ -902,7 +904,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the folder by folder id, or null if folder is not found
      */
     public Folder getFolder(String folderId) {
-        return getFolder(new FolderInfo("", folderId));
+        return getFolder(lookupInstance(folderId));
     }
 
     /**
@@ -1246,9 +1248,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.addProblemListener(valveProblemListenerSupport);
 
         // Now create metaFolder and map to the same FolderInfo key.
-        FolderInfo metaFolderInfo = new FolderInfo(
-                Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
-                Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
+        FolderInfo metaFolderInfo = folder.getInfo().getMetaFolderInfo();
         Path systemSubdir = folder.getSystemSubDir();
         FolderSettings metaFolderSettings = new FolderSettings(systemSubdir
                 .resolve(Constants.METAFOLDER_SUBDIR),
@@ -2200,9 +2200,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         FolderInfo newFolderInfo = foInfo;
         if (!foInfo.getName().equals(newName)) {
-            newFolderInfo = new FolderInfo(newName, foInfo.getId());
+            newFolderInfo = FolderInfoFactory.rename(foInfo, newName);
         }
-        newFolderInfo = newFolderInfo.intern(true);
 
         Folder folder = folders.get(foInfo);
         if (folder != null) {
@@ -2517,7 +2516,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!metaFolderInfo.isMetaFolder()) {
             return null;
         }
-        return getFolder(metaFolderInfo.getParentFolderInfo());
+        return getFolder(metaFolderInfo.lookupParentFolderInfo());
     }
 
     // Callbacks from ServerClient on login ***********************************
