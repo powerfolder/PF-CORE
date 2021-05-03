@@ -2904,7 +2904,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         // If a UI client is running and AUTO_SETUP_ACCOUNT_FOLDERS is enabled, check if there is enough disk space for all folders.
         // If there is not enough disk space, disable AUTO_SETUP_ACCOUNT_FOLDERS and send a notification
-        if (getController().isUIEnabled() && ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController()) && !checkDiskSpace(ad)) {
+        if (getController().isUIEnabled() && ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController()) && !sufficientDiskSpaceAvailable(ad)) {
             ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(), false);
             getController().saveConfig();
             Notice notice = new WarningNotice(Translation.get("disc_space_warning.title"), Translation.get("disc_space_warning.summary"), Translation.get("disc_space_warning.summary"));
@@ -3325,7 +3325,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param accountDetails The account details to check vs.
      * @return True if there is enough space on the disk to store all folders
      */
-    private boolean checkDiskSpace(AccountDetails accountDetails) {
+    public boolean sufficientDiskSpaceAvailable(AccountDetails accountDetails) {
         try {
             long dataSize = accountDetails.getSpaceUsed();
             long freeDiskSpace = Files.getFileStore(getFoldersBasedir()).getUsableSpace();
