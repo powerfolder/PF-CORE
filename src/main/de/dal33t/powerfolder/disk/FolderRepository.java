@@ -67,6 +67,7 @@ import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.*;
 import static de.dal33t.powerfolder.light.FolderInfoFactory.lookupInstance;
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -2087,15 +2088,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo(" stillPresent: " + stillPresent);
 
         if (foInfo == null) {
-            foInfo = new FolderInfo(file.getFileName().toString(),
-                    IdGenerator.makeFolderId());
+            foInfo = newTopFolder(file.getFileName().toString());
             createdNew = true;
         } else {
             if (!getController().getSecurityManager().hasPermission(
                     getMySelf().getInfo(), FolderPermission.read(foInfo))) {
                 cleanupMetaInformation(file);
-                foInfo = new FolderInfo(file.getFileName().toString(),
-                        IdGenerator.makeFolderId()).intern();
+                foInfo = newTopFolder(file.getFileName().toString());
                 createdNew = true;
             }
         }
