@@ -290,6 +290,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     @Override
     public String toString() {
+        if (isLookupInstance()) {
+            return "Folder " + name + '/' + id + '/' + "L";
+        }
         return "Folder " + name + '/' + id + '/' + version + (parent != null ? "@" + parent : "");
     }
 
