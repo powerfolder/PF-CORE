@@ -66,8 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.*;
-import static de.dal33t.powerfolder.light.FolderInfoFactory.lookupInstance;
-import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
+import static de.dal33t.powerfolder.light.FolderInfoFactory.*;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -2280,8 +2279,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 boolean isFolderAdmin = getController().getSecurityManager().hasPermission(
                         getMySelf().getInfo(), FolderPermission.admin(foInfo));
                 if (isFolderAdmin && foServ.renameFolder(foInfo, newName)) {
-                    foInfo = new FolderInfo(newName, foInfo.getId());
-                    foInfo.intern(true);
+                    foInfo = FolderInfoFactory.rename(foInfo, newName);
                 } else {
                     logWarning("Could not rename the Folder " + oldName
                             + " on the server to " + foInfo.getName());
@@ -2862,7 +2860,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 if (foInfo == null) {
                     // Spawn/Create a new one.
-                    foInfo = new FolderInfo(folderName, a.createInfo());
+                    foInfo = backupFolderOfAccount(folderName, a.createInfo());
                     logInfo("Folder not found on account " + a.getUsername()
                             + ". Created new: " + foInfo);
                 }

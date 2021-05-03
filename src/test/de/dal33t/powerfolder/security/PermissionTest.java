@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.security;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FolderInfo;
 
@@ -75,7 +76,7 @@ public class PermissionTest extends TestCase {
         Account acc = new Account();
         acc.addGroup(grp);
         acc.setOrganizationOID(org.getOID());
-        FolderInfo foInfo = new FolderInfo("testFolder", acc.createInfo());
+        FolderInfo foInfo = FolderInfoFactory.backupFolderOfAccountForTest("testFolder", acc.createInfo());
         Permission[] allPermissions = new Permission[] {
             new FolderAdminPermission(foInfo),
             new FolderReadPermission(foInfo),

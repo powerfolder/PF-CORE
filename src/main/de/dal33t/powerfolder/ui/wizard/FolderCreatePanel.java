@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
@@ -98,8 +99,7 @@ public class FolderCreatePanel extends SwingWorkerPanel {
     private static FolderInfo createFolderInfo(Path localBase) {
         // Create new folder info
         String name = PathUtils.getSuggestedFolderName(localBase);
-        String folderId = IdGenerator.makeFolderId();
-        return new FolderInfo(name, folderId);
+        return FolderInfoFactory.newTopFolder(name);
     }
 
     private class MyFolderCreateWorker implements Runnable {

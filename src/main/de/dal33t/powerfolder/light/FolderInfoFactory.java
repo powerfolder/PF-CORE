@@ -111,4 +111,8 @@ public class FolderInfoFactory {
                 "TestFolder / " + UUID.randomUUID(),
                 (int) (1000000L * Math.random()));
     }
+
+    public static FolderInfo backupFolderOfAccountForTest(String name, AccountInfo aInfo) {
+        return backupFolderOfAccountForTest(name, aInfo);
+    }
 }

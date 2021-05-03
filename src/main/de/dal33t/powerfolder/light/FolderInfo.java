@@ -95,34 +95,26 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         // NOP - for Hibernate
     }
 
+    // TODO
     public FolderInfo(Folder folder) {
         name = folder.getName();
         id = folder.getId();
         hash = hashCode0();
     }
 
+    // TODO
     public FolderInfo(String name, String id) {
         this.name = name;
         this.id = id;
         hash = hashCode0();
     }
 
-    public FolderInfo(String name, String id, int version, DirectoryInfo parent) {
+    FolderInfo(String name, String id, int version, DirectoryInfo parent) {
         this.name = name;
         this.id = id;
         this.version = version;
         this.parent = parent;
         hash = hashCode0();
-    }
-
-    /**
-     * PFS-1129: Account relative backup folder. Name must be unique.
-     *
-     * @param name
-     * @param aInfo
-     */
-    public FolderInfo(String name, AccountInfo aInfo) {
-        this(name, "PB-" + aInfo.getOID() + "-" + name);
     }
 
     /** FolderInfo
