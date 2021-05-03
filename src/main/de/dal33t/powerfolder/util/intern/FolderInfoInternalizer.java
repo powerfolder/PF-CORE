@@ -21,8 +21,12 @@ package de.dal33t.powerfolder.util.intern;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 
 /**
@@ -36,6 +40,11 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
     public FolderInfo intern(FolderInfo folderInfo) {
         if (folderInfo == null) {
             return null;
+        }
+        if (folderInfo.isLookupInstance()) {
+            Logger.getLogger(this.getClass().getName()).log(
+                    Level.WARNING, folderInfo + ": Not internalizing lookup instance", new StackDump());
+            return folderInfo;
         }
         FolderInfo internInstance = null;
         synchronized (INSTANCES) {
@@ -78,6 +87,16 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                     && oldInstance.getName().equals(foInfo.getName()))
             {
                 return oldInstance;
+            }
+
+            if (foInfo.isLookupInstance()) {
+                Logger.getLogger(this.getClass().getName()).log(
+                        Level.WARNING, foInfo + ": Renaming from lookup instance", new StackDump());
+                foInfo = FolderInfoFactory.unmarshallExistingFolder(
+                        oldInstance.getId(),
+                        foInfo.getName(),
+                        oldInstance.getVersion(),
+                        oldInstance.getParent());
             }
 
             INSTANCES.put(foInfo, foInfo);
