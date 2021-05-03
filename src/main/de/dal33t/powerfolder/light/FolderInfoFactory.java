@@ -56,28 +56,32 @@ public class FolderInfoFactory {
     }
 
     public static FolderInfo newTopFolder(String name) {
-        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, null);
+        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, null).intern();
     }
 
     public static FolderInfo newTopFolder(String id, String name) {
-        return new FolderInfo(name, id, 0, null);
+        return new FolderInfo(name, id, 0, null).intern();
     }
 
     public static FolderInfo newFolder(String name, DirectoryInfo parent) {
-        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, parent);
+        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, parent).intern();
     }
 
     public static FolderInfo newFolder(String id, String name, DirectoryInfo parent) {
-        return new FolderInfo(name, id, 0, parent);
-    }
-
-    public static FolderInfo unmarshallExistingTopFolder(String id, String name, int version) {
-        return new FolderInfo(name, id, version, null).intern();
+        return new FolderInfo(name, id, 0, parent).intern();
     }
 
     public static FolderInfo backupFolderOfAccount(String name, AccountInfo aInfo)
     {
-        return new FolderInfo(name, "PB-" + aInfo.getOID() + "-" + name);
+        return new FolderInfo(name, "PB-" + aInfo.getOID() + "-" + name).intern();
+    }
+
+    public static FolderInfo unmarshallExistingTopFolder(String id, String name, int version) {
+        return unmarshallExistingFolder(name, id, version, null);
+    }
+
+    public static FolderInfo unmarshallExistingFolder(String id, String name, int version, DirectoryInfo parent) {
+        return new FolderInfo(name, id, version, parent).intern();
     }
 
     public static FolderInfo rename(FolderInfo originalFolderInfo, String newName) {
