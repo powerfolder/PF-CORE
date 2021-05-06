@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -52,8 +53,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
     public void testJoinSecretFolder() {
         // Join on testfolder
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeFolderId());
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
+        //  testFolder = new FolderInfo("testFolder", IdGenerator.makeFolderId());
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
 
         assertEquals(2, getContollerBart().getFolderRepository().getFolder(
@@ -189,7 +190,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
 
     private FolderInfo createRandomFolder(String nameSuffix) {
         String folderName = "testFolder-" + nameSuffix;
-        return new FolderInfo(folderName, folderName + IdGenerator.makeFolderId());
+        // return new FolderInfo(folderName, folderName + IdGenerator.makeFolderId());
+        return FolderInfoFactory.newTopFolderForTest(folderName);
     }
 
     /**
@@ -201,8 +203,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * @throws IOException
      */
     public void testStartAutoDownload() throws FolderException, IOException {
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeFolderId());
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
 
         // Prepare folder on "host" Bart.
         TestHelper.createRandomFile(TESTFOLDER_BASEDIR_BART);
@@ -247,8 +248,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     public void testStartAutoDownloadInPausedMode() throws FolderException,
         IOException
     {
-        FolderInfo testFolder = new FolderInfo("testFolder",
-            IdGenerator.makeFolderId());
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         // Prepare folder on "host" Bart.
         FolderSettings folderSettingsBart = new FolderSettings(
             TESTFOLDER_BASEDIR_BART, SyncProfile.HOST_FILES, 0);
@@ -281,8 +281,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
     }
 
     public void testReceiveFileListOnReconnect() {
-        FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator
-            .makeFolderId());
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);
         disconnectBartAndLisa();
 
