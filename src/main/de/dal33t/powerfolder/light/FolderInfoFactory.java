@@ -112,6 +112,10 @@ public class FolderInfoFactory {
                 (int) (1000000L * Math.random()));
     }
 
+    public static FolderInfo newTopFolderForTest(String name) {
+        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, null);
+    }
+
     public static FolderInfo backupFolderOfAccountForTest(String name, AccountInfo aInfo) {
         return backupFolderOfAccountForTest(name, aInfo);
     }
