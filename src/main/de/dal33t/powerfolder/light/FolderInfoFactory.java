@@ -56,6 +56,7 @@ public class FolderInfoFactory {
         return new FolderInfo(name, folderID, -1, null);
     }
 
+    // TODO Really needed?
     public static FolderInfo copyFrom(Folder folder) {
         return new FolderInfo(folder.getInfo().getName(),
                 folder.getInfo().getId(),
@@ -67,7 +68,7 @@ public class FolderInfoFactory {
         return new FolderInfo(name, IdGenerator.makeFolderId(), 0, null).intern();
     }
 
-    // TODO Check if better use unmarshallExistingTopFolder
+    // TODO Check if better use unmarshallExistingTopFolder, retrieve from database or FolderRepository
     public static FolderInfo newTopFolder(String id, String name) {
         return new FolderInfo(name, id, 0, null).intern();
     }
@@ -80,12 +81,12 @@ public class FolderInfoFactory {
         return new FolderInfo(name, id, 0, parent).intern();
     }
 
+    // TODO Really needed?
     public static FolderInfo proxyFolder(String id, String name) {
         return new FolderInfo(name, id, 0, null).intern();
     }
 
-    public static FolderInfo backupFolderOfAccount(String name, AccountInfo aInfo)
-    {
+    public static FolderInfo backupFolderOfAccount(String name, AccountInfo aInfo) {
         return new FolderInfo(name, "PB-" + aInfo.getOID() + "-" + name, 0, null).intern();
     }
 
@@ -117,6 +118,8 @@ public class FolderInfoFactory {
     }
 
     // TODO: Read/Write as file
+
+    // For tests --------------------------------------------------------------
 
     public static FolderInfo newRandomTopFolderForTest() {
         return unmarshallExistingTopFolder(
