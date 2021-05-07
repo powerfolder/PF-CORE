@@ -44,8 +44,8 @@ public class IdGenerator {
     public static String makeId() {
         String id = Base58.encode(makeIdBytes());
         // Remove the last == at the end
-        return PathUtils.removeInvalidFilenameChars(
-            id.substring(0, id.length() - 2)).replace("+", "");
+        return PathUtils.removeInvalidFilenameChars(id.substring(0, id.length() - 2))
+                .replace("+", "").replace("/", "");
     }
 
 
