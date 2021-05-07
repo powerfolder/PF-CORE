@@ -67,6 +67,7 @@ public class FolderInfoFactory {
         return new FolderInfo(name, IdGenerator.makeFolderId(), 0, null).intern();
     }
 
+    // TODO Check if better use unmarshallExistingTopFolder
     public static FolderInfo newTopFolder(String id, String name) {
         return new FolderInfo(name, id, 0, null).intern();
     }
@@ -81,7 +82,7 @@ public class FolderInfoFactory {
 
     public static FolderInfo backupFolderOfAccount(String name, AccountInfo aInfo)
     {
-        return new FolderInfo(name, "PB-" + aInfo.getOID() + "-" + name).intern();
+        return new FolderInfo(name, "PB-" + aInfo.getOID() + "-" + name, 0, null).intern();
     }
 
     public static FolderInfo unmarshallExistingTopFolder(String id, String name, int version) {
