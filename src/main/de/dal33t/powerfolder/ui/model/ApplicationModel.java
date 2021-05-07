@@ -44,6 +44,7 @@ import de.dal33t.powerfolder.event.PausedModeEvent;
 import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
@@ -483,7 +484,7 @@ public class ApplicationModel extends PFUIComponent {
             }
 
             // Create the new Folder in the repository.
-            FolderInfo fi = new FolderInfo(folder);
+            FolderInfo fi = FolderInfoFactory.copyFrom(folder);
             FolderSettings fs = new FolderSettings(newDirectory,
                 folder.getSyncProfile(), folder.getDownloadScript(), folder
                     .getFileArchiver().getVersionsPerFile(),
