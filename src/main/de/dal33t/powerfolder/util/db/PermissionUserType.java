@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.StackDump;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
@@ -125,7 +126,7 @@ public class PermissionUserType extends Loggable implements UserType {
             if (fdInfo == null) {
                 logSevere("FolderInfo with ID " + fiId + " not found!",
                     new StackDump());
-                fdInfo = new FolderInfo(null, fiId);
+                fdInfo = FolderInfoFactory.lookupInstance(fiId);
             } else {
                 fdInfo = fdInfo.intern();
             }
