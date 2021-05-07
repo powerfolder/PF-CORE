@@ -338,12 +338,8 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (!includeVersionAndParent) {
             return;
         }
-        if (includeVersionAndParent) {
-            Logger.getLogger(FolderInfo.class.getName()).log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
-        }
-        if (version > 0) {
-            out.writeInt(version);
-        }
+        Logger.getLogger(FolderInfo.class.getName()).log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
+        out.writeInt(version);
         if (location != null) {
             out.writeBoolean(true);
             location.writeExternal(out);
