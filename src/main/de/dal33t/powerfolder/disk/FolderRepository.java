@@ -922,6 +922,22 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFC-3295: For subfolder sharing. Retrieves the {@link Folder} at the given location if available
+     * @param location the location of the subfolder in another folder
+     * @return the {@link Folder} or null if location is not shared as subfolder
+     */
+    public Folder getSubFolder(DirectoryInfo location) {
+        Reject.ifNull(location, "Location");
+        for (Folder folder : folders.values()) {
+            if (location.equals(folder.getInfo().getLocation())) {
+                return folder;
+            }
+        }
+        // None found
+        return null;
+    }
+
+    /**
      * All real-folders WITHOUT Meta-folders (#1548) and WITHOUT unmounted
      * {@link Folder Folders}. Returns the indirect reference to the internal
      * {@link ConcurrentMap}. Contents may change after get.
