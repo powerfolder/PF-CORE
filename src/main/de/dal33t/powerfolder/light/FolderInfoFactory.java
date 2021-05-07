@@ -18,6 +18,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.StackDump;
 
@@ -53,6 +54,13 @@ public class FolderInfoFactory {
      */
     public static FolderInfo lookupInstance(String folderID, String name) {
         return new FolderInfo(name, folderID, -1, null);
+    }
+
+    public static FolderInfo copyFrom(Folder folder) {
+        return new FolderInfo(folder.getInfo().getName(),
+                folder.getInfo().getId(),
+                folder.getInfo().getVersion(),
+                folder.getInfo().getParent());
     }
 
     public static FolderInfo newTopFolder(String name) {

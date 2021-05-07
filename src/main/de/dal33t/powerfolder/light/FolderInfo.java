@@ -96,13 +96,6 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     // TODO
-    public FolderInfo(Folder folder) {
-        name = folder.getName();
-        id = folder.getId();
-        hash = hashCode0();
-    }
-
-    // TODO
     public FolderInfo(String name, String id) {
         this.name = name;
         this.id = id;
