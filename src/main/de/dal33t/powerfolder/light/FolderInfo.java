@@ -96,6 +96,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     // TODO
+    @Deprecated
     public FolderInfo(String name, String id) {
         this.name = name;
         this.id = id;
