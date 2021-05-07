@@ -81,10 +81,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private int version;
 
     /**
-     * PF-1790: The parent location of this folder. null if top level
+     * PF-1790: The location of this folder in another folder. null if top level
      */
     @Transient
-    private DirectoryInfo parent;
+    private DirectoryInfo location;
 
     /**
      * The cached hash info.
@@ -103,11 +103,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         hash = hashCode0();
     }
 
-    FolderInfo(String name, String id, int version, DirectoryInfo parent) {
+    FolderInfo(String name, String id, int version, DirectoryInfo location) {
         this.name = name;
         this.id = id;
         this.version = version;
-        this.parent = parent;
+        this.location = location;
         hash = hashCode0();
     }
 
@@ -185,8 +185,8 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return version;
     }
 
-    public DirectoryInfo getParent() {
-        return parent;
+    public DirectoryInfo getLocation() {
+        return location;
     }
 
     /**
@@ -279,7 +279,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (isLookupInstance()) {
             return "Folder " + name + '/' + id + '/' + "L";
         }
-        return "Folder " + name + '/' + id + '/' + version + (parent != null ? "@" + parent : "");
+        return "Folder " + name + '/' + id + '/' + version + (location != null ? "<-" + location : "");
     }
 
     // Serialization optimization *********************************************
@@ -310,7 +310,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         }
         version = in.readInt();
         if (in.readBoolean()) {
-            parent = (DirectoryInfo) FileInfoFactory.readExt(in);
+            location = (DirectoryInfo) FileInfoFactory.readExt(in);
         }
         Logger.getLogger(FolderInfo.class.getName()).log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
     }
@@ -320,7 +320,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     public void writeExternal(ObjectOutput out, boolean includeVersionAndParent) throws IOException {
-        boolean requiresNewProtocol = version > 0 || parent != null;
+        boolean requiresNewProtocol = version > 0 || location != null;
         if (includeVersionAndParent) {
             includeVersionAndParent = requiresNewProtocol;
         } else if (requiresNewProtocol) {
@@ -344,9 +344,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (version > 0) {
             out.writeInt(version);
         }
-        if (parent != null) {
+        if (location != null) {
             out.writeBoolean(true);
-            parent.writeExternal(out);
+            location.writeExternal(out);
         } else {
             out.writeBoolean(false);
         }

@@ -96,7 +96,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                         oldInstance.getId(),
                         foInfo.getName(),
                         oldInstance.getVersion(),
-                        oldInstance.getParent());
+                        oldInstance.getLocation());
             }
 
             INSTANCES.put(foInfo, foInfo);
