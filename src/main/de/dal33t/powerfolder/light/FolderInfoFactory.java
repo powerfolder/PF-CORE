@@ -80,6 +80,10 @@ public class FolderInfoFactory {
         return new FolderInfo(name, id, 0, parent).intern();
     }
 
+    public static FolderInfo proxyFolder(String id, String name) {
+        return new FolderInfo(name, id, 0, null).intern();
+    }
+
     public static FolderInfo backupFolderOfAccount(String name, AccountInfo aInfo)
     {
         return new FolderInfo(name, "PB-" + aInfo.getOID() + "-" + name, 0, null).intern();
