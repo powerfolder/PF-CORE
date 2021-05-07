@@ -37,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -284,8 +285,9 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         public void keyReleased(KeyEvent e) {
             if (selectedItem != null) {
-                selectedItem.setFolderInfo(new FolderInfo(nameField.getText(),
-                    selectedItem.getFolderInfo().id));
+                selectedItem.setFolderInfo(
+                        FolderInfoFactory.newTopFolder(selectedItem.getFolderInfo().id, nameField.getText())
+                );
             }
         }
     }
