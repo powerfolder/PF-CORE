@@ -19,12 +19,9 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,6 +58,7 @@ import static de.dal33t.powerfolder.light.FolderInfoFactory.unmarshallExistingTo
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class FolderInfo implements Serializable, Cloneable, D2DObject {
+    private static final Logger LOG = Logger.getLogger(FolderInfo.class.getName());
     private static final long serialVersionUID = 102L;
     private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
 
@@ -138,8 +136,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     public FolderInfo lookupParentFolderInfo() {
         if (!isMetaFolder()) {
-            Logger.getLogger(FolderInfo.class.getName()).log(
-                Level.WARNING,
+            LOG.log(Level.WARNING,
                 "Not required to retrieve parent folder info on non-meta folder: "
                     + this, new RuntimeException("from here"));
             return this;
@@ -153,7 +150,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
                 + Constants.METAFOLDER_ID_PREFIX.length());
             return lookupInstance(folderId, name);
         } catch (Exception e) {
-            Logger.getLogger(FolderInfo.class.getName()).log(Level.WARNING,
+            LOG.log(Level.WARNING,
                 "Unable to get parent folder info for meta-folder: " + this, e);
             return this;
         }
@@ -312,7 +309,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (in.readBoolean()) {
             location = (DirectoryInfo) FileInfoFactory.readExt(in);
         }
-        Logger.getLogger(FolderInfo.class.getName()).log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
+        LOG.log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -324,7 +321,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (includeVersionAndParent) {
             includeVersionAndParent = requiresNewProtocol;
         } else if (requiresNewProtocol) {
-            Logger.getLogger(FolderInfo.class.getName()).log(Level.WARNING,
+            LOG.log(Level.WARNING,
                     this + ": writeExternal would require new protocol, using backward compatibility.", new StackDump());
         }
         if (includeVersionAndParent) {
@@ -338,7 +335,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (!includeVersionAndParent) {
             return;
         }
-        Logger.getLogger(FolderInfo.class.getName()).log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
+        LOG.log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
         out.writeInt(version);
         if (location != null) {
             out.writeBoolean(true);
@@ -398,5 +395,40 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
       builder.setId(this.id);
 
       return builder.build();
+    }
+
+    // Writing / Loading *****************************************************
+
+    /**
+     * Saves this FolderInfo to the given file.
+     *
+     * @param file
+     */
+    boolean save(Path file) {
+        if (Files.notExists(file.getParent())) {
+            return false;
+        }
+        try (ObjectOutputStream oout = new ObjectOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(file)))) {
+            oout.writeObject(this);
+        } catch (Exception e) {
+            LOG.warning(this + ": Unable to store FolderInfo to " + file + ". " + e);
+        }
+        return true;
+    }
+
+    static FolderInfo load(Path file) {
+        if (Files.notExists(file)) {
+            return null;
+        }
+        try (InputStream fin = Files.newInputStream(file)) {
+            ObjectInputStream oin = new ObjectInputStream(
+                    new BufferedInputStream(fin));
+            FolderInfo folderInfo = (FolderInfo) oin.readObject();
+            return folderInfo;
+        } catch (Exception e) {
+            LOG.warning("Unable to read FolderInfo from " + file + ". " + e);
+        }
+        return null;
     }
 }
