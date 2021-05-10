@@ -234,7 +234,6 @@ public class Folder extends PFComponent {
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
         if (fInfo.isLookupInstance()) {
-            // TODO: Store and read version and parent
             currentInfo = FolderInfoFactory.unmarshallExistingTopFolder(fInfo.id, fInfo.getName(), 0);
         } else {
             currentInfo = fInfo;
@@ -456,6 +455,14 @@ public class Folder extends PFComponent {
             statistic.calculate0();
         }
 
+        FolderInfo fromDisk = FolderInfoFactory.readFrom(this);
+        if (fromDisk != null) {
+            logInfo(this + ": Meta-data loaded: " + fromDisk);
+            updateInfo(fromDisk, false);
+        } else {
+            // Write meta-data
+            updateInfo(currentInfo);
+        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -4819,9 +4826,22 @@ public class Folder extends PFComponent {
     }
 
     void updateInfo(FolderInfo folderInfo) {
+        updateInfo(folderInfo, true);
+    }
+
+    private void updateInfo(FolderInfo folderInfo, boolean storeFolderInfo) {
         Reject.ifNull(folderInfo, "folderInfo");
-        Reject.ifFalse(currentInfo.getId().equals(folderInfo.getId()), "Unable to update meta data. Folder ID mismatch");
-        this.currentInfo = folderInfo.intern();
+        if (currentInfo != null) {
+            Reject.ifFalse(currentInfo.getId().equals(folderInfo.getId()), "Unable to update meta data. Folder ID mismatch");
+            if (folderInfo.getVersion() < currentInfo.getVersion()) {
+                logWarning("New FolderInfo has lower version. current: " + currentInfo + ". new: " + folderInfo);
+            }
+        }
+        logInfo(this + ": updateInfo: " + folderInfo);
+        this.currentInfo = folderInfo;
+        if (storeFolderInfo) {
+            FolderInfoFactory.writeFolderInfo(this);
+        }
     }
 
     /**
