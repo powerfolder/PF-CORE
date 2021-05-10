@@ -2095,6 +2095,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (foInfo != null) {
             logInfo(" Folder name: " + foInfo.getLocalizedName());
             logInfo(" Folder ID: " + foInfo.getId());
+            logInfo(" Folder Version: " + foInfo.getVersion());
         }
         logInfo(" renamedOnServer: " + renamedOnServer);
         logInfo(" stillPresent: " + stillPresent);
@@ -2156,6 +2157,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo("handleNewFolder.p2 of " + file);
         logInfo(" Folder name: " + foInfo.getLocalizedName());
         logInfo(" Folder ID: " + foInfo.getId());
+        logInfo(" Folder Version: " + foInfo.getVersion());
         logInfo(" renamedOnServer: " + renamedOnServer);
         logInfo(" stillPresent: " + stillPresent);
         logInfo(" createdNew: " + createdNew);
