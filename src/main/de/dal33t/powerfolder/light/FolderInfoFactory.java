@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.StackDump;
 
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +92,7 @@ public class FolderInfoFactory {
     }
 
     public static FolderInfo unmarshallExistingTopFolder(String id, String name, int version) {
-        return unmarshallExistingFolder(name, id, version, null);
+        return new FolderInfo(name, id, version, null).intern();
     }
 
     public static FolderInfo unmarshallExistingFolder(String id, String name, int version, DirectoryInfo parent) {
@@ -118,6 +119,18 @@ public class FolderInfoFactory {
     }
 
     // TODO: Read/Write as file
+
+    // Persistence ------------------------------------------------------------
+
+    public static FolderInfo readFrom(Folder folder) {
+        Path file = folder.getSystemSubDir().resolve("FolderInfo");
+        return FolderInfo.load(file);
+    }
+
+    public static boolean writeFolderInfo(Folder folder) {
+        Path file = folder.getSystemSubDir().resolve("FolderInfo");
+        return folder.getInfo().save(file);
+    }
 
     // For tests --------------------------------------------------------------
 
