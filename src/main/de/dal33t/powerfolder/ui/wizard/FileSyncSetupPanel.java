@@ -191,8 +191,15 @@ public class FileSyncSetupPanel extends PFWizardPanel {
 
     private class WebDAVConnectionTask implements Runnable {
         public void run() {
+            disableLocalSync();
             createWebdavConnection();
         }
+    }
+
+    private void disableLocalSync() {
+        ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.setValue(getController(), false);
+        ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES.setValue(getController(), false);
+        getController().saveConfig();
     }
 
     private void createWebdavConnection() {
