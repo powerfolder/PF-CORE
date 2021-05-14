@@ -37,6 +37,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -347,7 +348,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         Reject.ifTrue(testFolder != null, "Reject already setup a testfolder!");
         // FIXME Waiting between join only because of race condition making join
         // fail.
-        testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
+        FolderInfoFactory.newTopFolderForTest("testFolder");
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, getContollerBart(),
             profile);
         TestHelper.waitMilliSeconds(100);
