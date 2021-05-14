@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.event.InvitationHandler;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.SendMessageTask;
@@ -67,9 +68,8 @@ public class PowerFolderInvitationTest extends TwoControllerTestCase {
             }
 
         });
-
-        FolderInfo testFolder = new FolderInfo("testFolder",
-            IdGenerator.makeFolderId());
+        FolderInfoFactory.newTopFolderForTest("testFolder");
+        //FolderInfo testFolder = new FolderInfo("testFolder", IdGenerator.makeFolderId());
 
         FolderSettings folderSettings = new FolderSettings(
             TESTFOLDER_BASEDIR_LISA, SyncProfile.HOST_FILES, 0);

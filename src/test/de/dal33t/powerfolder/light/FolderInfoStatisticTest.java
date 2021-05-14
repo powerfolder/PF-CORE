@@ -11,7 +11,8 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 public class FolderInfoStatisticTest extends TestCase {
 
     public void testStoreLoad() throws IOException {
-        FolderInfo foInfo = new FolderInfo("Test", IdGenerator.makeId());
+        //FolderInfo foInfo = new FolderInfo("Test", IdGenerator.makeId());
+        FolderInfoFactory.newTopFolderForTest("Test");
         FolderStatisticInfo stats = new FolderStatisticInfo(foInfo);
         assertNotNull(stats.getPartialSyncStatMap());
         assertTrue(stats.getPartialSyncStatMap().isEmpty());
