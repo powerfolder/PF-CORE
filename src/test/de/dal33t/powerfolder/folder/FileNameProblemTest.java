@@ -113,7 +113,7 @@ public class FileNameProblemTest extends ControllerTestCase {
 
     public void testFilenameProblemsNoCheck() {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), false);
-        FolderInfoFactory.newTopFolderForTest("testFolder");
+        FolderInfo folderInfo = new FolderInfo("testFolder", "ID");
         assertFalse(FilenameProblemHelper
             .hasProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows
