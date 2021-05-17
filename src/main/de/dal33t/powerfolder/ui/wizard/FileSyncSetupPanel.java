@@ -101,10 +101,14 @@ public class FileSyncSetupPanel extends PFWizardPanel {
 
     @Override
     public WizardPanel next() {
-        return new SwingWorkerPanel(getController(), new WebDAVConnectionTask(),
-                Translation.get("wizard.login_online_storage.logging_in"),
-                Translation.get("wizard.login_online_storage.logging_in.text"),
-                nextFinishPanel);
+        if (syncNetDriveRadioButton.isSelected()) {
+            return new SwingWorkerPanel(getController(), new WebDAVConnectionTask(),
+                    Translation.get("wizard.login_online_storage.logging_in"),
+                    Translation.get("wizard.login_online_storage.logging_in.text"),
+                    nextFinishPanel);
+        } else {
+            return nextFinishPanel;
+        }
     }
 
     @Override
