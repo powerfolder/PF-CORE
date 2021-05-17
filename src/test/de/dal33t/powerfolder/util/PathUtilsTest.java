@@ -6,6 +6,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
@@ -2205,8 +2206,7 @@ public class PathUtilsTest extends TestCase {
         fileWriter.close();
         controller.startConfig("build/test/basic.config");
 
-        FolderInfo testFolder = new FolderInfo("testFolder",
-                IdGenerator.makeFolderId());
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         FolderSettings folderSettings = new FolderSettings(Paths.get("build/test"),
                 SyncProfile.HOST_FILES, 0);
         controller.getFolderRepository().createFolder(testFolder, folderSettings);

@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Format;
@@ -237,7 +238,7 @@ public abstract class TwoControllerTestCase extends TestCase {
      * @see #getFolderAtLisa()
      */
     protected void joinTestFolder(SyncProfile syncprofile) {
-        testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
+        testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART,
             TESTFOLDER_BASEDIR_LISA, syncprofile);
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
@@ -502,7 +503,7 @@ public abstract class TwoControllerTestCase extends TestCase {
     protected void joinTestFolder(Path baseDir1, Path baseDir2,
         SyncProfile profile)
     {
-        testFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
+        testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         joinFolder(testFolder, baseDir1, baseDir2, profile);
     }
 

@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 
@@ -48,8 +49,7 @@ public class TestScanFolder extends ControllerTestCase {
     private Folder folder;
 
     private void doTest() throws Exception {
-        FolderInfo testFolder = new FolderInfo("testFolder",
-            IdGenerator.makeFolderId());
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         FolderSettings folderSettings = new FolderSettings(Paths.get(location),
             SyncProfile.HOST_FILES, 0);
         folder = getController().getFolderRepository().createFolder(testFolder,
