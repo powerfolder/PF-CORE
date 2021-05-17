@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.util.Debug;
@@ -150,8 +151,8 @@ public final class ControllerTest extends ControllerTestCase {
         }, 1);
 
         for (int i = 0; i < nFolders; i++) {
-            FolderInfo foInfo = new FolderInfo("Test-Folder-" + i,
-                IdGenerator.makeFolderId());
+            //FolderInfo foInfo = new FolderInfo("Test-Folder-" + i, IdGenerator.makeFolderId());
+            FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Test-Folder" + i);
             joinFolder(foInfo,
                 getController().getFolderRepository().getFoldersBasedir()
                     .resolve(foInfo.getName()),
