@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
@@ -70,7 +69,7 @@ public class FileNameProblemTest extends ControllerTestCase {
 
     public void testFilenameProblems() {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
-        FolderInfoFactory.newTopFolderForTest("testfolder");
+        FolderInfo folderInfo = new FolderInfo("testFolder", "ID");
         assertFalse(FilenameProblemHelper
             .hasProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows

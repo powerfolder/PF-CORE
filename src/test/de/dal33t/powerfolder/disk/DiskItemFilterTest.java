@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
@@ -57,7 +56,7 @@ public class DiskItemFilterTest extends TestCase {
     
     public void testBlackList() {
         DiskItemFilter blacklist = new DiskItemFilter();
-        FolderInfoFactory.newTopFolderForTest("foldername");
+        FolderInfo folderInfo = new FolderInfo("foldername", "id");
         FileInfo fileInfo = FileInfoFactory.lookupInstance(folderInfo,
             "thumbs.db");
         FileInfo fileInfo2 = FileInfoFactory.lookupInstance(folderInfo,
@@ -82,7 +81,7 @@ public class DiskItemFilterTest extends TestCase {
 
     public void testBlacklistPatterns() {
         DiskItemFilter blacklist = new DiskItemFilter();
-        FolderInfoFactory.newTopFolderForTest("foldername");
+        FolderInfo folderInfo = new FolderInfo("foldername", "id");
         blacklist.addPattern("*thumbs.db");
         blacklist.addPattern("*THAMBS.db");
 
