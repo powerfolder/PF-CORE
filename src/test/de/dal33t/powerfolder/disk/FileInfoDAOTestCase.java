@@ -27,12 +27,7 @@ import java.util.UUID;
 
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.DirectoryInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
@@ -213,8 +208,7 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
     }
 
     protected static FolderInfo createRandomFolderInfo() {
-        FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
-            "FOLDERID").intern();
+        FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("TestFolder / " + UUID.randomUUID(), "FOLDERID");
         return foInfo;
     }
 

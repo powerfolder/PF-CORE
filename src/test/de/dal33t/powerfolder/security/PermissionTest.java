@@ -53,7 +53,7 @@ public class PermissionTest extends TestCase {
     }
 
     public void testFolderReadPermission() {
-        FolderReadPermission fap = new FolderReadPermission(new FolderInfo(
+        FolderReadPermission fap = new FolderReadPermission(FolderInfoFactory.newTopFolderForTest(
             "myFolder", "4711"));
         assertEquals("FolderReadPermission IDs not equal", fap.getId(),
             "4711_FP_FolderReadPermission");
@@ -61,7 +61,7 @@ public class PermissionTest extends TestCase {
 
     public void testFolderReadWritePermission() {
         FolderReadWritePermission fap = new FolderReadWritePermission(
-            new FolderInfo("myFolder", "4711"));
+            FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
         assertEquals("FolderReadWritePermission IDs not equal", fap.getId(),
             "4711_FP_FolderReadWritePermission");
     }
