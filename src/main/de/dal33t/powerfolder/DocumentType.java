@@ -11,7 +11,11 @@ public enum DocumentType {
     PRESENTATION("ppt", "pptx", "odp"),
     IMAGE("png", "jpg", "jpeg", "gif", "bmp","tif","tiff"),
     AUDIO("wav", "mp3", "ogg", "oga", "webma", "fla", "flac", "m3u8a", "rtmpa", "djvu"),
+<<<<<<< Updated upstream
     VIDEO("mp4", "flv", "rtmp", "rtmpv", "m4v", "ogv", "webmv", "m3uv", "m3u8v"),
+=======
+    VIDEO("mp4", "flv", "rtmp", "rtmpv", "m4v", "ogv", "webmv", "m3uv", "m3u8v","mov","webm"),
+>>>>>>> Stashed changes
     PDF("pdf"),
     TEXT("txt", "rtf");
 
