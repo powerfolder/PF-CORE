@@ -1260,8 +1260,7 @@ public class MainFrame extends PFUIComponent {
                         Translation.get("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(OSUtil.isSystraySupported() &&
-                        !PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
+                minusButton.setVisible(OSUtil.isSystraySupported());
                 checkSplitMinWidth();
                 break;
             case NORMAL :
@@ -1279,8 +1278,7 @@ public class MainFrame extends PFUIComponent {
 
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(OSUtil.isSystraySupported() &&
-                        !PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
+                minusButton.setVisible(OSUtil.isSystraySupported());
                 configureNormalSize();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
@@ -1308,8 +1306,7 @@ public class MainFrame extends PFUIComponent {
                         Translation.get("main_frame.minimize.tips"));
                 // Don't show minimize button if systray is available
                 // and the exit button uses minimize option.
-                minusButton.setVisible(OSUtil.isSystraySupported() &&
-                        !PreferencesEntry.QUIT_ON_X.getValueBoolean(getController()));
+                minusButton.setVisible(OSUtil.isSystraySupported());
                 toFront();
                 UIUtil.invokeLaterInEDT(new Runnable() {
                     public void run() {
