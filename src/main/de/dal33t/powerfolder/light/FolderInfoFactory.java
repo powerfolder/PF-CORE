@@ -145,6 +145,10 @@ public class FolderInfoFactory {
         return new FolderInfo(name, IdGenerator.makeFolderId(), 0, null);
     }
 
+    public static FolderInfo newTopFolderForTest(String name, String id) {
+        return new FolderInfo(name, id, 0, null);
+    }
+
     public static FolderInfo backupFolderOfAccountForTest(String name, AccountInfo aInfo) {
         return backupFolderOfAccountForTest(name, aInfo);
     }
