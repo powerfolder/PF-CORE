@@ -89,8 +89,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     private transient int hash;
 
-    private FolderInfo()
-    {
+    private FolderInfo() {
         // NOP - for Hibernate
     }
 
