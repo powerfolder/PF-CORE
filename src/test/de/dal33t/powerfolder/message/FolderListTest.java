@@ -35,8 +35,7 @@ public class FolderListTest extends TestCase {
         list.folders = new FolderInfo[10];
 
         for (int i = 0; i < list.folders.length; i++) {
-            //FolderInfo foInfo = new FolderInfo("Na" + IdGenerator.makeId(), IdGenerator.makeFolderId());
-            FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Na");
+            FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Na" + IdGenerator.makeId());
             list.folders[i] = foInfo;
         }
 
