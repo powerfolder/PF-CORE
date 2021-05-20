@@ -379,8 +379,8 @@ public class Icons {
         String iconId = getIconId(id);
         if (iconId == null) {
             // Log it.
-            if (log.isLoggable(Level.FINE)) {
-                log.fine("Icon not found ID: '" + id + '\'');
+            if (log.isLoggable(Level.FINER)) {
+                log.finer("Icon not found ID: '" + id + '\'');
             }
             UNKNOWN_ICONS.add(id);
             return null;
