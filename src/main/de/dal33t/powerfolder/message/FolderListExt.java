@@ -73,7 +73,7 @@ public class FolderListExt extends FolderList implements Externalizable {
             }
         }
 
-        if (extUID == extVersionUID) {
+        if (extUID >= 101L) {
             if (in.readBoolean()) {
                 int len = in.readInt();
                 folders = new FolderInfo[len];
