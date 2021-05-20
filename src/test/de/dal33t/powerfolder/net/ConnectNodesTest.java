@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -370,7 +371,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
                 assertNotNull(a);
                 assertTrue(a.isValid());
                 client.getSecurityService().getFolderPermissions(
-                    new FolderInfo("xx", "xx43kljkfjdffewlkjk345j4kj5öjöj"));
+                        FolderInfoFactory.newTopFolderForTest("xx", "xx43kljkfjdffewlkjk345j4kj5öjöj"));
                 assertTrue(server.isCompletelyConnected());
                 server.shutdown();
             } catch (ConnectionException e) {

@@ -2229,7 +2229,7 @@ public class PathUtilsTest extends TestCase {
         fileWriter.close();
         controller.startConfig("build/test/basic.config");
 
-        FolderInfo testFolder = new FolderInfo("testFoldermeta", "meta|folder");
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFoldermeta", "meta|folder");
         FolderSettings folderSettings = new FolderSettings(Paths.get("build/test"),
                 SyncProfile.HOST_FILES, 0);
         controller.getFolderRepository().createFolder(testFolder, folderSettings);

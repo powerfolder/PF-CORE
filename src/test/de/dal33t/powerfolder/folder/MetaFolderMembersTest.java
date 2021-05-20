@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.Condition;
@@ -52,8 +53,7 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
      */
     public void testMembersSync() throws IOException {
         // 1. Bart creates a folder and Homer joins.
-        FolderInfo folderInfo = new FolderInfo("testFolder", "testFolder"
-            + IdGenerator.makeFolderId());
+        FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder", "testFolder" );
 
         Controller controllerBart = getContollerBart();
         Files.createDirectories(TESTFOLDER_BASEDIR_BART);

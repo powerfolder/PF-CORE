@@ -39,15 +39,13 @@ public class PermissionTest extends TestCase {
     }
 
     public void testFolderAdminPermission() {
-        Permission fap = new FolderAdminPermission(new FolderInfo("myFolder",
-            "4711"));
+        Permission fap = new FolderAdminPermission(FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
         assertEquals("FolderAdminPermission IDs not equal", fap.getId(),
             "4711_FP_FolderAdminPermission");
     }
 
     public void testFolderOwnerPermission() {
-        FolderOwnerPermission fap = new FolderOwnerPermission(new FolderInfo(
-            "myFolder", "4711"));
+        FolderOwnerPermission fap = new FolderOwnerPermission(FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
         assertEquals("FolderOwnerPermission IDs not equal", fap.getId(),
             "4711_FP_FolderOwnerPermission");
     }
@@ -105,6 +103,6 @@ public class PermissionTest extends TestCase {
         account.setUsername("ACCOUNT");
         account.grant(AdminPermission.INSTANCE);
         account.grant(AllFoldersAdminPermission.INSTANCE);
-        assertTrue(account.hasAdminPermission(new FolderInfo("xx", "21")));
+        assertTrue(account.hasAdminPermission(FolderInfoFactory.newTopFolderForTest("xx", "21")));
     }
 }
