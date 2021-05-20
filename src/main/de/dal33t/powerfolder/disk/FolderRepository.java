@@ -604,10 +604,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                         return;
                     }
 
-                    // TODO: Read from system directory?
-                    FolderInfo foInfo = lookupInstance(folderId, folderName);
                     FolderSettings folderSettings = FolderSettings.load(
                             getController(), folderEntryId);
+
+                    FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
+                    if (foInfo == null) {
+                        foInfo = lookupInstance(folderId, folderName);
+                    }
 
                     if (folderSettings == null) {
                         logWarning("Unable to load folder settings."
@@ -2379,6 +2382,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      * {@code null}, if the file does not point to a Folder.
      */
     private FolderInfo checkSystemSubdirForFolder(Path file) {
+        FolderInfo folderInfo = FolderInfoFactory.readFrom(file);
+        if (folderInfo != null) {
+            return folderInfo;
+        }
 
         Path meta = file.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve(
                 Folder.FOLDER_STATISTIC);
@@ -2569,6 +2576,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (isFine()) {
                     logFine("localFolder: " + localFolder);
                     logFine("remoteFolder: " + foInfo);
+                }
+                if (localFolder.getVersion() > foInfo.getVersion()) {
+                    logWarning(localFolder + ": Not renaming folder. server has lower version: " + foInfo);
+                    return;
                 }
                 Path currentDirectory = folder.getLocalBase();
                 String currentDirectoryName = currentDirectory.getFileName().toString();

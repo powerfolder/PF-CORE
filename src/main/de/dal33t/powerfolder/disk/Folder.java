@@ -349,15 +349,15 @@ public class Folder extends PFComponent {
         // Check base dir
         try {
             checkBaseDir(false);
-            logFine("Opened " + toString() + "/" + getId() + " at '"
+            logFine("Opened " + toString() + " at '"
                 + localBase.toAbsolutePath() + '\'');
         } catch (FolderException e) {
             if (currentInfo.isMetaFolder()) {
-                logFine("Unable to open " + toString() + "/" + getId() + " at '"
+                logFine("Unable to open " + toString() + " at '"
                     + localBase.toAbsolutePath()
                     + "'. Local base directory is inaccessable. " + e);
             } else {
-                logWarning("Unable to open " + toString() + "/" + getId() + " at '"
+                logWarning("Unable to open " + toString() + " at '"
                     + localBase.toAbsolutePath()
                     + "'. Local base directory is inaccessable. " + e);
             }
@@ -455,14 +455,8 @@ public class Folder extends PFComponent {
             statistic.calculate0();
         }
 
-        FolderInfo fromDisk = FolderInfoFactory.readFrom(this);
-        if (fromDisk != null) {
-            logInfo(this + ": Meta-data loaded: " + fromDisk);
-            updateInfo(fromDisk, false);
-        } else {
-            // Write meta-data
-            updateInfo(currentInfo);
-        }
+        // Write meta-data
+        updateInfo(currentInfo);
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -4834,7 +4828,7 @@ public class Folder extends PFComponent {
         if (currentInfo != null) {
             Reject.ifFalse(currentInfo.getId().equals(folderInfo.getId()), "Unable to update meta data. Folder ID mismatch");
             if (folderInfo.getVersion() < currentInfo.getVersion()) {
-                logWarning("New FolderInfo has lower version. current: " + currentInfo + ". new: " + folderInfo);
+                logWarning("New FolderInfo has lower version. current: " + currentInfo + ". new: " + folderInfo, new StackDump());
             }
         }
         logInfo(this + ": updateInfo: " + folderInfo);

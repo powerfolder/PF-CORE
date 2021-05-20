@@ -314,7 +314,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             includeVersionAndParent = requiresNewProtocol;
         } else if (requiresNewProtocol) {
             LOG.log(Level.WARNING,
-                    this + ": writeExternal would require new protocol, using backward compatibility.", new StackDump());
+                    this + ": writeExternal would require new protocol, using backward compatibility.");
         }
         if (includeVersionAndParent) {
             out.writeLong(extVersionUID);

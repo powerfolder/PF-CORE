@@ -18,6 +18,7 @@
  */
 package de.dal33t.powerfolder.light;
 
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.StackDump;
@@ -121,6 +122,11 @@ public class FolderInfoFactory {
     // TODO: Read/Write as file
 
     // Persistence ------------------------------------------------------------
+
+    public static FolderInfo readFrom(Path folderBasePath) {
+        Path file = folderBasePath.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve("FolderInfo");
+        return FolderInfo.load(file);
+    }
 
     public static FolderInfo readFrom(Folder folder) {
         Path file = folder.getSystemSubDir().resolve("FolderInfo");
