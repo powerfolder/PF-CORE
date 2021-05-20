@@ -93,14 +93,6 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         // NOP - for Hibernate
     }
 
-    // TODO
-    @Deprecated
-    public FolderInfo(String name, String id) {
-        this.name = name;
-        this.id = id;
-        hash = hashCode0();
-    }
-
     FolderInfo(String name, String id, int version, DirectoryInfo location) {
         this.name = name;
         this.id = id;
