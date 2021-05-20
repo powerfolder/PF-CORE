@@ -53,7 +53,7 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
      */
     public void testMembersSync() throws IOException {
         // 1. Bart creates a folder and Homer joins.
-        FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder", "testFolder" );
+        FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder", "testFolder" + IdGenerator.makeFolderId());
 
         Controller controllerBart = getContollerBart();
         Files.createDirectories(TESTFOLDER_BASEDIR_BART);
