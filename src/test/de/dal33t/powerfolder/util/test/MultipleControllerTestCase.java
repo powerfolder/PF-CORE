@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.PropertiesUtil;
@@ -254,7 +255,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
 
     protected void joinNTestFolder(SyncProfile profile) {
         Reject.ifTrue(mctFolder != null, "Reject already setup a testfolder!");
-        mctFolder = new FolderInfo("testFolder", UUID.randomUUID().toString());
+        mctFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         for (Entry<String, Controller> e : controllers.entrySet()) {
             joinFolder(
                 mctFolder,

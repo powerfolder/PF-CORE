@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.INITIAL_FOLDER_NAME;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.PROMPT_TEXT_ATTRIBUTE;
@@ -31,6 +32,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import jwf.WizardPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -83,8 +85,7 @@ public class FolderSetupPanel extends PFWizardPanel {
         // NOTE this is more or less a copy of ConfirmDiskLocationPanel next(),
         // for experts.
         // Changes may need to be applied to both.
-        FolderInfo folderInfo = new FolderInfo(folderNameTextField.getText()
-            .trim(), IdGenerator.makeFolderId());
+        FolderInfo folderInfo = newTopFolder(folderNameTextField.getText().trim());
         getWizardContext().setAttribute(FOLDERINFO_ATTRIBUTE, folderInfo);
 
         // Set sync profile

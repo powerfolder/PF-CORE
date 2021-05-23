@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 
 import java.awt.event.ItemEvent;
@@ -36,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import jwf.WizardPanel;
 
 import com.jgoodies.binding.value.ValueHolder;
@@ -244,7 +246,7 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
     private static void createFolderInfo(FolderCreateItem item) {
         // Default sync folder has user name...
         String name = PathUtils.getSuggestedFolderName(item.getLocalBase());
-        FolderInfo folderInfo = new FolderInfo(name, IdGenerator.makeFolderId());
+        FolderInfo folderInfo = newTopFolder(name);
         item.setFolderInfo(folderInfo);
     }
 
@@ -283,8 +285,9 @@ public class MultiFolderSetupPanel extends PFWizardPanel {
 
         public void keyReleased(KeyEvent e) {
             if (selectedItem != null) {
-                selectedItem.setFolderInfo(new FolderInfo(nameField.getText(),
-                    selectedItem.getFolderInfo().id));
+                selectedItem.setFolderInfo(
+                        FolderInfoFactory.newTopFolder(selectedItem.getFolderInfo().id, nameField.getText())
+                );
             }
         }
     }

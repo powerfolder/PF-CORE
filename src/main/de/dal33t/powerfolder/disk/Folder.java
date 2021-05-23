@@ -233,7 +233,11 @@ public class Folder extends PFComponent {
 
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
-        currentInfo = new FolderInfo(fInfo.getName(), fInfo.id).intern();
+        if (fInfo.isLookupInstance()) {
+            currentInfo = FolderInfoFactory.unmarshallExistingTopFolder(fInfo.id, fInfo.getName(), 0);
+        } else {
+            currentInfo = fInfo;
+        }
 
         // Create listener support
         folderListenerSupport = ListenerSupportFactory
@@ -345,15 +349,15 @@ public class Folder extends PFComponent {
         // Check base dir
         try {
             checkBaseDir(false);
-            logFine("Opened " + toString() + "/" + getId() + " at '"
+            logFine("Opened " + toString() + " at '"
                 + localBase.toAbsolutePath() + '\'');
         } catch (FolderException e) {
             if (currentInfo.isMetaFolder()) {
-                logFine("Unable to open " + toString() + "/" + getId() + " at '"
+                logFine("Unable to open " + toString() + " at '"
                     + localBase.toAbsolutePath()
                     + "'. Local base directory is inaccessable. " + e);
             } else {
-                logWarning("Unable to open " + toString() + "/" + getId() + " at '"
+                logWarning("Unable to open " + toString() + " at '"
                     + localBase.toAbsolutePath()
                     + "'. Local base directory is inaccessable. " + e);
             }
@@ -451,6 +455,8 @@ public class Folder extends PFComponent {
             statistic.calculate0();
         }
 
+        // Write meta-data
+        updateInfo(currentInfo);
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -4814,9 +4820,31 @@ public class Folder extends PFComponent {
     }
 
     void updateInfo(FolderInfo folderInfo) {
+        updateInfo(folderInfo, true);
+    }
+
+    private void updateInfo(FolderInfo folderInfo, boolean storeFolderInfo) {
         Reject.ifNull(folderInfo, "folderInfo");
-        Reject.ifFalse(currentInfo.getId().equals(folderInfo.getId()), "Unable to update meta data. Folder ID mismatch");
-        this.currentInfo = folderInfo.intern();
+        if (currentInfo != null) {
+            Reject.ifFalse(currentInfo.getId().equals(folderInfo.getId()), "Unable to update meta data. Folder ID mismatch");
+            if (folderInfo.getVersion() < currentInfo.getVersion()) {
+                logWarning("New FolderInfo has lower version. current: " + currentInfo + ". new: " + folderInfo, new StackDump());
+            }
+        }
+        if (!folderInfo.isMetaFolder()) {
+            logInfo(this + ": updateInfo to " + folderInfo);
+        }
+        this.currentInfo = folderInfo;
+        if (storeFolderInfo) {
+            FolderInfo onDisk = FolderInfoFactory.readFrom(this);
+            if (onDisk != null
+                    || !onDisk.equals(currentInfo)
+                    || onDisk.getVersion() < currentInfo.getVersion()
+                    || !Util.equals(onDisk.getLocation(), currentInfo.getLocation())
+                    || onDisk.getName().equals(currentInfo.getName())) {
+                FolderInfoFactory.writeFolderInfo(this);
+            }
+        }
     }
 
     /**
@@ -5012,7 +5040,7 @@ public class Folder extends PFComponent {
             return hasRead;
         }
         hasRead = hasFolderPermission(member,
-            FolderPermission.read(getParentFolderInfo()));
+            FolderPermission.read(lookupParentFolderInfo()));
         hasReadCache.put(member, hasRead);
         return hasRead;
     }
@@ -5026,19 +5054,19 @@ public class Folder extends PFComponent {
             return hasWrite;
         }
         hasWrite = hasFolderPermission(member,
-                FolderPermission.readWrite(getParentFolderInfo()));
+                FolderPermission.readWrite(lookupParentFolderInfo()));
         hasWriteCache.put(member, hasWrite);
         return hasWrite;
     }
 
     public boolean hasAdminPermission(Member member) {
         return hasFolderPermission(member,
-            FolderPermission.admin(getParentFolderInfo()));
+            FolderPermission.admin(lookupParentFolderInfo()));
     }
 
     public boolean hasOwnerPermission(Member member) {
         return hasFolderPermission(member,
-            FolderPermission.owner(getParentFolderInfo()));
+            FolderPermission.owner(lookupParentFolderInfo()));
     }
 
     private boolean hasFolderPermission(Member member,
@@ -5048,11 +5076,11 @@ public class Folder extends PFComponent {
             .hasPermission(member.getInfo(), permission);
     }
 
-    private FolderInfo getParentFolderInfo() {
+    private FolderInfo lookupParentFolderInfo() {
         if (!currentInfo.isMetaFolder()) {
             return currentInfo;
         }
-        return currentInfo.getParentFolderInfo();
+        return currentInfo.lookupParentFolderInfo();
     }
 
     // General stuff **********************************************************

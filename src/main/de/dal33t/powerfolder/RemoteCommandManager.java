@@ -24,10 +24,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
@@ -48,6 +45,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 
 /**
  * The remote command processor is responsible for binding on a socket and
@@ -609,11 +608,6 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
         // ID
         String id = config.get(FOLDER_SCRIPT_CONFIG_ID);
-        boolean createInvitationFile = false;
-        if (StringUtils.isEmpty(id)) {
-            id = IdGenerator.makeFolderId();
-            createInvitationFile = true;
-        }
 
         if (ConfigurationEntry.FOLDER_CREATE_AVOID_DUPES
             .getValueBoolean(getController()))
@@ -639,7 +633,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         boolean backupByServer = "true".equals(config
             .get(FOLDER_SCRIPT_CONFIG_BACKUP_BY_SERVER));
 
-        FolderInfo foInfo = new FolderInfo(name, id);
+        FolderInfo foInfo;
+        if (StringUtils.isBlank(id)) {
+            foInfo = newTopFolder(name);
+        } else {
+            foInfo = newTopFolder(id, name);
+        }
 
         String dlScript = config.get(FOLDER_SCRIPT_CONFIG_DL_SCRIPT);
 

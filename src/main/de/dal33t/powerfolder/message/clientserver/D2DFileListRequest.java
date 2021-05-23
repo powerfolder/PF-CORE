@@ -7,10 +7,7 @@ import de.dal33t.powerfolder.d2d.D2DRequestMessage;
 import de.dal33t.powerfolder.d2d.NodeEvent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
-import de.dal33t.powerfolder.light.DirectoryInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.protocol.FileListRequestProto;
 
 import java.util.ArrayList;
@@ -114,7 +111,7 @@ public class D2DFileListRequest extends D2DRequestMessage {
             node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));
             return;
         }
-        FolderInfo folderInfo = new FolderInfo("", this.folderId);
+        FolderInfo folderInfo = FolderInfoFactory.lookupInstance(this.folderId);
         Folder folder = node.getController().getFolderRepository().getFolder(folderInfo);
         if (folder == null) {
             node.sendMessagesAsynchron(new FileListReply(this.requestCode, StatusCode.BAD_REQUEST, null));

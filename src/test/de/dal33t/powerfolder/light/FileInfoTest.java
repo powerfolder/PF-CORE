@@ -61,8 +61,7 @@ public class FileInfoTest extends TestCase {
     }
 
     public void testSerialize() throws IOException, ClassNotFoundException {
-        FolderInfo foInfo = new FolderInfo("Random name of folder "
-            + IdGenerator.makeFolderId(), IdGenerator.makeFolderId());
+        FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Random name of folder " + IdGenerator.makeFolderId());
         MemberInfo mInfo = new MemberInfo("Nickname", IdGenerator.makeId(),
             IdGenerator.makeId());
         AccountInfo aInfo = new AccountInfo("Nickname", IdGenerator.makeId(),

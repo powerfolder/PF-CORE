@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.d2d.*;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.protocol.FolderListProto;
@@ -96,8 +97,7 @@ public class FolderList extends Message implements D2DObject, D2DEvent
             // Clone folderinfo
             String secureId = folderInfo.calculateSecureId(remoteMagicId);
             // Set Id to secure Id
-            FolderInfo secretFolder = new FolderInfo(folderInfo.getName(),
-                secureId);
+            FolderInfo secretFolder = FolderInfoFactory.lookupInstance(secureId, folderInfo.getName());
             // Secret folder, encrypt folder id with magic id
             secretFos.add(secretFolder);
         }

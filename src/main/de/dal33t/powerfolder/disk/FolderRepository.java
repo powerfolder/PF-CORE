@@ -26,9 +26,7 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.*;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.FolderStatisticInfo;
+import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
@@ -65,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.*;
+import static de.dal33t.powerfolder.light.FolderInfoFactory.*;
 
 /**
  * Repository of all known power folders. Local and unjoined.
@@ -605,10 +604,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                         return;
                     }
 
-                    FolderInfo foInfo = new FolderInfo(folderName, folderId)
-                            .intern();
                     FolderSettings folderSettings = FolderSettings.load(
                             getController(), folderEntryId);
+
+                    FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
+                    if (foInfo == null) {
+                        foInfo = lookupInstance(folderId, folderName);
+                    }
 
                     if (folderSettings == null) {
                         logWarning("Unable to load folder settings."
@@ -902,7 +904,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the folder by folder id, or null if folder is not found
      */
     public Folder getFolder(String folderId) {
-        return getFolder(new FolderInfo("", folderId));
+        return getFolder(lookupInstance(folderId));
     }
 
     /**
@@ -919,6 +921,22 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return metaFolder;
             }
         }
+        return null;
+    }
+
+    /**
+     * PFC-3295: For subfolder sharing. Retrieves the {@link Folder} at the given location if available
+     * @param location the location of the subfolder in another folder
+     * @return the {@link Folder} or null if location is not shared as subfolder
+     */
+    public Folder getSubFolder(DirectoryInfo location) {
+        Reject.ifNull(location, "Location");
+        for (Folder folder : folders.values()) {
+            if (location.equals(folder.getInfo().getLocation())) {
+                return folder;
+            }
+        }
+        // None found
         return null;
     }
 
@@ -1246,9 +1264,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.addProblemListener(valveProblemListenerSupport);
 
         // Now create metaFolder and map to the same FolderInfo key.
-        FolderInfo metaFolderInfo = new FolderInfo(
-                Constants.METAFOLDER_ID_PREFIX + folderInfo.getName(),
-                Constants.METAFOLDER_ID_PREFIX + folderInfo.id);
+        FolderInfo metaFolderInfo = folder.getInfo().getMetaFolderInfo();
         Path systemSubdir = folder.getSystemSubDir();
         FolderSettings metaFolderSettings = new FolderSettings(systemSubdir
                 .resolve(Constants.METAFOLDER_SUBDIR),
@@ -2082,20 +2098,19 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (foInfo != null) {
             logInfo(" Folder name: " + foInfo.getLocalizedName());
             logInfo(" Folder ID: " + foInfo.getId());
+            logInfo(" Folder Version: " + foInfo.getVersion());
         }
         logInfo(" renamedOnServer: " + renamedOnServer);
         logInfo(" stillPresent: " + stillPresent);
 
         if (foInfo == null) {
-            foInfo = new FolderInfo(file.getFileName().toString(),
-                    IdGenerator.makeFolderId());
+            foInfo = newTopFolder(file.getFileName().toString());
             createdNew = true;
         } else {
             if (!getController().getSecurityManager().hasPermission(
                     getMySelf().getInfo(), FolderPermission.read(foInfo))) {
                 cleanupMetaInformation(file);
-                foInfo = new FolderInfo(file.getFileName().toString(),
-                        IdGenerator.makeFolderId()).intern();
+                foInfo = newTopFolder(file.getFileName().toString());
                 createdNew = true;
             }
         }
@@ -2145,6 +2160,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         logInfo("handleNewFolder.p2 of " + file);
         logInfo(" Folder name: " + foInfo.getLocalizedName());
         logInfo(" Folder ID: " + foInfo.getId());
+        logInfo(" Folder Version: " + foInfo.getVersion());
         logInfo(" renamedOnServer: " + renamedOnServer);
         logInfo(" stillPresent: " + stillPresent);
         logInfo(" createdNew: " + createdNew);
@@ -2200,9 +2216,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         FolderInfo newFolderInfo = foInfo;
         if (!foInfo.getName().equals(newName)) {
-            newFolderInfo = new FolderInfo(newName, foInfo.getId());
+            newFolderInfo = FolderInfoFactory.rename(foInfo, newName);
         }
-        newFolderInfo = newFolderInfo.intern(true);
 
         Folder folder = folders.get(foInfo);
         if (folder != null) {
@@ -2282,8 +2297,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 boolean isFolderAdmin = getController().getSecurityManager().hasPermission(
                         getMySelf().getInfo(), FolderPermission.admin(foInfo));
                 if (isFolderAdmin && foServ.renameFolder(foInfo, newName)) {
-                    foInfo = new FolderInfo(newName, foInfo.getId());
-                    foInfo.intern(true);
+                    foInfo = FolderInfoFactory.rename(foInfo, newName);
                 } else {
                     logWarning("Could not rename the Folder " + oldName
                             + " on the server to " + foInfo.getName());
@@ -2368,6 +2382,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      * {@code null}, if the file does not point to a Folder.
      */
     private FolderInfo checkSystemSubdirForFolder(Path file) {
+        FolderInfo folderInfo = FolderInfoFactory.readFrom(file);
+        if (folderInfo != null) {
+            return folderInfo;
+        }
 
         Path meta = file.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR).resolve(
                 Folder.FOLDER_STATISTIC);
@@ -2517,7 +2535,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (!metaFolderInfo.isMetaFolder()) {
             return null;
         }
-        return getFolder(metaFolderInfo.getParentFolderInfo());
+        return getFolder(metaFolderInfo.lookupParentFolderInfo());
     }
 
     // Callbacks from ServerClient on login ***********************************
@@ -2558,6 +2576,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (isFine()) {
                     logFine("localFolder: " + localFolder);
                     logFine("remoteFolder: " + foInfo);
+                }
+                if (localFolder.getVersion() > foInfo.getVersion()) {
+                    logWarning(localFolder + ": Not renaming folder. server has older version: " + foInfo);
+                    return;
                 }
                 Path currentDirectory = folder.getLocalBase();
                 String currentDirectoryName = currentDirectory.getFileName().toString();
@@ -2864,7 +2886,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 if (foInfo == null) {
                     // Spawn/Create a new one.
-                    foInfo = new FolderInfo(folderName, a.createInfo());
+                    foInfo = backupFolderOfAccount(folderName, a.createInfo());
                     logInfo("Folder not found on account " + a.getUsername()
                             + ". Created new: " + foInfo);
                 }

@@ -41,9 +41,10 @@ import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
-import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
+
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 
 /**
  * This action is called, when the "share folder" context menu item was clicked.<br />
@@ -151,10 +152,8 @@ class ShareFolderAction extends ContextMenuAction {
         if (folder != null) {
             foInfo = folder.getInfo();
         } else {
-            String id = IdGenerator.makeFolderId();
             String name = PathUtils.getSuggestedFolderName(path);
-
-            foInfo = new FolderInfo(name, id);
+            foInfo = newTopFolder(name);
         }
 
         return foInfo;

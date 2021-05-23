@@ -36,6 +36,7 @@ import java.nio.file.Path;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import jwf.WizardContext;
 import jwf.WizardPanel;
 
@@ -147,10 +148,8 @@ public class DefaultFolderWizardHelper extends PFUIComponent {
             FolderInfo foInfo;
             if (accountFolder == null) {
                 // Default sync folder has user name...
-                String name = defaultSynchronizedFolder.getFileName()
-                    .toString();
-                foInfo = new FolderInfo(name, IdGenerator.makeFolderId())
-                    .intern();
+                String name = defaultSynchronizedFolder.getFileName().toString();
+                foInfo = FolderInfoFactory.newTopFolder(name);
             } else {
                 // Take from account.
                 foInfo = accountFolder;

@@ -39,6 +39,7 @@ import de.dal33t.powerfolder.event.TransferManagerAdapter;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.event.ExpansionEvent;
 import de.dal33t.powerfolder.ui.event.ExpansionListener;
@@ -55,6 +56,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 
 /**
  * This class creates a list combining folder repository and server client
@@ -196,8 +199,7 @@ public class FoldersList extends PFUIComponent {
             for (String name : UserDirectories.getUserDirectoriesFiltered(
                 getController(), showAppData).keySet())
             {
-                FolderInfo folderInfo = new FolderInfo(name,
-                    IdGenerator.makeFolderId());
+                FolderInfo folderInfo = newTopFolder(name);
                 ExpandableFolderModel bean = new ExpandableFolderModel(
                     Type.Typical, folderInfo, null, false);
 

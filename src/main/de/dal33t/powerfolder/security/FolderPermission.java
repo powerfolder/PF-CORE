@@ -52,7 +52,7 @@ public abstract class FolderPermission
     
     protected FolderPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folderinfo is null");
-        folder = foInfo.intern();
+        folder = foInfo;
     }
 
     public abstract String getName();

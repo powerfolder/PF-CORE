@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.security;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FolderInfo;
 
@@ -38,21 +39,19 @@ public class PermissionTest extends TestCase {
     }
 
     public void testFolderAdminPermission() {
-        Permission fap = new FolderAdminPermission(new FolderInfo("myFolder",
-            "4711"));
+        Permission fap = new FolderAdminPermission(FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
         assertEquals("FolderAdminPermission IDs not equal", fap.getId(),
             "4711_FP_FolderAdminPermission");
     }
 
     public void testFolderOwnerPermission() {
-        FolderOwnerPermission fap = new FolderOwnerPermission(new FolderInfo(
-            "myFolder", "4711"));
+        FolderOwnerPermission fap = new FolderOwnerPermission(FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
         assertEquals("FolderOwnerPermission IDs not equal", fap.getId(),
             "4711_FP_FolderOwnerPermission");
     }
 
     public void testFolderReadPermission() {
-        FolderReadPermission fap = new FolderReadPermission(new FolderInfo(
+        FolderReadPermission fap = new FolderReadPermission(FolderInfoFactory.newTopFolderForTest(
             "myFolder", "4711"));
         assertEquals("FolderReadPermission IDs not equal", fap.getId(),
             "4711_FP_FolderReadPermission");
@@ -60,7 +59,7 @@ public class PermissionTest extends TestCase {
 
     public void testFolderReadWritePermission() {
         FolderReadWritePermission fap = new FolderReadWritePermission(
-            new FolderInfo("myFolder", "4711"));
+            FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
         assertEquals("FolderReadWritePermission IDs not equal", fap.getId(),
             "4711_FP_FolderReadWritePermission");
     }
@@ -75,7 +74,7 @@ public class PermissionTest extends TestCase {
         Account acc = new Account();
         acc.addGroup(grp);
         acc.setOrganizationOID(org.getOID());
-        FolderInfo foInfo = new FolderInfo("testFolder", acc.createInfo());
+        FolderInfo foInfo = FolderInfoFactory.backupFolderOfAccountForTest("testFolder", acc.createInfo());
         Permission[] allPermissions = new Permission[] {
             new FolderAdminPermission(foInfo),
             new FolderReadPermission(foInfo),
@@ -104,6 +103,6 @@ public class PermissionTest extends TestCase {
         account.setUsername("ACCOUNT");
         account.grant(AdminPermission.INSTANCE);
         account.grant(AllFoldersAdminPermission.INSTANCE);
-        assertTrue(account.hasAdminPermission(new FolderInfo("xx", "21")));
+        assertTrue(account.hasAdminPermission(FolderInfoFactory.newTopFolderForTest("xx", "21")));
     }
 }

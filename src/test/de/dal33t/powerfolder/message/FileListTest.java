@@ -229,8 +229,6 @@ public class FileListTest extends TestCase {
     }
 
     private static FolderInfo createRandomFolderInfo() {
-        FolderInfo foInfo = new FolderInfo("TestFolder / " + UUID.randomUUID(),
-            IdGenerator.makeFolderId());
-        return foInfo;
+        return FolderInfoFactory.newTopFolderForTest("TestFolder / " + UUID.randomUUID());
     }
 }

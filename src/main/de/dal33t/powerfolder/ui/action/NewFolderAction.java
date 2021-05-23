@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.ui.action;
 
+import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
 
@@ -35,6 +36,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.wizard.FolderCreateItem;
@@ -127,8 +129,7 @@ public class NewFolderAction extends BaseAction {
 
                         // FolderInfo
                         String name = PathUtils.getSuggestedFolderName(file);
-                        String folderId = IdGenerator.makeFolderId();
-                        FolderInfo fi = new FolderInfo(name, folderId);
+                        FolderInfo fi = newTopFolder(name);
 
                         FolderCreateItem item = new FolderCreateItem(file);
                         item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.message;
 
 import java.nio.file.Path;
 
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -34,8 +35,7 @@ public class FolderListTest extends TestCase {
         list.folders = new FolderInfo[10];
 
         for (int i = 0; i < list.folders.length; i++) {
-            FolderInfo foInfo = new FolderInfo("Na" + IdGenerator.makeId(),
-                IdGenerator.makeFolderId());
+            FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Na" + IdGenerator.makeId());
             list.folders[i] = foInfo;
         }
 

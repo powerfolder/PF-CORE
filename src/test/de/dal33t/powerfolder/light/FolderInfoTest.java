@@ -7,8 +7,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 public class FolderInfoTest extends TestCase {
 
     public void testGetMetaInfo() {
-        FolderInfo foInfo = new FolderInfo("Name of folder",
-            IdGenerator.makeId());
+        FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Name of folder");
         assertFalse(foInfo.toString(), foInfo.isMetaFolder());
         assertFalse(foInfo.id,
             foInfo.id.contains(Constants.METAFOLDER_ID_PREFIX));
@@ -22,12 +21,12 @@ public class FolderInfoTest extends TestCase {
         assertTrue(metaFolder.getName(),
             metaFolder.getName().contains(Constants.METAFOLDER_ID_PREFIX));
 
-        assertEquals(foInfo, metaFolder.getParentFolderInfo());
+        assertEquals(foInfo, metaFolder.lookupParentFolderInfo());
         assertEquals(metaFolder, foInfo.getMetaFolderInfo());
 
         // Fallback stuff if something really is wrong in the code:
         assertEquals(metaFolder, metaFolder.getMetaFolderInfo());
-        assertEquals(foInfo, foInfo.getParentFolderInfo());
+        assertEquals(foInfo, foInfo.lookupParentFolderInfo());
         assertFalse(metaFolder.equals(foInfo));
     }
 

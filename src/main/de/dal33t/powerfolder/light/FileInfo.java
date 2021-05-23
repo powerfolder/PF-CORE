@@ -1024,7 +1024,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         ExternalizableUtil.writeDate(out, lastModifiedDate);
         out.writeInt(version);
         out.writeBoolean(deleted);
-        ExternalizableUtil.writeFolderInfo(out, folderInfo);
+        ExternalizableUtil.writeFolderInfo(out, folderInfo, false);
 
         if (extUID == extVersion100UID) {
             return;
@@ -1101,7 +1101,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             this.deleted = fileInfo.getDeleted();
             this.fileName = fileInfo.getFileName();
             // Todo: Hacky
-            this.folderInfo = new FolderInfo("", fileInfo.getFolderId());
+            this.folderInfo = FolderInfoFactory.lookupInstance(fileInfo.getFolderId());
             this.lastModifiedDate = new Date(fileInfo.getLastModifiedDate());
             // Todo: Hacky
             this.modifiedBy = new MemberInfo("", fileInfo.getModifiedByNodeId(), "");

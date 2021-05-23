@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import junit.framework.TestCase;
@@ -148,15 +149,13 @@ public abstract class ControllerTestCase extends TestCase {
      */
     protected void setupTestFolder(SyncProfile syncprofile)
     {
-        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-            .toString());
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         folder = joinFolder(testFolder, TESTFOLDER_BASEDIR, syncprofile);
     }
 
     protected void setupEncryptedTestFolder(SyncProfile syncprofile)
     {
-        FolderInfo testFolder = new FolderInfo("testFolder", UUID.randomUUID()
-                .toString());
+        FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         folder = joinFolder(testFolder, ENCRYPTED_TESTFOLDER_BASEDIR, syncprofile);
     }
 
