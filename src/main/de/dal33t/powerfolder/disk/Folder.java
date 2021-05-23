@@ -4831,10 +4831,19 @@ public class Folder extends PFComponent {
                 logWarning("New FolderInfo has lower version. current: " + currentInfo + ". new: " + folderInfo, new StackDump());
             }
         }
-        logInfo(this + ": updateInfo: " + folderInfo);
+        if (!folderInfo.isMetaFolder()) {
+            logInfo(this + ": updateInfo to " + folderInfo);
+        }
         this.currentInfo = folderInfo;
         if (storeFolderInfo) {
-            FolderInfoFactory.writeFolderInfo(this);
+            FolderInfo onDisk = FolderInfoFactory.readFrom(this);
+            if (onDisk != null
+                    || !onDisk.equals(currentInfo)
+                    || onDisk.getVersion() < currentInfo.getVersion()
+                    || !Util.equals(onDisk.getLocation(), currentInfo.getLocation())
+                    || onDisk.getName().equals(currentInfo.getName())) {
+                FolderInfoFactory.writeFolderInfo(this);
+            }
         }
     }
 

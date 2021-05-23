@@ -312,7 +312,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         boolean requiresNewProtocol = version > 0 || location != null;
         if (includeVersionAndParent) {
             includeVersionAndParent = requiresNewProtocol;
-        } else if (requiresNewProtocol) {
+        } else if (requiresNewProtocol && !isMetaFolder()) {
             LOG.log(Level.WARNING,
                     this + ": writeExternal would require new protocol, using backward compatibility.");
         }
