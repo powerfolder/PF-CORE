@@ -2578,7 +2578,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     logFine("remoteFolder: " + foInfo);
                 }
                 if (localFolder.getVersion() > foInfo.getVersion()) {
-                    logWarning(localFolder + ": Not renaming folder. server has lower version: " + foInfo);
+                    logWarning(localFolder + ": Not renaming folder. server has older version: " + foInfo);
                     return;
                 }
                 Path currentDirectory = folder.getLocalBase();
