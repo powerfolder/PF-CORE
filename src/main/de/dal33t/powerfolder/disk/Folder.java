@@ -4837,11 +4837,11 @@ public class Folder extends PFComponent {
         this.currentInfo = folderInfo;
         if (storeFolderInfo) {
             FolderInfo onDisk = FolderInfoFactory.readFrom(this);
-            if (onDisk != null
+            if (onDisk == null
                     || !onDisk.equals(currentInfo)
                     || onDisk.getVersion() < currentInfo.getVersion()
                     || !Util.equals(onDisk.getLocation(), currentInfo.getLocation())
-                    || onDisk.getName().equals(currentInfo.getName())) {
+                    || !onDisk.getName().equals(currentInfo.getName())) {
                 FolderInfoFactory.writeFolderInfo(this);
             }
         }
