@@ -2210,28 +2210,53 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param newName the new name to rename to.
      * @return the new internalized FolderInfo with the new name.
      */
-    public FolderInfo renameFolder(FolderInfo foInfo, String newName) {
+    public FolderInfo renameFolder(FolderInfo foInfo, String newName, boolean moveData) {
         Reject.ifNull(foInfo, "folder info is null");
         Reject.ifBlank(newName, "New name is blank");
 
-        FolderInfo newFolderInfo = foInfo;
-        if (!foInfo.getName().equals(newName)) {
-            newFolderInfo = FolderInfoFactory.rename(foInfo, newName);
+        if (foInfo.getName().equals(newName)) {
+            return foInfo;
         }
+        FolderInfo newFolderInfo = FolderInfoFactory.rename(foInfo, newName);
+        renameFolder(newFolderInfo, moveData);
+        return newFolderInfo;
+    }
 
-        Folder folder = folders.get(foInfo);
-        if (folder != null) {
-            folder.updateInfo(newFolderInfo);
-            folders.remove(foInfo);
-            folders.put(newFolderInfo, folder);
+    /**
+     * PFC-3136
+     *
+     * @param newFolderInfo  the new folder info
+     * @param moveData if to move the data on disk
+     */
+    public void renameFolder(FolderInfo newFolderInfo, boolean moveData) {
+        Reject.ifNull(newFolderInfo, "folder info is null");
+
+        Folder folder = folders.get(newFolderInfo);
+        if (folder == null) {
+            return;
         }
-        Folder metaFolder = getMetaFolderForParent(foInfo);
+        folder.updateInfo(newFolderInfo);
+        folders.remove(newFolderInfo);
+        folders.put(newFolderInfo, folder);
+        Folder metaFolder = getMetaFolderForParent(newFolderInfo);
         if (metaFolder != null) {
             metaFolder.updateInfo(newFolderInfo.getMetaFolderInfo());
-            metaFolders.remove(foInfo);
+            metaFolders.remove(newFolderInfo);
             metaFolders.put(newFolderInfo, metaFolder);
         }
-        return newFolderInfo;
+
+        if (folder.getName().equals(newFolderInfo.getName())) {
+            return;
+        }
+        if (moveData) {
+            Path newDirectory = folder.getLocalBase().getParent()
+                    .resolve(PathUtils
+                            .removeInvalidFilenameChars(newFolderInfo.getLocalizedName()));
+            folder = moveLocalFolder(folder, newDirectory);
+            if (folder == null) {
+                logWarning("Failed to move folder " + newFolderInfo + " to new directory " + newDirectory);
+            }
+        }
     }
 
     /**
@@ -2285,7 +2310,7 @@ public class FolderRepository extends PFComponent implements Runnable {
              * Renaming the folder first prevents that the client which
              * renamed the folder changes it via the server's update.
              */
-            logInfo("Renaming Folder '" + oldName + "' to '" + newName + "'");
+            logInfo("Renaming " + foInfo + " to '" + newName + "'");
 
             if (folder != null && folder.checkIfDeviceDisconnected()) {
                 removeFolder(folder, false, false, true);
@@ -2594,16 +2619,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 logInfo("Renaming Folder " + localFolder.getName() + " to "
                         + foInfo.getName());
-                foInfo = renameFolder(localFolder, foInfo.getName());
-
-                Path newDirectory = folder.getLocalBase().getParent()
-                        .resolve(PathUtils
-                                .removeInvalidFilenameChars(foInfo.getLocalizedName()));
-                folder = moveLocalFolder(folder, newDirectory);
-                if (folder == null) {
-                    logWarning("Failed to move folder " + foInfo.getName() + "/" + foInfo.getId()
-                            + " to new directory " + newDirectory);
-                }
+                renameFolder(foInfo, true);
             }
 
             if (isFine()) {
