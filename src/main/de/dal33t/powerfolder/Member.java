@@ -2203,6 +2203,17 @@ public class Member extends PFComponent implements Comparable<Member> {
                     if (isFiner()) {
                         logFiner("Joined meta folder: " + metaFolder);
                     }
+                    boolean nameDiffers = !folderInfo.getName().equals(folder.getName());
+                    if (folderInfo.getVersion() > folder.getInfo().getVersion()) {
+                        if (folder.hasWritePermission(fromPeer.getMember())) {
+                            logWarning("About to rename. Local: " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                            // TODO: In background thread?
+                            boolean moveData = !getMySelf().isServer();
+                            getController().getFolderRepository().renameFolder(folderInfo, moveData);
+                        }
+                    } else if (nameDiffers) {
+                        logWarning("Not renaming, although name differs. Local: " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                    }
                 }
             } else {
                 String myMagicId = fromPeer.getMyMagicId();

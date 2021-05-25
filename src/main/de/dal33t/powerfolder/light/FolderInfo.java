@@ -301,7 +301,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (in.readBoolean()) {
             location = (DirectoryInfo) FileInfoFactory.readExt(in);
         }
-        LOG.log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
+        // LOG.log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -313,8 +313,8 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (includeVersionAndParent) {
             includeVersionAndParent = requiresNewProtocol;
         } else if (requiresNewProtocol && !isMetaFolder()) {
-            LOG.log(Level.WARNING,
-                    this + ": writeExternal would require new protocol, using backward compatibility.");
+            //LOG.log(Level.WARNING,
+             //       this + ": writeExternal would require new protocol, using backward compatibility.", new StackDump());
         }
         if (includeVersionAndParent) {
             out.writeLong(extVersionUID);
@@ -327,7 +327,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (!includeVersionAndParent) {
             return;
         }
-        LOG.log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
+        // LOG.log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
         out.writeInt(version);
         if (location != null) {
             out.writeBoolean(true);
