@@ -2231,6 +2231,8 @@ public class FolderRepository extends PFComponent implements Runnable {
     public void renameFolder(FolderInfo newFolderInfo, boolean moveData) {
         Reject.ifNull(newFolderInfo, "folder info is null");
 
+        newFolderInfo.intern(true);
+
         Folder folder = folders.get(newFolderInfo);
         if (folder == null) {
             return;
@@ -2255,6 +2257,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             folder = moveLocalFolder(folder, newDirectory);
             if (folder == null) {
                 logWarning("Failed to move folder " + newFolderInfo + " to new directory " + newDirectory);
+            }
+        } else {
+            for (Member member: folder.getConnectedMembers()) {
+                member.synchronizeFolderMemberships();
             }
         }
     }
