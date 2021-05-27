@@ -46,12 +46,6 @@ public class FolderInfoComparator extends Loggable implements
         if (o2.getName() == null) {
             return 1;
         }
-        int c = o1.getName().toLowerCase()
-            .compareTo(o2.getName().toLowerCase());
-        if (c != 0) {
-            return c;
-        }
-        // PFS-2142:
         return o1.getId().compareTo(o2.getId());
     }
 }

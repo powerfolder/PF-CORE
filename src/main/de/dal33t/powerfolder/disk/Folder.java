@@ -253,23 +253,21 @@ public class Folder extends PFComponent {
         problems = new CopyOnWriteArrayList<>();
 
         Path localBaseDir = folderSettings.getLocalBaseDir();
+        // PFS-1994: Start: Encrypted storage.
+        boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
+                || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBaseDir);
 
         if (localBaseDir.isAbsolute()) {
-
             // PFS-2695: Fallback if storage location isn't available:
-            if (Files.notExists(localBaseDir)) {
+            if (Files.notExists(localBaseDir) && isEncrypted) {
                 logWarning("Could NOT find storage location for folder %s with " +
-                    "localbase %s. Auto creating storage location!", fInfo.getName(), localBaseDir.toString());
+                        "localbase %s. Auto creating storage location!", fInfo.getName(), localBaseDir.toString());
                 try {
                     Files.createDirectories(localBaseDir);
                 } catch (IOException ioe) {
                     // Ignore.
                 }
             }
-
-            // PFS-1994: Start: Encrypted storage.
-            boolean isEncrypted = EncryptedFileSystemUtils.isCryptoInstance(localBaseDir)
-                    || EncryptedFileSystemUtils.endsWithEncryptionSuffix(localBaseDir);
 
             if (isEncrypted && !fInfo.isMetaFolder()) {
                 try {
@@ -306,11 +304,11 @@ public class Folder extends PFComponent {
                 + ". Chosen relative path: " + localBase);
         }
 
-        if (Files.notExists(localBase)) {
+        if (Files.notExists(localBase) && isEncrypted) {
             logWarning("Could NOT find storage location for folder %s with " +
                 "localbase %s. Auto creating storage location!", fInfo.getName(), localBase.toString());
             try {
-                Files.createDirectories(localBase);
+                 Files.createDirectories(localBase);
             } catch (IOException ioe) {
                 // Ignore.
             }
@@ -4819,12 +4817,9 @@ public class Folder extends PFComponent {
         return currentInfo;
     }
 
-    void updateInfo(FolderInfo folderInfo) {
-        updateInfo(folderInfo, true);
-    }
-
-    private void updateInfo(FolderInfo folderInfo, boolean storeFolderInfo) {
+    public void updateInfo(FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "folderInfo");
+        Reject.ifFalse(folderInfo.equals(currentInfo), "mismatch");
         if (currentInfo != null) {
             Reject.ifFalse(currentInfo.getId().equals(folderInfo.getId()), "Unable to update meta data. Folder ID mismatch");
             if (folderInfo.getVersion() < currentInfo.getVersion()) {
@@ -4835,15 +4830,13 @@ public class Folder extends PFComponent {
             logInfo(this + ": updateInfo to " + folderInfo);
         }
         this.currentInfo = folderInfo;
-        if (storeFolderInfo) {
-            FolderInfo onDisk = FolderInfoFactory.readFrom(this);
-            if (onDisk == null
-                    || !onDisk.equals(currentInfo)
-                    || onDisk.getVersion() < currentInfo.getVersion()
-                    || !Util.equals(onDisk.getLocation(), currentInfo.getLocation())
-                    || !onDisk.getName().equals(currentInfo.getName())) {
-                FolderInfoFactory.writeFolderInfo(this);
-            }
+        FolderInfo onDisk = FolderInfoFactory.readFrom(this);
+        if (onDisk == null
+                || !onDisk.equals(currentInfo)
+                || onDisk.getVersion() < currentInfo.getVersion()
+                || !Util.equals(onDisk.getLocation(), currentInfo.getLocation())
+                || !onDisk.getName().equals(currentInfo.getName())) {
+            FolderInfoFactory.writeFolderInfo(this);
         }
     }
 

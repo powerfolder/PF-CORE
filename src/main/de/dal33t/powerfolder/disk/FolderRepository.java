@@ -2247,9 +2247,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             metaFolders.put(newFolderInfo, metaFolder);
         }
 
-        if (folder.getName().equals(newFolderInfo.getName())) {
-            return;
-        }
+        // Only move if path is different
+        moveData &= !PathUtils.isSameName(folder.getLocalBase().getFileName().toString(), newFolderInfo.getLocalizedName());
         if (moveData) {
             Path newDirectory = folder.getLocalBase().getParent()
                     .resolve(PathUtils
@@ -2593,41 +2592,6 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         try {
             scanBasedirLock.lock();
-            for (FolderInfo foInfo : a.getFolders()) {
-                Folder folder = folders.get(foInfo);
-                if (folder == null) {
-                    // Not synced locally
-                    continue;
-                }
-                FolderInfo localFolder = folder.getInfo();
-                if (PathUtils.isSameName(localFolder.getLocalizedName(), foInfo.getLocalizedName())) {
-                    // Same name, not renamed.
-                    continue;
-                }
-                if (isFine()) {
-                    logFine("localFolder: " + localFolder);
-                    logFine("remoteFolder: " + foInfo);
-                }
-                if (localFolder.getVersion() > foInfo.getVersion()) {
-                    logWarning(localFolder + ": Not renaming folder. server has older version: " + foInfo);
-                    return;
-                }
-                Path currentDirectory = folder.getLocalBase();
-                String currentDirectoryName = currentDirectory.getFileName().toString();
-                if (!PathUtils.isSameName(currentDirectoryName, localFolder.getLocalizedName())) {
-                    logWarning("Not renaming Folder " + localFolder.getName()
-                            + " to " + foInfo.getName()
-                            + ". Current local directory name (" + currentDirectoryName
-                            + ") does not match folder name ("
-                            + localFolder.getLocalizedName() + ")");
-                    continue;
-                }
-
-                logInfo("Renaming Folder " + localFolder.getName() + " to "
-                        + foInfo.getName());
-                renameFolder(foInfo, true);
-            }
-
             if (isFine()) {
                 logFine("Syncing folder setup with account permissions("
                         + a.getFolders().size() + "): " + a.getUsername());
