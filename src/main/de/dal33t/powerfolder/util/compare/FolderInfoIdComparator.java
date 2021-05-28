@@ -30,13 +30,13 @@ import de.dal33t.powerfolder.util.logging.Loggable;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc </a>
  * @version $Revision: 1.6 $
  */
-public class FolderInfoComparator extends Loggable implements
+public class FolderInfoIdComparator extends Loggable implements
     Comparator<FolderInfo>
 {
 
-    public static final FolderInfoComparator INSTANCE = new FolderInfoComparator();
+    public static final FolderInfoIdComparator INSTANCE = new FolderInfoIdComparator();
 
-    private FolderInfoComparator() {
+    private FolderInfoIdComparator() {
     }
 
     public int compare(FolderInfo o1, FolderInfo o2) {
