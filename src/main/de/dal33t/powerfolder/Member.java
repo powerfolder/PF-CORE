@@ -2211,7 +2211,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                             if (getMySelf().isServer()) {
                                 getController().getFolderRepository().renameFolder(folderInfo, false, null);
                             } else {
-                                new FolderRenameTask(folder, folderInfo, fromPeer.getMember()).scheduleTask(getController());
+                                new FolderRenameTask(folderInfo, fromPeer.getMember()).scheduleTask(getController());
                             }
                         }
                     } else if (nameDiffers && folderInfo.getVersion() == folder.getInfo().getVersion()) {

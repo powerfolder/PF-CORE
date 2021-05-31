@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 
 import java.util.logging.Logger;
@@ -32,18 +33,15 @@ public class FolderRenameTask extends ServerRemoteCallTask {
     private static final Logger LOG = Logger.getLogger(FolderRenameTask.class.getName());
     private static final long serialVersionUID = 100L;
 
-    private Folder folder;
     private FolderInfo newFolderInfo;
-    private Member initiator;
+    private MemberInfo initiator;
 
-    public FolderRenameTask(Folder folder, FolderInfo newFolderInfo, Member initiator) {
+    public FolderRenameTask(FolderInfo newFolderInfo, Member initiator) {
         super(30);
-        Reject.ifNull(folder, "Folder");
         Reject.ifNull(newFolderInfo, "newFolderInfo");
         Reject.ifNull(initiator, "initiator");
-        this.folder = folder;
         this.newFolderInfo = newFolderInfo;
-        this.initiator = initiator;
+        this.initiator = initiator.getInfo();
     }
 
     @Override
@@ -52,6 +50,11 @@ public class FolderRenameTask extends ServerRemoteCallTask {
     }
 
     private boolean rename(ServerClient client) {
+        Folder folder = newFolderInfo.getFolder(getController());
+        if (folder == null) {
+            LOG.warning(newFolderInfo + ": not found for rename.");
+            return true;
+        }
         if (getController().getMySelf().isServer()) {
             LOG.warning(folder + ": Not renaming to new folder name. Rename on server is done differently");
             return true;
@@ -60,7 +63,7 @@ public class FolderRenameTask extends ServerRemoteCallTask {
             LOG.warning(folder + ": Not renaming to new folder name. Remote version lower: " + newFolderInfo);
             return true;
         }
-        if (!folder.hasAdminPermission(initiator)) {
+        if (!folder.hasAdminPermission(initiator.getNode(getController(), true))) {
             LOG.warning(folder + ": Initiator has no folder admin permission to rename to: " + newFolderInfo);
             return true;
         }
