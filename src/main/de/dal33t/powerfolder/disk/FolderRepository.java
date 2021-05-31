@@ -2253,7 +2253,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             Path newDirectory = folder.getLocalBase().getParent()
                     .resolve(PathUtils
                             .removeInvalidFilenameChars(newFolderInfo.getLocalizedName()));
-            folder = moveLocalFolder(folder, newDirectory);
+            folder = moveLocalFolder(folder, newDirectory, true);
             if (folder == null) {
                 logWarning("Failed to move folder " + newFolderInfo + " to new directory " + newDirectory);
             }
@@ -2637,6 +2637,10 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public Folder moveLocalFolder(Folder folder, Path targetPath) {
+        return moveLocalFolder(folder, targetPath, false);
+    }
+
+    public Folder moveLocalFolder(Folder folder, Path targetPath, boolean atomic) {
 
         boolean sourceEncrypted = EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase());
         boolean targetEncrypted = targetPath.getFileName().toString().endsWith(Constants.FOLDER_ENCRYPTION_SUFFIX);
@@ -2705,57 +2709,65 @@ public class FolderRepository extends PFComponent implements Runnable {
                     PathUtils.recursiveDelete(targetPath);
                 }
 
-                PathUtils.recursiveMoveCopyFallbackVisitor(sourceDirectory, targetPath);
+                if (atomic) {
+                    Files.move(sourceDirectory, targetPath);
+                } else {
+                    PathUtils.recursiveMoveCopyFallbackVisitor(sourceDirectory, targetPath);
+                }
 
                 fs = fs.changeBaseDir(targetPath);
                 moved = true;
             } catch (IOException e) {
-                if (Files.exists(targetPath) && PathUtils.isEmptyDir(targetPath)) {
-                    // Delete empty target target path. Might have been created through resolveTargetDirectory
-                    try {
-                        PathUtils.recursiveDelete(targetPath);
-                    } catch (IOException ex) {
-                        logWarning("Unable to cleanup empty target path while moving folder " + folder.getName() + " to " + targetPath + ": " + e);
-                    }
-                }
-                if (Files.notExists(targetPath)) {
-                    try {
-                        PathUtils.recursiveCopyVisitor(sourceDirectory, targetPath);
-                        fs = fs.changeBaseDir(targetPath);
-                        moved = true;
-                        deleteOriginalDirectory = true;
-                    } catch (IOException ex) {
-                        logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex + " and " + e);
-                        deleteOriginalDirectory = false;
-                    }
-                }
-
-                try {
-                    Long[] sizes = PathUtils.calculateDirectorySizeAndCount(targetPath);
-                    long targetSizeBytes = 0;
-                    long targetNFiles = 0;
-                    if (sizes.length >= 2) {
-                        targetSizeBytes = sizes[0];
-                        targetNFiles = sizes[1];
-                    }
-                    sizes = PathUtils.calculateDirectorySizeAndCount(sourceDirectory);
-                    long sourceSizeBytes = 0;
-                    long sourceNFiles = 0;
-                    if (sizes.length >= 2) {
-                        sourceSizeBytes = sizes[0];
-                        sourceNFiles = sizes[1];
-                    }
-                    if (targetNFiles > sourceNFiles && targetSizeBytes > sourceSizeBytes) {
-                        if (sourceNFiles > 0 || sourceSizeBytes > 0) {
-                            logSevere("Possible incomplete folder move from " + sourceDirectory + " to " + targetPath +
-                                    ". Files in source: " + sourceNFiles + " (" + Format.formatBytesShort(sourceSizeBytes) + "), " +
-                                    "target: " + targetNFiles + " (" + Format.formatBytesShort(targetSizeBytes) + "). " +
-                                    "Using target path: " + targetPath);
+                if (!atomic) {
+                    // Use fallback copy + delete
+                    if (Files.exists(targetPath) && PathUtils.isEmptyDir(targetPath)) {
+                        // Delete empty target target path. Might have been created through resolveTargetDirectory
+                        try {
+                            PathUtils.recursiveDelete(targetPath);
+                        } catch (IOException ex) {
+                            logWarning("Unable to cleanup empty target path while moving folder " + folder.getName() + " to " + targetPath + ": " + e);
                         }
-                        fs = fs.changeBaseDir(targetPath);
                     }
-                } catch (RuntimeException rte) {
-                    logSevere("Possible incomplete folder move: Error on folder " + folder.getName() + " from " + sourceDirectory + " to " + targetPath + ": " + rte, rte);
+                    if (Files.notExists(targetPath)) {
+                        try {
+                            PathUtils.recursiveCopyVisitor(sourceDirectory, targetPath);
+                            fs = fs.changeBaseDir(targetPath);
+                            moved = true;
+                            deleteOriginalDirectory = true;
+                        } catch (IOException ex) {
+                            logWarning("Unable to move/copy folder " + folder.getName() + " to " + targetPath + ". @" + ex + " and " + e);
+                            deleteOriginalDirectory = false;
+                        }
+                    }
+
+                    try {
+                        Long[] sizes = PathUtils.calculateDirectorySizeAndCount(targetPath);
+                        long targetSizeBytes = 0;
+                        long targetNFiles = 0;
+                        if (sizes.length >= 2) {
+                            targetSizeBytes = sizes[0];
+                            targetNFiles = sizes[1];
+                        }
+                        sizes = PathUtils.calculateDirectorySizeAndCount(sourceDirectory);
+                        long sourceSizeBytes = 0;
+                        long sourceNFiles = 0;
+                        if (sizes.length >= 2) {
+                            sourceSizeBytes = sizes[0];
+                            sourceNFiles = sizes[1];
+                        }
+                        if (targetNFiles > sourceNFiles && targetSizeBytes > sourceSizeBytes) {
+                            if (sourceNFiles > 0 || sourceSizeBytes > 0) {
+                                logSevere("Possible incomplete folder move from " + sourceDirectory + " to " + targetPath +
+                                        ". Files in source: " + sourceNFiles + " (" + Format.formatBytesShort(sourceSizeBytes) + "), " +
+                                        "target: " + targetNFiles + " (" + Format.formatBytesShort(targetSizeBytes) + "). " +
+                                        "Using target path: " + targetPath);
+                            }
+                            fs = fs.changeBaseDir(targetPath);
+                            moved = true;
+                        }
+                    } catch (RuntimeException rte) {
+                        logSevere("Possible incomplete folder move: Error on folder " + folder.getName() + " from " + sourceDirectory + " to " + targetPath + ": " + rte, rte);
+                    }
                 }
             }
 
@@ -2764,7 +2776,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             folder = createFolder(folder.getInfo().intern(), fs, true, false);
             PathUtils.setAttributesOnWindows(folder.getLocalBase(), null, true);
             PathUtils.setAttributesOnWindows(folder.getSystemSubDir(), true, true);
-            fireFolderMoved(folder, oldFolder);
+
+            if (moved) {
+                fireFolderMoved(folder, oldFolder);
+            }
 
             // Restore patterns
             for (String pattern : patterns) {
