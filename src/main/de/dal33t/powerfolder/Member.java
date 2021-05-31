@@ -2205,13 +2205,14 @@ public class Member extends PFComponent implements Comparable<Member> {
                     }
                     boolean nameDiffers = !folderInfo.getName().equals(folder.getName());
                     if (folderInfo.getVersion() > folder.getInfo().getVersion()) {
-                        if (folder.hasWritePermission(fromPeer.getMember())) {
+                        if (folder.hasAdminPermission(fromPeer.getMember())) {
                             logInfo("Renaming local " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
                             boolean moveData = !getMySelf().isServer();
                             getController().getFolderRepository().renameFolder(folderInfo, moveData);
                         }
-                    } else if (nameDiffers) {
-                        logWarning("Not renaming, although name differs. Local: " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                    } else if (nameDiffers && folderInfo.getVersion() == folder.getInfo().getVersion()) {
+                        logWarning("Possible renaming conflict detected. Name differs but same version. Local: "
+                                + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
                     }
                 }
             } else {
