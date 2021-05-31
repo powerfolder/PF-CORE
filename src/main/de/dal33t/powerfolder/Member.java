@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.InvalidIdentityException;
 import de.dal33t.powerfolder.net.PlainSocketConnectionHandler;
+import de.dal33t.powerfolder.task.FolderRenameTask;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
@@ -2207,8 +2208,11 @@ public class Member extends PFComponent implements Comparable<Member> {
                     if (folderInfo.getVersion() > folder.getInfo().getVersion()) {
                         if (folder.hasAdminPermission(fromPeer.getMember())) {
                             logInfo("Renaming local " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
-                            boolean moveData = !getMySelf().isServer();
-                            getController().getFolderRepository().renameFolder(folderInfo, moveData);
+                            if (getMySelf().isServer()) {
+                                getController().getFolderRepository().renameFolder(folderInfo, false, null);
+                            } else {
+                                new FolderRenameTask(folder, folderInfo, fromPeer.getMember()).scheduleTask(getController());
+                            }
                         }
                     } else if (nameDiffers && folderInfo.getVersion() == folder.getInfo().getVersion()) {
                         logWarning("Possible renaming conflict detected. Name differs but same version. Local: "

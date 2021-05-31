@@ -2204,13 +2204,13 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * PFS-2438
+     * PFS-2438 / PFC-3136
      *
      * @param foInfo  the new or old folder info
      * @param newName the new name to rename to.
      * @return the new internalized FolderInfo with the new name.
      */
-    public FolderInfo renameFolder(FolderInfo foInfo, String newName, boolean moveData) {
+    public FolderInfo renameFolderMetaData(FolderInfo foInfo, String newName) {
         Reject.ifNull(foInfo, "folder info is null");
         Reject.ifBlank(newName, "New name is blank");
 
@@ -2218,7 +2218,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             return foInfo;
         }
         FolderInfo newFolderInfo = FolderInfoFactory.rename(foInfo, newName);
-        renameFolder(newFolderInfo, moveData);
+        renameFolder(newFolderInfo, false, null);
         return newFolderInfo;
     }
 
@@ -2227,15 +2227,17 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param newFolderInfo  the new folder info
      * @param moveData if to move the data on disk
+     * @param ownerDisplayName the display name of the owner of the folder to use as directory suffix
+     * @return true if the data was moved, false if on same directory
      */
-    public void renameFolder(FolderInfo newFolderInfo, boolean moveData) {
+    public boolean renameFolder(FolderInfo newFolderInfo, boolean moveData, String ownerDisplayName) {
         Reject.ifNull(newFolderInfo, "folder info is null");
 
         newFolderInfo.intern(true);
 
         Folder folder = folders.get(newFolderInfo);
         if (folder == null) {
-            return;
+            return false;
         }
         folder.updateInfo(newFolderInfo);
         folders.remove(newFolderInfo);
@@ -2250,18 +2252,24 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Only move if path is different
         moveData &= !PathUtils.isSameName(folder.getLocalBase().getFileName().toString(), newFolderInfo.getLocalizedName());
         if (moveData) {
-            Path newDirectory = folder.getLocalBase().getParent()
-                    .resolve(PathUtils
-                            .removeInvalidFilenameChars(newFolderInfo.getLocalizedName()));
+            String dirName = PathUtils.removeInvalidFilenameChars(newFolderInfo.getLocalizedName());
+            if (StringUtils.isNotBlank(ownerDisplayName)) {
+                dirName += " (";
+                dirName += PathUtils.removeInvalidFilenameChars(ownerDisplayName);
+                dirName += ")";
+            }
+            Path newDirectory = folder.getLocalBase().getParent().resolve(dirName);
             folder = moveLocalFolder(folder, newDirectory, true);
             if (folder == null) {
-                logWarning("Failed to move folder " + newFolderInfo + " to new directory " + newDirectory);
+                logWarning(newFolderInfo + ": Failed to move to new directory " + newDirectory);
+                return false;
             }
         } else {
             for (Member member: folder.getConnectedMembers()) {
                 member.synchronizeFolderMemberships();
             }
         }
+        return true;
     }
 
     /**
@@ -2677,6 +2685,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             return null;
         }
 
+        boolean moved = false;
         try {
             scanBasedirLock.lock();
 
@@ -2694,7 +2703,6 @@ public class FolderRepository extends PFComponent implements Runnable {
                     folder.getConfigEntryId());
 
             boolean deleteOriginalDirectory = false;
-            boolean moved = false;
 
             // Remember patterns if content not moving.
             List<String> patterns = folder.getDiskItemFilter().getPatterns();
@@ -2812,7 +2820,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             scanBasedirLock.unlock();
         }
 
-        return folder;
+        return moved ? folder : null;
     }
 
     private void removeLocalFolders(Account a, Collection<FolderInfo> skip) {
@@ -3335,7 +3343,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 logFine("Removing " + folder.toString());
                 removeFolder(folder, false);
-                getController().getFolderRepository().scanBasedir();
+                scanBasedir();
             }
         }, 5000L);
 
