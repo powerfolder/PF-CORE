@@ -59,8 +59,12 @@ public class FolderRenameTask extends ServerRemoteCallTask {
             LOG.warning(folder + ": Not renaming to new folder name. Rename on server is done differently");
             return true;
         }
-        if (folder.getInfo().getVersion() > newFolderInfo.getVersion()) {
-            LOG.warning(folder + ": Not renaming to new folder name. Remote version lower: " + newFolderInfo + " at " + initiator);
+        if (folder.getInfo().getVersion() == newFolderInfo.getVersion() && folder.getInfo().getName().equals(newFolderInfo.getName())) {
+            LOG.fine(folder + ": Not renaming to folder. Already done: " + newFolderInfo + " from " + initiator);
+            return true;
+        }
+        if (folder.getInfo().getVersion() >= newFolderInfo.getVersion()) {
+            LOG.warning(folder + ": Not renaming to new folder name. Remote version not higher: " + newFolderInfo + " at " + initiator);
             return true;
         }
         if (!folder.hasAdminPermission(initiator.getNode(getController(), true))) {
