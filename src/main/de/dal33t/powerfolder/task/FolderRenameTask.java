@@ -60,11 +60,11 @@ public class FolderRenameTask extends ServerRemoteCallTask {
             return true;
         }
         if (folder.getInfo().getVersion() > newFolderInfo.getVersion()) {
-            LOG.warning(folder + ": Not renaming to new folder name. Remote version lower: " + newFolderInfo);
+            LOG.warning(folder + ": Not renaming to new folder name. Remote version lower: " + newFolderInfo + " at " + initiator);
             return true;
         }
         if (!folder.hasAdminPermission(initiator.getNode(getController(), true))) {
-            LOG.warning(folder + ": Initiator has no folder admin permission to rename to: " + newFolderInfo);
+            LOG.warning(folder + ": Initiator " + initiator + " has no folder admin permission to rename to: " + newFolderInfo);
             return true;
         }
         LOG.info("Renaming local " + folder.getInfo() + ". Remote: " + newFolderInfo + " by " + initiator);
