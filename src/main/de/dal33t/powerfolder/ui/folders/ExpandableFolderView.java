@@ -1242,7 +1242,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         String folderName = folderInfo.getLocalizedName();
 
-        if (StringUtils.isNotBlank(ownerDisplayname)) {
+        if (!serverClient.getAccount().hasOwnerPermission(folderInfo) && StringUtils.isNotBlank(ownerDisplayname)) {
             ownerAddition += " (" + ownerDisplayname + ")";
         }
 
