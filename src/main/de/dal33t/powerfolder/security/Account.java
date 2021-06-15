@@ -1111,6 +1111,17 @@ public class Account implements Serializable, D2DObject {
         return true;
     }
 
+    public boolean addEmailAsFirst(String email) {
+        Reject.ifBlank(email, "Email");
+        email = email.trim().toLowerCase();
+        if (emails.contains(email)) {
+            return false;
+        }
+        emails.add(0, email);
+        return true;
+    }
+
+
     /**
      * Adds an email address to the account, combined with its corresponding LDAP identifier
      *
