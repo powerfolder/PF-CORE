@@ -183,6 +183,21 @@ public class Format {
     public static Date parseDateCanonical(String str) throws ParseException {
         return CANONICAL_DATE_FORMAT.get().parse(str);
     }
+    /**
+     * Parses a json date into Date Object
+     * (English).
+     * <p>
+     *
+     * @param date
+     *           the string to parse
+     * @return the date.
+     * @throws ParseException
+     */
+    public static Date parseJsonDate(final String date) throws ParseException {
+        final SimpleDateFormat format = new SimpleDateFormat(
+            "yyyy-MM-dd'T'HH:mm:ss");
+        return format.parse(date);
+    }
 
     /**
      * Short date format.
