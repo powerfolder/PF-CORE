@@ -2214,7 +2214,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 new FolderRenameTask(folderInfo, fromPeer.getMember()).scheduleTask(getController());
                             }
                         }
-                    } else if (nameDiffers && folderInfo.getVersion() == folder.getInfo().getVersion()) {
+                    } else if (nameDiffers && folderInfo.getVersion() == folder.getInfo().getVersion() && folderInfo.getVersion() != 0) {
                         logWarning("Possible renaming conflict detected. Name differs but same version. Local: "
                                 + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
                     }
