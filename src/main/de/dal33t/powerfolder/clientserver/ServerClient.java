@@ -39,7 +39,11 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.ietf.jgss.*;
 
 import javax.security.auth.Subject;
@@ -1368,8 +1372,7 @@ public class ServerClient extends PFComponent {
      * shibboleth is used.
      */
     private boolean prepareShibbolethLogin(String username, char[] thePassword, boolean userChanged) {
-        String idpURLString = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                .getValue(config);
+        String idpURLString = getAndReloadLastConnectedECP();
 
         if (StringUtils.isBlank(idpURLString)) {
             shibUsername = null;
@@ -1451,6 +1454,40 @@ public class ServerClient extends PFComponent {
         }
 
         return false;
+    }
+
+    private String getAndReloadLastConnectedECP() {
+        String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.getValue(config);
+        String entityID = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(config);
+        String externalNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.getValue(config);
+
+        if (StringUtils.isBlank(entityID)) {
+            // No entity ID given, using existing one.
+            return ecpURL;
+        } else if ("ext".equals(entityID)
+                || (StringUtils.isNotBlank(externalNames)
+                && externalNames.contains(entityID)))
+        {
+            return ecpURL;
+        }
+        try {
+            String idpLookupURL = ConfigurationEntry.SERVER_WEB_URL
+                    .getValue(getController())
+                    + "/api/idpd?entityID="
+                    + URLEncoder.encode(entityID, Convert.UTF8.toString());
+
+            HttpGet getBindingURL = new HttpGet(idpLookupURL);
+            // PFC-2669:
+            HttpClientBuilder builder = Util
+                    .createHttpClientBuilder(getController());
+            HttpClient client = builder.build();
+
+            HttpResponse httpResponse = client.execute(getBindingURL);
+            ecpURL = EntityUtils.toString(httpResponse.getEntity());
+        } catch (IOException e1) {
+            logWarning("Could not retrieve new ECP URL for entity ID " + entityID + ". " + e1);
+        }
+        return ecpURL;
     }
 
     private void findAlternativeServer() {
