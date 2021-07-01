@@ -882,7 +882,7 @@ public class Folder extends PFComponent {
                             }
                             arch.archive(oldLocalFileInfo, targetFile, false);
                         }
-                        logFileOperation("UPDATE", oldLocalFileInfo, fInfo);
+                        logFileOperation("UPDATED", oldLocalFileInfo, fInfo);
                         fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
