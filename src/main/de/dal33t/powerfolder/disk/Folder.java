@@ -882,6 +882,7 @@ public class Folder extends PFComponent {
                             }
                             arch.archive(oldLocalFileInfo, targetFile, false);
                         }
+                        logFileOperation("UPDATE", oldLocalFileInfo, fInfo);
                         fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
@@ -909,6 +910,8 @@ public class Folder extends PFComponent {
                 // + fInfo.toDetailString());
                 // return false;
                 // }
+            } else {
+                logFileOperation("ADDED", null, fInfo);
             }
 
             if (!ConfigurationEntry.FOLDER_COPY_AFTER_TRANSFER
@@ -3246,26 +3249,6 @@ public class Folder extends PFComponent {
                 return;
             }
 
-            if (isInfo()) {
-                // PFC-2434
-                String by = "n/a";
-                if (remoteFile.getModifiedBy() != null) {
-                    AccountInfo aInfo = remoteFile.getModifiedBy()
-                            .getNode(getController(), true).getAccountInfo();
-                    if (aInfo != null) {
-                        by = aInfo.getDisplayName();
-                    }
-                }
-                String msg = "File " + localFile.toDetailString() + " was deleted by "
-                        + by + ": " + remoteFile.toDetailString()
-                        + " , deleting local at " + localCopy.toAbsolutePath();
-                if (currentInfo.isMetaFolder()) {
-                    logFine(msg);
-                } else {
-                    logInfo(msg);
-                }
-            }
-
             // Abort transfers on file.
             if (remoteFile.isFile()) {
                 getController().getTransferManager().breakTransfers(remoteFile);
@@ -3278,6 +3261,7 @@ public class Folder extends PFComponent {
                             logFine("Deleting directory from remote: "
                                     + localFile.toDetailString());
                         }
+                        logFileOperation("DELETED", localFile, remoteFile);
                         watcher.addIgnoreFile(localFile);
 
                         try {
@@ -3394,6 +3378,27 @@ public class Folder extends PFComponent {
             logWarning(remoteFile.toDetailString() + ": Unable to locally delete deleted file. " + e);
         } catch (RuntimeException e) {
             logWarning(remoteFile.toDetailString() + ": Unable to locally delete deleted file. " + e, e);
+        }
+    }
+
+    void logFileOperation(String operation, FileInfo oldFileInfo, FileInfo newFileInfo) {
+        String msg = "File\t";
+        msg += operation;
+        msg += "\t";
+
+        if (oldFileInfo != null) {
+            msg += "was:\t";
+            msg += oldFileInfo.toDetailString();
+            msg += "\t";
+        }
+
+        msg += "now:\t";
+        msg += newFileInfo.toDetailString();
+
+        if (currentInfo.isMetaFolder()) {
+            logFine(msg);
+        } else {
+            logInfo(msg);
         }
     }
 
@@ -4304,18 +4309,8 @@ public class Folder extends PFComponent {
         }
 
         FileInfo fileInfo = getFile(newFileInfo);
-        if (isInfo()) {
-            String msg = "Deleting file "
-                + (fileInfo != null ? fileInfo.toDetailString() : newFileInfo)
-                + ((archiver.getVersionsPerFile() > 0)
-                    ? " by " + newFileInfo.getModifiedByAccount() + ", moving to version history"
-                    : "");
-            if (currentInfo.isMetaFolder()) {
-                logFine(msg);
-            } else {
-                logInfo(msg);
-            }
-        }
+        logFileOperation("DELETED", fileInfo, newFileInfo);
+
         boolean success = false;
         try {
             watcher.addIgnoreFile(newFileInfo);
