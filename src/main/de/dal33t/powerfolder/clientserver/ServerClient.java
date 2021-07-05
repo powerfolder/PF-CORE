@@ -1484,6 +1484,10 @@ public class ServerClient extends PFComponent {
 
             HttpResponse httpResponse = client.execute(getBindingURL);
             ecpURL = EntityUtils.toString(httpResponse.getEntity());
+            if (!Util.equals(ecpURL, ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.getValue(config))) {
+                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(config, ecpURL);
+                getController().saveConfig();
+            }
         } catch (IOException e1) {
             logWarning("Could not retrieve new ECP URL for entity ID " + entityID + ". " + e1);
         }
