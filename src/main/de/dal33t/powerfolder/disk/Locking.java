@@ -19,10 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.AccountInfo;
@@ -178,6 +175,29 @@ public class Locking extends PFComponent {
         Reject.ifNull(fInfo, "FileInfo");
         Path lockFile = getLockFile(fInfo);
         return lockFile != null && Files.exists(lockFile);
+    }
+
+    /**
+     * PFS-3821
+     * @param fInfo
+     * @return true if the file is currently being edited on the server (e.g. via ONLYOFFICE)
+     */
+    public boolean isEditing(FileInfo fInfo) {
+        final Lock lock = getLock(fInfo);
+        if (lock != null) {
+            if (lock.getMemberInfo().equals(getMySelf().getInfo())) {
+                return true;
+            } else {
+                final boolean isEdit =
+                        getController().getNodeManager().getNodesAsCollection().stream()
+                                .filter(Member::isServer)
+                                .anyMatch(n -> n.getInfo().equals(lock.getMemberInfo()));
+                if (isEdit) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
