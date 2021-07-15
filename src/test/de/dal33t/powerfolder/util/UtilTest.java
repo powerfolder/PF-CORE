@@ -80,7 +80,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testEqualsRelativeCase() {
-        assumeTrue(FileInfo.IGNORE_CASE);
+        assumeTrue("Test only supported on systems which do ignore character case in filenames, e.g. Windows", FileInfo.IGNORE_CASE);
         assertTrue(Util.equalsRelativeName("Test","test"));
         assertTrue(Util.equalsRelativeName("ThIsIsAtEsTsTrInG", "thisIsATestString"));
         assertTrue(Util.equalsRelativeName("   A", "   a"));
