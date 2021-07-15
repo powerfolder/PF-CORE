@@ -156,6 +156,6 @@ public class FolderInfoFactory {
     }
 
     public static FolderInfo backupFolderOfAccountForTest(String name, AccountInfo aInfo) {
-        return backupFolderOfAccountForTest(name, aInfo);
+        return backupFolderOfAccount(name, aInfo);
     }
 }
