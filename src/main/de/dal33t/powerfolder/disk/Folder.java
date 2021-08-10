@@ -3064,7 +3064,7 @@ public class Folder extends PFComponent {
             return;
         }
         if (isFine()) {
-            logFine("Deleting files, which are deleted by friends. con-members: "
+            logFine("Deleting files, which are deleted by trusted nodes. con-members: "
                 + Arrays.asList(getConnectedMembers()));
         }
 
