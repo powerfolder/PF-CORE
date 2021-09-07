@@ -520,6 +520,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         return modifiedByAccount;
     }
 
+    public void setModifiedByAccount(AccountInfo modifiedByAccount) {
+        this.modifiedByAccount = modifiedByAccount;
+    }
+
     /**
      * @return the modification date.
      */
