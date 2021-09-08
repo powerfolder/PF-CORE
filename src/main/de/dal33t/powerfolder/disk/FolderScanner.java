@@ -582,16 +582,14 @@ public class FolderScanner extends PFComponent {
             if (exists != null) {// file was known
                 if (exists.isDeleted()) {
                     // file restored
-                    FileInfo restoredFile = exists.syncFromDiskIfRequired(
-                        currentScanningFolder, fileToScan);
+                    FileInfo restoredFile = exists.syncFromDiskIfRequired(currentScanningFolder, fileToScan, null);
                     if (restoredFile != null) {
                         currentScanningFolder.logFileOperation("RESTORED", exists, restoredFile);
                         restoredFile.setPreviousSize(exists.getSize());
                         currentScanResult.restoredFiles.add(restoredFile);
                     }
                 } else {
-                    FileInfo changedFile = exists.syncFromDiskIfRequired(
-                        currentScanningFolder, fileToScan);
+                    FileInfo changedFile = exists.syncFromDiskIfRequired(currentScanningFolder, fileToScan, null);
                     if (changedFile != null) {
                         if (currentScanningFolder.getDiskItemFilter().isRetained(changedFile)) {
                             currentScanningFolder.logFileOperation("CHANGED", exists, changedFile);

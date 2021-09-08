@@ -148,7 +148,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertEquals("testdir", testDirInfoLisa.getRelativeName());
         // null = IN SYNC
         assertNull(testDirInfoLisa.syncFromDiskIfRequired(getFolderAtLisa(),
-            testDirLisa));
+            testDirLisa, null));
     }
 
     /**

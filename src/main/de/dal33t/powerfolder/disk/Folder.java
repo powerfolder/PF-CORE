@@ -1493,7 +1493,7 @@ public class Folder extends PFComponent {
                         return fInfo;
                     }
 
-                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this, file);
+                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this, file, null);
                     if (syncFile != null) {
                         store(getMySelf(), syncFile);
                         if (isFiner()) {
@@ -1645,7 +1645,7 @@ public class Folder extends PFComponent {
      * @param fInfo
      * @return The new deleted FileInfo, null if unchanged.
      */
-    private FileInfo removeFileLocal(FileInfo fInfo) {
+    private FileInfo removeFileLocal(FileInfo fInfo, AccountInfo deletingAccount) {
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not removeFileLocal: " + fInfo.toDetailString());
             return null;
@@ -1694,10 +1694,10 @@ public class Folder extends PFComponent {
                 if (localFile == null) {
                     return null;
                 }
-                FileInfo synced = localFile.syncFromDiskIfRequired(this,
-                    diskFile);
+                FileInfo synced = localFile.syncFromDiskIfRequired(this, diskFile, deletingAccount);
                 folderChanged = synced != null;
                 if (folderChanged) {
+                    logFileOperation("DELETED", localFile, synced);
                     store(getMySelf(), synced);
                     return synced;
                 }
@@ -1712,8 +1712,8 @@ public class Folder extends PFComponent {
      *
      * @param fInfos
      */
-    public void removeFilesLocal(FileInfo... fInfos) {
-        removeFilesLocal(Arrays.asList(fInfos));
+    public void removeFilesLocal(AccountInfo deletingAccount, FileInfo... fInfos) {
+        removeFilesLocal(deletingAccount, Arrays.asList(fInfos));
     }
 
     /**
@@ -1721,7 +1721,16 @@ public class Folder extends PFComponent {
      *
      * @param fInfos
      */
-    public void removeFilesLocal(Collection<FileInfo> fInfos) {
+    public void removeFilesLocal(FileInfo... fInfos) {
+        removeFilesLocal(null, Arrays.asList(fInfos));
+    }
+
+    /**
+     * Removes files from the local disk
+     *
+     * @param fInfos
+     */
+    public void removeFilesLocal(AccountInfo deletingAccount, Collection<FileInfo> fInfos) {
         Reject.ifNull(fInfos, "Files null");
         if (fInfos.isEmpty()) {
             return;
@@ -1741,7 +1750,7 @@ public class Folder extends PFComponent {
                     dirs.add(fileInfo);
                     continue;
                 }
-                FileInfo deletedFileInfo = removeFileLocal(fileInfo);
+                FileInfo deletedFileInfo = removeFileLocal(fileInfo, deletingAccount);
                 if (deletedFileInfo != null) {
                     removedFiles.add(deletedFileInfo);
                 }
@@ -1751,8 +1760,8 @@ public class Folder extends PFComponent {
                 c.addMySelf(this);
                 c.setPath((DirectoryInfo) dirInfo);
                 logInfo("Deleting directory: " + dirInfo);
-                removeFilesLocal(dao.findFiles(c));
-                FileInfo deletedDirInfo = removeFileLocal(dirInfo);
+                removeFilesLocal(deletingAccount, dao.findFiles(c));
+                FileInfo deletedDirInfo = removeFileLocal(dirInfo, deletingAccount);
                 if (deletedDirInfo != null) {
                     removedFiles.add(deletedDirInfo);
                 }
@@ -1794,6 +1803,7 @@ public class Folder extends PFComponent {
                 if (deleteFile(fInfo, diskFile)) {
                     // 2) Purge DB
                     dao.delete(null, fInfo);
+                    logFileOperation("DELETED", fInfo, null);
                     return true;
                 } else {
                     logWarning("Unable to erase: " + diskFile + ". " + fInfo);
@@ -3276,7 +3286,7 @@ public class Folder extends PFComponent {
                             for (FileInfo fileInfo : filesInDir) {
                                 if (!fileInfo.isDeleted()) {
                                     // PFS-2147:
-                                    removeFileLocal(fileInfo);
+                                    removeFileLocal(fileInfo, member.getAccountInfo());
                                     if (isInfo()) {
                                         logInfo(
                                                 "Deleted file in deleted directory: "
@@ -3374,6 +3384,7 @@ public class Folder extends PFComponent {
             // Changed localFile -> remoteFile
             removedFiles.add(remoteFile);
             store(getMySelf(), remoteFile);
+            logFileOperation("DELETED", localFile, remoteFile);
         } catch (IllegalStateException e) {
             logWarning(remoteFile.toDetailString() + ": Unable to locally delete deleted file. " + e);
         } catch (RuntimeException e) {
@@ -4283,10 +4294,12 @@ public class Folder extends PFComponent {
                     } else {
                         logInfo("  known file found: " + lookupInstance);
                     }
+                    logFileOperation("DELETED", storedInfo, storedInfo);
                     deleteFile(storedInfo, path);
                 }
             }
         }
+        logFileOperation("DELETED", newFileInfo, newFileInfo);
         return deleteFile(newFileInfo, file);
     }
 
@@ -4309,7 +4322,6 @@ public class Folder extends PFComponent {
         }
 
         FileInfo fileInfo = getFile(newFileInfo);
-        logFileOperation("DELETED", fileInfo, newFileInfo);
 
         boolean success = false;
         try {
