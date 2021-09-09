@@ -442,10 +442,6 @@ public enum ConfigurationEntry {
      * If WebDAV should be enabled.
      */
     WEB_DAV_ENABLED("web.dav.enabled", true),
-    /**
-     * If WebDAV should be allowed fro web.
-     */
-    WEB_DAV_WEB_ALLOWED("webdav.web.allow", true),
 
     /**
      * Enable/Disable the Members Tab
