@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.dal33t.powerfolder.Controller;
@@ -40,7 +41,7 @@ import de.dal33t.powerfolder.util.PathUtils;
  *
  * @author <A HREF="mailto:schaatser@powerfolder.com">Jan van Oosterom</A>
  */
-public class FilenameProblemHelper {
+public class FileProblemHelper {
 
     /**
      * All names the are not allowed on windows
@@ -58,6 +59,9 @@ public class FilenameProblemHelper {
 
     public static final String[] ILLEGAL_MACOSX_CHARS = { };
 
+    private static final Date UNIX_TIME_ZERO = new Date(0);
+    private static final Date TEN_YEARS_IN_THE_FUTURE = new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365 * 10);
+
     /**
      * See if there are any problems.
      *
@@ -65,8 +69,13 @@ public class FilenameProblemHelper {
      * @return
      */
     public static boolean hasProblems(FileInfo fInfo) {
-        return hasProblems(fInfo.getFilenameOnly());
+        return hasProblems(fInfo.getFilenameOnly()) || hasIllegalModificationDate(fInfo);
     }
+
+    public static boolean hasIllegalModificationDate(FileInfo fileInfo) {
+        return fileInfo.getModifiedDate().before(UNIX_TIME_ZERO) || fileInfo.getModifiedDate().after(TEN_YEARS_IN_THE_FUTURE);
+    }
+
     /**
      * See if there are any problems.
      *
@@ -120,6 +129,10 @@ public class FilenameProblemHelper {
 
             if (isTooLong(filename)) {
                 returnValue.add(new TooLongFilenameProblem(fileInfo));
+            }
+
+            if (hasIllegalModificationDate(fileInfo)) {
+                returnValue.add(new IllegalModificationDateProblem(fileInfo));
             }
         }
         return returnValue;

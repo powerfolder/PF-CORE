@@ -21,8 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
-import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
-import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -363,7 +362,7 @@ public class FolderScanner extends PFComponent {
     {
         for (FileInfo fileInfo : files) {
             currentScanResult
-                .putFileProblems(fileInfo, FilenameProblemHelper.getProblems(
+                .putFileProblems(fileInfo, FileProblemHelper.getProblems(
                     getController(), fileInfo));
         }
     }

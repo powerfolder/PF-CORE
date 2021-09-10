@@ -1400,7 +1400,7 @@ public class Folder extends PFComponent {
             return null;
         }
 
-        checkFileName(fInfo);
+        checkFile(fInfo);
 
         // First relink modified by memberinfo to
         // actual instance if available on nodemanager
@@ -1604,12 +1604,12 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Checks a single filename if there are problems with the name
+     * Checks a single file if there are problems with it
      *
      * @param fileInfo
      */
-    private void checkFileName(FileInfo fileInfo) {
-        List<Problem> problemList = FilenameProblemHelper.getProblems(
+    private void checkFile(FileInfo fileInfo) {
+        List<Problem> problemList = FileProblemHelper.getProblems(
             getController(), fileInfo);
         for (Problem problem : problemList) {
             addProblem(problem);
