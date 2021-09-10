@@ -209,7 +209,7 @@ public interface FolderService {
      * @param folderInfo
      * @return
      */
-    public boolean hasDeletedFiles(FolderInfo folderInfo);
+    public boolean hasDeletedContents(FolderInfo folderInfo);
 
     /**
      * Retrieves a List of existing FileInfos for an archived file.
