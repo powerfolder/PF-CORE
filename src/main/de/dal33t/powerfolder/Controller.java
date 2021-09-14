@@ -2411,7 +2411,7 @@ public class Controller extends PFComponent {
      * @author Christoph Kappel <kappel@powerfolder.com>
      * @param  address  Address to connect to
      * @throws ConnectionException Raised when something is wrong
-     * @return The connected {@link Node}
+     * @return The connected {@link Member}
      */
     public Member connect(InetSocketAddress address) throws ConnectionException
     {
@@ -2424,7 +2424,7 @@ public class Controller extends PFComponent {
      * @param  address  Address to connect to
      * @param  useD2D   Whether to use D2D proto
      * @throws ConnectionException Raised when something is wrong
-     * @return The connected {@link Node}
+     * @return The connected {@link Member}
      **/
 
     public Member
@@ -2966,7 +2966,7 @@ public class Controller extends PFComponent {
     /**
      * Distribute ask for friendship events.
      *
-     * @param event
+     * @param memberInfo
      */
     public void makeFriendship(MemberInfo memberInfo) {
         if (networkingMode == NetworkingMode.SERVERONLYMODE) {
