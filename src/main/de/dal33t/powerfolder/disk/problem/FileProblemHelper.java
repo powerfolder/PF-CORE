@@ -72,8 +72,13 @@ public class FileProblemHelper {
         return hasProblems(fInfo.getFilenameOnly()) || hasIllegalModificationDate(fInfo);
     }
 
-    public static boolean hasIllegalModificationDate(FileInfo fileInfo) {
-        return fileInfo.getModifiedDate().before(UNIX_TIME_ZERO) || fileInfo.getModifiedDate().after(TEN_YEARS_IN_THE_FUTURE);
+    private static boolean hasIllegalModificationDate(FileInfo fileInfo) {
+        if (fileInfo.isLookupInstance()) {
+            return false;
+        }
+        return fileInfo.getModifiedDate() == null
+                | fileInfo.getModifiedDate().before(UNIX_TIME_ZERO)
+                || fileInfo.getModifiedDate().after(TEN_YEARS_IN_THE_FUTURE);
     }
 
     /**
