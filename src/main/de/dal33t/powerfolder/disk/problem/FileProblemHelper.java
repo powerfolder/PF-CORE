@@ -73,7 +73,7 @@ public class FileProblemHelper {
     }
 
     private static boolean hasIllegalModificationDate(FileInfo fileInfo) {
-        if (fileInfo.isLookupInstance() || fileInfo.isDeleted() || fileInfo.getModifiedDate() == null) {
+        if (fileInfo.isDeleted() || fileInfo.getModifiedDate() == null) {
             return false;
         }
         return fileInfo.getModifiedDate().before(UNIX_TIME_ZERO)
