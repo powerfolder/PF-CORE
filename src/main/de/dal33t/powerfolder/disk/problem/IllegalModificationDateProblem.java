@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +41,7 @@ public class IllegalModificationDateProblem extends ResolvableProblem {
         return () -> {
             Path file = fileInfo.getDiskFile(controller.getFolderRepository());
             try {
-                Files.setLastModifiedTime(file, FileTime.fromMillis(System.currentTimeMillis()));
+                Files.setLastModifiedTime(file, FileTime.from(Instant.now()));
                 getFolder(controller).scanChangedFile(fileInfo);
             } catch (IOException e) {
                 Logger.getLogger(IllegalModificationDateProblem.class.getName()).log(Level.WARNING, "Failed to set modification date of " + file + " to now.", e);
