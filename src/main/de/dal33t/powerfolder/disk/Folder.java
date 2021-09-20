@@ -1400,8 +1400,6 @@ public class Folder extends PFComponent {
             return null;
         }
 
-        checkFile(fInfo);
-
         // First relink modified by memberinfo to
         // actual instance if available on nodemanager
         long start = System.currentTimeMillis();
@@ -1490,6 +1488,7 @@ public class Folder extends PFComponent {
                             logFiner(toString() + ": Local file scanned: "
                                 + fInfo.toDetailString());
                         }
+                        checkFile(fInfo);
                         return fInfo;
                     }
 
@@ -1505,6 +1504,7 @@ public class Folder extends PFComponent {
                             logFiner("Scan file unchanged: " + localFile.toDetailString());
                         }
                     }
+                    checkFile(syncFile);
                     return syncFile;
                 }
             }
