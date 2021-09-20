@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.Reject;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -104,6 +105,7 @@ public class FileProblemHelper {
     public static List<Problem> getProblems(Controller controller,
         FileInfo fileInfo)
     {
+        Reject.ifNull(fileInfo, "FileInfo");
         String filename = fileInfo.getFilenameOnly();
         List<Problem> returnValue = new ArrayList<Problem>();
 

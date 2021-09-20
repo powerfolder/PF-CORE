@@ -1499,12 +1499,13 @@ public class Folder extends PFComponent {
                             logFiner("Scan file changed: " + syncFile.toDetailString());
                         }
                         syncFile.setPreviousSize(localFile.getSize());
+                        checkFile(syncFile);
                     } else {
                         if (isFiner()) {
                             logFiner("Scan file unchanged: " + localFile.toDetailString());
                         }
+                        checkFile(localFile);
                     }
-                    checkFile(syncFile);
                     return syncFile;
                 }
             }
