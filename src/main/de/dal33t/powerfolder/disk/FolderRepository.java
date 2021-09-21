@@ -2686,6 +2686,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         boolean moved = false;
+        long start = System.currentTimeMillis();
         try {
             scanBasedirLock.lock();
 
@@ -2795,9 +2796,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
             if (moved) {
-                logInfo("Successfully moved folder from " + sourceDirectory + " to " + targetPath + ".");
+                long took = System.currentTimeMillis() - start;
+                logInfo(folder + ": Successfully moved folder from " + sourceDirectory + " to " + targetPath + ". Took " + took + "ms.");
             } else {
-                logInfo("Not moved folder from " + sourceDirectory + " to " + targetPath + ". Using old directory");
+                logInfo(folder + ": Not moved folder from " + sourceDirectory + " to " + targetPath + ". Using old directory");
             }
 
             // If the folder just has been copied, delete the old directory
