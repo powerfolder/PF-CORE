@@ -4835,7 +4835,11 @@ public class Folder extends PFComponent {
             }
         }
         if (!folderInfo.isMetaFolder()) {
-            logInfo(this + ": updateInfo to " + folderInfo);
+            if (currentInfo.getVersion() != folderInfo.getVersion()) {
+                logInfo(this + ": updateInfo to " + folderInfo);
+            } else {
+                logFine(this + ": updateInfo to " + folderInfo);
+            }
         }
         this.currentInfo = folderInfo.intern(true);
         FolderInfo onDisk = FolderInfoFactory.readFrom(this);
