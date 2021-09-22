@@ -4837,7 +4837,7 @@ public class Folder extends PFComponent {
         if (!folderInfo.isMetaFolder()) {
             logInfo(this + ": updateInfo to " + folderInfo);
         }
-        this.currentInfo = folderInfo;
+        this.currentInfo = folderInfo.intern(true);
         FolderInfo onDisk = FolderInfoFactory.readFrom(this);
         if (onDisk == null
                 || !onDisk.equals(currentInfo)
