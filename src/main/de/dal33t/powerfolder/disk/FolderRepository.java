@@ -2266,7 +2266,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         } else {
             for (Member member: folder.getConnectedMembers()) {
-                member.synchronizeFolderMemberships();
+                member.synchronizeFolderMemberships(null, true);
             }
         }
         return true;
@@ -3272,7 +3272,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 Collection<Member> connectedNodes = getController()
                         .getNodeManager().getConnectedNodes();
                 for (Member node : connectedNodes) {
-                    node.synchronizeFolderMemberships(canceled);
+                    node.synchronizeFolderMemberships(canceled, false);
                     if (canceled.get()) {
                         logFiner("Foldermemberships synchroniziation cancelled");
                         return;

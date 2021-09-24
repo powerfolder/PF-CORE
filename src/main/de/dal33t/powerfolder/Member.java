@@ -2039,13 +2039,13 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
 
     public void synchronizeFolderMemberships() {
-        synchronizeFolderMemberships(null);
+        synchronizeFolderMemberships(null, false);
     }
     
     /**
      * Synchronizes the folder memberships on both sides
      */
-    public void synchronizeFolderMemberships(AtomicBoolean canceled) {
+    public void synchronizeFolderMemberships(AtomicBoolean canceled, boolean sendFolderListOnly) {
         if (isMySelf()) {
             return;
         }
@@ -2074,8 +2074,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         try {
             FolderList folderList = getLastFolderList();
             if (folderList != null) {
-                // Rejoin to local folders
-                joinToLocalFolders(folderList, thisPeer);
+                if (!sendFolderListOnly) {
+                    // Rejoin to local folders
+                    joinToLocalFolders(folderList, thisPeer);
+                }
             } else {
                 // Hopefully we receive this later.
                 logWarning("Unable to synchronize memberships, "
