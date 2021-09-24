@@ -2815,7 +2815,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
         } catch (IOException e) {
-            logWarning("Unable to move folder " + folder.getName() + " to " + targetPath + ". " + e);
+            logWarning(folder + ": Unable to move to " + targetPath + ". " + e, e);
             logFine(e);
             return null;
         } finally {
