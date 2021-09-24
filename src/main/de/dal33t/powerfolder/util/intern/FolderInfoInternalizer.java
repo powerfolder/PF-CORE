@@ -41,11 +41,6 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         if (folderInfo == null) {
             return null;
         }
-        if (folderInfo.isLookupInstance()) {
-            Logger.getLogger(this.getClass().getName()).log(
-                    Level.WARNING, folderInfo + ": Not internalizing lookup instance", new StackDump());
-            return folderInfo;
-        }
         FolderInfo internInstance = null;
         synchronized (INSTANCES) {
             internInstance = INSTANCES.get(folderInfo);
@@ -53,22 +48,20 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         if (internInstance != null) {
             return internInstance;
         }
-
+        if (folderInfo.isLookupInstance()) {
+            Logger.getLogger(this.getClass().getName()).log(
+                    Level.WARNING, folderInfo + ": Not internalizing lookup instance", new StackDump());
+            return folderInfo;
+        }
         // New Intern
         synchronized (INSTANCES) {
             internInstance = INSTANCES.get(folderInfo);
             if (internInstance == null) {
                 if (StringUtils.isBlank(folderInfo.getName())) {
-                    // Not interned folder info without name.
-                    // System.err.println("INTERN FAILED: " + folderInfo + " / "
-                    // + folderInfo.getId());
-                    // new RuntimeException().printStackTrace();
                     return folderInfo;
                 }
                 INSTANCES.put(folderInfo, folderInfo);
                 internInstance = folderInfo;
-            } else {
-
             }
         }
         return internInstance;
