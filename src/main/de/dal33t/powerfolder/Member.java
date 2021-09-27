@@ -2209,7 +2209,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                     boolean nameDiffers = !folderInfo.getName().equals(folder.getName());
                     if (folderInfo.getVersion() > folder.getInfo().getVersion()) {
                         if (folder.hasAdminPermission(fromPeer.getMember())) {
-                            logInfo("Renaming local " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                            if (nameDiffers) {
+                                logInfo("Renaming local " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                            }
                             if (getMySelf().isServer()) {
                                 getController().getFolderRepository().renameFolder(folderInfo, false, null);
                             } else {
