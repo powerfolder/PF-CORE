@@ -231,10 +231,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      *
      * @param folder   the folder to sync with
      * @param diskFile the diskfile of this file, not gets it from controller !
+     * @param changingAccount the account which is responsible for the change.
      * @return the new FileInfo if the file was synced or null if the file is in
      * sync
      */
-    public FileInfo syncFromDiskIfRequired(Folder folder, Path diskFile) {
+    public FileInfo syncFromDiskIfRequired(Folder folder, Path diskFile, AccountInfo changingAccount) {
         Reject.ifNull(folder, "Folder is null");
         Reject.ifFalse(folder.getInfo().equals(folderInfo), "Folder mismatch");
         if (diskFile == null) {
@@ -264,16 +265,15 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
         if (!inSyncWithDisk(diskFile)) {
             MemberInfo mySelf = folder.getController().getMySelf().getInfo();
-            AccountInfo myAccount = folder.getController().getMySelf()
-                    .getAccountInfo();
+            if (changingAccount == null) {
+                changingAccount = folder.getController().getMySelf().getAccountInfo();
+            }
             if (Files.exists(diskFile)) {
                 // PFC-2352: TODO: Calc new hashes
                 String newHashes = null;
-                return FileInfoFactory.modifiedFile(this, folder, diskFile,
-                        mySelf, myAccount, newHashes);
+                return FileInfoFactory.modifiedFile(this, folder, diskFile, mySelf, changingAccount, newHashes);
             } else {
-                return FileInfoFactory.deletedFile(this, mySelf, myAccount,
-                        new Date());
+                return FileInfoFactory.deletedFile(this, mySelf, changingAccount, new Date());
             }
         }
 

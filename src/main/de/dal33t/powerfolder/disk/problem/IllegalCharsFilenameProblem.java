@@ -40,9 +40,9 @@ public class IllegalCharsFilenameProblem extends ResolvableProblem {
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
-                String newFilename = FilenameProblemHelper.removeChars(
+                String newFilename = FileProblemHelper.removeChars(
                     fileInfo.getFilenameOnly(), illegalChars);
-                FilenameProblemHelper.resolve(controller, fileInfo, newFilename,
+                FileProblemHelper.resolve(controller, fileInfo, newFilename,
                     IllegalCharsFilenameProblem.this);
             }
         };

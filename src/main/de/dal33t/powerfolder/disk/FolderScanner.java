@@ -21,8 +21,7 @@ package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.ScanResult.ResultState;
-import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
-import de.dal33t.powerfolder.disk.problem.Problem;
+import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -363,7 +362,7 @@ public class FolderScanner extends PFComponent {
     {
         for (FileInfo fileInfo : files) {
             currentScanResult
-                .putFileProblems(fileInfo, FilenameProblemHelper.getProblems(
+                .putFileProblems(fileInfo, FileProblemHelper.getProblems(
                     getController(), fileInfo));
         }
     }
@@ -582,16 +581,14 @@ public class FolderScanner extends PFComponent {
             if (exists != null) {// file was known
                 if (exists.isDeleted()) {
                     // file restored
-                    FileInfo restoredFile = exists.syncFromDiskIfRequired(
-                        currentScanningFolder, fileToScan);
+                    FileInfo restoredFile = exists.syncFromDiskIfRequired(currentScanningFolder, fileToScan, null);
                     if (restoredFile != null) {
                         currentScanningFolder.logFileOperation("RESTORED", exists, restoredFile);
                         restoredFile.setPreviousSize(exists.getSize());
                         currentScanResult.restoredFiles.add(restoredFile);
                     }
                 } else {
-                    FileInfo changedFile = exists.syncFromDiskIfRequired(
-                        currentScanningFolder, fileToScan);
+                    FileInfo changedFile = exists.syncFromDiskIfRequired(currentScanningFolder, fileToScan, null);
                     if (changedFile != null) {
                         if (currentScanningFolder.getDiskItemFilter().isRetained(changedFile)) {
                             currentScanningFolder.logFileOperation("CHANGED", exists, changedFile);

@@ -58,9 +58,9 @@ public class EndIllegalCharsFilenameProblem extends ResolvableProblem {
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
-                String newFilename = FilenameProblemHelper.makeUnique(
+                String newFilename = FileProblemHelper.makeUnique(
                         controller, fileInfo);
-                FilenameProblemHelper.resolve(controller, fileInfo, newFilename,
+                FileProblemHelper.resolve(controller, fileInfo, newFilename,
                         EndIllegalCharsFilenameProblem.this);
             }
         };

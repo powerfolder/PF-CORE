@@ -380,7 +380,7 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                             crit.setRecursive(true);
                             Collection<FileInfo> infoCollection = folder
                                 .getDAO().findFiles(crit);
-                            folder.removeFilesLocal(infoCollection);
+                            folder.removeFilesLocal(null, infoCollection);
                             folder.removeFilesLocal(directoryInfo);
                         } else if (diskItem instanceof FileInfo) {
                             FileInfo fileInfo = (FileInfo) diskItem;

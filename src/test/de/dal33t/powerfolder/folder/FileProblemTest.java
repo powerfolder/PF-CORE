@@ -21,7 +21,7 @@ package de.dal33t.powerfolder.folder;
 
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.problem.FilenameProblemHelper;
+import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
@@ -30,15 +30,15 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 
 import java.lang.reflect.Method;
 
-public class FileNameProblemTest extends ControllerTestCase {
+public class FileProblemTest extends ControllerTestCase {
 
     public void testForWindows() {
-        assertFalse(FilenameProblemHelper
+        assertFalse(FileProblemHelper
             .containsIllegalWindowsChars("a valid filename.txt"));
         // /\?*<":>+[]
 
         // assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("fhf/fjf"));
-        assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("hhhh\\"));
+        assertTrue(FileProblemHelper.containsIllegalWindowsChars("hhhh\\"));
         // assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("?hhh"));
         // assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("ddfgd*"));
         // assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("<hhf"));
@@ -46,37 +46,37 @@ public class FileNameProblemTest extends ControllerTestCase {
         // assertTrue(FilenameProblemHelper.containsIllegalWindowsChars(":sds"));
         // assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("gfgf>"));
         // assertTrue(FilenameProblemHelper.containsIllegalWindowsChars("ssdffd<"));
-        assertFalse(FilenameProblemHelper
+        assertFalse(FileProblemHelper
                 .containsIllegalWindowsChars("日本語でのテスト"));
 
         // controll chars
         for (int i = 0; i <= 31; i++) {
-            assertFalse(FilenameProblemHelper
+            assertFalse(FileProblemHelper
                 .containsIllegalWindowsChars((char) i + "123"));
         }
         // >=32 is no controll char
-        assertFalse(FilenameProblemHelper.containsIllegalWindowsChars((char) 32
+        assertFalse(FileProblemHelper.containsIllegalWindowsChars((char) 32
             + "123"));
 
         // reserved windows words like AUX (extentions behind it are also not
         // allowed)
-        assertTrue(FilenameProblemHelper.isReservedWindowsFilename("AUX"));
-        assertTrue(FilenameProblemHelper.isReservedWindowsFilename("AUX.txt"));
-        assertTrue(FilenameProblemHelper.isReservedWindowsFilename("LPT1"));
-        assertFalse(FilenameProblemHelper.isReservedWindowsFilename("xLPT1"));
-        assertFalse(FilenameProblemHelper.isReservedWindowsFilename("xAUX.txt"));
+        assertTrue(FileProblemHelper.isReservedWindowsFilename("AUX"));
+        assertTrue(FileProblemHelper.isReservedWindowsFilename("AUX.txt"));
+        assertTrue(FileProblemHelper.isReservedWindowsFilename("LPT1"));
+        assertFalse(FileProblemHelper.isReservedWindowsFilename("xLPT1"));
+        assertFalse(FileProblemHelper.isReservedWindowsFilename("xAUX.txt"));
 
     }
 
     public void testFilenameProblems() {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder");
-        assertFalse(FilenameProblemHelper
+        assertFalse(FileProblemHelper
             .hasProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows
-        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
+        assertEquals(1, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());
-        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
+        assertEquals(1, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd ")).size());
 
         // Windows/Unix/Mac
@@ -86,23 +86,23 @@ public class FileNameProblemTest extends ControllerTestCase {
         // FilenameProblem.getProblems(FileInfoFactory.lookupInstance(folderInfo,
         // "ddd/d")).size());
         // windows/Mac
-        assertEquals(FilenameProblemHelper.getProblems(getController(),
-                FileInfoFactory.lookupInstance(folderInfo, "ddd:d")).toString(), 0, FilenameProblemHelper.getProblems(getController(),
+        assertEquals(FileProblemHelper.getProblems(getController(),
+                FileInfoFactory.lookupInstance(folderInfo, "ddd:d")).toString(), 0, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "ddd:d")).size());
         // windows
-        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
+        assertEquals(1, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "AUX")).size());
-        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
+        assertEquals(1, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "aux")).size());
-        assertEquals(1, FilenameProblemHelper.getProblems(getController(),
+        assertEquals(1, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "aux.txt")).size());
         // 255 chars
-        assertFalse(FilenameProblemHelper
+        assertFalse(FileProblemHelper
             .hasProblems("012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"));
         // 256 chars
         assertEquals(
             1,
-            FilenameProblemHelper
+            FileProblemHelper
                 .getProblems(
                     getController(),
                     FileInfoFactory
@@ -115,17 +115,17 @@ public class FileNameProblemTest extends ControllerTestCase {
     public void testFilenameProblemsNoCheck() {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), false);
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder");
-        assertFalse(FilenameProblemHelper
+        assertFalse(FileProblemHelper
             .hasProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows
-        assertEquals(0, FilenameProblemHelper.getProblems(getController(),
+        assertEquals(0, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());
     }
 
     public void testStripExtension() {
         try {
             boolean foundMethod = false;
-            Method[] methods = FilenameProblemHelper.class.getDeclaredMethods();
+            Method[] methods = FileProblemHelper.class.getDeclaredMethods();
             for (Method method : methods) {
                 if (method.getName().equals("stripExtension")) {
                     foundMethod = true;
@@ -154,17 +154,17 @@ public class FileNameProblemTest extends ControllerTestCase {
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd");
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcde");
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcdef");
-        String s = FilenameProblemHelper.getShorterFilename(getController(),
+        String s = FileProblemHelper.getShorterFilename(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "abcdef"));
         assertEquals("Failed to shorten abcdef to abc", s, "abc");
 
         // Test that other does not get touched.
-        s = FilenameProblemHelper.getShorterFilename(getController(),
+        s = FileProblemHelper.getShorterFilename(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "other"));
         assertEquals("Other affected", s, "other");
 
         // Test that R E A L L Y long names get shortened.
-        s = FilenameProblemHelper
+        s = FileProblemHelper
             .getShorterFilename(
                 getController(),
                 FileInfoFactory
@@ -186,7 +186,7 @@ public class FileNameProblemTest extends ControllerTestCase {
         // Test that abcd gets changed to abcd-2 because of other files.
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd");
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd-1");
-        String s = FilenameProblemHelper.makeUnique(getController(),
+        String s = FileProblemHelper.makeUnique(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "abcd"));
         assertEquals("Failed to make unique abcd to abcd-2", s, "abcd-2");
 
@@ -194,7 +194,7 @@ public class FileNameProblemTest extends ControllerTestCase {
         TestHelper.createRandomFile(getFolder().getLocalBase(), "subdir/abcd");
         TestHelper
             .createRandomFile(getFolder().getLocalBase(), "subdir/abcd-1");
-        s = FilenameProblemHelper.makeUnique(getController(), FileInfoFactory
+        s = FileProblemHelper.makeUnique(getController(), FileInfoFactory
             .lookupInstance(getFolder().getInfo(), "abcd"));
         assertEquals("Failed to make unique abcd to abcd-2", s, "abcd-2");
     }
@@ -208,7 +208,7 @@ public class FileNameProblemTest extends ControllerTestCase {
         // Test that abcd gets changed to abcd-2 because of other files.
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd.txt");
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd-1.txt");
-        String s = FilenameProblemHelper.makeUnique(getController(),
+        String s = FileProblemHelper.makeUnique(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "abcd.txt"));
         assertEquals("Failed to make unique abcd.txt to abcd-2.txt", s,
             "abcd-2.txt");

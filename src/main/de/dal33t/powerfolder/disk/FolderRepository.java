@@ -2266,7 +2266,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         } else {
             for (Member member: folder.getConnectedMembers()) {
-                member.synchronizeFolderMemberships();
+                member.synchronizeFolderMemberships(null, true);
             }
         }
         return true;
@@ -2686,6 +2686,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         boolean moved = false;
+        long start = System.currentTimeMillis();
         try {
             scanBasedirLock.lock();
 
@@ -2795,9 +2796,10 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
             if (moved) {
-                logInfo("Successfully moved folder from " + sourceDirectory + " to " + targetPath + ".");
+                long took = System.currentTimeMillis() - start;
+                logInfo(folder + ": Successfully moved folder from " + sourceDirectory + " to " + targetPath + ". Took " + took + "ms.");
             } else {
-                logInfo("Not moved folder from " + sourceDirectory + " to " + targetPath + ". Using old directory");
+                logInfo(folder + ": Not moved folder from " + sourceDirectory + " to " + targetPath + ". Using old directory");
             }
 
             // If the folder just has been copied, delete the old directory
@@ -2813,7 +2815,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
         } catch (IOException e) {
-            logWarning("Unable to move folder " + folder.getName() + " to " + targetPath + ". " + e);
+            logWarning(folder + ": Unable to move to " + targetPath + ". " + e, e);
             logFine(e);
             return null;
         } finally {
@@ -3270,7 +3272,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 Collection<Member> connectedNodes = getController()
                         .getNodeManager().getConnectedNodes();
                 for (Member node : connectedNodes) {
-                    node.synchronizeFolderMemberships(canceled);
+                    node.synchronizeFolderMemberships(canceled, false);
                     if (canceled.get()) {
                         logFiner("Foldermemberships synchroniziation cancelled");
                         return;

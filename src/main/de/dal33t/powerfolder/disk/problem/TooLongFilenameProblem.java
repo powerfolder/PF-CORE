@@ -58,9 +58,9 @@ public class TooLongFilenameProblem extends ResolvableProblem {
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
-                String newFilename = FilenameProblemHelper.getShorterFilename(
+                String newFilename = FileProblemHelper.getShorterFilename(
                         controller, fileInfo);
-                FilenameProblemHelper.resolve(controller, fileInfo, newFilename,
+                FileProblemHelper.resolve(controller, fileInfo, newFilename,
                         TooLongFilenameProblem.this);
             }
         };

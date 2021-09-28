@@ -108,13 +108,16 @@ public class DirectoryInfo extends FileInfo {
         } else {
             str.append("-n/a-");
         }
-        str.append(") by '");
-        if (getModifiedBy() == null) {
-            str.append("-n/a-");
+        str.append(") by ");
+        if (getModifiedByAccount() != null) {
+            str.append(getModifiedByAccount().getUsername());
         } else {
+            str.append("(unknown)");
+        }
+        if (getModifiedBy() != null) {
+            str.append(" on ");
             str.append(getModifiedBy().nick);
         }
-        str.append('\'');
     }
 
     public String toDetailString() {
