@@ -27,6 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Helper class for all formatting
@@ -36,6 +37,7 @@ import java.util.Locale;
 public class Format {
 
     private static final CanonicalDateFormat CANONICAL_DATE_FORMAT = new CanonicalDateFormat();
+    private static Pattern CANONICAL_DATE_PATTERN = Pattern.compile("^\\d{2} \\w{3} \\d{4}$");
     private static final CanonicalDateWithTimeFormat CANONICAL_DATE_WITH_TIME_FORMAT = new CanonicalDateWithTimeFormat();
     private static final ShortDateFormat SHORT_DATE_FORMAT = new ShortDateFormat();
     private static final ShortTimeFormat SHORT_TIME_FORMAT = new ShortTimeFormat();
@@ -163,6 +165,10 @@ public class Format {
      */
     public static String formatDateCanonical(Date date) {
         return CANONICAL_DATE_FORMAT.get().format(date);
+    }
+
+    public static boolean isCanonicalDate(String date){
+        return CANONICAL_DATE_PATTERN.matcher(date).matches();
     }
 
     public static String formatDateWithTimeCanonical(Date date) {
