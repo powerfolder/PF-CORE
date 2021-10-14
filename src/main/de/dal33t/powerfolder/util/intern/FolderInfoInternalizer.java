@@ -72,12 +72,13 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
             return null;
         }
 
-        FolderInfo oldInstance = null;
+        FolderInfo oldInstance;
         synchronized (INSTANCES) {
             oldInstance = INSTANCES.get(foInfo);
 
             if (oldInstance != null
-                    && oldInstance.getName().equals(foInfo.getName()))
+                    && oldInstance.getName().equals(foInfo.getName())
+                    && oldInstance.getVersion() == foInfo.getVersion())
             {
                 return oldInstance;
             }
