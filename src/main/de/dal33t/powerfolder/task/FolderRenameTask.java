@@ -50,6 +50,7 @@ public class FolderRenameTask extends ServerRemoteCallTask {
     }
 
     private boolean rename(ServerClient client) {
+        remove();
         Folder folder = newFolderInfo.getFolder(getController());
         if (folder == null) {
             LOG.warning(newFolderInfo + ": not found for rename.");
