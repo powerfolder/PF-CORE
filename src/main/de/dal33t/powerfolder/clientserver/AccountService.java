@@ -73,6 +73,28 @@ public interface AccountService {
         ServerInfo serverInfo, String referredBy, boolean recommendWelcomeEmail);
 
     /**
+     * Tries to register a new account through Invitation Process.
+     *
+     * @param username
+     *            the username
+     * @param password
+     *            the password. if NULL a random password will be generated and
+     *            send by email.
+     * @param newsLetter
+     *            true if the users wants to subscribe to the newsletter.
+     * @param serverInfo
+     *            The server to host the account on or null for default
+     * @param referredBy
+     *            the account OID this user was referred by.
+     * @param recommendWelcomeEmail
+     *            if a welcome mail is recommend to be sent
+     * @return the Account if registration was successfully. null if not
+     *         possible or already taken even if password match.
+     */
+    Account registerInvitee(String username, String password, boolean newsLetter,
+                     ServerInfo serverInfo, String referredBy, boolean recommendWelcomeEmail);
+
+    /**
      * @param username
      *            The username of the user to register.
      * @param password
