@@ -108,6 +108,9 @@ public class PersistentTaskManager extends PFComponent {
                     if (task == null) {
                         break;
                     }
+                    if (tasks.contains(task)) {
+                        continue;
+                    }
                     tasks.add(task);
                 }
                 oin.close();

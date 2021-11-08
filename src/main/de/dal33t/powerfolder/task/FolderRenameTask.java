@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 
+import java.util.Objects;
 import java.util.logging.Logger;
 
 public class FolderRenameTask extends ServerRemoteCallTask {
@@ -87,5 +88,20 @@ public class FolderRenameTask extends ServerRemoteCallTask {
             LOG.warning(folder + ": Unable to retrieve owner name. " + e);
         }
         return getController().getFolderRepository().renameFolder(newFolderInfo, true, ownerDisplayname);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FolderRenameTask that = (FolderRenameTask) o;
+        return Objects.equals(newFolderInfo, that.newFolderInfo)
+                && Objects.equals(initiator, that.initiator)
+                && newFolderInfo.getVersion() == that.newFolderInfo.getVersion();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(newFolderInfo, initiator, newFolderInfo.getVersion());
     }
 }
