@@ -1611,18 +1611,11 @@ public class Controller extends PFComponent {
             }
         }
     }
-
+    
     /**
      * Saves the current config to disk
      */
     public synchronized void saveConfig() {
-
-    }
-
-    /**
-     * Saves the current config to disk
-     */
-    public synchronized void saveConfig(Runnable postSaveConfig) {
         if (!started) {
             return;
         }
