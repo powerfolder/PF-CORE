@@ -90,7 +90,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 16;
     private static final int MINOR_VERSION = 6;
-    private static final int REVISION_VERSION = 13;
+    private static final int REVISION_VERSION = 14;
 
     private static final int SPRINT_NUMBER = 37;
 
@@ -1616,6 +1616,13 @@ public class Controller extends PFComponent {
      * Saves the current config to disk
      */
     public synchronized void saveConfig() {
+
+    }
+
+    /**
+     * Saves the current config to disk
+     */
+    public synchronized void saveConfig(Runnable postSaveConfig) {
         if (!started) {
             return;
         }
