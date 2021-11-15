@@ -247,11 +247,7 @@ public class ServerInfo implements Serializable, D2DObject {
 
     public String toString() {
         if (isFederatedService()) {
-            if (this.federationVersion != null) {
-                return "Federated service: " + webUrl + " (" + "v" + this.federationVersion + ")";
-            } else {
-                return "Federated service: " + webUrl;
-            }
+            return "Federated service: " + webUrl;
         }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
                 + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;

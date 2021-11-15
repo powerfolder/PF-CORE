@@ -2950,6 +2950,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                 if (hasJoinedFolder(folderInfo)) {
                     continue;
                 }
+                if (folderInfo.getName().equals(Constants.MAIL_ATTACHMENT_FOLDER)) {
+                    continue;
+                }
 
                 String folderName = PathUtils.removeInvalidFilenameChars(folderInfo.getLocalizedName());
 

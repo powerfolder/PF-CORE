@@ -115,8 +115,7 @@ public class Locking extends PFComponent {
             fireLocked(fInfo);
             setWritableIfFromOtherMember(fInfo, lock, false);
             if (isInfo()) {
-                logInfo("File locked: " + fInfo + " by "
-                    + (by != null ? by.getUsername() : "?"));
+                logInfo((by != null ? by.getUsername() : "?") + " locked the file " + fInfo.toDetailString());
             }
             return true;
         } catch (IOException e) {
