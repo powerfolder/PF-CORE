@@ -1952,6 +1952,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testSetAttributeOnWindowsIoException() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         File file = new File("build/test/myFile.txt");
         assertTrue(PathUtils.setAttributesOnWindows(file.toPath(), null, true));

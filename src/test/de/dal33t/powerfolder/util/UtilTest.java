@@ -81,6 +81,9 @@ public class UtilTest extends TestCase {
     }
 
     public void testEqualsRelativeCase() {
+        if (!FileInfo.IGNORE_CASE) {
+            return;
+        }
         assumeTrue("Test only supported on systems which do ignore character case in filenames, e.g. Windows", FileInfo.IGNORE_CASE);
         assertTrue(Util.equalsRelativeName("Test","test"));
         assertTrue(Util.equalsRelativeName("ThIsIsAtEsTsTrInG", "thisIsATestString"));
@@ -466,6 +469,9 @@ public class UtilTest extends TestCase {
     }
 
     public void testSetClipboardContentsOk() throws IOException, UnsupportedFlavorException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
 
         Util.setClipboardContents("This is a test string");
@@ -494,6 +500,9 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsOk() {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
 
         StringSelection stringSelection = new StringSelection("This is some text");
@@ -510,6 +519,9 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsNull() {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -542,6 +554,9 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsUnsupportedFlavor() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
 
         BufferedImage image = new BufferedImage(1,2,3);
