@@ -39,6 +39,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.text.ParseException;
@@ -400,7 +401,7 @@ public class UtilTest extends TestCase {
         assertEquals(returnedPath, destination.toPath());
 
         //Cleanup
-        FileUtils.forceDelete(destination);
+        destination.delete();
     }
 
     public void testCopyResource() throws IOException {
@@ -411,7 +412,7 @@ public class UtilTest extends TestCase {
         assertTrue(destination.toFile().exists());
 
         //Cleanup
-        FileUtils.forceDelete(destination.toFile());
+        Files.deleteIfExists(destination);
     }
 
     public void testCopyResourceExceptionQuiet() {
