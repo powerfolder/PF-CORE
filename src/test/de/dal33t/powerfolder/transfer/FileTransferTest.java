@@ -2311,7 +2311,7 @@ public class FileTransferTest extends TwoControllerTestCase {
      * PFC-3213
      */
     @Ignore
-    public void testLongPaths() {
+    public void xtestLongPaths() {
         Folder folderAtLisa = getFolderAtLisa();
         Path lisasPath = folderAtLisa.getLocalBase();
         getContollerLisa().getFolderRepository().removeFolder(folderAtLisa, false);
