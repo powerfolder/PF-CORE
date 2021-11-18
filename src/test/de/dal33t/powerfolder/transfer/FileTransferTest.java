@@ -48,6 +48,7 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import org.junit.Ignore;
 
 /**
  * Tests file transfer between nodes.
@@ -2309,6 +2310,7 @@ public class FileTransferTest extends TwoControllerTestCase {
     /**
      * PFC-3213
      */
+    @Ignore
     public void testLongPaths() {
         Folder folderAtLisa = getFolderAtLisa();
         Path lisasPath = folderAtLisa.getLocalBase();
