@@ -326,6 +326,7 @@ public class UtilTest extends TestCase {
 
     public void testUseSwarming() throws ConnectionException, IOException {
 
+        System.out.println("testUseSwarming1");
         File file = new File("build/test/first.config");
         file.getParentFile().mkdirs();
         file.createNewFile();
@@ -348,17 +349,23 @@ public class UtilTest extends TestCase {
 
         Feature.P2P_REQUIRES_LOGIN_AT_SERVER.disable();
 
+        System.out.println("testUseSwarming2");
         Controller firstController = new Controller();
         Controller secondController = new Controller();
         firstController.startConfig("build/test/first.config");
+        System.out.println("testUseSwarming3");
         secondController.startConfig("build/test/second.config");
 
+        System.out.println("testUseSwarming4");
         firstController.connect(secondController.getConnectionListener().getAddress());
         Member member = firstController.getNodeManager().getConnectedNodes().iterator().next();
         assertTrue(Util.useSwarming(firstController, member));
 
+        System.out.println("testUseSwarming5");
         firstController.shutdown();
         secondController.shutdown();
+
+        System.out.println("testUseSwarming6");
 
         FileUtils.forceDelete(file);
         FileUtils.forceDelete(newFile);
