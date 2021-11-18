@@ -3404,8 +3404,10 @@ public class Folder extends PFComponent {
             msg += "\t";
         }
 
-        msg += "now:\t";
-        msg += newFileInfo.toDetailString();
+        if (newFileInfo != null) {
+            msg += "now:\t";
+            msg += newFileInfo.toDetailString();
+        }
 
         if (currentInfo.isMetaFolder()) {
             logFine(msg);
