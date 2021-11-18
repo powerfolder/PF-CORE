@@ -457,10 +457,10 @@ public abstract class TwoControllerTestCase extends TestCase {
                 }
             });
         } catch (RuntimeException re) {
-            System.err.println(" ... FAILED: " + e);
+            System.err.println("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick() + " ... FAILED: " + e);
             return false;
         }
-        System.out.println(" ... SUCCESS");
+        //System.out.println(" ... SUCCESS");
         return true;
     }
 
