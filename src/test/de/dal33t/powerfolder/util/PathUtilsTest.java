@@ -1916,12 +1916,18 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testSetAttributeOnWindowsNull() {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         File file = new File("build/test/myFile.txt");
         assertTrue(PathUtils.setAttributesOnWindows(file.toPath(), null, null));
     }
 
     public void testSetAttributeOnWindowsHidden() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
@@ -1932,6 +1938,9 @@ public class PathUtilsTest extends TestCase {
     }
 
     public void testSetAttributeOnWindowsSystem() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
@@ -2142,15 +2151,6 @@ public class PathUtilsTest extends TestCase {
         file.createNewFile();
         assertTrue(PathUtils.openFile(file.toPath()));
     }
-
-
-    @Test
-    public void testOpenDirectory() {
-        File directory = new File("build/test/directoryOne");
-        directory.mkdir();
-        assertTrue(PathUtils.openFile(directory.toPath()));
-    }
-
 
     @Test
     public void testOpenFileIfExists() throws IOException {
@@ -2512,6 +2512,9 @@ public class PathUtilsTest extends TestCase {
     public void testCopyFromStreamToFileDeleteException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
+        if (isWindows()) {
+            return;
+        }
         assumeFalse("Not able to run this test on Windows", isWindows());
         File from = new File("build/test/fileOne");
         assertTrue(from.createNewFile());
@@ -2546,6 +2549,9 @@ public class PathUtilsTest extends TestCase {
     public void testRecursiveDeleteException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
+        if (isWindows()) {
+            return;
+        }
         assumeFalse("Not able to run this test on Windows", isWindows());
         File directoryRo = new File("build/test/directoryOne");
         assertTrue(directoryRo.mkdir());
@@ -2568,6 +2574,9 @@ public class PathUtilsTest extends TestCase {
     public void testRecursiveMirrorException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
+        if (isWindows()) {
+            return;
+        }
         assumeFalse("Not able to run this test on Windows", isWindows());
         File sourceDir = new File("build/test/sourceDir");
         assertTrue(sourceDir.mkdir());
@@ -2595,6 +2604,9 @@ public class PathUtilsTest extends TestCase {
     public void testHasFilesException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
+        if (isWindows()) {
+            return;
+        }
         assumeFalse("Not able to run this test on Windows", isWindows());
         File sourceDir = new File("build/test/sourceDir");
         assertTrue(sourceDir.mkdir());

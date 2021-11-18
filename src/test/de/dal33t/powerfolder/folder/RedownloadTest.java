@@ -116,6 +116,8 @@ public class RedownloadTest extends TwoControllerTestCase {
             }
 
             public boolean reached() {
+                getContollerBart().getFolderRepository().getFileRequestor()
+                        .triggerFileRequesting(folderBart.getInfo());
                 return Files.exists(testFileBart)
                     && folderBart.getKnownItemCount() == 1;
             }

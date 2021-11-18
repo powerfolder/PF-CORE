@@ -330,7 +330,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             }
         });
         TestHelper.waitMilliSeconds(500);
-        System.out.println("All Controllers Disconnected");
+        //System.out.println("All Controllers Disconnected");
     }
 
     /**

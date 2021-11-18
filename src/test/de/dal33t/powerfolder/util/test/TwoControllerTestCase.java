@@ -423,7 +423,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet: " + cont2);
 
         // Connect
-        System.out.print("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick());
+        //System.out.print("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick());
 
         Exception e = null;
         try {
