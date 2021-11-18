@@ -179,16 +179,16 @@ public class NetUtilTest extends TestCase {
         assertEquals("88.198.85.81",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
-        assertEquals("os007.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals("addr.getAddress().getHostName()", "os007.powerfolder.com", addr.getAddress().getHostName());
         assertEquals("os007.powerfolder.com/88.198.85.81", addr.getAddress()
             .toString());
-        assertEquals("os007.powerfolder.com",
+        assertEquals("NetworkUtil.getHostAddressNoResolve", "os007.powerfolder.com",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         assertFalse(addr.isUnresolved());
-        assertEquals("os007.powerfolder.com", addr.getHostName());
-        assertEquals("os007.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals("addr.getHostName()", "os007.powerfolder.com", addr.getHostName());
+        assertEquals("addr.getAddress().getHostName()", "os007.powerfolder.com", addr.getAddress().getHostName());
         assertEquals("88.198.85.81", addr.getAddress().getHostAddress());
-        assertEquals("os007.powerfolder.com", addr.getAddress()
+        assertEquals("addr.getAddress() .getCanonicalHostName()", "os007.powerfolder.com", addr.getAddress()
             .getCanonicalHostName());
 
         addr = new InetSocketAddress("195.201.181.138", 1337);
@@ -196,16 +196,16 @@ public class NetUtilTest extends TestCase {
         assertEquals("195.201.181.138",
                 NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
-        assertEquals("my.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals("addr.getAddress().getHostName()", "my.powerfolder.com", addr.getAddress().getHostName());
         assertEquals("my.powerfolder.com/195.201.181.138", addr.getAddress()
                 .toString());
-        assertEquals("my.powerfolder.com",
+        assertEquals("NetworkUtil.getHostAddressNoResolve", "my.powerfolder.com",
                 NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         assertFalse(addr.isUnresolved());
-        assertEquals("my.powerfolder.com", addr.getHostName());
-        assertEquals("my.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals("addr.getHostName()", "my.powerfolder.com", addr.getHostName());
+        assertEquals("addr.getAddress().getHostName()", "my.powerfolder.com", addr.getAddress().getHostName());
         assertEquals("195.201.181.138", addr.getAddress().getHostAddress());
-        assertEquals("my.powerfolder.com", addr.getAddress()
+        assertEquals("addr.getAddress() .getCanonicalHostName()", "my.powerfolder.com", addr.getAddress()
                 .getCanonicalHostName());
     }
 }
