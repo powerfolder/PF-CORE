@@ -1277,8 +1277,6 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        LoggingManager.setConsoleLogging(Level.FINE);
-
         assertTrue(Files.exists(tempFile));
         assertTrue(Files.size(tempFile) > 0);
         assertTrue(Files.size(tempFile) < Files.size(testFile));
