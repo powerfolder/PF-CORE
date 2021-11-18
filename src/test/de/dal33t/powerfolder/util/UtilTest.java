@@ -364,11 +364,6 @@ public class UtilTest extends TestCase {
         System.out.println("testUseSwarming5");
         firstController.shutdown();
         secondController.shutdown();
-
-        System.out.println("testUseSwarming6");
-
-        FileUtils.forceDelete(file);
-        FileUtils.forceDelete(newFile);
     }
 
     public void testGetResourceUnableToFind() {
@@ -406,9 +401,6 @@ public class UtilTest extends TestCase {
         Path returnedPath = Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, path, false, true);
 
         assertEquals(returnedPath, destination.toPath());
-
-        //Cleanup
-        destination.delete();
     }
 
     public void testCopyResource() throws IOException {
@@ -417,21 +409,16 @@ public class UtilTest extends TestCase {
         Path returnedPath = Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, true);
 
         assertTrue(destination.toFile().exists());
-
-        //Cleanup
-        Files.deleteIfExists(destination);
     }
 
     public void testCopyResourceExceptionQuiet() {
         Path destination = new File("build").toPath();
         assertNull(Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, true));
-
     }
 
     public void testCopyResourceExceptionNotQuiet() {
         Path destination = new File("build").toPath();
         assertNull(Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, false));
-
     }
 
     public void testGetUrlContentNull() {
@@ -462,8 +449,6 @@ public class UtilTest extends TestCase {
 
         URL url = file.toURI().toURL();
         assertEquals("This is a test string",Util.getURLContent(url));
-
-        FileUtils.forceDelete(file);
     }
 
     public void testGetUrlSite() throws MalformedURLException {
@@ -478,8 +463,6 @@ public class UtilTest extends TestCase {
 
         URL url = file.toURI().toURL();
         assertNull(Util.getURLContent(url));
-
-        FileUtils.forceDelete(file);
     }
 
     public void testSetClipboardContentsOk() throws IOException, UnsupportedFlavorException {
@@ -524,8 +507,6 @@ public class UtilTest extends TestCase {
         StringSelection spaces = new StringSelection("    ");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(spaces, spaces);
         assertEquals("    ", Util.getClipboardContents());
-
-
     }
 
     public void testGetClipboardContentsNull() {
