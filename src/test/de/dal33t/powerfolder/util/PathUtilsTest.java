@@ -2143,15 +2143,6 @@ public class PathUtilsTest extends TestCase {
         assertTrue(PathUtils.openFile(file.toPath()));
     }
 
-
-    @Test
-    public void testOpenDirectory() {
-        File directory = new File("build/test/directoryOne");
-        directory.mkdir();
-        assertTrue(PathUtils.openFile(directory.toPath()));
-    }
-
-
     @Test
     public void testOpenFileIfExists() throws IOException {
         File nonExistent = new File("build/test/otherFile.pdf");
