@@ -222,7 +222,7 @@ public final class ControllerTest extends ControllerTestCase {
         }
         TestHelper.waitMilliSeconds(5000);
         assertTrue("Saw a too big peak in threads in pool: " + maxThreads.get(),
-            maxThreads.get() < nTasks * 2);
+            maxThreads.get() < nTasks * 3);
     }
 
     /**
