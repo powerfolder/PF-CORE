@@ -1473,9 +1473,11 @@ public class PathUtilsTest extends TestCase {
         Path returnedPath = PathUtils.removeInvalidFilenameChars(path);
         assertEquals(path, returnedPath);
 
-        file = new File("myFile\\Yes.txt");
-        returnedPath = PathUtils.removeInvalidFilenameChars(file.toPath());
-        assertEquals("Yes.txt",returnedPath.getFileName().toString());
+        if (isWindows()) {
+            file = new File("myFile\\Yes.txt");
+            returnedPath = PathUtils.removeInvalidFilenameChars(file.toPath());
+            assertEquals("Yes.txt",returnedPath.getFileName().toString());
+        }
 
         file = new File("myFile/Yes.txt");
         returnedPath = PathUtils.removeInvalidFilenameChars(file.toPath());
