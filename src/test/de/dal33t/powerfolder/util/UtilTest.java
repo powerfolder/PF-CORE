@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpGet;
@@ -455,8 +457,19 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetUrlSite() throws MalformedURLException {
-        URL url = new URL("https://google.com");
-        assertTrue(Util.getURLContent(url).contains("Google"));
+        TestHelper.waitForCondition(10, () -> {
+            URL url = null;
+            try {
+                url = new URL("https://google.com");
+            } catch (MalformedURLException e) {
+                return false;
+            }
+            String content = Util.getURLContent(url);
+            if (content == null) {
+                return false;
+            }
+            return content.contains("Google");
+        });
     }
 
     public void testGetUrlNotInputStream() throws IOException {
