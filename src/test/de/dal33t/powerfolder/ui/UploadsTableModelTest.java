@@ -140,6 +140,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
+                getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
                 return bartModel.getRowCount() > 0;
             }
         });
