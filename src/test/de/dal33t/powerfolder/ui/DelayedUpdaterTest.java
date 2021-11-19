@@ -52,9 +52,9 @@ public class DelayedUpdaterTest extends ControllerTestCase {
             - updates.get(0).getTime();
         assertTrue("Updates took " + took + "ms", took >= updater.getDelay());
         assertTrue("Updates took " + took
-                + "ms, should not really take longer than single", took <= 1100);
-        assertTrue("Should not have passed more that 100ms after last event",
-            sinceLastEvent < 100);
+                + "ms, should not really take longer than single", took <= 1200);
+        assertTrue("Should not have passed more that 200ms after last event",
+            sinceLastEvent < 200);
     }
 
     public void testMultipleEvents() {
