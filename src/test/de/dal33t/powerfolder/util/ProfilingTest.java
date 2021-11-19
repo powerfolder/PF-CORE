@@ -105,7 +105,7 @@ public class ProfilingTest extends TestCase {
             e.printStackTrace();
         }
         assertTrue("elapsedMilliseconds >= 2000", profilingEntry2.elapsedMilliseconds() >= 2000);
-        assertTrue("elapsedMilliseconds <= 2100",profilingEntry2.elapsedMilliseconds() <= 2100);
+        assertTrue("elapsedMilliseconds <= 2200",profilingEntry2.elapsedMilliseconds() <= 2200);
         assertTrue(profilingEntry2.getOperationName().equals("Test profile 2"));
     }
 

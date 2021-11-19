@@ -1867,6 +1867,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testDeleteDesktopIni() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         File directory = new File("build/test/directoryOne");
         directory.mkdir();
         File desktopIniFile = new File("build/test/directoryOne/" + PathUtils.DESKTOP_INI_FILENAME);
@@ -1878,6 +1881,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testMaintainDesktopIniRecent() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
         configFile.createNewFile();
@@ -1900,6 +1906,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testMaintainDesktopIniLastModifiedPfIconFalse() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
         configFile.createNewFile();
