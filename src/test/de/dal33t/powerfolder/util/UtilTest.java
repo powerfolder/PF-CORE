@@ -336,8 +336,7 @@ public class UtilTest extends TestCase {
         file.getParentFile().mkdirs();
         file.createNewFile();
         FileWriter writer = new FileWriter(file);
-        writer.write("\n" +
-                "net.bindaddress=127.0.0.1\n" +
+        writer.write(
                 "random-port=false\n" +
                 "net.port=3457\n" +
                 "net.broadcast=false\n" +
@@ -356,7 +355,9 @@ public class UtilTest extends TestCase {
 
         System.out.println("testUseSwarming2");
         Controller firstController = new Controller();
+        System.out.println("testUseSwarming2-1");
         Controller secondController = new Controller();
+        System.out.println("testUseSwarming2-2");
         firstController.startConfig("build/test/first.config");
         System.out.println("testUseSwarming3");
         secondController.startConfig("build/test/second.config");
