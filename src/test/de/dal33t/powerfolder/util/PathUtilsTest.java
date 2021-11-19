@@ -1929,6 +1929,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testMaintainDesktopIniLastModifiedPfIconTrue() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
         configFile.createNewFile();
