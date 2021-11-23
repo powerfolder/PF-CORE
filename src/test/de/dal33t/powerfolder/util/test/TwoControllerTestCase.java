@@ -373,7 +373,7 @@ public abstract class TwoControllerTestCase extends TestCase {
                 return !bartAtLisa.isConnected() && !lisaAtBart.isConnected();
             }
         });
-        System.out.println("Both Controllers disconnected");
+        //System.out.println("Both Controllers disconnected");
     }
 
     private void stopControllers() throws InterruptedException {
