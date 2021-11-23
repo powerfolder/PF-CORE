@@ -2130,11 +2130,6 @@ public class Controller extends PFComponent {
             webClientLogin.stop();
         }
 
-        if (wasStarted) {
-            System.out.println("------------ " + PowerFolder.NAME + " "
-                + PROGRAM_VERSION + " Controller Shutdown ------------");
-        }
-
         // remove current config
         // config = null;
         shuttingDown = false;
