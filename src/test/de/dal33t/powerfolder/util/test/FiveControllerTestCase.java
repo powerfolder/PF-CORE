@@ -94,7 +94,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         LoggingManager.setConsoleLogging(Level.WARNING);
         super.setUp();
 
-        System.out.println("-------------- Starting Controllers ----------------");
+        //System.out.println("-------------- Starting Controllers ----------------");
         // Copy fresh configs
         startController(HOMER_ID);
         startController(BART_ID);
@@ -109,7 +109,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         // PFS-1994: Activate encrypted storage for this test.
         prepareTestFolderBaseDirs();
 
-        System.out.println("-------------- Controllers started -----------------");
+        //System.out.println("-------------- Controllers started -----------------");
         LoggingManager.setConsoleLogging(Level.WARNING);
     }
 

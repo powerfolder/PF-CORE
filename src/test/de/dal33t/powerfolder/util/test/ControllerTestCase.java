@@ -79,7 +79,7 @@ public abstract class ControllerTestCase extends TestCase {
 
         // Copy fresh configs
         // Start controllers
-        System.out.println("-------------- Starting Controllers ----------------");
+        //System.out.println("-------------- Starting Controllers ----------------");
         controller = Controller.createController();
         Path source = Paths.get("src/test-resources/ControllerBart.config");
         Path target = Controller.getMiscFilesLocation().resolve("ControllerBart.config");
@@ -93,7 +93,7 @@ public abstract class ControllerTestCase extends TestCase {
         controller.startConfig("ControllerBart");
         waitForStart(controller);
 
-        System.out.println("-------------- Controllers started -----------------");
+        //System.out.println("-------------- Controllers started -----------------");
         LoggingManager.setConsoleLogging(Level.WARNING);
         
         // Let the start settle down.

@@ -132,7 +132,7 @@ public abstract class TwoControllerTestCase extends TestCase {
             Paths.get("build/test/ControllerLisa/PowerFolder.config"));
 
         // Start controllers
-        System.out.println("-------------- Starting Controllers ----------------");
+        //System.out.println("-------------- Starting Controllers ----------------");
         startControllerBart();
         startControllerLisa();
 
