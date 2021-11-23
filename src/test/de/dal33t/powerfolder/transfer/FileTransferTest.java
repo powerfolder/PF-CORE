@@ -74,7 +74,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         
         // Let startup settle down.
         TestHelper.waitMilliSeconds(500);
-        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     /**

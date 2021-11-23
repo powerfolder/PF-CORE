@@ -94,7 +94,6 @@ public abstract class MultipleControllerTestCase extends TestCase {
         // Cleanup
         TestHelper.cleanTestDir();
         PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve("build"));
-        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     @Override
