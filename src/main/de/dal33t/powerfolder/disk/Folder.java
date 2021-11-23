@@ -2276,10 +2276,12 @@ public class Folder extends PFComponent {
         }
 
         // Also maintain meta folder
-        Folder mFolder = getController().getFolderRepository()
-            .getMetaFolderForParent(currentInfo);
-        if (mFolder != null) {
-            mFolder.maintainFolderDB(removeBefore);
+        if (!currentInfo.isMetaFolder()) {
+            Folder mFolder = getController().getFolderRepository()
+                    .getMetaFolderForParent(currentInfo);
+            if (mFolder != null && mFolder != this) {
+                mFolder.maintainFolderDB(removeBefore);
+            }
         }
     }
 
