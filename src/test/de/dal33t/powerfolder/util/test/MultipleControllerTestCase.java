@@ -99,7 +99,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
     @Override
     protected void tearDown() throws Exception {
         LoggingManager.setConsoleLogging(Level.OFF);
-        System.out.println("-------------- tearDown -----------------");
+        //System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         stopControllers();
         mctFolder = null;

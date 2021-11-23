@@ -138,14 +138,14 @@ public abstract class TwoControllerTestCase extends TestCase {
 
         TestHelper.waitMilliSeconds(250);
 
-        System.out.println("-------------- Controllers started -----------------");
+        //System.out.println("-------------- Controllers started -----------------");
         LoggingManager.setConsoleLogging(Level.WARNING);
     }
 
     @Override
     protected void tearDown() throws Exception {
         LoggingManager.setConsoleLogging(Level.OFF);
-        System.out.println("-------------- tearDown -----------------");
+        //System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         stopControllers();
     }
