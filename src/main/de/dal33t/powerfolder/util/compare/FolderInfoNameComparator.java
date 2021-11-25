@@ -5,7 +5,7 @@ import java.util.Comparator;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
-public final class FolderInfoNameComparator  extends Loggable implements
+public final class FolderInfoNameComparator extends Loggable implements
     Comparator<FolderInfo> {
     public static final FolderInfoNameComparator INSTANCE = new FolderInfoNameComparator();
 
@@ -19,6 +19,11 @@ public final class FolderInfoNameComparator  extends Loggable implements
         if (o2.getName() == null) {
             return 1;
         }
-        return o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+
+        final int comparison = o1.getName().toLowerCase().compareTo(o2.getName().toLowerCase());
+        if (comparison == 0) {
+            return o1.getId().compareTo(o2.getId());
+        }
+        return comparison;
     }
 }
