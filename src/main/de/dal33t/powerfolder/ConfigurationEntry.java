@@ -422,6 +422,11 @@ public enum ConfigurationEntry {
      */
     SERVER_FEDERATED_MERGE("server.federation.auto_merge_accounts", false),
 
+    /**
+     * PFS-3919: Always let account merge process in federation. Otherwise runs in at night.
+     */
+    SERVER_FEDERATED_MERGE_ALWAYS("server.federation.auto_merge_accounts.always", false),
+
     // Server WEB settings ****************************************************
 
     /**
