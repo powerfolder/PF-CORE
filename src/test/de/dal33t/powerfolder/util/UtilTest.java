@@ -339,7 +339,7 @@ public class UtilTest extends TestCase {
         file.createNewFile();
         FileWriter writer = new FileWriter(file);
         writer.write(
-                "random-port=false\n" +
+                "random-port=true\n" +
                 "net.port=7345\n" +
                 "net.broadcast=false\n" +
                 "disableui=true");
