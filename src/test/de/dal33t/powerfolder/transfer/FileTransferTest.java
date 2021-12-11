@@ -2228,18 +2228,28 @@ public class FileTransferTest extends TwoControllerTestCase {
             4 * 1024 * 1024);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerLisa().getTransferManager().countActiveDownloads()="
+                        + getContollerLisa().getTransferManager().countActiveDownloads();
+            }
+
             @Override
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() == 1;
+                return getContollerLisa().getTransferManager().countActiveDownloads() == 1;
             }
         });
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getTransferManager().countAllUploads()="
+                        + getContollerBart().getTransferManager().countAllUploads();
+            }
+
             @Override
             public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .countAllUploads() == 1;
+                return getContollerBart().getTransferManager().countAllUploads() == 1;
             }
         });
 
@@ -2247,22 +2257,32 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         // Download should break
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerLisa().getTransferManager().countActiveDownloads()="
+                        + getContollerLisa().getTransferManager().countActiveDownloads();
+            }
+
             @Override
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() == 0;
+                return getContollerLisa().getTransferManager().countActiveDownloads() == 0;
             }
         });
         // Since this download was auto-requested it shouldn't be added to the
         // list of pending downloads.
         assertEquals(0, getContollerLisa().getTransferManager()
             .getPendingDownloads().size());
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getTransferManager().countAllUploads()="
+                        + getContollerBart().getTransferManager().countAllUploads() ;
+            }
+
             @Override
             public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .countAllUploads() == 0;
+                return getContollerBart().getTransferManager().countAllUploads() == 0;
             }
         });
 
