@@ -74,7 +74,7 @@ public class DelayedUpdaterTest extends ControllerTestCase {
             }
         });
         assertTrue("Got wrong number of updates: " + updates.size() + ": " + updates,
-                updates.size() >= 10 && updates.size() <= 12);
+                updates.size() >= 10 && updates.size() <= 20);
     }
 
     private class Update implements Runnable {
