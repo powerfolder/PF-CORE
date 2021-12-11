@@ -443,7 +443,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // all 3 must not be deleted at lisas folder
         for (FileInfo fileAtLisa : getFolderAtLisa().getKnownFiles()) {
             assertFalse(fileAtLisa.isDeleted());
-            assertEquals(2, fileAtLisa.getVersion());
+            assertEquals("Lisa: fileAtLisa.getVersion()=" + fileAtLisa.getVersion(), 2, fileAtLisa.getVersion());
             assertEquals(getContollerLisa().getMySelf().getInfo(),
                 fileAtLisa.getModifiedBy());
             Path file = getFolderAtLisa().getDiskFile(fileAtLisa);
@@ -491,14 +491,14 @@ public class DeletionSyncTest extends TwoControllerTestCase {
 
         // all 3 must not be deleted anymore at folder1
         for (FileInfo fileInfo : getFolderAtBart().getKnownFiles()) {
-            assertEquals(2, fileInfo.getVersion());
+            assertEquals("Bart: fileInfo.getVersion()=" + fileInfo.getVersion(), 2, fileInfo.getVersion());
             assertFalse(fileInfo.isDeleted());
             assertTrue(Files.exists(fileInfo.getDiskFile(getContollerBart()
                 .getFolderRepository())));
         }
 
         for (FileInfo fileInfo : getFolderAtLisa().getKnownFiles()) {
-            assertEquals(2, fileInfo.getVersion());
+            assertEquals("Lisa: fileInfo.getVersion()=" + fileInfo.getVersion(), 2, fileInfo.getVersion());
             assertFalse(fileInfo.isDeleted());
             assertTrue(Files.exists(fileInfo.getDiskFile(getContollerLisa()
                 .getFolderRepository())));
