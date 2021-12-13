@@ -37,7 +37,6 @@ public class FileInfoFactoryTest extends TestCase {
 
         testString = "$%$";
         String decoded = FileInfoFactory.decodeIllegalChars(testString);
-        System.out.println(decoded);
         returned = FileInfoFactory.encodeIllegalChars(decoded);
         assertEquals(testString, returned);
 
@@ -53,15 +52,12 @@ public class FileInfoFactoryTest extends TestCase {
 
         testString = "  |||:::*?<>  . ";
         encoded = FileInfoFactory.encodeIllegalChars(testString);
-        System.out.println(encoded);
         returned = FileInfoFactory.decodeIllegalChars(encoded);
         assertEquals(testString, returned);
 
         testString = "  |||:::*?<>  ";
         encoded = FileInfoFactory.encodeIllegalChars(testString);
-        System.out.println(encoded);
         returned = FileInfoFactory.decodeIllegalChars(encoded);
-        System.out.println(returned);
         assertEquals(testString, returned);
     }
 }

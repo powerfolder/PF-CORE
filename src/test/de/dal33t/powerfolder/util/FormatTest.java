@@ -449,7 +449,6 @@ public class FormatTest {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M/d/yy h:mm aa");
         Date today = new Date();
         today.setTime(-7200000);
-        System.out.println(today);
         assertEquals(simpleDateFormat.format(today), Format.formatDateShort(today, false));
 
         Calendar calendar = Calendar.getInstance();

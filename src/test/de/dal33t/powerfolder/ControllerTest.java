@@ -109,7 +109,6 @@ public final class ControllerTest extends ControllerTestCase {
         ScheduledFuture<?> f = getController().getThreadPool().schedule(
             new Runnable() {
                 public void run() {
-                    System.out.println("Completed");
                     run = true;
                 }
             }, 100, TimeUnit.MILLISECONDS);
@@ -146,7 +145,6 @@ public final class ControllerTest extends ControllerTestCase {
                 .getThreadPool()).getActiveCount();
             if (tCount > maxThreads.get()) {
                 maxThreads.set(tCount);
-                System.out.println("New thread maximum: " + maxThreads.get());
             }
         }, 1);
 
@@ -157,13 +155,9 @@ public final class ControllerTest extends ControllerTestCase {
                 getController().getFolderRepository().getFoldersBasedir()
                     .resolve(foInfo.getName()),
                 SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-            if (i % 100 == 0) {
-                System.out.println("Created folder: " + i);
-            }
         }
         
         TestHelper.waitMilliSeconds(1000);
-        System.out.println("Setup completed with " + nFolders + " folders");
 
         for (Folder folder : getController().getFolderRepository()
             .getFolders(true))
@@ -211,9 +205,6 @@ public final class ControllerTest extends ControllerTestCase {
                         maxThreads.set(tCount);
                     }
                     TestHelper.waitMilliSeconds(waitMS);
-                    System.out
-                        .println(((ScheduledThreadPoolExecutor) getController()
-                            .getThreadPool()).getActiveCount());
                 } catch (RuntimeException e) {
                     interrupted.set(true);
                 }
@@ -247,9 +238,6 @@ public final class ControllerTest extends ControllerTestCase {
                 }
                 try {
                     TestHelper.waitMilliSeconds(waitMS);
-                    System.out
-                        .println(((ScheduledThreadPoolExecutor) getController()
-                            .getThreadPool()).getActiveCount());
                 } catch (RuntimeException e) {
                     e.printStackTrace();
                     interrupted.set(true);

@@ -54,16 +54,12 @@ public class CompositeMapTest extends TestCase {
             for (int i = 0; i < 100000; i++) {
                 String v = IdGenerator.makeId();
                 map.put(v, v);
-                if (i % 100 == 0) {
-                    System.out.print(".");
-                }
             }
 
             for (String key : map.keySet()) {
                 map.remove(key);
             }
 
-            System.out.println("COMPLETED");
             LOCK.release();
         }
 
