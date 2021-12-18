@@ -136,16 +136,6 @@ public enum ConfigurationEntry {
     FOLDER_OWNERSHIP_CHANGEABLE("folder.change_owner.allowed", true),
 
     /**
-     * Required permission to access/use the archive of a folder.
-     * <p>
-     * PFS-1336
-     * <p>
-     * http://www.powerfolder.com/wiki/Security_Permissions
-     */
-    SECURITY_FOLDER_ARCHIVE_PERMISSION("security.folder.archive.permission",
-            AccessMode.READ_WRITE.name(), true),
-
-    /**
      * PFC-2670: Trust self-signed/any SSL certificate
      */
     SECURITY_SSL_TRUST_ANY("security.ssl.trust_any", false),

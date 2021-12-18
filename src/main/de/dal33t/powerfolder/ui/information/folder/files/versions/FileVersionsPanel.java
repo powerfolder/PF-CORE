@@ -207,15 +207,7 @@ public class FileVersionsPanel extends PFUIComponent {
             return;
         }
 
-        // PFS-1336
-        AccessMode mode = AccessMode.fromString(
-            ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
-                .getValue(getController()),
-            ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
-                .getDefaultValue());
-        restoreAction.allowWith(FolderPermission.get(fileInfo.getFolderInfo(),
-            mode));
-        // PFS-1336: End
+        restoreAction.allowWith(FolderPermission.get(fileInfo.getFolderInfo(), AccessMode.READ_WRITE));
 
         currentVersionLabel.setText(Translation.get(
             "file_version_tab.current_version",

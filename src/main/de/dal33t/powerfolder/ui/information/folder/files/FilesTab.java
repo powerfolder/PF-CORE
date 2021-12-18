@@ -201,13 +201,7 @@ public class FilesTab extends PFUIComponent implements DirectoryFilterListener {
     }
 
     private void setupArchive(FolderInfo foInfo) {
-        // PFS-1336
-        AccessMode mode = AccessMode.fromString(
-            ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
-                .getValue(getController()),
-            ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
-                .getDefaultValue());
-        fileArchiveAction.allowWith(FolderPermission.get(foInfo, mode));
+        fileArchiveAction.allowWith(FolderPermission.get(foInfo, AccessMode.READ_WRITE));
     }
 
     /**

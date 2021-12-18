@@ -607,17 +607,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     downloadState = true;
                     restoreArchiveAction.setEnabled(true);
                     
-                    // PFS-1336
-                    AccessMode mode = AccessMode.fromString(
-                        ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
-                            .getValue(getController()),
-                        ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
-                            .getDefaultValue());
-                    FolderInfo foInfo = ((DirectoryInfo) diskItem)
-                        .getFolderInfo();
-                    restoreArchiveAction.allowWith(FolderPermission.get(foInfo,
-                        mode));
-                    // PFS-1336: End
+
+                    FolderInfo foInfo = ((DirectoryInfo) diskItem).getFolderInfo();
+                    restoreArchiveAction.allowWith(FolderPermission.get(foInfo, AccessMode.READ_WRITE));
                     
                     done = true;
                 } else if (diskItem != null && diskItem instanceof FileInfo) {
@@ -659,18 +651,9 @@ public class FilesTablePanel extends PFUIComponent implements HasDetailsPanel,
                     singleFileTransferAction.setEnabled(true);
 
                     restoreArchiveAction.setEnabled(true);
-                    
-                    // PFS-1336
-                    AccessMode mode = AccessMode.fromString(
-                        ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
-                            .getValue(getController()),
-                        ConfigurationEntry.SECURITY_FOLDER_ARCHIVE_PERMISSION
-                            .getDefaultValue());
-                    FolderInfo foInfo = ((FileInfo) diskItem)
-                        .getFolderInfo();
-                    restoreArchiveAction.allowWith(FolderPermission.get(foInfo,
-                        mode));
-                    // PFS-1336: End
+
+                    FolderInfo foInfo = ((FileInfo) diskItem).getFolderInfo();
+                    restoreArchiveAction.allowWith(FolderPermission.get(foInfo, AccessMode.READ_WRITE));
 
                     done = true;
                 }
