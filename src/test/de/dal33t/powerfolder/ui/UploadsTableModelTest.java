@@ -132,14 +132,20 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testRunningUpload() {
-        // Create a 10 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10000000);
+        // Create a 100 megs file
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 100000000);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(10, new Condition() {
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "bartModel.getRowCount()=" + bartModel.getRowCount();
+            }
+
             public boolean reached() {
+                getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
                 return bartModel.getRowCount() > 0;
             }
         });

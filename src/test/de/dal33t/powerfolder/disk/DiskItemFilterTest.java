@@ -148,7 +148,6 @@ public class DiskItemFilterTest extends TestCase {
         }
         Path p = TestHelper.getTestDir().resolve("ignore.patterns");
         filter.savePatternsTo(TestHelper.getTestDir().resolve("ignore.patterns"), false);
-        System.out.println(p);
 
         filter = new DiskItemFilter();
         filter.loadPatternsFrom(p, false);

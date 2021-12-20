@@ -11,7 +11,7 @@ test-Linux:
     reports:
       junit: test-reports/raw/TEST-*.xml
     paths:
-      - test-reports/html/*.html
+      - test-reports/*
 
 test-macOS:
   stage: test
@@ -23,7 +23,7 @@ test-macOS:
     reports:
       junit: test-reports/raw/TEST-*.xml
     paths:
-      - test-reports/html/*.html
+      - test-reports/*
 
 test-Windows:
   stage: test
@@ -35,4 +35,4 @@ test-Windows:
     reports:
       junit: test-reports/raw/TEST-*.xml
     paths:
-      - test-reports/html/*.html
+      - test-reports/*

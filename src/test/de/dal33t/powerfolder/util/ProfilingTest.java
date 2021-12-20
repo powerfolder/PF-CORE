@@ -95,7 +95,7 @@ public class ProfilingTest extends TestCase {
             e.printStackTrace();
         }
         assertTrue("elapsedMilliseconds >= 10000", profilingEntry1.elapsedMilliseconds() >= 10000);
-        assertTrue("elapsedMilliseconds <= 10100", profilingEntry1.elapsedMilliseconds() <= 10100);
+        assertTrue("elapsedMilliseconds <= 10300", profilingEntry1.elapsedMilliseconds() <= 10300);
         assertTrue(profilingEntry1.getOperationName().equals("Test profile 1"));
 
         ProfilingEntry profilingEntry2 = Profiling.start("Test profile 2");
@@ -105,7 +105,7 @@ public class ProfilingTest extends TestCase {
             e.printStackTrace();
         }
         assertTrue("elapsedMilliseconds >= 2000", profilingEntry2.elapsedMilliseconds() >= 2000);
-        assertTrue("elapsedMilliseconds <= 2100",profilingEntry2.elapsedMilliseconds() <= 2100);
+        assertTrue("elapsedMilliseconds <= 2300",profilingEntry2.elapsedMilliseconds() <= 2300);
         assertTrue(profilingEntry2.getOperationName().equals("Test profile 2"));
     }
 

@@ -391,7 +391,6 @@ public class DeltaTest extends TestCase {
         // bamboo machine again this goes right
         // back to 1000.
         for (int i = 0; i < 10; i++) {
-            System.out.println(i);
             testPartInfos();
             tearDown();
             setUp();

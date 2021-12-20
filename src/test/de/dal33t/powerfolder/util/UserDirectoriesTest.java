@@ -94,6 +94,9 @@ public class UserDirectoriesTest {
 
     @Test
     public void testWindowsDirectories() {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         assertNotNull(getDocumentsReported());
         assertNotNull(getMusicReported());
@@ -103,6 +106,9 @@ public class UserDirectoriesTest {
 
     @Test
     public void testDirectoriesNotInwindows() {
+        if (isWindows()) {
+            return;
+        }
         assumeFalse("Not able to run this test on Windows", isWindows());
         assertNull(getDocumentsReported());
         assertNull(getVideosReported());

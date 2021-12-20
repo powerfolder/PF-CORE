@@ -457,6 +457,9 @@ public class FileUpdateTest extends TwoControllerTestCase {
 
     // PFC-2758
     public void testIdenticalDateAndSizeHandling() throws IOException {
+        if (!FileInfo.IGNORE_CASE) {
+            return;
+        }
         assumeTrue("Test only supported on systems which do ignore character case in filenames, e.g. Windows", FileInfo.IGNORE_CASE);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);

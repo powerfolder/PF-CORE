@@ -136,16 +136,6 @@ public enum ConfigurationEntry {
     FOLDER_OWNERSHIP_CHANGEABLE("folder.change_owner.allowed", true),
 
     /**
-     * Required permission to access/use the archive of a folder.
-     * <p>
-     * PFS-1336
-     * <p>
-     * http://www.powerfolder.com/wiki/Security_Permissions
-     */
-    SECURITY_FOLDER_ARCHIVE_PERMISSION("security.folder.archive.permission",
-            AccessMode.READ_WRITE.name(), true),
-
-    /**
      * PFC-2670: Trust self-signed/any SSL certificate
      */
     SECURITY_SSL_TRUST_ANY("security.ssl.trust_any", false),
@@ -421,6 +411,16 @@ public enum ConfigurationEntry {
      * PFS-3335: Merge accounts in federation
      */
     SERVER_FEDERATED_MERGE("server.federation.auto_merge_accounts", false),
+
+    /**
+     * PFS-3335: Merge accounts in federation in background
+     */
+    SERVER_FEDERATED_MERGE_AT_NIGHT("server.federation.auto_merge_accounts.atnight", true),
+
+    /**
+     * PFS-3919: Always let account merge process in federation. Otherwise runs in at night.
+     */
+    SERVER_FEDERATED_MERGE_ALWAYS("server.federation.auto_merge_accounts.always", false),
 
     // Server WEB settings ****************************************************
 

@@ -128,9 +128,6 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     public FolderInfo lookupParentFolderInfo() {
         if (!isMetaFolder()) {
-            LOG.log(Level.WARNING,
-                "Not required to retrieve parent folder info on non-meta folder: "
-                    + this, new RuntimeException("from here"));
             return this;
         }
         try {
@@ -152,6 +149,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * @return the meta-folder info for this folder
      */
     public FolderInfo getMetaFolderInfo() {
+        if (isMetaFolder()) {
+            return this;
+        }
         return unmarshallExistingTopFolder(
                 Constants.METAFOLDER_ID_PREFIX + id,
                 Constants.METAFOLDER_ID_PREFIX + name,

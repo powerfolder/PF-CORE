@@ -526,9 +526,6 @@ public class ScanFolderTest extends ControllerTestCase {
         final int nFiles = 11000;
         List<Path> files = new ArrayList<Path>();
         for (int i = 0; i < nFiles; i++) {
-            if (i % 1000 == 0) {
-                System.out.println("Still alive " + i + "/" + nFiles);
-            }
             files.add(TestHelper
                 .createRandomFile(getFolder().getLocalBase(), 5));
         }

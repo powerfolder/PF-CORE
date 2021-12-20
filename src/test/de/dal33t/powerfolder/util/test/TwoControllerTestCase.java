@@ -132,20 +132,20 @@ public abstract class TwoControllerTestCase extends TestCase {
             Paths.get("build/test/ControllerLisa/PowerFolder.config"));
 
         // Start controllers
-        System.out.println("-------------- Starting Controllers ----------------");
+        //System.out.println("-------------- Starting Controllers ----------------");
         startControllerBart();
         startControllerLisa();
 
         TestHelper.waitMilliSeconds(250);
 
-        System.out.println("-------------- Controllers started -----------------");
+        //System.out.println("-------------- Controllers started -----------------");
         LoggingManager.setConsoleLogging(Level.WARNING);
     }
 
     @Override
     protected void tearDown() throws Exception {
         LoggingManager.setConsoleLogging(Level.OFF);
-        System.out.println("-------------- tearDown -----------------");
+        //System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         stopControllers();
     }
@@ -373,7 +373,7 @@ public abstract class TwoControllerTestCase extends TestCase {
                 return !bartAtLisa.isConnected() && !lisaAtBart.isConnected();
             }
         });
-        System.out.println("Both Controllers disconnected");
+        //System.out.println("Both Controllers disconnected");
     }
 
     private void stopControllers() throws InterruptedException {
@@ -423,7 +423,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         Reject.ifTrue(!cont2.isStarted(), "Controller2 not started yet: " + cont2);
 
         // Connect
-        System.out.print("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick());
+        //System.out.print("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick());
 
         Exception e = null;
         try {
@@ -457,10 +457,10 @@ public abstract class TwoControllerTestCase extends TestCase {
                 }
             });
         } catch (RuntimeException re) {
-            System.err.println(" ... FAILED: " + e);
+            System.err.println("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick() + " ... FAILED: " + e);
             return false;
         }
-        System.out.println(" ... SUCCESS");
+        //System.out.println(" ... SUCCESS");
         return true;
     }
 

@@ -48,6 +48,7 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import org.junit.Ignore;
 
 /**
  * Tests file transfer between nodes.
@@ -73,7 +74,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         
         // Let startup settle down.
         TestHelper.waitMilliSeconds(500);
-        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     /**
@@ -1277,8 +1277,6 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        LoggingManager.setConsoleLogging(Level.FINE);
-
         assertTrue(Files.exists(tempFile));
         assertTrue(Files.size(tempFile) > 0);
         assertTrue(Files.size(tempFile) < Files.size(testFile));
@@ -2230,18 +2228,28 @@ public class FileTransferTest extends TwoControllerTestCase {
             4 * 1024 * 1024);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerLisa().getTransferManager().countActiveDownloads()="
+                        + getContollerLisa().getTransferManager().countActiveDownloads();
+            }
+
             @Override
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() == 1;
+                return getContollerLisa().getTransferManager().countActiveDownloads() == 1;
             }
         });
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getTransferManager().countAllUploads()="
+                        + getContollerBart().getTransferManager().countAllUploads();
+            }
+
             @Override
             public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .countAllUploads() == 1;
+                return getContollerBart().getTransferManager().countAllUploads() == 1;
             }
         });
 
@@ -2249,22 +2257,32 @@ public class FileTransferTest extends TwoControllerTestCase {
         getFolderAtLisa().setSyncProfile(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         // Download should break
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerLisa().getTransferManager().countActiveDownloads()="
+                        + getContollerLisa().getTransferManager().countActiveDownloads();
+            }
+
             @Override
             public boolean reached() {
-                return getContollerLisa().getTransferManager()
-                    .countActiveDownloads() == 0;
+                return getContollerLisa().getTransferManager().countActiveDownloads() == 0;
             }
         });
         // Since this download was auto-requested it shouldn't be added to the
         // list of pending downloads.
         assertEquals(0, getContollerLisa().getTransferManager()
             .getPendingDownloads().size());
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new Condition() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getTransferManager().countAllUploads()="
+                        + getContollerBart().getTransferManager().countAllUploads() ;
+            }
+
             @Override
             public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .countAllUploads() == 0;
+                return getContollerBart().getTransferManager().countAllUploads() == 0;
             }
         });
 
@@ -2311,7 +2329,8 @@ public class FileTransferTest extends TwoControllerTestCase {
     /**
      * PFC-3213
      */
-    public void testLongPaths() {
+    @Ignore
+    public void xtestLongPaths() {
         Folder folderAtLisa = getFolderAtLisa();
         Path lisasPath = folderAtLisa.getLocalBase();
         getContollerLisa().getFolderRepository().removeFolder(folderAtLisa, false);

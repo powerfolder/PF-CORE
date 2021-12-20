@@ -187,7 +187,16 @@ public class MirrorFolderTest extends FiveControllerTestCase {
                 return foLisa.getKnownDirectories().size();
             }
         });
-        assertEquals(1, getFolderAtLisa().getIncomingFiles().size());
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            public boolean reached() {
+                return getFolderAtLisa().getIncomingFiles().size() >= 1;
+            }
+
+            public String message() {
+                return "Incoming files at lisa: "
+                        + getFolderAtLisa().getIncomingFiles().size();
+            }
+        });
         TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerLisa().getTransferManager()

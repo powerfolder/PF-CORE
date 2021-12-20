@@ -94,13 +94,12 @@ public abstract class MultipleControllerTestCase extends TestCase {
         // Cleanup
         TestHelper.cleanTestDir();
         PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve("build"));
-        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     @Override
     protected void tearDown() throws Exception {
         LoggingManager.setConsoleLogging(Level.OFF);
-        System.out.println("-------------- tearDown -----------------");
+        //System.out.println("-------------- tearDown -----------------");
         super.tearDown();
         stopControllers();
         mctFolder = null;
@@ -330,7 +329,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             }
         });
         TestHelper.waitMilliSeconds(500);
-        System.out.println("All Controllers Disconnected");
+        //System.out.println("All Controllers Disconnected");
     }
 
     /**

@@ -26,6 +26,9 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.test.Condition;
+import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpGet;
@@ -39,12 +42,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.logging.Level;
 
 import static com.liferay.nativity.util.OSDetector.isWindows;
 import static org.junit.Assume.assumeTrue;
@@ -80,6 +85,9 @@ public class UtilTest extends TestCase {
     }
 
     public void testEqualsRelativeCase() {
+        if (!FileInfo.IGNORE_CASE) {
+            return;
+        }
         assumeTrue("Test only supported on systems which do ignore character case in filenames, e.g. Windows", FileInfo.IGNORE_CASE);
         assertTrue(Util.equalsRelativeName("Test","test"));
         assertTrue(Util.equalsRelativeName("ThIsIsAtEsTsTrInG", "thisIsATestString"));
@@ -325,14 +333,14 @@ public class UtilTest extends TestCase {
 
     public void testUseSwarming() throws ConnectionException, IOException {
 
+        System.out.println("testUseSwarming1");
         File file = new File("build/test/first.config");
         file.getParentFile().mkdirs();
         file.createNewFile();
         FileWriter writer = new FileWriter(file);
-        writer.write("\n" +
-                "net.bindaddress=127.0.0.1\n" +
-                "random-port=false\n" +
-                "net.port=3457\n" +
+        writer.write(
+                "random-port=true\n" +
+                "net.port=7345\n" +
                 "net.broadcast=false\n" +
                 "disableui=true");
 
@@ -347,20 +355,24 @@ public class UtilTest extends TestCase {
 
         Feature.P2P_REQUIRES_LOGIN_AT_SERVER.disable();
 
+        System.out.println("testUseSwarming2");
         Controller firstController = new Controller();
+        System.out.println("testUseSwarming2-1");
         Controller secondController = new Controller();
+        System.out.println("testUseSwarming2-2");
+        LoggingManager.setConsoleLogging(Level.FINE);
         firstController.startConfig("build/test/first.config");
+        System.out.println("testUseSwarming3");
         secondController.startConfig("build/test/second.config");
 
+        System.out.println("testUseSwarming4");
         firstController.connect(secondController.getConnectionListener().getAddress());
         Member member = firstController.getNodeManager().getConnectedNodes().iterator().next();
         assertTrue(Util.useSwarming(firstController, member));
 
+        System.out.println("testUseSwarming5");
         firstController.shutdown();
         secondController.shutdown();
-
-        FileUtils.forceDelete(file);
-        FileUtils.forceDelete(newFile);
     }
 
     public void testGetResourceUnableToFind() {
@@ -398,9 +410,6 @@ public class UtilTest extends TestCase {
         Path returnedPath = Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, path, false, true);
 
         assertEquals(returnedPath, destination.toPath());
-
-        //Cleanup
-        FileUtils.forceDelete(destination);
     }
 
     public void testCopyResource() throws IOException {
@@ -409,21 +418,16 @@ public class UtilTest extends TestCase {
         Path returnedPath = Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, true);
 
         assertTrue(destination.toFile().exists());
-
-        //Cleanup
-        FileUtils.forceDelete(destination.toFile());
     }
 
     public void testCopyResourceExceptionQuiet() {
         Path destination = new File("build").toPath();
         assertNull(Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, true));
-
     }
 
     public void testCopyResourceExceptionNotQuiet() {
         Path destination = new File("build").toPath();
         assertNull(Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, false));
-
     }
 
     public void testGetUrlContentNull() {
@@ -454,13 +458,22 @@ public class UtilTest extends TestCase {
 
         URL url = file.toURI().toURL();
         assertEquals("This is a test string",Util.getURLContent(url));
-
-        FileUtils.forceDelete(file);
     }
 
     public void testGetUrlSite() throws MalformedURLException {
-        URL url = new URL("https://google.com");
-        assertTrue(Util.getURLContent(url).contains("Google"));
+        TestHelper.waitForCondition(10, () -> {
+            URL url = null;
+            try {
+                url = new URL("https://google.com");
+            } catch (MalformedURLException e) {
+                return false;
+            }
+            String content = Util.getURLContent(url);
+            if (content == null) {
+                return false;
+            }
+            return content.contains("Google");
+        });
     }
 
     public void testGetUrlNotInputStream() throws IOException {
@@ -470,11 +483,12 @@ public class UtilTest extends TestCase {
 
         URL url = file.toURI().toURL();
         assertNull(Util.getURLContent(url));
-
-        FileUtils.forceDelete(file);
     }
 
     public void testSetClipboardContentsOk() throws IOException, UnsupportedFlavorException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
 
         Util.setClipboardContents("This is a test string");
@@ -503,6 +517,9 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsOk() {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
 
         StringSelection stringSelection = new StringSelection("This is some text");
@@ -516,11 +533,12 @@ public class UtilTest extends TestCase {
         StringSelection spaces = new StringSelection("    ");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(spaces, spaces);
         assertEquals("    ", Util.getClipboardContents());
-
-
     }
 
     public void testGetClipboardContentsNull() {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -553,6 +571,9 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsUnsupportedFlavor() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
 
         BufferedImage image = new BufferedImage(1,2,3);

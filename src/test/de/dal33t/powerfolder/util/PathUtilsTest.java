@@ -499,160 +499,6 @@ public class PathUtilsTest extends TestCase {
         assertFalse(success);
     }
 
-    public void testRecursiveMirror() throws IOException {
-        Path baseDir = Paths.get("build/test").toAbsolutePath();
-        PathUtils.recursiveDelete(baseDir);
-
-        // Setup base dir with dirs and files.
-        Files.createDirectories(baseDir);
-        Path source = baseDir.resolve("source");
-        Files.createDirectories(source);
-        Path sub = source.resolve("sub");
-        Files.createDirectories(sub);
-        TestHelper.createRandomFile(baseDir, "a");
-        TestHelper.createRandomFile(source, "b");
-        TestHelper.createRandomFile(source, "c");
-        TestHelper.createRandomFile(sub, "d");
-
-        // Move
-        Path copyDir = Paths.get("build/test/sub").toAbsolutePath();
-        boolean done;
-        try {
-            PathUtils.recursiveMirror(baseDir, copyDir);
-            done = true;
-        } catch (IOException e) {
-            System.err.println(e.toString());
-            done = false;
-        }
-        assertFalse(done);
-
-        // Move
-        copyDir = Paths.get("build/test/sub/subsub").toAbsolutePath();
-        Files.createDirectories(copyDir);
-        try {
-            PathUtils.recursiveMirror(baseDir, copyDir);
-            done = true;
-        } catch (IOException e) {
-            System.err.println(e.toString());
-            done = false;
-        }
-        assertFalse(done);
-
-        // Now actual copy
-        Path target = baseDir.resolve("target");
-        long souceSum = buildCheckSum(source, 0);
-        long targetSum = buildCheckSum(target, 0);
-        assertFalse(souceSum == targetSum);
-        PathUtils.recursiveMirror(source, target);
-        souceSum = buildCheckSum(source, 0);
-        targetSum = buildCheckSum(target, 0);
-        assertEquals("start: sourceSum=" + souceSum + ". targetSum=" + targetSum, souceSum, targetSum);
-        // Should be OK!
-
-        int nFiles = 250;
-        Set<Path> testFiles = new HashSet<Path>();
-        // Create a initial folder structure
-        Path currentSubDir = source;
-        for (int i = 0; i < nFiles; i++) {
-            if (Math.random() > 0.95) {
-                // Change subdir
-                boolean madeDir = false;
-                do {
-                    int depth = (int) (Math.random() * 10);
-                    String fileName = "";
-                    for (int j = 0; j < depth; j++) {
-                        fileName += TestHelper.createRandomFilename() + "/";
-                    }
-                    fileName += TestHelper.createRandomFilename();
-                    currentSubDir = source.resolve(fileName);
-                    try {
-                        Files.createDirectories(currentSubDir);
-                        madeDir = true;
-                    } catch (IOException ioe) {
-                        madeDir = false;
-                    }
-                } while (!madeDir);
-            }
-
-            if (!currentSubDir.equals(source)) {
-                if (Math.random() > 0.9) {
-                    // Go one directory up
-                    // System.err.println("Moving up from "
-                    // + currentSubDir.getAbsoluteFile());
-                    currentSubDir = currentSubDir.getParent();
-                } else if (Math.random() > 0.95) {
-                    // Go one directory up
-                    Path subDirCanidate = currentSubDir.resolve(TestHelper
-                            .createRandomFilename());
-                    // System.err.println("Moving down to "
-                    // + currentSubDir.getAbsoluteFile());
-                    if (!Files.isRegularFile(subDirCanidate)) {
-                        currentSubDir = subDirCanidate;
-                        Files.createDirectories(currentSubDir);
-                    }
-                }
-            }
-
-            Path file = TestHelper.createRandomFile(currentSubDir);
-            testFiles.add(file);
-        }
-
-        souceSum = buildCheckSum(source, 0);
-        targetSum = buildCheckSum(target, 0);
-        assertFalse(souceSum == targetSum);
-        PathUtils.recursiveMirror(source, target);
-        souceSum = buildCheckSum(source, 0);
-        targetSum = buildCheckSum(target, 0);
-        assertEquals("Stage 2: sourceSum=" + souceSum + ". targetSum=" + targetSum, souceSum, targetSum);
-
-        for (int i = 0; i < 100; i++) {
-            TestHelper.createRandomFile(target);
-        }
-        // Again
-        souceSum = buildCheckSum(source, 0);
-        targetSum = buildCheckSum(target, 0);
-        assertFalse(souceSum == targetSum);
-        PathUtils.recursiveMirror(source, target);
-        souceSum = buildCheckSum(source, 0);
-        targetSum = buildCheckSum(target, 0);
-        assertEquals("Stage 3: sourceSum=" + souceSum + ". targetSum=" + targetSum,souceSum, targetSum);
-
-        final Path tempDir = source.resolve("temp");
-        Files.createDirectories(tempDir);
-        final Path existingDestDir = target.resolve("shouldRemain");
-        Files.createDirectories(existingDestDir);
-        PathUtils.recursiveMirror(source, target, new Filter<Path>() {
-            @Override
-            public boolean accept(Path pathname) {
-                return !pathname.equals(tempDir)
-                        && !existingDestDir.equals(pathname);
-            }
-        });
-        assertFalse(Files.exists(target.resolve(tempDir.getFileName())));
-        assertTrue(Files.exists(existingDestDir));
-    }
-
-    private long buildCheckSum(Path file, long baseSum) throws IOException {
-        try {
-            baseSum += Files.size(file);
-        } catch (IOException ioe) {
-            // Ignore.
-        }
-        try {
-            baseSum += Files.size(file.toRealPath());
-        } catch (IOException ioe) {
-            // Ignore.
-        }
-        if (Files.isDirectory(file)) {
-            try (DirectoryStream<Path> stream = Files.newDirectoryStream(file)) {
-                for (Path entry : stream) {
-                    baseSum += buildCheckSum(entry, baseSum);
-                }
-            }
-        }
-        return baseSum;
-    }
-
     public void testIsSubdirectory() throws IOException {
         Path parent = Paths.get("parent");
         Files.createDirectories(parent);
@@ -1627,9 +1473,11 @@ public class PathUtilsTest extends TestCase {
         Path returnedPath = PathUtils.removeInvalidFilenameChars(path);
         assertEquals(path, returnedPath);
 
-        file = new File("myFile\\Yes.txt");
-        returnedPath = PathUtils.removeInvalidFilenameChars(file.toPath());
-        assertEquals("Yes.txt",returnedPath.getFileName().toString());
+        if (isWindows()) {
+            file = new File("myFile\\Yes.txt");
+            returnedPath = PathUtils.removeInvalidFilenameChars(file.toPath());
+            assertEquals("Yes.txt",returnedPath.getFileName().toString());
+        }
 
         file = new File("myFile/Yes.txt");
         returnedPath = PathUtils.removeInvalidFilenameChars(file.toPath());
@@ -1916,12 +1764,18 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testSetAttributeOnWindowsNull() {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         File file = new File("build/test/myFile.txt");
         assertTrue(PathUtils.setAttributesOnWindows(file.toPath(), null, null));
     }
 
     public void testSetAttributeOnWindowsHidden() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
@@ -1932,6 +1786,9 @@ public class PathUtilsTest extends TestCase {
     }
 
     public void testSetAttributeOnWindowsSystem() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         File file = new File("build/test/myFile.txt");
         file.createNewFile();
@@ -1943,6 +1800,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testSetAttributeOnWindowsIoException() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         assumeTrue("Windows system required to run this test", isWindows());
         File file = new File("build/test/myFile.txt");
         assertTrue(PathUtils.setAttributesOnWindows(file.toPath(), null, true));
@@ -2009,6 +1869,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testDeleteDesktopIni() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         File directory = new File("build/test/directoryOne");
         directory.mkdir();
         File desktopIniFile = new File("build/test/directoryOne/" + PathUtils.DESKTOP_INI_FILENAME);
@@ -2020,6 +1883,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testMaintainDesktopIniRecent() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
         configFile.createNewFile();
@@ -2042,6 +1908,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testMaintainDesktopIniLastModifiedPfIconFalse() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
         configFile.createNewFile();
@@ -2062,6 +1931,9 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testMaintainDesktopIniLastModifiedPfIconTrue() throws IOException {
+        if (!isWindows()) {
+            return;
+        }
         Controller controller = new Controller();
         File configFile = new File("build/test/basic.config");
         configFile.createNewFile();
@@ -2142,15 +2014,6 @@ public class PathUtilsTest extends TestCase {
         file.createNewFile();
         assertTrue(PathUtils.openFile(file.toPath()));
     }
-
-
-    @Test
-    public void testOpenDirectory() {
-        File directory = new File("build/test/directoryOne");
-        directory.mkdir();
-        assertTrue(PathUtils.openFile(directory.toPath()));
-    }
-
 
     @Test
     public void testOpenFileIfExists() throws IOException {
@@ -2358,40 +2221,6 @@ public class PathUtilsTest extends TestCase {
 
     }
 
-
-    @Test
-    public void testRecurrsiveMirrorUnsupported() throws IOException {
-        File file = new File("build/test/myFile.txt");
-        file.createNewFile();
-        File directory = new File("build/test/myDirectory");
-        directory.mkdir();
-
-        try {
-            PathUtils.recursiveMirror(file.toPath(), directory.toPath(), new Filter<Path>() {
-                @Override
-                public boolean accept(Path entry) throws IOException {
-                    return true;
-                }
-            });
-            fail("Did not throw UnsupportedOperationException for file-directory case");
-        } catch (UnsupportedOperationException e){
-            //OK
-        }
-
-
-        try {
-            PathUtils.recursiveMirror(directory.toPath(), file.toPath(), new Filter<Path>() {
-                @Override
-                public boolean accept(Path entry) throws IOException {
-                    return true;
-                }
-            });
-            fail("Did not throw UnsupportedOperationException for direcotyr-file case");
-        } catch (UnsupportedOperationException e){
-            //OK
-        }
-    }
-
     @Test
     public void testZipFileIllegal() throws IOException {
         File directory = new File("build/test/myDir");
@@ -2512,6 +2341,9 @@ public class PathUtilsTest extends TestCase {
     public void testCopyFromStreamToFileDeleteException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
+        if (isWindows()) {
+            return;
+        }
         assumeFalse("Not able to run this test on Windows", isWindows());
         File from = new File("build/test/fileOne");
         assertTrue(from.createNewFile());
@@ -2546,6 +2378,9 @@ public class PathUtilsTest extends TestCase {
     public void testRecursiveDeleteException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
+        if (isWindows()) {
+            return;
+        }
         assumeFalse("Not able to run this test on Windows", isWindows());
         File directoryRo = new File("build/test/directoryOne");
         assertTrue(directoryRo.mkdir());
@@ -2565,36 +2400,12 @@ public class PathUtilsTest extends TestCase {
     }
 
     @Test
-    public void testRecursiveMirrorException() throws IOException {
-        // Skip. Does not work on Windows:
-        // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
-        assumeFalse("Not able to run this test on Windows", isWindows());
-        File sourceDir = new File("build/test/sourceDir");
-        assertTrue(sourceDir.mkdir());
-
-        File targetDir = new File("build/test/targetDir");
-        assertTrue(targetDir.mkdir());
-
-        File fileInTargetDir = new File("build/test/targetDir/file.txt");
-        assertTrue(fileInTargetDir.createNewFile());
-
-        assertTrue(targetDir.setReadOnly());
-
-        try {
-            PathUtils.recursiveMirror(sourceDir.toPath(), targetDir.toPath());
-            assertTrue(targetDir.setWritable(true));
-            fail("Should have thrown IO, target is RO and it should not be able to delete file from target");
-        } catch (IOException e){
-            //OK
-        }
-
-        assertTrue(targetDir.setWritable(true));
-    }
-
-    @Test
     public void testHasFilesException() throws IOException {
         // Skip. Does not work on Windows:
         // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=6728842
+        if (isWindows()) {
+            return;
+        }
         assumeFalse("Not able to run this test on Windows", isWindows());
         File sourceDir = new File("build/test/sourceDir");
         assertTrue(sourceDir.mkdir());
