@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import de.dal33t.powerfolder.util.os.OSUtil;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -170,7 +171,10 @@ public class NetUtilTest extends TestCase {
             .getByName("10.51.65.254")));
     }
 
-    public void xtestNoResovleInetAddress() {
+    public void testNoResovleInetAddress() {
+        if (OSUtil.isWindowsSystem()) {
+            return;
+        }
         InetSocketAddress addr = new InetSocketAddress("127.0.0.1", 1337);
         assertFalse(addr.isUnresolved());
 
