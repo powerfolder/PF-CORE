@@ -170,7 +170,7 @@ public class NetUtilTest extends TestCase {
             .getByName("10.51.65.254")));
     }
 
-    public void testNoResovleInetAddress() {
+    public void xtestNoResovleInetAddress() {
         InetSocketAddress addr = new InetSocketAddress("127.0.0.1", 1337);
         assertFalse(addr.isUnresolved());
 
