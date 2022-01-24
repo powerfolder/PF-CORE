@@ -186,7 +186,7 @@ public class ServerInfo implements Serializable, D2DObject {
      * @return the URL to the given folder.
      */
     public String getURL(FolderInfo folder) {
-        String uri = "/filestable/";
+        String uri = "/files/";
         String snippet = Base64.encode4URL(folder.getId());
         if (snippet.endsWith("=")) {
             snippet = snippet.substring(0, snippet.length() - 1);
