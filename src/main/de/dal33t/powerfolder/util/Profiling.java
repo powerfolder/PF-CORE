@@ -268,6 +268,8 @@ public class Profiling {
                 || uri.startsWith("/onlyoffice/")
                 || uri.startsWith("/editfile/")
                 || uri.startsWith("/upload/")
+                || uri.startsWith("/wapi/upload/")
+                || uri.startsWith("/api/upload/")
                 || uri.startsWith("/ul/")
                 || uri.startsWith("/gallery/")
                 || uri.startsWith("/settings/")
