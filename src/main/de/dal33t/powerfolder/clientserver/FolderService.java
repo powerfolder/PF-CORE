@@ -400,7 +400,7 @@ public interface FolderService {
      * @param folderInfo The folder info
      * @param account    The account owning the folder
      */
-    void correctStoragePath(FolderInfo folderInfo, Account account);
+    void correctStoragePath(FolderInfo folderInfo, Account account, boolean moveData);
 
     /**
      * PFS-2343: Checks if a folder is encrypted.

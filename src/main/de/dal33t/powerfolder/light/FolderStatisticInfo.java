@@ -63,6 +63,10 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
     // The archive size.
     private volatile long archiveSize;
 
+    //number of blocks  on the folder
+    private volatile long blocks;
+
+
     // Total number of files
     private volatile int totalFilesCount;
 
@@ -170,6 +174,14 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
             partialSyncStatMap = Util.createConcurrentHashMap();
         }
         return partialSyncStatMap;
+    }
+
+    public long getBlocks() {
+        return blocks;
+    }
+
+    public void setBlocks(long blocks) {
+        this.blocks = blocks;
     }
 
     /**

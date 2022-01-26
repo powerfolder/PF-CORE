@@ -48,6 +48,7 @@ import static de.dal33t.powerfolder.clientserver.AccountService.TOKEN_TYPE_MERGE
  * </table>
  */
 public class UpdateEmailResponse {
+    public static final UpdateEmailResponse NO_CONTENT = new UpdateEmailResponse(StatusCode.NO_CONTENT);
     @NotNull
     private final StatusCode  status;
     @Nullable
@@ -104,7 +105,7 @@ public class UpdateEmailResponse {
      * contain any further information.
      */
     public static UpdateEmailResponse createNothingChanged() {
-        return new UpdateEmailResponse(StatusCode.NO_CONTENT);
+        return NO_CONTENT;
     }
 
     /**
