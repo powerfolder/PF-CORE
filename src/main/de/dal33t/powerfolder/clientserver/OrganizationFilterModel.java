@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,13 +22,9 @@ import java.util.List;
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.jgoodies.binding.beans.Model;
-
-public class OrganizationFilterModel extends Model {
+public class OrganizationFilterModel implements Serializable {
 
     private static final long serialVersionUID = 100L;
-
-    public static final String PROPERTY_NAME = "name";
 
     private String name;
     private int maxResults;
@@ -44,7 +41,6 @@ public class OrganizationFilterModel extends Model {
     public void setName(String name) {
         Object oldValue = getName();
         this.name = name;
-        firePropertyChange(PROPERTY_NAME, oldValue, this.name);
     }
 
     public int getMaxResults() {

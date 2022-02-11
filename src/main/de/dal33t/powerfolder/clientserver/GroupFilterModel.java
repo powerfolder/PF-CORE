@@ -1,16 +1,13 @@
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jgoodies.binding.beans.Model;
-
 import de.dal33t.powerfolder.security.Organization;
 
-public class GroupFilterModel extends Model {
+public class GroupFilterModel implements Serializable {
     private static final long serialVersionUID = 100L;
-
-    public static final String PROPERTY_QUERYNAME = "queryname";
 
     private String queryname;
     private String organizationOID = Organization.FILTER_MATCH_ALL;
@@ -43,7 +40,6 @@ public class GroupFilterModel extends Model {
         this.queryname = queryname != null
                 ? queryname.toLowerCase().trim()
                 : null;
-        firePropertyChange(PROPERTY_QUERYNAME, oldValue, this.queryname);
     }
 
     public String getMemberOfOrganizationOID() {
