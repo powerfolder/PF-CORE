@@ -220,4 +220,12 @@ public interface AccountService {
      */
     @NotNull
     UpdateEmailResponse updateEmails(@NotNull Account account, @Nullable String[] emails);
+
+    /**
+     * PF-1812:
+     * @param filter the filter to use
+     *
+     * @return retrieve the filtered/searched accounts
+     */
+    List<Account> getAll(AccountFilterModel filter);
 }
