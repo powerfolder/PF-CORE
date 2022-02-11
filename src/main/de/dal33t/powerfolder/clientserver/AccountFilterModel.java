@@ -19,24 +19,14 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jgoodies.binding.beans.Model;
-
 import de.dal33t.powerfolder.security.Organization;
 
-public class AccountFilterModel extends Model {
+public class AccountFilterModel implements Serializable {
     private static final long serialVersionUID = 100L;
-
-    public static final String PROPERTY_DISABLED_ONLY = "disabledOnly";
-    public static final String PROPERTY_PRO_USERS_ONLY = "proUsersOnly";
-    public static final String PROPERTY_PAYING_OS_ONLY = "payingOSOnly";
-    public static final String PROPERTY_ACTIVE_TRIAL = "activeTrial";
-    public static final String PROPERTY_USERNAME = "username";
-    public static final String PROPERTY_QUERYNAME = "queryname";
-    public static final String PROPERTY_PAGE_SIZE = "pageSize";
-    public static final String PROPERTY_PAGE_NUMBER = "pageNumber";
 
     private boolean disabledOnly;
     private boolean proUsersOnly;
@@ -70,7 +60,6 @@ public class AccountFilterModel extends Model {
     public void setDisabledOnly(boolean disabledOnly) {
         Object oldValue = isDisabledOnly();
         this.disabledOnly = disabledOnly;
-        firePropertyChange(PROPERTY_DISABLED_ONLY, oldValue, this.disabledOnly);
     }
 
     public boolean isProUsersOnly() {
@@ -80,7 +69,6 @@ public class AccountFilterModel extends Model {
     public void setProUsersOnly(boolean proUsersOnly) {
         Object oldValue = isProUsersOnly();
         this.proUsersOnly = proUsersOnly;
-        firePropertyChange(PROPERTY_PRO_USERS_ONLY, oldValue, this.proUsersOnly);
     }
 
     public boolean isActiveTrial() {
@@ -90,7 +78,6 @@ public class AccountFilterModel extends Model {
     public void setActiveTrial(boolean activeTrial) {
         Object oldValue = isActiveTrial();
         this.activeTrial = activeTrial;
-        firePropertyChange(PROPERTY_ACTIVE_TRIAL, oldValue, this.activeTrial);
     }
 
     public String getUsername() {
@@ -100,7 +87,6 @@ public class AccountFilterModel extends Model {
     public void setUsername(String username) {
         Object oldValue = getUsername();
         this.username = username != null ? username.toLowerCase().trim() : null;
-        firePropertyChange(PROPERTY_USERNAME, oldValue, this.username);
     }
 
     public String getQueryname() {
@@ -112,7 +98,6 @@ public class AccountFilterModel extends Model {
         this.queryname = queryname != null
             ? queryname.toLowerCase().trim()
             : null;
-        firePropertyChange(PROPERTY_QUERYNAME, oldValue, this.queryname);
     }
 
     public String getMemberOfOrganizationOID() {
