@@ -1885,7 +1885,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         ConfigurationLoader
                             .processMessage(getController(), clr);
                     } else {
-                        logInfo("Ignoring full reload config request for myself being server: "
+                        logFine("Ignoring full reload config request for myself being server: "
                             + message);
                     }
                 } else {
