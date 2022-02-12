@@ -24,6 +24,8 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.Group;
+import de.dal33t.powerfolder.security.Organization;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -222,10 +224,16 @@ public interface AccountService {
     UpdateEmailResponse updateEmails(@NotNull Account account, @Nullable String[] emails);
 
     /**
-     * PF-1812:
-     * @param filter the filter to use
+     * PF-1812 / PFS-3954
+     *
+     * @param filter
      *
      * @return retrieve the filtered/searched accounts
      */
     List<Account> getAll(AccountFilterModel filter);
+
+    List<Group> getAll(GroupFilterModel filter);
+
+    List<Organization> getAll(OrganizationFilterModel filter);
+
 }
