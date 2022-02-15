@@ -51,6 +51,10 @@ public class OrganizationFilterModel implements Serializable {
         this.maxResults = maxResults;
     }
 
+    public boolean isEmptyOrgOIDs() {
+        return orgOIDs == null || orgOIDs.isEmpty();
+    }
+
     public List<String> getOrgOIDs() {
         return orgOIDs;
     }
