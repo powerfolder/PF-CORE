@@ -2613,6 +2613,15 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     /**
+     *
+     * @param controller
+     * @return true if this a server of the own cluster
+     */
+    public boolean isServerOfOwnCluster(Controller controller) {
+        return server && !controller.getOSClient().isClusterServer(this);
+    }
+
+    /**
      * Sets/Unsets this member as server that should be reconnected.
      *
      * @param server
