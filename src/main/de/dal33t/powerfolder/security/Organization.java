@@ -363,6 +363,13 @@ public class Organization implements Serializable {
         return color3;
     }
 
+    public synchronized void convertCollections() {
+        if (!(domains instanceof CopyOnWriteArrayList<?>)) {
+            domains = new CopyOnWriteArrayList<>(
+                    domains);
+        }
+    }
+
     @Override
     public String toString() {
         return "Organization [oid=" + oid + ", name=" + name + ", maxUsers="
