@@ -17,7 +17,7 @@
  *
  * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
  */
-package de.dal33t.powerfolder.folder;
+package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -72,7 +72,7 @@ public class FileProblemTest extends ControllerTestCase {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder");
         assertFalse(FileProblemHelper
-            .hasProblems("a valid filename.whatever"));
+            .hasFilenameProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows
         assertEquals(1, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());
@@ -98,7 +98,7 @@ public class FileProblemTest extends ControllerTestCase {
             FileInfoFactory.lookupInstance(folderInfo, "aux.txt")).size());
         // 255 chars
         assertFalse(FileProblemHelper
-            .hasProblems("012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"));
+            .hasFilenameProblems("012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234"));
         // 256 chars
         assertEquals(
             1,
@@ -116,7 +116,7 @@ public class FileProblemTest extends ControllerTestCase {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), false);
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder");
         assertFalse(FileProblemHelper
-            .hasProblems("a valid filename.whatever"));
+            .hasFilenameProblems("a valid filename.whatever"));
         // cannot end with . and space ( ) on windows
         assertEquals(0, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());

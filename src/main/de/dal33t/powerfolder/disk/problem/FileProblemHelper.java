@@ -54,11 +54,11 @@ public class FileProblemHelper {
 
     private static final int MAX_FILENAME_LENGTH = 255;
 
-    public static final String[] ILLEGAL_LINUX_CHARS = { "/" };
+    private static final String[] ILLEGAL_LINUX_CHARS = { "/" };
 
-    public static final String[] ILLEGAL_WINDOWS_CHARS = { "\\" };
+    private static final String[] ILLEGAL_WINDOWS_CHARS = { "\\" };
 
-    public static final String[] ILLEGAL_MACOSX_CHARS = { };
+    private static final String[] ILLEGAL_MACOSX_CHARS = { };
 
     private static final Date UNIX_TIME_ZERO = new Date(0);
     private static final Date TEN_YEARS_IN_THE_FUTURE = new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 365 * 10);
@@ -70,7 +70,7 @@ public class FileProblemHelper {
      * @return
      */
     public static boolean hasProblems(FileInfo fInfo) {
-        return hasProblems(fInfo.getFilenameOnly()) || hasIllegalModificationDate(fInfo);
+        return hasFilenameProblems(fInfo.getFilenameOnly()) || hasIllegalModificationDate(fInfo);
     }
 
     private static boolean hasIllegalModificationDate(FileInfo fileInfo) {
@@ -87,7 +87,7 @@ public class FileProblemHelper {
      * @param filename
      * @return
      */
-    public static boolean hasProblems(String filename) {
+    static boolean hasFilenameProblems(String filename) {
         return containsIllegalLinuxChar(filename)
             || containsIllegalMacOSXChar(filename)
             || containsIllegalWindowsChars(filename)
@@ -147,7 +147,7 @@ public class FileProblemHelper {
     /**
      * Will also return true if file is called AUX.txt or aux
      */
-    public static boolean isReservedWindowsFilename(String filename) {
+    static boolean isReservedWindowsFilename(String filename) {
         String filePart = stripExtension(filename).toUpperCase();
         for (String reservedWord : RESERVED_WORDS) {
             if (reservedWord.equals(filePart)) {
@@ -168,10 +168,10 @@ public class FileProblemHelper {
         return filename;
     }
 
-/**
+    /**
      * |\?*<":>/ illegal in windows
      */
-    public static boolean containsIllegalWindowsChars(String filename) {
+    static boolean containsIllegalWindowsChars(String filename) {
         for (String illegalLinuxChar : ILLEGAL_WINDOWS_CHARS) {
             if (filename.contains(illegalLinuxChar)) {
                 return true;
@@ -211,7 +211,7 @@ public class FileProblemHelper {
         return false;
     }
 
-    public static boolean isTooLong(String filename) {
+    private static boolean isTooLong(String filename) {
         return filename.length() > MAX_FILENAME_LENGTH;
     }
 
@@ -219,7 +219,7 @@ public class FileProblemHelper {
      * This method tries to rename the file to a better filename without
      * problems.
      */
-    public static void resolve(Controller controller, FileInfo fileInfo,
+    static void resolve(Controller controller, FileInfo fileInfo,
         String newFilename, Problem problem)
     {
 
@@ -249,7 +249,7 @@ public class FileProblemHelper {
         }
     }
 
-    public static String removeChars(String filenameArg, String[] charsToRemove)
+    static String removeChars(String filenameArg, String[] charsToRemove)
     {
         String filename = filenameArg;
         for (String c : charsToRemove) {
@@ -273,7 +273,7 @@ public class FileProblemHelper {
      * @return if the file with the new name (same path as FileInfo) does not
      *         exists yet.
      */
-    public static boolean isUnique(Controller controller, String newName,
+    private static boolean isUnique(Controller controller, String newName,
         FileInfo fileInfo)
     {
         Folder folder = controller.getFolderRepository().getFolder(
@@ -302,7 +302,7 @@ public class FileProblemHelper {
      * @param fileInfo
      * @return
      */
-    public static String getShorterFilename(Controller controller,
+    static String getShorterFilename(Controller controller,
         FileInfo fileInfo)
     {
         int length = Math.min(MAX_FILENAME_LENGTH, fileInfo.getFilenameOnly()
@@ -329,7 +329,7 @@ public class FileProblemHelper {
      * @param fileInfo
      * @return
      */
-    public static String makeUnique(Controller controller, FileInfo fileInfo) {
+    static String makeUnique(Controller controller, FileInfo fileInfo) {
         String filename = fileInfo.getFilenameOnly();
         String extension = "";
         if (filename.contains(".")) {
