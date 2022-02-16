@@ -19,8 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+
 /**
- * Used to easily add gurading clauses.
+ * Used to easily add guarding clauses.
  *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
@@ -86,7 +88,7 @@ public class Reject {
      *             if str is blank
      */
     public static void ifBlank(String str, String message) {
-        if (str == null || str.trim().length() == 0) {
+        if (isBlank(str)) {
             throw new IllegalArgumentException(message);
         }
     }
