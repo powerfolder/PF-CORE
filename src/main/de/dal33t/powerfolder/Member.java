@@ -1584,9 +1584,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 // FIX for #924
                                 targetFolder.waitForScan();
                                 // Send filelist of joined folders
-                                logInfo("Resending file list of "
-                                    + targetFolder.getName() + " to "
-                                    + getNick() + " (" + getUsername() + ")");
+                                if (isFine()) {
+                                    logFine("Resending file list of " + targetFolder.getName() + " to "
+                                        + getNick() + " (" + getUsername() + ")");
+                                }
                                 Message[] filelistMsgs = FileList.create(
                                     targetFolder, targetFolder
                                         .supportExternalizable(Member.this));
