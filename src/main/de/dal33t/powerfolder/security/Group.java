@@ -312,7 +312,7 @@ public class Group implements Serializable, D2DObject {
         return result;
     }
 
-    synchronized void convertCollections() {
+    public synchronized void convertCollections() {
         if (!(permissions instanceof CopyOnWriteArrayList<?>)) {
             Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
                 permissions);

@@ -158,6 +158,14 @@ public interface FolderService {
     void sendInvitation(Invitation invitation, boolean wait);
 
     /**
+     * PFS-3952: Retrieves the currently set sync profile for the given folder
+     *
+     * @param folderInfo
+     * @return
+     */
+    SyncProfile getSyncProfile(FolderInfo folderInfo);
+
+    /**
      * Changes the sync profile on the remote server for this folder.
      *
      * @param foInfo

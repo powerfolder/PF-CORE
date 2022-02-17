@@ -1885,7 +1885,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         ConfigurationLoader
                             .processMessage(getController(), clr);
                     } else {
-                        logWarning("Ignoring full reload config request for myself being server: "
+                        logFine("Ignoring full reload config request for myself being server: "
                             + message);
                     }
                 } else {
@@ -2610,6 +2610,15 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public boolean isServer() {
         return server;
+    }
+
+    /**
+     *
+     * @param controller
+     * @return true if this a server of the own cluster
+     */
+    public boolean isServerOfOwnCluster(Controller controller) {
+        return server && !controller.getOSClient().isClusterServer(this);
     }
 
     /**
