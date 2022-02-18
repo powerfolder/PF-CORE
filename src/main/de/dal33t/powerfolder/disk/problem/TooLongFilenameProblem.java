@@ -14,8 +14,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
- *
- * $Id: UnsynchronizedFolderProblem.java 7985 2009-05-18 07:17:34Z harry $
  */
 package de.dal33t.powerfolder.disk.problem;
 
