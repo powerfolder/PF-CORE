@@ -213,4 +213,20 @@ public class FileProblemTest extends ControllerTestCase {
         assertEquals("Failed to make unique abcd.txt to abcd-2.txt", s,
             "abcd-2.txt");
     }
+
+    public void test8dot3NotationProblem() {
+        setupTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        assertFalse(FileProblemHelper.is8dot3Notation("Aabcd.txt"));
+        assertFalse(FileProblemHelper.is8dot3Notation("BPAC_C~"));
+        assertFalse(FileProblemHelper.is8dot3Notation("BPAC_C~1"));
+        assertTrue(FileProblemHelper.is8dot3Notation("BPAC_C~1.ODS"));
+
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "normal/subdir/abcd.txt");
+        TestHelper.createRandomFile(getFolder().getLocalBase(), "R-SCRI~1/data/BPAC_C~1.ODS");
+        scanFolder(getFolder());
+
+        assertEquals(1, getFolder().getProblems().size());
+        assertTrue(getFolder().getProblems().get(0) instanceof EightDot3NotationFilenameProblem);
+    }
 }
