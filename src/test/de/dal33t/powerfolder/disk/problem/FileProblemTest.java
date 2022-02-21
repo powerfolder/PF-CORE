@@ -221,6 +221,7 @@ public class FileProblemTest extends ControllerTestCase {
         assertFalse(FileProblemHelper.is8dot3Notation("BPAC_C~"));
         assertFalse(FileProblemHelper.is8dot3Notation("BPAC_C~1"));
         assertTrue(FileProblemHelper.is8dot3Notation("BPAC_C~1.ODS"));
+        assertTrue(FileProblemHelper.is8dot3Notation("ADMINI~1.PDF"));
 
         TestHelper.createRandomFile(getFolder().getLocalBase(), "normal/subdir/abcd.txt");
         TestHelper.createRandomFile(getFolder().getLocalBase(), "R-SCRI~1/data/BPAC_C~1.ODS");
