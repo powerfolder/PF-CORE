@@ -25,7 +25,7 @@ import de.dal33t.powerfolder.util.Translation;
 /**
  * PFC-3317
  */
-public class EightDot3NotationFilenameProblem extends Problem {
+public class EightDot3NotationFilenameProblem extends ResolvableProblem {
     private final String description;
     private final FileInfo fileInfo;
 
@@ -69,7 +69,6 @@ public class EightDot3NotationFilenameProblem extends Problem {
     @Override
     public String toString() {
         return "EightDot3NotationFilenameProblem{" +
-
                 "fileInfo=" + fileInfo +
                 ",description='" + description + '\'' +
                 '}';
