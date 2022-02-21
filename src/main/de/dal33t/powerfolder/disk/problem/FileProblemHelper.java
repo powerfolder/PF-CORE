@@ -89,10 +89,12 @@ public class FileProblemHelper {
      */
     static boolean hasFilenameProblems(String filename) {
         return containsIllegalLinuxChar(filename)
-            || containsIllegalMacOSXChar(filename)
-            || containsIllegalWindowsChars(filename)
-            || endsWithIllegalWindowsChar(filename)
-            || isReservedWindowsFilename(filename) || isTooLong(filename);
+                || containsIllegalMacOSXChar(filename)
+                || containsIllegalWindowsChars(filename)
+                || endsWithIllegalWindowsChar(filename)
+                || isReservedWindowsFilename(filename)
+                || is8dot3Notation(filename)
+                || isTooLong(filename);
     }
 
     /**
@@ -131,6 +133,10 @@ public class FileProblemHelper {
 
             if (isReservedWindowsFilename(filename)) {
                 returnValue.add(new ReservedWordFilenameProblem(fileInfo));
+            }
+
+            if (is8dot3Notation(filename)) {
+                returnValue.add(new EightDot3NotationFilenameProblem(fileInfo));
             }
 
             if (isTooLong(filename)) {
@@ -213,6 +219,24 @@ public class FileProblemHelper {
 
     private static boolean isTooLong(String filename) {
         return filename.length() > MAX_FILENAME_LENGTH;
+    }
+
+    public static boolean is8dot3Notation(String filename) {
+        int iT = filename.lastIndexOf('~');
+        if (iT < 0 || iT == filename.length() - 1) {
+            return false;
+        }
+        int iD = filename.indexOf('.', iT + 1);
+        if (iD < 0) {
+            return false;
+        }
+        String possibleNumber = filename.substring(iT + 1, iD);
+        try {
+            Integer.valueOf(possibleNumber);
+            return filename.toUpperCase().equals(filename);
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /**

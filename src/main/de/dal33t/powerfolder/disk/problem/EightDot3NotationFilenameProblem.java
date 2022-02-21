@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2022 Christian Sprajc, dal33t GmbH. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -20,20 +20,18 @@ package de.dal33t.powerfolder.disk.problem;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
- * Filename too long on various systems (most have a 255 limit)
+ * PFC-3317
  */
-public class TooLongFilenameProblem extends ResolvableProblem {
-
+public class EightDot3NotationFilenameProblem extends ResolvableProblem {
     private final String description;
     private final FileInfo fileInfo;
 
-    public TooLongFilenameProblem(FileInfo fileInfo) {
+    public EightDot3NotationFilenameProblem(FileInfo fileInfo) {
         this.fileInfo = fileInfo;
-        description = Translation.get("filename_problem.too_long",
+        description = Translation.get("filename_problem.8dot3notation",
                 fileInfo.getFilenameOnly());
     }
 
@@ -46,7 +44,7 @@ public class TooLongFilenameProblem extends ResolvableProblem {
     }
 
     public String getWikiLinkKey() {
-        return WikiLinks.PROBLEM_FILENAME_TOO_LONG;
+        return null;
     }
 
     public Folder getFolder(final Controller controller) {
@@ -56,16 +54,24 @@ public class TooLongFilenameProblem extends ResolvableProblem {
     public Runnable resolution(final Controller controller) {
         return new Runnable() {
             public void run() {
-                String newFilename = FileProblemHelper.getShorterFilename(
-                        controller, fileInfo);
-                FileProblemHelper.resolve(controller, fileInfo, newFilename,
-                        TooLongFilenameProblem.this);
+                Folder folder = fileInfo.getFolderInfo().getFolder(controller);
+                if (folder != null) {
+                    controller.getFolderRepository().addToIgnoredFolders(folder);
+                    controller.getFolderRepository().removeFolder(folder, false);
+                }
             }
         };
     }
 
     public String getResolutionDescription() {
-        return Translation.get("filename_problem.too_long.soln_desc");
+        return Translation.get("filename_problem.8dot3notation.soln_desc");
     }
 
+    @Override
+    public String toString() {
+        return "EightDot3NotationFilenameProblem{" +
+                "fileInfo=" + fileInfo +
+                ",description='" + description + '\'' +
+                '}';
+    }
 }
