@@ -56,6 +56,7 @@ public class EightDot3NotationFilenameProblem extends ResolvableProblem {
             public void run() {
                 Folder folder = fileInfo.getFolderInfo().getFolder(controller);
                 if (folder != null) {
+                    controller.getFolderRepository().addToIgnoredFolders(folder);
                     controller.getFolderRepository().removeFolder(folder, false);
                 }
             }
