@@ -226,6 +226,10 @@ public class FileProblemHelper {
         if (iT < 0 || iT == filename.length() - 1) {
             return false;
         }
+        int iS = filename.lastIndexOf('\\');
+        if (iS >= 0) {
+            return is8dot3Notation(filename.substring(iS + 1));
+        }
         int iD = filename.indexOf('.', iT + 1);
         if (iD < 0) {
             return false;

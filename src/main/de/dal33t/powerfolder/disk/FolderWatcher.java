@@ -27,6 +27,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import net.contentobjects.jnotify.JNotify;
 import net.contentobjects.jnotify.JNotifyException;
 import net.contentobjects.jnotify.JNotifyListener;
@@ -324,6 +325,9 @@ public class FolderWatcher extends PFComponent {
                 return;
             }
             if (!PathUtils.isScannable(name, folder)) {
+                return;
+            }
+            if (FileProblemHelper.is8dot3Notation(name)) {
                 return;
             }
             if (ignoreAll) {
