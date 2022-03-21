@@ -550,11 +550,15 @@ public class Util {
         String result = null;
         try {
             // FIX1: Corrected relative filenames including path separator /
+            // FIX2: To make download servlet work with Apache proxy
             result = URLEncoder.encode(aURLFragment, "UTF-8")
-                    .replaceAll("\\+", "%20")
-                    .replaceAll("%2F", "/");
+                    .replace("+", "%20")
+                    .replace("%2F", "/");
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException("UTF-8 not supported", ex);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "Unable to encode for URL: " + aURLFragment + ". " + e, e);
+            return aURLFragment;
         }
         return result;
     }
