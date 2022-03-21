@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.clientserver;
 
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.domain.FileLink;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
@@ -143,7 +144,7 @@ public interface FolderService {
      * @deprecated use {@link #sendInvitation(Invitation, boolean)}
      */
     void sendInvitationEmail(SendInvitationEmail request);
-    
+
     /**
      * @param request
      * @param wait block until send process is finished
@@ -204,7 +205,7 @@ public interface FolderService {
      * Retrieves the hosting servers for an array of folder infos
      *
      * @param folderInfos The array of folders to retrieve the hosted servers for
-     *                    
+     *
      * @return The list of servers the folders are hosted on
      */
     Collection<MemberInfo> getHostingServersNew(FolderInfo... folderInfos);
@@ -326,10 +327,10 @@ public interface FolderService {
      * @return
      */
     String getWebDAVURL(FolderInfo foInfo);
-    
+
     /**
      * PFC-2284
-     * 
+     *
      * @param foInfo
      * @return the display name of the owner
      */
@@ -345,7 +346,7 @@ public interface FolderService {
 
     /**
      * Remove a file link.
-     * 
+     *
      * @param fInfo
      * @return
      */
@@ -427,4 +428,14 @@ public interface FolderService {
      * @throws IOException
      */
     boolean encrypt(FolderInfo folderInfo, Account account);
+
+    /**
+     * PF-1812 / PFS-3955
+     *
+     * @param filter
+     *
+     * @return retrieves the filtered/searched File Links
+     */
+    List<FileLink> getAll(FileLinkFilterModel filter);
+
 }
