@@ -546,7 +546,7 @@ public class Util {
      * @param aURLFragment
      * @return the string encoded for URL usage.
      */
-    public static String endcodeForURL(String aURLFragment) {
+    public static String encodeForURL(String aURLFragment) {
         String result = null;
         try {
             // FIX1: Corrected relative filenames including path separator /

@@ -35,7 +35,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import java.net.URLEncoder;
 import java.util.Date;
 
 /**
@@ -194,7 +193,7 @@ public class ServerInfo implements Serializable, D2DObject {
         if (snippet.endsWith("=")) {
             snippet = snippet.substring(0, snippet.length() - 1);
         }
-        uri += Util.endcodeForURL(snippet);
+        uri += Util.encodeForURL(snippet);
         return getURL(uri);
     }
 
