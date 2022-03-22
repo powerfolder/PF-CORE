@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.ArchiveMode;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -438,4 +439,13 @@ public interface FolderService {
      */
     List<FileLink> getAll(FileLinkFilterModel filter);
 
+    /**
+     * PF-1812 / PFS-3963
+     *
+     * @param folderInfo
+     * @return
+     */
+    JSONObject getUploadForm(FolderInfo folderInfo);
+
+    void storeUploadForm(FolderInfo folderInfo, JSONObject jsonObject);
 }
