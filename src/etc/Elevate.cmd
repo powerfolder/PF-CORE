@@ -60,3 +60,5 @@
  REM Run shell as admin (example) - put here code as you like
  :: ECHO %batchName% Arguments: P1=%1 P2=%2 P3=%3 P4=%4 P5=%5 P6=%6 P7=%7 P8=%8 P9=%9
  cmd /c "%1 %2 %3 %4 %5 %6 %7" /S
+ ECHO %batchName% Arguments: P1=%1 P2=%2 P3=%3 P4=%4 P5=%5 P6=%6 P7=%7 P8=%8 P9=%9
+ cmd /k
