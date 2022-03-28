@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
@@ -120,6 +119,7 @@ public class FileProblemTest extends ControllerTestCase {
         // cannot end with . and space ( ) on windows
         assertEquals(0, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());
+        PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
     }
 
     public void testStripExtension() {
