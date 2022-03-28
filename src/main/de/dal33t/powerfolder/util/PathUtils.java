@@ -43,9 +43,7 @@ import java.nio.file.attribute.FileTime;
 import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -500,7 +498,7 @@ public class PathUtils {
         if (!OSUtil.isMacOS()) {
             return name;
         }
-        Path p = Paths.get(rootPath).relativize(
+        Path p = Paths.get(rootPath).toAbsolutePath().relativize(
                 Paths.get(rootPath, name).toAbsolutePath());
         return p.toString();
     }
