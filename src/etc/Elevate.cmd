@@ -6,9 +6,6 @@
  @echo off
  CLS
  ECHO.
- ECHO =============================
- ECHO Running Admin shell
- ECHO =============================
 
 :init
  setlocal DisableDelayedExpansion
@@ -59,6 +56,18 @@
  ::::::::::::::::::::::::::::
  REM Run shell as admin (example) - put here code as you like
  :: ECHO %batchName% Arguments: P1=%1 P2=%2 P3=%3 P4=%4 P5=%5 P6=%6 P7=%7 P8=%8 P9=%9
+ ECHO ==========================
+ ECHO HESSENBOX Client Migration
+ ECHO ==========================
+ ECHO.
+ ECHO Der neue HESSENBOX Client ersetzt ab sofort die alten Sync-Clients "HESSENBOX-DA" und "JLUBox"
+ ECHO.
+ ECHO Dieses Script versucht nun die alten Clients zu stoppen und zu de-installieren.
+ ECHO Sollte dies nicht automatisch funktionieren so bitten wir Sie die Clients JLUBox, bzw. HESSENBOX-DA nun zu beenden und manuell zu de-installieren.
+ ECHO.
+ ECHO Alle Ihre Daten bleiben dabei erhalten und die Synchronisation Ihrer Daten wird von dem HESSENBOX Client uebernommen.
+ ECHO.
+ ECHO.
  cmd /c "%1 %2 %3 %4 %5 %6 %7" /S
- ECHO %batchName% Arguments: P1=%1 P2=%2 P3=%3 P4=%4 P5=%5 P6=%6 P7=%7 P8=%8 P9=%9
- cmd /k
+ REM ECHO %batchName% Arguments: P1=%1 P2=%2 P3=%3 P4=%4 P5=%5 P6=%6 P7=%7 P8=%8 P9=%9
+ pause
