@@ -19,15 +19,6 @@
  */
 package de.dal33t.powerfolder.folder;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -41,6 +32,15 @@ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.EqualsCondition;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class MirrorFolderTest extends FiveControllerTestCase {
     @Override
@@ -169,9 +169,9 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             }
         }
 
-        // 20 MB testfile
+        // 200 MB testfile
         getFolderAtBart().getFolderWatcher().setIngoreAll(true);
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 2000000);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
         getFolderAtBart().getFolderWatcher().setIngoreAll(false);
 
         scanFolder(getFolderAtBart());
