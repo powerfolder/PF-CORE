@@ -142,12 +142,12 @@ public class LoginUtil {
             url += "?";
             url += Constants.LOGIN_PARAM_USERNAME;
             url += "=";
-            url += Util.endcodeForURL(username);
+            url += Util.encodeForURL(username);
             if (password != null && password.length > 0) {
                 url += "&";
                 url += Constants.LOGIN_PARAM_PASSWORD_OBF;
                 url += "=";
-                url += Util.endcodeForURL(obfuscate(password));
+                url += Util.encodeForURL(obfuscate(password));
             }
         }
         return url;
@@ -171,7 +171,7 @@ public class LoginUtil {
             url += "?";
             url += Constants.LOGIN_PARAM_USERNAME;
             url += "=";
-            url += Util.endcodeForURL(username);
+            url += Util.encodeForURL(username);
         }
         if (StringUtils.isNotBlank(passwordObf)) {
             if (url.contains("?")) {
@@ -181,7 +181,7 @@ public class LoginUtil {
             }
             url += Constants.LOGIN_PARAM_PASSWORD_OBF;
             url += "=";
-            url += Util.endcodeForURL(passwordObf);
+            url += Util.encodeForURL(passwordObf);
         }
         return url;
     }

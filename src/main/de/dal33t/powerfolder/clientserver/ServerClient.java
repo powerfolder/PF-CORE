@@ -691,7 +691,7 @@ public class ServerClient extends PFComponent {
         return getWebURL(
                 Constants.GET_LINK_URI + '/'
                         + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
-                        + Util.endcodeForURL(fInfo.getRelativeName()), true);
+                        + Util.encodeForURL(fInfo.getRelativeName()), true);
     }
 
     /**
@@ -732,7 +732,7 @@ public class ServerClient extends PFComponent {
         return getWebURL(
                 Constants.OPEN_LINK_URI + '/'
                         + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
-                        + Util.endcodeForURL(fInfo.getRelativeName()), true);
+                        + Util.encodeForURL(fInfo.getRelativeName()), true);
     }
 
     /**

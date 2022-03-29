@@ -19,6 +19,19 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import net.contentobjects.jnotify.JNotify;
+import net.contentobjects.jnotify.JNotifyException;
+import net.contentobjects.jnotify.JNotifyListener;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,18 +39,6 @@ import java.util.Map.Entry;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-
-import net.contentobjects.jnotify.JNotify;
-import net.contentobjects.jnotify.JNotifyException;
-import net.contentobjects.jnotify.JNotifyListener;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * TRAC #711: Automatic change detection by watching the filesystem.
@@ -326,6 +327,9 @@ public class FolderWatcher extends PFComponent {
             if (!PathUtils.isScannable(name, folder)) {
                 return;
             }
+            if (FileProblemHelper.is8dot3Notation(name)) {
+                return;
+            }
             if (ignoreAll) {
                 return;
             }
@@ -337,14 +341,13 @@ public class FolderWatcher extends PFComponent {
             if (name.endsWith("/")) {
                 name = name.substring(0, name.length() - 1);
             }
-
-            name = PathUtils.getDiskFileName(rootPath, name);
-            name = FileInfoFactory.decodeIllegalChars(name);
-            if (dirtyFiles.containsKey(name)) {
-                // Skipping already dirty file
-                return;
-            }
             try {
+                name = PathUtils.getDiskFileName(rootPath, name);
+                name = FileInfoFactory.decodeIllegalChars(name);
+                if (dirtyFiles.containsKey(name)) {
+                    // Skipping already dirty file
+                    return;
+                }
                 FileInfo lookup = lookupInstance(rootPath, name);
                 if (ignoreFiles.containsKey(lookup)) {
                     // Skipping ignored file

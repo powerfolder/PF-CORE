@@ -150,6 +150,7 @@ public class EncryptedFileSystemUtils {
      */
 
     public static boolean isCryptoInstance(@NotNull Path path){
+        Reject.ifNull(path, "path");
         return path.getFileSystem() instanceof CryptoFileSystem;
     }
 
@@ -165,6 +166,7 @@ public class EncryptedFileSystemUtils {
 
     @NotNull
     public static Path getPhysicalStorageLocation(@NotNull Path path) {
+        Reject.ifNull(path, "path");
         if (!(path.getFileSystem() instanceof CryptoFileSystem)) {
             throw new IllegalArgumentException("FileSystem from " + path  + " is not a CryptoFileSystem");
         }

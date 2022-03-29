@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
-import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
@@ -42,7 +41,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.text.ParseException;
@@ -605,11 +603,11 @@ public class UtilTest extends TestCase {
     }
 
     public void testEndcodeForUrlOk(){
-        assertEquals("%21%40%23%24%25%5E%26*", Util.endcodeForURL("!@#$%^&*"));
-        assertEquals("test%2Ctesting", Util.endcodeForURL("test,testing"));
-        assertEquals("ThisIsATest", Util.endcodeForURL("ThisIsATest"));
-        assertEquals("%20%20%20", Util.endcodeForURL("   "));
-        assertEquals("1234567", Util.endcodeForURL("1234567"));
+        assertEquals("%21%40%23%24%25%5E%26*", Util.encodeForURL("!@#$%^&*"));
+        assertEquals("test%2Ctesting", Util.encodeForURL("test,testing"));
+        assertEquals("ThisIsATest", Util.encodeForURL("ThisIsATest"));
+        assertEquals("%20%20%20", Util.encodeForURL("   "));
+        assertEquals("1234567", Util.encodeForURL("1234567"));
     }
 
     public void testRemoveLastSlashFromUriNull() {

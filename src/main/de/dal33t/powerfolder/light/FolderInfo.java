@@ -19,23 +19,7 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
-
-import de.dal33t.powerfolder.util.StackDump;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
@@ -45,6 +29,18 @@ import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
 import de.dal33t.powerfolder.util.intern.Internalizer;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Index;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.light.FolderInfoFactory.lookupInstance;
 import static de.dal33t.powerfolder.light.FolderInfoFactory.unmarshallExistingTopFolder;
@@ -176,6 +172,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     public DirectoryInfo getLocation() {
         return location;
+    }
+
+    public boolean isSubFolder() {
+        return location != null;
     }
 
     /**

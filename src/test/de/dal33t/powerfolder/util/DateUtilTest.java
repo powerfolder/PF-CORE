@@ -19,6 +19,9 @@
 */
 package de.dal33t.powerfolder.util;
 
+import junit.framework.TestCase;
+import org.junit.Test;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,9 +29,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
-
-import junit.framework.TestCase;
-import org.junit.Test;
 
 public class DateUtilTest extends TestCase {
 
@@ -149,23 +149,23 @@ public class DateUtilTest extends TestCase {
      * @throws ParseException 
      */
     public void testIsMoreThanNDaysAfter() throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
-        Date d1 = sdf.parse("01 Jan 2010");
-        Date d2 = sdf.parse("10 Jan 2010");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM yyyy");
+        Date d1 = sdf.parse("01.01 2010");
+        Date d2 = sdf.parse("10.01 2010");
 
         assertTrue(DateUtil.isMoreThanNDaysAfter(d1, d2, 4));
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 15));
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 10));
 
-        d1 = sdf.parse("27 Jan 2010");
-        d2 = sdf.parse("10 Feb 2010");
+        d1 = sdf.parse("27.01 2010");
+        d2 = sdf.parse("10.02 2010");
 
         assertTrue(DateUtil.isMoreThanNDaysAfter(d1, d2, 4));
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 20));
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 14));
 
-        d1 = sdf.parse("10 Dec 2010");
-        d2 = sdf.parse("05 Jan 2011");
+        d1 = sdf.parse("10.12 2010");
+        d2 = sdf.parse("05.01 2011");
 
         assertTrue(DateUtil.isMoreThanNDaysAfter(d1, d2, 10));
         assertFalse(DateUtil.isMoreThanNDaysAfter(d1, d2, 30));

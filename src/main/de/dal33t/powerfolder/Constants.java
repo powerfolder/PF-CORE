@@ -17,11 +17,11 @@
  */
 package de.dal33t.powerfolder;
 
-import java.util.Arrays;
-import java.util.List;
-
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Central constants holder for all important constants in PowerFolder.
@@ -338,12 +338,6 @@ public class Constants {
 
     public static final int MIN_SIZE_FOR_PARTTRANSFERS = 8 * 1024;
 
-    // Time estimation constants
-
-    public static final long ESTIMATION_WINDOW_MILLIS = 300 * 1000;
-
-    public static final int ESTIMATION_MINVALUES = 5;
-
     // Time constants
 
     /**
@@ -382,7 +376,6 @@ public class Constants {
      */
     public static final String FOLDER_WEBDAV_SUFFIX = ".webdav";
     public static final String FOLDER_WEBDAV_HTTP_PREFIX = "http";
-    public static final String FOLDER_WEBDAV_URI = "webdav";
 
     public static final String POWERFOLDER_SERVER_ID_HEADER = "PF-Server-ID";
     public static final String POWERFOLDER_SERVER_NAME_HEADER = "PF-Server-Name";
@@ -394,8 +387,6 @@ public class Constants {
     public static final String PRO_LOADER_PLUGIN_CLASS = "CD";
 
     public static final String ENCRYPTION_PLUGIN_CLASS = "BC";
-
-    public static final String SESSIONS_SUB_DIR = "database/sessions";
 
     // Web stuff **************************************************************
 

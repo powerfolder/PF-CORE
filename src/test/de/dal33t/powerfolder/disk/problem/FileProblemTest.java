@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.disk.problem;
 
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
@@ -120,6 +119,7 @@ public class FileProblemTest extends ControllerTestCase {
         // cannot end with . and space ( ) on windows
         assertEquals(0, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "dddd.")).size());
+        PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
     }
 
     public void testStripExtension() {
@@ -222,6 +222,7 @@ public class FileProblemTest extends ControllerTestCase {
         assertFalse(FileProblemHelper.is8dot3Notation("BPAC_C~1"));
         assertTrue(FileProblemHelper.is8dot3Notation("BPAC_C~1.ODS"));
         assertTrue(FileProblemHelper.is8dot3Notation("ADMINI~1.PDF"));
+        assertTrue(FileProblemHelper.is8dot3Notation( "Wohnungen\\Peter-Roos Str. 20\\Verwalter\\202202~2.PDF"));
 
         TestHelper.createRandomFile(getFolder().getLocalBase(), "normal/subdir/abcd.txt");
         TestHelper.createRandomFile(getFolder().getLocalBase(), "R-SCRI~1/data/BPAC_C~1.ODS");

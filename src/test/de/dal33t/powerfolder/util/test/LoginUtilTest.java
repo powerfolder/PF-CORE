@@ -43,7 +43,7 @@ public class LoginUtilTest extends TestCase {
         assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + username, LoginUtil.decorateURL(url, username, password));
 
         String usernameWithSpecial = "Test%23User!";
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.endcodeForURL(usernameWithSpecial), LoginUtil.decorateURL(url, usernameWithSpecial, password));
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(usernameWithSpecial), LoginUtil.decorateURL(url, usernameWithSpecial, password));
 
     }
 
@@ -64,7 +64,7 @@ public class LoginUtilTest extends TestCase {
         String username = "TestUser";
         char[] password = {'p','a','s','s','A','1','!','w', 'o', 'R', 'd'};
 
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + username + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.endcodeForURL(LoginUtil.obfuscate(password)),
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + username + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(LoginUtil.obfuscate(password)),
                 LoginUtil.decorateURL(url, username, password));
 
     }
@@ -80,13 +80,13 @@ public class LoginUtilTest extends TestCase {
         String username = null;
         String password = "TestPassA1!";
 
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.endcodeForURL(password), LoginUtil.decorateURL(url, username, password));
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(password), LoginUtil.decorateURL(url, username, password));
 
         String usernameEmpty = "";
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.endcodeForURL(password), LoginUtil.decorateURL(url, usernameEmpty, password));
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(password), LoginUtil.decorateURL(url, usernameEmpty, password));
 
         String usernameSpaces = "   ";
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.endcodeForURL(password), LoginUtil.decorateURL(url, usernameSpaces, password));
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(password), LoginUtil.decorateURL(url, usernameSpaces, password));
 
     }
 
@@ -95,13 +95,13 @@ public class LoginUtilTest extends TestCase {
         String username = "TestUsername";
         String password = null;
 
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.endcodeForURL(username), LoginUtil.decorateURL(url, username, password));
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(username), LoginUtil.decorateURL(url, username, password));
 
         String passwordEmpty = "";
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.endcodeForURL(username), LoginUtil.decorateURL(url, username, passwordEmpty));
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(username), LoginUtil.decorateURL(url, username, passwordEmpty));
 
         String passwordSpaces = "   ";
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.endcodeForURL(username), LoginUtil.decorateURL(url, username, passwordSpaces));
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(username), LoginUtil.decorateURL(url, username, passwordSpaces));
     }
 
     public void testDecorateUrlObfuscatedOk() {
@@ -109,13 +109,13 @@ public class LoginUtilTest extends TestCase {
         String username = "TestUsername";
         String password = "PassA1!Word$%2";
 
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.endcodeForURL(username) + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.endcodeForURL(password)
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(username) + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(password)
                 , LoginUtil.decorateURL(url, username, password));
 
         String usernameSpecialChars = "TestUsernameA1!@#$";
         String passwordSpaces = "   PassA1!Word$%2   ";
 
-        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.endcodeForURL(usernameSpecialChars) + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.endcodeForURL(passwordSpaces)
+        assertEquals(url + "?" + Constants.LOGIN_PARAM_USERNAME + "=" + Util.encodeForURL(usernameSpecialChars) + "&" + Constants.LOGIN_PARAM_PASSWORD_OBF + "=" + Util.encodeForURL(passwordSpaces)
                 , LoginUtil.decorateURL(url, usernameSpecialChars, passwordSpaces));
     }
 

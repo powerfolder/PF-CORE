@@ -35,7 +35,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
-import java.net.URLEncoder;
 import java.util.Date;
 
 /**
@@ -194,7 +193,7 @@ public class ServerInfo implements Serializable, D2DObject {
         if (snippet.endsWith("=")) {
             snippet = snippet.substring(0, snippet.length() - 1);
         }
-        uri += URLEncode(snippet);
+        uri += Util.encodeForURL(snippet);
         return getURL(uri);
     }
 
@@ -251,17 +250,6 @@ public class ServerInfo implements Serializable, D2DObject {
         }
         return "Server " + node.nick + '/' + node.networkId + '/' + node.id
                 + ", web: " + webUrl + ", tunnel: " + httpTunnelUrl;
-    }
-
-    private String URLEncode(String url) {
-        try {
-            String newUrl = URLEncoder.encode(url, "UTF-8");
-            // FIX1: Corrected relative filenames including path separator /
-            // FIX2: To make download servlet work with Apache proxy
-            return newUrl.replace("%2F", "/").replace("+", "%20");
-        } catch (Exception e) {
-            return url;
-        }
     }
 
     /**
