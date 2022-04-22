@@ -743,6 +743,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                         && file.getModifiedByAccount() == null && fa.hasArchivedFileInfo(file))
                 {
                     Path fileOnDisk = file.getDiskFile(this);
+                    if (Files.notExists(fileOnDisk)) {
+                        continue;
+                    }
                     try {
                         // Check the file size to be 0 bytes
                         if (Files.size(fileOnDisk) == 0) {
