@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
-import de.dal33t.powerfolder.util.test.TestHelper;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpGet;
@@ -40,7 +39,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.*;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.text.ParseException;
@@ -426,61 +427,6 @@ public class UtilTest extends TestCase {
     public void testCopyResourceExceptionNotQuiet() {
         Path destination = new File("build").toPath();
         assertNull(Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, false));
-    }
-
-    public void testGetUrlContentNull() {
-        URL url = null;
-        try {
-            Util.getURLContent(url);
-            fail("NullPointer was not thrown when url was null");
-        } catch (NullPointerException e){
-            //Ok to throw null pointer
-        }
-    }
-
-    public void testGetUrlFileDoesNotExist() throws MalformedURLException {
-        File file = new File("build/test/testImage.png");
-        //File does not exist so it returns null because IO Exception is thrown
-        URL url = file.toURI().toURL();
-        assertNull(Util.getURLContent(url));
-    }
-
-    public void testGetUrlOkFile() throws IOException {
-        File file = new File("build/test/someFile.html");
-        file.getParentFile().mkdirs();
-        file.createNewFile();
-
-        FileWriter fileWriter = new FileWriter(file);
-        fileWriter.write("This is a test string");
-        fileWriter.close();
-
-        URL url = file.toURI().toURL();
-        assertEquals("This is a test string",Util.getURLContent(url));
-    }
-
-    public void testGetUrlSite() throws MalformedURLException {
-        TestHelper.waitForCondition(10, () -> {
-            URL url = null;
-            try {
-                url = new URL("https://google.com");
-            } catch (MalformedURLException e) {
-                return false;
-            }
-            String content = Util.getURLContent(url);
-            if (content == null) {
-                return false;
-            }
-            return content.contains("Google");
-        });
-    }
-
-    public void testGetUrlNotInputStream() throws IOException {
-        File file = new File("build/test/someFile.jpeg");
-        file.getParentFile().mkdirs();
-        file.createNewFile();
-
-        URL url = file.toURI().toURL();
-        assertNull(Util.getURLContent(url));
     }
 
     public void testSetClipboardContentsOk() throws IOException, UnsupportedFlavorException {
