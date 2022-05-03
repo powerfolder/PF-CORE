@@ -2572,11 +2572,23 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param metaFolderInfo
      * @return the parent folder for a metaFolder's info.
      */
-    public Folder getParentFolder(FolderInfo metaFolderInfo) {
+    public Folder getParentFolderOfMetaFolder(FolderInfo metaFolderInfo) {
         if (!metaFolderInfo.isMetaFolder()) {
             return null;
         }
         return getFolder(metaFolderInfo.lookupParentFolderInfo());
+    }
+
+    /**
+     * Gets a archiveFolder for a FolderInfo. NOTE: the folderInfo is the parent
+     * Folder's FolderInfo, NOT the FolderInfo of the archiveFolder. BUT the
+     * archiveFolders Map key holds the parent FolderInfo
+     *
+     * @param parentFolderInfo parent Folder's FolderInfo
+     * @return the archive folder.
+     */
+    public Folder getArchiveFolderForParent(FolderInfo parentFolderInfo) {
+        return folders.get(parentFolderInfo.getArchiveFolderInfo());
     }
 
     // Callbacks from ServerClient on login ***********************************

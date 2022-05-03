@@ -19,23 +19,18 @@
  */
 package de.dal33t.powerfolder.folder;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
-import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Tests if both instance join the same folder by folder id
@@ -84,7 +79,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         assertEquals("Bart profile", SyncProfile.META_FOLDER_SYNC, bartMeta
             .getSyncProfile());
         assertEquals("Bart parent", getFolderAtBart(), bartRepo
-            .getParentFolder(bartMeta.getInfo()));
+            .getParentFolderOfMetaFolder(bartMeta.getInfo()));
         assertNotNull("Bart info not null", bartRepo.getFolder(bartMeta
             .getInfo()));
         assertEquals("Bart members", 2, bartMeta.getMembersCount());
@@ -108,7 +103,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         assertEquals("Lisa profile", SyncProfile.META_FOLDER_SYNC, lisaMeta
             .getSyncProfile());
         assertEquals("Lisa parent", getFolderAtLisa(), lisaRepo
-            .getParentFolder(lisaMeta.getInfo()));
+            .getParentFolderOfMetaFolder(lisaMeta.getInfo()));
         assertNotNull("Lisa info not null", lisaRepo.getFolder(lisaMeta
             .getInfo()));
         assertEquals("Lisa members", 2, lisaMeta.getMembersCount());
