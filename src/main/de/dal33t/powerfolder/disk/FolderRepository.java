@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.*;
@@ -3237,6 +3238,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     int nMemberItems = folder.getDAO().count(member.getId(),
                             true, false);
                     if (nMemberItems > 0) {
+                        continue;
+                    }
+                    if (member.getPeer() instanceof D2DSocketConnectionHandler) {
+                        // D2D does not exchange full file lists from the beginning, but only on request
                         continue;
                     }
                     // OK: Handle it. There is a connected member on an unsyced
