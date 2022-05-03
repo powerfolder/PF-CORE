@@ -23,8 +23,6 @@ import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -1966,10 +1964,10 @@ public class PathUtilsTest extends TestCase {
 
     @Test
     public void testGetDiskFileName(){
-        assertEquals("/text/myFile", PathUtils.getDiskFileName("build","/text/myFile"));
         assertEquals("myFile", PathUtils.getDiskFileName("build/text/","myFile"));
         assertEquals("myFile", PathUtils.getDiskFileName("","myFile"));
         assertEquals("myFile.csv", PathUtils.getDiskFileName("C:/Builds/Testing","myFile.csv"));
+        assertEquals("/text/myFile", PathUtils.getDiskFileName("build","/text/myFile"));
     }
 
 
