@@ -668,9 +668,6 @@ public class Member extends PFComponent implements Comparable<Member> {
         info.setD2dPort(identity.getMemberInfo().getD2dPort());
 
         if (peer instanceof D2DSocketConnectionHandler) {
-            if (isInfo()) {
-                logInfo(getNick() + " " + " connected (" + getController().getNodeManager().countConnectedNodes() + " total)");
-            }
             return ConnectResult.success();
         } else {
             return completeHandshake();
@@ -989,13 +986,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 syncFolderMemberships);
         }
 
-        if (isInfo()) {
-            logInfo(getNick() + " " + (isOnLAN() ? "(LAN)" : "(Internet)")
-                + " connected ("
-                + getController().getNodeManager().countConnectedNodes()
-                + " total)");
-        }
-
         // Request files
         for (Folder folder : foldersJoined) {
             // Trigger filerequesting. we may want re-request files on a
@@ -1254,12 +1244,6 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Inform nodemanger about it
             getController().getNodeManager().connectStateChanged(this);
-
-            if (isInfo()) {
-                logInfo(getNick() + " disconnected ("
-                    + getController().getNodeManager().countConnectedNodes()
-                    + " still connected)");
-            }
         } else {
             // logFiner("Shutdown");
         }

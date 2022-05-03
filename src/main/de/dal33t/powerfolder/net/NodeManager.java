@@ -767,8 +767,21 @@ public class NodeManager extends PFComponent {
         // Event handling
         if (nodeConnected) {
             fireNodeConnected(node);
+
+            if (isInfo()) {
+                logInfo(node.getNick() + " " + (node.isOnLAN() ? "(LAN)" : "(Internet)")
+                        + " connected ("
+                        + getController().getNodeManager().countConnectedNodes()
+                        + " total)");
+            }
         } else {
             fireNodeDisconnected(node);
+
+            if (isInfo()) {
+                logInfo(node.getNick() + " disconnected ("
+                        + getController().getNodeManager().countConnectedNodes()
+                        + " still connected)");
+            }
         }
     }
 
