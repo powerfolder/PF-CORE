@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
@@ -110,8 +111,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     public boolean isMetaFolder() {
-        // #1548: Convert this into boolean flag?
         return id != null && id.startsWith(Constants.METAFOLDER_ID_PREFIX);
+    }
+
+    public boolean isArchiveFolder() {
+        return id != null && id.startsWith(Constants.ARCHIVEFOLDER_ID_PREFIX);
     }
 
     public boolean isLookupInstance() {
@@ -123,34 +127,59 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      *         folder.
      */
     public FolderInfo lookupParentFolderInfo() {
-        if (!isMetaFolder()) {
-            return this;
+        if (isMetaFolder()) {
+            try {
+                int i = id.indexOf(Constants.METAFOLDER_ID_PREFIX);
+                String folderId = id.substring(i + Constants.METAFOLDER_ID_PREFIX.length());
+                i = name.indexOf(Constants.METAFOLDER_ID_PREFIX);
+                String folderName = name.substring(i + Constants.METAFOLDER_ID_PREFIX.length());
+                return lookupInstance(folderId, folderName);
+            } catch (Exception e) {
+                LOG.log(Level.WARNING,
+                        "Unable to get parent folder info for meta-folder: " + this, e);
+                return this;
+            }
+        } else if (isArchiveFolder()) {
+            try {
+                int i = id.indexOf(Constants.ARCHIVEFOLDER_ID_PREFIX);
+                String folderId = id.substring(i + Constants.ARCHIVEFOLDER_ID_PREFIX.length());
+                i = name.indexOf(Constants.ARCHIVEFOLDER_ID_PREFIX);
+                String folderName = name.substring(i + Constants.ARCHIVEFOLDER_ID_PREFIX.length());
+                return lookupInstance(folderId, folderName);
+            } catch (Exception e) {
+                LOG.log(Level.WARNING,
+                        "Unable to get parent folder info for archive-folder: " + this, e);
+                return this;
+            }
         }
-        try {
-            int i = id.indexOf(Constants.METAFOLDER_ID_PREFIX);
-            String folderId = id.substring(i
-                + Constants.METAFOLDER_ID_PREFIX.length());
-            i = name.indexOf(Constants.METAFOLDER_ID_PREFIX);
-            String folderName = name.substring(i
-                + Constants.METAFOLDER_ID_PREFIX.length());
-            return lookupInstance(folderId, name);
-        } catch (Exception e) {
-            LOG.log(Level.WARNING,
-                "Unable to get parent folder info for meta-folder: " + this, e);
-            return this;
-        }
+        return this;
     }
 
     /**
      * @return the meta-folder info for this folder
      */
     public FolderInfo getMetaFolderInfo() {
+        Reject.ifTrue(isArchiveFolder(), String.format("%s: Archive folder not allowed on meta folder", this));
         if (isMetaFolder()) {
             return this;
         }
         return unmarshallExistingTopFolder(
                 Constants.METAFOLDER_ID_PREFIX + id,
                 Constants.METAFOLDER_ID_PREFIX + name,
+                version);
+    }
+
+    /**
+     * @return the archive-folder info for this folder
+     */
+    public FolderInfo getArchiveFolderInfo() {
+        Reject.ifTrue(isMetaFolder(), String.format("%s: Archive folder not allowed on meta folder", this));
+        if (isArchiveFolder()) {
+            return this;
+        }
+        return unmarshallExistingTopFolder(
+                Constants.ARCHIVEFOLDER_ID_PREFIX + id,
+                Constants.ARCHIVEFOLDER_ID_PREFIX + name,
                 version);
     }
 

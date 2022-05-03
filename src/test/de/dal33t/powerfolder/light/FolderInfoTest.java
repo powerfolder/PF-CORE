@@ -1,8 +1,7 @@
 package de.dal33t.powerfolder.light;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.util.IdGenerator;
+import junit.framework.TestCase;
 
 public class FolderInfoTest extends TestCase {
 
@@ -30,4 +29,27 @@ public class FolderInfoTest extends TestCase {
         assertFalse(metaFolder.equals(foInfo));
     }
 
+    public void testGetArchiveInfo() {
+        FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Name of folder");
+        assertFalse(foInfo.toString(), foInfo.isArchiveFolder());
+        assertFalse(foInfo.id,
+                foInfo.id.contains(Constants.ARCHIVEFOLDER_ID_PREFIX));
+        assertFalse(foInfo.getName(),
+                foInfo.getName().contains(Constants.ARCHIVEFOLDER_ID_PREFIX));
+
+        FolderInfo archiveFolder = foInfo.getArchiveFolderInfo();
+        assertTrue(archiveFolder.toString(), archiveFolder.isArchiveFolder());
+        assertTrue(archiveFolder.id,
+                archiveFolder.id.contains(Constants.ARCHIVEFOLDER_ID_PREFIX));
+        assertTrue(archiveFolder.getName(),
+                archiveFolder.getName().contains(Constants.ARCHIVEFOLDER_ID_PREFIX));
+
+        assertEquals(foInfo, archiveFolder.lookupParentFolderInfo());
+        assertEquals(archiveFolder, foInfo.getArchiveFolderInfo());
+
+        // Fallback stuff if something really is wrong in the code:
+        assertEquals(archiveFolder, archiveFolder.getArchiveFolderInfo());
+        assertEquals(foInfo, foInfo.lookupParentFolderInfo());
+        assertFalse(archiveFolder.equals(foInfo));
+    }
 }
