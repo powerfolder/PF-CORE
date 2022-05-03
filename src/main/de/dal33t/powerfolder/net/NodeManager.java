@@ -769,8 +769,7 @@ public class NodeManager extends PFComponent {
             fireNodeConnected(node);
 
             if (isInfo()) {
-                logInfo(node.getNick() + " " + (node.isOnLAN() ? "(LAN)" : "(Internet)")
-                        + " connected ("
+                logInfo(node.getNick() + " connected ("
                         + getController().getNodeManager().countConnectedNodes()
                         + " total)");
             }
