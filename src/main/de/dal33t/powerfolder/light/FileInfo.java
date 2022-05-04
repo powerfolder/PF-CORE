@@ -848,7 +848,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         str.append(size);
         str.append(" bytes, version: ");
         str.append(version);
-        str.append(", modified: ");
+        if (isDeleted()) {
+            str.append(", deleted: ");
+        } else {
+            str.append(", modified: ");
+        }
         str.append(lastModifiedDate);
         str.append(" (");
         if (lastModifiedDate != null) {

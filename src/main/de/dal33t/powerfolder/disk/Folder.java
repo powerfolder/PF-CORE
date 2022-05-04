@@ -3400,15 +3400,15 @@ public class Folder extends PFComponent {
         msg += operation;
         msg += "\t";
 
-        if (oldFileInfo != null) {
-            msg += "was:\t";
-            msg += oldFileInfo.toDetailString();
-            msg += "\t";
-        }
-
         if (newFileInfo != null) {
             msg += "now:\t";
             msg += newFileInfo.toDetailString();
+            msg += "\t";
+        }
+
+        if (oldFileInfo != null) {
+            msg += "was:\t";
+            msg += oldFileInfo.toDetailString();
         }
 
         if (currentInfo.isMetaFolder()) {
