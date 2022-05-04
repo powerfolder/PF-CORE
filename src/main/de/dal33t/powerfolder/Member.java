@@ -1710,22 +1710,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 AddFriendNotification notification = (AddFriendNotification) message;
                 getController().makeFriendship(notification.getMemberInfo());
                 expectedTime = 50;
-            } else if (message instanceof Notification) {
-                // This is the V3 friendship notification class.
-                // V4 uses AddFriendNotification.
-                Notification not = (Notification) message;
-                if (not.getEvent() == null) {
-                    logWarning("Unknown event from peer");
-                } else {
-                    switch (not.getEvent()) {
-                        case ADDED_TO_FRIENDS :
-                            getController().makeFriendship(getInfo());
-                            break;
-                        default :
-                            logWarning("Unhandled event: " + not.getEvent());
-                    }
-                }
-                expectedTime = 50;
             } else if (message instanceof RevertedFile) {
                 RevertedFile msg = (RevertedFile) message;
                 if (targetFolder != null) {
