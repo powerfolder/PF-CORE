@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.disk.FolderStatistic;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.message.RequestNodeInformation;
-import de.dal33t.powerfolder.security.AccessMode;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
@@ -91,7 +90,7 @@ public enum ConfigurationEntry {
         // Always return false if software was installed via MSI
         @Override
         public Boolean getValueBoolean(Controller controller) {
-            if (WinUtils.isSupported() && WinUtils.isMSI()) {
+            if (OSUtil.isWindowsSystem() && WinUtils.isMSI()) {
                 return Boolean.FALSE;
             }
             return super.getValueBoolean(controller);
@@ -101,7 +100,7 @@ public enum ConfigurationEntry {
         public String getDefaultValue() {
             // Hack for PFC-2461
             // Updates disabled by default if software was installed via MSI
-            if (WinUtils.isSupported() && WinUtils.isMSI()) {
+            if (OSUtil.isWindowsSystem() && WinUtils.isMSI()) {
                 return Boolean.FALSE.toString();
             }
             return super.getDefaultValue();
