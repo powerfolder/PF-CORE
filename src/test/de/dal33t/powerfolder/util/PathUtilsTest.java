@@ -1967,7 +1967,7 @@ public class PathUtilsTest extends TestCase {
         assertEquals("myFile", PathUtils.getDiskFileName("build/text/","myFile"));
         assertEquals("myFile", PathUtils.getDiskFileName("","myFile"));
         assertEquals("myFile.csv", PathUtils.getDiskFileName("C:/Builds/Testing","myFile.csv"));
-        assertEquals("/text/myFile", PathUtils.getDiskFileName("build","/text/myFile"));
+        assertEquals("text/myFile", PathUtils.getDiskFileName("build","text/myFile"));
     }
 
 
