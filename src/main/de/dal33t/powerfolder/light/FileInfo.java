@@ -402,8 +402,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (index == -1) {
             return "";
         }
-        return tmpFileName.substring(index + 1, tmpFileName.length())
-                .toUpperCase();
+        return tmpFileName.substring(index + 1).toUpperCase();
     }
 
     /**
