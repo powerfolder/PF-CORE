@@ -56,13 +56,13 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  * PFS-779: Domain object for PFS-779: Organization wide admin role to manage
  * user accounts per "admin domain"/Organization - Multitenancy -
  * Mandantenfähigkeit
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision: 1.5 $
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Organization implements Serializable {
+public class Organization extends BaseEntity implements Serializable {
 
     private static final Logger LOG = Logger.getLogger(Organization.class.getName());
     private static final long serialVersionUID = 100L;
@@ -90,8 +90,8 @@ public class Organization implements Serializable {
     @Index(name = "IDX_ORGANIZATION_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
-    
-    // PFS-1446     
+
+    // PFS-1446
     @Column(length = 512)
     private String basePath;
 
