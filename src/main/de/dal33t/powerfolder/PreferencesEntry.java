@@ -24,6 +24,7 @@ import com.jgoodies.binding.value.ValueModel;
 import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.ui.information.folder.files.DirectoryFilter;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
 import java.util.logging.Level;
@@ -189,7 +190,7 @@ public enum PreferencesEntry {
         @Override
         public Boolean getValueBoolean(Controller controller) {
             // Never show option at MSI installer: Auto-update not supported (yet)
-            if (WinUtils.isSupported() && WinUtils.isMSI()) {
+            if (OSUtil.isWindowsSystem() && WinUtils.isMSI()) {
                 return Boolean.FALSE;
             }
             // If no value is set: Show if update is enabled.

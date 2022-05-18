@@ -106,7 +106,7 @@ public class NodeManager extends PFComponent {
         }
         // check for manual id
         String id = ConfigurationEntry.NODE_ID.getValue(getController());
-        if (id == null) {
+        if (StringUtils.isBlank(id)) {
             id = IdGenerator.makeId();
             // store ID
             logInfo("Generated new ID for '" + nick + "': " + id);
@@ -767,8 +767,20 @@ public class NodeManager extends PFComponent {
         // Event handling
         if (nodeConnected) {
             fireNodeConnected(node);
+
+            if (isInfo()) {
+                logInfo(node.getNick() + " connected ("
+                        + getController().getNodeManager().countConnectedNodes()
+                        + " total)");
+            }
         } else {
             fireNodeDisconnected(node);
+
+            if (isInfo()) {
+                logInfo(node.getNick() + " disconnected ("
+                        + getController().getNodeManager().countConnectedNodes()
+                        + " still connected)");
+            }
         }
     }
 

@@ -19,6 +19,19 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderStatistic;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.message.FileChunk;
+import de.dal33t.powerfolder.transfer.Transfer.State;
+import de.dal33t.powerfolder.transfer.Transfer.TransferState;
+import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.delta.*;
+import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -30,33 +43,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
-
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderStatistic;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.transfer.Transfer.State;
-import de.dal33t.powerfolder.transfer.Transfer.TransferState;
-import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.Convert;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.Debug;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProgressListener;
-import de.dal33t.powerfolder.util.Range;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.TransferCounter;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.delta.FilePartsRecord;
-import de.dal33t.powerfolder.util.delta.FilePartsState;
-import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
-import de.dal33t.powerfolder.util.delta.MatchCopyWorker;
-import de.dal33t.powerfolder.util.delta.MatchInfo;
-import de.dal33t.powerfolder.util.delta.MatchResultWorker;
 
 /**
  * Shared implementation of download managers. This class leaves details on what
@@ -149,7 +135,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         // illegalState("abort");
         switch (state) {
             case ABORTED :
-                illegalState("abort()");
+                logFine("Already aborted download of " + fileInfo.toDetailString());
                 break;
             case BROKEN :
             case COMPLETED :
@@ -340,6 +326,9 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             throw new RuntimeException(e);
         } catch (IOException e) {
             logWarning("IOException: " + e);
+            setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
+        } catch (InterruptedException e) {
+            // Shutdown
             setBroken(TransferProblem.GENERAL_EXCEPTION, e.getMessage());
         } catch (Exception e) {
             logSevere("Exception", e);

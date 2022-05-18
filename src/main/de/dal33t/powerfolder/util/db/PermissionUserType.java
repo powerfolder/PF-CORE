@@ -19,6 +19,16 @@
  */
 package de.dal33t.powerfolder.util.db;
 
+import de.dal33t.powerfolder.disk.dao.FolderInfoDAO;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
+import de.dal33t.powerfolder.security.*;
+import de.dal33t.powerfolder.util.StackDump;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.logging.Loggable;
+import org.hibernate.HibernateException;
+import org.hibernate.usertype.UserType;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
@@ -28,26 +38,6 @@ import java.sql.Types;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.light.FolderInfoFactory;
-import de.dal33t.powerfolder.util.StackDump;
-import org.hibernate.HibernateException;
-import org.hibernate.usertype.UserType;
-
-import de.dal33t.powerfolder.disk.dao.FolderInfoDAO;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.FolderAdminPermission;
-import de.dal33t.powerfolder.security.FolderOwnerPermission;
-import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.security.FolderReadPermission;
-import de.dal33t.powerfolder.security.FolderReadWritePermission;
-import de.dal33t.powerfolder.security.GroupAdminPermission;
-import de.dal33t.powerfolder.security.OrganizationAdminPermission;
-import de.dal33t.powerfolder.security.Permission;
-import de.dal33t.powerfolder.security.SingletonPermission;
-import de.dal33t.powerfolder.security.UnknownPermission;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
@@ -124,8 +114,7 @@ public class PermissionUserType extends Loggable implements UserType {
             }
 
             if (fdInfo == null) {
-                logSevere("FolderInfo with ID " + fiId + " not found!",
-                    new StackDump());
+                logWarning("FolderInfo with ID " + fiId + " not found", new StackDump());
                 fdInfo = FolderInfoFactory.lookupInstance(fiId);
             } else {
                 fdInfo = fdInfo.intern();

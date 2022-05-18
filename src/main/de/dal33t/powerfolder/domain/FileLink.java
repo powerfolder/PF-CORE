@@ -22,12 +22,15 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.clientserver.ShareLinkInfo;
-import de.dal33t.powerfolder.security.*;
+import de.dal33t.powerfolder.security.FolderPermission;
+import de.dal33t.powerfolder.security.FolderReadPermission;
+import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.util.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -130,6 +133,18 @@ public class FileLink implements Serializable {
         } else {
             return relativeName;
         }
+    }
+
+    /**
+     * @return everything after the last point (.) in the fileName in upper case
+     */
+    public String getExtension() {
+        String tmpFileName = getFilenameOnly();
+        int index = tmpFileName.lastIndexOf('.');
+        if (index == -1) {
+            return "";
+        }
+        return tmpFileName.substring(index + 1).toUpperCase();
     }
 
     public String getLinkURI() {

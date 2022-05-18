@@ -464,42 +464,6 @@ public class Util {
     }
 
     /**
-     * Returns the plain url content as string
-     *
-     * @param url
-     * @return
-     */
-    public static String getURLContent(URL url) {
-        if (url == null) {
-            throw new NullPointerException("URL is null");
-        }
-        InputStream in = null;
-        try {
-            in = url.openStream();
-            StringBuilder buf = new StringBuilder();
-            if (in.available() == 0) {
-                return null;
-            }
-            while (in.available() > 0) {
-                buf.append((char) in.read());
-            }
-            return buf.toString();
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to get content from " + url + ". "
-                + e.toString(), e);
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ioe) {
-                // ignore
-            }
-        }
-        return null;
-    }
-
-    /**
      * Place a String on the clipboard
      *
      * @param aString

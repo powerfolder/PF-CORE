@@ -986,13 +986,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 syncFolderMemberships);
         }
 
-        if (isInfo()) {
-            logInfo(getNick() + " " + (isOnLAN() ? "(LAN)" : "(Internet)")
-                + " connected ("
-                + getController().getNodeManager().countConnectedNodes()
-                + " total)");
-        }
-
         // Request files
         for (Folder folder : foldersJoined) {
             // Trigger filerequesting. we may want re-request files on a
@@ -1251,12 +1244,6 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Inform nodemanger about it
             getController().getNodeManager().connectStateChanged(this);
-
-            if (isInfo()) {
-                logInfo(getNick() + " disconnected ("
-                    + getController().getNodeManager().countConnectedNodes()
-                    + " still connected)");
-            }
         } else {
             // logFiner("Shutdown");
         }
@@ -1722,22 +1709,6 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof AddFriendNotification) {
                 AddFriendNotification notification = (AddFriendNotification) message;
                 getController().makeFriendship(notification.getMemberInfo());
-                expectedTime = 50;
-            } else if (message instanceof Notification) {
-                // This is the V3 friendship notification class.
-                // V4 uses AddFriendNotification.
-                Notification not = (Notification) message;
-                if (not.getEvent() == null) {
-                    logWarning("Unknown event from peer");
-                } else {
-                    switch (not.getEvent()) {
-                        case ADDED_TO_FRIENDS :
-                            getController().makeFriendship(getInfo());
-                            break;
-                        default :
-                            logWarning("Unhandled event: " + not.getEvent());
-                    }
-                }
                 expectedTime = 50;
             } else if (message instanceof RevertedFile) {
                 RevertedFile msg = (RevertedFile) message;

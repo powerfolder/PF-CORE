@@ -1,11 +1,11 @@
 package de.dal33t.powerfolder.transfer.swarm;
 
-import java.io.IOException;
-import java.util.Collection;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferProblem;
+
+import java.io.IOException;
+import java.util.Collection;
 
 public interface DownloadControl {
     /**
@@ -73,8 +73,6 @@ public interface DownloadControl {
 
     /**
      * Breaks all existing downloads in this manager and sets it to broken.
-     *
-     * @param string
      */
     void setBroken(TransferProblem problem, String details);
 }

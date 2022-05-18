@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2015 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2022 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -14,8 +14,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
- *
- * $Id: Controller.java 21251 2013-03-19 01:46:23Z sprajc $
  */
 package de.dal33t.powerfolder;
 
@@ -89,10 +87,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 17;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 101;
+    private static final int MINOR_VERSION = 2;
+    private static final int REVISION_VERSION = 100;
 
-    private static final int SPRINT_NUMBER = 41;
+    private static final int SPRINT_NUMBER = 42;
 
     /**
      * Program version.

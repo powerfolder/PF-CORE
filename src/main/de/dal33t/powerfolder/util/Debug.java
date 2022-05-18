@@ -47,8 +47,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static de.dal33t.powerfolder.disk.FolderSettings.ID;
-
 /**
  * Utility class with methods for debugging
  *
@@ -410,6 +408,9 @@ public class Debug {
                     value = "XXX-erased-XXX";
                 }
                 if (key.toLowerCase().contains("license")) {
+                    value = "XXX-erased-XXX";
+                }
+                if (key.toLowerCase().contains("login.admin.iplist")) {
                     value = "XXX-erased-XXX";
                 }
                 b.append("\n" + key + "=" + value);

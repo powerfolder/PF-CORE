@@ -19,19 +19,18 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.awt.EventQueue;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.message.Message;
+import de.dal33t.powerfolder.message.MessageListener;
+import de.dal33t.powerfolder.util.logging.Loggable;
+
+import javax.swing.*;
+import java.awt.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.SwingUtilities;
-
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.MessageListener;
-import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Helper class to handle message listener/firing
@@ -180,7 +179,7 @@ public class MessageListenerSupport extends Loggable {
                 try {
                     genListener.handleMessage(theSource, message);
                 } catch (Exception e) {
-                    logSevere(source
+                    logWarning(source
                         + ": Exception while handling message in listener of "
                         + theSource + ". msg: " + message + ". " + e, e);
                 }
@@ -195,7 +194,7 @@ public class MessageListenerSupport extends Loggable {
                 try {
                     specListener.handleMessage(theSource, message);
                 } catch (Exception e) {
-                    logSevere(source
+                    logWarning(source
                         + ": Exception while handling message in listener of "
                         + theSource + ". msg: " + message + ". " + e, e);
                 }
@@ -224,7 +223,7 @@ public class MessageListenerSupport extends Loggable {
                         try {
                             genListener.handleMessage(theSource, message);
                         } catch (Exception e) {
-                            logSevere(
+                            logWarning(
                                 source
                                     + ": Exception while handling message in listener of "
                                     + theSource + ". msg: " + message + ". "
@@ -240,7 +239,7 @@ public class MessageListenerSupport extends Loggable {
                         try {
                             specListener.handleMessage(theSource, message);
                         } catch (Exception e) {
-                            logSevere(
+                            logWarning(
                                 source
                                     + ": Exception while handling message in listener of "
                                     + theSource + ". msg: " + message + ". "

@@ -100,7 +100,11 @@ public class DirectoryInfo extends FileInfo {
         str.append(toString());
         str.append(", version: ");
         str.append(getVersion());
-        str.append(", modified: ");
+        if (isDeleted()) {
+            str.append(", deleted: ");
+        } else {
+            str.append(", modified: ");
+        }
         str.append(getModifiedDate());
         str.append(" (");
         if (getModifiedDate() != null) {
