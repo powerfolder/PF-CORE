@@ -556,7 +556,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             lastProblem = new Problem("Network ID mismatch", true,
                 Problem.NETWORK_ID_MISMATCH);
             throw new InvalidIdentityException(
-                "Closing connection to node with diffrent network ID. Our netID: "
+                "Closing connection to node with different network ID. Our netID: "
                     + getController().getNodeManager().getNetworkId()
                     + ", remote netID: " + remoteMemberInfo.networkId + " on "
                     + remoteMemberInfo, newPeer);
