@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.clientserver;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.Group;
@@ -236,4 +237,5 @@ public interface AccountService {
 
     List<Organization> getAll(OrganizationFilterModel filter);
 
+    Collection<Invitation> getInvitationsFor(AccountInfo account);
 }
