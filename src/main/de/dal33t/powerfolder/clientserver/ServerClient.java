@@ -2144,6 +2144,9 @@ public class ServerClient extends PFComponent {
             if (serverOnFolder || serverNode.hasCompleteFileListFor(folderInfo)) {
                 return serverNode;
             }
+            if (serverNode.getLastFolderList() != null && serverNode.getLastFolderList().contains(folderInfo)) {
+                return serverNode;
+            }
         }
         return null;
     }
