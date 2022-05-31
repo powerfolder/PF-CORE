@@ -764,6 +764,11 @@ public enum ConfigurationEntry {
     },
 
     /**
+     * PFS-4018: Minimum version to keep connection to. Empty for any version.
+     */
+    NET_VERSION_MINIMUM("net.version.minimum"),
+
+    /**
      * If relayed or tunnel connections should be tried for LAN based computers.
      * Usually this does not make sense. Only for special scenarios. e.g.
      * ILY-570834
