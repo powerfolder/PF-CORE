@@ -80,6 +80,11 @@ public class Constants {
     public static final String METAFOLDER_ID_PREFIX = "meta|";
 
     /**
+     * The prefix for archive folder IDs.
+     */
+    public static final String ARCHIVE_ID_PREFIX = "archive|";
+
+    /**
      * The subdir name that will be used by default for the PowerFolders base
      * directory.
      *
