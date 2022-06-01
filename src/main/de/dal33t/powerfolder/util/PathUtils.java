@@ -1521,6 +1521,12 @@ public class PathUtils {
             return true;
         }
 
+        if (folder.getInfo().isArchiveFolder()) {
+            int secondSystemDir = relOrAbsfilePath.indexOf(
+                    Constants.POWERFOLDER_SYSTEM_SUBDIR, firstSystemDir + 1);
+            return secondSystemDir < 0;
+        }
+
         if (folder.getInfo().isMetaFolder()) {
             // MetaFolders are in the POWERFOLDER_SYSTEM_SUBDIR of the parent,
             // like
