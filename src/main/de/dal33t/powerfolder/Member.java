@@ -601,8 +601,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (StringUtils.isNotBlank(remoteVersion) && Util.compareVersions(minimumVersion, remoteVersion)) {
                 lastProblem = new Problem("Version too old. Required minimum version: " + minimumVersion,
                         true, Problem.VERSION_TOO_OLD);
-                if (isInfo()) {
-                    logInfo(remoteMemberInfo + ": Closing connection. Version too old. Required version: "
+                if (isFine()) {
+                    logFine(remoteMemberInfo + ": Closing connection. Version too old. Required version: "
                             + minimumVersion + ", remote version: " + remoteVersion);
                 }
                 try {
