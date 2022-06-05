@@ -6,14 +6,14 @@ import java.util.Collections;
 
 public enum DocumentType {
 
-    DOCUMENT("doc", "docx", "odt", "epub", "xps"),
+    DOCUMENT("doc", "docx", "odt", "epub", "xps","rtf"),
     SPREADSHEET("xls", "xlsx", "ods", "csv"),
     PRESENTATION("ppt", "pptx", "odp"),
     IMAGE("png", "jpg", "jpeg", "gif", "bmp","tif","tiff"),
     AUDIO("wav", "mp3", "ogg", "oga", "webma", "fla", "flac", "m3u8a", "rtmpa", "djvu"),
     VIDEO("mp4", "flv", "rtmp", "rtmpv", "m4v", "ogv", "webmv", "m3uv", "m3u8v","mov","webm"),
     PDF("pdf"),
-    TEXT("txt", "rtf");
+    TEXT("txt");
 
     private Collection<String> extensions;
 
