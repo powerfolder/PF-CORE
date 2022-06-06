@@ -24,13 +24,12 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import org.hibernate.annotations.*;
+import org.hibernate.annotations.CascadeType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
+import javax.persistence.*;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -48,7 +47,7 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Organization implements Serializable {
+public class Organization implements Serializable , Auditable {
 
     private static final Logger LOG = Logger.getLogger(Organization.class.getName());
     private static final long serialVersionUID = 100L;
@@ -129,6 +128,7 @@ public class Organization implements Serializable {
     public Organization() {
         // Generate unique id
         this(IdGenerator.makeId());
+        this.auditFields = new AuditFields();
     }
 
     public Organization(String oid) {
@@ -207,10 +207,10 @@ public class Organization implements Serializable {
         return Collections.unmodifiableList(domains);
     }
 
-    public void setDomains (List<String> domains){
+    public void setDomains(List<String> domains) {
         Reject.ifNull(domains, "Domains");
         List<String> domainsLower = new ArrayList<>();
-        for (String dom : domains){
+        for (String dom : domains) {
             if (dom == null) {
                 continue;
             }
@@ -236,7 +236,7 @@ public class Organization implements Serializable {
             return new JSONObject(jsonData);
         } catch (JSONException e) {
             LOG.warning("Illegal JSON data for " + name + ": " + jsonData
-                + ". " + e);
+                    + ". " + e);
             return new JSONObject();
         }
     }
@@ -382,5 +382,13 @@ public class Organization implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(oid);
+    }
+
+    public void setCreatedNowBy(final Account caller) {
+        this.auditFields.setCreatedNowBy(caller);
+    }
+
+    public void setModifiedNowBy(final Account caller) {
+        this.auditFields.setModifiedNowBy(caller);
     }
 }

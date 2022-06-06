@@ -24,10 +24,15 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
+import de.dal33t.powerfolder.security.Account;
+import de.dal33t.powerfolder.security.AuditFields;
+import de.dal33t.powerfolder.security.Auditable;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Type;
 
@@ -43,13 +48,13 @@ import java.nio.file.Paths;
  * An invitation to a folder or an invitation of a user.
  *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
- * 
+ *
  * Adapted the class to be stored to a database using hibernate.
- * 
+ *
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 @Entity
-public class Invitation extends FolderRelatedMessage
+public class Invitation extends FolderRelatedMessage implements Auditable
 {
     private static final long serialVersionUID = 101L;
 
@@ -130,6 +135,10 @@ public class Invitation extends FolderRelatedMessage
     @Deprecated
     @Transient
     private String inviteeUsername;
+
+    @Embedded
+    @Fetch(FetchMode.JOIN)
+    public AuditFields auditFields;
 
     /**
      * Constructor
@@ -358,6 +367,16 @@ public class Invitation extends FolderRelatedMessage
 
     private static String getUserHomeDir() {
         return System.getProperty("user.home");
+    }
+
+    @Override
+    public void setCreatedNowBy(Account caller) {
+        this.auditFields.setCreatedNowBy(caller);
+    }
+
+    @Override
+    public void setModifiedNowBy(Account caller) {
+        this.auditFields.setModifiedNowBy(caller);
     }
 
     private enum PathType {
