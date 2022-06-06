@@ -19,36 +19,22 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import org.hibernate.annotations.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-
-import de.dal33t.powerfolder.util.*;
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
-import org.hibernate.annotations.CollectionOfElements;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Index;
-import org.hibernate.annotations.IndexColumn;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 
@@ -62,7 +48,7 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Organization extends BaseEntity implements Serializable {
+public class Organization implements Serializable {
 
     private static final Logger LOG = Logger.getLogger(Organization.class.getName());
     private static final long serialVersionUID = 100L;
@@ -135,6 +121,10 @@ public class Organization extends BaseEntity implements Serializable {
     private String color2;
     @Column(length = 10)
     private String color3;
+
+    @Embedded
+    @Fetch(FetchMode.JOIN)
+    public AuditFields auditFields;
 
     public Organization() {
         // Generate unique id
