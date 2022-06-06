@@ -38,9 +38,7 @@ public class AuditFields {
     }
 
     public void setCreatedNowBy(final Account account) {
-        if (account != null) {
-            this.creationAccount = toAccountField(account);
-        }
+        this.creationAccount = toAccountField(account);
         this.creationDate = new Date();
     }
 
@@ -69,9 +67,7 @@ public class AuditFields {
     }
 
     public void setModifiedNowBy(final Account account) {
-        if (account != null) {
-            this.modifiedAccount = toAccountField(account);
-        }
+        this.modifiedAccount = toAccountField(account);
         this.modifiedDate = new Date();
     }
 
@@ -90,6 +86,9 @@ public class AuditFields {
     }
 
     private String toAccountField(Account account) {
+        if (account == null) {
+            return null;
+        }
         return account.getOID() + SEPARATOR + account.getUsername();
     }
 }
