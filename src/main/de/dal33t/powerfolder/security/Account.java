@@ -58,7 +58,7 @@ import java.util.logging.Logger;
 @TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Account implements Serializable, D2DObject {
+public class Account implements Serializable, D2DObject, Auditable {
 
     private static final Logger LOG = Logger.getLogger(Account.class.getName());
     private static final long serialVersionUID = 100L;
@@ -254,6 +254,10 @@ public class Account implements Serializable, D2DObject {
     private OnlineStorageSubscription osSubscription;
 
     private int agreedToSVersion;
+
+    @Embedded
+    @Fetch(FetchMode.JOIN)
+    public AuditFields auditFields = new AuditFields();
 
     Account() {
         // Generate unique id
@@ -1863,5 +1867,15 @@ public class Account implements Serializable, D2DObject {
             jsonObject.remove("ethAddress");
         }
         setJSONObject(jsonObject);
+    }
+
+    @Override
+    public void setCreatedNowBy(Account caller) {
+        this.auditFields.setCreatedNowBy(caller);
+    }
+
+    @Override
+    public void setModifiedNowBy(Account caller) {
+        this.auditFields.setModifiedNowBy(caller);
     }
 }
