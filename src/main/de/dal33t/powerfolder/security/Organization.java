@@ -24,12 +24,13 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import org.hibernate.annotations.*;
-import org.hibernate.annotations.CascadeType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -123,12 +124,11 @@ public class Organization implements Serializable , Auditable {
 
     @Embedded
     @Fetch(FetchMode.JOIN)
-    public AuditFields auditFields;
+    public AuditFields auditFields = new AuditFields();
 
     public Organization() {
         // Generate unique id
         this(IdGenerator.makeId());
-        this.auditFields = new AuditFields();
     }
 
     public Organization(String oid) {
