@@ -548,6 +548,11 @@ public enum ConfigurationEntry {
     SERVER_INVITE_ENABLED("server.invite.enabled", true),
 
     /**
+     * If the option to sync/backup to cloud is mandatory.
+     */
+    SERVER_SYNC_MANDATORY("server.sync.mandatory", true),
+
+    /**
      * PFS-871: The user has to agree to invitations, if enabled
      */
     FOLDER_AGREE_INVITATION_ENABLED("folder.agree.invitation.enabled", true),
