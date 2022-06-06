@@ -65,8 +65,8 @@ import de.dal33t.powerfolder.util.os.LinuxUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 
-import javax.swing.*;
 import javax.swing.SwingWorker;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -651,20 +651,17 @@ public class ExpandableFolderView extends PFUIComponent implements
     }
 
     private void updatePermissions() {
-        if (getController().isBackupOnly()) {
-            backupOnlineStorageAction.setEnabled(false);
-            stopOnlineStorageAction.setEnabled(false);
-            inviteAction.setEnabled(false);
-            return;
-        }
         // Update permissions
         Permission folderAdmin = FolderPermission.admin(folderInfo);
         backupOnlineStorageAction.allowWith(folderAdmin);
         stopOnlineStorageAction.allowWith(folderAdmin);
         inviteAction.allowWith(folderAdmin);
 
-        admin = getController().getOSClient().getAccount()
-            .hasAdminPermission(folderInfo);
+        admin = getController().getOSClient().getAccount().hasAdminPermission(folderInfo);
+
+        if (!ConfigurationEntry.SERVER_SYNC_MANDATORY.getValueBoolean(getController())) {
+            stopOnlineStorageAction.setEnabled(false);
+        }
     }
 
     private void updateLocalButtons() {
@@ -1173,7 +1170,9 @@ public class ExpandableFolderView extends PFUIComponent implements
             {
                 boolean osConfigured = serverClient.joinedByCloud(folder);
                 if (osConfigured) {
-                    contextMenu.add(stopOnlineStorageAction).setIcon(null);
+                    if (!ConfigurationEntry.SERVER_SYNC_MANDATORY.getValueBoolean(getController())) {
+                        contextMenu.add(stopOnlineStorageAction).setIcon(null);
+                    }
                 } else {
                     contextMenu.add(backupOnlineStorageAction).setIcon(null);
                 }
