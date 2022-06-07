@@ -30,11 +30,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -286,7 +282,13 @@ public class FileArchiver {
                 }
                 allSuccessful &= thisSuccessfuly;
             } else {
-                String baseName = getBaseName(f);
+                String baseName;
+                try {
+                    baseName = getBaseName(f);
+                } catch (RuntimeException e) {
+                    log.log(Level.WARNING, f + ": Skipping: " + e.toString());
+                    continue;
+                }
                 Path vf = dir.resolve(baseName);
                 checked.add(vf);
                 Collection<Path> files = fileMap.get(baseName);
