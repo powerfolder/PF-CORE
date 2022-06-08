@@ -19,17 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.*;
-import java.nio.file.DirectoryStream.Filter;
-import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Level;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
@@ -49,6 +38,20 @@ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import org.junit.Ignore;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.DirectoryStream.Filter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Tests file transfer between nodes.
@@ -1213,7 +1216,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.changeFile(testFile, 20 * 1024 * 1024);
+        TestHelper.changeFile(testFile, 100 * 1024 * 1024);
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
@@ -1277,9 +1280,12 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        assertTrue(Files.exists(tempFile));
-        assertTrue(Files.size(tempFile) > 0);
-        assertTrue(Files.size(tempFile) < Files.size(testFile));
+        assertTrue("Temp file should exist: " + tempFile, Files.exists(tempFile));
+        assertTrue("Temp file should have size > 0: " + tempFile + ". " + Files.size(tempFile),
+                Files.size(tempFile) > 0);
+        assertTrue("Temp file should have be smaller than testfile: " + tempFile +
+                ". " + Files.size(tempFile) + "<" + Files.size(testFile),
+                Files.size(tempFile) < Files.size(testFile));
         assertTrue("Size inc. file: " + Files.size(tempFile)
             + ", size testfile: " + Files.size(testFile),
             Files.size(tempFile) < Files.size(testFile));
