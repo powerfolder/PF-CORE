@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.net;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import org.junit.Test;
@@ -46,13 +47,58 @@ public class BroadcastManagerTest extends FiveControllerTestCase {
     }
     @Test
     public void testConnectViaBroadcast() {
-        TestHelper.waitForCondition(30, () -> getContollerBart().getNodeManager().countConnectedNodes() == 1);
-        TestHelper.waitForCondition(30, () -> getContollerLisa().getNodeManager().countConnectedNodes() == 1);
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerBart().getNodeManager().countConnectedNodes();
+            }
+            @Override
+            public boolean reached() {
+                return getContollerBart().getNodeManager().countConnectedNodes() == 1;
+            }
+        });
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerLisa().getNodeManager().countConnectedNodes();
+            }
+            @Override
+            public boolean reached() {
+                return getContollerLisa().getNodeManager().countConnectedNodes() == 1;
+            }
+        });
         assertEquals(0, getContollerMaggie().getNodeManager().countConnectedNodes());
 
         getContollerMaggie().openBroadcastManager();
-        TestHelper.waitForCondition(30, () -> getContollerBart().getNodeManager().countConnectedNodes() == 2);
-        TestHelper.waitForCondition(30, () -> getContollerLisa().getNodeManager().countConnectedNodes() == 2);
-        TestHelper.waitForCondition(30, () -> getContollerMaggie().getNodeManager().countConnectedNodes() == 2);
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerBart().getNodeManager().countConnectedNodes();
+            }
+            @Override
+            public boolean reached() {
+                return getContollerBart().getNodeManager().countConnectedNodes() == 2;
+            }
+        });
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerLisa().getNodeManager().countConnectedNodes();
+            }
+            @Override
+            public boolean reached() {
+                return getContollerLisa().getNodeManager().countConnectedNodes() == 2;
+            }
+        });
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public String message() {
+                return "getContollerBart().getNodeManager().countConnectedNodes()=" + getContollerMaggie().getNodeManager().countConnectedNodes();
+            }
+            @Override
+            public boolean reached() {
+                return getContollerMaggie().getNodeManager().countConnectedNodes() == 2;
+            }
+        });
     }
 }
