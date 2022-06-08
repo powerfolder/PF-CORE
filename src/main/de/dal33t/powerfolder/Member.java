@@ -1721,7 +1721,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 .getNoticesModel().handleNotice(notice);
                     }
                 } else {
-                    logWarning(this + ": Problem received: " + lastProblem);
+                    logWarning(this + ": Received: " + lastProblem);
                 }
 
                 if (lastProblem.fatal) {
