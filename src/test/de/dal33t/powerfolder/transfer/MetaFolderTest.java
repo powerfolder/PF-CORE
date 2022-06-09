@@ -19,10 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -33,6 +29,10 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Test cases for MetaFolder synchronization.
@@ -196,9 +196,9 @@ public class MetaFolderTest extends TwoControllerTestCase {
         Folder bartMetaFolder = contollerBart.getFolderRepository()
             .getMetaFolderForParent(bartFolder.getInfo());
         // Wait for Bart's sync patterns to persist.
-        TestHelper.waitMilliSeconds(1000);
+        TestHelper.waitMilliSeconds(2000);
         scanFolder(bartMetaFolder);
-        TestHelper.waitForCondition(10, () -> initialSize + 1 == lisaFolder
+        TestHelper.waitForCondition(60, () -> initialSize + 1 == lisaFolder
                 .getDiskItemFilter().getPatterns().size());
 
         assertEquals("Wrong number of patterns", initialSize + 1, lisaFolder
