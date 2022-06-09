@@ -652,12 +652,12 @@ public class UtilTest extends TestCase {
         assertEquals(1, oneChunk.size());
         assertEquals(empty, emptyChunk.get(0));
 
-        byte[] veryBig = new byte[Integer.MAX_VALUE / 2];
-        for (int index = 0; index < Integer.MAX_VALUE / 2; index++) {
+        byte[] veryBig = new byte[Integer.MAX_VALUE / 20];
+        for (int index = 0; index < Integer.MAX_VALUE / 20; index++) {
             veryBig[index] = (byte) index;
         }
 
-        int sizeMax = Integer.MAX_VALUE;
+        int sizeMax = Integer.MAX_VALUE / 10;
         List<byte[]> bigChunk = Util.splitArray(veryBig, sizeMax);
         assertEquals(1, bigChunk.size());
         assertEquals(veryBig, bigChunk.get(0));
