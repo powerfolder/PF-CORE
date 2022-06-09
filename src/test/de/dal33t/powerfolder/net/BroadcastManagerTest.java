@@ -48,6 +48,7 @@ public class BroadcastManagerTest extends FiveControllerTestCase {
 
         LoggingManager.setConsoleLogging(Level.FINE);
         getContollerBart().openBroadcastManager();
+        TestHelper.waitMilliSeconds(100);
         getContollerLisa().openBroadcastManager();
     }
     @Test
