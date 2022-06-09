@@ -1,14 +1,14 @@
 package de.dal33t.powerfolder.ui;
 
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DelayedUpdaterTest extends ControllerTestCase {
     private DelayedUpdater updater;
@@ -52,7 +52,7 @@ public class DelayedUpdaterTest extends ControllerTestCase {
             - updates.get(0).getTime();
         assertTrue("Updates took " + took + "ms", took >= updater.getDelay());
         assertTrue("Updates took " + took
-                + "ms, should not really take longer than single", took <= 1200);
+                + "ms, should not really take longer than single", took <= 1500);
         assertTrue("Should not have passed more that 200ms after last event",
             sinceLastEvent < 200);
     }
