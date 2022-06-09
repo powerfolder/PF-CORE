@@ -26,7 +26,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpGet;
@@ -48,7 +47,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
-import java.util.logging.Level;
 
 import static com.liferay.nativity.util.OSDetector.isWindows;
 import static org.junit.Assume.assumeTrue;
@@ -359,7 +357,6 @@ public class UtilTest extends TestCase {
         System.out.println("testUseSwarming2-1");
         Controller secondController = new Controller();
         System.out.println("testUseSwarming2-2");
-        LoggingManager.setConsoleLogging(Level.FINE);
         firstController.startConfig("build/test/first.config");
         System.out.println("testUseSwarming3");
         secondController.startConfig("build/test/second.config");
