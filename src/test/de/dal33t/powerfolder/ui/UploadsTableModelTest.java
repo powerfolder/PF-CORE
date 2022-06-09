@@ -19,12 +19,6 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.ui.information.uploads.UploadsTableModel;
@@ -33,6 +27,11 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests the upload table model.
@@ -324,8 +323,6 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         public List<TableModelEvent> events = new ArrayList<TableModelEvent>();
 
         public void tableChanged(TableModelEvent e) {
-            System.out.println("Got event: " + e.getType() + " row: "
-                + e.getFirstRow() + "-" + e.getLastRow());
             events.add(e);
         }
     }
