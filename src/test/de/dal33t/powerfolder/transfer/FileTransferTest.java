@@ -305,19 +305,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
-            @Override
-            public String message() {
-                return "Icoming files at lisa: "
-                    + getFolderAtLisa().getIncomingFiles().size();
-            }
-
-            @Override
-            public boolean reached() {
-                return getFolderAtLisa().getIncomingFiles().size() == 1;
-            }
-
-        });
         // Give them time to copy
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
