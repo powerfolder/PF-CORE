@@ -1026,7 +1026,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 0);
         }
-        System.err.println("Created!");
 
         assertEquals(0, lisasListener.downloadCompleted);
 
@@ -1099,7 +1098,6 @@ public class FileTransferTest extends TwoControllerTestCase {
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 0);
         }
-        System.err.println("Created!");
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -2406,9 +2404,6 @@ public class FileTransferTest extends TwoControllerTestCase {
             if (downloadsRequested.contains(event.getFile())) {
                 if (failOnSecondRequest) {
                     fail("Second download request for "
-                        + event.getFile().toDetailString());
-                } else {
-                    System.err.println("Second download request for "
                         + event.getFile().toDetailString());
                 }
             }

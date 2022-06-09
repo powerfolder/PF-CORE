@@ -480,9 +480,6 @@ public class MirrorFolderTest extends FiveControllerTestCase {
                 if (failOnSecondRequest) {
                     fail("Second download request for "
                         + event.getFile().toDetailString());
-                } else {
-                    System.err.println("Second download request for "
-                        + event.getFile().toDetailString());
                 }
             }
             downloadsRequested.add(event.getFile());
