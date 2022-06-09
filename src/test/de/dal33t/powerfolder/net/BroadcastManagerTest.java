@@ -20,10 +20,13 @@ package de.dal33t.powerfolder.net;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import org.junit.Test;
+
+import java.util.logging.Level;
 
 /**
  * PFS-3276
@@ -42,6 +45,8 @@ public class BroadcastManagerTest extends FiveControllerTestCase {
         ConfigurationEntry.NET_BROADCAST_INTERVAL_SECONDS.setValue(getContollerBart(), 1);
         ConfigurationEntry.NET_BROADCAST_INTERVAL_SECONDS.setValue(getContollerLisa(), 1);
         ConfigurationEntry.NET_BROADCAST_INTERVAL_SECONDS.setValue(getContollerMaggie(), 1);
+
+        LoggingManager.setConsoleLogging(Level.FINE);
         getContollerBart().openBroadcastManager();
         getContollerLisa().openBroadcastManager();
     }
