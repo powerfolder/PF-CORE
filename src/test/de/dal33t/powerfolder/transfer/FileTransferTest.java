@@ -1796,9 +1796,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         final MyTransferManagerListener lisaListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisaListener);
 
-        // 1 Meg testfile
+        // 100 Meg testfile
         Path testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 10 * 1024 * 1024);
+            .getLocalBase(), 100 * 1024 * 1024);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
