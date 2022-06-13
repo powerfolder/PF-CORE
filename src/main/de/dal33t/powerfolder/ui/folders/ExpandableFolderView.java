@@ -340,6 +340,9 @@ public class ExpandableFolderView extends PFUIComponent implements
                 logFine("Unsupported/Old server. Not able to retrieve owner name of "
                     + folderInfo.getName() + ". " + e);
             }
+            if (ownerDisplayname != null && serverClient.getAccount().getDisplayName().equals(ownerDisplayname)) {
+                ownerDisplayname = null;
+            }
             if (ownerDisplayname == null) {
                 // Don't fetch again. It's simply not available.
                 ownerDisplayname = "";
