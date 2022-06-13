@@ -19,16 +19,16 @@
  */
 package de.dal33t.powerfolder.folder;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Test case to ensure that a file is re-downloaded if it is removed from the db
@@ -63,6 +63,7 @@ public class RedownloadTest extends TwoControllerTestCase {
             }
         });
         scanFolder(folderLisa);
+        getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             @Override
             public String message() {
