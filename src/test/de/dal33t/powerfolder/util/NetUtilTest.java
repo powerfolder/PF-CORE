@@ -19,21 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import de.dal33t.powerfolder.util.net.AddressRange;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
+import junit.framework.TestCase;
+
+import java.net.*;
 import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import de.dal33t.powerfolder.util.os.OSUtil;
-import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.net.AddressRange;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
 
 public class NetUtilTest extends TestCase {
 
@@ -171,10 +165,7 @@ public class NetUtilTest extends TestCase {
             .getByName("10.51.65.254")));
     }
 
-    public void testNoResovleInetAddress() {
-        if (OSUtil.isWindowsSystem()) {
-            return;
-        }
+    public void xtestNoResovleInetAddress() {
         InetSocketAddress addr = new InetSocketAddress("127.0.0.1", 1337);
         assertFalse(addr.isUnresolved());
 
