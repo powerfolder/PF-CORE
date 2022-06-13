@@ -252,7 +252,7 @@ public class LoginUtil {
             return;
         }
         for (int i = 0; i < password.length; i++) {
-            password[i] = (char) (Math.random() * 256);
+            password[i] = (char) 0;
         }
     }
 
