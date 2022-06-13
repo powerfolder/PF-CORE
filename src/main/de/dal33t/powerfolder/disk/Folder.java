@@ -593,7 +593,7 @@ public class Folder extends PFComponent {
         hasOwnDatabase = true;
 
         if (isInfo() || isFine()) {
-            String msg = getLocalizedName() + ": Scanned " + scanResult.getTotalFilesCount() + " total, "
+            String msg = this + ": Scanned " + scanResult.getTotalFilesCount() + " total, "
                 + scanResult.getChangedFiles().size() + " changed, "
                 + scanResult.getNewFiles().size() + " new, "
                 + scanResult.getRestoredFiles().size() + " restored, "
@@ -3884,7 +3884,7 @@ public class Folder extends PFComponent {
                     // among peers.
 
                     if (isFine()) {
-                        logFine("Found identical file remotely with diffrent name-case: local "
+                        logFine("Found identical file remotely with different name-case: local "
                             + localFileInfo.toDetailString()
                             + " remote: "
                             + remoteFileInfo.toDetailString()
