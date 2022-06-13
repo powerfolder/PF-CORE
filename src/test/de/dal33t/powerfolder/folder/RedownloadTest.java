@@ -63,7 +63,6 @@ public class RedownloadTest extends TwoControllerTestCase {
             }
         });
         scanFolder(folderLisa);
-        getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
         TestHelper.waitForCondition(20, new ConditionWithMessage() {
             @Override
             public String message() {
@@ -71,6 +70,7 @@ public class RedownloadTest extends TwoControllerTestCase {
             }
 
             public boolean reached() {
+                getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
                 return folderLisa.getKnownFiles().size() == 1;
             }
         });
