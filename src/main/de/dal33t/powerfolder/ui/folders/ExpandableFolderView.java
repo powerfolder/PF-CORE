@@ -659,7 +659,7 @@ public class ExpandableFolderView extends PFUIComponent implements
 
         admin = getController().getOSClient().getAccount().hasAdminPermission(folderInfo);
 
-        if (!ConfigurationEntry.SERVER_SYNC_MANDATORY.getValueBoolean(getController())) {
+        if (ConfigurationEntry.SERVER_SYNC_MANDATORY.getValueBoolean(getController())) {
             stopOnlineStorageAction.setEnabled(false);
         }
     }

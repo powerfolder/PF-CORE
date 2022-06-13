@@ -577,7 +577,7 @@ public class SettingsTab extends PFUIComponent {
             }
         }
         confOSAction.allowWith(FolderPermission.admin(folder.getInfo()));
-        confOSActionLabel.getUIComponent().setVisible(enabled && ConfigurationEntry.SERVER_SYNC_MANDATORY.getValueBoolean(getController()));
+        confOSActionLabel.getUIComponent().setVisible(enabled && !ConfigurationEntry.SERVER_SYNC_MANDATORY.getValueBoolean(getController()));
     }
 
     private void updateLocalArchiveMode(Object oldValue, final Object newValue) {
