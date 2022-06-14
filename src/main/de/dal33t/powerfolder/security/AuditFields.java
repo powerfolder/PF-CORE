@@ -23,11 +23,14 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.Embeddable;
+import java.io.Serializable;
 import java.util.Date;
 
 @Embeddable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AuditFields {
+public class AuditFields implements Serializable {
+    private static final long serialVersionUID = 100L;
+
     private static final String SEPARATOR = "|";
     private Date creationDate;
     private String creationAccount;

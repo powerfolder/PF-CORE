@@ -138,7 +138,7 @@ public class Invitation extends FolderRelatedMessage implements Auditable
 
     @Embedded
     @Fetch(FetchMode.JOIN)
-    public transient AuditFields auditFields = new AuditFields();
+    public AuditFields auditFields = new AuditFields();
 
     /**
      * Constructor
