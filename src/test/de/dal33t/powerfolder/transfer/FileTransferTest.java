@@ -2114,7 +2114,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.HOST_FILES);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-            8 * 1024 * 1024);
+            100 * 1024 * 1024);
         scanFolder(getFolderAtBart());
 
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
