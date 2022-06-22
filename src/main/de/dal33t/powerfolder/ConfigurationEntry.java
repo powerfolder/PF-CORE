@@ -548,6 +548,11 @@ public enum ConfigurationEntry {
     SERVER_INVITE_ENABLED("server.invite.enabled", true),
 
     /**
+     * If the option to sync/backup to cloud is mandatory.
+     */
+    SERVER_SYNC_MANDATORY("server.sync.mandatory", false),
+
+    /**
      * PFS-871: The user has to agree to invitations, if enabled
      */
     FOLDER_AGREE_INVITATION_ENABLED("folder.agree.invitation.enabled", true),
@@ -762,6 +767,11 @@ public enum ConfigurationEntry {
         }
 
     },
+
+    /**
+     * PFS-4018: Minimum version to keep connection to. Empty for any version.
+     */
+    NET_VERSION_MINIMUM("net.version.minimum"),
 
     /**
      * If relayed or tunnel connections should be tried for LAN based computers.

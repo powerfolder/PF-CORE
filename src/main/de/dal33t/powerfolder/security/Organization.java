@@ -19,36 +19,22 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import org.hibernate.annotations.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-
-import de.dal33t.powerfolder.util.*;
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
-import org.hibernate.annotations.CollectionOfElements;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Index;
-import org.hibernate.annotations.IndexColumn;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.io.Serializable;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 
@@ -56,13 +42,13 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  * PFS-779: Domain object for PFS-779: Organization wide admin role to manage
  * user accounts per "admin domain"/Organization - Multitenancy -
  * Mandantenfähigkeit
- * 
+ *
  * @author Christian Sprajc
  * @version $Revision: 1.5 $
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Organization implements Serializable {
+public class Organization implements Serializable , Auditable {
 
     private static final Logger LOG = Logger.getLogger(Organization.class.getName());
     private static final long serialVersionUID = 100L;
@@ -90,8 +76,8 @@ public class Organization implements Serializable {
     @Index(name = "IDX_ORGANIZATION_LDAPDN")
     @Column(length = 512)
     private String ldapDN;
-    
-    // PFS-1446     
+
+    // PFS-1446
     @Column(length = 512)
     private String basePath;
 
@@ -135,6 +121,10 @@ public class Organization implements Serializable {
     private String color2;
     @Column(length = 10)
     private String color3;
+
+    @Embedded
+    @Fetch(FetchMode.JOIN)
+    public AuditFields auditFields = new AuditFields();
 
     public Organization() {
         // Generate unique id
@@ -217,10 +207,10 @@ public class Organization implements Serializable {
         return Collections.unmodifiableList(domains);
     }
 
-    public void setDomains (List<String> domains){
+    public void setDomains(List<String> domains) {
         Reject.ifNull(domains, "Domains");
         List<String> domainsLower = new ArrayList<>();
-        for (String dom : domains){
+        for (String dom : domains) {
             if (dom == null) {
                 continue;
             }
@@ -246,7 +236,7 @@ public class Organization implements Serializable {
             return new JSONObject(jsonData);
         } catch (JSONException e) {
             LOG.warning("Illegal JSON data for " + name + ": " + jsonData
-                + ". " + e);
+                    + ". " + e);
             return new JSONObject();
         }
     }
@@ -392,5 +382,13 @@ public class Organization implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(oid);
+    }
+
+    public void setCreatedNowBy(final Account caller) {
+        this.auditFields.setCreatedNowBy(caller);
+    }
+
+    public void setModifiedNowBy(final Account caller) {
+        this.auditFields.setModifiedNowBy(caller);
     }
 }

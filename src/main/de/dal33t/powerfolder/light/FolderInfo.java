@@ -114,6 +114,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return id != null && id.startsWith(Constants.METAFOLDER_ID_PREFIX);
     }
 
+    public boolean isArchiveFolder() {
+        // #1548: Convert this into boolean flag?
+        return id != null && id.startsWith(Constants.ARCHIVE_ID_PREFIX);
+    }
+
     public boolean isLookupInstance() {
         return version < 0;
     }

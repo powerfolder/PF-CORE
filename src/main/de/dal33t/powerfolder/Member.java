@@ -544,7 +544,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             && !remoteMemberInfo.isOnSameNetwork(getController()))
         {
             if (isFine()) {
-                logFine("Closing connection to node with diffrent network ID. Our netID: "
+                logFine("Closing connection to node with different network ID. Our netID: "
                     + getController().getNodeManager().getNetworkId()
                     + ", remote netID: "
                     + remoteMemberInfo.networkId
@@ -556,7 +556,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             lastProblem = new Problem("Network ID mismatch", true,
                 Problem.NETWORK_ID_MISMATCH);
             throw new InvalidIdentityException(
-                "Closing connection to node with diffrent network ID. Our netID: "
+                "Closing connection to node with different network ID. Our netID: "
                     + getController().getNodeManager().getNetworkId()
                     + ", remote netID: " + remoteMemberInfo.networkId + " on "
                     + remoteMemberInfo, newPeer);
@@ -593,6 +593,28 @@ public class Member extends PFComponent implements Comparable<Member> {
             throw new InvalidIdentityException(this
                 + " Remote peer has wrong identity. remote ID: " + identityId
                 + ", expected ID: " + getId(), newPeer);
+        }
+
+        if (ConfigurationEntry.NET_VERSION_MINIMUM.hasNonBlankValue(getController())) {
+            String minimumVersion = ConfigurationEntry.NET_VERSION_MINIMUM.getValue(getController());
+            String remoteVersion = identity.getProgramVersion();
+            if (StringUtils.isNotBlank(remoteVersion) && Util.compareVersions(minimumVersion, remoteVersion)) {
+                lastProblem = new Problem("Version too old. Required minimum version: " + minimumVersion,
+                        true, Problem.VERSION_TOO_OLD);
+                if (isFine()) {
+                    logFine(remoteMemberInfo + ": Closing connection. Version too old. Required version: "
+                            + minimumVersion + ", remote version: " + remoteVersion);
+                }
+                try {
+                    newPeer.sendMessage(lastProblem);
+                } catch (ConnectionException e) {
+                }
+                newPeer.shutdown();
+                setConnectedToNetwork(false);
+                throw new InvalidIdentityException(
+                        "Closing connection. Version too old. Required version: " + minimumVersion
+                                + ", remote version: " + remoteVersion + " of " + remoteMemberInfo, newPeer);
+            }
         }
 
         // Complete low-level handshake
@@ -1682,15 +1704,24 @@ public class Member extends PFComponent implements Comparable<Member> {
                         + "we should not longer try to connect");
                     // Not connected to public network
                     setConnectedToNetwork(true);
-                } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION)
-                {
+                } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION) {
                     if (getMySelf().isServer()) {
-                        logFine("Problem received: Node thinks we have a dupe connection to " + this);
+                        logFine(this + ": Problem received: Node thinks we have a dupe connection to " + this);
                     } else {
-                        logWarning("Problem received: Node thinks we have a dupe connection to " + this);
+                        logWarning(this + ": Problem received: Node thinks we have a dupe connection to " + this);
+                    }
+                } else if (lastProblem.problemCode == Problem.VERSION_TOO_OLD) {
+                    logWarning(this + ": Our program version is too old: " + lastProblem);
+                    if (getController().isUIEnabled()) {
+                        WarningNotice notice = new WarningNotice(
+                                Translation.get("warning_notice.title"),
+                                Translation.get("warning_notice.version_too_old_summary"),
+                                Translation.get("warning_notice.version_too_old_message"));
+                        getController().getUIController().getApplicationModel()
+                                .getNoticesModel().handleNotice(notice);
                     }
                 } else {
-                    logWarning("Problem received: " + lastProblem);
+                    logWarning(this + ": Received: " + lastProblem);
                 }
 
                 if (lastProblem.fatal) {

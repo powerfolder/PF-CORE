@@ -19,23 +19,18 @@
  */
 package de.dal33t.powerfolder.folder;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderException;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
-import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Tests if both instance join the same folder by folder id
@@ -132,7 +127,6 @@ public class FolderJoinTest extends TwoControllerTestCase {
                 .resolve(testFolder.getName());
             Path folderDirLisa = TESTFOLDER_BASEDIR_LISA
                 .resolve(testFolder.getName());
-            System.err.println("Joining folder: " + testFolder);
             // joinFolder(testFolder, folderDirBart, folderDirLisa);
 
             FolderSettings folderSettings1 = new FolderSettings(folderDirBart,

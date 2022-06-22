@@ -509,7 +509,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}" />
 
 		<!-- Compile tests -->
-		<javac destdir="${build.dir}" debug="${Debug}" deprecation="off" failonerror="true" encoding="UTF-8">
+		<javac destdir="${build.dir}" debug="true" debuglevel="lines,vars,source" deprecation="off" failonerror="true" encoding="UTF-8">
 			<src path="${test.src.dir}" />
 			<classpath>
 				<pathelement location="${build.dir}" />
@@ -521,7 +521,7 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
 		<!-- Batchrun all tests -->
-		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="5g" showoutput="yes">
+		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="2g" showoutput="yes">
 			<!-- Reason: https://code.google.com/p/opendedup/issues/detail?id=34 -->
 			<sysproperty key="file.encoding" value="UTF-8"/>
 			<classpath>

@@ -33,6 +33,7 @@ public class Problem extends Message {
     public static final int DO_NOT_LONGER_CONNECT = 666;
     public static final int DUPLICATE_CONNECTION = 777;
     public static final int NETWORK_ID_MISMATCH = 888;
+    public static final int VERSION_TOO_OLD = 999;
 
     // The problem code
     public int problemCode;

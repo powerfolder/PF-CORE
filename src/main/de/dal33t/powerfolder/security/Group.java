@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.util.StringUtils;
 import org.hibernate.annotations.*;
 
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.io.Serializable;
@@ -50,7 +51,7 @@ import java.util.logging.Logger;
  */
 @Entity(name = "AGroup")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Group implements Serializable, D2DObject {
+public class Group implements Serializable, D2DObject, Auditable {
 
     public static final String PROPERTYNAME_OID = "oid";
     public static final String PROPERTYNAME_GROUPNAME = "name";
@@ -85,6 +86,10 @@ public class Group implements Serializable, D2DObject {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
+
+    @Embedded
+    @Fetch(FetchMode.JOIN)
+    public AuditFields auditFields = new AuditFields();
 
     /**
      * Serialization constructor
@@ -422,4 +427,13 @@ public class Group implements Serializable, D2DObject {
         return builder.build();
     }
 
+    @Override
+    public void setCreatedNowBy(Account caller) {
+        this.auditFields.setCreatedNowBy(caller);
+    }
+
+    @Override
+    public void setModifiedNowBy(Account caller) {
+        this.auditFields.setModifiedNowBy(caller);
+    }
 }

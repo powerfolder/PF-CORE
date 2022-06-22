@@ -19,17 +19,19 @@
  */
 package de.dal33t.powerfolder.folder;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.*;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * This test checks that a testFolder can be moved for one location to another. It
@@ -141,34 +143,17 @@ public class FolderMoveTest extends ControllerTestCase {
         FolderRepository repository = getController().getFolderRepository();
 
         try {
-
-            System.out.println("Before moving:");
-
-            Files.walk(testFolder.getLocalBase())
-                    .forEach(p -> System.out.println(p));
-
             Path oldLocalBase = testFolder.getLocalBase();
-
             testFolder = repository.moveLocalFolder(testFolder, testFolder2);
-
             scanFolder(testFolder);
-
-            System.out.println("After moving:");
-
-            Files.walk(testFolder.getLocalBase())
-                    .forEach(p -> System.out.println(p));
-
             // The testFolder should have the test files plus 2 subdirs
             assertEquals(4, testFolder.getKnownItemCount());
-
             // Sub dir should contain one file; test2.txt
             Files.walk(testFolder2)
                     .filter(p -> p.getFileName().toString().equals("sub") && Files.isDirectory(p))
                     .forEach(p -> assertEquals(1, PathUtils.getNumberOfSiblings(p)));
-
             // PFS-2227: moveLocalFolder should actually move all contents on filesystem:
             assertTrue("Old location still existing!:  " + oldLocalBase, Files.notExists(oldLocalBase));
-
         } catch (IOException e) {
             e.printStackTrace();
         }

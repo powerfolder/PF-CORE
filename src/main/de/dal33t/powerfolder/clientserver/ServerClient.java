@@ -857,8 +857,8 @@ public class ServerClient extends PFComponent {
      * @return if all new folders should be backed up by the server/cloud.
      */
     public boolean isBackupByDefault() {
-        return PreferencesEntry.USE_ONLINE_STORAGE
-                .getValueBoolean(getController())
+        return ConfigurationEntry.SERVER_SYNC_MANDATORY.getValueBoolean(getController()) ||
+                PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController())
                 || getController().isBackupOnly()
                 || !PreferencesEntry.EXPERT_MODE.getValueBoolean(getController());
     }
@@ -2142,6 +2142,9 @@ public class ServerClient extends PFComponent {
             Folder folder = folderInfo.getFolder(getController());
             boolean serverOnFolder = folder != null && folder.hasMember(serverNode);
             if (serverOnFolder || serverNode.hasCompleteFileListFor(folderInfo)) {
+                return serverNode;
+            }
+            if (serverNode.getLastFolderList() != null && serverNode.getLastFolderList().contains(folderInfo)) {
                 return serverNode;
             }
         }
