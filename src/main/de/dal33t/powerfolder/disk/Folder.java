@@ -234,7 +234,7 @@ public class Folder extends PFComponent {
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
         if (fInfo.isLookupInstance()) {
-            currentInfo = FolderInfoFactory.unmarshallExistingTopFolder(fInfo.id, fInfo.getName(), 0);
+            currentInfo = FolderInfoFactory.unmarshallExistingFolder(fInfo.id, fInfo.getName(), 0, fInfo.getLocation()).intern();
         } else {
             currentInfo = fInfo;
         }
