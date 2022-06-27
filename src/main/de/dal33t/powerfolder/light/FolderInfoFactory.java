@@ -96,8 +96,8 @@ public class FolderInfoFactory {
         return new FolderInfo(name, id, version, null).intern();
     }
 
-    public static FolderInfo unmarshallExistingFolder(String id, String name, int version, DirectoryInfo parent) {
-        return new FolderInfo(name, id, version, parent).intern();
+    public static FolderInfo unmarshallExistingFolder(String id, String name, int version, DirectoryInfo location) {
+        return new FolderInfo(name, id, version, location).intern();
     }
 
     public static FolderInfo rename(FolderInfo originalFolderInfo, String newName) {
