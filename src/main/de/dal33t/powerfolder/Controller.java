@@ -804,7 +804,7 @@ public class Controller extends PFComponent {
                     preferences.remove(key);
                     i++;
                 }
-                logWarning("Cleared " + i
+                logInfo("Cleared " + i
                     + " preferences, new config/nodeid found");
             }
         } catch (BackingStoreException e1) {
