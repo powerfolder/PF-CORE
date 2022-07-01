@@ -2206,8 +2206,8 @@ public class Folder extends PFComponent {
                         // Increase version to force re-sync
                         if (!brokenExisting.contains(file)) {
                             brokenExisting.add(file);
-                            if (isWarning() && !currentInfo.isMetaFolder()) {
-                                logWarning("Fixing file entry. Local: "
+                            if (isInfo() && !currentInfo.isMetaFolder()) {
+                                logInfo("Fixing file entry. Local: "
                                     + file.toDetailString() + ".\n@"
                                     + member.getNick() + ": "
                                     + remoteFile.toDetailString());
