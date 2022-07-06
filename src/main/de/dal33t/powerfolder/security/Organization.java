@@ -385,10 +385,17 @@ public class Organization implements Serializable , Auditable {
     }
 
     public void setCreatedNowBy(final Account caller) {
-        this.auditFields.setCreatedNowBy(caller);
+        this.auditFields().setCreatedNowBy(caller);
     }
 
     public void setModifiedNowBy(final Account caller) {
-        this.auditFields.setModifiedNowBy(caller);
+        this.auditFields().setModifiedNowBy(caller);
+    }
+
+    private AuditFields auditFields() {
+        if (this.auditFields == null) {
+            this.auditFields = new AuditFields();
+        }
+        return auditFields;
     }
 }
