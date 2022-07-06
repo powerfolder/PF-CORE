@@ -1954,8 +1954,7 @@ public class TransferManager extends PFComponent {
         Reject.ifNull(fInfo, "File is null");
         Folder folder = fInfo.getFolder(getController().getFolderRepository());
         if (folder == null) {
-            throw new NullPointerException("Folder not joined of file: "
-                + fInfo);
+            return Collections.emptyList();
         }
 
         // List<Member> nodes = getController().getNodeManager()
