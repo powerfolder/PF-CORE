@@ -429,11 +429,18 @@ public class Group implements Serializable, D2DObject, Auditable {
 
     @Override
     public void setCreatedNowBy(Account caller) {
-        this.auditFields.setCreatedNowBy(caller);
+        this.auditFields().setCreatedNowBy(caller);
     }
 
     @Override
     public void setModifiedNowBy(Account caller) {
-        this.auditFields.setModifiedNowBy(caller);
+        this.auditFields().setModifiedNowBy(caller);
+    }
+
+    private AuditFields auditFields() {
+        if (this.auditFields == null) {
+            this.auditFields = new AuditFields();
+        }
+        return auditFields;
     }
 }
