@@ -16,6 +16,9 @@ public class FileLinkFilterModel implements Serializable {
         this.foldersInfo = folders;
     }
     public Collection<FolderInfo> getFolders() {
+        if (foldersInfo == null) {
+            return null;
+        }
         return Collections.unmodifiableCollection(foldersInfo);
     }
 
