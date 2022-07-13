@@ -61,6 +61,9 @@ public interface FolderService {
     void createFolder(FolderInfo foInfo, SyncProfile profile,
                       Path targetDir, boolean isEncryptedFolder);
 
+    void createFolder(FolderInfo foInfo, SyncProfile profile,
+                      String targetDir, boolean isEncryptedFolder);
+
     /**
      * Removes a folder from the account. Required owner permission if
      * deletedFiles is true.
