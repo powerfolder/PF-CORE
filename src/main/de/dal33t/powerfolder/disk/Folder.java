@@ -4043,6 +4043,14 @@ public class Folder extends PFComponent {
         return localBase;
     }
 
+    public Path getPhysicalDir() {
+        if (EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
+            return EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
+        } else {
+            return localBase;
+        }
+    }
+
     /**
      * @return the dir to commit/mirror the whole folder contents to after
      *         folder has been fully updated. null if no commit should be
