@@ -169,11 +169,11 @@ public class Upload extends Transfer {
      */
     synchronized void start() {
         if (isStarted()) {
-            logWarning("Upload already started. " + this);
+            logFine("Upload already started. " + this);
             return;
         }
         if (isAborted() || isBroken()) {
-            logWarning("Upload already broken/aborted. " + this);
+            logFine("Upload already broken/aborted. " + this);
             return;
         }
 
@@ -583,7 +583,7 @@ public class Upload extends Transfer {
         }
 
         if (!stillQueuedAtPartner()) {
-            logWarning("Upload broken because not enqued @ partner: queedAtPartner: "
+            logWarning("Upload broken because not enqueued @ partner: queedAtPartner: "
                 + stillQueuedAtPartner()
                 + ", folder: "
                 + getFile().getFolder(getController().getFolderRepository())
