@@ -1035,8 +1035,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             // Simply break. Already disconnected
                             break;
                         } else {
-                            logWarning("Connection closed, message received, before peer identified itself: "
-                                + obj);
+                            if (lastKeepaliveMessage == null) {
+                                logWarning("Connection closed, message received, before peer identified itself: " + obj);
+                            }
                             // connection closed
                             break;
                         }
