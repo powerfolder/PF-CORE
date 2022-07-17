@@ -2495,7 +2495,12 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public Identity getIdentity() {
         if (peer != null) {
-            return peer.getIdentity();
+            try {
+                return peer.getIdentity();
+            } catch (NullPointerException e) {
+                // Really rare case
+                return null;
+            }
         }
         return null;
     }
