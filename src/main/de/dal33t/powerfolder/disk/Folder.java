@@ -881,9 +881,9 @@ public class Folder extends PFComponent {
                                 }
                             }
                             arch.archive(oldLocalFileInfo, targetFile, false);
+                            fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                         }
                         logFileOperation("UPDATED", oldLocalFileInfo, fInfo);
-                        fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
                         // TODO Maybe raise folder-problem....
