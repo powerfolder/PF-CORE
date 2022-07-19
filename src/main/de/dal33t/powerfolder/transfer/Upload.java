@@ -595,12 +595,14 @@ public class Upload extends Transfer {
         Path diskFile = getFile().getDiskFile(
             getController().getFolderRepository());
         if (diskFile == null || Files.notExists(diskFile)) {
-            logWarning("Upload broken because diskfile is not available, folder: "
-                + getFile().getFolder(getController().getFolderRepository())
-                + ", diskfile: "
-                + diskFile
-                + ", last contime: "
-                + getPartner().getLastConnectTime());
+            if (!getFile().getFolderInfo().isMetaFolder()) {
+                logWarning("Upload broken because diskfile is not available, folder: "
+                        + getFile().getFolder(getController().getFolderRepository())
+                        + ", diskfile: "
+                        + diskFile
+                        + ", last contime: "
+                        + getPartner().getLastConnectTime());
+            }
             return true;
         }
 
