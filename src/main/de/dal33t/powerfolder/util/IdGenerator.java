@@ -107,6 +107,10 @@ public class IdGenerator {
 
     public static final String FILE_LINK_PREFIX = "fi";
 
+    public static String generateFileLinkRandomID() {
+        return FILE_LINK_PREFIX + makeId();
+    }
+
     public static String generateFileLinkID(FileInfo fInfo) {
         return generateFileLinkID(fInfo.getFolderInfo().id, fInfo.getRelativeName());
     }

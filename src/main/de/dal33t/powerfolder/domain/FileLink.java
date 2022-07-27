@@ -84,14 +84,18 @@ public class FileLink implements Serializable {
         // NOP Hibernate only.
     }
 
-    public FileLink(FileInfo fInfo) {
+    public FileLink(FileInfo fInfo, boolean generateRandomID) {
         super();
         Reject.ifNull(fInfo, "FileInfo");
         Reject.ifNull(fInfo.getFolderInfo(), "FolderInfo");
         this.folderInfo = fInfo.getFolderInfo();
         this.relativeName = fInfo.getRelativeName();
         this.maxDownloads = -1;
-        this.id = IdGenerator.generateFileLinkID(fInfo);
+        if (generateRandomID) {
+            this.id = IdGenerator.generateFileLinkRandomID();
+        } else {
+            this.id = IdGenerator.generateFileLinkID(fInfo);
+        }
         this.creationDate = new Date();
     }
 
