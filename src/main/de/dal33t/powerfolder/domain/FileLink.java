@@ -51,7 +51,7 @@ public class FileLink implements Serializable {
     private static final long serialVersionUID = 100L;
 
     // Properties
-    public static final String FILE_LINK_PREFIX = "fi";
+    public static final String FILE_LINK_PREFIX = IdGenerator.FILE_LINK_PREFIX;
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_RELATIVE_NAME = "relativeName";
     public static final String PROPERTYNAME_CREATION_DATE = "creationDate";
