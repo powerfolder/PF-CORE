@@ -260,8 +260,7 @@ public class Folder extends PFComponent {
         if (localBaseDir.isAbsolute()) {
             // PFS-2695: Fallback if storage location isn't available:
             if (Files.notExists(localBaseDir) && isEncrypted) {
-                logWarning("Could NOT find storage location for folder %s with " +
-                        "localbase %s. Auto creating storage location!", fInfo.getName(), localBaseDir.toString());
+                logWarning("%s: Could not find base directory %s. Auto creating it", fInfo, localBaseDir.toString());
                 try {
                     Files.createDirectories(localBaseDir);
                 } catch (IOException ioe) {
@@ -351,13 +350,11 @@ public class Folder extends PFComponent {
                 + localBase.toAbsolutePath() + '\'');
         } catch (FolderException e) {
             if (currentInfo.isMetaFolder()) {
-                logFine("Unable to open " + toString() + " at '"
-                    + localBase.toAbsolutePath()
-                    + "'. Local base directory is inaccessable. " + e);
+                logFine(toString() + ": Unable to access base directory "
+                        + localBase.toAbsolutePath() + ": " + e);
             } else {
-                logWarning("Unable to open " + toString() + " at '"
-                    + localBase.toAbsolutePath()
-                    + "'. Local base directory is inaccessable. " + e);
+                logWarning(toString() + ": Unable to access base directory "
+                    + localBase.toAbsolutePath() + ": " + e);
             }
             deviceDisconnected = true;
         }
