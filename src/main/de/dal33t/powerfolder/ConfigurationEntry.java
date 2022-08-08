@@ -1264,6 +1264,11 @@ public enum ConfigurationEntry {
     FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", true),
 
     /**
+     * Creates directory if folder base directory is not existing during startup.
+     */
+    FOLDER_CREATE_ON_STARTUP("create.folder.on.startup", false),
+
+    /**
      * PFC-2572: Possibility to disallow networked drives or UNC shares
      */
     FOLDER_CREATE_ALLOW_NETWORK("create.folder.allow.network", true),
