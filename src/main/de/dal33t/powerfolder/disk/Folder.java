@@ -1540,7 +1540,7 @@ public class Folder extends PFComponent {
         Reject.ifNull(dirInfo, "DirInfo is null");
         Reject.ifTrue(dirInfo.isLookupInstance(), "Scanning lookup instances not implemented");
         if (shutdown) {
-            logFine(getName() + ": Already shutdown: Not scanDirectory: " + dirInfo.toDetailString() + " at " + dir);
+            logFine(getName() + ": Already shutdown: Not scanning directory: " + dirInfo.toDetailString() + " at " + dir);
             return;
         }
         if (isFiner()) {
@@ -1565,6 +1565,9 @@ public class Folder extends PFComponent {
 
         if (PathUtils.isReplicatedSubdir(dir)) {
             logWarning("Unable to scan directory. Replication found: " + dir);
+            return;
+        }
+        if (isDeviceDisconnected()) {
             return;
         }
 
