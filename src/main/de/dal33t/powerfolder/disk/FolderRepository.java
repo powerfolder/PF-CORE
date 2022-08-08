@@ -635,8 +635,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     }
 
                     // Do not add0 if already added
-                    if (!hasJoinedFolder(foInfo)
-                            && folderSettings != null) {
+                    if (!hasJoinedFolder(foInfo) && folderSettings != null) {
+                        if (ConfigurationEntry.FOLDER_CREATE_ON_STARTUP.getValueBoolean(getController()) && Files.notExists(folderSettings.getLocalBaseDir())) {
+                            Files.createDirectories(folderSettings.getLocalBaseDir());
+                        }
                         createFolder(foInfo, folderSettings, false, true);
                     }
                 } catch (Exception e) {
