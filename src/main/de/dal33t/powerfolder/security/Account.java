@@ -863,8 +863,8 @@ public class Account implements Serializable, D2DObject, Auditable {
         try {
             return new JSONObject(jsonData);
         } catch (JSONException e) {
-            LOG.severe("Illegal JSON data for " + username + ": " + jsonData
-                    + ". " + e);
+            LOG.warning("Resetting JSON data for " + username + ". Illegal value '" + jsonData
+                    + "'. " + e.getMessage());
             return new JSONObject();
         }
     }

@@ -235,8 +235,8 @@ public class Organization implements Serializable , Auditable {
         try {
             return new JSONObject(jsonData);
         } catch (JSONException e) {
-            LOG.warning("Illegal JSON data for " + name + ": " + jsonData
-                    + ". " + e);
+            LOG.warning("Resetting JSON data for " + name + ". Illegal value '" + jsonData
+                    + "'. " + e.getMessage());
             return new JSONObject();
         }
     }
