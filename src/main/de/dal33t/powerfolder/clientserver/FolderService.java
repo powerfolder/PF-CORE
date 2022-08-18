@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.domain.FileLink;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -44,9 +45,25 @@ import java.util.Map;
  * @version $Revision: 1.5 $
  */
 public interface FolderService {
+    /**
+     * Create a folder to be setup at the server using defaults.
+     * <br>
+     * The default {@link SyncProfile} is used ({@link SyncProfile#getDefault(Controller)}).
+     * To change use {@link #setSyncProfile(FolderInfo, SyncProfile)}
+     * <br>
+     * The default number of versions is used. To change use {@link #setArchiveMode(FolderInfo, int)}
+     * <br>
+     * The default setting for encryption is used {@link de.dal33t.powerfolder.disk.EncryptedFileSystemUtils#isEncryptionActivatedAndDefault(Controller)}.
+     * <br>
+     * The default path on the server will be used to store the data in.
+     * <br>
+     * @since 17.4
+     * @param folderInfo
+     */
+    void createFolder(FolderInfo folderInfo);
 
     /**
-     * Creates a new folder to be mirrored by the server. Default Sync
+     * Creates a new folder to be mirrored by the server. DOES NOT ENCRYPT THE FOLDER!
      *
      * @param foInfo
      * @param profile
@@ -55,8 +72,6 @@ public interface FolderService {
      * @see SyncProfile#getDefault(de.dal33t.powerfolder.Controller)
      */
     void createFolder(FolderInfo foInfo, SyncProfile profile);
-
-    void createFolder(FolderInfo foInfo, SyncProfile profile, Path targetDir);
 
     void createFolder(FolderInfo foInfo, SyncProfile profile,
                       Path targetDir, boolean isEncryptedFolder);
