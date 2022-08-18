@@ -201,7 +201,7 @@ public interface FolderService {
      *
      * @param profile
      */
-    void setSyncProfile(SyncProfile profile);
+    void setSyncProfileOfAllFolders(SyncProfile profile);
 
     /**
      * TRAC #991
