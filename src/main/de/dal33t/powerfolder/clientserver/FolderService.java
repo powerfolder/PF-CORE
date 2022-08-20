@@ -88,7 +88,6 @@ public interface FolderService {
      */
     void removeFolder(FolderInfo foInfo, boolean deleteFiles);
 
-
     /**
      * Removes a folder from the account. Required owner permission if
      * deletedFiles is true.
@@ -110,14 +109,6 @@ public interface FolderService {
      *
      */
     void leaveFolder(FolderInfo folderInfo);
-
-    /**
-     * PF-1218 / PFS-3953
-     * @param folderInfo
-     * @return the folderinfo of the archive folder
-     */
-    FolderInfo createArchiveFolder(FolderInfo folderInfo);
-    void removeArchiveFolder(FolderInfo folderInfo);
 
     /**
      * PFS-3572
