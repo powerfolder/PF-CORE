@@ -87,10 +87,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 17;
-    private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 103;
+    private static final int MINOR_VERSION = 4;
+    private static final int REVISION_VERSION = 100;
 
-    private static final int SPRINT_NUMBER = 43;
+    private static final int SPRINT_NUMBER = 45;
 
     /**
      * Program version.
@@ -804,7 +804,7 @@ public class Controller extends PFComponent {
                     preferences.remove(key);
                     i++;
                 }
-                logWarning("Cleared " + i
+                logInfo("Cleared " + i
                     + " preferences, new config/nodeid found");
             }
         } catch (BackingStoreException e1) {
