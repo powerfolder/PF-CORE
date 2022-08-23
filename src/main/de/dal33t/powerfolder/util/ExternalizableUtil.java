@@ -19,16 +19,19 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
+
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Date;
-
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.net.NetworkUtil;
+import java.util.logging.Logger;
 
 /**
  * Helpers an utility methods for handling {@link Externalizable}
@@ -92,10 +95,9 @@ public class ExternalizableUtil {
         if (value != null) {
             InetAddress addr = value.getAddress();
             if (addr != null) {
-
                 str = NetworkUtil.getHostAddressNoResolve(addr);
                 str += ":";
-                if (!value.isUnresolved()) {
+                if (!value.isUnresolved() && addr.getAddress() != null) {
                     str += Base64.encodeBytes(addr.getAddress());
                 }
                 str += ":";
@@ -128,8 +130,16 @@ public class ExternalizableUtil {
         int port = Integer.valueOf(addAndPort[2]);
         if (StringUtils.isNotBlank(addAndPort[1])) {
             byte[] ip = Base64.decode(addAndPort[1]);
-            InetAddress addr = InetAddress.getByAddress(hostname, ip);
-            return new InetSocketAddress(addr, port);
+            try {
+                InetAddress addr = InetAddress.getByAddress(hostname, ip);
+                return new InetSocketAddress(addr, port);
+            } catch (UnknownHostException e) {
+                Logger.getLogger(ExternalizableUtil.class.getName()).warning(e +
+                        ": hostname=" + hostname +
+                        ", addAndPort[1]=" + addAndPort[1] +
+                        ", ip=" + Arrays.toString(ip));
+                throw e;
+            }
         } else {
             return new InetSocketAddress(hostname, port);
         }

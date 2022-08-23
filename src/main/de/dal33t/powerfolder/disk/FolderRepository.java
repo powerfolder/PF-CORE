@@ -1896,7 +1896,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             break;
                         }
                     }
-                    Path localBase = folder.getLocalBase();
+                    Path localBase = folder.getPhysicalDir();
 
                     // PFS-2871: Functionality to setup directories behind symlinks as folders.
                     if (Files.isSymbolicLink(localBase)) {
@@ -1905,10 +1905,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                     if (Files.isSymbolicLink(dir)) {
                         dir = dir.toRealPath();
-                    }
-
-                    if (EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
-                        localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
                     }
 
                     if (localBase.equals(localBase.getFileSystem().getPath(dir.toString()))
@@ -2680,10 +2676,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         targetPath = PathUtils.removeInvalidFilenameChars(targetPath);
 
         if (Files.exists(targetPath) && !PathUtils.isEmptyDir(targetPath)) {
-            Path localBase = folder.getLocalBase();
-            if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
-                localBase = EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
-            }
+            Path localBase = folder.getPhysicalDir();
             logWarning("Not moving folder " + folder.getLocalizedName() + " to new directory "
                     + targetPath.toString()
                     + ". The new directory is not empty. "
@@ -2696,11 +2689,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         try {
             scanBasedirLock.lock();
 
-            Path sourceDirectory = folder.getLocalBase().toRealPath();
-
-            // PFS-2343
-            if (EncryptedFileSystemUtils.isCryptoInstance(sourceDirectory))
-                sourceDirectory = EncryptedFileSystemUtils.getPhysicalStorageLocation(sourceDirectory);
+            Path sourceDirectory = folder.getPhysicalDir().toRealPath();
 
             if (sourceDirectory.equals(targetPath)) {
                 logFine("Not required to move folder from/to " + targetPath);
@@ -3332,11 +3321,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         Path bd = getFoldersBasedir().toAbsolutePath();
         boolean inBaseDir = false;
         if (bd != null) {
-            if (EncryptedFileSystemUtils.isCryptoInstance(folder.getLocalBase())) {
-                inBaseDir = EncryptedFileSystemUtils.getPhysicalStorageLocation(folder.getLocalBase()).startsWith(bd);
-            } else {
-                inBaseDir = folder.getLocalBase().toAbsolutePath().startsWith(bd);
-            }
+            inBaseDir = folder.getPhysicalDir().toAbsolutePath().startsWith(bd);
         }
 
         if (!inBaseDir) {

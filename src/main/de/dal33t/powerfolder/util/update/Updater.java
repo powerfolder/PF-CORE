@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder.util.update;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -30,15 +35,6 @@ import java.nio.file.attribute.FileTime;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StreamCallback;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
 
 /**
  * A Thread that checks for updates on powerfolder
@@ -213,7 +209,8 @@ public class Updater extends Thread {
             return null;
         }
         if (Util.compareVersions(latestVersion, Controller.PROGRAM_VERSION)) {
-            LOG.info("Latest version is newer than this one");
+            LOG.info("Latest available version (" + latestVersion + ") is newer than this version (" +
+                    Controller.PROGRAM_VERSION + ")");
             return latestVersion;
         }
         LOG.fine("This version is up-to-date (" + Controller.PROGRAM_VERSION + ")");

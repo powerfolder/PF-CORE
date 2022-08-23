@@ -1643,6 +1643,9 @@ public class ServerClient extends PFComponent {
                 for (MemberInfo snInfo : list.getServersSet()) {
                     Boolean hasKey = cachedServerPublicKey.getValidEntry(snInfo);
                     useCache &= hasKey != null && hasKey;
+                    if (snInfo.getConnectAddress() == null) {
+                        logWarning("Server has empty hostname: " + snInfo);
+                    }
                 }
             } else {
                 useCache = false;

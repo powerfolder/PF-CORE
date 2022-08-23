@@ -145,8 +145,10 @@ public class FolderWatcher extends PFComponent {
             try {
                 JNotify.removeWatch(watchID);
             } catch (JNotifyException e) {
-                logWarning("Failed to remove watch from folder " + folder.getName()
-                        + " at path " + folder.getLocalBase() + e);
+                if (isFine()) {
+                    logFine("Failed to remove watch from folder " + folder.getName()
+                            + " at path " + folder.getLocalBase() + e);
+                }
             } finally {
                 watchID = -1;
             }

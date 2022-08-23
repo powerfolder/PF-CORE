@@ -6,7 +6,7 @@
 !define APPDESC "File Sync and Share"
 !define APPCOMPANY "PowerFolder.com"
 !define APPHOME "https://www.powerfolder.com"
-!define APPCONTACT "contact@powerfolder.com"
+!define APPCONTACT "info@powerfolder.com"
 !define COMPHOME "https://www.powerfolder.com"
 !define APPRELEASENOTES "https://wiki.powerfolder.com/display/PFC/Release+Notes"
 !define APPSUPPORT "https://wiki.powerfolder.com"

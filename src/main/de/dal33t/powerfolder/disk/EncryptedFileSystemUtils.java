@@ -125,9 +125,19 @@ public class EncryptedFileSystemUtils {
      * @param controller The controller
      * @return {@code True} if storage encryption is activated.
      */
-
     public static boolean isEncryptionActivated(@NotNull Controller controller){
         return ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(controller);
+    }
+
+    /**
+     * Checks if storage encryption is activated and should by used by default on this server.
+     *
+     * @param controller The controller
+     * @return {@code True} if storage encryption is activated and should be used by default.
+     */
+    public static boolean isEncryptionActivatedAndDefault(@NotNull Controller controller){
+        return ConfigurationEntry.ENCRYPTED_STORAGE.getValueBoolean(controller)
+                && ConfigurationEntry.ENCRYPTED_STORAGE_DEFAULT.getValueBoolean(controller);
     }
 
     /**

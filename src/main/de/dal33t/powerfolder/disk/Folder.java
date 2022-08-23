@@ -234,7 +234,7 @@ public class Folder extends PFComponent {
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
         if (fInfo.isLookupInstance()) {
-            currentInfo = FolderInfoFactory.unmarshallExistingTopFolder(fInfo.id, fInfo.getName(), 0);
+            currentInfo = FolderInfoFactory.unmarshallExistingFolder(fInfo.id, fInfo.getName(), 0, fInfo.getLocation()).intern();
         } else {
             currentInfo = fInfo;
         }
@@ -878,9 +878,9 @@ public class Folder extends PFComponent {
                                 }
                             }
                             arch.archive(oldLocalFileInfo, targetFile, false);
+                            fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                         }
                         logFileOperation("UPDATED", oldLocalFileInfo, fInfo);
-                        fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                     } catch (IOException e) {
                         // Same behavior as below, on failure drop out
                         // TODO Maybe raise folder-problem....
@@ -1537,7 +1537,7 @@ public class Folder extends PFComponent {
         Reject.ifNull(dirInfo, "DirInfo is null");
         Reject.ifTrue(dirInfo.isLookupInstance(), "Scanning lookup instances not implemented");
         if (shutdown) {
-            logFine(getName() + ": Already shutdown: Not scanDirectory: " + dirInfo.toDetailString() + " at " + dir);
+            logFine(getName() + ": Already shutdown: Not scanning directory: " + dirInfo.toDetailString() + " at " + dir);
             return;
         }
         if (isFiner()) {
@@ -1562,6 +1562,9 @@ public class Folder extends PFComponent {
 
         if (PathUtils.isReplicatedSubdir(dir)) {
             logWarning("Unable to scan directory. Replication found: " + dir);
+            return;
+        }
+        if (isDeviceDisconnected()) {
             return;
         }
 
@@ -2203,8 +2206,8 @@ public class Folder extends PFComponent {
                         // Increase version to force re-sync
                         if (!brokenExisting.contains(file)) {
                             brokenExisting.add(file);
-                            if (isWarning() && !currentInfo.isMetaFolder()) {
-                                logWarning("Fixing file entry. Local: "
+                            if (isInfo() && !currentInfo.isMetaFolder()) {
+                                logInfo("Fixing file entry. Local: "
                                     + file.toDetailString() + ".\n@"
                                     + member.getNick() + ": "
                                     + remoteFile.toDetailString());
@@ -4038,6 +4041,14 @@ public class Folder extends PFComponent {
      */
     public Path getLocalBase() {
         return localBase;
+    }
+
+    public Path getPhysicalDir() {
+        if (EncryptedFileSystemUtils.isCryptoInstance(localBase)) {
+            return EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase);
+        } else {
+            return localBase;
+        }
     }
 
     /**

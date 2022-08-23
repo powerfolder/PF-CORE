@@ -19,6 +19,18 @@
  */
 package de.dal33t.powerfolder.net;
 
+import de.dal33t.powerfolder.Constants;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.RelayedMessage.Type;
+import de.dal33t.powerfolder.util.ByteSerializer;
+import de.dal33t.powerfolder.util.Format;
+import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
+
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.Queue;
@@ -26,24 +38,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
-import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.IdentityReply;
-import de.dal33t.powerfolder.message.Message;
-import de.dal33t.powerfolder.message.Pong;
-import de.dal33t.powerfolder.message.Problem;
-import de.dal33t.powerfolder.message.RelayedMessage;
-import de.dal33t.powerfolder.message.RelayedMessage.Type;
-import de.dal33t.powerfolder.message.RelayedMessageExt;
-import de.dal33t.powerfolder.util.ByteSerializer;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.Reject;
 
 /**
  * The base super class for connection which get relayed through a third node.
@@ -804,8 +798,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     // Simply break. Already disconnected
                     shutdownWithMember();
                 } else {
-                    logWarning("Connection closed, message received, before peer identified itself: "
-                        + obj);
+                    if (lastKeepaliveMessage == null) {
+                        logWarning("Connection closed, message received, before peer identified itself: " + obj);
+                    }
                     // connection closed
                     shutdownWithMember();
                 }
