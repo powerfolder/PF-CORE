@@ -210,14 +210,15 @@ public class PathUtilsTest extends TestCase {
 
         Path actual3 = PathUtils
                 .createEmptyDirectory(
-                        baseDir.resolve(PathUtils.removeInvalidFilenameChars("hümmers / rüttenscheiß: Wichtige Doxx|.....")));
+                        baseDir.resolve(PathUtils.removeInvalidFilenameChars("hümmers / rüß: Wichtige Doxx|.....")));
         assertTrue(Files.exists(actual3));
         assertTrue(Files.isDirectory(actual3));
         assertEquals(0, PathUtils.getNumberOfSiblings(actual3));
-        assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3
+        assertEquals("hümmers _ rüß_ Wichtige Doxx______", actual3
                 .getFileName().toString());
 
-        assertEquals("", PathUtils.removeInvalidFilenameChars("....."));
+        assertEquals("_____", PathUtils.removeInvalidFilenameChars("....."));
+        assertEquals("___", PathUtils.removeInvalidFilenameChars("..."));
     }
 
     @Test
@@ -241,14 +242,14 @@ public class PathUtilsTest extends TestCase {
                 .createEmptyDirectory(
                         baseDir,
                         PathUtils
-                                .removeInvalidFilenameChars("hümmers / rüttenscheiß: Wichtige Doxx|....."));
+                                .removeInvalidFilenameChars("hümmers / rüß: Wichtige Doxx|....."));
         assertTrue(Files.exists(actual3));
         assertTrue(Files.isDirectory(actual3));
         assertEquals(0, PathUtils.getNumberOfSiblings(actual3));
-        assertEquals("hümmers  rüttenscheiß Wichtige Doxx", actual3
+        assertEquals("hümmers _ rüß_ Wichtige Doxx______", actual3
                 .getFileName().toString());
 
-        assertEquals("", PathUtils.removeInvalidFilenameChars("....."));
+        assertEquals("_____", PathUtils.removeInvalidFilenameChars("....."));
     }
 
     /**

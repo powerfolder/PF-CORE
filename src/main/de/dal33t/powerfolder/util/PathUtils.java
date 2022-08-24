@@ -1195,25 +1195,30 @@ public class PathUtils {
      * @return
      */
     public static String removeInvalidFilenameChars(String filename) {
+        Reject.ifBlank(filename, "Filename is blank");
         for (int i = 0; i < INVALID_CHARS.length(); i++) {
             char c = INVALID_CHARS.charAt(i);
             while (filename.indexOf(c) != -1) {
                 int index = filename.indexOf(c);
-                filename = filename.substring(0, index)
-                        + filename.substring(index + 1, filename.length());
+                filename = filename.substring(0, index) + "_"
+                        + filename.substring(index + 1);
             }
         }
+        String suffix = "";
         while (filename.endsWith(".")) {
             filename = filename.substring(0, filename.length() - 1);
+            suffix += "_";
         }
-        return filename.trim();
+        filename += suffix;
+        filename = filename.trim();
+        Reject.ifBlank(filename, "Filename is blank");
+        return filename;
     }
 
     public static @NotNull Path removeInvalidFilenameChars(@NotNull Path path) {
         if (path.getFileName() == null) {
             return path;
         }
-
 
         String filename = path.getFileName().toString();
         String cleared = PathUtils.removeInvalidFilenameChars(filename);
