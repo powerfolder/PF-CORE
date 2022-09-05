@@ -90,7 +90,7 @@ public enum ConfigurationEntry {
         // Always return false if software was installed via MSI
         @Override
         public Boolean getValueBoolean(Controller controller) {
-            if (OSUtil.isWindowsSystem() && WinUtils.isMSI()) {
+            if (OSUtil.isWindowsSystem() && WinUtils.isMSI(controller)) {
                 return Boolean.FALSE;
             }
             return super.getValueBoolean(controller);
@@ -100,7 +100,7 @@ public enum ConfigurationEntry {
         public String getDefaultValue() {
             // Hack for PFC-2461
             // Updates disabled by default if software was installed via MSI
-            if (OSUtil.isWindowsSystem() && WinUtils.isMSI()) {
+            if (OSUtil.isWindowsSystem() && WinUtils.isMSI(null)) {
                 return Boolean.FALSE.toString();
             }
             return super.getDefaultValue();
