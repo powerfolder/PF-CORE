@@ -19,17 +19,7 @@
  */
 package de.dal33t.powerfolder.util.os.Win32;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map.Entry;
-import java.util.logging.Logger;
-
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -39,6 +29,16 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map.Entry;
+import java.util.logging.Logger;
+
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 
 /**
  * Utilities for windows. http://vbnet.mvps.org/index.html?code/browse/csidl.htm
@@ -237,7 +237,7 @@ public class WinUtils extends Loggable {
     public void setPFStartup(boolean setup, Controller controller)
         throws IOException, UnsupportedOperationException
     {
-        Path programFiles = getProgramInstallationPath();
+        Path programFiles = getProgramInstallationPath(controller);
         Path pfile = null;
         if (programFiles != null) {
             pfile = programFiles.resolve(controller.getDistribution().getBinaryName() + ".exe");
@@ -298,12 +298,23 @@ public class WinUtils extends Loggable {
      *
      * @return the path on a Windows installation or null if unable to resolve.
      */
-    public static Path getProgramInstallationPath() {
+    public static Path getProgramInstallationPath(Controller controller) {
         String programFiles = System.getenv("PROGRAMFILES");
-        if (StringUtils.isBlank(programFiles)) {
+        if (isBlank(programFiles)) {
             LOG.warning("Unable find installation path. Program files directory not found");
             return null;
         }
+        if (controller != null) {
+            String distCompany = ConfigurationEntry.DIST_COMPANY.getValue(controller);
+            String distBinaryName = ConfigurationEntry.DIST_BINARY_NAME.getValue(controller);
+            if (isNotBlank(distCompany) && isNotBlank(distBinaryName)) {
+                Path f = Paths.get(programFiles + "/" + distCompany + "/" + distBinaryName);
+                if (Files.exists(f)) {
+                    return f;
+                }
+            }
+        }
+
         Path f = Paths.get(programFiles + "/PowerFolder.com/PowerFolder");
         if (Files.exists(f)) {
             return f;
@@ -331,12 +342,12 @@ public class WinUtils extends Loggable {
      */
     public static String getAppDataCurrentUser() {
         String appDataname = System.getenv("APPDATA");
-        if (StringUtils.isBlank(appDataname) && WinUtils.getInstance() != null)
+        if (isBlank(appDataname) && WinUtils.getInstance() != null)
         {
             appDataname = WinUtils.getInstance().getSystemFolderPath(
                 WinUtils.CSIDL_APP_DATA, false);
         }
-        if (StringUtils.isBlank(appDataname) && OSUtil.isWindowsSystem()) {
+        if (isBlank(appDataname) && OSUtil.isWindowsSystem()) {
             LOG.severe("Unable to find APPDATA (current user) directory");
         }
         return appDataname;
@@ -423,8 +434,8 @@ public class WinUtils extends Loggable {
         Runtime.getRuntime().exec(KILL + serviceName);
     }
 
-    public static boolean isMSI() {
-        return Files.exists(getProgramInstallationPath().resolve(MSI_MARKER_FILE));
+    public static boolean isMSI(Controller controller) {
+        return Files.exists(getProgramInstallationPath(controller).resolve(MSI_MARKER_FILE));
     }
 
     /**
