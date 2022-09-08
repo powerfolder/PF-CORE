@@ -31,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -238,4 +239,8 @@ public interface AccountService {
     List<Organization> getAll(OrganizationFilterModel filter);
 
     Collection<Invitation> getInvitationsFor(AccountInfo account);
+
+    void setOrganizationValidTill(String organizationID, Date validTillDate);
+
+    void deleteOrganization(String organizationID);
 }
