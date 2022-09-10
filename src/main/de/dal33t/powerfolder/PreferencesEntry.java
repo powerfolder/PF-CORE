@@ -200,7 +200,12 @@ public enum PreferencesEntry {
             }
             return super.getValueBoolean(controller);
         }
-    };
+    },
+
+    /**
+     * PFC-3349: WebDAV Only view
+     */
+    WEBDAV_ONLY("webdav.only", false);
 
     /**
      * String, Boolean, Integer
