@@ -2270,15 +2270,19 @@ public class ServerClient extends PFComponent {
                 return;
             }
 
-            Collection<FolderInfo> infos = getController()
-                    .getFolderRepository().getJoinedFolderInfos();
+            Collection<FolderInfo> infos = getController().getFolderRepository().getJoinedFolderInfos();
             FolderInfo[] folders = infos.toArray(new FolderInfo[0]);
-            if (infos.size() > 1000) {
+            Collection<MemberInfo> hostingServers;
+            if (infos.size() < 1000) {
+                hostingServers = getFolderService().getHostingServers(folders);
+            } else {
                 // TODO: Remove after major distribution of Version 17.5
-                folders = Arrays.copyOf(folders, 1000);
+                hostingServers = new ArrayList<>();
+                for (Member serverNodeInfo : getServersInCluster()) {
+                    hostingServers.add(serverNodeInfo.getInfo());
+                }
             }
-            Collection<MemberInfo> hostingServers = getFolderService()
-                    .getHostingServers(folders);
+
             if (isFine()) {
                 logFine("Got " + hostingServers.size() + " servers for our "
                         + folders.length + " folders: " + hostingServers);
