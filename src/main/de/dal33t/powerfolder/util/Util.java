@@ -63,6 +63,7 @@ import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -624,6 +625,29 @@ public class Util {
         }
         return result;
     }
+
+    // Source: https://howtodoinjava.com/java/array/split-arrays/
+    public static <T extends Object> List<T[]> splitArray(T[] array, int splitSize) {
+
+        int numberOfArrays = array.length / splitSize;
+        int remainder = array.length % splitSize;
+
+        int start = 0;
+        int end = 0;
+
+        List<T[]> list = new ArrayList<>();
+        for (int i = 0; i < numberOfArrays; i++) {
+            end += splitSize;
+            list.add(Arrays.copyOfRange(array, start, end));
+            start = end;
+        }
+
+        if (remainder > 0) {
+            list.add(Arrays.copyOfRange(array, start, (start + remainder)));
+        }
+        return list;
+    }
+
 
     /**
      * Converts an array of bytes into an array of characters representing the
