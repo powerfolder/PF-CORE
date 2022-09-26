@@ -209,19 +209,10 @@ public interface FolderService {
     /**
      * @param foInfos
      *            the list of folders to retrieve the hosted servers for.
+     *            use <code>null</code> to retrieve server for folders contained in last {@link de.dal33t.powerfolder.message.FolderList}
      * @return the list of servers the folders are hosted on.
      */
-    @Deprecated
     Collection<MemberInfo> getHostingServers(FolderInfo... foInfos);
-
-    /**
-     * Retrieves the hosting servers for an array of folder infos
-     *
-     * @param folderInfos The array of folders to retrieve the hosted servers for
-     *
-     * @return The list of servers the folders are hosted on
-     */
-    Collection<MemberInfo> getHostingServersNew(FolderInfo... folderInfos);
 
     // Server archive calls ***************************************************
 
