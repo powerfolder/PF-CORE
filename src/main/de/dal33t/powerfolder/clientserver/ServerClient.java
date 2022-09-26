@@ -2273,6 +2273,10 @@ public class ServerClient extends PFComponent {
             Collection<FolderInfo> infos = getController()
                     .getFolderRepository().getJoinedFolderInfos();
             FolderInfo[] folders = infos.toArray(new FolderInfo[0]);
+            if (infos.size() > 1000) {
+                // TODO: Remove after major distribution of Version 17.5
+                folders = Arrays.copyOf(folders, 1000);
+            }
             Collection<MemberInfo> hostingServers = getFolderService()
                     .getHostingServers(folders);
             if (isFine()) {
