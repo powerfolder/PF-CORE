@@ -190,7 +190,7 @@ public enum PreferencesEntry {
         @Override
         public Boolean getValueBoolean(Controller controller) {
             // Never show option at MSI installer: Auto-update not supported (yet)
-            if (OSUtil.isWindowsSystem() && WinUtils.isMSI()) {
+            if (OSUtil.isWindowsSystem() && WinUtils.isMSI(controller)) {
                 return Boolean.FALSE;
             }
             // If no value is set: Show if update is enabled.
@@ -200,7 +200,12 @@ public enum PreferencesEntry {
             }
             return super.getValueBoolean(controller);
         }
-    };
+    },
+
+    /**
+     * PFC-3349: WebDAV Only view
+     */
+    WEBDAV_ONLY("webdav.only", false);
 
     /**
      * String, Boolean, Integer

@@ -50,7 +50,7 @@ public class Spacetree {
             name = d.getBinaryName();
         }
         String exeName = d.getBinaryName() + ".exe";
-        Path pathToExe = WinUtils.getProgramInstallationPath().resolve(exeName);
+        Path pathToExe = WinUtils.getProgramInstallationPath(controller).resolve(exeName);
 
         Path baseDir = controller.getFolderRepository().getFoldersBasedir();
         if (Files.notExists(pathToExe)) {
@@ -122,7 +122,7 @@ public class Spacetree {
     }
 
     public static void main(String... args) throws IOException {
-        Path installPath = WinUtils.getProgramInstallationPath();
+        Path installPath = WinUtils.getProgramInstallationPath(null);
         Spacetree st = new Spacetree("PowerFolder",
                 installPath.resolve("PowerFolder.exe"),
                 Paths.get("%userprofile%\\PowerFolders")

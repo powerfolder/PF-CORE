@@ -996,12 +996,12 @@ public class PathUtils {
             // Need to set up desktop ini.
             PrintWriter pw = null;
             try {
-                Path iconFile = findDistributionFile("Folder.ico");
+                Path iconFile = findDistributionFile(controller, "Folder.ico");
                 if (iconFile == null) {
                     // Try harder, use EXE file icon
                     String exeName = controller.getDistribution()
                             .getBinaryName() + ".exe";
-                    iconFile = findDistributionFile(exeName);
+                    iconFile = findDistributionFile(controller, exeName);
                 }
 
                 if (iconFile == null || Files.notExists(iconFile)) {
@@ -1056,14 +1056,14 @@ public class PathUtils {
         }
     }
 
-    private static Path findDistributionFile(String filename) {
+    private static Path findDistributionFile(Controller controller, String filename) {
         // Try to find file in skin directory
         Path distroFile = Controller.getMiscFilesLocation().resolve("skin/client/" + filename);
         if (Files.notExists(distroFile)) {
             distroFile = Paths.get(".").toAbsolutePath().resolve(filename);
             if (Files.notExists(distroFile)) {
                 // Try harder
-                distroFile = WinUtils.getProgramInstallationPath().resolve(filename);
+                distroFile = WinUtils.getProgramInstallationPath(controller).resolve(filename);
 
                 if (Files.notExists(distroFile)) {
                     log.fine("Could not find " + distroFile.getFileName()
