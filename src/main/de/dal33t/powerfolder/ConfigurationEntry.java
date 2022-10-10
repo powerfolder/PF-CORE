@@ -550,7 +550,7 @@ public enum ConfigurationEntry {
     /**
      * If the option to sync/backup to cloud is mandatory.
      */
-    SERVER_SYNC_MANDATORY("server.sync.mandatory", false),
+    SERVER_SYNC_MANDATORY("server.sync.mandatory", true),
 
     /**
      * PFS-871: The user has to agree to invitations, if enabled
