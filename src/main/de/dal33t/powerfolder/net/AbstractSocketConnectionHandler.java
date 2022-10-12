@@ -504,7 +504,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 long took = System.currentTimeMillis() - start;
                 if (took > 40000) {
                     logWarning("Sending (" + data.length + " bytes) took "
-                        + took + "ms: " + message);
+                        + took + "ms: " + message + " to " + getMember());
                 }
             }
         } catch (IOException e) {
