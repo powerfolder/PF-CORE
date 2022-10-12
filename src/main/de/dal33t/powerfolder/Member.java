@@ -2210,20 +2210,21 @@ public class Member extends PFComponent implements Comparable<Member> {
                         logFiner("Joined meta folder: " + metaFolder);
                     }
                     boolean nameDiffers = !folderInfo.getName().equals(folder.getName());
+                    Member member = fromPeer.getMember();
                     if (folderInfo.getVersion() > folder.getInfo().getVersion()) {
-                        if (folder.hasAdminPermission(fromPeer.getMember())) {
+                        if (member != null && folder.hasAdminPermission(member)) {
                             if (nameDiffers) {
-                                logInfo("Renaming local " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                                logInfo("Renaming local " + folder.getInfo() + ". Remote: " + folderInfo + ". " + member);
                             }
                             if (getMySelf().isServer()) {
                                 getController().getFolderRepository().renameFolder(folderInfo, false, null);
                             } else {
-                                new FolderRenameTask(folderInfo, fromPeer.getMember()).scheduleTask(getController());
+                                new FolderRenameTask(folderInfo, member).scheduleTask(getController());
                             }
                         }
                     } else if (nameDiffers && folderInfo.getVersion() == folder.getInfo().getVersion() && folderInfo.getVersion() != 0) {
                         logWarning("Possible renaming conflict detected. Name differs but same version. Local: "
-                                + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                                + folder.getInfo() + ". Remote: " + folderInfo + ". " + member);
                     }
                 }
             } else {
