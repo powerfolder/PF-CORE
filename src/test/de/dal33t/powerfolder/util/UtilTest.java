@@ -899,6 +899,8 @@ public class UtilTest extends TestCase {
         String versionWeird = "TestOne";
         String anotherVersionWeird = "TestTwo";
         System.out.println(Util.compareVersions(versionWeird, anotherVersionWeird));
+
+        assertTrue(Util.compareVersions("18.0.101", "17.4.100"));
     }
 
     public void testBetweenVersions() {
