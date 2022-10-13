@@ -418,7 +418,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public boolean isConnected() {
         try {
-            return peer != null && peer.isConnected();
+            ConnectionHandler thisPeer = peer;
+            return thisPeer != null && thisPeer.isConnected();
         } catch (Exception e) {
             return false;
         }
@@ -975,7 +976,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!waitForHandshakeCompletion()) {
             long took = System.currentTimeMillis() - start;
             String message = null;
-            if (peer == null || !peer.isConnected()) {
+            thisPeer = peer;
+            if (thisPeer == null || !thisPeer.isConnected()) {
                 if (lastProblem == null) {
                     message = "Peer " + getNick() + " disconnected while waiting for handshake acknownledge (or problem)";
                 }
@@ -1304,8 +1306,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            the message to send
      */
     public void sendMessageAsynchron(Message message) {
-        if (peer != null && peer.isConnected()) {
-            peer.sendMessagesAsynchron(message);
+        ConnectionHandler thisPeer = peer;
+        if (thisPeer != null && thisPeer.isConnected()) {
+            thisPeer.sendMessagesAsynchron(message);
         }
     }
 
@@ -1318,8 +1321,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            the messages to send
      */
     public void sendMessagesAsynchron(Message... messages) {
-        if (peer != null && peer.isConnected()) {
-            peer.sendMessagesAsynchron(messages);
+        ConnectionHandler thisPeer = peer;
+        if (thisPeer != null && thisPeer.isConnected()) {
+            thisPeer.sendMessagesAsynchron(messages);
         }
     }
 
@@ -2027,7 +2031,10 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            the message to fire
      */
     public void fireMessageToListeners(Message message) {
-        getMessageListenerSupport().fireMessage(this, message);
+        MessageListenerSupport messageListenerSupport = getMessageListenerSupport();
+        if (messageListenerSupport != null) {
+            messageListenerSupport.fireMessage(this, message);
+        }
     }
 
     private synchronized MessageListenerSupport getMessageListenerSupport() {
