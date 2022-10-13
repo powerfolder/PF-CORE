@@ -25,8 +25,9 @@ import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.util.*;
 import org.hibernate.annotations.*;
 
-import javax.persistence.*;
 import javax.persistence.Entity;
+import javax.persistence.*;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
@@ -38,7 +39,10 @@ import java.util.Date;
 @Entity
 @org.hibernate.annotations.Table(appliesTo = "Token", indexes = {@Index(name = "IDX_TOKEN_AOID", columnNames = {AccountInfo.PROPERTYNAME_OID})})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Token {
+public class Token implements Serializable {
+
+    private static final long serialVersionUID = 100L;
+
     public static final int TOKEN_VERSION = 1;
     private static final char SEPARATOR = '-';
 
