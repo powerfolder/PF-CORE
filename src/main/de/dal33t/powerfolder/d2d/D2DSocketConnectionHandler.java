@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Reject;
+import org.squirrelframework.foundation.exception.TransitionException;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -326,6 +327,7 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                     break;
                 }
 
+                Object message = null;
                 try {
                     // Read data header, total size
                     read(in, sizeArr, 0, sizeArr.length);
@@ -338,7 +340,7 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                         throw new IOException("Illegal packet size: " + totalSize);
                     }
                     byte[] data = serializer.read(in, totalSize);
-                    Object message = deserialize(data, totalSize);
+                    message = deserialize(data, totalSize);
                     if (message instanceof D2DObject) {
                         if (message instanceof Identity) {
                             // I know this is really ugly but ¯\_(ツ)_/¯
@@ -393,6 +395,10 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                             + e.getMessage() + " from "
                             + D2DSocketConnectionHandler.this);
                     // do not break connection
+                } catch (TransitionException e) {
+                    logWarning(getMember() + ": Received unexpected message (" + message + "): "  + e.getMessage());
+                    // Break connection
+                    break;
                 } catch (RuntimeException e) {
                     logSevere("RuntimeException. " + e, e);
                     shutdownWithMember();
