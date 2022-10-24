@@ -738,7 +738,6 @@ public class Account implements Serializable, D2DObject, Auditable {
      */
 
     public void setLanguage(String lang) {
-        // TODO: PENTEST2022: Check for valid language codes
         this.language = lang;
     }
 
