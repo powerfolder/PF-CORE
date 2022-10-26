@@ -1565,7 +1565,7 @@ public class ServerClient extends PFComponent {
             String webURL = (String) props
                     .get(ConfigurationEntry.SERVER_WEB_URL.getConfigKey());
 
-            logInfo("Loaded " + props.size() + " from " + configURL + " network ID: " + networkID);
+            logInfo("Loaded " + props.size() + " config entries from " + configURL + " network ID: " + networkID);
             if (StringUtils.isBlank(host)) {
                 throw new IOException("Hostname not found");
             }
