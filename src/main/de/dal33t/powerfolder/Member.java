@@ -2383,13 +2383,13 @@ public class Member extends PFComponent implements Comparable<Member> {
     private List<Folder> getFoldersRequestedToJoin() {
         ConnectionHandler thisPeer = peer;
         if (thisPeer == null) {
-            logWarning("Node disconnected while getting folders");
+            logFine("Node disconnected while getting folders");
             return Collections.emptyList();
         }
         // TODO Think about a better way
         FolderList fList = getLastFolderList();
         if (fList == null) {
-            logWarning("Unable to get last folder list");
+            logFine("Unable to get last folder list");
             return Collections.emptyList();
         }
         List<Folder> requestedFolders = new LinkedList<Folder>();
