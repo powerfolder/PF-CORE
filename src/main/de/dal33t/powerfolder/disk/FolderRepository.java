@@ -2677,7 +2677,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         if (Files.exists(targetPath) && !PathUtils.isEmptyDir(targetPath)) {
             Path localBase = folder.getPhysicalDir();
-            logWarning("Not moving folder " + folder.getLocalizedName() + " to new directory "
+            logWarning(folder + ": Not moving to new directory "
                     + targetPath.toString()
                     + ". The new directory is not empty. "
                     + "Keeping the old directory " + localBase);
