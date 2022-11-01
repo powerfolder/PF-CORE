@@ -300,6 +300,10 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
 
     @Override
     public boolean acceptIdentity(Member node) {
+        if (node.isServer()) {
+            // Never accept server via D2D
+            return false;
+        }
         this.nodeStateMachine.setNode(node);
         Reject.ifNull(node, "node is null");
         member = node;
