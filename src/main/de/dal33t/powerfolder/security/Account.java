@@ -136,6 +136,8 @@ public class Account implements Serializable, D2DObject, Auditable {
     private Integer maxFolders;
 
     @Column(length = 255)
+    private String title;
+    @Column(length = 255)
     @Index(name = "IDX_ACC_FIRSTNAME")
     private String firstname;
     @Column(length = 255)
@@ -791,6 +793,14 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public void setOrganizationOID(String organizationOID) {
         this.organizationOID = organizationOID;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getFirstname() {
