@@ -621,7 +621,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     public String getDisplayName() {
         if (StringUtils.isNotBlank(firstname)
                 || StringUtils.isNotBlank(surname)) {
-            String t = (title == null) ? "" : title + " ";
+            String t = (title == null) ? "" : title.trim() + " ";
             String fn = (firstname == null ? "" : firstname).trim();
             String sn = (surname == null ? "" : surname).trim();
 
