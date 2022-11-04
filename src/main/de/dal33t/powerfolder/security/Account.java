@@ -621,17 +621,18 @@ public class Account implements Serializable, D2DObject, Auditable {
     public String getDisplayName() {
         if (StringUtils.isNotBlank(firstname)
                 || StringUtils.isNotBlank(surname)) {
+            String t = (title == null) ? "" : title + " ";
             String fn = (firstname == null ? "" : firstname).trim();
             String sn = (surname == null ? "" : surname).trim();
 
             if (StringUtils.isBlank(fn)) {
-                return sn;
+                return title + sn;
             }
             if (StringUtils.isBlank(sn)) {
-                return fn;
+                return title + fn;
             }
 
-            return (fn + " " + sn).trim();
+            return (title + fn + " " + sn).trim();
         } else if (StringUtils.isNotBlank(username) && authByShibboleth()
                 && !emails.isEmpty()) {
             return this.getEmails().get(0);
