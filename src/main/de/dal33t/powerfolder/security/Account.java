@@ -626,13 +626,13 @@ public class Account implements Serializable, D2DObject, Auditable {
             String sn = (surname == null ? "" : surname).trim();
 
             if (StringUtils.isBlank(fn)) {
-                return title + sn;
+                return t + sn;
             }
             if (StringUtils.isBlank(sn)) {
-                return title + fn;
+                return t + fn;
             }
 
-            return (title + fn + " " + sn).trim();
+            return (t + fn + " " + sn).trim();
         } else if (StringUtils.isNotBlank(username) && authByShibboleth()
                 && !emails.isEmpty()) {
             return this.getEmails().get(0);
