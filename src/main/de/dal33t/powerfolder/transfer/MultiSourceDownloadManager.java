@@ -19,11 +19,6 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.concurrent.ConcurrentMap;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -35,6 +30,11 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * This download manager will try to download from all available sources.
@@ -195,8 +195,6 @@ public class MultiSourceDownloadManager extends AbstractDownloadManager {
             if (!pendingPartRecordFrom.isBroken()) {
                 return;
             }
-            logWarning("Source should have been removed: "
-                + pendingPartRecordFrom);
             pendingPartRecordFrom = null;
         }
         if (download == null) {
