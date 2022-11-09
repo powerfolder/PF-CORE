@@ -49,6 +49,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+
 /**
  * Domain class of an user account.
  *
@@ -481,7 +483,7 @@ public class Account implements Serializable, D2DObject, Auditable {
      * {@link OrganizationAdminPermission} for this organization, {@code false} otherwise.
      */
     public boolean isAdminOfOwnOrganization() {
-        if (StringUtils.isBlank(organizationOID)) {
+        if (isBlank(organizationOID)) {
             return false;
         }
         return hasPermission(new OrganizationAdminPermission(organizationOID));
@@ -621,14 +623,14 @@ public class Account implements Serializable, D2DObject, Auditable {
     public String getDisplayName() {
         if (StringUtils.isNotBlank(firstname)
                 || StringUtils.isNotBlank(surname)) {
-            String t = (title == null) ? "" : title.trim() + " ";
+            String t = isBlank(title) ? "" : title.trim() + " ";
             String fn = (firstname == null ? "" : firstname).trim();
             String sn = (surname == null ? "" : surname).trim();
 
-            if (StringUtils.isBlank(fn)) {
+            if (isBlank(fn)) {
                 return t + sn;
             }
-            if (StringUtils.isBlank(sn)) {
+            if (isBlank(sn)) {
                 return t + fn;
             }
 
@@ -868,7 +870,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     public JSONObject getJSONObject() {
-        if (StringUtils.isBlank(jsonData)) {
+        if (isBlank(jsonData)) {
             return new JSONObject();
         }
         try {
@@ -951,7 +953,7 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     // PFS-742: TODO Add EXTRA Field for this later
     public boolean isSendEmail() {
-        if (StringUtils.isBlank(getCustom2())) {
+        if (isBlank(getCustom2())) {
             return true;
         }
         return !getCustom2().toUpperCase().contains("NOEMAIL");
@@ -979,14 +981,14 @@ public class Account implements Serializable, D2DObject, Auditable {
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {
-        if (StringUtils.isBlank(infoText)) {
+        if (isBlank(infoText)) {
             return;
         }
         String infoLine = Format.formatDateCanonical(new Date());
         infoLine += ": ";
         infoLine += infoText;
         String newNotes;
-        if (StringUtils.isBlank(notes)) {
+        if (isBlank(notes)) {
             newNotes = infoLine;
         } else {
             newNotes = notes + "\n" + infoLine;
@@ -1398,19 +1400,19 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.licenseKeyFileList.addAll(account.licenseKeyFileList);
 
         // Set the Organization OID if this is account is not yet in an Organization
-        if (StringUtils.isBlank(this.organizationOID)) {
+        if (isBlank(this.organizationOID)) {
             this.organizationOID = account.organizationOID;
         }
 
-        if (StringUtils.isBlank(this.ldapDN)) {
+        if (isBlank(this.ldapDN)) {
             this.ldapDN = account.ldapDN;
         }
 
-        if (StringUtils.isBlank(this.basePath)) {
+        if (isBlank(this.basePath)) {
             this.basePath = account.basePath;
         }
 
-        if (StringUtils.isBlank(this.shibbolethPersistentID)) {
+        if (isBlank(this.shibbolethPersistentID)) {
             this.shibbolethPersistentID = account.shibbolethPersistentID;
         }
 
