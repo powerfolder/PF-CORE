@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.security;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+
 /**
  * Empty/Null account to avoid NPEs on not logged in users.
  * <p>
@@ -41,7 +43,7 @@ public class AnonymousAccount extends Account {
 
     @Override
     public String toString() {
-        return "Anonymous: " + super.toString();
+        return isBlank(getUsername()) ? "Anonymous: " + super.toString() : super.toString();
     }
 
 }

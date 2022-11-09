@@ -34,6 +34,7 @@ import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
@@ -235,8 +236,8 @@ public class Organization implements Serializable , Auditable {
         try {
             return new JSONObject(jsonData);
         } catch (JSONException e) {
-            LOG.warning("Illegal JSON data for " + name + ": " + jsonData
-                    + ". " + e);
+            LOG.log(Level.WARNING, "Resetting JSON data for " + name + ". Illegal value '" + jsonData
+                    + "'. " + e.getMessage(), e);
             return new JSONObject();
         }
     }

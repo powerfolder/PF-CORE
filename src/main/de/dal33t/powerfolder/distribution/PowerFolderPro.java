@@ -21,10 +21,7 @@ package de.dal33t.powerfolder.distribution;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.clientserver.ServerClient;
-import de.dal33t.powerfolder.net.NodeManager;
-import de.dal33t.powerfolder.net.RelayFinder;
 import de.dal33t.powerfolder.skin.Origin;
 import de.dal33t.powerfolder.ui.LookAndFeelSupport;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
@@ -64,31 +61,7 @@ public class PowerFolderPro extends AbstractDistribution {
         }
     }
 
-    public RelayFinder createRelayFinder() {
-        return new PublicRelayFinder();
-    }
-
     public boolean allowSkinChange() {
         return true;
-    }
-
-    private class PublicRelayFinder implements RelayFinder {
-        private static final String RELAY_1ST_CHOICE_ID = "WEBSERVICE005";
-        private static final String RELAY_2ST_CHOICE_ID = "WEBSERVICE007";
-
-        public Member findRelay(NodeManager nodeManager) {
-            Member relay = nodeManager.getNode(RELAY_1ST_CHOICE_ID);
-            Member server = getController().getOSClient().getServer();
-            if (relay == null || server.equals(relay)) {
-                relay = nodeManager.getNode(RELAY_2ST_CHOICE_ID);
-            }
-            if (relay == null) {
-                relay = server;
-                logFine("Using default server as relay: " + relay);
-            } else {
-                logFiner("Using relay: " + relay);
-            }
-            return relay;
-        }
     }
 }

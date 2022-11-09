@@ -27,10 +27,12 @@ import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.Group;
 import de.dal33t.powerfolder.security.Organization;
+import de.dal33t.powerfolder.security.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -237,5 +239,11 @@ public interface AccountService {
 
     List<Organization> getAll(OrganizationFilterModel filter);
 
-    Collection<Invitation> getInvitationsFor(AccountInfo account);
+    Collection<Invitation> getInvitationsFor(AccountInfo accountInfo);
+
+    Collection<Token> getTokensFor(AccountInfo accountInfo);
+
+    void setOrganizationValidTill(String organizationID, Date validTillDate);
+
+    void deleteOrganization(String organizationID);
 }

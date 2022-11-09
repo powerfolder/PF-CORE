@@ -996,12 +996,12 @@ public class PathUtils {
             // Need to set up desktop ini.
             PrintWriter pw = null;
             try {
-                Path iconFile = findDistributionFile("Folder.ico");
+                Path iconFile = findDistributionFile(controller, "Folder.ico");
                 if (iconFile == null) {
                     // Try harder, use EXE file icon
                     String exeName = controller.getDistribution()
                             .getBinaryName() + ".exe";
-                    iconFile = findDistributionFile(exeName);
+                    iconFile = findDistributionFile(controller, exeName);
                 }
 
                 if (iconFile == null || Files.notExists(iconFile)) {
@@ -1056,14 +1056,14 @@ public class PathUtils {
         }
     }
 
-    private static Path findDistributionFile(String filename) {
+    private static Path findDistributionFile(Controller controller, String filename) {
         // Try to find file in skin directory
         Path distroFile = Controller.getMiscFilesLocation().resolve("skin/client/" + filename);
         if (Files.notExists(distroFile)) {
             distroFile = Paths.get(".").toAbsolutePath().resolve(filename);
             if (Files.notExists(distroFile)) {
                 // Try harder
-                distroFile = WinUtils.getProgramInstallationPath().resolve(filename);
+                distroFile = WinUtils.getProgramInstallationPath(controller).resolve(filename);
 
                 if (Files.notExists(distroFile)) {
                     log.fine("Could not find " + distroFile.getFileName()
@@ -1195,25 +1195,30 @@ public class PathUtils {
      * @return
      */
     public static String removeInvalidFilenameChars(String filename) {
+        Reject.ifBlank(filename, "Filename is blank");
         for (int i = 0; i < INVALID_CHARS.length(); i++) {
             char c = INVALID_CHARS.charAt(i);
             while (filename.indexOf(c) != -1) {
                 int index = filename.indexOf(c);
-                filename = filename.substring(0, index)
-                        + filename.substring(index + 1, filename.length());
+                filename = filename.substring(0, index) + "_"
+                        + filename.substring(index + 1);
             }
         }
+        String suffix = "";
         while (filename.endsWith(".")) {
             filename = filename.substring(0, filename.length() - 1);
+            suffix += "_";
         }
-        return filename.trim();
+        filename += suffix;
+        filename = filename.trim();
+        Reject.ifBlank(filename, "Filename is blank");
+        return filename;
     }
 
     public static @NotNull Path removeInvalidFilenameChars(@NotNull Path path) {
         if (path.getFileName() == null) {
             return path;
         }
-
 
         String filename = path.getFileName().toString();
         String cleared = PathUtils.removeInvalidFilenameChars(filename);
@@ -1519,12 +1524,6 @@ public class PathUtils {
                 .indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR);
         if (firstSystemDir < 0) {
             return true;
-        }
-
-        if (folder.getInfo().isArchiveFolder()) {
-            int secondSystemDir = relOrAbsfilePath.indexOf(
-                    Constants.POWERFOLDER_SYSTEM_SUBDIR, firstSystemDir + 1);
-            return secondSystemDir < 0;
         }
 
         if (folder.getInfo().isMetaFolder()) {

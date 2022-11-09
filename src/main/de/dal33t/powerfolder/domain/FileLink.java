@@ -51,7 +51,7 @@ public class FileLink implements Serializable {
     private static final long serialVersionUID = 100L;
 
     // Properties
-    public static final String FILE_LINK_PREFIX = "fi";
+    public static final String FILE_LINK_PREFIX = IdGenerator.FILE_LINK_PREFIX;
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_RELATIVE_NAME = "relativeName";
     public static final String PROPERTYNAME_CREATION_DATE = "creationDate";
@@ -84,14 +84,18 @@ public class FileLink implements Serializable {
         // NOP Hibernate only.
     }
 
-    public FileLink(FileInfo fInfo) {
+    public FileLink(FileInfo fInfo, boolean generateRandomID) {
         super();
         Reject.ifNull(fInfo, "FileInfo");
         Reject.ifNull(fInfo.getFolderInfo(), "FolderInfo");
         this.folderInfo = fInfo.getFolderInfo();
         this.relativeName = fInfo.getRelativeName();
         this.maxDownloads = -1;
-        this.id = IdGenerator.generateFileLinkID(fInfo);
+        if (generateRandomID) {
+            this.id = IdGenerator.generateFileLinkRandomID();
+        } else {
+            this.id = IdGenerator.generateFileLinkID(fInfo);
+        }
         this.creationDate = new Date();
     }
 

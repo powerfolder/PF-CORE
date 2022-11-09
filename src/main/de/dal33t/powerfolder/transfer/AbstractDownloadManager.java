@@ -690,8 +690,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             : 1);
 
         // add bytes to transferred status
-        FolderStatistic stat = fileInfo.getFolder(
-            getController().getFolderRepository()).getStatistic();
+        Folder folder = fileInfo.getFolder(getController().getFolderRepository());
+        FolderStatistic stat = folder != null ? folder.getStatistic() : null;
         if (stat != null) {
             stat.getDownloadCounter().chunkTransferred(chunk);
         }

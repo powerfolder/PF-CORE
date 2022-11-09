@@ -19,15 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import junit.framework.TestCase;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Note: You need desktoputils.dll in the test classpath for this to work.
@@ -41,7 +41,7 @@ public class WinUtilsTest extends TestCase {
         assertNotNull("Could not get instance. Is desktoputils.dll in the classpath?", wu);
         assertNotNull("AppDataAllUsers", WinUtils.getAppDataAllUsers());
         assertNotNull("AppDataCurrentUser", WinUtils.getAppDataCurrentUser());
-        assertNotNull("ProgramInstallationPath", WinUtils.getProgramInstallationPath());
+        assertNotNull("ProgramInstallationPath", WinUtils.getProgramInstallationPath(null));
         /* Does work in Windows Development Environment, but not on Windows Testrunner?
         assertNotNull("CSIDL_PERSONAL", wu.getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false));
         assertNotNull("CSIDL_STARTUP", wu.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));

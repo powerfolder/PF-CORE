@@ -80,11 +80,6 @@ public class Constants {
     public static final String METAFOLDER_ID_PREFIX = "meta|";
 
     /**
-     * The prefix for archive folder IDs.
-     */
-    public static final String ARCHIVE_ID_PREFIX = "archive|";
-
-    /**
      * The subdir name that will be used by default for the PowerFolders base
      * directory.
      *
@@ -226,8 +221,8 @@ public class Constants {
      * PFC-2742: Maximum numbers of message in send queue. Will disconnect node
      * if maximum is reached.
      */
-    public static final int WARN_MESSAGES_IN_SEND_QUEUE = 4500;
-    public static final int MAX_MESSAGES_IN_SEND_QUEUE = 5000;
+    public static final int WARN_MESSAGES_IN_SEND_QUEUE = 1500;
+    public static final int MAX_MESSAGES_IN_SEND_QUEUE = 2000;
 
     /**
      * the number of seconds (aprox) of delay till the connection is tested and

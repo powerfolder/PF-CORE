@@ -2494,10 +2494,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return the identity if connection is established, otherwise null
      */
     public Identity getIdentity() {
-        if (peer != null) {
-            return peer.getIdentity();
-        }
-        return null;
+        ConnectionHandler thisPeer = peer;
+        return thisPeer != null ? thisPeer.getIdentity() : null;
     }
 
     /**

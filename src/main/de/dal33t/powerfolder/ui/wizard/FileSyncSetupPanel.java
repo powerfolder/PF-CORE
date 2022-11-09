@@ -26,6 +26,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
@@ -58,8 +59,8 @@ import java.util.logging.Logger;
 @SuppressWarnings("serial")
 public class FileSyncSetupPanel extends PFWizardPanel {
     private static final Logger LOG = Logger.getLogger(FileSyncSetupPanel.class.getName());
-    private JRadioButton syncThisComRadioButton; // Sync To This Computer Radion Button
-    private JRadioButton syncNetDriveRadioButton; // Sync To Network Drive Radion Button
+    private JRadioButton syncThisComRadioButton; // Sync To This Computer Radio Button
+    private JRadioButton syncNetDriveRadioButton; // Use Network Drive Radio Button
     private JComponent locationField;
     private JTextField syncNetDriveField;
     private JTextField locationTF;
@@ -80,6 +81,16 @@ public class FileSyncSetupPanel extends PFWizardPanel {
     @Override
     protected void afterDisplay() {
         super.afterDisplay();
+
+        // 0) WebDAV support / or only mode
+        if (!getController().getOSClient().supportsWebDAV()) {
+            syncNetDriveRadioButton.setEnabled(false);
+        } else if (PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            syncNetDriveRadioButton.setSelected(true);
+            getWizard().next();
+            return;
+        }
+
         // 1) Precodition: If user has already setup the sync, do not ask again
         if (getController().getFolderRepository().getFoldersCount() > 0) {
             getWizard().next();

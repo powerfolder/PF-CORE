@@ -1643,6 +1643,9 @@ public class ServerClient extends PFComponent {
                 for (MemberInfo snInfo : list.getServersSet()) {
                     Boolean hasKey = cachedServerPublicKey.getValidEntry(snInfo);
                     useCache &= hasKey != null && hasKey;
+                    if (snInfo.getConnectAddress() == null) {
+                        logWarning("Server has empty hostname: " + snInfo);
+                    }
                 }
             } else {
                 useCache = false;
@@ -2267,11 +2270,19 @@ public class ServerClient extends PFComponent {
                 return;
             }
 
-            Collection<FolderInfo> infos = getController()
-                    .getFolderRepository().getJoinedFolderInfos();
+            Collection<FolderInfo> infos = getController().getFolderRepository().getJoinedFolderInfos();
             FolderInfo[] folders = infos.toArray(new FolderInfo[0]);
-            Collection<MemberInfo> hostingServers = getFolderService()
-                    .getHostingServers(folders);
+            Collection<MemberInfo> hostingServers;
+            if (infos.size() < 1000) {
+                hostingServers = getFolderService().getHostingServers(folders);
+            } else {
+                // TODO: Remove after major distribution of Version 17.5
+                hostingServers = new ArrayList<>();
+                for (Member serverNodeInfo : getServersInCluster()) {
+                    hostingServers.add(serverNodeInfo.getInfo());
+                }
+            }
+
             if (isFine()) {
                 logFine("Got " + hostingServers.size() + " servers for our "
                         + folders.length + " folders: " + hostingServers);

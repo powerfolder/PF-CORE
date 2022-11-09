@@ -90,7 +90,7 @@ public enum ConfigurationEntry {
         // Always return false if software was installed via MSI
         @Override
         public Boolean getValueBoolean(Controller controller) {
-            if (OSUtil.isWindowsSystem() && WinUtils.isMSI()) {
+            if (OSUtil.isWindowsSystem() && WinUtils.isMSI(controller)) {
                 return Boolean.FALSE;
             }
             return super.getValueBoolean(controller);
@@ -100,7 +100,7 @@ public enum ConfigurationEntry {
         public String getDefaultValue() {
             // Hack for PFC-2461
             // Updates disabled by default if software was installed via MSI
-            if (OSUtil.isWindowsSystem() && WinUtils.isMSI()) {
+            if (OSUtil.isWindowsSystem() && WinUtils.isMSI(null)) {
                 return Boolean.FALSE.toString();
             }
             return super.getDefaultValue();
@@ -206,12 +206,12 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder Accessibility
      */
-    PROVIDER_ACCESSIBILITY_URL("provider.url.accessibility", ""),
+    PROVIDER_ACCESSIBILITY_URL("provider.url.accessibility", "https://powerfolder.atlassian.net/wiki/spaces/PF/pages/2159706129/Accessibility+Information"),
 
     /**
      * URL of the PowerFolder Cookies policy
      */
-    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", ""),
+    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", "https://www.powerfolder.com/de/7084-2/"),
 
     /**
      * Whether to show support url in application menu
@@ -550,7 +550,7 @@ public enum ConfigurationEntry {
     /**
      * If the option to sync/backup to cloud is mandatory.
      */
-    SERVER_SYNC_MANDATORY("server.sync.mandatory", false),
+    SERVER_SYNC_MANDATORY("server.sync.mandatory", true),
 
     /**
      * PFS-871: The user has to agree to invitations, if enabled
@@ -1262,6 +1262,11 @@ public enum ConfigurationEntry {
      * Uses any existing directory found at the default path, even if not empty.
      */
     FOLDER_CREATE_USE_EXISTING("create.folder.use.existing", true),
+
+    /**
+     * Creates directory if folder base directory is not existing during startup.
+     */
+    FOLDER_CREATE_ON_STARTUP("create.folder.on.startup", false),
 
     /**
      * PFC-2572: Possibility to disallow networked drives or UNC shares
