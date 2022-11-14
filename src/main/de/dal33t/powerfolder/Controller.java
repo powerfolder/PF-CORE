@@ -486,14 +486,14 @@ public class Controller extends PFComponent {
         }
 
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
-        logFine("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + arch + ")");
-        logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
+        logInfo("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + arch + ")");
+        logInfo("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
-        logFine("Current time: " + new Date());
+        logInfo("Current time: " + new Date());
         Runtime runtime = Runtime.getRuntime();
         long maxMemory = runtime.maxMemory();
         long totalMemory = runtime.totalMemory();
-        logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
+        logInfo("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
         if (isUIEnabled()) {
             LookAndFeelSupport.setSyntheticaLicense();
