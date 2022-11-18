@@ -257,7 +257,8 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
             builder.add(verboseCB, cc.xy(3, row));
 
             // Start: PFC-2385
-            if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())) {
+            if (PreferencesEntry.MODE_SELECT.getValueBoolean(getController())
+                    && !PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
                 row += 2; builder.appendRelatedComponentsGapRow(); builder.appendRow("pref");
                 builder.add(modeChooser, cc.xy(3, row));
             }
