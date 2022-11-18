@@ -1961,8 +1961,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             } else if (type == Type.CloudOnly) {
                 // Join the folder locally.
-                PFWizard.openOnlineStorageJoinWizard(getController(),
-                    Collections.singletonList(folderInfo));
+                if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                    PFWizard.openOnlineStorageJoinWizard(getController(),
+                            Collections.singletonList(folderInfo));
+                }
             } else if (type == Type.Local) {
                 // Local - open it
                 openExplorer();
