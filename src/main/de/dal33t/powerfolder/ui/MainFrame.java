@@ -19,55 +19,12 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Frame;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JSplitPane;
-import javax.swing.SwingConstants;
-import javax.swing.TransferHandler;
-import javax.swing.WindowConstants;
-import javax.swing.event.ChangeListener;
-import javax.swing.plaf.RootPaneUI;
-
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -76,7 +33,10 @@ import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.event.*;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
+import de.dal33t.powerfolder.event.PausedModeEvent;
+import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
@@ -88,26 +48,33 @@ import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.model.SyncingModel;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
-import de.dal33t.powerfolder.ui.util.DelayedUpdater;
-import de.dal33t.powerfolder.ui.util.Icons;
-import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
-import de.dal33t.powerfolder.ui.util.SyncIconButtonMini;
-import de.dal33t.powerfolder.ui.util.UIUtil;
+import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.JButton3Icons;
 import de.dal33t.powerfolder.ui.widget.JButtonMini;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
-import de.dal33t.powerfolder.util.BrowserLauncher;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
-import de.dal33t.powerfolder.util.DateUtil;
-import de.dal33t.powerfolder.util.Format;
-import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.ProUtil;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.os.LinuxUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.javasoft.plaf.synthetica.SyntheticaRootPaneUI;
+
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.RootPaneUI;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Powerfolder gui mainframe
@@ -280,7 +247,9 @@ public class MainFrame extends PFUIComponent {
         if (PreferencesEntry.EXPERT_MODE.getValueBoolean(getController())) {
             builder.add(openTransfersActionLabel.getUIComponent(), cc.xy(1, 6, "right, top"));
         }
-        builder.add(createFolderActionLabel.getUIComponent(), cc.xy(1, 7, "right, top"));
+        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            builder.add(createFolderActionLabel.getUIComponent(), cc.xy(1, 7, "right, top"));
+        }
 
         return builder.getPanel();
     }
