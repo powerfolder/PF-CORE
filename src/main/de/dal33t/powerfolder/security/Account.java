@@ -148,6 +148,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Column(length = 255)
     private String telephone;
 
+    @Column(length = 512,name = "token_2fa")
+    private String twoFactorAuthenticationToken;
+
     // PFS-1656
     @Column(length = 4000)
     private String jsonData;
@@ -155,7 +158,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Column(length = 2048)
     private String notes;
 
-    // PFS-1446     
+    // PFS-1446
     @Column(length = 512)
     private String basePath;
 
@@ -1598,6 +1601,14 @@ public class Account implements Serializable, D2DObject, Auditable {
     public boolean hasAdminPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(FolderPermission.admin(foInfo));
+    }
+
+    public String getTwoFactorAuthenticationToken() {
+        return twoFactorAuthenticationToken;
+    }
+
+    public void setTwoFactorAuthenticationToken(final String twoFactorAuthenticationToken) {
+        this.twoFactorAuthenticationToken = twoFactorAuthenticationToken;
     }
 
     /**
