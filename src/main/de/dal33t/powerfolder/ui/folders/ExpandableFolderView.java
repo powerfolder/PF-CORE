@@ -72,6 +72,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
@@ -1186,10 +1188,20 @@ public class ExpandableFolderView extends PFUIComponent implements
 
     private void openExplorer() {
         // PFC-2349 : Don't freeze UI
-        getController().getIOProvider().startIO(new Runnable() {
-            public void run() {
-                PathUtils.openFile(folder.getCommitOrLocalDir());
+        getController().getIOProvider().startIO(() -> PathUtils.openFile(folder.getCommitOrLocalDir()));
+    }
+
+    private void openExplorerWebDAVPath() {
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
+        getController().getIOProvider().startIO(() -> {
+            char letterChar = getController().getDistribution().getBinaryName().charAt(0);
+            Path targetDir = Paths.get(letterChar + ":\\" + folderInfo.getLocalizedName());
+            if (Files.notExists(targetDir)) {
+                targetDir = Paths.get(letterChar + ":\\" );
             }
+            PathUtils.openFile(targetDir);
         });
     }
 
@@ -1700,6 +1712,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                         if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
                             PFWizard.openOnlineStorageJoinWizard(getController(),
                                     Collections.singletonList(folderInfo));
+                        } else {
+                            openExplorerWebDAVPath();
                         }
                     }
                     if (type == Type.Typical) {
@@ -1966,6 +1980,8 @@ public class ExpandableFolderView extends PFUIComponent implements
                 if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
                     PFWizard.openOnlineStorageJoinWizard(getController(),
                             Collections.singletonList(folderInfo));
+                } else {
+                    openExplorerWebDAVPath();
                 }
             } else if (type == Type.Local) {
                 // Local - open it
