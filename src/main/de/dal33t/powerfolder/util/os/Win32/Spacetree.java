@@ -18,6 +18,7 @@
 package de.dal33t.powerfolder.util.os.Win32;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.distribution.Distribution;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderGeneric;
@@ -52,7 +53,14 @@ public class Spacetree {
         String exeName = d.getBinaryName() + ".exe";
         Path pathToExe = WinUtils.getProgramInstallationPath(controller).resolve(exeName);
 
-        Path baseDir = controller.getFolderRepository().getFoldersBasedir();
+        Path baseDir;
+        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(controller)) {
+            baseDir = controller.getFolderRepository().getFoldersBasedir();
+        } else {
+            String letterChar = controller.getDistribution().getBinaryName().substring(0, 1);
+            baseDir = Paths.get(letterChar + ":");
+        }
+
         if (Files.notExists(pathToExe)) {
             Logger.getLogger(Spacetree.class.getName()).warning("Unable to install. Not found: " + pathToExe);
             return null;

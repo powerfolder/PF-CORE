@@ -1120,7 +1120,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Cloud-only folder popup
             retrieveWebDAVURL();
             if (StringUtils.isNotBlank(webDAVURL)) {
-                if (serverClient.supportsWebDAV()) {
+                if (serverClient.supportsWebDAV() && !PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
                     contextMenu.add(webdavAction).setIcon(null);
                 }
                 if (serverClient.supportsWebLogin()) {
@@ -1697,8 +1697,10 @@ public class ExpandableFolderView extends PFUIComponent implements
                         }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
-                        PFWizard.openOnlineStorageJoinWizard(getController(),
-                            Collections.singletonList(folderInfo));
+                        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                            PFWizard.openOnlineStorageJoinWizard(getController(),
+                                    Collections.singletonList(folderInfo));
+                        }
                     }
                     if (type == Type.Typical) {
                         askToCreateFolder();

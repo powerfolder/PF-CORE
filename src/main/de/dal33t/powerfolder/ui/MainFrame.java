@@ -72,6 +72,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -239,7 +240,9 @@ public class MainFrame extends PFUIComponent {
             builder.add(openFoldersBaseActionLabel.getUIComponent(),
                 cc.xy(1, 2, "right, top"));
         }
-        builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3, "right, top"));
+        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            builder.add(pauseResumeActionLabel.getUIComponent(), cc.xy(1, 3, "right, top"));
+        }
         builder.add(configurationActionLabel.getUIComponent(), cc.xy(1, 4, "right, top"));
         if (getController().isVerbose()) {
             builder.add(openDebugActionLabel.getUIComponent(), cc.xy(1, 5, "right, top"));
@@ -1399,10 +1402,13 @@ public class MainFrame extends PFUIComponent {
 
         public void actionPerformed(ActionEvent e) {
             // PFC-2349 : Don't freeze UI
-            getController().getIOProvider().startIO(new Runnable() {
-                public void run() {
+            getController().getIOProvider().startIO(() -> {
+                if (PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                    String letterChar = getController().getDistribution().getBinaryName().substring(0, 1);
+                    PathUtils.openFile(Paths.get(letterChar + ":"));
+                } else {
                     PathUtils.openFile(getController().getFolderRepository()
-                        .getFoldersBasedir());
+                            .getFoldersBasedir());
                 }
             });
         }

@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
@@ -1195,6 +1196,14 @@ public class ServerClient extends PFComponent {
                     getController().getIOProvider().startIO(() -> {
                         // Also switches server
                         updateLocalSettings(accountDetails);
+
+                        if (PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                            String webDAVURL = getWebURL(Constants.WEBDAV_URI, false);
+                            char letterChar = getController().getDistribution().getBinaryName().charAt(0);
+                            if (!WinUtils.isWebDAVAlreadyMapped(this, letterChar)) {
+                                WinUtils.mountWebDAV(this, letterChar, webDAVURL);
+                            }
+                        }
                     });
                 } else {
                     setAnonAccount();

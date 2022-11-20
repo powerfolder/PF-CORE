@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.StreamUtils;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -446,9 +447,20 @@ public class WinUtils extends Loggable {
      *
      * @return Either Y on success; otherwise N with error messages
      */
-
+    public static String mountWebDAV(ServerClient serverClient, String webDAVURL)
+    {
+        return mountWebDAV(serverClient, (char) 0, webDAVURL);
+    }
+    /**
+     * Mount given WebDAV url
+     *
+     * @param serverClient Instance of our {@link ServerClient}
+     * @param webDAVURL    WebDAV url to use
+     *
+     * @return Either Y on success; otherwise N with error messages
+     */
     public static String mountWebDAV(ServerClient serverClient,
-        String webDAVURL)
+        char prefDriveChar, String webDAVURL)
     {
         try {
             String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
@@ -461,8 +473,14 @@ public class WinUtils extends Loggable {
             } else {
                 username = serverClient.getUsername();
             }
+            String prefDriveLetter;
+            if (prefDriveChar == 0) {
+                prefDriveLetter = "*";
+            } else {
+                prefDriveLetter = prefDriveChar + ":";
+            }
 
-            String cmd = "net use * \"" + webDAVURL + "\" /User:"
+            String cmd = "net use " + prefDriveLetter + " \"" + webDAVURL + "\" /User:"
                     + username + " \""
                     + password + "\" /persistent:yes";
 
@@ -488,6 +506,19 @@ public class WinUtils extends Loggable {
         }
         // Huh?
         return null;
+    }
+
+    public static boolean isWebDAVAlreadyMapped(ServerClient serverClient, char prefDriveLetter) {
+        Path drivePath = Paths.get(prefDriveLetter + ":\\");
+        if (Files.notExists(drivePath)) {
+            return false;
+        }
+        for (FolderInfo folderInfo: serverClient.getAccount().getFoldersCharged()) {
+            if (Files.notExists(drivePath.resolve(folderInfo.getLocalizedName()))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
