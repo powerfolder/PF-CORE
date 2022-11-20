@@ -1404,7 +1404,7 @@ public class MainFrame extends PFUIComponent {
             // PFC-2349 : Don't freeze UI
             getController().getIOProvider().startIO(() -> {
                 if (PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-                    String letterChar = getController().getDistribution().getBinaryName().substring(0, 1);
+                    char letterChar = getController().getDistribution().getBinaryName().charAt(0);
                     PathUtils.openFile(Paths.get(letterChar + ":"));
                 } else {
                     PathUtils.openFile(getController().getFolderRepository()
