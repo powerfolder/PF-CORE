@@ -50,8 +50,10 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.wizard.DesktopSyncSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,6 +62,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -491,6 +494,41 @@ public class ApplicationModel extends PFUIComponent {
             return e;
         }
         return null;
+    }
+
+    public void openExplorer() {
+        getController().getIOProvider().startIO(() -> PathUtils.openFile(getController().getFolderRepository().getFoldersBasedir()));
+    }
+
+    public void openExplorer(Folder folder) {
+        Reject.ifNull(folder, "Folder");
+        getController().getIOProvider().startIO(() -> PathUtils.openFile(folder.getCommitOrLocalDir()));
+    }
+
+    public void openExplorerWebDAVPath(FolderInfo folderInfo) {
+        Reject.ifNull(folderInfo, "Folder");
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
+        getController().getIOProvider().startIO(() -> {
+            char letterChar = getController().getDistribution().getBinaryName().charAt(0);
+            Path targetDir = Paths.get(letterChar + ":\\" + folderInfo.getLocalizedName());
+            if (Files.notExists(targetDir)) {
+                targetDir = Paths.get(letterChar + ":\\" );
+            }
+            PathUtils.openFile(targetDir);
+        });
+    }
+
+    public void openExplorerWebDAVPath() {
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
+        getController().getIOProvider().startIO(() -> {
+            char letterChar = getController().getDistribution().getBinaryName().charAt(0);
+            Path targetDir = Paths.get(letterChar + ":\\" );
+            PathUtils.openFile(targetDir);
+        });
     }
 
     // Exposing ***************************************************************

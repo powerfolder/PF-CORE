@@ -72,7 +72,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1401,16 +1400,11 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            // PFC-2349 : Don't freeze UI
-            getController().getIOProvider().startIO(() -> {
-                if (PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
-                    char letterChar = getController().getDistribution().getBinaryName().charAt(0);
-                    PathUtils.openFile(Paths.get(letterChar + ":"));
-                } else {
-                    PathUtils.openFile(getController().getFolderRepository()
-                            .getFoldersBasedir());
-                }
-            });
+            if (PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                getUIController().getApplicationModel().openExplorerWebDAVPath();
+            } else {
+                getUIController().getApplicationModel().openExplorer();
+            }
         }
     }
 

@@ -72,8 +72,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
@@ -1186,25 +1184,6 @@ public class ExpandableFolderView extends PFUIComponent implements
         return contextMenu;
     }
 
-    private void openExplorer() {
-        // PFC-2349 : Don't freeze UI
-        getController().getIOProvider().startIO(() -> PathUtils.openFile(folder.getCommitOrLocalDir()));
-    }
-
-    private void openExplorerWebDAVPath() {
-        if (!OSUtil.isWindowsSystem()) {
-            return;
-        }
-        getController().getIOProvider().startIO(() -> {
-            char letterChar = getController().getDistribution().getBinaryName().charAt(0);
-            Path targetDir = Paths.get(letterChar + ":\\" + folderInfo.getLocalizedName());
-            if (Files.notExists(targetDir)) {
-                targetDir = Paths.get(letterChar + ":\\" );
-            }
-            PathUtils.openFile(targetDir);
-        });
-    }
-
     /**
      * Downloads added or removed for this folder. Recalculate new files status.
      * Or if expanded / collapsed - might need to change tool tip.
@@ -1705,7 +1684,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                         boolean openedTab = getController().getUIController()
                             .openFilesInformation(folderInfo);
                         if (!openedTab) {
-                            openExplorer();
+                            getApplicationModel().openExplorer(folder);
                         }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
@@ -1713,7 +1692,7 @@ public class ExpandableFolderView extends PFUIComponent implements
                             PFWizard.openOnlineStorageJoinWizard(getController(),
                                     Collections.singletonList(folderInfo));
                         } else {
-                            openExplorerWebDAVPath();
+                            getApplicationModel().openExplorerWebDAVPath(folderInfo);
                         }
                     }
                     if (type == Type.Typical) {
@@ -1922,7 +1901,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            openExplorer();
+            getApplicationModel().openExplorer(folder);
         }
     }
 
@@ -1981,11 +1960,11 @@ public class ExpandableFolderView extends PFUIComponent implements
                     PFWizard.openOnlineStorageJoinWizard(getController(),
                             Collections.singletonList(folderInfo));
                 } else {
-                    openExplorerWebDAVPath();
+                    getApplicationModel().openExplorerWebDAVPath(folderInfo);
                 }
             } else if (type == Type.Local) {
                 // Local - open it
-                openExplorer();
+                getApplicationModel().openExplorer(folder);
             } else {
                 // Typical - ask to create.
                 askToCreateFolder();
