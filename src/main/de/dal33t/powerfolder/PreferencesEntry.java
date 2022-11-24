@@ -56,11 +56,27 @@ public enum PreferencesEntry {
 
     WARN_ON_CLOSE("WarnOnClose", true),
 
-    EXPERT_MODE("ExpertMode", false),
+    EXPERT_MODE("ExpertMode", false) {
+        @Override
+        public Boolean getValueBoolean(Controller controller) {
+            if (WEBDAV_ONLY.getValueBoolean(controller)) {
+                return false;
+            }
+            return super.getValueBoolean(controller);
+        }
+    },
 
     SHOW_DEVICES("show.devices", false),
 
-    VIEW_ACHIVE("view.archive", true),
+    VIEW_ACHIVE("view.archive", true) {
+        @Override
+        public Boolean getValueBoolean(Controller controller) {
+            if (WEBDAV_ONLY.getValueBoolean(controller)) {
+                return false;
+            }
+            return super.getValueBoolean(controller);
+        }
+    },
 
     UNDERLINE_LINKS("UnderlineLinks", false),
 
@@ -155,7 +171,15 @@ public enum PreferencesEntry {
      * Enable the UI-Mode selector.
      * PFC-2385
      */
-    MODE_SELECT("mode.select.enabled", true),
+    MODE_SELECT("mode.select.enabled", true) {
+        @Override
+        public Boolean getValueBoolean(Controller controller) {
+            if (WEBDAV_ONLY.getValueBoolean(controller)) {
+                return false;
+            }
+            return super.getValueBoolean(controller);
+        }
+    },
 
     /**
      * Show the "Browse" Button / Link in the main window and the tray icon's

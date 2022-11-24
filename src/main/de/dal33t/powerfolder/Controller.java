@@ -87,10 +87,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 18;
-    private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 103;
-    
-    private static final int SPRINT_NUMBER = 45;
+    private static final int MINOR_VERSION = 1;
+    private static final int REVISION_VERSION = 100;
+
+    private static final int SPRINT_NUMBER = 46;
 
     /**
      * Program version.
@@ -486,14 +486,14 @@ public class Controller extends PFComponent {
         }
 
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
-        logFine("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + arch + ")");
-        logFine("Java: " + JavaVersion.systemVersion().toString() + " ("
+        logInfo("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + arch + ")");
+        logInfo("Java: " + JavaVersion.systemVersion().toString() + " ("
             + System.getProperty("java.vendor") + ')');
-        logFine("Current time: " + new Date());
+        logInfo("Current time: " + new Date());
         Runtime runtime = Runtime.getRuntime();
         long maxMemory = runtime.maxMemory();
         long totalMemory = runtime.totalMemory();
-        logFine("Max Memory: " + Format.formatBytesShort(maxMemory)
+        logInfo("Max Memory: " + Format.formatBytesShort(maxMemory)
             + ", Total Memory: " + Format.formatBytesShort(totalMemory));
         if (isUIEnabled()) {
             LookAndFeelSupport.setSyntheticaLicense();

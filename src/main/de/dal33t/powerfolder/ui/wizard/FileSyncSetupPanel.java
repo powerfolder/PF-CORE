@@ -25,6 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
@@ -229,19 +230,20 @@ public class FileSyncSetupPanel extends PFWizardPanel {
 
             public Object construct() throws Throwable {
                 try {
-                    webDAVURL = serverClient.getWebURL() + "/webdav/";
+                    webDAVURL = serverClient.getWebURL(Constants.WEBDAV_URI, false);
                     /* Handle different OSes */
                     if (OSUtil.isLinux()) {
                         return LinuxUtil.mountWebDAV(serverClient, webDAVURL);
+                    } else if (OSUtil.isMacOS()) {
+                        return "NUnsupported";
                     } else {
-                        WinUtils util = WinUtils.getInstance();
-
-                        if (util != null) {
-                            return util.mountWebDAV(serverClient, webDAVURL);
+                        char letterChar = getController().getDistribution().getBinaryName().charAt(0);
+                        if (WinUtils.isWebDAVAlreadyMapped(serverClient, letterChar)) {
+                            return "Y";
+                        } else {
+                            return WinUtils.mountWebDAV(serverClient, letterChar, webDAVURL);
                         }
                     }
-
-                    return 'N';
                 } catch (Exception e) {
                     // Looks like the link failed, badly :-(
 //                    logSevere(e.getMessage(), e);

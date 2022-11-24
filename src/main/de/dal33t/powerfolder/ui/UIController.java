@@ -24,7 +24,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.AgreeToSListener;
-import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.ScanResult;
@@ -65,8 +64,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
@@ -435,8 +434,11 @@ public class UIController extends PFComponent {
                         }
                     });
                 } else if (COMMAND_BROWSE.equals(e.getActionCommand())) {
-                    PathUtils.openFile(getController().getFolderRepository()
-                        .getFoldersBasedir());
+                    if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                        getApplicationModel().openExplorer();
+                    } else {
+                        getApplicationModel().openExplorerWebDAVPath();
+                    }
                 } else if (COMMAND_PAUSE.equals(e.getActionCommand())
                     || COMMAND_RESUME.equals(e.getActionCommand()))
                 {
@@ -512,24 +514,28 @@ public class UIController extends PFComponent {
         // /////////////////
         // Pause / Resume //
         // /////////////////
-        pauseResumeMenu = new MenuItem(
-            Translation.get("action_resume_sync.name"));
-        menu.add(pauseResumeMenu);
-        pauseResumeMenu.addActionListener(systrayActionHandler);
-        getController().addPausedModeListener(new MyPausedModeListener());
-        configurePauseResumeLink();
+        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            pauseResumeMenu = new MenuItem(
+                    Translation.get("action_resume_sync.name"));
+            menu.add(pauseResumeMenu);
+            pauseResumeMenu.addActionListener(systrayActionHandler);
+            getController().addPausedModeListener(new MyPausedModeListener());
+            configurePauseResumeLink();
+        }
 
         // /////////
         // Recent //
         // /////////
-        recentlyChangedMenu = new Menu(
-            Translation.get("uicontroller.recently_changed"));
-        recentlyChangedMenu.setEnabled(false);
-        menu.add(recentlyChangedMenu);
-        for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
-            recentMenuItems[i] = new MenuItem();
-            recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED + i);
-            recentMenuItems[i].addActionListener(systrayActionHandler);
+        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            recentlyChangedMenu = new Menu(
+                    Translation.get("uicontroller.recently_changed"));
+            recentlyChangedMenu.setEnabled(false);
+            menu.add(recentlyChangedMenu);
+            for (int i = 0; i < MAX_RECENTLY_CHANGED_FILES; i++) {
+                recentMenuItems[i] = new MenuItem();
+                recentMenuItems[i].setActionCommand(COMMAND_RECENTLY_CHANGED + i);
+                recentMenuItems[i].addActionListener(systrayActionHandler);
+            }
         }
 
         // //////////////

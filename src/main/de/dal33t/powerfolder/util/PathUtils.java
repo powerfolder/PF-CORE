@@ -1900,6 +1900,9 @@ public class PathUtils {
      */
 
     public static boolean isWebDAVFolder(Path path){
+        if (path.getFileName() == null) {
+            return false;
+        }
         String folderName = path.getFileName().toString();
         return folderName.contains(Constants.FOLDER_WEBDAV_SUFFIX);
     }

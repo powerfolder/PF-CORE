@@ -2210,13 +2210,13 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     public void testSwitchSyncProfile() {
 
-        getContollerBart().getTransferManager().setUploadCPSForLAN(1000000);
-        getContollerLisa().getTransferManager().setUploadCPSForLAN(1000000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(100000);
+        getContollerLisa().getTransferManager().setUploadCPSForLAN(100000);
 
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-            4 * 1024 * 1024);
+            10 * 1024 * 1024);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
@@ -2280,7 +2280,7 @@ public class FileTransferTest extends TwoControllerTestCase {
         // Switch back, dls should continue
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        TestHelper.waitForCondition(11, new ConditionWithMessage() {
+        TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public boolean reached() {
                 // #2557

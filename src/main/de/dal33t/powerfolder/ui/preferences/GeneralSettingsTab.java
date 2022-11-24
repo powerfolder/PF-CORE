@@ -212,13 +212,16 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             CellConstraints cc = new CellConstraints();
             int row = 1;
-            
-            // Start: PFC-2631
-            builder.addLabel(Translation.get("exp.preferences.expert.base_dir"), cc.xy(1, row));
-            builder.add(locationField, cc.xyw(3, row, 2));
-            // End: PFC-2631
-            
-            row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
+
+            if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                // Start: PFC-2631
+                builder.addLabel(Translation.get("exp.preferences.expert.base_dir"), cc.xy(1, row));
+                builder.add(locationField, cc.xyw(3, row, 2));
+                // End: PFC-2631
+
+                row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
+            }
+
             builder.addLabel(Translation.get("preferences.general.account_label"), cc.xy(1, row));
             builder.add(createChangeAccountLogoutPanel(), cc.xyw(3, row, 2));
 

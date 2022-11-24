@@ -295,18 +295,20 @@ public class FileRequestor extends PFComponent {
     }
 
     private void createDirectory(DirectoryInfo dirInfo) {
-        Path dirFile = dirInfo.getDiskFile(getController()
-            .getFolderRepository());
-        Folder folder = dirInfo
-            .getFolder(getController().getFolderRepository());
-        if (folder == null || dirFile == null) {
-            logWarning("Unable to created directory. not longer on folder: "
-                + dirInfo.toDetailString());
-            return;
-        }
-        folder.scanDirectory(dirInfo, dirFile);
-        if (isFine()) {
-            logFine("Synced directory: " + dirInfo.toDetailString());
+        try {
+            Path dirFile = dirInfo.getDiskFile(getController().getFolderRepository());
+            Folder folder = dirInfo.getFolder(getController().getFolderRepository());
+            if (folder == null || dirFile == null) {
+                logWarning("Unable to created directory. not longer on folder: "
+                        + dirInfo.toDetailString());
+                return;
+            }
+            folder.scanDirectory(dirInfo, dirFile);
+            if (isFine()) {
+                logFine("Synced directory: " + dirInfo.toDetailString());
+            }
+        } catch (RuntimeException e) {
+            logWarning(dirInfo + ": Unable to create directory. " + e);
         }
     }
 

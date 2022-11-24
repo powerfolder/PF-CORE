@@ -36,6 +36,7 @@ import de.dal33t.powerfolder.util.Base64;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.os.OSUtil;
+import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import edu.kit.scc.dei.ecplean.ECPAuthenticationException;
 import edu.kit.scc.dei.ecplean.ECPAuthenticator;
 import edu.kit.scc.dei.ecplean.ECPUnauthorizedException;
@@ -1195,6 +1196,14 @@ public class ServerClient extends PFComponent {
                     getController().getIOProvider().startIO(() -> {
                         // Also switches server
                         updateLocalSettings(accountDetails);
+
+                        if (PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                            String webDAVURL = getWebURL(Constants.WEBDAV_URI, false);
+                            char letterChar = getController().getDistribution().getBinaryName().charAt(0);
+                            if (!WinUtils.isWebDAVAlreadyMapped(this, letterChar)) {
+                                WinUtils.mountWebDAV(this, letterChar, webDAVURL);
+                            }
+                        }
                     });
                 } else {
                     setAnonAccount();
@@ -1565,7 +1574,7 @@ public class ServerClient extends PFComponent {
             String webURL = (String) props
                     .get(ConfigurationEntry.SERVER_WEB_URL.getConfigKey());
 
-            logInfo("Loaded " + props.size() + " from " + configURL + " network ID: " + networkID);
+            logInfo("Loaded " + props.size() + " config entries from " + configURL + " network ID: " + networkID);
             if (StringUtils.isBlank(host)) {
                 throw new IOException("Hostname not found");
             }

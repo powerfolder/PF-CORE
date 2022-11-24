@@ -418,7 +418,8 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public boolean isConnected() {
         try {
-            return peer != null && peer.isConnected();
+            ConnectionHandler thisPeer = peer;
+            return thisPeer != null && thisPeer.isConnected();
         } catch (Exception e) {
             return false;
         }
@@ -975,7 +976,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!waitForHandshakeCompletion()) {
             long took = System.currentTimeMillis() - start;
             String message = null;
-            if (peer == null || !peer.isConnected()) {
+            thisPeer = peer;
+            if (thisPeer == null || !thisPeer.isConnected()) {
                 if (lastProblem == null) {
                     message = "Peer " + getNick() + " disconnected while waiting for handshake acknownledge (or problem)";
                 }
@@ -1304,8 +1306,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            the message to send
      */
     public void sendMessageAsynchron(Message message) {
-        if (peer != null && peer.isConnected()) {
-            peer.sendMessagesAsynchron(message);
+        ConnectionHandler thisPeer = peer;
+        if (thisPeer != null && thisPeer.isConnected()) {
+            thisPeer.sendMessagesAsynchron(message);
         }
     }
 
@@ -1318,8 +1321,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            the messages to send
      */
     public void sendMessagesAsynchron(Message... messages) {
-        if (peer != null && peer.isConnected()) {
-            peer.sendMessagesAsynchron(messages);
+        ConnectionHandler thisPeer = peer;
+        if (thisPeer != null && thisPeer.isConnected()) {
+            thisPeer.sendMessagesAsynchron(messages);
         }
     }
 
@@ -2027,7 +2031,10 @@ public class Member extends PFComponent implements Comparable<Member> {
      *            the message to fire
      */
     public void fireMessageToListeners(Message message) {
-        getMessageListenerSupport().fireMessage(this, message);
+        MessageListenerSupport messageListenerSupport = getMessageListenerSupport();
+        if (messageListenerSupport != null) {
+            messageListenerSupport.fireMessage(this, message);
+        }
     }
 
     private synchronized MessageListenerSupport getMessageListenerSupport() {
@@ -2210,20 +2217,21 @@ public class Member extends PFComponent implements Comparable<Member> {
                         logFiner("Joined meta folder: " + metaFolder);
                     }
                     boolean nameDiffers = !folderInfo.getName().equals(folder.getName());
+                    Member member = fromPeer.getMember();
                     if (folderInfo.getVersion() > folder.getInfo().getVersion()) {
-                        if (folder.hasAdminPermission(fromPeer.getMember())) {
+                        if (member != null && folder.hasAdminPermission(member)) {
                             if (nameDiffers) {
-                                logInfo("Renaming local " + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                                logInfo("Renaming local " + folder.getInfo() + ". Remote: " + folderInfo + ". " + member);
                             }
                             if (getMySelf().isServer()) {
                                 getController().getFolderRepository().renameFolder(folderInfo, false, null);
                             } else {
-                                new FolderRenameTask(folderInfo, fromPeer.getMember()).scheduleTask(getController());
+                                new FolderRenameTask(folderInfo, member).scheduleTask(getController());
                             }
                         }
                     } else if (nameDiffers && folderInfo.getVersion() == folder.getInfo().getVersion() && folderInfo.getVersion() != 0) {
                         logWarning("Possible renaming conflict detected. Name differs but same version. Local: "
-                                + folder.getInfo() + ". Remote: " + folderInfo + ". " + fromPeer.getMember());
+                                + folder.getInfo() + ". Remote: " + folderInfo + ". " + member);
                     }
                 }
             } else {
@@ -2375,13 +2383,13 @@ public class Member extends PFComponent implements Comparable<Member> {
     private List<Folder> getFoldersRequestedToJoin() {
         ConnectionHandler thisPeer = peer;
         if (thisPeer == null) {
-            logWarning("Node disconnected while getting folders");
+            logFine("Node disconnected while getting folders");
             return Collections.emptyList();
         }
         // TODO Think about a better way
         FolderList fList = getLastFolderList();
         if (fList == null) {
-            logWarning("Unable to get last folder list");
+            logFine("Unable to get last folder list");
             return Collections.emptyList();
         }
         List<Folder> requestedFolders = new LinkedList<Folder>();

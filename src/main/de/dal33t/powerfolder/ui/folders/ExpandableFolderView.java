@@ -1120,7 +1120,7 @@ public class ExpandableFolderView extends PFUIComponent implements
             // Cloud-only folder popup
             retrieveWebDAVURL();
             if (StringUtils.isNotBlank(webDAVURL)) {
-                if (serverClient.supportsWebDAV()) {
+                if (serverClient.supportsWebDAV() && !PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
                     contextMenu.add(webdavAction).setIcon(null);
                 }
                 if (serverClient.supportsWebLogin()) {
@@ -1182,15 +1182,6 @@ public class ExpandableFolderView extends PFUIComponent implements
             }
         }
         return contextMenu;
-    }
-
-    private void openExplorer() {
-        // PFC-2349 : Don't freeze UI
-        getController().getIOProvider().startIO(new Runnable() {
-            public void run() {
-                PathUtils.openFile(folder.getCommitOrLocalDir());
-            }
-        });
     }
 
     /**
@@ -1693,12 +1684,16 @@ public class ExpandableFolderView extends PFUIComponent implements
                         boolean openedTab = getController().getUIController()
                             .openFilesInformation(folderInfo);
                         if (!openedTab) {
-                            openExplorer();
+                            getApplicationModel().openExplorer(folder);
                         }
                     }
                     if (type == Type.CloudOnly && folderInfo != null) {
-                        PFWizard.openOnlineStorageJoinWizard(getController(),
-                            Collections.singletonList(folderInfo));
+                        if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                            PFWizard.openOnlineStorageJoinWizard(getController(),
+                                    Collections.singletonList(folderInfo));
+                        } else {
+                            getApplicationModel().openExplorerWebDAVPath(folderInfo);
+                        }
                     }
                     if (type == Type.Typical) {
                         askToCreateFolder();
@@ -1906,7 +1901,7 @@ public class ExpandableFolderView extends PFUIComponent implements
         }
 
         public void actionPerformed(ActionEvent e) {
-            openExplorer();
+            getApplicationModel().openExplorer(folder);
         }
     }
 
@@ -1961,11 +1956,15 @@ public class ExpandableFolderView extends PFUIComponent implements
                 }
             } else if (type == Type.CloudOnly) {
                 // Join the folder locally.
-                PFWizard.openOnlineStorageJoinWizard(getController(),
-                    Collections.singletonList(folderInfo));
+                if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                    PFWizard.openOnlineStorageJoinWizard(getController(),
+                            Collections.singletonList(folderInfo));
+                } else {
+                    getApplicationModel().openExplorerWebDAVPath(folderInfo);
+                }
             } else if (type == Type.Local) {
                 // Local - open it
-                openExplorer();
+                getApplicationModel().openExplorer(folder);
             } else {
                 // Typical - ask to create.
                 askToCreateFolder();

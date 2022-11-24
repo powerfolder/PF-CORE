@@ -49,6 +49,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+
 /**
  * Domain class of an user account.
  *
@@ -135,6 +137,8 @@ public class Account implements Serializable, D2DObject, Auditable {
      */
     private Integer maxFolders;
 
+    @Column(length = 255)
+    private String title;
     @Column(length = 255)
     @Index(name = "IDX_ACC_FIRSTNAME")
     private String firstname;
@@ -479,7 +483,7 @@ public class Account implements Serializable, D2DObject, Auditable {
      * {@link OrganizationAdminPermission} for this organization, {@code false} otherwise.
      */
     public boolean isAdminOfOwnOrganization() {
-        if (StringUtils.isBlank(organizationOID)) {
+        if (isBlank(organizationOID)) {
             return false;
         }
         return hasPermission(new OrganizationAdminPermission(organizationOID));
@@ -619,17 +623,18 @@ public class Account implements Serializable, D2DObject, Auditable {
     public String getDisplayName() {
         if (StringUtils.isNotBlank(firstname)
                 || StringUtils.isNotBlank(surname)) {
+            String t = isBlank(title) ? "" : title.trim() + " ";
             String fn = (firstname == null ? "" : firstname).trim();
             String sn = (surname == null ? "" : surname).trim();
 
-            if (StringUtils.isBlank(fn)) {
-                return sn;
+            if (isBlank(fn)) {
+                return t + sn;
             }
-            if (StringUtils.isBlank(sn)) {
-                return fn;
+            if (isBlank(sn)) {
+                return t + fn;
             }
 
-            return (fn + " " + sn).trim();
+            return (t + fn + " " + sn).trim();
         } else if (StringUtils.isNotBlank(username) && authByShibboleth()
                 && !emails.isEmpty()) {
             return this.getEmails().get(0);
@@ -738,7 +743,6 @@ public class Account implements Serializable, D2DObject, Auditable {
      */
 
     public void setLanguage(String lang) {
-        // TODO: PENTEST2022: Check for valid language codes
         this.language = lang;
     }
 
@@ -792,6 +796,14 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public void setOrganizationOID(String organizationOID) {
         this.organizationOID = organizationOID;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getFirstname() {
@@ -858,7 +870,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     public JSONObject getJSONObject() {
-        if (StringUtils.isBlank(jsonData)) {
+        if (isBlank(jsonData)) {
             return new JSONObject();
         }
         try {
@@ -941,7 +953,7 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     // PFS-742: TODO Add EXTRA Field for this later
     public boolean isSendEmail() {
-        if (StringUtils.isBlank(getCustom2())) {
+        if (isBlank(getCustom2())) {
             return true;
         }
         return !getCustom2().toUpperCase().contains("NOEMAIL");
@@ -969,14 +981,14 @@ public class Account implements Serializable, D2DObject, Auditable {
      * @param infoText
      */
     public void addNotesWithDate(String infoText) {
-        if (StringUtils.isBlank(infoText)) {
+        if (isBlank(infoText)) {
             return;
         }
         String infoLine = Format.formatDateCanonical(new Date());
         infoLine += ": ";
         infoLine += infoText;
         String newNotes;
-        if (StringUtils.isBlank(notes)) {
+        if (isBlank(notes)) {
             newNotes = infoLine;
         } else {
             newNotes = notes + "\n" + infoLine;
@@ -1388,19 +1400,19 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.licenseKeyFileList.addAll(account.licenseKeyFileList);
 
         // Set the Organization OID if this is account is not yet in an Organization
-        if (StringUtils.isBlank(this.organizationOID)) {
+        if (isBlank(this.organizationOID)) {
             this.organizationOID = account.organizationOID;
         }
 
-        if (StringUtils.isBlank(this.ldapDN)) {
+        if (isBlank(this.ldapDN)) {
             this.ldapDN = account.ldapDN;
         }
 
-        if (StringUtils.isBlank(this.basePath)) {
+        if (isBlank(this.basePath)) {
             this.basePath = account.basePath;
         }
 
-        if (StringUtils.isBlank(this.shibbolethPersistentID)) {
+        if (isBlank(this.shibbolethPersistentID)) {
             this.shibbolethPersistentID = account.shibbolethPersistentID;
         }
 

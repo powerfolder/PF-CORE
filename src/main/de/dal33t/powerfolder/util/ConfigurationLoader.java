@@ -19,6 +19,12 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.disk.FolderSettings;
+import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
+import org.apache.commons.cli.CommandLine;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,13 +38,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-
-import org.apache.commons.cli.CommandLine;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 
 /**
  * Helper class around configuration
@@ -307,7 +306,7 @@ public class ConfigurationLoader {
             int i = merge(serverConfig, controller.getConfig(),
                 controller.getPreferences(), overWrite);
 
-            LOG.info("Loaded " + i + " profile settings (overwrite? "
+            LOG.info("Loaded " + i + " config entries (overwrite? "
                 + overWrite + ") from: " + configURL);
 
             if (i > 0) {
