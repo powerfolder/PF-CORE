@@ -28,20 +28,8 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.FolderSettings;
-import de.dal33t.powerfolder.disk.Lock;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
-import de.dal33t.powerfolder.event.FolderRepositoryEvent;
-import de.dal33t.powerfolder.event.LockingEvent;
-import de.dal33t.powerfolder.event.LockingListener;
-import de.dal33t.powerfolder.event.NodeManagerAdapter;
-import de.dal33t.powerfolder.event.NodeManagerEvent;
-import de.dal33t.powerfolder.event.OverallFolderStatListener;
-import de.dal33t.powerfolder.event.PausedModeEvent;
-import de.dal33t.powerfolder.event.PausedModeListener;
+import de.dal33t.powerfolder.disk.*;
+import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
@@ -62,18 +50,19 @@ import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.wizard.DesktopSyncSetupPanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.os.OSUtil;
 
-import javax.swing.AbstractAction;
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.PointerInfo;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -507,6 +496,41 @@ public class ApplicationModel extends PFUIComponent {
         return null;
     }
 
+    public void openExplorer() {
+        getController().getIOProvider().startIO(() -> PathUtils.openFile(getController().getFolderRepository().getFoldersBasedir()));
+    }
+
+    public void openExplorer(Folder folder) {
+        Reject.ifNull(folder, "Folder");
+        getController().getIOProvider().startIO(() -> PathUtils.openFile(folder.getCommitOrLocalDir()));
+    }
+
+    public void openExplorerWebDAVPath(FolderInfo folderInfo) {
+        Reject.ifNull(folderInfo, "Folder");
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
+        getController().getIOProvider().startIO(() -> {
+            char letterChar = getController().getDistribution().getBinaryName().charAt(0);
+            Path targetDir = Paths.get(letterChar + ":\\" + folderInfo.getLocalizedName());
+            if (Files.notExists(targetDir)) {
+                targetDir = Paths.get(letterChar + ":\\" );
+            }
+            PathUtils.openFile(targetDir);
+        });
+    }
+
+    public void openExplorerWebDAVPath() {
+        if (!OSUtil.isWindowsSystem()) {
+            return;
+        }
+        getController().getIOProvider().startIO(() -> {
+            char letterChar = getController().getDistribution().getBinaryName().charAt(0);
+            Path targetDir = Paths.get(letterChar + ":\\" );
+            PathUtils.openFile(targetDir);
+        });
+    }
+
     // Exposing ***************************************************************
 
     public ActionModel getActionModel() {
@@ -632,6 +656,8 @@ public class ApplicationModel extends PFUIComponent {
             status = SyncStatusEvent.LOGGING_IN;
         } else if (!loggedIn) {
             status = SyncStatusEvent.NOT_LOGGED_IN;
+        } else if (PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+            status = SyncStatusEvent.SYNCHRONIZED;
         } else if (repository.getFoldersCount() == 0 && !noticeAvailable) {
             status = SyncStatusEvent.NO_FOLDERS;
         } else if (syncingModel.isSyncing()) {

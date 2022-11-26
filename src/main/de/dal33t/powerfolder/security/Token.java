@@ -246,7 +246,7 @@ public class Token implements Serializable {
     }
 
     public boolean isValid() {
-        return StringUtils.isNotBlank(secrect) && !revoked && !isExpired();
+        return hasSecret() && !revoked && !isExpired();
     }
 
     public boolean hasSecret() {

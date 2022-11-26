@@ -533,8 +533,13 @@ public class LoginPanel extends PFWizardPanel {
      * Open the basedir in file browser iff the main frame is minimized.
      */
     private void openBasedirIfMinimized() {
-        if (getController().getUIController().getMainFrame().isIconifiedOrHidden())
-            PathUtils.openFile(getController().getFolderRepository().getFoldersBasedir());
+        if (getController().getUIController().getMainFrame().isIconifiedOrHidden()) {
+            if (!PreferencesEntry.WEBDAV_ONLY.getValueBoolean(getController())) {
+                getController().getUIController().getApplicationModel().openExplorer();
+            } else {
+                getController().getUIController().getApplicationModel().openExplorerWebDAVPath();
+            }
+        }
     }
 
     private class LoginTask implements Runnable {

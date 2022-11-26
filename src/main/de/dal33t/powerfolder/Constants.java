@@ -402,6 +402,7 @@ public class Constants {
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
     public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI
         + "/client";
+    public static final String WEBDAV_URI = "/webdav";
 
     public static final String LOGIN_PARAM_USERNAME = "Username";
     public static final String LOGIN_PARAM_PASSWORD = "Password";
