@@ -404,7 +404,7 @@ public enum ConfigurationEntry {
     /**
      * PFS-2425: Federated login.
      */
-    SERVER_FEDERATED_LOGIN("server.federation.login_enabled", false),
+    SERVER_FEDERATED_LOGIN("server.federation.login_enabled", true),
 
     /**
      * PFS-3335: Merge accounts in federation
