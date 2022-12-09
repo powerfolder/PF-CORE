@@ -863,8 +863,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
                 folderList = new FolderListExt(folders2node, includeVersionAndParent);
             }
-            if (isInfo()) {
-                logInfo("Sending CH " + folderList);
+            if (isFiner()) {
+                logFiner("Sending CH " + folderList);
             }
             peer.sendMessagesAsynchron(folderList);
         }
@@ -1961,8 +1961,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                     boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
                     myFolderList = new FolderListExt(folders2node, includeVersionAndParent);
                 }
-                if (isInfo()) {
-                    logInfo("Sending HM " + myFolderList);
+                if (isFine()) {
+                    logFine("Sending HM " + myFolderList);
                 }
                 sendMessageAsynchron(myFolderList);
             }
@@ -2110,8 +2110,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
                 myFolderList = new FolderListExt(folders2node, includeVersionAndParent);
             }
-            if (isInfo()) {
-                logInfo("Sending SFM " + myFolderList);
+            if (isFiner()) {
+                logFiner("Sending SFM " + myFolderList);
             }
             sendMessageAsynchron(myFolderList);
         } finally {
