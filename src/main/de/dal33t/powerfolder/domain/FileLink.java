@@ -295,8 +295,8 @@ public class FileLink implements Serializable {
     @Override
     public String toString() {
         return "FileLink [id=" + id + ", folderInfo=" + folderInfo
-            + ", relativeName=" + relativeName + ", publicAccess="
-            + publicAccess + ", expirationDate=" + expirationDate
+            + ", relativeName=" + relativeName + ", publicPermission="
+            + publicPermission + ", expirationDate=" + expirationDate
             + ", downloads=" + downloads + ", maxDownloads=" + maxDownloads
             + ", password=" + (password == null ? "no" : "yes") + "]";
     }
