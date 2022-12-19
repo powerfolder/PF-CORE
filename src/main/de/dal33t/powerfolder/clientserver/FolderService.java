@@ -451,4 +451,6 @@ public interface FolderService {
     String getUploadForm(FolderInfo folderInfo);
 
     void storeUploadForm(FolderInfo folderInfo, String jsonForm);
+
+    void logDiffFiles(FolderInfo folderInfo, MemberInfo localServer, MemberInfo remoteServer);
 }
