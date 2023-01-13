@@ -1814,6 +1814,11 @@ public class Folder extends PFComponent {
         }
     }
 
+    public void changeModifiedAccountFor(FileInfo fileInfo) {
+        dao.store(null, fileInfo);
+        setDBDirty();
+    }
+
     private void initFileInfoDAO() {
         if (dao != null) {
             // Stop old DAO

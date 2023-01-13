@@ -130,7 +130,6 @@ public interface FileInfoDAO {
      *             database information. Activation/Loading all FileInfos is a
      *             BAD idea generally.
      */
-    @Deprecated
     Collection<FileInfo> findAllFiles(String domain);
 
     /**
@@ -151,7 +150,6 @@ public interface FileInfoDAO {
      *            the selection criteria.
      * @return the collection of matching directories.
      */
-    @Deprecated
     Collection<FileInfo> findFiles(FileInfoCriteria criteria);
 
     /**
