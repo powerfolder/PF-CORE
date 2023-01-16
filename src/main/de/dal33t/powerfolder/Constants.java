@@ -32,7 +32,7 @@ import java.util.List;
 public class Constants {
 
     public static final String POWERFOLDER_HOMEPAGE = "https://www.powerfolder.com";
-    
+
     // General settings *******************************************************
     /**
      * The name of the subdirectory in every folder to store powerfolder
@@ -86,7 +86,7 @@ public class Constants {
      * @see ConfigurationEntry#FOLDER_BASEDIR
      */
     public static String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
-    
+
     /**
      * PFC-2538
      */
@@ -426,12 +426,14 @@ public class Constants {
     public static final String MAIL_ATTACHMENT_FOLDER = "$mail_attachments";
 
     // Locking ****************************************************************
-    
+
     public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
     public static final String LIBRE_OFFICE_FILENAME_PREFIX = ".~lock.";
 
 
     public static final List<String> SUPPORTED_LANGUAGES = Arrays.asList("en","de");
+
+    public static final List<String> SUPPORTED_CURRENCIES = Arrays.asList("eur","usd");
 
 
     private Constants() {
