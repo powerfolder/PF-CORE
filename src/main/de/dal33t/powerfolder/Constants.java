@@ -433,7 +433,8 @@ public class Constants {
 
     public static final List<String> SUPPORTED_LANGUAGES = Arrays.asList("en","de");
 
-    public static final List<String> SUPPORTED_CURRENCIES = Arrays.asList("eur","usd");
+    public static final List<String> SUPPORTED_COUNTRIES = Arrays.asList("de","ch","nl","po","it");
+
 
 
     private Constants() {
