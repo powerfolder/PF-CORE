@@ -430,12 +430,7 @@ public class Constants {
     public static final String MS_OFFICE_FILENAME_PREFIX = "~$";
     public static final String LIBRE_OFFICE_FILENAME_PREFIX = ".~lock.";
 
-
     public static final List<String> SUPPORTED_LANGUAGES = Arrays.asList("en","de");
-
-    public static final List<String> SUPPORTED_COUNTRIES = Arrays.asList("de","ch","nl","po","it");
-
-
 
     private Constants() {
         // No instance allowed
