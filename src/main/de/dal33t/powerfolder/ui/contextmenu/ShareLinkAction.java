@@ -76,7 +76,7 @@ class ShareLinkAction extends ContextMenuAction {
                         @Override
                         public void run() {
                             String previousEntry = Util.getClipboardContents();
-                            String url = client.getFolderService(fInfo.getFolderInfo()).getDownloadLink(fInfo);
+                            String url = client.getFolderService(fInfo.getFolderInfo()).getFileLink(fInfo);
                             Util.setClipboardContents(url);
 
                             ShareFileNotificationHandler handler = new ShareFileNotificationHandler(

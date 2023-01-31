@@ -1183,7 +1183,9 @@ public class ServerClient extends PFComponent {
                                         .removeValue(config);
                             }
                         }
-
+                        if (StringUtils.isBlank(username)) {
+                            username = accountDetails.getAccount().getUsername();
+                        }
                         saveLastKnowLogin(username, passwordObf);
                     } else {
                         saveLastKnowLogin(username, null);

@@ -413,6 +413,9 @@ public class Debug {
                 if (key.toLowerCase().contains("login.admin.iplist")) {
                     value = "XXX-erased-XXX";
                 }
+                if (key.toLowerCase().contains("secret.key")) {
+                    value = "XXX-erased-XXX";
+                }
                 b.append("\n" + key + "=" + value);
             }
             b.append('\n');

@@ -1175,6 +1175,9 @@ public class PathUtils {
         if (".".equals(fileName) || "..".equals(fileName)) {
             return true;
         }
+        if (fileName.endsWith(" ")) {
+            return true;
+        }
 
         /* Check list of invalid chars */
         for (int i = 0; i < fileName.length(); i++) {
