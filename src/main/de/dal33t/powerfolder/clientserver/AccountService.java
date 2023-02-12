@@ -117,6 +117,11 @@ public interface AccountService {
         String referredBy) throws RegisterFailedException;
 
     /**
+     * PFIOS-186: Request account deletion.
+     */
+    void requestDeleteOwnAccount();
+
+    /**
      * @return Account details about the currently logged in user.
      * @deprecated use {@link SecurityService#getAccountDetails()}
      */

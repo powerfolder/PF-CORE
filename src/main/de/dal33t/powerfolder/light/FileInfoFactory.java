@@ -19,6 +19,13 @@
  */
 package de.dal33t.powerfolder.light;
 
+import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.nio.file.Files;
@@ -26,12 +33,6 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Factory to create {@link FileInfo} and {@link DirectoryInfo} objects.
@@ -142,6 +143,55 @@ public final class FileInfoFactory {
                     "Illegal original FileInfo: " + original.getClass() + ": "
                         + original.toDetailString());
             }
+        }
+    }
+
+    /**
+     * Returns a FileInfo with changed AccountInfo. No version update etc.
+     * whatsoever happens.
+     *
+     * @param original
+     * @param accountInfo
+     * @return the new (or existing) instance.
+     */
+    public static FileInfo changeModifiedAccount(FileInfo original, AccountInfo accountInfo) {
+        Reject.ifNull(original, "Original FileInfo is null");
+        if (original.isLookupInstance()) {
+            return original;
+        }
+        if (original.getModifiedByAccount() != null && accountInfo != null) {
+            if (Util.equals(accountInfo.getUsername(), original.getModifiedByAccount().getUsername())
+                    && Util.equals(accountInfo.getDisplayName(), original.getModifiedByAccount().getDisplayName())) {
+                // Same display name + username. No update required
+                return original;
+            }
+        }
+        if (original.isFile()) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Corrected AccountInfo on "
+                        + original.toDetailString());
+            }
+            return new FileInfo(original.getRelativeName(),
+                    original.getOID(), original.getSize(),
+                    original.getModifiedBy(), accountInfo,
+                    original.getModifiedDate(), original.getVersion(),
+                    original.getHashes(), original.isDeleted(),
+                    original.getTags(), original.getFolderInfo());
+        } else if (original.isDiretory()) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Corrected AccountInfo on "
+                        + original.toDetailString());
+            }
+            return new DirectoryInfo(original.getRelativeName(),
+                    original.getOID(), original.getSize(),
+                    original.getModifiedBy(), accountInfo,
+                    original.getModifiedDate(), original.getVersion(),
+                    original.getHashes(), original.isDeleted(),
+                    original.getTags(), original.getFolderInfo());
+        } else {
+            throw new IllegalArgumentException(
+                    "Illegal original FileInfo: " + original.getClass() + ": "
+                            + original.toDetailString());
         }
     }
     

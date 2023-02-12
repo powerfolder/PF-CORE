@@ -236,8 +236,11 @@ public class Organization implements Serializable , Auditable {
         try {
             return new JSONObject(jsonData);
         } catch (JSONException e) {
-            LOG.log(Level.WARNING, "Resetting JSON data for " + name + ". Illegal value '" + jsonData
-                    + "'. " + e.getMessage(), e);
+            boolean quiet = "undefined".equalsIgnoreCase(jsonData) || "[object Object]".equalsIgnoreCase(jsonData);
+            if (!quiet) {
+                LOG.log(Level.WARNING, "Resetting JSON data for " + name + ". Illegal value '" + jsonData
+                        + "'. " + e.getMessage(), e);
+            }
             return new JSONObject();
         }
     }
@@ -364,8 +367,7 @@ public class Organization implements Serializable , Auditable {
     @Override
     public String toString() {
         return "Organization [oid=" + oid + ", name=" + name + ", maxUsers="
-            + maxUsers + ", osSubscription=" + osSubscription + ", notes="
-            + notes + "]";
+            + maxUsers + ", osSubscription=" + osSubscription + "]";
     }
 
     @Override
