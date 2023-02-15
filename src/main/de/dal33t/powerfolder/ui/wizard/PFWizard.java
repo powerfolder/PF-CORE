@@ -19,30 +19,6 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-
-import java.awt.Dialog;
-import java.awt.Toolkit;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.swing.JDialog;
-
-import de.dal33t.powerfolder.util.os.OSUtil;
-import jwf.Wizard;
-import jwf.WizardContext;
-import jwf.WizardListener;
-import jwf.WizardPanel;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
@@ -58,6 +34,24 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.Icons;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+import jwf.Wizard;
+import jwf.WizardContext;
+import jwf.WizardListener;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
 
 /**
  * The main wizard class
@@ -87,7 +81,7 @@ public class PFWizard extends PFUIComponent {
      * @param title
      */
     public PFWizard(Controller controller, String title) {
-        this(controller, title, false);
+        this(controller, title, ConfigurationEntry.SHOW_TINY_WIZARDS.getValueBoolean(controller));
     }
 
     /**
