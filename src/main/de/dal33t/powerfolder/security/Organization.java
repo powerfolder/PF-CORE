@@ -164,6 +164,8 @@ public class Organization implements Serializable , Auditable {
         this.maxUsers = UNLIMITED_USERS;
     }
 
+    public boolean isUnlimitedUsers() { return this.maxUsers == UNLIMITED_USERS; }
+
     public boolean hasMaxUsers() {
         return this.maxUsers > 0 && this.maxUsers != UNLIMITED_USERS;
     }
