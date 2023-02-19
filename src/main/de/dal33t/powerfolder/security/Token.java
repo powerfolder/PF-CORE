@@ -316,6 +316,14 @@ public class Token implements Serializable {
         }
     }
 
+    public boolean isAndroid() {
+        return notes != null && notes.toLowerCase().contains("android");
+    }
+
+    public void setAndroid() {
+        notes = "android";
+    }
+
     // Static helper **********************************************************
 
     public static String extractId(String secret) {
