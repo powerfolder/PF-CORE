@@ -77,7 +77,7 @@ public class Waiter {
     }
 
     public static void waitRandom(long maxMillis) {
-        long millis = (long) (Math.random() * maxMillis);
+        long millis = 100 + (long) (Math.random() * (maxMillis - 100));
         waitABit(millis);
     }
 
