@@ -76,6 +76,11 @@ public class Waiter {
         }
     }
 
+    public static void waitRandom(long maxMillis) {
+        long millis = (long) (Math.random() * maxMillis);
+        waitABit(millis);
+    }
+
     public static final class WaiterInterruptedException extends RuntimeException {
         public WaiterInterruptedException(String message, Throwable cause) {
             super(message, cause);
