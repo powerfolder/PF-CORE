@@ -115,13 +115,18 @@ public class OnlineStorageSubscription implements Serializable {
         if (validFrom != null) {
             Calendar calendar = Calendar.getInstance();
             calendar.set(Calendar.YEAR, year);
-            calendar.set(Calendar.MONTH, month);
+            calendar.set(Calendar.MONTH, month - 1);
             calendar.set(Calendar.DAY_OF_MONTH, 1);
             calendar.set(Calendar.HOUR_OF_DAY, 0);
             calendar.set(Calendar.MINUTE, 0);
             calendar.set(Calendar.SECOND, 0);
             calendar.set(Calendar.MILLISECOND, 0);
-            if (calendar.getTime().before(validFrom)) {
+
+            // End of previous month
+            calendar.add(Calendar.MONTH, 1);
+            calendar.add(Calendar.SECOND, -1);
+
+            if (validFrom.after(calendar.getTime())) {
                 return false;
             }
         }
