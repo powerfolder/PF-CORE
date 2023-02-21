@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 
 /**
  * Domain class of an user account.
@@ -1601,6 +1602,10 @@ public class Account implements Serializable, D2DObject, Auditable {
     public boolean hasAdminPermission(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(FolderPermission.admin(foInfo));
+    }
+
+    public boolean hasTwoFactorAuthenticationToken() {
+        return isNotBlank(twoFactorAuthenticationToken);
     }
 
     public String getTwoFactorAuthenticationToken() {
