@@ -19,11 +19,11 @@
  */
 package de.dal33t.powerfolder.clientserver;
 
+import de.dal33t.powerfolder.security.Organization;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import de.dal33t.powerfolder.security.Organization;
 
 public class AccountFilterModel implements Serializable {
     private static final long serialVersionUID = 100L;
@@ -38,7 +38,7 @@ public class AccountFilterModel implements Serializable {
     private boolean reseller;
     private String[] permissionNames;
     private String sortingProperty;
-    private String sortingOrder;
+    private boolean sortingAscending = true;
     private int pageNumber;
 
     private int maxResults;
@@ -146,12 +146,12 @@ public class AccountFilterModel implements Serializable {
         this.sortingProperty = sortingProperty;
     }
 
-    public String getSortingOrder() {
-        return sortingOrder;
+    public boolean isSortingAscending() {
+        return sortingAscending;
     }
 
-    public void setSortingOrder(String sortingOrder) {
-        this.sortingOrder = sortingOrder;
+    public void setSortingAscending(boolean sortingAscending) {
+        this.sortingAscending = sortingAscending;
     }
 
     public void setPageNumber(int pageNumber) {

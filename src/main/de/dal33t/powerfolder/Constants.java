@@ -406,6 +406,7 @@ public class Constants {
 
     public static final String LOGIN_PARAM_USERNAME = "Username";
     public static final String LOGIN_PARAM_PASSWORD = "Password";
+    public static final String LOGIN_PARAM_TOTP_CODE = "Totp";
     public static final String LOGIN_PARAM_PASSWORD_OBF = "PasswordOBF";
     public static final String LOGIN_PARAM_OR_HEADER_TOKEN = "Token";
     public static final String LOGIN_PARAM_OR_HEADER_TOKEN_BEARER = "Bearer";
