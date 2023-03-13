@@ -1180,11 +1180,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 boolean inBaseDir = localBaseDirParent
                         .equals(getFoldersBasedir());
                 if (!inBaseDir) {
-                    logWarning("Not allowed to create " + folderInfo.getName()
+                    logWarning("Not allowed to create " + folderInfo
                             + " at " + folderSettings.getLocalBaseDir()
                             + ". Must be in base directory: " + getFoldersBasedir());
                     throw new IllegalStateException("Not allowed to create "
-                            + folderInfo.getName() + " at "
+                            + folderInfo + " at "
                             + folderSettings.getLocalBaseDir()
                             + ". Must be in base directory: " + getFoldersBasedir());
                 }
@@ -1203,11 +1203,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             } catch (IOException e) {
                 logWarning("Failed to resolve symlink at "
-                        + localBaseDir + " for folder "
-                        + folderInfo.getName());
+                        + localBaseDir + " for "
+                        + folderInfo);
                 throw new IllegalStateException("Failed to resolve symlink at "
-                        + localBaseDir + " for folder "
-                        + folderInfo.getName());
+                        + localBaseDir + " for "
+                        + folderInfo);
             }
 
             try {
@@ -1215,19 +1215,19 @@ public class FolderRepository extends PFComponent implements Runnable {
                     if (saveConfig) {
                         getController().saveConfig();
                     }
-                    logWarning("Not allowed to create " + folderInfo.getName()
+                    logWarning("Not allowed to create " + folderInfo
                             + " at " + folderSettings.getLocalBaseDir()
                             + ". Network shares not allowed");
                     throw new IllegalStateException("Not allowed to create "
-                            + folderInfo.getName() + " at "
+                            + folderInfo + " at "
                             + folderSettings.getLocalBaseDir()
                             + ". Network shares not allowed");
                 }
             } catch (IOException e) {
                 logWarning("Failed to resolve symlink at " + localBaseDir);
                 throw new IllegalStateException("Failed to resolve symlink at "
-                        + localBaseDir + " for folder "
-                        + folderInfo.getName());
+                        + localBaseDir + " for "
+                        + folderInfo);
             }
         }
 
@@ -1252,13 +1252,13 @@ public class FolderRepository extends PFComponent implements Runnable {
                 // Mount it.
                 String mountMessage = LinuxUtil.mountWebDAV(webDAVURL, folderBaseDir);
                 if (mountMessage.startsWith("N")) {
-                    logSevere("Failed to mount folder " +
-                            folderInfo.getName() + " as WebDAV resource. Error message: " + mountMessage);
+                    logSevere("Failed to mount " +
+                            folderInfo + " as WebDAV resource. Error message: " + mountMessage);
                 }
                 folderSettings = folderSettings.changeBaseDir(folderBaseDir);
             } catch (MalformedURLException e) {
-                logSevere("Failed to mount folder " +
-                        folderInfo.getName() + " as WebDAV resource @ " + e, e);
+                logSevere("Failed to mount " +
+                        folderInfo + " as WebDAV resource @ " + e, e);
             }
         } else if (folderSettings.getLocalBaseDir().toString().contains(Constants.FOLDER_WEBDAV_SUFFIX) && !OSUtil.isLinux()) {
             logSevere("WebDAV folder mounting is only supported with Linux as operating system.");
@@ -1338,8 +1338,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         if (isFine()) {
-            String message = "Setup folder " + folderInfo.getLocalizedName()
-                    + " at " + folder.getLocalBase();
+            String message = "Setup folder " + folderInfo + " at " + folder.getLocalBase();
             logFine(message);
         }
 
