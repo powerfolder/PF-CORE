@@ -1147,7 +1147,7 @@ public enum ConfigurationEntry {
      * maintenance. In Seconds. Default: 3 years
      */
     MAX_FILEINFO_DELETED_AGE_SECONDS("filedb.deleted.maxage", 60 * 60 * 24 * 30
-            * 3),
+            * 12 * 3),
 
     /**
      * The http proxy to use for HTTP tunneled connections
@@ -1368,7 +1368,7 @@ public enum ConfigurationEntry {
      */
     PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600), // One hour default.
 
-    SHOW_TINY_WIZARDS("show.tiny.wizards", false),
+    SHOW_TINY_WIZARDS("show.tiny.wizards", true),
 
     SHOW_CREATE_FOLDER("show.create.folder", true),
 
