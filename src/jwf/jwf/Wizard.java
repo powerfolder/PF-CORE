@@ -33,7 +33,7 @@ import java.util.Stack;
 public class Wizard extends JPanel implements ActionListener {
 
     // PFC-2931
-    private static final int SCALE_PERCENT = (int) ((100d * 2/3 * Toolkit.getDefaultToolkit().getScreenResolution()) / 96);
+    private static final int SCALE_PERCENT = (int) ((80d * Toolkit.getDefaultToolkit().getScreenResolution()) / 96);
     // Wizard sizes
     public static final Dimension WIZARD_TINY_WINDOW_SIZE = new Dimension(
             430 * SCALE_PERCENT / 100,
