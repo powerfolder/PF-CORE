@@ -81,21 +81,12 @@ public class PFWizard extends PFUIComponent {
      * @param title
      */
     public PFWizard(Controller controller, String title) {
-        this(controller, title, ConfigurationEntry.SHOW_TINY_WIZARDS.getValueBoolean(controller));
-    }
-
-    /**
-     * @param controller
-     *            the controller
-     * @param title
-     */
-    public PFWizard(Controller controller, String title, boolean tiny) {
         super(controller);
         this.title = title;
         NUMBER_OF_OPEN_WIZARDS.incrementAndGet();
         // controller.getUIController().getMainFrame().checkOnTop();
         setSuspendNewFolderSearch(true);
-        wizard = new Wizard(tiny);
+        wizard = new Wizard();
     }
 
     /**
@@ -252,9 +243,7 @@ public class PFWizard extends PFUIComponent {
 
     public static void openLoginWizard(Controller controller,ServerClient client)
     {
-        boolean tiny = ConfigurationEntry.SHOW_TINY_WIZARDS
-                .getValueBoolean(controller);
-        PFWizard wizard = new PFWizard(controller, Translation.get("wizard.pfwizard.login_title"), tiny);
+        PFWizard wizard = new PFWizard(controller, Translation.get("wizard.pfwizard.login_title"));
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,Translation.get("wizard.finish.os_login_title"),
                 Translation.get("wizard.finish.os_login_text"), true);
         WizardPanel nextPanel = new FileSyncSetupPanel(controller,client,nextFinishPanel);
@@ -268,10 +257,8 @@ public class PFWizard extends PFUIComponent {
     public static void openDesktopSyncWizard(Controller controller,
         ServerClient client)
     {
-        boolean tiny = ConfigurationEntry.SHOW_TINY_WIZARDS
-            .getValueBoolean(controller);
         PFWizard wizard = new PFWizard(controller,
-            Translation.get("wizard.desktop_sync.title"), tiny);
+            Translation.get("wizard.desktop_sync.title"));
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,
             Translation.get("wizard.desktop_sync.title"),
             Translation.get("wizard.desktop_sync.success_text"), true);

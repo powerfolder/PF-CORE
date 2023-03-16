@@ -19,17 +19,11 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.factories.Borders;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.LayoutMap;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.ui.util.Help;
@@ -38,6 +32,9 @@ import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.AntialiasedLabel;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import jwf.WizardPanel;
+
+import javax.swing.*;
 
 /**
  * Base class for wizard panels All subclasses have a title, optional picto and
@@ -156,8 +153,7 @@ public abstract class PFWizardPanel extends WizardPanel {
      * @return true
      */
     public boolean hasHelp() {
-        return !getWizard().isTiny()
-            && StringUtils
+        return StringUtils
                 .isNotBlank(ConfigurationEntry.PROVIDER_QUICKSTART_URL
                     .getValue(getController()));
     }

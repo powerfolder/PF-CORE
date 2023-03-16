@@ -1368,8 +1368,6 @@ public enum ConfigurationEntry {
      */
     PAUSE_RESUME_SECONDS("pause.resume.seconds", 3600), // One hour default.
 
-    SHOW_TINY_WIZARDS("show.tiny.wizards", true),
-
     SHOW_CREATE_FOLDER("show.create.folder", true),
 
     /**
