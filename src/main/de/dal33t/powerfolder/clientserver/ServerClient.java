@@ -2824,6 +2824,9 @@ public class ServerClient extends PFComponent {
             if (!getController().isStarted()) {
                 return;
             }
+            if (!ConfigurationEntry.SERVER_CONNECT.getValueBoolean(getController())) {
+                return;
+            }
             retrieveAndConnectoClusterServers();
         }
 

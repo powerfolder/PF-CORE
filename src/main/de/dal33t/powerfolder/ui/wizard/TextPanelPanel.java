@@ -19,35 +19,29 @@
  */
 package de.dal33t.powerfolder.ui.wizard;
 
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
-import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
-
-import java.awt.event.ActionEvent;
-import java.util.List;
-import java.util.StringTokenizer;
-
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-
-import de.dal33t.powerfolder.security.FolderPermission;
-import de.dal33t.powerfolder.util.Waiter;
-import jwf.WizardPanel;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.Waiter;
+import jwf.WizardPanel;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDERINFO_ATTRIBUTE;
+import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_IS_INVITE;
 
 /**
  * A general text panel, displays the given text and offers to finish wizard
@@ -92,9 +86,7 @@ public class TextPanelPanel extends PFWizardPanel {
             });
         }
         // Tiny wizards don't have a "Finish" button. So automatically close.
-        if (autoFadeOut || getWizard().isTiny()) {
-            new FadeOutWorker().execute();
-        }
+        new FadeOutWorker().execute();
 
         // If it's an invite, try to display it in the UI.
         Object o = getWizardContext().getAttribute(FOLDER_IS_INVITE);

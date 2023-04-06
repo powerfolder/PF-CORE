@@ -307,6 +307,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     public synchronized void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
         for (Permission p : newPermissions) {
+            Reject.ifNull(p, "Permission is null");
             if (hasPermission(p)) {
                 // Skip
                 continue;
@@ -329,6 +330,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     public synchronized void revoke(Permission... revokePermissions) {
         Reject.ifNull(revokePermissions, "Permission is null");
         for (Permission p : revokePermissions) {
+            Reject.ifNull(p, "Permission is null");
             if (permissions.remove(p)) {
                 LOG.fine("Revoked permission from " + this + ": " + p);
             }

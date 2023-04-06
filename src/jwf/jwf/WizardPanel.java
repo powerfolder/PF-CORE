@@ -1,11 +1,10 @@
 package jwf;
 
-import javax.swing.JPanel;
-import javax.swing.border.Border;
-
 import com.jgoodies.forms.factories.Borders;
-
 import de.dal33t.powerfolder.ui.wizard.WizardContextAttributes;
+
+import javax.swing.*;
+import javax.swing.border.Border;
 
 /**
  * The base class used for implementing a panel that is displayed in a Wizard.
@@ -129,10 +128,6 @@ public abstract class WizardPanel extends JPanel {
     }
 
     protected Border createFewContentBorder() {
-        if (getWizard().isTiny()) {
-            return Borders.createEmptyBorder("0, 0, 0, 0");
-        } else {
-            return Borders.createEmptyBorder("30dlu, 10dlu, 0, 0");
-        }
+        return Borders.createEmptyBorder("0, 0, 0, 0");
     }
 }

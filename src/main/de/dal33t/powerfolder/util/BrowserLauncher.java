@@ -112,7 +112,7 @@ public class BrowserLauncher {
      */
     public static void openURL(String url) throws IOException {
         if (StringUtils.isBlank(url)) {
-            log.fine("Not opening blank url!");
+            log.warning("Not opening blank url!");
             return;
         }
         if (java6impl(url)) {
