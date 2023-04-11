@@ -236,7 +236,7 @@ public class Folder extends PFComponent {
         if (fInfo.isLookupInstance()) {
             currentInfo = FolderInfoFactory.unmarshallExistingFolder(fInfo.id, fInfo.getName(), 0, fInfo.getLocation()).intern();
         } else {
-            currentInfo = fInfo;
+            currentInfo = fInfo.intern(true);
         }
 
         // Create listener support
