@@ -19,13 +19,6 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
@@ -33,6 +26,13 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -52,7 +52,7 @@ public class FileProblemHelper {
         "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4",
         "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
-    private static final int MAX_FILENAME_LENGTH = 255;
+    private static final int MAX_FILENAME_LENGTH = 250;
 
     private static final String[] ILLEGAL_LINUX_CHARS = { "/" };
 
@@ -217,7 +217,11 @@ public class FileProblemHelper {
         return false;
     }
 
-    private static boolean isTooLong(String filename) {
+    public static void main(String... args) {
+        String fn = "access.log_1_22.11.2021,_133805_0_08.12.2022,_081122_0_13.12.2022,_051426_2_13.12.2022,_051428_0_14.12.2022,_101732_2_15.12.2022,_10_27_25_0_19.12.2022,_12_43_21_0_20.12.2022,_124708_0_20.12.2022,_14_15_31_0_20.12.2022,_150436_0_08.02.2023,_162534.current. java.io.IOException: /mnt/main/PowerFolders/bj@impitas.de/02_Kunden/Udo Pflaesterer/04_Sonstiges/01_BACKUP/Alte Webseite_20211122/_ProviderRestore/logs/access.log_1_22.11.2021,_133805_0_08.12.2022,_081122_0_13.12.2022,_051426_2_13.12.2022,_051428_0_14.12.2022,_101732_2_15.12.2022,_10_27_25_0_19.12.2022,_12_43_21_0_20.12.2022,_124708_0_20.12.2022,_14_15_31_0_20.12.2022,_150436_0_08.02.2023,_162534.current -> /mnt/main/PowerFolders/bj@impitas.de/02_Kunden/.PowerFolder/archive/Udo Pflaesterer/04_Sonstiges/01_BACKUP/Alte Webseite_20211122/_ProviderRestore/logs/access.log_1_22.11.2021,_133805_0_08.12.2022,_081122_0_13.12.2022,_051426_2_13.12.2022,_051428_0_14.12.2022,_101732_2_15.12.2022,_10_27_25_0_19.12.2022,_12_43_21_0_20.12.2022,_124708_0_20.12.2022,_14_15_31_0_20.12.2022,_150436_0_08.02.2023,_162534_K_0.current:Unable to delete old file /mnt/main/PowerFolders/bj@impitas.de/02_Kunden/.PowerFolder/archive/Udo Pflaesterer/04_Sonstiges/01_BACKUP/Alte Webseite_20211122/_ProviderRestore/logs/access.log_1_22.11.2021,_133805_0_08.12.2022,_081122_0_13.12.2022,_051426_2_13.12.2022,_051428_0_14.12.2022,_101732_2_15.12.2022,_10_27_25_0_19.12.2022,_12_43_21_0_20.12.2022,_124708_0_20.12.2022,_14_15_31_0_20.12.2022,_150436_0_08.02.2023,_162534_K_0.current";
+        System.out.println(isTooLong(fn));
+    }
+    public static boolean isTooLong(String filename) {
         return filename.length() > MAX_FILENAME_LENGTH;
     }
 
