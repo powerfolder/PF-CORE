@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.d2d.D2DObject;
-import de.dal33t.powerfolder.message.Message;
 import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
@@ -359,7 +358,7 @@ public class MemberInfo implements Serializable, D2DObject {
 
     @Override
     public String toString() {
-        return "Member '" + nick + "' (con. at " + connectAddress + ")";
+        return "Member '" + nick + "' (" + connectAddress != null ? connectAddress.toString() : "noIP" + ")";
     }
 
     // Serialization optimization *********************************************
