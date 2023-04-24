@@ -217,10 +217,6 @@ public class FileProblemHelper {
         return false;
     }
 
-    public static void main(String... args) {
-        String fn = "access.log_1_22.11.2021,_133805_0_08.12.2022,_081122_0_13.12.2022,_051426_2_13.12.2022,_051428_0_14.12.2022,_101732_2_15.12.2022,_10_27_25_0_19.12.2022,_12_43_21_0_20.12.2022,_124708_0_20.12.2022,_14_15_31_0_20.12.2022,_150436_0_08.02.2023,_162534.current. java.io.IOException: /mnt/main/PowerFolders/bj@impitas.de/02_Kunden/Udo Pflaesterer/04_Sonstiges/01_BACKUP/Alte Webseite_20211122/_ProviderRestore/logs/access.log_1_22.11.2021,_133805_0_08.12.2022,_081122_0_13.12.2022,_051426_2_13.12.2022,_051428_0_14.12.2022,_101732_2_15.12.2022,_10_27_25_0_19.12.2022,_12_43_21_0_20.12.2022,_124708_0_20.12.2022,_14_15_31_0_20.12.2022,_150436_0_08.02.2023,_162534.current -> /mnt/main/PowerFolders/bj@impitas.de/02_Kunden/.PowerFolder/archive/Udo Pflaesterer/04_Sonstiges/01_BACKUP/Alte Webseite_20211122/_ProviderRestore/logs/access.log_1_22.11.2021,_133805_0_08.12.2022,_081122_0_13.12.2022,_051426_2_13.12.2022,_051428_0_14.12.2022,_101732_2_15.12.2022,_10_27_25_0_19.12.2022,_12_43_21_0_20.12.2022,_124708_0_20.12.2022,_14_15_31_0_20.12.2022,_150436_0_08.02.2023,_162534_K_0.current:Unable to delete old file /mnt/main/PowerFolders/bj@impitas.de/02_Kunden/.PowerFolder/archive/Udo Pflaesterer/04_Sonstiges/01_BACKUP/Alte Webseite_20211122/_ProviderRestore/logs/access.log_1_22.11.2021,_133805_0_08.12.2022,_081122_0_13.12.2022,_051426_2_13.12.2022,_051428_0_14.12.2022,_101732_2_15.12.2022,_10_27_25_0_19.12.2022,_12_43_21_0_20.12.2022,_124708_0_20.12.2022,_14_15_31_0_20.12.2022,_150436_0_08.02.2023,_162534_K_0.current";
-        System.out.println(isTooLong(fn));
-    }
     public static boolean isTooLong(String filename) {
         return filename.length() > MAX_FILENAME_LENGTH;
     }
