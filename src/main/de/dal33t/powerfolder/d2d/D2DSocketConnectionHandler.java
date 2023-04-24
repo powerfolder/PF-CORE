@@ -302,7 +302,6 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
     public boolean acceptIdentity(Member node) {
         if (node.isServer()) {
             // Never accept server via D2D
-            sendMessagesAsynchron(IdentityReply.reject("Forbidden"));
             return false;
         }
         this.nodeStateMachine.setNode(node);
