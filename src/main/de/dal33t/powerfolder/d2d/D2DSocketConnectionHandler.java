@@ -269,6 +269,7 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
 
         byte[] data = null;
 
+        logInfo(this + ": Sending " + message);
         if (message instanceof D2DObject) {
             AbstractMessage abstractMessage = ((D2DObject) message).toD2D();
 
@@ -346,6 +347,7 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                     }
                     byte[] data = serializer.read(in, totalSize);
                     message = deserialize(data, totalSize);
+                    logInfo(this + ": Received " + message);
                     if (message instanceof D2DObject) {
                         if (message instanceof Identity) {
                             // I know this is really ugly but ¯\_(ツ)_/¯
