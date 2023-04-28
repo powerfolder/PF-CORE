@@ -214,8 +214,6 @@ public interface FolderService {
      */
     Collection<MemberInfo> getHostingServers(FolderInfo... foInfos);
 
-    Collection<MemberInfo> getHostingServersNew(FolderInfo... folderInfos);
-
     // Server archive calls ***************************************************
 
     /**
