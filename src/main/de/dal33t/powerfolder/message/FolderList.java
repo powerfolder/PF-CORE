@@ -298,7 +298,6 @@ public class FolderList extends Message implements D2DObject, D2DEvent
 
     @Override
     public void handle(Member node) {
-        LOG.info(node + ": handle: " + this);
         node.processFolderListD2D(this);
         // Execute additional code during handshake phase
         D2DSocketConnectionHandler d2DSocketConnectionHandler = ((D2DSocketConnectionHandler)node.getPeer());
