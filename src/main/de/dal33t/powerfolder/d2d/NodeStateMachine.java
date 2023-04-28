@@ -32,7 +32,8 @@ public class NodeStateMachine extends AbstractUntypedStateMachine {
         // Login is optional (but only one login is possible)
         builder.externalTransition().from(NodeState.OPEN_LOGIN_REQUEST_WAIT).to(NodeState.OPEN_ACCOUNT_INFO_REQUEST_WAIT).on(NodeEvent.LOGIN_REQUEST).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_ACCOUNT_INFO_REQUEST_WAIT).to(NodeState.OPEN_FOLDER_LIST_WAIT).on(NodeEvent.ACCOUNT_INFO_REQUEST).callMethod("handle");
-
+        // Skip login if folder list is received. This is valid when login was performed at primary server and this is for retrieving
+        builder.externalTransition().from(NodeState.OPEN_LOGIN_REQUEST_WAIT).to(NodeState.OPEN_HANDSHAKE_COMPLETED_WAIT).on(NodeEvent.FOLDER_LIST).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_FOLDER_LIST_WAIT).to(NodeState.OPEN_HANDSHAKE_COMPLETED_WAIT).on(NodeEvent.FOLDER_LIST).callMethod("handle");
         builder.externalTransition().from(NodeState.OPEN_HANDSHAKE_COMPLETED_WAIT).to(NodeState.ESTABLISHED).on(NodeEvent.HANDSHAKE_COMPLETED).callMethod("handle");
         // Established
