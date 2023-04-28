@@ -1147,7 +1147,7 @@ public class NodeManager extends PFComponent {
         if (acceptHandler) {
             if (member.getPeer() != handler) {
                 if (member.isConnected()) {
-                    logWarning("Taking a better conHandler for "
+                    logInfo("Taking a better conHandler for "
                         + member.getNick() + ". current: " + member.getPeer()
                         + ", onLAN? " + member.isOnLAN() + "/"
                         + member.getPeer().isOnLAN() + ". new: " + handler

@@ -119,8 +119,6 @@ public class FolderInfoFactory {
         ).intern(true);
     }
 
-    // TODO: Read/Write as file
-
     // Persistence ------------------------------------------------------------
 
     public static FolderInfo readFrom(Path folderBasePath) {

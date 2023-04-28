@@ -2828,6 +2828,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
     public void completeHandshakeD2D() {
         connectionRetries = 0;
+        handshaked = true;
         getController().getNodeManager().connectStateChanged(this);
         getController().getSecurityManager().nodeAccountStateChanged(this, true);
 
@@ -2840,7 +2841,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 folder.triggerSyncRemoteDeletedFiles(Collections.singleton(this), false);
             }
         }
-        handshaked = true;
     }
 
     public void processFolderListD2D(FolderList folderList) {

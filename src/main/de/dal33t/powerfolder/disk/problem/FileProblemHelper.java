@@ -19,13 +19,6 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.Folder;
@@ -33,6 +26,13 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Identifies problems with filenames. Note the directory names mostly have the
@@ -52,7 +52,7 @@ public class FileProblemHelper {
         "COM6", "COM7", "COM8", "COM9", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4",
         "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 
-    private static final int MAX_FILENAME_LENGTH = 255;
+    private static final int MAX_FILENAME_LENGTH = 250;
 
     private static final String[] ILLEGAL_LINUX_CHARS = { "/" };
 
@@ -217,7 +217,7 @@ public class FileProblemHelper {
         return false;
     }
 
-    private static boolean isTooLong(String filename) {
+    public static boolean isTooLong(String filename) {
         return filename.length() > MAX_FILENAME_LENGTH;
     }
 

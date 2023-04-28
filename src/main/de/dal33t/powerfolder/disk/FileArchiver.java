@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.PathUtils;
@@ -149,6 +150,10 @@ public class FileArchiver {
                         size += Files.size(target);
                     }
                 } catch (IOException ioe) {
+                    if (ioe.getMessage().toLowerCase().contains("too long") || FileProblemHelper.isTooLong(target.getFileName().toString())) {
+                        log.warning("Failed to archive " + source + ": " + ioe.getMessage());
+                        return;
+                    }
                     log.warning("Failed to rename " + source
                             + ", falling back to copying: " + ioe);
                     tryCopy = true;
