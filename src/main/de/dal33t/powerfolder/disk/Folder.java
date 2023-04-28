@@ -1894,6 +1894,9 @@ public class Folder extends PFComponent {
 
                 // Send filelist to connected members
                 for (Member member : getConnectedMembers()) {
+                    if (member.getPeer() instanceof D2DSocketConnectionHandler) {
+                        continue;
+                    }
                     if (hasReadPermission(member)) {
                         member.sendMessagesAsynchron(FileList.create(this,
                             supportExternalizable(member)));
