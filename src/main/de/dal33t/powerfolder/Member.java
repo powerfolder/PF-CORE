@@ -785,7 +785,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             throw e;
         } catch (ConnectionException e) {
-            logFine(e.getMessage());
+            if (isServer()) {
+                logWarning(e.getMessage());
+            } else {
+                logFine(e.getMessage());
+            }
             logFiner(e);
             // Shut down reconnect handler
             if (handler != null) {
@@ -2819,6 +2823,10 @@ public class Member extends PFComponent implements Comparable<Member> {
     // -------------------------------------------------------------------------------------
 
     public void handshakeFolderList() {
+
+        // Check for Login
+
+
         synchronized (peerInitializeLock) {
             boolean includeVersionAndParent = true;
             peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false), includeVersionAndParent));
