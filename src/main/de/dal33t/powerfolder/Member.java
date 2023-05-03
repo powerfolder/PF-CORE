@@ -2690,7 +2690,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public boolean updateInfo(MemberInfo newInfo, boolean force) {
         boolean updated = false;
-        if (force || (!isConnected() && newInfo.isConnected)) {
+        if (force ||
+                (!isConnected() && newInfo.isConnected) ||
+                (info.getConnectAddress() == null && newInfo.getConnectAddress() != null)) {
             // take info, if this is now a supernode
             if (newInfo.isSupernode && !info.isSupernode) {
                 if (isFiner()) {
