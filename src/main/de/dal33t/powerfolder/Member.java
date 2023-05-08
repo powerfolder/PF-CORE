@@ -785,7 +785,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             throw e;
         } catch (ConnectionException e) {
-            logFine(e.getMessage());
+            if (isServer()) {
+                logWarning(e.getMessage());
+            } else {
+                logFine(e.getMessage());
+            }
             logFiner(e);
             // Shut down reconnect handler
             if (handler != null) {
@@ -2686,7 +2690,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public boolean updateInfo(MemberInfo newInfo, boolean force) {
         boolean updated = false;
-        if (force || (!isConnected() && newInfo.isConnected)) {
+        if (force ||
+                (!isConnected() && newInfo.isConnected) ||
+                (info.getConnectAddress() == null && newInfo.getConnectAddress() != null)) {
             // take info, if this is now a supernode
             if (newInfo.isSupernode && !info.isSupernode) {
                 if (isFiner()) {
@@ -2819,6 +2825,10 @@ public class Member extends PFComponent implements Comparable<Member> {
     // -------------------------------------------------------------------------------------
 
     public void handshakeFolderList() {
+
+        // Check for Login
+
+
         synchronized (peerInitializeLock) {
             boolean includeVersionAndParent = true;
             peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false), includeVersionAndParent));
