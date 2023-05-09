@@ -19,15 +19,8 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -162,11 +155,16 @@ public class Translation {
         resourceBundle = newResourceBundle;
     }
 
+    private static Object INIT_LOCK = new Object();
+
     /**
      * @return the currently active resource bundle
      */
-    public static synchronized ResourceBundle getResourceBundle() {
-        if (resourceBundle == null) {
+    public static ResourceBundle getResourceBundle() {
+        if (resourceBundle != null) {
+            return resourceBundle;
+        }
+        synchronized (INIT_LOCK) {
             // Intalize bundle
             try {
                 // Get language out of preferences
@@ -190,15 +188,15 @@ public class Translation {
                 }
                 resourceBundle = ResourceBundle.getBundle("Translation",
                         confLang, new UTF8Control());
-                
+
                 log.fine("Default Locale '" + Locale.getDefault()
                         + "', using '" + resourceBundle.getLocale()
                         + "', in config '" + confLang + '\'');
             } catch (MissingResourceException e) {
                 log.log(Level.SEVERE, "Unable to load translation file", e);
             }
+            return resourceBundle;
         }
-        return resourceBundle;
     }
 
     public static synchronized String getCurrentLanguage() {
