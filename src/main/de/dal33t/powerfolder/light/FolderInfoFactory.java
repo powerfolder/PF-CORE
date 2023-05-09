@@ -100,6 +100,22 @@ public class FolderInfoFactory {
         return new FolderInfo(name, id, version, location).intern();
     }
 
+    public static FolderInfo resolveConflict(FolderInfo originalFolderInfo) {
+        int version;
+        if (originalFolderInfo.isLookupInstance()) {
+            version = 0;
+            LOG.log(Level.WARNING, originalFolderInfo + ": Renaming from lookup instance is discouraged, but used.", new StackDump());
+        } else {
+            version = originalFolderInfo.getVersion() + 1;
+        }
+        return new FolderInfo(
+                originalFolderInfo.getName(),
+                originalFolderInfo.getId(),
+                version,
+                originalFolderInfo.getLocation()
+        ).intern(true);
+    }
+
     public static FolderInfo rename(FolderInfo originalFolderInfo, String newName) {
         if (originalFolderInfo.getName().equals(newName)) {
             return originalFolderInfo;
