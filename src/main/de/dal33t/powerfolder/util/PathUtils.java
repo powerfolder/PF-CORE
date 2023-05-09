@@ -461,6 +461,8 @@ public class PathUtils {
             }
 
             return !files.iterator().hasNext();
+        } catch (NoSuchFileException nse) {
+            IO_EXCEPTION_LISTENER.exceptionThrown(nse);
         } catch (IOException ioe) {
             log.warning("Error checking for empty directory. " + ioe);
             IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
