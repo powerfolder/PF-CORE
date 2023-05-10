@@ -24,10 +24,7 @@ import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.problem.FolderReadOnlyProblem;
-import de.dal33t.powerfolder.light.AccountInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.message.clientserver.AccountStateChanged;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -2234,8 +2231,16 @@ public class Member extends PFComponent implements Comparable<Member> {
                             }
                         }
                     } else if (nameDiffers && folderInfo.getVersion() == folder.getInfo().getVersion() && folderInfo.getVersion() != 0) {
-                        logWarning("Possible renaming conflict detected. Name differs but same version. Local: "
-                                + folder.getInfo() + ". Remote: " + folderInfo + ". " + member);
+                        if (getMySelf().isServer()) {
+                            // Increase version on server
+                            FolderInfo resolvedFolderInfo = FolderInfoFactory.resolveConflict(folder.getInfo());
+                            getController().getFolderRepository().renameFolder(resolvedFolderInfo, false, null);
+                            logInfo("Renaming conflict detected. Name differs but same version. Local: "
+                                    + folder.getInfo() + ". Remote: " + folderInfo + ". " + member + ". Resolved into: " + resolvedFolderInfo);
+                        } else {
+                            logWarning("Renaming conflict detected. Name differs but same version. Local: "
+                                    + folder.getInfo() + ". Remote: " + folderInfo + ". " + member);
+                        }
                     }
                 }
             } else {
