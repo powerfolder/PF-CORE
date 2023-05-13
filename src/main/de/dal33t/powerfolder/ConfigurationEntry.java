@@ -208,6 +208,8 @@ public enum ConfigurationEntry {
      */
     PROVIDER_ACCESSIBILITY_URL("provider.url.accessibility", "https://powerfolder.atlassian.net/wiki/spaces/PF/pages/2159706129/Accessibility+Information"),
 
+    PROVIDER_ACCESSIBILITY_REPORT_PROBLEM_URL("provider.accessibility.report.problem.url", ""),
+
     /**
      * URL of the PowerFolder Cookies policy
      */
@@ -383,7 +385,7 @@ public enum ConfigurationEntry {
      * PFS-2006: Comma-seperated list to add custom LDAP-Organizations to institution
      * dropdown on Shibboleth login page.
      */
-    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names", "", true),
+    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names", "Berlin,London,New York", true),
 
     /**
      * PFC-2534: Skip auto login for the specified number. Defaults to retrying
