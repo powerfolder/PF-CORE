@@ -283,45 +283,20 @@ public enum ConfigurationEntry {
     /**
      * The optional url of the server.
      */
-    SERVER_WEB_URL("server.url", "https://my.powerfolder.com") {
-        @Override
-        public String getValue(Controller controller) {
-            String str = super.getValue(controller);
-            if (str != null && str.toLowerCase().trim()
-                    .startsWith("https://access.powerfolder.com")) {
-                return getDefaultValue();
-            }
-            return str;
-        }
-    },
+    SERVER_WEB_URL("server.url", "https://my.powerfolder.com"),
 
     /**
      * The node id of the server to connect to. Not mandatory but at
      * recommended. At leat host or ID of a server has to be set to connect to a
      * server.
      */
-    SERVER_NODEID("server.nodeid", "WEBSERVICE006"),
+    SERVER_NODEID("server.nodeid"),
 
     /**
      * The optional server hostname to connect to. Example:
      * server.powerfolder.com:1234
      */
-    SERVER_HOST("server.host", "os006.powerfolder.com:1337") {
-        @Override
-        public String getValue(Controller controller) {
-            String str = super.getValue(controller);
-            if (str == null) {
-                return str;
-            }
-            str = str.toLowerCase().trim();
-            if (str.startsWith("os003.powerfolder.com")
-                    || str.startsWith("os004.powerfolder.com")
-                    || str.startsWith("os005.powerfolder.com")) {
-                return getDefaultValue();
-            }
-            return str;
-        }
-    },
+    SERVER_HOST("server.host"),
 
     /**
      * The D2D port of the server
