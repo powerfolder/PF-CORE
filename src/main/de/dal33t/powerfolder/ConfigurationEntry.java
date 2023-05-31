@@ -360,7 +360,7 @@ public enum ConfigurationEntry {
      * PFS-2006: Comma-seperated list to add custom LDAP-Organizations to institution
      * dropdown on Shibboleth login page.
      */
-    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names", "Berlin,London,New York", true),
+    SERVER_IDP_EXTERNAL_NAMES("server.idp.external_names", "", true),
 
     /**
      * PFC-2534: Skip auto login for the specified number. Defaults to retrying
