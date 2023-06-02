@@ -2708,7 +2708,7 @@ public class ServerClient extends PFComponent {
             }
             serviceWebUrl = sInfo.getWebUrl();
         } catch (RemoteCallException ex) {
-            logWarning("Server " + server + " does not support federation logins.");
+            logWarning(server + " Problem while retrieving target service in federation: " + ex);
             return false;
         }
 
