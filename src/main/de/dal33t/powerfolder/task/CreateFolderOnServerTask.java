@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.task;
 
+import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
@@ -89,7 +90,11 @@ public class CreateFolderOnServerTask extends ServerRemoteCallTask {
             client.getFolderService().createFolder(foInfo, syncProfile);
 
             if (archiveVersions != null && client.getAccount().hasAdminPermission(foInfo)) {
-                client.getFolderService(foInfo).setArchiveMode(foInfo, archiveVersions);
+                try {
+                    client.getFolderService(foInfo).setArchiveMode(foInfo, archiveVersions);
+                } catch (RemoteCallException e) {
+                    LOG.warning(foInfo + ": Unable to set versions to " + archiveVersions + ": " + e);
+                }
             }
             if (client.getAccount().hasReadPermissions(foInfo))
             {
