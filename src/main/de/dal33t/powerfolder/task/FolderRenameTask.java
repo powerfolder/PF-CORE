@@ -76,7 +76,7 @@ public class FolderRenameTask extends ServerRemoteCallTask {
             LOG.warning(folder + ": Initiator " + initiator + " has no folder admin permission to rename to: " + newFolderInfo);
             return true;
         }
-        LOG.info("Renaming local " + folder.getInfo() + ". Remote: " + newFolderInfo + " by " + initiator);
+        LOG.info("Renaming local " + folder.getInfo() + " to remote: " + newFolderInfo + " by " + initiator);
 
         String ownerDisplayname = null;
         try {
