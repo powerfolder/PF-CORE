@@ -24,6 +24,14 @@ import junit.framework.TestCase;
  */
 public class FileInfoFactoryTest extends TestCase {
 
+    public void testRenameConflictResolve() {
+        FolderInfo z = FolderInfoFactory.unmarshallExistingTopFolder("ID", "Z", 1);
+        FolderInfo zResolved = FolderInfoFactory.resolveConflict(z);
+        assertEquals(z.getId(), zResolved.getId());
+        assertEquals(z.getName(), zResolved.getName());
+        assertEquals(2, zResolved.getVersion());
+    }
+
     public void testEncodeDecodeIllegalCharacters() {
         String testString = "PhD_GOE&CPH-221216.";
         String encoded = FileInfoFactory.encodeIllegalChars(testString);
