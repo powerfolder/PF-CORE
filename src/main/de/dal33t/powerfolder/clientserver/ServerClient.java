@@ -400,7 +400,8 @@ public class ServerClient extends PFComponent {
             return true;
         }
         if (isTempServerNode(server)) {
-            if (server.getReconnectAddress().equals(node.getReconnectAddress())) {
+            if (server.getReconnectAddress() != null &&
+                    server.getReconnectAddress().equals(node.getReconnectAddress())) {
                 return true;
             }
             // Try check by hostname / port
