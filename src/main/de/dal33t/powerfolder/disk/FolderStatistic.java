@@ -285,7 +285,8 @@ public class FolderStatistic extends PFComponent {
         }
         boolean insync = !newestFileInfo.isNewerThan(fileInfo)
             && !fileInfo.isNewerThan(newestFileInfo);
-        if (insync && newestFileInfo.getSize() != fileInfo.getSize()
+        if (!newestFileInfo.isDeleted()
+            && insync && newestFileInfo.getSize() != fileInfo.getSize()
             && !fileInfo.getFolderInfo().isMetaFolder()
             && LOG.isLoggable(Level.WARNING))
         {

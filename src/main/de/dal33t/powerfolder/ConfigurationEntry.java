@@ -296,7 +296,7 @@ public enum ConfigurationEntry {
      * The optional server hostname to connect to. Example:
      * server.powerfolder.com:1234
      */
-    SERVER_HOST("server.host", "os007.powerfolder.com"),
+    SERVER_HOST("server.host"),
 
     /**
      * The D2D port of the server
