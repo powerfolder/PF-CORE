@@ -774,7 +774,7 @@ public class Debug {
         while (top.getParent() != null) {
             top = top.getParent();
         }
-        StringBuilder b = new StringBuilder();
+        StringBuilder b = new StringBuilder("Current Threads - Stacktraces:\n");
         for (String dumps : getGroupInfo(top, hideIdleThreds)) {
             b.append(dumps);
         }
