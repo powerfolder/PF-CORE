@@ -61,6 +61,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
+
 /**
  * Client to a server.
  *
@@ -243,7 +245,7 @@ public class ServerClient extends PFComponent {
                 theNode = serverNode.getNode(getController(), true);
             }
         }
-        if (StringUtils.isNotBlank(host)) {
+        if (isNotBlank(host)) {
             theNode.getInfo().setConnectAddress(
                     Util.parseConnectionString(host));
         }
@@ -342,9 +344,9 @@ public class ServerClient extends PFComponent {
     public static boolean isPowerFolderCloud(Controller contoller) {
         String nodeId = ConfigurationEntry.SERVER_NODEID.getValue(contoller);
         String host = ConfigurationEntry.SERVER_HOST.getValue(contoller);
-        return StringUtils.isNotBlank(nodeId)
+        return isNotBlank(nodeId)
                 && nodeId.toUpperCase().contains("WEBSERVICE")
-                && StringUtils.isNotBlank(host)
+                && isNotBlank(host)
                 && host.toLowerCase().contains("powerfolder.com");
     }
 
@@ -741,7 +743,7 @@ public class ServerClient extends PFComponent {
      * @return if password recovery is supported
      */
     public boolean supportsRecoverPassword() {
-        return StringUtils.isNotBlank(getRecoverPasswordURL());
+        return isNotBlank(getRecoverPasswordURL());
     }
 
     /**
@@ -758,7 +760,7 @@ public class ServerClient extends PFComponent {
             return null;
         }
         String url = getWebURL(Constants.LOGIN_URI, false);
-        if (StringUtils.isNotBlank(username)) {
+        if (isNotBlank(username)) {
             url = LoginUtil.decorateURL(url, username, (char[]) null);
         }
         return url;
@@ -899,7 +901,7 @@ public class ServerClient extends PFComponent {
             if (pw == null) {
                 String pws = ConfigurationEntry.SERVER_CONNECT_PASSWORD_CLEAR
                         .getValue(config);
-                if (StringUtils.isNotBlank(pws)) {
+                if (isNotBlank(pws)) {
                     pw = Util.toCharArray(pws);
                 }
             }
@@ -922,10 +924,10 @@ public class ServerClient extends PFComponent {
             }
         }
 
-        if (StringUtils.isNotBlank(getController().getCLIUsername())) {
+        if (isNotBlank(getController().getCLIUsername())) {
             un = getController().getCLIUsername();
         }
-        if (StringUtils.isNotBlank(getController().getCLIPassword())) {
+        if (isNotBlank(getController().getCLIPassword())) {
             pw = Util.toCharArray(getController().getCLIPassword());
         }
 
@@ -1020,7 +1022,7 @@ public class ServerClient extends PFComponent {
     private Account login0(String theUsername, String thePasswordObj,
                            String theToken) {
 
-        if (StringUtils.isNotBlank(theUsername)) {
+        if (isNotBlank(theUsername)) {
             Level l = isConnected() ? Level.INFO : Level.FINE;
             logIt(l, "Logging in with: " + theUsername + (theToken != null ?
                     (". token: " + theToken.length()) : "") + " to " + getServerString(), null);
@@ -1164,7 +1166,7 @@ public class ServerClient extends PFComponent {
                     if (isKeepLoggedIn()) {
                         if (StringUtils.isBlank(tokenSecret)) {
                             tokenSecret = requestAndSaveToken();
-                            if (StringUtils.isNotBlank(tokenSecret)
+                            if (isNotBlank(tokenSecret)
                                     && !Token.isExpired(tokenSecret)) {
                                 passwordObf = null;
                                 ConfigurationEntry.SERVER_CONNECT_TOKEN
@@ -1175,7 +1177,7 @@ public class ServerClient extends PFComponent {
                             }
 
                             webdavToken = requestWebDAVToken();
-                            if (StringUtils.isNotBlank(webdavToken)
+                            if (isNotBlank(webdavToken)
                                     && !Token.isExpired(webdavToken)) {
                                 ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV
                                         .setValue(config, webdavToken);
@@ -1243,7 +1245,7 @@ public class ServerClient extends PFComponent {
     private String requestAndSaveToken() {
         try {
             String tokenSecret = securityService.requestToken();
-            if (StringUtils.isNotBlank(tokenSecret)) {
+            if (isNotBlank(tokenSecret)) {
                 logInfo("Received token for client");
                 return tokenSecret;
             } else {
@@ -1267,7 +1269,7 @@ public class ServerClient extends PFComponent {
     private String requestWebDAVToken() {
         try {
             String tokenSecret = securityService.requestWebDAVToken();
-            if (StringUtils.isNotBlank(tokenSecret)) {
+            if (isNotBlank(tokenSecret)) {
                 logInfo("Received WebDAV token for client");
                 return tokenSecret;
             } else {
@@ -1286,7 +1288,7 @@ public class ServerClient extends PFComponent {
     }
 
     private boolean hasUsername() {
-        return StringUtils.isNotBlank(username);
+        return isNotBlank(username);
     }
 
     /**
@@ -1294,12 +1296,12 @@ public class ServerClient extends PFComponent {
      * information to justify an login attempt.
      */
     private boolean hasCredentials() {
-        return StringUtils.isNotBlank(passwordObf) || isTokenLogin()
+        return isNotBlank(passwordObf) || isTokenLogin()
                 || isKerberosLogin();
     }
 
     public boolean isTokenLogin() {
-        return StringUtils.isNotBlank(tokenSecret)
+        return isNotBlank(tokenSecret)
                 && StringUtils.isBlank(passwordObf);
     }
 
@@ -1477,7 +1479,7 @@ public class ServerClient extends PFComponent {
             // No entity ID given, using existing one.
             return ecpURL;
         } else if ("ext".equals(entityID)
-                || (StringUtils.isNotBlank(externalNames)
+                || (isNotBlank(externalNames)
                 && externalNames.contains(entityID)))
         {
             return ecpURL;
@@ -1583,7 +1585,7 @@ public class ServerClient extends PFComponent {
             }
 
             String oldNetworkID = getController().getMySelf().getInfo().networkId;
-            if (StringUtils.isNotBlank(networkID)) {
+            if (isNotBlank(networkID)) {
                 getController().getMySelf().getInfo().networkId = networkID;
             } else {
                 getController().getMySelf().getInfo().networkId = ConfigurationEntry.NETWORK_ID
@@ -1640,14 +1642,14 @@ public class ServerClient extends PFComponent {
         String serverPublicKeysURL = getWebURL(SERVER_PUBLIC_KEYS_URI,
                 false);
         NodeList list = null;
-        if (StringUtils.isNotBlank(serverNodesURL)) {
+        if (isNotBlank(serverNodesURL)) {
             try {
                 list = loadNodesFrom(new URL(serverNodesURL));
             } catch (MalformedURLException e) {
                 logWarning(e.toString());
             }
         }
-        if (StringUtils.isNotBlank(serverPublicKeysURL)) {
+        if (isNotBlank(serverPublicKeysURL)) {
             // Check cache:
             boolean useCache;
             if (list != null) {
@@ -2019,12 +2021,15 @@ public class ServerClient extends PFComponent {
     }
 
     private ServerClient createNewFedClient(ServerInfo serviceInfo, String token) {
-        String defaultConfigURL = serviceInfo.getWebUrl()
-                + ConfigurationLoader.DEFAULT_PROPERTIES_URI;
+        Reject.ifNull(serviceInfo, "Service is null");
+        Reject.ifBlank(token, "Token missing");
+        String defaultConfigURL = serviceInfo.getWebUrl() + ConfigurationLoader.DEFAULT_PROPERTIES_URI;
         try {
             Properties config = ConfigurationLoader
                     .loadPreConfiguration(defaultConfigURL);
-            ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, getUsername());
+            if (isNotBlank(getUsername())) {
+                ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, getUsername());
+            }
             ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, token);
             ConfigurationEntry.SERVER_FEDERATED_LOGIN.setValue(config, false);
             ServerClient client = new ServerClient(getController(), config);
@@ -2468,7 +2473,7 @@ public class ServerClient extends PFComponent {
     }
 
     private void saveLastKnowLogin(String username, String passwordObf) {
-        if (StringUtils.isNotBlank(username)) {
+        if (isNotBlank(username)) {
             ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
                     config, username);
         } else {
@@ -2476,7 +2481,7 @@ public class ServerClient extends PFComponent {
                     .removeValue(config);
         }
 
-        if (isKeepLoggedIn() && StringUtils.isNotBlank(passwordObf)) {
+        if (isKeepLoggedIn() && isNotBlank(passwordObf)) {
             ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
                     config, passwordObf);
         } else {
@@ -2608,7 +2613,7 @@ public class ServerClient extends PFComponent {
         }
         if (hasWebURL()) {
             return getWebURL();
-        } else if (StringUtils.isNotBlank(addrStr)) {
+        } else if (isNotBlank(addrStr)) {
             return "pf://" + addrStr;
         } else {
             return "n/a";
@@ -2696,7 +2701,7 @@ public class ServerClient extends PFComponent {
 
         String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
             .getValue(getController());
-        if (StringUtils.isNotBlank(ecpURL) && !"ext".equals(ecpURL)) {
+        if (isNotBlank(ecpURL) && !"ext".equals(ecpURL)) {
             return true;
         }
 
@@ -2716,13 +2721,13 @@ public class ServerClient extends PFComponent {
         String currentWebUrl = ConfigurationEntry.SERVER_WEB_URL.getValue(getController());
 
         // Already got the hosting server:
-        if (StringUtils.isNotBlank(serviceWebUrl) && serviceWebUrl.equals(currentWebUrl)) {
+        if (isNotBlank(serviceWebUrl) && serviceWebUrl.equals(currentWebUrl)) {
             return true;
         }
 
         // 2. If the the service URL of the hosting server of the username differs from the current server URL of
         // this client -> load the default config of the discovered service:
-        if (StringUtils.isNotBlank(serviceWebUrl) && !serviceWebUrl.equals(currentWebUrl)) {
+        if (isNotBlank(serviceWebUrl) && !serviceWebUrl.equals(currentWebUrl)) {
 
             logInfo("Federated login: Starting AccountDiscovery ...");
             loadConfigURL(serviceWebUrl);
