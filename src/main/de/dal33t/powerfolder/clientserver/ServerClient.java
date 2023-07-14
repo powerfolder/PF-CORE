@@ -1953,7 +1953,7 @@ public class ServerClient extends PFComponent {
         scheduleConnectHostingServers();
 
         // PFC-2455 / PFC-2745: Spawn additional Clients
-        if (!a.getTokens().isEmpty()) {
+        if (!a.getTokens().isEmpty() && !getMySelf().isServer()) {
             getController().getNodeManager().setNetworkId(Constants.NETWORK_ID_ANY);
         }
         updateChildClients(a);
