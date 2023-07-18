@@ -902,7 +902,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             while (true) {
                 senderSpawnLock.lock();
                 msg = messagesToSendQueue.poll();
-                messagesToSendQueue.notifyAll();
+                synchronized (messagesToSendQueue) {
+                    messagesToSendQueue.notifyAll();
+                }
                 if (msg == null) {
                     sender = null;
                     senderSpawnLock.unlock();

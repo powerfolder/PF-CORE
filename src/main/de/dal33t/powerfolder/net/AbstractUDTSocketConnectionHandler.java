@@ -836,7 +836,9 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
             while (true) {
                 senderSpawnLock.lock();
                 msg = messagesToSendQueue.poll();
-                messagesToSendQueue.notifyAll();
+                synchronized (messagesToSendQueue) {
+                    messagesToSendQueue.notifyAll();
+                }
                 if (msg == null) {
                     sender = null;
                     senderSpawnLock.unlock();
