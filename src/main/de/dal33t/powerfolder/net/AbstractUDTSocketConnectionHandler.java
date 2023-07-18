@@ -679,7 +679,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
         int nMessage = messagesToSendQueue.size();
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
-                Thread.sleep(1);
+                messagesToSendQueue.wait(1);
                 waitedMS += 1;
             } catch (InterruptedException e) {
                 break;
@@ -836,6 +836,7 @@ public abstract class AbstractUDTSocketConnectionHandler extends PFComponent
             while (true) {
                 senderSpawnLock.lock();
                 msg = messagesToSendQueue.poll();
+                messagesToSendQueue.notifyAll();
                 if (msg == null) {
                     sender = null;
                     senderSpawnLock.unlock();

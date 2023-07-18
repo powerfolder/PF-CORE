@@ -605,7 +605,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         int nMessage = messagesToSendQueue.size();
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
-                Thread.sleep(1);
+                messagesToSendQueue.wait(1);
                 waitedMS += 1;
             } catch (InterruptedException e) {
                 break;
@@ -902,6 +902,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
             while (true) {
                 senderSpawnLock.lock();
                 msg = messagesToSendQueue.poll();
+                messagesToSendQueue.notifyAll();
                 if (msg == null) {
                     sender = null;
                     senderSpawnLock.unlock();
@@ -919,12 +920,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     break;
                 }
                 try {
-                    // logWarning(
-                    // "Sending async (" + messagesToSendQueue.size()
-                    // + "): " + asyncMsg.getMessage());
                     sendMessage(msg);
-                    // logWarning("Send complete: " +
-                    // asyncMsg.getMessage());
                 } catch (ConnectionException e) {
                     logFine("Unable to send message asynchronly. " + e);
                     logFiner("ConnectionException", e);
