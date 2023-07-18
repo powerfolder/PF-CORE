@@ -294,13 +294,6 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         if (isFiner()) {
             logFiner("Shutting down");
         }
-        // if (isConnected() && started) {
-        // // Send "EOF" if possible, the last thing you see
-        // sendMessagesAsynchron(new Problem("Closing connection, EOF", true,
-        // Problem.DISCONNECTED));
-        // // Give him some time to receive the message
-        // waitForEmptySendQueue(1000);
-        // }
         started = false;
         // Clear magic ids
         // myMagicId = null;
@@ -706,34 +699,23 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
     }
 
     @Override
-    public boolean waitForEmptySendQueue(long ms) {
-        long waited = 0;
+    public boolean waitForEmptySendQueue() {
+        long waitedMS = 0;
+        int nMessage = messagesToSendQueue.size();
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
-                // logWarning("Waiting for empty send buffer to " +
-                // getMember());
-                waited += 50;
-                // Wait a bit the let the send queue get empty
-                Thread.sleep(50);
-
-                if (ms >= 0 && waited >= ms) {
-                    // Stop waiting
-                    break;
-                }
+                waitedMS += 1;
+                Thread.sleep(1);
             } catch (InterruptedException e) {
-                logFiner("InterruptedException", e);
                 break;
             }
         }
-        if (waited > 0) {
-            if (isFiner()) {
-                logFiner("Waited " + waited
-                    + "ms for empty sendbuffer, clear now, proceeding to "
-                    + getMember());
-            }
+        if (waitedMS > 0 && isFiner()) {
+            logFiner(getMember() + ": Waited " + waitedMS + "ms for empty send buffer. " + nMessage + " messages were in queue.");
         }
         return messagesToSendQueue.isEmpty();
     }
+
 
     /**
      * Analysese the connection of the user
