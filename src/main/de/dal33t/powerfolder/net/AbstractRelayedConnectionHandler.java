@@ -605,8 +605,8 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
         int nMessage = messagesToSendQueue.size();
         while (!messagesToSendQueue.isEmpty() && isConnected()) {
             try {
-                waitedMS += 1;
                 Thread.sleep(1);
+                waitedMS += 1;
             } catch (InterruptedException e) {
                 break;
             }

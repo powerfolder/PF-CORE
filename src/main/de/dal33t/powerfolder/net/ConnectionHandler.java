@@ -69,9 +69,9 @@ public interface ConnectionHandler {
     boolean acceptIdentity(Member node);
 
     /**
-     * Waits for the send queue to get send
+     * Waits for the send queue to get empty
      *
-     * @return if the queue is empty now. if ms = -1 always true.
+     * @return if the queue is empty now
      */
     boolean waitForEmptySendQueue();
 
