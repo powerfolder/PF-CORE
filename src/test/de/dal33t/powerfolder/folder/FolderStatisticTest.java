@@ -213,7 +213,7 @@ public class FolderStatisticTest extends FiveControllerTestCase {
         waitForCompletedDownloads(1, 0, 1, 1, 1);
         waitForFileListOnTestFolder();
         // For whatever
-        TestHelper.waitMilliSeconds(500);
+        TestHelper.waitMilliSeconds(2000);
         forceStatsCals();
         // 1 normal
         assertAllInSync(1, Files.size(testFile));
