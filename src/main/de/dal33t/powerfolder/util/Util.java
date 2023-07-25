@@ -985,6 +985,26 @@ public class Util {
         return builder;
     }
 
+    /**
+     * PFS-4189 / SP-5644
+     * @param e
+     * @return true if the exception or any cause is "Duplicate entry"
+     */
+    public static final boolean isDuplicateEntryException(Throwable e) {
+        String text = e.toString().toLowerCase();
+        if (e.getCause() != null && e.getCause().getMessage() != null) {
+            text += e.getCause().getMessage().toLowerCase();
+            if (e.getCause().getCause() != null && e.getCause().getCause().getMessage() != null) {
+                text += e.getCause().getCause().getMessage();
+            }
+        }
+        return isDuplicateEntryException(text);
+    }
+
+    private static final boolean isDuplicateEntryException(String text) {
+        return text.contains("uplicate entry");
+    }
+
     public static final boolean isMySQLDeadlock(LogRecord lr) {
         return (lr.getMessage() != null && isMySQLDeadlock(lr.getMessage().toLowerCase()))
                 || (lr.getThrown() != null && isMySQLDeadlock(lr.getThrown()));
