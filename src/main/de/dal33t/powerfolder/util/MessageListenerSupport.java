@@ -212,7 +212,7 @@ public class MessageListenerSupport extends Loggable {
         messageClass = message.getClass();
         do {
             List<MessageListener> possibleSpecialEDTListener = messageListenersInDispatchThread.get(messageClass);
-            if (!possibleSpecialEDTListener.isEmpty()) {
+            if (possibleSpecialEDTListener != null && !possibleSpecialEDTListener.isEmpty()) {
                 if (specialEDTListener == null) {
                     specialEDTListener = new LinkedList<>(possibleSpecialEDTListener);
                 } else {
