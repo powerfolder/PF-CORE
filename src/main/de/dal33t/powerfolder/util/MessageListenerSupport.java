@@ -187,19 +187,22 @@ public class MessageListenerSupport extends Loggable {
         }
 
         // Fire special listeners
-        Collection<MessageListener> specialListeners = messageListenersNotInDispatchThread
-            .get(message.getClass());
-        if (specialListeners != null && !specialListeners.isEmpty()) {
-            for (MessageListener specListener : specialListeners) {
-                try {
-                    specListener.handleMessage(theSource, message);
-                } catch (Exception e) {
-                    logWarning(source
-                        + ": Exception while handling message in listener of "
-                        + theSource + ". msg: " + message + ". " + e, e);
+        Class messageClass = message.getClass();
+        do {
+            Collection<MessageListener> specialListeners = messageListenersNotInDispatchThread.get(messageClass);
+            if (specialListeners != null && !specialListeners.isEmpty()) {
+                for (MessageListener specListener : specialListeners) {
+                    try {
+                        specListener.handleMessage(theSource, message);
+                    } catch (Exception e) {
+                        logWarning(source
+                                + ": Exception while handling message in listener of "
+                                + theSource + ". msg: " + message + ". " + e, e);
+                    }
                 }
             }
-        }
+            messageClass = messageClass.getSuperclass();
+        } while (messageClass != null && !messageClass.equals(Message.class) && !messageClass.equals(Object.class));
 
         // java.util.List<E>
         final List<MessageListener> generalEDTListener = messageListenersInDispatchThread
