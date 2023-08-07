@@ -943,7 +943,11 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                             + totalSize);
                     }
 
-                    byte[] data = serializer.read(in, totalSize);
+                    ByteSerializer thisSerializer = serializer;
+                    if (thisSerializer == null) {
+                        throw new EOFException();
+                    }
+                    byte[] data = thisSerializer.read(in, totalSize);
                     Object obj = deserialize(data, totalSize);
 
                     lastKeepaliveMessage = new Date();
