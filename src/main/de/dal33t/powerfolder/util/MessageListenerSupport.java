@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.util.logging.Loggable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -205,49 +206,50 @@ public class MessageListenerSupport extends Loggable {
         } while (messageClass != null && !messageClass.equals(Message.class) && !messageClass.equals(Object.class));
 
         // java.util.List<E>
-        final List<MessageListener> generalEDTListener = messageListenersInDispatchThread
-            .get(All.class);
-        final List<MessageListener> specialEDTListener = messageListenersInDispatchThread
-            .get(message.getClass());
-        boolean executeEDT = (generalEDTListener != null && !generalEDTListener
-            .isEmpty())
-            || (specialEDTListener != null && !specialEDTListener.isEmpty());
+        final List<MessageListener> generalEDTListener = messageListenersInDispatchThread.get(All.class);
 
+        List<MessageListener> specialEDTListener = null;
+        messageClass = message.getClass();
+        do {
+            List<MessageListener> possibleSpecialEDTListener = messageListenersInDispatchThread.get(messageClass);
+            if (!possibleSpecialEDTListener.isEmpty()) {
+                if (specialEDTListener == null) {
+                    specialEDTListener = new LinkedList<>(possibleSpecialEDTListener);
+                } else {
+                    specialEDTListener.addAll(possibleSpecialEDTListener);
+                }
+            }
+            messageClass = messageClass.getSuperclass();
+        } while (messageClass != null && !messageClass.equals(Message.class) && !messageClass.equals(Object.class));
+
+        boolean executeEDT = (generalEDTListener != null && !generalEDTListener.isEmpty())
+            || (specialEDTListener != null && !specialEDTListener.isEmpty());
         if (!executeEDT) {
             // SKIP EDT executing.
             return;
         }
 
-        Runnable edtRunner = new Runnable() {
-            public void run() {
-                if (generalEDTListener != null && !generalEDTListener.isEmpty())
-                {
-                    for (MessageListener genListener : generalEDTListener) {
-                        try {
-                            genListener.handleMessage(theSource, message);
-                        } catch (Exception e) {
-                            logWarning(
-                                source
-                                    + ": Exception while handling message in listener of "
-                                    + theSource + ". msg: " + message + ". "
-                                    + e, e);
-                        }
+        final List<MessageListener> finalSpecialEDTListener = specialEDTListener;
+        Runnable edtRunner = () -> {
+            if (generalEDTListener != null && !generalEDTListener.isEmpty()) {
+                for (MessageListener genListener : generalEDTListener) {
+                    try {
+                        genListener.handleMessage(theSource, message);
+                    } catch (Exception e) {
+                        logWarning(source + ": Exception while handling message in listener of "
+                                + theSource + ". msg: " + message + ". " + e, e);
                     }
                 }
+            }
 
-                // Fire special listeners
-                if (specialEDTListener != null && !specialEDTListener.isEmpty())
-                {
-                    for (MessageListener specListener : specialEDTListener) {
-                        try {
-                            specListener.handleMessage(theSource, message);
-                        } catch (Exception e) {
-                            logWarning(
-                                source
-                                    + ": Exception while handling message in listener of "
-                                    + theSource + ". msg: " + message + ". "
-                                    + e, e);
-                        }
+            // Fire special listeners
+            if (finalSpecialEDTListener != null && !finalSpecialEDTListener.isEmpty()) {
+                for (MessageListener specListener : finalSpecialEDTListener) {
+                    try {
+                        specListener.handleMessage(theSource, message);
+                    } catch (Exception e) {
+                        logWarning(source + ": Exception while handling message in listener of "
+                                + theSource + ". msg: " + message + ". " + e, e);
                     }
                 }
             }
