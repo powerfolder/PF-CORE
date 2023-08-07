@@ -2833,7 +2833,7 @@ public class ServerClient extends PFComponent {
             if (!ConfigurationEntry.SERVER_CONNECT.getValueBoolean(getController())) {
                 return;
             }
-            retrieveAndConnectoClusterServers();
+            connectHostingServers(true);
         }
 
         @Override
