@@ -2785,15 +2785,14 @@ public class Member extends PFComponent implements Comparable<Member> {
     @Override
     public String toString() {
         String connect;
-
         if (isConnected()) {
             connect = peer + "";
         } else {
             connect = isMySelf() ? "myself" : "-disco.-, " + "recon. at "
                 + getReconnectAddress();
         }
-
-        return "Member '" + info.nick + "' (" + connect + ')';
+        String type = isServer() || isSupernode() ? "Server" : "Member";
+        return type + " '" + info.nick + "' (" + connect + ')';
     }
 
     /**
