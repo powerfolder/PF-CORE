@@ -3174,12 +3174,15 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private class CheckSyncTask implements Runnable {
+        private boolean recalculateStatisticZeroFilesDone = false;
+
         public void run() {
             boolean syncMemberShips = false;
-            for (Folder folder : getController().getFolderRepository()
-                    .getFolders()) {
+            for (Folder folder : getController().getFolderRepository().getFolders()) {
+
                 // PFS-1800: Start
-                if (folder.getStatistic().getTotalFilesCount() == 0) {
+                if (!recalculateStatisticZeroFilesDone
+                        && folder.getStatistic().getTotalFilesCount() == 0) {
                     folder.getStatistic().scheduleCalculate();
                 }
                 // PFS-1800: End
@@ -3248,6 +3251,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             .getInfo()));
                 }
             }
+            recalculateStatisticZeroFilesDone = true;
             if (syncMemberShips) {
                 for (Member node : getController().getNodeManager()
                         .getNodesAsCollection()) {
