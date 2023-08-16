@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.protocol.AnyMessageProto;
 import de.dal33t.powerfolder.protocol.FolderFilesChangedProto;
 import de.dal33t.powerfolder.transfer.LimitedInputStream;
 import de.dal33t.powerfolder.transfer.LimitedOutputStream;
+import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StackDump;
@@ -345,7 +346,11 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                     if (totalSize <= 0) {
                         throw new IOException("Illegal packet size: " + totalSize);
                     }
-                    byte[] data = serializer.read(in, totalSize);
+                    ByteSerializer thisSerializer = serializer;
+                    if (thisSerializer == null) {
+                        throw new EOFException();
+                    }
+                    byte[] data = thisSerializer.read(in, totalSize);
                     message = deserialize(data, totalSize);
                     if (message instanceof D2DObject) {
                         if (message instanceof Identity) {

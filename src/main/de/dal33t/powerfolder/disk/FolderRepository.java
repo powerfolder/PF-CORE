@@ -611,6 +611,10 @@ public class FolderRepository extends PFComponent implements Runnable {
                     FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
                     if (foInfo == null) {
                         foInfo = lookupInstance(folderId, folderName);
+                    } else if (!foInfo.getId().equals(folderId)) {
+                        String folderIdFromFile = foInfo.getId();
+                        foInfo = unmarshallExistingFolder(folderId, folderName, foInfo.getVersion(), foInfo.getLocation());
+                        logInfo(foInfo + ": Adjusted ID, found in 'FolderInfo' meta-data file: " + folderIdFromFile + ". Set from config to " + foInfo.getId());
                     }
 
                     if (folderSettings == null) {
@@ -3170,12 +3174,15 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     private class CheckSyncTask implements Runnable {
+        private boolean recalculateStatisticZeroFilesDone = false;
+
         public void run() {
             boolean syncMemberShips = false;
-            for (Folder folder : getController().getFolderRepository()
-                    .getFolders()) {
+            for (Folder folder : getController().getFolderRepository().getFolders()) {
+
                 // PFS-1800: Start
-                if (folder.getStatistic().getTotalFilesCount() == 0) {
+                if (!recalculateStatisticZeroFilesDone
+                        && folder.getStatistic().getTotalFilesCount() == 0) {
                     folder.getStatistic().scheduleCalculate();
                 }
                 // PFS-1800: End
@@ -3244,6 +3251,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             .getInfo()));
                 }
             }
+            recalculateStatisticZeroFilesDone = true;
             if (syncMemberShips) {
                 for (Member node : getController().getNodeManager()
                         .getNodesAsCollection()) {
