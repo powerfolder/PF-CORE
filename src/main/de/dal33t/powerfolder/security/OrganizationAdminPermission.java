@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionTypeProto;
 import de.dal33t.powerfolder.protocol.StringMessageProto;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 
 import java.util.logging.Logger;
@@ -46,6 +47,7 @@ public class OrganizationAdminPermission implements Permission, D2DObject {
     }
 
     public OrganizationAdminPermission(String organizationOID) {
+        Reject.ifNull(organizationOID, "organizationOID");
         this.organizationOID = organizationOID;
     }
 
