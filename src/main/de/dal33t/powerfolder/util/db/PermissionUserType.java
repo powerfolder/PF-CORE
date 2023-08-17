@@ -120,7 +120,7 @@ public class PermissionUserType extends Loggable implements UserType {
                 fdInfo = fdInfo.intern();
             }
 
-            if (StringUtils.isBlank(fdInfo.getName())) {
+            if (StringUtils.isBlank(fdInfo.getName()) && isFine()) {
                 logFine("Unknown folder with ID=" + fdInfo.getId());
             }
 
@@ -182,13 +182,17 @@ public class PermissionUserType extends Loggable implements UserType {
                 p = (Permission) pObj;
             } catch (Exception e) {
                 outE = e;
-                logFine(owner + ": Unable to resolve permission: " + permissionID + ". " + e, e);
+                if (isFine()) {
+                    logFine(owner + ": Unable to resolve permission: " + permissionID + ". " + e, e);
+                }
             }
         }
 
         if (p == null) {
             // This may happen on a downgrade.
-            logWarning(owner + ": Unknown permission with ID: " + permissionID + ". " + outE);
+            if (isWarning()) {
+                logWarning(owner + ": Unknown permission with ID: " + permissionID + ". " + outE);
+            }
             return new UnknownPermission(permissionID);
         }
 
