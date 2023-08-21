@@ -313,14 +313,32 @@ public interface FolderService {
 
     /**
      * @param foInfo
-     * @return true if this folder is currently hosted on this server
+     * @return true if the folder is (currently) hosted on this server
      */
-    boolean hasJoined(FolderInfo foInfo);
+    boolean isHostedOnThisServer(FolderInfo foInfo);
+    
+    /**
+     * @param foInfo
+     * @return true if the folder is hosted in any server of the service cluster
+     */
+    boolean isHostedOnThisService(FolderInfo foInfo);
+    
+    /**
+     * @param foInfo
+     * @return true if the folder is hosted NOT locally, but on a federated service
+     */
+    boolean isHostedInFederation(FolderInfo foInfo);
+    
+    /**
+     * @param foInfo
+     * @return true if the folder is hosted on this service or any federated service
+     */
+    boolean isHostedInCloud(FolderInfo foInfo);
 
     /**
-     *
      * @param foInfo
-     * @return true if the folder is stored on this service
+     * @return true if stored locally or on a federation cloud service.
+     * @deprecated Use {@link #isHostedInCloud(FolderInfo)}
      */
     boolean isStoredInCloud(FolderInfo foInfo);
 

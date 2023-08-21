@@ -1285,17 +1285,18 @@ public class Member extends PFComponent implements Comparable<Member> {
     public void sendMessage(Message message) throws ConnectionException {
         checkPeer();
 
-        if (peer != null) {
-            // wait
-            peer.waitForEmptySendQueue(-1);
-            // synchronized (peerInitalizeLock) {
-            if (peer != null) {
-                // send
-                peer.sendMessage(message);
-            }
-            // }
-
+        ConnectionHandler thisPeer = peer;
+        if (thisPeer == null) {
+            return;
         }
+        // wait for important messages to get send first
+        thisPeer.waitForEmptySendQueue();
+
+        thisPeer = peer;
+        if (thisPeer == null) {
+            return;
+        }
+        thisPeer.sendMessage(message);
     }
 
     /**
@@ -2784,15 +2785,14 @@ public class Member extends PFComponent implements Comparable<Member> {
     @Override
     public String toString() {
         String connect;
-
         if (isConnected()) {
             connect = peer + "";
         } else {
             connect = isMySelf() ? "myself" : "-disco.-, " + "recon. at "
                 + getReconnectAddress();
         }
-
-        return "Member '" + info.nick + "' (" + connect + ')';
+        String type = isServer() || isSupernode() ? "Server" : "Member";
+        return type + " '" + info.nick + "' (" + connect + ')';
     }
 
     /**

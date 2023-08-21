@@ -20,14 +20,7 @@
 package de.dal33t.powerfolder.util;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RunnableScheduledFuture;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -183,16 +176,17 @@ public class WrappedScheduledThreadPoolExecutor
     private Date lastDump = new Date(System.currentTimeMillis() - 1000L * 30);
 
     private void checkBusyness() {
-        if (getActiveCount() == 0) {
+        int activeCount = getActiveCount();
+        if (activeCount == 0) {
             return;
         }
         if (lastDump.after(new Date(System.currentTimeMillis() - 1000L * 30))) {
             return;
         }
         Level l = Level.FINER;
-        if (getActiveCount() > SEVERE_NUMBER_WORKERS) {
+        if (activeCount > SEVERE_NUMBER_WORKERS) {
             l = Level.SEVERE;
-        } else if (getActiveCount() > WARN_NUMBER_WORKERS) {
+        } else if (activeCount > WARN_NUMBER_WORKERS) {
             l = Level.WARNING;
         }
         if (LOG.isLoggable(l)) {
@@ -206,7 +200,7 @@ public class WrappedScheduledThreadPoolExecutor
                 }
             }
             LOG.log(l, "Scheduled threadpool status: Currently active threads: "
-                            + getActiveCount() + "/" + getPoolSize() + "\n" + b);
+                            + activeCount + "/" + getPoolSize() + "\n" + b);
             lastDump = new Date();
         }
     }

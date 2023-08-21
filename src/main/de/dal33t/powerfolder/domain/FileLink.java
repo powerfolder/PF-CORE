@@ -221,6 +221,13 @@ public class FileLink implements Serializable {
         }
     }
 
+    public boolean hasPublicPermission(FolderPermission folderPermission) {
+        if (publicPermission == null) {
+            return folderPermission == null;
+        }
+        return publicPermission.equals(folderPermission) || publicPermission.implies(folderPermission);
+    }
+
     public int getDownloads() {
         return downloads;
     }

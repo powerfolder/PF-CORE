@@ -252,11 +252,11 @@ public class FolderFilesChanged extends FolderRelatedMessage implements D2DObjec
     @Override
     public String toString() {
         if (removed != null) {
-            return "FolderFilesChanged '" + folder.getLocalizedName() + "': "
+            return "FolderFilesChanged " + folder + ": "
                 + (removed != null ? removed.length : 0)
                 + " (removed/legacy) files";
         }
-        return "FolderFilesChanged '" + folder.getLocalizedName() + "': "
+        return "FolderFilesChanged " + folder + ": "
             + (added != null ? added.length : 0) + " files";
     }
 

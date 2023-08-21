@@ -19,22 +19,7 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.awt.EventQueue;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
@@ -46,6 +31,12 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
+
+import java.awt.*;
+import java.util.List;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The security manager for the client.
@@ -220,14 +211,7 @@ public class SecurityManagerClient extends PFComponent implements
             return Boolean.FALSE;
         }
 
-        boolean supportsBulkRequest = false;
-        try {
-            supportsBulkRequest = Util.compareVersions(client.getServer()
-                .getIdentity().getProgramVersion(), "4.2.9");
-        } catch (Exception e) {
-        }
-
-        if (supportsBulkRequest && permission instanceof FolderPermission) {
+        if (permission instanceof FolderPermission) {
             // Optimization. Request all folder permissions in bulk
             FolderPermission fp = (FolderPermission) permission;
             FolderInfo foInfo = fp.folder;

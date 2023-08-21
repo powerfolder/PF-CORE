@@ -568,40 +568,8 @@ For creation of the installer:
 			<doctitle>
 				<![CDATA[<h1>PowerFolder API Documentation</h1>]]>
 			</doctitle>
-		<link href="http://java.sun.com/j2se/1.5.0/docs/api" />
-	</javadoc>
-</target>
-
-<!-- Build the download applet. -->
-<target name="jar-applet" depends="init">
-
-	<mkdir dir="${dist.dir}" />
-	<mkdir dir="${build.dir}" />
-
-	<javac destdir="${dist.dir}" source="1.2" target="1.1" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" deprecation="off">
-		<compilerarg value="-Xlint:${Unchecked}" />
-		<compilerarg value="-Xlint:${Fallthrough}" />
-
-		<src path="${applet.dir}" />
-	</javac>
-
-	<!-- copy files from etc to include in jar -->
-	<copy todir="${dist.dir}">
-		<fileset dir="${applet.dir}">
-			<include name="**/*.html" />
-		</fileset>
-	</copy>
-
-
-	<!-- <jar jarfile="${dist.dir}/DownloadApplet.jar" basedir="${build.dir}" excludes="test*/**/*" update="true">
-                    <manifest>
-                        <attribute name="Built-By" value="${BuildBy}" />
-                        <attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
-                        <attribute name="BuildDateTime" value="${BuildDateTime}" />
-                        <attribute name="Sealed" value="true" />
-                        <attribute name="Main-Class" value="de.dal33t.powerfolder.PowerFolder" />
-                    </manifest>
-                </jar>-->
-</target>
+			<link href="http://java.sun.com/j2se/1.5.0/docs/api" />
+		</javadoc>
+	</target>
 
 </project>

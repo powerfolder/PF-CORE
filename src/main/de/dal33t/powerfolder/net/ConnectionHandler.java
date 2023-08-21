@@ -19,12 +19,12 @@
 */
 package de.dal33t.powerfolder.net;
 
-import java.net.InetSocketAddress;
-import java.util.Date;
-
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.Message;
+
+import java.net.InetSocketAddress;
+import java.util.Date;
 
 /**
  * Base interface for all connection handlers doing basic I/O communication.
@@ -69,13 +69,11 @@ public interface ConnectionHandler {
     boolean acceptIdentity(Member node);
 
     /**
-     * Waits for the send queue to get send
+     * Waits for the send queue to get empty
      *
-     * @param tm
-     *            the maximum number of miliseconds to wait. -1 for infintive.
-     * @return if the queue is empty now. if ms = -1 always true.
+     * @return if the queue is empty now
      */
-    boolean waitForEmptySendQueue(long ms);
+    boolean waitForEmptySendQueue();
 
     /**
      * Callback method from <code>#Member.completeHandshake()</code>. Called

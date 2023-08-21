@@ -24,14 +24,12 @@ import de.dal33t.powerfolder.disk.FolderSettings;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 /**
  * PFC-2444
  * @author Sprajc
  */
 public class SplitConfig extends Properties {
-    private static final Logger LOGGER = Logger.getLogger(SplitConfig.class.getName());
     private static final long serialVersionUID = 1L;
 
     private Properties regular = new Properties();
@@ -48,12 +46,12 @@ public class SplitConfig extends Properties {
     // Overriding
 
     @Override
-    public synchronized boolean contains(Object key) {
+    public boolean contains(Object key) {
         return regular.contains(key) || folders.contains(key);
     }
 
     @Override
-    public synchronized boolean containsKey(Object key) {
+    public boolean containsKey(Object key) {
         return regular.containsKey(key) || folders.containsKey(key);
     }
 
@@ -63,12 +61,12 @@ public class SplitConfig extends Properties {
     }
 
     @Override
-    public synchronized Enumeration<Object> elements() {
+    public Enumeration<Object> elements() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public synchronized Object get(Object key) {
+    public Object get(Object key) {
         Object value = regular.get(key);
         if (value == null) {
             value = folders.get(key);
@@ -110,7 +108,7 @@ public class SplitConfig extends Properties {
     }
 
     @Override
-    public synchronized int size() {
+    public int size() {
         return regular.size() + folders.size();
     }
 
@@ -121,7 +119,7 @@ public class SplitConfig extends Properties {
     }
 
     @Override
-    public synchronized boolean isEmpty() {
+    public boolean isEmpty() {
         return regular.isEmpty() && folders.isEmpty();
     }
 
@@ -169,7 +167,7 @@ public class SplitConfig extends Properties {
 
     @Override
     @Deprecated()
-    public synchronized Enumeration<Object> keys() {
+    public Enumeration<Object> keys() {
         throw new UnsupportedOperationException();
     }
 

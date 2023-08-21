@@ -828,12 +828,12 @@ public enum ConfigurationEntry {
      * The maximum size (in bytes) of an {@link FileChunk} used for file
      * transfers
      */
-    TRANSFERS_MAX_FILE_CHUNK_SIZE("transfers.max.file.chunk.size", 32 * 1024),
+    TRANSFERS_MAX_FILE_CHUNK_SIZE("transfers.max.file.chunk.size", 128 * 1024),
 
     /**
      * The maximum number of queued request for {@link FileChunk}s
      */
-    TRANSFERS_MAX_REQUESTS_QUEUED("transfers.max.request.queued", 15),
+    TRANSFERS_MAX_REQUESTS_QUEUED("transfers.max.request.queued", 30),
 
     /**
      * PF-972
