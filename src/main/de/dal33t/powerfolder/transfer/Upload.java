@@ -416,7 +416,7 @@ public class Upload extends Transfer {
                     pendingRequests.wait(waitTime);
                     waitTime = Constants.UPLOAD_REQUEST_TIMEOUT;
                 } catch (InterruptedException e) {
-                    logWarning("Interrupted on " + this + ". " + e);
+                    logFine("Interrupted on " + this + ". " + e);
                     logFiner(e);
                     throw new TransferException(e);
                 }
