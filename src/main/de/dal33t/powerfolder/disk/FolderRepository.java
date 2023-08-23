@@ -1309,7 +1309,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         metaFolders.put(folderInfo, metaFolder);
         if (folders.containsKey(folderInfo)) {
-            logWarning(folderInfo + "already in folders list");
+            logWarning(folderInfo + " already in folders list");
         }
         folders.put(folder.getInfo(), folder);
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
