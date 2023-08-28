@@ -19,31 +19,18 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.StreamCorruptedException;
+import de.dal33t.powerfolder.message.Identity;
+import de.dal33t.powerfolder.util.logging.Loggable;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+
+import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
-
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * Helper class which serializes and deserializes java objects into byte arrays
@@ -273,13 +260,13 @@ public class ByteSerializer extends Loggable {
             try {
                 result = deserialize0(base, !expectCompression);
             } catch (StreamCorruptedException e2) {
-                LOG.log(Level.WARNING, "While deserializing "
+                LOG.log(Level.FINE, "While deserializing "
                     + (expectCompression ? "compressed" : "uncompressed")
                     + ": " + e);
                 if (!e2.toString().toLowerCase()
                     .contains("invalid stream header: 1f8b0800"))
                 {
-                    LOG.log(Level.WARNING, "While deserializing "
+                    LOG.log(Level.FINE, "While deserializing "
                         + (!expectCompression
                             ? "compressed"
                             : "uncompressed") + ": " + e2);
