@@ -29,6 +29,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -237,9 +238,10 @@ public class Locking extends PFComponent {
         try (InputStream in = Files.newInputStream(lockPath)) {
             byte[] buf = StreamUtils.readIntoByteArray(in);
             return (Lock) ByteSerializer.deserializeStatic(buf, false);
+        } catch (EOFException e) {
+            return null;
         } catch (Exception e) {
-            logWarning("Problems while reading lock file: " + lockPath + ". "
-                    + e);
+            logWarning("Problems while reading lock file: " + lockPath + ". " + e);
             return null;
         }
     }
