@@ -19,31 +19,18 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.message.AbortDownload;
-import de.dal33t.powerfolder.message.FileChunk;
-import de.dal33t.powerfolder.message.Identity;
-import de.dal33t.powerfolder.message.RequestDownload;
-import de.dal33t.powerfolder.message.RequestDownloadExt;
-import de.dal33t.powerfolder.message.RequestFilePartsRecord;
-import de.dal33t.powerfolder.message.RequestPart;
-import de.dal33t.powerfolder.message.RequestPartExt;
-import de.dal33t.powerfolder.message.StopUpload;
-import de.dal33t.powerfolder.message.StopUploadExt;
+import de.dal33t.powerfolder.message.*;
 import de.dal33t.powerfolder.util.Range;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.Validate;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Download class, containing file and member.<BR>
@@ -138,9 +125,8 @@ public class Download extends Transfer {
 
         // Maybe remove this check?
         if (isStarted()) {
-            if (isWarning()) {
-                logWarning("Aborting. Received multiple upload start messages: "
-                    + this);
+            if (isFine()) {
+                logFine("Aborting. Received multiple upload start messages: " + this);
             }
             abort();
             return;
