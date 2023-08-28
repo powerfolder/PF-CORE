@@ -1834,8 +1834,9 @@ public class TransferManager extends PFComponent {
             {
                 if (man != null) {
                     if (!man.isDone()) {
-                        logWarning("Aborting download. Got active download of different file version: "
-                            + man);
+                        if (isFine()) {
+                            logFine("Aborting download. Got active download of different file version: " + man);
+                        }
                         man.abortAndCleanup();
                     }
                     return false;
