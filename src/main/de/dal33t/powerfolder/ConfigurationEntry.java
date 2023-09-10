@@ -520,6 +520,12 @@ public enum ConfigurationEntry {
     SERVER_REGISTER_ENABLED("server.register.enabled", false),
 
     /**
+     * #PF-1850 If it should use recaptcha on register .
+     */
+    SERVER_REGISTER_RECAPTCHA_PUBLIC_KEY("server.register.recaptcha.public.key", ""),
+    SERVER_REGISTER_RECAPTCHA_PRIVATE_KEY("server.register.recaptcha.private.key", ""),
+
+    /**
      * PFS-485 If it should be possible to send invite others.
      */
     SERVER_INVITE_ENABLED("server.invite.enabled", true),
