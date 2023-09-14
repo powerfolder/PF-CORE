@@ -356,7 +356,7 @@ public class Format {
 
     private static class CanonicalDateWithTimeFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
-            return new SimpleDateFormat("dd MMM yyyy H:m", Locale.ENGLISH);
+            return new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.ENGLISH);
         }
     }
 
