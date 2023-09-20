@@ -2274,6 +2274,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                 member.synchronizeFolderMemberships(null, true);
             }
         }
+
+        logInfo(newFolderInfo + ": Rename done");
         return true;
     }
 
