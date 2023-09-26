@@ -2668,6 +2668,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
     }
 
+    public boolean isIOS() {
+        return getInfo().isIOS();
+    }
+
     public String getUsername() {
         AccountInfo accountInfo = getAccountInfo();
         if (accountInfo == null) {
