@@ -1,0 +1,21 @@
+package de.dal33t.powerfolder.clientserver;
+
+import de.dal33t.powerfolder.security.Organization;
+
+public interface OrganizationService {
+
+    /**
+     *
+     * @param name the organization name (customer name)
+     * @return the newly created Organization with Default server params
+     */
+
+    Organization simplifiedCreate(final String name);
+
+    /**
+     * cancel subscription (Disable organization)
+     *
+     * @param organizationId the organization id
+     */
+    void cancelSubscription(String organizationId);
+}
