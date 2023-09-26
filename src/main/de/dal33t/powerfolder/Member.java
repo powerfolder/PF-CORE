@@ -447,8 +447,9 @@ public class Member extends PFComponent implements Comparable<Member> {
      */
     public boolean isOnLAN() {
         try {
-            if (peer != null) {
-                return peer.isOnLAN();
+            ConnectionHandler thisPeer = peer;
+            if (thisPeer != null) {
+                return thisPeer.isOnLAN();
             }
             if (info.getConnectAddress() == null) {
                 return false;

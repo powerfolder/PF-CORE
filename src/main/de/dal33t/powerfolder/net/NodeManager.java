@@ -1031,8 +1031,9 @@ public class NodeManager extends PFComponent {
      * @return the connected node or null if problem occurred
      */
     public Member acceptConnection(ConnectionHandler handler)
-        throws ConnectionException
-    {
+        throws ConnectionException {
+        Reject.ifNull(handler, "ConnectionHandler");
+
         if (!started) {
             logFine("Not accepting node from " + handler
                 + ". NodeManager is not started");

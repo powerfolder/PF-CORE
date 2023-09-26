@@ -19,13 +19,14 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.util.Date;
-
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
+import de.dal33t.powerfolder.util.Reject;
+
+import java.util.Date;
 
 /**
  * An acceptor is a task to fully handshake a new incoming connection.
@@ -115,6 +116,7 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
      * @param handler
      */
     public void acceptConnection(ConnectionHandler handler) {
+        Reject.ifNull(handler, "ConnectionHandler");
         try {
             this.handler = handler;
             getController().getNodeManager().acceptConnection(handler);
