@@ -240,6 +240,8 @@ public class Debug {
             b.append("\nOS: " + System.getProperty("os.name"));
             b.append("\nJava: " + JavaVersion.systemVersion().toString() + " ("
                 + System.getProperty("java.vendor") + ')');
+            b.append("\nMemory: " + Format.formatBytesShort(Runtime.getRuntime().totalMemory())
+                    + "/" + Format.formatBytesShort(Runtime.getRuntime().maxMemory()));
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());
             double uptimeDays = ((double) c.getUptime()) / 1000 / 60 / 60 / 24;
