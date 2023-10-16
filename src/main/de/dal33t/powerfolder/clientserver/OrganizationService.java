@@ -18,4 +18,11 @@ public interface OrganizationService {
      * @param organizationId the organization id
      */
     void cancelSubscription(String organizationId);
+
+    /**
+     * renew subscription (Enable organization)
+     *
+     * @param organizationId the organization id
+     */
+    void renewSubscription(String organizationId);
 }
