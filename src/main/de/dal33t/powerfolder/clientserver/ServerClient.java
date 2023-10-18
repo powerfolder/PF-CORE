@@ -2152,7 +2152,9 @@ public class ServerClient extends PFComponent {
             // Fallback:
             return folderService;
         }
-        logInfo(folderInfo + ": getFolderService: connected to " + serverNode);
+        if (isFine()) {
+            logFine(folderInfo + ": getFolderService: connected to " + serverNode);
+        }
         return RemoteServiceStubFactory.createRemoteStub(getController(), FolderService.class, serverNode, throwableHandler);
     }
 
