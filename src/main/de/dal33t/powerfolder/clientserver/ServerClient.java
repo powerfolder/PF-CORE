@@ -2148,7 +2148,9 @@ public class ServerClient extends PFComponent {
     public FolderService getFolderService(FolderInfo folderInfo) {
         Member serverNode = findConnectedServerFor(folderInfo);
         if (serverNode == null) {
-            logInfo(folderInfo + ": getFolderService: no connected server found");
+            if (isFine()) {
+                logFine(folderInfo + ": getFolderService: no connected server found");
+            }
             // Fallback:
             return folderService;
         }
