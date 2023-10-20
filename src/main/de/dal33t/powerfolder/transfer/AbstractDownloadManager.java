@@ -672,9 +672,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             tempFileChannel.position(chunk.offset);
             tempFileChannel.write(ByteBuffer.wrap(chunk.data));
         } catch (IOException e) {
-            logSevere("IOException", e);
-            setBroken(TransferProblem.IO_EXCEPTION,
-                "Couldn't write to tempfile!");
+            logSevere("IOException while writing to " + tempFile, e);
+            setBroken(TransferProblem.IO_EXCEPTION, "Couldn't write to tempfile");
             return;
         }
 
