@@ -307,10 +307,6 @@ public class Member extends PFComponent implements Comparable<Member> {
      * @return true if this node is interesting for us
      */
     public boolean isInteresting() {
-        // logFine("isOnLAN(): " + isOnLAN());
-        // logFine("getController().isLanOnly():" +
-        // getController().isLanOnly());
-
         boolean isRelay = getController().getIOProvider()
             .getRelayedConnectionManager().isRelay(getInfo());
         boolean isRelayOrServer = isServer() || isRelay;
@@ -348,9 +344,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 return true;
             }
         }
-
-        // logFine("isFriend(): " + isFriend());
-        // logFine("hasJoinedAnyFolder(): " + hasJoinedAnyFolder());
 
         if (isFriend() || isOnLAN() || hasJoinedAnyFolder()) {
             return true;
@@ -461,8 +454,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             return getController().getNodeManager().isOnLANorConfiguredOnLAN(
                 adr);
         } catch (RuntimeException e) {
-            logWarning("Unable to check if client is on LAN: " + this + ". "
-                + e);
+            logWarning("Unable to check if client is on LAN. " + e);
             return false;
         }
     }
@@ -531,8 +523,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             .getMemberInfo() : null;
 
         if (remoteMemberInfo != null && remoteMemberInfo.matches(getMySelf())) {
-            logFine("Loopback connection detected to " + newPeer
-                    + ", disconnecting");
+            logFine("Loopback connection detected to " + newPeer + ", disconnecting");
             newPeer.shutdown();
             throw new InvalidIdentityException("Loopback connection detected to "
                     + newPeer + ", disconnecting", newPeer);
@@ -562,10 +553,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (!newPeer.isConnected()) {
-            logFine("Peer disconnected while initializing connection: "
-                + newPeer);
-            return ConnectResult
-                .failure("Peer disconnected while initializing connection");
+            logFine("Peer disconnected while initializing connection: " + newPeer);
+            return ConnectResult.failure("Peer disconnected while initializing connection");
         }
 
         // check if identity is valid and matches the this member
@@ -632,11 +621,9 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (!identity.getMemberInfo().id.equals(info.id)) {
-            logSevere("Got wrong indentity from peer. Expected: " + info
-                + ". got: " + identity.getMemberInfo());
+            logWarning("Got wrong identity from peer. Expected: " + info + ". got: " + identity.getMemberInfo());
             newPeer.shutdown();
-            return ConnectResult
-                .failure("Got wrong indentity from peer. Expected: " + info
+            return ConnectResult.failure("Got wrong identity from peer. Expected: " + info
                     + ". got: " + identity.getMemberInfo());
         }
 
@@ -742,8 +729,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         // return false;
         // }
         if (isFine()) {
-            logFine("Reconnecting (tried " + connectionRetries + " time(s) to "
-                + this + ')');
+            logFine("Reconnecting (tried " + connectionRetries + " times");
         }
 
         connectionRetries++;
@@ -758,8 +744,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             // Re-resolve connect address
             String theHostname = getHostName(); // cached hostname
             if (isFiner()) {
-                logFiner("Reconnect hostname to " + getNick() + " is: "
-                    + theHostname);
+                logFiner("Reconnect hostname is: " + theHostname);
             }
             if (!StringUtils.isBlank(theHostname)) {
                 info.setConnectAddress(new InetSocketAddress(theHostname, info
@@ -806,8 +791,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             connectionRetries = 0;
         } else {
             if (isUnableToConnect() && isConnectedToNetwork) {
-                logFine("Unable to connect directly to "
-                    + getReconnectAddress());
+                logFine("Unable to connect directly to " + getReconnectAddress());
                 // FIXME: Find a better ways
                 setConnectedToNetwork(false);
             }
@@ -848,8 +832,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         synchronized (peerInitializeLock) {
             if (!isConnected() || identity == null) {
                 logFine("Disconnected while completing handshake");
-                return ConnectResult
-                    .failure("Disconnected while completing handshake");
+                return ConnectResult.failure("Disconnected while completing handshake");
             }
             // Send node informations now
             // Send joined folders to synchronize
@@ -876,23 +859,19 @@ public class Member extends PFComponent implements Comparable<Member> {
         synchronized (peerInitializeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
-                return ConnectResult
-                    .failure("Disconnected while completing handshake");
+                return ConnectResult.failure("Disconnected while completing handshake");
             }
             if (!receivedFolderList) {
                 if (isConnected()) {
                     logFine("Did not receive a folder list after 60s, disconnecting");
-                    return ConnectResult
-                        .failure("Did not receive a folder list after 60s, disconnecting (1)");
+                    return ConnectResult.failure("Did not receive a folder list after 60s, disconnecting (1)");
                 }
                 shutdown();
-                return ConnectResult
-                    .failure("Did not receive a folder list after 60s, disconnecting (2)");
+                return ConnectResult.failure("Did not receive a folder list after 60s, disconnecting (2)");
             }
             if (!isConnected()) {
                 logFine("Disconnected while waiting for folder list");
-                return ConnectResult
-                    .failure("Disconnected while waiting for folder list");
+                return ConnectResult.failure("Disconnected while waiting for folder list");
             }
         }
 
@@ -904,8 +883,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         synchronized (peerInitializeLock) {
             if (!isConnected()) {
                 logFine("Disconnected while completing handshake");
-                return ConnectResult
-                    .failure("Disconnected while completing handshake");
+                return ConnectResult.failure("Disconnected while completing handshake");
             }
 
             if (isInteresting()) {
@@ -955,14 +933,13 @@ public class Member extends PFComponent implements Comparable<Member> {
             String reason = "Disconnecting. Did not receive the full filelists for "
                 + foldersJoined.size() + " folders: " + foldersJoined;
             if (isServer()) {
-                logWarning(getNick() + ": " + reason);
+                logWarning(reason);
             } else {
-                logFine(getNick() + ": " + reason);
+                logFine(reason);
             }
             if (isFine()) {
                 for (Folder folder : foldersJoined) {
-                    logFine("Got filelist for " + folder.getName() + " ? "
-                        + hasCompleteFileListFor(folder.getInfo()));
+                    logFine("Got filelist for " + folder.getName() + " ? " + hasCompleteFileListFor(folder.getInfo()));
                 }
             }
             shutdown();
@@ -995,7 +972,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             return ConnectResult.failure(message);
         } else if (isFiner()) {
-            logFiner("Got handshake completion!!");
+            logFiner("Got handshake completion");
         }
 
         // Reset things
@@ -1051,11 +1028,9 @@ public class Member extends PFComponent implements Comparable<Member> {
         List<Folder> foldersJoined = getFoldersActuallyJoined();
         List<Folder> foldersRequested = getFoldersRequestedToJoin();
         if (isFine() && !foldersJoined.isEmpty()) {
-            logFine("Joined " + foldersJoined.size() + " folders: "
-                + foldersJoined);
+            logFine("Joined " + foldersJoined.size() + " folders: " + foldersJoined);
         } else if (isFiner()) {
-            logFiner("Joined " + foldersJoined.size() + " folders: "
-                + foldersJoined);
+            logFiner("Joined " + foldersJoined.size() + " folders: " + foldersJoined);
         }
 
         for (Folder folder : foldersJoined) {
@@ -1137,7 +1112,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             lastMessageReceived = peer != null ? peer
                 .getLastKeepaliveMessageTime() : null;
             if (lastMessageReceived == null) {
-                logSevere("Unable to check last received message date. got null while waiting for filelist");
+                logWarning("Unable to check last received message date. got null while waiting for filelist");
                 return false;
             }
             boolean noChangeReceivedSineOneMinute = System.currentTimeMillis()
@@ -1158,10 +1133,10 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (waiter.isTimeout()) {
             logWarning("Timeout ("
                 + (waiter.getWaitTimeMS() / (1000 * 60))
-                + " minutes) while waiting for filelist from " + info);
+                + " minutes) while waiting for filelist");
         }
         if (!isConnected() && isFine()) {
-            logFine(getNick() + ": Disconnected while waiting for filelist");
+            logFine("Disconnected while waiting for filelist");
         }
         return fileListsCompleted;
     }
@@ -1270,8 +1245,6 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // Inform nodemanger about it
             getController().getNodeManager().connectStateChanged(this);
-        } else {
-            // logFiner("Shutdown");
         }
     }
 
@@ -1369,8 +1342,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         .getFolder(targetedFolderInfo);
                 } else {
                     targetFolder = null;
-                    logSevere("Got folder message without FolderInfo: "
-                        + message);
+                    logWarning("Got folder message without FolderInfo: " + message);
                 }
             } else {
                 targetedFolderInfo = null;
@@ -1402,7 +1374,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     && ((fList.folders != null && fList.folders.length > 500) || (fList.secretFolders != null && fList.secretFolders.length > 500))
                     && getController().getFolderRepository().getFoldersCount() < 500)
                 {
-                    logWarning(getNick() + ": Received large " + fList);
+                    logWarning("Received large " + fList);
                 }
                 getController().getIOProvider().startIO(() -> {
                     processFolderList(fList, fromPeer);
@@ -1413,8 +1385,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     if (targetFolder.getSyncProfile().isInstantSync()
                         || targetFolder.getSyncProfile().isPeriodicSync())
                     {
-                        logFiner("Remote sync command received on "
-                            + targetFolder);
+                        logFiner("Remote sync command received on " + targetFolder);
                         getController().setPaused(false);
                         // Now trigger the scan
                         targetFolder.recommendScanOnNextMaintenance();
@@ -1477,8 +1448,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                             if (getController().isPaused()) {
                                 // Send abort
                                 if (isInfo()) {
-                                    logInfo("Sending abort (paused) of "
-                                        + dlReq.file);
+                                    logInfo("Sending abort (paused) of " + dlReq.file);
                                 }
                                 sendMessagesAsynchron(
                                     new AbortUpload(dlReq.file));
@@ -1506,7 +1476,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof AbortDownload) {
                 AbortDownload abort = (AbortDownload) message;
                 // Abort the upload
-                logFine("Received " + abort + " from " + this);
+                logFine("Received " + abort);
                 getController().getTransferManager().abortUpload(abort.file,
                     this);
                 expectedTime = 100;
@@ -1584,8 +1554,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (message instanceof SettingsChange) {
                 SettingsChange settingsChange = (SettingsChange) message;
                 if (settingsChange.newInfo != null) {
-                    logFine(getInfo().nick + " changed nick to "
-                        + settingsChange.newInfo.nick);
+                    logFine("Changed nick to " + settingsChange.newInfo.nick);
                     setNick(settingsChange.newInfo.nick);
                 }
                 expectedTime = 50;
@@ -1601,8 +1570,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 targetFolder.waitForScan();
                                 // Send filelist of joined folders
                                 if (isFine()) {
-                                    logFine("Resending file list of " + targetFolder.getName() + " to "
-                                        + getNick() + " (" + getUsername() + ")");
+                                    logFine(getUsername() + ": Resending file list of " + targetFolder.getName());
                                 }
                                 Message[] filelistMsgs = FileList.create(
                                     targetFolder, targetFolder
@@ -1612,9 +1580,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                         sendMessage(filelistMsg);
                                     } catch (ConnectionException e) {
                                         logFine("Unable to send new filelist of "
-                                            + targetFolder.getName()
-                                            + " to "
-                                            + getNick() + ". " + e);
+                                            + targetFolder.getName() + ". " + e);
                                     }
                                 }
                             }
@@ -1627,8 +1593,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 final FileList remoteFileList = (FileList) message;
 
                 if (isFine()) {
-                    logFine(getNick() + ": Received new filelist. Expecting "
-                        + remoteFileList.nFollowingDeltas + " more deltas. "
+                    logFine("Received new filelist. Expecting " + remoteFileList.nFollowingDeltas + " more deltas. "
                         + message);
                 }
                 // Reset counter of expected filelists
@@ -1646,8 +1611,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {
                     // Ignoring: Caused by SCAN during connect. we will get the full filelist later:
-                    logFine(getNick() + ": Received folder changes, but not received the full filelist from "
-                        + getNick() + ". Ignoring: " + changes);
+                    logFine("Received folder changes, but not received the full filelist. Ignoring: " + changes);
                     return;
                 }
                 nExpected -= 1;
@@ -1672,11 +1636,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (isFine()) {
                     int msgs = expectedListMessages.get(targetedFolderInfo);
                     if (msgs >= 0) {
-                        logFine(getNick() + ": Received folder change. Expecting " + msgs
-                            + " more deltas. " + message);
+                        logFine("Received folder change. Expecting " + msgs + " more deltas. " + message);
                     } else {
-                        logFine(getNick() + ": Received folder change. Received " + (-msgs)
-                            + " additional deltas. " + message);
+                        logFine("Received folder change. Received " + (-msgs) + " additional deltas. " + message);
                     }
                 }
 
@@ -1707,18 +1669,17 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (lastProblem.problemCode == Problem.DO_NOT_LONGER_CONNECT) {
                     // Finds us boring
                     // set unable to connect
-                    logFine("Problem received: Node reject our connection, "
-                        + "we should not longer try to connect");
+                    logFine("Problem received: Node reject our connection, we should not longer try to connect");
                     // Not connected to public network
                     setConnectedToNetwork(true);
                 } else if (lastProblem.problemCode == Problem.DUPLICATE_CONNECTION) {
                     if (getMySelf().isServer()) {
-                        logFine(this + ": Problem received: Node thinks we have a dupe connection to " + this);
+                        logFine("Problem received: Node thinks we have a dupe connection");
                     } else {
-                        logWarning(this + ": Problem received: Node thinks we have a dupe connection to " + this);
+                        logWarning("Problem received: Node thinks we have a dupe connection");
                     }
                 } else if (lastProblem.problemCode == Problem.VERSION_TOO_OLD) {
-                    logWarning(this + ": Our program version is too old: " + lastProblem);
+                    logWarning("Our program version is too old: " + lastProblem);
                     if (getController().isUIEnabled()) {
                         WarningNotice notice = new WarningNotice(
                                 Translation.get("warning_notice.title"),
@@ -1728,7 +1689,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 .getNoticesModel().handleNotice(notice);
                     }
                 } else {
-                    logWarning(this + ": Received: " + lastProblem);
+                    logWarning("Received: " + lastProblem);
                 }
 
                 if (lastProblem.fatal) {
@@ -1848,8 +1809,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                         Folder f = getController().getFolderRepository()
                             .getFolder(requested.getFolderInfo());
                         if (f == null) {
-                            logWarning("Illegal FileHistoryRequest from "
-                                + this
+                            logWarning("Illegal FileHistoryRequest "
                                 + ": This client is not member of the folder.");
                             return;
                         }
@@ -1921,7 +1881,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             Profiling.end(profilingEntry, expectedTime);
             long took = System.currentTimeMillis() - start;
             if (took > 60000) {
-                logWarning(this + ": Handling took " + (took/1000) + "s: " + message);
+                logWarning("Handling took " + (took/1000) + "s: " + message);
             }
         }
     }
@@ -2020,7 +1980,7 @@ public class Member extends PFComponent implements Comparable<Member> {
     @Override
     public void removeAllListeners() {
         if (isFiner()) {
-            logFiner("Removing all listeners from member. " + this);
+            logFiner("Removing all listeners from member");
         }
         super.removeAllListeners();
         // Remove message listeners
@@ -2093,8 +2053,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             } else {
                 // Hopefully we receive this later.
-                logWarning("Unable to synchronize memberships, "
-                    + "did not received folderlist from " + getNick());
+                logWarning("Unable to synchronize memberships, did not received folderlist");
             }
 
             // Send node informations now
@@ -2173,7 +2132,6 @@ public class Member extends PFComponent implements Comparable<Member> {
         FolderRepository repo = getController().getFolderRepository();
         Set<FolderInfo> joinedFolders = new HashSet<FolderInfo>();
         Collection<Folder> localFolders = repo.getFolders();
-        // logWarning("joinToLocalFolders: " + folderList);
         folderJoinLock.lock();
         try {
             if (fromPeer == null) {
@@ -2192,7 +2150,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     // Join him into our folder if possible.
                     if (!folder.join(this)) {
                         if (isFiner()) {
-                            logFiner(this + " did not join into: " + folder);
+                            logFiner("Did not join into: " + folder);
                         }
                         continue;
                     }
@@ -2248,7 +2206,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else {
                 String myMagicId = fromPeer.getMyMagicId();
                 if (StringUtils.isBlank(myMagicId)) {
-                    logSevere("Unable to join to local folders. Own magic id of peer is blank: " + peer);
+                    logWarning("Unable to join to local folders. Own magic id of peer is blank: " + peer);
                     return;
                 }
                 // Process secret folders now
@@ -2288,7 +2246,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 }
                             } else {
                                 if (isFine()) {
-                                    logFine(this + " did not join into: " + folder);
+                                    logFine("Did not join into: " + folder);
                                 }
                             }
                         }
@@ -2304,7 +2262,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             if (!joinedFolders.isEmpty()) {
                 if (isFine()) {
-                    logFine(getNick() + " joined " + joinedFolders.size() + " folder(s)");
+                    logFine("Joined " + joinedFolders.size() + " folder");
                 }
                 if (!isFriend() && !server) {
                     getController().makeFriendship(getInfo());
@@ -2653,9 +2611,9 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (oldValue != server) {
 
             if (!server) {
-                logFine("Not longer server: " + this);
+                logFine("Is not longer a server");
             } else {
-                logFine("Is server: " + this);
+                logFine("Is now a server");
             }
 
             // #2569: Server 2 server connection. don't wait for folder lists
@@ -2745,10 +2703,6 @@ public class Member extends PFComponent implements Comparable<Member> {
                 .before(newLastConnectTime));
 
         if (!isConnected() && updateLastNetworkConnectTime) {
-            // logFiner(
-            // "Last connect time fresher on remote side. this "
-            // + lastNetworkConnectTime + ", remote: "
-            // + newInfo.lastConnectTime);
             lastNetworkConnectTime = newLastConnectTime;
             updated = true;
         }
@@ -2782,6 +2736,22 @@ public class Member extends PFComponent implements Comparable<Member> {
     }
 
     // Logger methods *********************************************************
+
+    protected void logWarning(String message) {
+        super.logWarning(getNick() + ": " + message);
+    }
+
+    protected void logInfo(String message) {
+        super.logInfo(getNick() + ": " + message);
+    }
+
+    protected void logFine(String message) {
+        super.logFine(getNick() + ": " + message);
+    }
+
+    protected void logFiner(String message) {
+        super.logFiner(getNick() + ": " + message);
+    }
 
     /*
      * General
