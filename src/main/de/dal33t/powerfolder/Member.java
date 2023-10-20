@@ -1627,7 +1627,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 final FileList remoteFileList = (FileList) message;
 
                 if (isFine()) {
-                    logFine("Received new filelist. Expecting "
+                    logFine(getNick() + ": Received new filelist. Expecting "
                         + remoteFileList.nFollowingDeltas + " more deltas. "
                         + message);
                 }
@@ -1646,7 +1646,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 Integer nExpected = expectedListMessages.get(changes.folder);
                 if (nExpected == null) {
                     // Ignoring: Caused by SCAN during connect. we will get the full filelist later:
-                    logFine("Received folder changes, but not received the full filelist from "
+                    logFine(getNick() + ": Received folder changes, but not received the full filelist from "
                         + getNick() + ". Ignoring: " + changes);
                     return;
                 }
@@ -1672,10 +1672,10 @@ public class Member extends PFComponent implements Comparable<Member> {
                 if (isFine()) {
                     int msgs = expectedListMessages.get(targetedFolderInfo);
                     if (msgs >= 0) {
-                        logFine("Received folder change. Expecting " + msgs
+                        logFine(getNick() + ": Received folder change. Expecting " + msgs
                             + " more deltas. " + message);
                     } else {
-                        logFine("Received folder change. Received " + (-msgs)
+                        logFine(getNick() + ": Received folder change. Received " + (-msgs)
                             + " additional deltas. " + message);
                     }
                 }
