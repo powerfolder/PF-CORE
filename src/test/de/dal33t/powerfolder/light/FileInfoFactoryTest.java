@@ -24,6 +24,14 @@ import junit.framework.TestCase;
  */
 public class FileInfoFactoryTest extends TestCase {
 
+    public void testPFC3375() {
+        String input = FileInfoFactory.AEL_SPECIAL_ENCODING_UNICODE + FileInfoFactory.AEU_SPECIAL_ENCODING_UNICODE
+                + FileInfoFactory.OEL_SPECIAL_ENCODING_UNICODE + FileInfoFactory.OEU_SPECIAL_ENCODING_UNICODE
+                + FileInfoFactory.UEL_SPECIAL_ENCODING_UNICODE + FileInfoFactory.UEU_SPECIAL_ENCODING_UNICODE;
+        String expected = "äÄöÖüÜ";
+        assertEquals(expected, FileInfoFactory.encodeIllegalChars(input));
+    }
+
     public void testRenameConflictResolve() {
         FolderInfo z = FolderInfoFactory.unmarshallExistingTopFolder("ID", "Z", 1);
         FolderInfo zResolved = FolderInfoFactory.resolveConflict(z);

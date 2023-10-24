@@ -41,12 +41,12 @@ public final class FileInfoFactory {
     private static final Logger LOG = Logger.getLogger(FileInfoFactory.class
         .getName());
 
-    private static final String AEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x61, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
-    private static final String AEU_SPECIAL_ENCODING_UNICODE = AEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
-    private static final String OEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x6F, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
-    private static final String OEU_SPECIAL_ENCODING_UNICODE = OEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
-    private static final String UEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x75, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
-    private static final String UEU_SPECIAL_ENCODING_UNICODE = UEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
+    protected static final String AEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x61, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    protected static final String AEU_SPECIAL_ENCODING_UNICODE = AEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
+    protected static final String OEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x6F, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    protected static final String OEU_SPECIAL_ENCODING_UNICODE = OEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
+    protected static final String UEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x75, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    protected static final String UEU_SPECIAL_ENCODING_UNICODE = UEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
 
     private FileInfoFactory() {
         // No instance allowed
