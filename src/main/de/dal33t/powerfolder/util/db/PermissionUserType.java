@@ -183,7 +183,19 @@ public class PermissionUserType extends Loggable implements UserType {
             } catch (Exception e) {
                 outE = e;
                 if (isFine()) {
-                    logFine(owner + ": Unable to resolve permission: " + permissionID + ". " + e, e);
+                    /*
+                    Prevent LazyInitializationException  illegal access to loading collection
+                    at org.hibernate.collection.PersistentBag.size(PersistentBag.java:248)
+                    at de.dal33t.powerfolder.security.Account.toString(Unknown Source)
+                    at de.dal33t.powerfolder.util.db.PermissionUserType.nullSafeGet(Unknown Source)
+                     */
+                    String who;
+                    if (owner instanceof Account) {
+                        who = ((Account) owner).getUsername();
+                    } else {
+                        who = owner.toString();
+                    }
+                    logFine(who + ": Unable to resolve permission: " + permissionID + ". " + e, e);
                 }
             }
         }
@@ -191,7 +203,19 @@ public class PermissionUserType extends Loggable implements UserType {
         if (p == null) {
             // This may happen on a downgrade.
             if (isWarning()) {
-                logWarning(owner + ": Unknown permission with ID: " + permissionID + ". " + outE);
+                 /*
+                    Prevent LazyInitializationException  illegal access to loading collection
+                    at org.hibernate.collection.PersistentBag.size(PersistentBag.java:248)
+                    at de.dal33t.powerfolder.security.Account.toString(Unknown Source)
+                    at de.dal33t.powerfolder.util.db.PermissionUserType.nullSafeGet(Unknown Source)
+                     */
+                String who;
+                if (owner instanceof Account) {
+                    who = ((Account) owner).getUsername();
+                } else {
+                    who = owner.toString();
+                }
+                logWarning(who + ": Unknown permission with ID: " + permissionID + ". " + outE);
             }
             return new UnknownPermission(permissionID);
         }

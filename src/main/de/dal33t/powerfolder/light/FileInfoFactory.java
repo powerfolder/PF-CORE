@@ -20,10 +20,7 @@
 package de.dal33t.powerfolder.light;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.Base64;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.Util;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 import java.io.IOException;
@@ -31,6 +28,7 @@ import java.io.ObjectInput;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +40,13 @@ import java.util.logging.Logger;
 public final class FileInfoFactory {
     private static final Logger LOG = Logger.getLogger(FileInfoFactory.class
         .getName());
+
+    protected static final String AEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x61, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    protected static final String AEU_SPECIAL_ENCODING_UNICODE = AEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
+    protected static final String OEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x6F, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    protected static final String OEU_SPECIAL_ENCODING_UNICODE = OEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
+    protected static final String UEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x75, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    protected static final String UEU_SPECIAL_ENCODING_UNICODE = UEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
 
     private FileInfoFactory() {
         // No instance allowed
@@ -420,6 +425,14 @@ public final class FileInfoFactory {
             replacement = "$%" + replacement + "%$";
             output = output.replace("./", replacement + "/");
         }
+
+        output = output.replaceAll(AEL_SPECIAL_ENCODING_UNICODE, "ä");
+        output = output.replaceAll(AEU_SPECIAL_ENCODING_UNICODE, "Ä");
+        output = output.replaceAll(OEL_SPECIAL_ENCODING_UNICODE, "ö");
+        output = output.replaceAll(OEU_SPECIAL_ENCODING_UNICODE, "Ö");
+        output = output.replaceAll(UEL_SPECIAL_ENCODING_UNICODE, "ü");
+        output = output.replaceAll(UEU_SPECIAL_ENCODING_UNICODE, "Ü");
+
         // Spaces at start and end
         return output;
     }

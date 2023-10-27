@@ -1876,12 +1876,13 @@ public class Folder extends PFComponent {
                     if (member.isMySelf()) {
                         continue;
                     }
-                    if (member.isConnected() && member.isServer()) {
+                    boolean serverOfOwnCluster = member.isServer()
+                            && !getController().getOSClient().isClusterServer(member)
+                            && !getController().getOSClient().isFederatedServer(member);
+                    if (member.isConnected() && serverOfOwnCluster) {
                         // PFS-1144: May not actually member anymore in cluster
-                        // setup.
-                        // NEVER Ever join any member into a folder which is
-                        // actually
-                        // connected already.
+                        // setup. NEVER Ever join any server into a folder which is
+                        // actually connected already.
                         if (!members.containsKey(member)) {
                             logFine("(I) Not joining connected server "
                                 + member.getNick() + " into folder "
@@ -2821,9 +2822,12 @@ public class Folder extends PFComponent {
                 if (!memberInfo.isOnSameNetwork(getController())) {
                     continue;
                 }
-                if (memberCanidate.isConnected() && memberCanidate.isServer()) {
+                boolean serverOfOwnCluster = memberCanidate.isServer()
+                        && !getController().getOSClient().isClusterServer(memberCanidate)
+                        && !getController().getOSClient().isFederatedServer(memberCanidate);
+                if (memberCanidate.isConnected() && serverOfOwnCluster) {
                     // PFS-1144: May not actually member anymore in cluster setup.
-                    // NEVER Ever join any member into a folder which is actually
+                    // NEVER Ever join any server into a folder which is actually
                     // connected already.
                     logFine("(U) Not joining connected server "
                             + memberCanidate.getNick() + " into folder " + getName());
