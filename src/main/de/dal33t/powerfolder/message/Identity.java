@@ -81,6 +81,9 @@ public class Identity extends Message implements D2DObject, D2DEvent
     // uses program version. ATTENTION: NEVER MARK THESE FINAL; FINAL FIELDS ARE NOT SERIALIZED!
     private String programVersion = Controller.PROGRAM_VERSION;
 
+    // PFS-4234: Platform information
+    private String operatingSystem = System.getProperty("os.name");
+
     private Calendar timeGMT = Calendar.getInstance();
 
     // Supports requests for single parts and filepartsrecords.
@@ -213,6 +216,10 @@ public class Identity extends Message implements D2DObject, D2DEvent
      */
     public String getProgramVersion() {
         return programVersion;
+    }
+
+    public String getOperatingSystem() {
+        return operatingSystem;
     }
 
     /**
