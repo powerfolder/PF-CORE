@@ -299,11 +299,11 @@ public class JavaVersion implements Comparable<JavaVersion> {
         int update = 0;
         int build = 0;
 
-        Segment s = new Segment(strings[0]);
+        Segment s = new Segment(version, strings[0]);
         major = s.number;
 
         if (strings.length > 1) {
-            s = new Segment(strings[1]);
+            s = new Segment(version, strings[1]);
             minor = s.number;
             if (s.containsAdditionalNumber()) {
                 update = s.additionalNumber;
@@ -315,7 +315,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
         }
 
         if (strings.length > 2) {
-            s = new Segment(strings[2]);
+            s = new Segment(version, strings[2]);
             revision = s.number;
             if (s.containsAdditionalNumber()) {
                 update = s.additionalNumber;
@@ -323,7 +323,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
         }
 
         if (strings.length > 3) {
-            s = new Segment(strings[3]);
+            s = new Segment(version, strings[3]);
             update = s.number;
             if (s.containsAdditionalNumber()) {
                 build = s.additionalNumber;
@@ -341,10 +341,10 @@ public class JavaVersion implements Comparable<JavaVersion> {
             return additionalNumber >= 0;
         }
 
-        private Segment(String versionPart) {
+        private Segment(String versionFull, String versionPart) {
             try {
                 try {
-                    number = Integer.valueOf(versionPart);
+                    number = Integer.parseInt(versionPart);
                 } catch (NumberFormatException e) {
                     String[] split = new String[]{"0", "0"};
                     if (versionPart.contains("+")) {
@@ -354,17 +354,16 @@ public class JavaVersion implements Comparable<JavaVersion> {
                     } else if (versionPart.contains("-b")) {
                         split = versionPart.split("-b");
                     }
-                    number = Integer.valueOf(split[0]);
+                    number = Integer.parseInt(split[0]);
                     String buildStr = split[1]
                             .replaceAll("-", "")
                             .replaceAll("\\+", "")
                             .replaceAll("b", "")
                             .replaceAll("_", "_");
-                    additionalNumber = Integer.valueOf(buildStr);
+                    additionalNumber = Integer.parseInt(buildStr);
                 }
             } catch (RuntimeException e) {
-                System.err.println("Failed to parse java version part: " + versionPart + ". " + e);
-                e.printStackTrace();
+                System.err.println("Failed to parse java version part: " + versionPart + " of Java Version " + versionFull + ". " + e);
             }
         }
     }
