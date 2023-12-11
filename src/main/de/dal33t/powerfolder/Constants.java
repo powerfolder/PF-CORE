@@ -405,6 +405,7 @@ public class Constants {
     public static final String WEBDAV_URI = "/webdav";
 
     public static final String LOGIN_PARAM_USERNAME = "Username";
+    public static final String LOGIN_PARAM_KEEP_LOGGED = "KeepLoggedIn";
     public static final String LOGIN_PARAM_PASSWORD = "Password";
     public static final String LOGIN_PARAM_TOTP_CODE = "Totp";
     public static final String LOGIN_PARAM_PASSWORD_OBF = "PasswordOBF";
