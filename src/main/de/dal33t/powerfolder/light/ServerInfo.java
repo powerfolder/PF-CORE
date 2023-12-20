@@ -37,6 +37,8 @@ import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Date;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+
 /**
  * Contains important information about a server
  *
@@ -175,7 +177,7 @@ public class ServerInfo implements Serializable, D2DObject {
         if (uri == null) {
             return theBaseURL;
         }
-        boolean slashOk = uri.startsWith("/") || theBaseURL.endsWith("/");
+        boolean slashOk = uri.startsWith("/") || theBaseURL.endsWith("/") || isBlank(uri);
         String slash = slashOk ? "" : "/";
         return theBaseURL + slash + uri;
     }
