@@ -347,7 +347,7 @@ public class FormatTest {
     public void formatDateWithTimeCanonicalTest() {
 
         Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM yyyy H:m");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm");
 
         assertEquals(simpleDateFormat.format(date), Format.formatDateWithTimeCanonical(date));
 

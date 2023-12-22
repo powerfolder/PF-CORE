@@ -412,6 +412,8 @@ public class LoginPanel extends PFWizardPanel {
             } else if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasNonBlankValue(getController())) {
                 if (!Token.isExpired(client.getDeviceToken())) {
                     passwordField.setText(TOKEN_PLACEHOLDER);
+                } else {
+                    passwordField.setText("");
                 }
             }
         } else if (client.isConnected()) {
@@ -421,6 +423,8 @@ public class LoginPanel extends PFWizardPanel {
             } else if (client.isTokenLogin()) {
                 if (!Token.isExpired(client.getDeviceToken())) {
                     passwordField.setText(TOKEN_PLACEHOLDER);
+                } else {
+                    passwordField.setText("");
                 }
             }
         }
