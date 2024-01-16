@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.util;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import de.dal33t.powerfolder.security.SecurityException;
 import org.hibernate.HibernateException;
 
 /**
@@ -76,6 +77,9 @@ public class WrappedRunnable implements Runnable {
         } catch (Waiter.WaiterInterruptedException e) {
             // Shutdown
             LOG.log(Level.INFO, "Interrupted " + deligate);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            LOG.log(Level.WARNING, deligate + ": " + e, e);
         } catch (RuntimeException t) {
             t.printStackTrace();
             LOG.log(Level.SEVERE,
