@@ -1795,6 +1795,7 @@ public class Controller extends PFComponent {
     {
         boolean oldPausedValue = paused;
         paused = newPausedValue;
+        logInfo("Set paused=" + paused + ". wasPaused=" + oldPausedValue);
 
         if (newPausedValue) {
             folderRepository.getFolderScanner().abortScan();
