@@ -424,7 +424,11 @@ public class Invitation extends FolderRelatedMessage implements Auditable
 
     @Override
     public String toString() {
-        return "Invitation to " + folder + " from " + senderDevice;
+        String senderDeviceInfo = "";
+        if (senderDevice != null) {
+            senderDeviceInfo = " (" + senderDevice + ")";
+        }
+        return "Invitation to " + folder + " from " + sender + senderDeviceInfo + " to " + recipient;
     }
 
     @Override
