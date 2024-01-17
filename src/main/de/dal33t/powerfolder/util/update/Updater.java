@@ -241,7 +241,7 @@ public class Updater extends Thread {
                 if (latestVersion.length() > 50) {
                     LOG.log(Level.SEVERE,
                         "Received illegal response while checking latest available version from "
-                            + settings.versionCheckURL);
+                            + settings.versionCheckURL + ": " + latestVersion);
                     return null;
                 }
                 LOG.fine("Latest available version: " + latestVersion + " @ "
