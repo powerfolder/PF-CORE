@@ -239,7 +239,7 @@ public class Updater extends Thread {
             if (latestVersion != null) {
                 latestVersion = latestVersion.trim();
                 if (latestVersion.length() > 50) {
-                    LOG.log(Level.SEVERE,
+                    LOG.log(Level.WARNING,
                         "Received illegal response while checking latest available version from "
                             + settings.versionCheckURL + ": " + latestVersion);
                     return null;
@@ -251,7 +251,7 @@ public class Updater extends Thread {
         } catch (IOException e) {
             LOG.log(Level.WARNING,
                 "Unable to retrieve latest available version for: "
-                    + settings.versionCheckURL);
+                    + settings.versionCheckURL + ". " + e);
             LOG.log(Level.FINER, e.toString(), e);
         }
         return null;
