@@ -361,6 +361,7 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                             }
                             ConnectionListener.SocketAcceptor acceptor = getSocketAcceptor();
                             if (acceptor == null) {
+                                logConnectionClose(null);
                                 break;
                             }
                             acceptor.acceptConnection(D2DSocketConnectionHandler.this);
