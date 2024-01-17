@@ -359,7 +359,11 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                                 identity = (Identity) message;
                                 identityWaiter.notifyAll();
                             }
-                            getSocketAcceptor().acceptConnection(D2DSocketConnectionHandler.this);
+                            ConnectionListener.SocketAcceptor acceptor = getSocketAcceptor();
+                            if (acceptor == null) {
+                                break;
+                            }
+                            acceptor.acceptConnection(D2DSocketConnectionHandler.this);
                         }
                         nodeStateMachine.fire(((D2DEvent) message).getNodeEvent(), message);
                         continue;
