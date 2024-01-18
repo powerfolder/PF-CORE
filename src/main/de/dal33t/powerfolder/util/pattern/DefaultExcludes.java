@@ -35,6 +35,7 @@ public enum DefaultExcludes {
     PARTS("*.part"),
     PARTIAL("*.partial"),
     CRDOWNLOAD("*.crdownload"),
+    MAC_METADATA("._*"),
 
     /**
      * Apples iPod thumb files. http://dotwhat.net/ithmb/9058/
