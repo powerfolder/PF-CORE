@@ -251,4 +251,6 @@ public interface AccountService {
     void setOrganizationValidTill(String organizationID, Date validTillDate);
 
     void deleteOrganization(String organizationID);
+
+    void closeAccount(Account account);
 }
