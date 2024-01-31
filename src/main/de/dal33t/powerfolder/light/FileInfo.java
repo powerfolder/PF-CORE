@@ -163,10 +163,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                        String hashes, boolean deleted, String tags, FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
-        if (relativeName.contains("/../")) {
-            throw new IllegalArgumentException(
-                    "relativeName must not contain /../: " + relativeName);
-        }
+        Reject.ifTrue(relativeName.contains("../"), "relativeName must not contain ../");
+        Reject.ifTrue(relativeName.contains("/.."), "relativeName must not contain /..");
 
         this.fileName = relativeName;
         this.oid = oid;
@@ -187,10 +185,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     protected FileInfo(FolderInfo folder, String relativeName) {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
-        if (relativeName.contains("/../")) {
-            throw new IllegalArgumentException(
-                    "relativeName must not contain /../: " + relativeName);
-        }
+        Reject.ifTrue(relativeName.contains("../"), "relativeName must not contain ../");
+        Reject.ifTrue(relativeName.contains("/.."), "relativeName must not contain /..");
 
         fileName = relativeName;
         folderInfo = folder;
