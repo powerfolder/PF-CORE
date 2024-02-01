@@ -164,7 +164,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(folderInfo, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
         Reject.ifTrue(relativeName.contains("../"), "relativeName must not contain ../");
-        Reject.ifTrue(relativeName.contains("/.."), "relativeName must not contain /..");
 
         this.fileName = relativeName;
         this.oid = oid;
@@ -186,7 +185,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
         Reject.ifTrue(relativeName.contains("../"), "relativeName must not contain ../");
-        Reject.ifTrue(relativeName.contains("/.."), "relativeName must not contain /..");
 
         fileName = relativeName;
         folderInfo = folder;
