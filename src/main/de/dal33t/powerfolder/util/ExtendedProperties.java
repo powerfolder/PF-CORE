@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public class ExtendedProperties extends Properties {
     public synchronized void load(InputStream inStream) throws IOException {
@@ -82,7 +83,8 @@ public class ExtendedProperties extends Properties {
                     - valueStart, convtBuf);
                 put(key, value);
             } catch (Exception e) {
-                System.out.println("Error on: " + new String(lr.lineBuf));
+                Logger.getLogger(ExtendedProperties.class.getName()).warning("Error on: " + new String(lr.lineBuf));
+                System.err.println("Error on: " + new String(lr.lineBuf));
             }
         }
     }
