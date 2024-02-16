@@ -818,7 +818,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         } else if (isFine()) {
             logFine(msg);
         }
-        if (isFiner()) {
+        if (isFiner() && e != null) {
             logFiner("Exception", e);
         }
     }

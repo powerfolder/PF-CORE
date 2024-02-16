@@ -80,14 +80,11 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                     Translation.get("dialog.tos.text"),
                     new String[]{"OK"}, 0, GenericDialogType.INFO);
 
-                getController().getIOProvider().startIO(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            BrowserLauncher.openURL(client.getLoginURLWithCredentials());
-                        } catch (IOException ioe) {
-                            logWarning("Could not open browser to view ToS. " + ioe);
-                        }
+                getController().getIOProvider().startIO(() -> {
+                    try {
+                        BrowserLauncher.openURL(client.getLoginURLWithCredentials());
+                    } catch (IOException ioe) {
+                        logWarning("Could not open browser to view ToS. " + ioe);
                     }
                 });
             } else {
@@ -133,20 +130,17 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
 
     @Override
     public void nodeServerStatusChanged(ServerClientEvent event) {
-        getController().getIOProvider().startIO(new Runnable() {
-            @Override
-            public void run() {
-                if (!event.getClient().isLoggedIn()) {
-                    return;
-                }
-                AccountDetails ad = event.getClient().refreshAccountDetails();
-                if (ad.needsToAgreeToS()) {
-                    wasPaused = getController().isPaused();
-                    agreedOnToS = false;
-                    getController().setPaused(true);
-                    getController().getUIController().getApplicationModel()
-                        .getNoticesModel().handleNotice(tosn);
-                }
+        getController().getIOProvider().startIO(() -> {
+            if (!event.getClient().isLoggedIn()) {
+                return;
+            }
+            AccountDetails ad = event.getClient().refreshAccountDetails();
+            if (ad.needsToAgreeToS()) {
+                wasPaused = getController().isPaused();
+                agreedOnToS = false;
+                getController().setPaused(true);
+                getController().getUIController().getApplicationModel()
+                    .getNoticesModel().handleNotice(tosn);
             }
         });
     }
@@ -166,17 +160,14 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                         getMessage(), new String[]{"OK"}, 0,
                         GenericDialogType.INFO);
 
-                controller.getIOProvider().startIO(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            String url = controller.getOSClient().getLoginURLWithCredentials();
-                            BrowserLauncher.openURL(url);
-                        } catch (IOException ioe) {
-                            Logger.getLogger(ToSNotice.class.getName()).log(Level.WARNING,
-                                    "Could not open browser to view ToS. "
-                                            + ioe);
-                        }
+                controller.getIOProvider().startIO(() -> {
+                    try {
+                        String url = controller.getOSClient().getLoginURLWithCredentials();
+                        BrowserLauncher.openURL(url);
+                    } catch (IOException ioe) {
+                        Logger.getLogger(ToSNotice.class.getName()).log(Level.WARNING,
+                                "Could not open browser to view ToS. "
+                                        + ioe);
                     }
                 });
             };

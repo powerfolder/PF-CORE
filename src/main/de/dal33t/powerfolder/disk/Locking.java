@@ -143,7 +143,7 @@ public class Locking extends PFComponent {
                 scanLockFile(fInfo.getFolderInfo(), lockFile);
                 fireUnlocked(fInfo);
                 setWritableIfFromOtherMember(fInfo, null, true);
-                logInfo("File un-locked: " + fInfo);
+                logInfo("File un-locked: " + fInfo.toDetailString());
             }
             return true;
         } catch (IOException e) {
@@ -155,7 +155,7 @@ public class Locking extends PFComponent {
                     scanLockFile(fInfo.getFolderInfo(), lockFile);
                     fireUnlocked(fInfo);
                     setWritableIfFromOtherMember(fInfo, null, true);
-                    logInfo("File un-locked: " + fInfo);
+                    logInfo("File un-locked: " + fInfo.toDetailString());
                 }
                 return true;
             } catch (IOException e2) {
@@ -256,10 +256,10 @@ public class Locking extends PFComponent {
         Lock lock = getLock(fInfo);
         setWritableIfFromOtherMember(fInfo, lock, lockFileInfo.isDeleted());
         if (lockFileInfo.isDeleted()) {
-            logInfo("File un-locked by remote: " + fInfo);
+            logInfo("File un-locked by remote: " + fInfo.toDetailString());
             fireUnlocked(fInfo);
         } else {
-            logInfo("File locked by remote: " + fInfo);
+            logInfo("File locked by remote: " + fInfo.toDetailString());
             fireLocked(fInfo);
         }
     }

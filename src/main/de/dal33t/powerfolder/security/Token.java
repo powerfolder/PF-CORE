@@ -61,6 +61,8 @@ public class Token implements Serializable {
     private static final long SERVICE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
     // PF-881
     private static final long MERGE_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
+    //24h
+    private static final long CLOSE_ACCOUNT_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24;
     private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
     // PFS-2296: Unlimited time
     private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
@@ -142,6 +144,11 @@ public class Token implements Serializable {
         Token token = newAccessToken(MERGE_TOKEN_TIMEOUT, aInfo);
         token.addNotesWithDate(
                 aInfo.getUsername() + " merging with " + usernameToMerge);
+        return token;
+    }
+
+    public static Token newCloseAccountToken(AccountInfo aInfo) {
+        Token token = newAccessToken(CLOSE_ACCOUNT_TOKEN_TIMEOUT, aInfo);
         return token;
     }
 

@@ -358,7 +358,7 @@ public class MemberInfo implements Serializable, D2DObject {
 
     @Override
     public String toString() {
-        return "Member '" + nick + "'" + connectAddress != null ? " (" + connectAddress + ")" : "";
+        return "Member '" + nick + "'" + (connectAddress != null ? " (" + connectAddress + ")" : "");
     }
 
     // Serialization optimization *********************************************
