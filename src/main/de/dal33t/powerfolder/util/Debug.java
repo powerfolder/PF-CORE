@@ -841,6 +841,18 @@ public class Debug {
         StringBuilder b = new StringBuilder();
         for (StackTraceElement te : t.getStackTrace()) {
             if (hideIdleThreds) {
+                if (te.toString().contains("java.lang.ref.Reference.waitForReferencePendingList")) {
+                    return null;
+                }
+                if (te.toString().contains("sun.nio.ch.EPoll.wait")) {
+                    return null;
+                }
+                if (te.toString().contains("sun.nio.ch.Net.accept")) {
+                    return null;
+                }
+                if (te.toString().contains("sun.nio.ch.SocketDispatcher.read")) {
+                    return null;
+                }
                 if (te.toString().contains(
                     "java.net.SocketInputStream.socketRead0"))
                 {
