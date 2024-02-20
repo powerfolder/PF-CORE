@@ -240,7 +240,9 @@ public class Debug {
             b.append("\nOS: " + System.getProperty("os.name"));
             b.append("\nJava: " + JavaVersion.systemVersion().toString() + " ("
                 + System.getProperty("java.vendor") + ')');
-            b.append("\nMemory: " + Format.formatBytesShort(Runtime.getRuntime().totalMemory())
+            long usedMemory =  Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            b.append("\nMemory: " + Format.formatBytesShort(usedMemory)
+                    + "/" + Format.formatBytesShort(Runtime.getRuntime().totalMemory())
                     + "/" + Format.formatBytesShort(Runtime.getRuntime().maxMemory()));
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());
