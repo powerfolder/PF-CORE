@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.ui.dialog;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ import de.dal33t.powerfolder.ui.dialog.directory.DirectoryChooser;
 import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.util.LinkedTextBuilder;
 import de.dal33t.powerfolder.ui.util.NeverAskAgainResponse;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -100,9 +102,15 @@ public class DialogFactory {
                                              List<String> onlineFolders, boolean multiSelect) {
         DirectoryChooser dc = new DirectoryChooser(uiController.getController(), initialDirectory, onlineFolders,
                 multiSelect);
-        dc.open();
-        if (dc.getSelectedDirs() != null) {
-            return dc.getSelectedDirs();
+
+        try {
+            if (initialDirectory == null || !PathUtils.isNetworkPath(initialDirectory)) {
+                dc.open();
+                if (dc.getSelectedDirs() != null) {
+                    return dc.getSelectedDirs();
+                }
+            }
+        } catch (IOException e) {
         }
 
         // Null selectedDirs indicates that user wants to use classic browser.
