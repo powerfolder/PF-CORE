@@ -174,9 +174,7 @@ public class DirectoryChooser extends BaseDialog {
             Path writeCheck = null;
             try {
                 writeCheck = Files.createTempFile(checkpath, "delete_me_", ".writecheck");
-                if (Files.isWritable(writeCheck)) {
-                    return true;
-                }
+                return Files.exists(writeCheck);
             } catch (Exception e) {
                 if (writeCheck != null) {
                     try {
