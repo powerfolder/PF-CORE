@@ -175,7 +175,8 @@ public class DirectoryChooser extends BaseDialog {
             try {
                 writeCheck = Files.createTempFile(checkpath, "delete_me_", ".writecheck");
                 return Files.exists(writeCheck);
-            } catch (Exception e) {
+            } catch (IOException e) {
+            } finally {
                 if (writeCheck != null) {
                     try {
                         Files.deleteIfExists(writeCheck);
@@ -183,7 +184,6 @@ public class DirectoryChooser extends BaseDialog {
                     }
                 }
             }
-
         }
 
         DialogFactory.genericDialog(getController(),
