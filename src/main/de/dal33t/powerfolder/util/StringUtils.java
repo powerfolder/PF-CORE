@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.util;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 public class StringUtils {
 	/**
@@ -324,6 +325,26 @@ public class StringUtils {
             positionOfLineBreak = 0;
         }
         return last2049Characters.substring(positionOfLineBreak + 1, 2049);
+    }
+
+    public static final String AEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x61, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    public static final String AEU_SPECIAL_ENCODING_UNICODE = AEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
+    public static final String OEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x6F, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    public static final String OEU_SPECIAL_ENCODING_UNICODE = OEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
+    public static final String UEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x75, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
+    public static final String UEU_SPECIAL_ENCODING_UNICODE = UEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
+
+    public static String convertToPrecomposedForm(String input) {
+        String output = input;
+
+        output = output.replaceAll(AEL_SPECIAL_ENCODING_UNICODE, "ä");
+        output = output.replaceAll(AEU_SPECIAL_ENCODING_UNICODE, "Ä");
+        output = output.replaceAll(OEL_SPECIAL_ENCODING_UNICODE, "ö");
+        output = output.replaceAll(OEU_SPECIAL_ENCODING_UNICODE, "Ö");
+        output = output.replaceAll(UEL_SPECIAL_ENCODING_UNICODE, "ü");
+        output = output.replaceAll(UEU_SPECIAL_ENCODING_UNICODE, "Ü");
+
+        return output;
     }
 
     /**

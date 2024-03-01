@@ -44,7 +44,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static de.dal33t.powerfolder.light.FileInfoFactory.decodeIllegalChars;
+import static de.dal33t.powerfolder.util.StringUtils.convertToPrecomposedForm;
 
 /**
  * File information of a local or remote file. NEVER USE A CONSTRUCTOR OF THIS
@@ -167,7 +167,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(relativeName, "relativeName is null!");
         Reject.ifTrue(relativeName.contains("../"), "relativeName must not contain ../");
 
-        this.fileName = decodeIllegalChars(relativeName);
+        this.fileName = convertToPrecomposedForm(relativeName);
         this.oid = oid;
         this.hashes = hashes;
         this.tags = tags;
@@ -188,7 +188,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(relativeName, "relativeName is null!");
         Reject.ifTrue(relativeName.contains("../"), "relativeName must not contain ../");
 
-        fileName = decodeIllegalChars(relativeName);
+        fileName = convertToPrecomposedForm(relativeName);
         folderInfo = folder;
 
         oid = null;
@@ -237,8 +237,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (diskFile == null) {
             throw new NullPointerException("diskFile is null");
         }
-        String diskFileName = decodeIllegalChars(diskFile
-                .getFileName().toString());
+        String diskFileName = FileInfoFactory.decodeIllegalChars(diskFile.getFileName().toString());
         boolean nameMatch = fileName.endsWith(diskFileName);
 
         if (!nameMatch && IGNORE_CASE) {
@@ -940,7 +939,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         modifiedByAccount = modifiedByAccount != null ? modifiedByAccount.intern() : null;
 
         // PFC-3428
-        fileName = decodeIllegalChars(fileName);
+        fileName = convertToPrecomposedForm(fileName);
         // #2159: Remove / in front and end of filename
         if (fileName.endsWith("/")) {
             fileName = fileName.substring(0, fileName.length() - 1);
@@ -964,7 +963,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                             + ", supported: " + extVersion100UID + ", "
                             + extVersionCurrentUID);
         }
-        fileName = decodeIllegalChars(in.readUTF());
+        fileName = convertToPrecomposedForm(in.readUTF());
         size = in.readLong();
         if (in.readBoolean()) {
             modifiedBy = MemberInfo.readExt(in);
@@ -1100,7 +1099,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (mesg instanceof FileInfoProto.FileInfo) {
             FileInfoProto.FileInfo fileInfo = (FileInfoProto.FileInfo) mesg;
             this.deleted = fileInfo.getDeleted();
-            this.fileName = decodeIllegalChars(fileInfo.getFileName());
+            this.fileName = convertToPrecomposedForm(fileInfo.getFileName());
             // Todo: Hacky
             this.folderInfo = FolderInfoFactory.lookupInstance(fileInfo.getFolderId());
             this.lastModifiedDate = new Date(fileInfo.getLastModifiedDate());
