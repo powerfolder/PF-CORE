@@ -279,7 +279,7 @@ public class FolderScanner extends PFComponent {
                             getController().getMySelf().getAccountInfo(), new Date());
                     currentScanResult.deletedFiles.add(deletedFileInfo);
                 } catch (RuntimeException e) {
-                    logWarning(fileInfo + ": Problem while marking as deleted: " + e);
+                    logWarning(fileInfo.toDetailString() + ": Problem while marking as deleted: " + e);
                 }
             }
 
