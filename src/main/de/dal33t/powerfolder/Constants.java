@@ -400,8 +400,8 @@ public class Constants {
     public static final String DL_LINK_ENTER_PW_URI = "/dlpw";
     public static final String OPEN_LINK_URI = "/open";
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
-    public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI
-        + "/client";
+    public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI + "/client";
+    public static final String LOGIN_SHIBBOLETH_ANDROID_URI = LOGIN_SHIBBOLETH_URI + "/android";
     public static final String WEBDAV_URI = "/webdav";
 
     public static final String LOGIN_PARAM_USERNAME = "Username";
