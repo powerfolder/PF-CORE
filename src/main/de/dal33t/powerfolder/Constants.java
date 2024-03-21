@@ -221,7 +221,7 @@ public class Constants {
      * PFC-2742: Maximum numbers of message in send queue. Will disconnect node
      * if maximum is reached.
      */
-    public static final int WARN_MESSAGES_IN_SEND_QUEUE = 1500;
+    public static final int WARN_MESSAGES_IN_SEND_QUEUE = 1900;
     public static final int MAX_MESSAGES_IN_SEND_QUEUE = 2000;
 
     /**
