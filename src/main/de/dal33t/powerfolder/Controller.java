@@ -1481,24 +1481,25 @@ public class Controller extends PFComponent {
     public void initializeListenerOnLocalPortD2D() {
         /* Check whether to start D2D, too */
         int port = ConfigurationEntry.NET_PORT_D2D.getValueInt(this);
-        if (port > 0) {
-            boolean listenerOpened;
-            for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
-                listenerOpened = openListener(bindAddress, port, true);
-                if (!listenerOpened) {
-                    logSevere("Couldn't bind to iOS port " + port);
-                } else {
-                    logInfo("Listening for iOS on port " + port);
-                    nodeManager.getMySelf().getInfo().setD2dPort(port);
-                }
+        if (port <= 0) {
+            return;
+        }
+        boolean listenerOpened;
+        for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
+            listenerOpened = openListener(bindAddress, port, true);
+            if (!listenerOpened) {
+                logSevere("Couldn't bind to iOS port " + port);
+            } else {
+                logInfo("Listening for iOS on port " + port);
+                nodeManager.getMySelf().getInfo().setD2dPort(port);
             }
-            for (ConnectionListener connectionListener : additionalConnectionListeners) {
-                if (connectionListener.useD2D) {
-                    try {
-                        connectionListener.start();
-                    } catch (ConnectionException e) {
-                        logSevere("Problems starting listener " + connectionListener, e);
-                    }
+        }
+        for (ConnectionListener connectionListener : additionalConnectionListeners) {
+            if (connectionListener.useD2D && !connectionListener.isServerSocketOpen()) {
+                try {
+                    connectionListener.start();
+                } catch (ConnectionException e) {
+                    logSevere("Problems starting listener " + connectionListener, e);
                 }
             }
         }
@@ -1518,10 +1519,10 @@ public class Controller extends PFComponent {
             logSevere("Couldn't bind to D2D port " + port);
         }
         for (ConnectionListener connectionListener : additionalConnectionListeners) {
-            if (connectionListener.useD2D) {
+            if (connectionListener.useD2D && !connectionListener.isServerSocketOpen()) {
                 try {
                     connectionListener.start();
-                    logInfo("Listening for iOS on port " + connectionListener.getLocalAddress().getPort());
+                    logFine("Listening for iOS on port " + connectionListener.getLocalAddress().getPort());
                     // nodeManager.getMySelf().getInfo().setD2dPort(port);
                 } catch (ConnectionException e) {
                     logSevere("Problems starting listener " + connectionListener, e);

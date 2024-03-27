@@ -156,6 +156,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     createD2DSSLSocket = false;
                 }
                 if (port != DEFAULT_D2D_PORT) {
+                    logWarning("Opening non-SSL secured iOS listener, " +
+                            " port " + port +" on " + bAddress + " must not be reachable from the internet.");
                     createD2DSSLSocket = false;
                 }
             }
