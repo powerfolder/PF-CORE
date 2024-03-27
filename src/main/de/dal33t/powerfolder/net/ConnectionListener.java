@@ -150,12 +150,17 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 }
             }
             // Use SSL socket for D2D connections on external interfaces
-            if (useD2D && !(NetworkUtil.LOOPBACK_LOCALHOST_IPv4.equals(bind))) {
-                if (port == DEFAULT_D2D_PORT) {
-                    serverSocket = createD2DSSLServerSocket(bAddress);
-                } else {
-                    serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
+            boolean createD2DSSLSocket = useD2D;
+            if (useD2D) {
+                if (NetworkUtil.LOOPBACK_LOCALHOST_IPv4.equals(bind)) {
+                    createD2DSSLSocket = false;
                 }
+                if (port != DEFAULT_D2D_PORT) {
+                    createD2DSSLSocket = false;
+                }
+            }
+            if (createD2DSSLSocket) {
+                serverSocket = createD2DSSLServerSocket(bAddress);
             } else {
                 serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
             }
