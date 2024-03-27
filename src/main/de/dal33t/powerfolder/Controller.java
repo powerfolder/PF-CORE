@@ -1482,13 +1482,13 @@ public class Controller extends PFComponent {
         /* Check whether to start D2D, too */
         int port = ConfigurationEntry.NET_PORT_D2D.getValueInt(this);
         if (port > 0) {
-            boolean listenerOpened = false;
+            boolean listenerOpened;
             for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
                 listenerOpened = openListener(bindAddress, port, true);
                 if (!listenerOpened) {
                     logSevere("Couldn't bind to iOS port " + port);
                 } else {
-                    logInfo("iOS listening on port " + port);
+                    logInfo("Listening for iOS on port " + port);
                     nodeManager.getMySelf().getInfo().setD2dPort(port);
                 }
             }
@@ -1510,11 +1510,10 @@ public class Controller extends PFComponent {
     public void initializeListenerOnLoopbackInterfaceD2D() {
         logFine("D2D is enabled on loopback interface");
         boolean listenerOpened;
-        String bindAddress = "127.0.0.1";
+        String bindAddress = NetworkUtil.LOCALHOST_LOOPBACK_IPv4;
         // Random port (if there is more than one server on the same machine, the port needs to be random anyway)
         int port = 0;
         listenerOpened = openListener(bindAddress, port, true);
-        // nodeManager.getMySelf().getInfo().setD2dPort(port);
         if (!listenerOpened) {
             logSevere("Couldn't bind to D2D port " + port);
         }
@@ -1522,7 +1521,8 @@ public class Controller extends PFComponent {
             if (connectionListener.useD2D) {
                 try {
                     connectionListener.start();
-                    //logInfo("Listening on D2D port " + connectionListener.getLocalAddress().getPort());
+                    logInfo("Listening for iOS on port " + connectionListener.getLocalAddress().getPort());
+                    // nodeManager.getMySelf().getInfo().setD2dPort(port);
                 } catch (ConnectionException e) {
                     logSevere("Problems starting listener " + connectionListener, e);
                 }
