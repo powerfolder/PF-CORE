@@ -1510,7 +1510,7 @@ public class Controller extends PFComponent {
     public void initializeListenerOnLoopbackInterfaceD2D() {
         logFine("D2D is enabled on loopback interface");
         boolean listenerOpened;
-        String bindAddress = NetworkUtil.LOCALHOST_LOOPBACK_IPv4;
+        String bindAddress = NetworkUtil.LOOPBACK_LOCALHOST_IPv4;
         // Random port (if there is more than one server on the same machine, the port needs to be random anyway)
         int port = 0;
         listenerOpened = openListener(bindAddress, port, true);
