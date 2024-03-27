@@ -1482,7 +1482,7 @@ public class Controller extends PFComponent {
         /* Check whether to start D2D, too */
         int port = ConfigurationEntry.NET_PORT_D2D.getValueInt(this);
         if (port > 0) {
-            logInfo("D2D is enabled");
+            logInfo("D2D is enabled on port " + port);
             boolean listenerOpened = false;
             for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
                 listenerOpened = openListener(bindAddress, port, true);
@@ -1515,7 +1515,7 @@ public class Controller extends PFComponent {
         // Random port (if there is more than one server on the same machine, the port needs to be random anyway)
         int port = 0;
         listenerOpened = openListener(bindAddress, port, true);
-        nodeManager.getMySelf().getInfo().setD2dPort(port);
+        // nodeManager.getMySelf().getInfo().setD2dPort(port);
         if (!listenerOpened) {
             logSevere("Couldn't bind to D2D port " + port);
         }
