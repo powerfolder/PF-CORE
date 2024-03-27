@@ -1492,13 +1492,13 @@ public class Controller extends PFComponent {
                     nodeManager.getMySelf().getInfo().setD2dPort(port);
                 }
             }
-        }
-        for (ConnectionListener connectionListener : additionalConnectionListeners) {
-            if (connectionListener.useD2D) {
-                try {
-                    connectionListener.start();
-                } catch (ConnectionException e) {
-                    logSevere("Problems starting listener " + connectionListener, e);
+            for (ConnectionListener connectionListener : additionalConnectionListeners) {
+                if (connectionListener.useD2D) {
+                    try {
+                        connectionListener.start();
+                    } catch (ConnectionException e) {
+                        logSevere("Problems starting listener " + connectionListener, e);
+                    }
                 }
             }
         }
