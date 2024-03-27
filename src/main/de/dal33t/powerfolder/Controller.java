@@ -1495,7 +1495,7 @@ public class Controller extends PFComponent {
             }
         }
         for (ConnectionListener connectionListener : additionalConnectionListeners) {
-            if (connectionListener.useD2D && !connectionListener.isServerSocketOpen()) {
+            if (connectionListener.useD2D) {
                 try {
                     connectionListener.start();
                 } catch (ConnectionException e) {
@@ -1519,7 +1519,7 @@ public class Controller extends PFComponent {
             logSevere("Couldn't bind to D2D port " + port);
         }
         for (ConnectionListener connectionListener : additionalConnectionListeners) {
-            if (connectionListener.useD2D && !connectionListener.isServerSocketOpen()) {
+            if (connectionListener.useD2D) {
                 try {
                     connectionListener.start();
                     logFine("Listening for iOS on port " + connectionListener.getLocalAddress().getPort());

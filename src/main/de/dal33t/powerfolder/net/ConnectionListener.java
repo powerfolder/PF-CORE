@@ -154,10 +154,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
             if (useD2D) {
                 if (NetworkUtil.LOOPBACK_LOCALHOST_IPv4.equals(bind)) {
                     createD2DSSLSocket = false;
-                }
-                if (port != DEFAULT_D2D_PORT) {
-                    logWarning("Opening non-SSL secured iOS listener, " +
-                            " port " + port +" on " + bAddress + " must not be reachable from the internet.");
+                } else if (port != DEFAULT_D2D_PORT) {
+                    logWarning("Opening non-SSL secured iOS listener. " + bAddress + ":" + port + " must not be reachable from the internet.");
                     createD2DSSLSocket = false;
                 }
             }
