@@ -56,6 +56,7 @@ public class NetworkUtil {
     private final static Logger LOG = Logger.getLogger(NetworkUtil.class
         .getName());
 
+    public static String LOOPBACK_LOCALHOST_IPv4 = "127.0.0.1";
     /**
      * Network interfaces cache.
      */

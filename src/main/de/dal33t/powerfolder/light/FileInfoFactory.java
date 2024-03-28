@@ -41,13 +41,6 @@ public final class FileInfoFactory {
     private static final Logger LOG = Logger.getLogger(FileInfoFactory.class
         .getName());
 
-    protected static final String AEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x61, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
-    protected static final String AEU_SPECIAL_ENCODING_UNICODE = AEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
-    protected static final String OEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x6F, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
-    protected static final String OEU_SPECIAL_ENCODING_UNICODE = OEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
-    protected static final String UEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x75, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
-    protected static final String UEU_SPECIAL_ENCODING_UNICODE = UEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
-
     private FileInfoFactory() {
         // No instance allowed
     }
@@ -382,7 +375,7 @@ public final class FileInfoFactory {
         "<", ":", ">", "\r"};
 
     /**
-     * #2480: Encodes illegal characters in filenames for windows such as: |, :,
+     * #2480: Encodes illegal characters in filenames, e.g. for windows such as: |, :,
      * <, >,
      *
      * @param relativeFilename
@@ -390,55 +383,47 @@ public final class FileInfoFactory {
      * @return
      */
     public static String encodeIllegalChars(String relativeFilename) {
-        if (!OSUtil.isWindowsSystem()) {
-            return relativeFilename;
-        }
-        String output = relativeFilename;
-        for (String illChar : ILLEGAL_WINDOWS_CHARS) {
-            if (output.contains(illChar)) {
-                String replacement = Base64.encodeString(illChar);
+        String output = StringUtils.convertToPrecomposedForm(relativeFilename);
+
+        if (OSUtil.isWindowsSystem()) {
+            for (String illChar : ILLEGAL_WINDOWS_CHARS) {
+                if (output.contains(illChar)) {
+                    String replacement = Base64.encodeString(illChar);
+                    replacement = replacement.replace("=", "");
+                    replacement = "$%" + replacement + "%$";
+                    output = output.replace(illChar, replacement);
+                }
+            }
+            if (output.length() > 1) {
+                char lastChar = output.charAt(output.length() - 1);
+                if (lastChar == ' ' || lastChar == '.') {
+                    String replacement = Base64.encodeString(String.valueOf(output
+                            .charAt(output.length() - 1)));
+                    replacement = replacement.replace("=", "");
+                    replacement = "$%" + replacement + "%$";
+                    output = output.substring(0, output.length() - 1);
+                    output += replacement;
+                }
+            }
+            if (output.contains(" /")) {
+                String replacement = Base64.encodeString(" ");
                 replacement = replacement.replace("=", "");
                 replacement = "$%" + replacement + "%$";
-                output = output.replace(illChar, replacement);
+                output = output.replace(" /", replacement + "/");
             }
-        }
-        if (output.length() > 1) {
-            char lastChar = output.charAt(output.length() - 1);
-            if (lastChar == ' ' || lastChar == '.') {
-                String replacement = Base64.encodeString(String.valueOf(output
-                    .charAt(output.length() - 1)));
+            if (output.contains("./")) {
+                String replacement = Base64.encodeString(".");
                 replacement = replacement.replace("=", "");
                 replacement = "$%" + replacement + "%$";
-                output = output.substring(0, output.length() - 1);
-                output += replacement;
+                output = output.replace("./", replacement + "/");
             }
         }
-        if (output.contains(" /")) {
-            String replacement = Base64.encodeString(" ");
-            replacement = replacement.replace("=", "");
-            replacement = "$%" + replacement + "%$";
-            output = output.replace(" /", replacement + "/");
-        }
-        if (output.contains("./")) {
-            String replacement = Base64.encodeString(".");
-            replacement = replacement.replace("=", "");
-            replacement = "$%" + replacement + "%$";
-            output = output.replace("./", replacement + "/");
-        }
 
-        output = output.replaceAll(AEL_SPECIAL_ENCODING_UNICODE, "ä");
-        output = output.replaceAll(AEU_SPECIAL_ENCODING_UNICODE, "Ä");
-        output = output.replaceAll(OEL_SPECIAL_ENCODING_UNICODE, "ö");
-        output = output.replaceAll(OEU_SPECIAL_ENCODING_UNICODE, "Ö");
-        output = output.replaceAll(UEL_SPECIAL_ENCODING_UNICODE, "ü");
-        output = output.replaceAll(UEU_SPECIAL_ENCODING_UNICODE, "Ü");
-
-        // Spaces at start and end
         return output;
     }
 
     /**
-     * #2480: Decodes illegal characters in filenames for windows such as: |, :,
+     * #2480: Decodes illegal characters in filenames, e.g. for windows such as: |, :,
      * <, >,
      *
      * @param relativeFilename
@@ -446,31 +431,31 @@ public final class FileInfoFactory {
      * @return
      */
     public static String decodeIllegalChars(String relativeFilename) {
-        if (!OSUtil.isWindowsSystem()) {
-            return relativeFilename;
-        }
-        String output = relativeFilename;
-        int start = 0;
-        while ((start = output.indexOf("$%", start)) >= 0) {
-            int end = output.indexOf("%$", start);
-            if (end < 0 || end < start + 2) {
-                break;
-            }
-            String encoded = output.substring(start + 2, end);
-            try {
-                String decoded = Base64.decodeString(encoded + "==");
-                output = output.substring(0, start) + decoded + output.substring(end + 2);
-            } catch (IllegalArgumentException e) {
-                break;
-            } catch (RuntimeException e) {
-                LOG.log(Level.WARNING, "Exception while decoding filename: " + relativeFilename + ". " + e, e);
-                break;
+        String output = StringUtils.convertToPrecomposedForm(relativeFilename);
+
+        if (OSUtil.isWindowsSystem()) {
+            int start = 0;
+            while ((start = output.indexOf("$%", start)) >= 0) {
+                int end = output.indexOf("%$", start);
+                if (end < 0 || end < start + 2) {
+                    break;
+                }
+                String encoded = output.substring(start + 2, end);
+                try {
+                    String decoded = Base64.decodeString(encoded + "==");
+                    output = output.substring(0, start) + decoded + output.substring(end + 2);
+                } catch (IllegalArgumentException e) {
+                    break;
+                } catch (RuntimeException e) {
+                    LOG.log(Level.WARNING, "Exception while decoding filename: " + relativeFilename + ". " + e, e);
+                    break;
+                }
             }
         }
         return output;
     }
 
-    protected static String buildFileName(Path baseDirectory, Path file) {
+    private static String buildFileName(Path baseDirectory, Path file) {
         Reject.ifNull(baseDirectory, "Base directory is null");
         Reject.ifNull(file, "File is null");
         if (file.equals(baseDirectory)) {

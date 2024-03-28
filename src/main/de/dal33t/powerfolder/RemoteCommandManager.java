@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.wizard.*;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.BrowserLauncher.URLProducer;
+import de.dal33t.powerfolder.util.net.NetworkUtil;
 import jwf.WizardPanel;
 
 import java.awt.*;
@@ -136,7 +137,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         try {
             // Only bind to localhost
             testSocket = new ServerSocket(port, 0,
-                InetAddress.getByName("127.0.0.1"));
+                InetAddress.getByName(NetworkUtil.LOOPBACK_LOCALHOST_IPv4));
 
             // Server socket can be opened, no instance of PowerFolder running
             log.fine("No running instance found");
@@ -183,7 +184,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
     public static boolean sendCommand(int port, String command) {
         try {
             log.log(Level.INFO, "Sending remote command '" + command + '\'');
-            Socket socket = new Socket("127.0.0.1", port);
+            Socket socket = new Socket(NetworkUtil.LOOPBACK_LOCALHOST_IPv4, port);
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(
                 socket.getOutputStream(), ENCODING));
 
@@ -212,7 +213,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         try {
             // Only bind to localhost
             serverSocket = new ServerSocket(port, 0,
-                InetAddress.getByName("127.0.0.1"));
+                InetAddress.getByName(NetworkUtil.LOOPBACK_LOCALHOST_IPv4));
 
             // Start thread
             myThread = new Thread(this, "Remote command Manager");
@@ -259,7 +260,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             log.finer("Remote command from " + socket);
             try {
                 String address = socket.getInetAddress().getHostAddress();
-                if (address.equals("localhost") || address.equals("127.0.0.1"))
+                if (address.equals("localhost") || address.equals(NetworkUtil.LOOPBACK_LOCALHOST_IPv4))
                 {
                     BufferedReader reader = new BufferedReader(
                         new InputStreamReader(socket.getInputStream(), ENCODING));

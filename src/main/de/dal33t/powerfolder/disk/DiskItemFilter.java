@@ -41,6 +41,7 @@ import de.dal33t.powerfolder.event.PatternChangedEvent;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.DiskItem;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.dal33t.powerfolder.util.pattern.Pattern;
@@ -209,15 +210,22 @@ public class DiskItemFilter {
             log.warning(ioe.getMessage());
             return;
         }
-        try (BufferedWriter writer = Files.newBufferedWriter(file, Charset.forName("UTF-8"))) {
+        if (Files.notExists(file.getParent())) {
+            try {
+                Files.createDirectories(file.getParent());
+            } catch (IOException e) {
+                log.log(Level.WARNING, "Problem saving pattern to " + file + ". " + e);
+                return;
+            }
+        }
+        try (BufferedWriter writer = Files.newBufferedWriter(file, Convert.UTF8)) {
             for (Pattern pattern : patterns) {
                 writer.write(pattern.getPatternText());
                 writer.newLine();
             }
             dirty = false;
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Problem saving pattern to " + file + ". "
-                + e);
+            log.log(Level.WARNING, "Problem saving pattern to " + file + ". " + e);
             log.log(Level.FINER, e.toString(), e);
         }
     }

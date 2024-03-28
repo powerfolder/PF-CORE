@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.BaseDialog;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -170,8 +171,18 @@ public class DirectoryChooser extends BaseDialog {
                 checkpath = path;
             }
 
-            if (null != checkpath && Files.isWritable(checkpath)) {
-                return true;
+            Path writeCheck = null;
+            try {
+                writeCheck = Files.createTempFile(checkpath, "delete_me_", ".writecheck");
+                return Files.exists(writeCheck);
+            } catch (IOException e) {
+            } finally {
+                if (writeCheck != null) {
+                    try {
+                        Files.deleteIfExists(writeCheck);
+                    } catch (IOException ex) {
+                    }
+                }
             }
         }
 

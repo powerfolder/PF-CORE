@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -149,20 +150,17 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 }
             }
             // Use SSL socket for D2D connections on external interfaces
-            if (useD2D && !("127.0.0.1".equals(bind))) {
-                // Load trust store
-                KeyStore keyStore = KeyStore.getInstance("JKS");
-                keyStore.load(new FileInputStream(getController().getSslTrustStoreFile().toString()), new char[0]);
-                // Create key manager
-                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                keyManagerFactory.init(keyStore, new char[0]);
-                KeyManager keyManager[] = keyManagerFactory.getKeyManagers();
-                // Create SSL context
-                SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-                sslContext.init(keyManager, null, new SecureRandom());
-                // Create SSl socket factory
-                SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
-                serverSocket = serverSocketFactory.createServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
+            boolean createD2DSSLSocket = useD2D;
+            if (useD2D) {
+                if (NetworkUtil.LOOPBACK_LOCALHOST_IPv4.equals(bind)) {
+                    createD2DSSLSocket = false;
+                } else if (port != DEFAULT_D2D_PORT) {
+                    logWarning("Opening non-SSL secured iOS listener. " + bAddress + ":" + port + " must not be reachable from the internet.");
+                    createD2DSSLSocket = false;
+                }
+            }
+            if (createD2DSSLSocket) {
+                serverSocket = createD2DSSLServerSocket(bAddress);
             } else {
                 serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
             }
@@ -184,6 +182,21 @@ public class ConnectionListener extends PFComponent implements Runnable {
         port = serverSocket.getLocalPort();
     }
 
+    private ServerSocket createD2DSSLServerSocket(InetAddress bAddress) throws Exception {
+        // Load trust store
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        keyStore.load(new FileInputStream(getController().getSslTrustStoreFile().toString()), new char[0]);
+        // Create key manager
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        keyManagerFactory.init(keyStore, new char[0]);
+        KeyManager keyManager[] = keyManagerFactory.getKeyManagers();
+        // Create SSL context
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(keyManager, null, new SecureRandom());
+        // Create SSl socket factory
+        SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
+        return serverSocketFactory.createServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
+    }
     /**
      * Answers if the server socket is opened
      *
@@ -389,11 +402,13 @@ public class ConnectionListener extends PFComponent implements Runnable {
             openServerSocket();
         }
 
-        myThread = new Thread(this, "Listener on port "
-            + serverSocket.getLocalPort());
-        myThread.setPriority(Thread.MIN_PRIORITY);
-        myThread.start();
-        logFine("Started");
+        if (myThread == null) {
+            myThread = new Thread(this, "Listener on port "
+                    + serverSocket.getLocalPort());
+            myThread.setPriority(Thread.MIN_PRIORITY);
+            myThread.start();
+            logFine("Started");
+        }
     }
 
     /**

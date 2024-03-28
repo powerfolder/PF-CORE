@@ -240,7 +240,9 @@ public class Debug {
             b.append("\nOS: " + System.getProperty("os.name"));
             b.append("\nJava: " + JavaVersion.systemVersion().toString() + " ("
                 + System.getProperty("java.vendor") + ')');
-            b.append("\nMemory: " + Format.formatBytesShort(Runtime.getRuntime().totalMemory())
+            long usedMemory =  Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            b.append("\nMemory: " + Format.formatBytesShort(usedMemory)
+                    + "/" + Format.formatBytesShort(Runtime.getRuntime().totalMemory())
                     + "/" + Format.formatBytesShort(Runtime.getRuntime().maxMemory()));
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());
@@ -841,6 +843,18 @@ public class Debug {
         StringBuilder b = new StringBuilder();
         for (StackTraceElement te : t.getStackTrace()) {
             if (hideIdleThreds) {
+                if (te.toString().contains("java.lang.ref.Reference.waitForReferencePendingList")) {
+                    return null;
+                }
+                if (te.toString().contains("sun.nio.ch.EPoll.wait")) {
+                    return null;
+                }
+                if (te.toString().contains("sun.nio.ch.Net.accept")) {
+                    return null;
+                }
+                if (te.toString().contains("sun.nio.ch.SocketDispatcher.read")) {
+                    return null;
+                }
                 if (te.toString().contains(
                     "java.net.SocketInputStream.socketRead0"))
                 {

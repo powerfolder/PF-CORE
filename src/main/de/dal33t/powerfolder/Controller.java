@@ -87,8 +87,8 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 20;
-    private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 101;
+    private static final int MINOR_VERSION = 4;
+    private static final int REVISION_VERSION = 90;
 
     private static final int SPRINT_NUMBER = 52;
 
@@ -1481,17 +1481,17 @@ public class Controller extends PFComponent {
     public void initializeListenerOnLocalPortD2D() {
         /* Check whether to start D2D, too */
         int port = ConfigurationEntry.NET_PORT_D2D.getValueInt(this);
-        if (port > 0) {
-            logInfo("D2D is enabled");
-            boolean listenerOpened = false;
-            for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
-                listenerOpened = openListener(bindAddress, port, true);
+        if (port <= 0) {
+            return;
+        }
+        boolean listenerOpened;
+        for (String bindAddress : ConfigurationEntry.NET_BIND_ADDRESS.getValueArray(this)) {
+            listenerOpened = openListener(bindAddress, port, true);
+            if (!listenerOpened) {
+                logSevere("Couldn't bind to iOS port " + port);
+            } else {
+                logInfo("Listening for iOS on port " + port);
                 nodeManager.getMySelf().getInfo().setD2dPort(port);
-                if (!listenerOpened) {
-                    logSevere("Couldn't bind to D2D port " + port);
-                } else {
-                    //logInfo("Listening on D2D port " + port);
-                }
             }
         }
         for (ConnectionListener connectionListener : additionalConnectionListeners) {
@@ -1511,11 +1511,10 @@ public class Controller extends PFComponent {
     public void initializeListenerOnLoopbackInterfaceD2D() {
         logFine("D2D is enabled on loopback interface");
         boolean listenerOpened;
-        String bindAddress = "127.0.0.1";
+        String bindAddress = NetworkUtil.LOOPBACK_LOCALHOST_IPv4;
         // Random port (if there is more than one server on the same machine, the port needs to be random anyway)
         int port = 0;
         listenerOpened = openListener(bindAddress, port, true);
-        nodeManager.getMySelf().getInfo().setD2dPort(port);
         if (!listenerOpened) {
             logSevere("Couldn't bind to D2D port " + port);
         }
@@ -1523,7 +1522,8 @@ public class Controller extends PFComponent {
             if (connectionListener.useD2D) {
                 try {
                     connectionListener.start();
-                    //logInfo("Listening on D2D port " + connectionListener.getLocalAddress().getPort());
+                    logFine("Listening for iOS on port " + connectionListener.getLocalAddress().getPort());
+                    // nodeManager.getMySelf().getInfo().setD2dPort(port);
                 } catch (ConnectionException e) {
                     logSevere("Problems starting listener " + connectionListener, e);
                 }

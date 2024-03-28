@@ -17,17 +17,33 @@
  */
 package de.dal33t.powerfolder.light;
 
+import de.dal33t.powerfolder.util.StringUtils;
 import junit.framework.TestCase;
+
+import java.util.Date;
 
 /**
  * Created by sprajc on 23.05.17.
  */
 public class FileInfoFactoryTest extends TestCase {
 
+
+    public void testPFC3428() {
+        String diskFile = "KV402505_Buch Resonanzräume.PDF";
+        String funame = "KV402505_Buch Resonanzräume.PDF";
+        assertFalse(funame.equals(diskFile));
+        FileInfo fileInfo = FileInfoFactory.unmarshallExistingFile(
+                FolderInfoFactory.lookupInstance("123"), funame, null, 100, null, null,
+                new Date(), 0, null, false, null);
+
+        // Should be converted internally
+        assertEquals(diskFile, fileInfo.getRelativeName());
+    }
+
     public void testPFC3375() {
-        String input = FileInfoFactory.AEL_SPECIAL_ENCODING_UNICODE + FileInfoFactory.AEU_SPECIAL_ENCODING_UNICODE
-                + FileInfoFactory.OEL_SPECIAL_ENCODING_UNICODE + FileInfoFactory.OEU_SPECIAL_ENCODING_UNICODE
-                + FileInfoFactory.UEL_SPECIAL_ENCODING_UNICODE + FileInfoFactory.UEU_SPECIAL_ENCODING_UNICODE;
+        String input = StringUtils.AEL_SPECIAL_ENCODING_UNICODE + StringUtils.AEU_SPECIAL_ENCODING_UNICODE
+                + StringUtils.OEL_SPECIAL_ENCODING_UNICODE + StringUtils.OEU_SPECIAL_ENCODING_UNICODE
+                + StringUtils.UEL_SPECIAL_ENCODING_UNICODE + StringUtils.UEU_SPECIAL_ENCODING_UNICODE;
         String expected = "äÄöÖüÜ";
         assertEquals(expected, FileInfoFactory.encodeIllegalChars(input));
     }

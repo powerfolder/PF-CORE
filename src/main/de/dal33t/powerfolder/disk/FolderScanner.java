@@ -273,10 +273,14 @@ public class FolderScanner extends PFComponent {
                 // Do not perform FileInfo.syncFromDiskIfRequired
                 // This would leave to extra I/O for all files that had been
                 // deleted in the past on every scan.
-                FileInfo deletedFileInfo = FileInfoFactory.deletedFile(
-                    fileInfo, getController().getMySelf().getInfo(),
-                    getController().getMySelf().getAccountInfo(), new Date());
-                currentScanResult.deletedFiles.add(deletedFileInfo);
+                try {
+                    FileInfo deletedFileInfo = FileInfoFactory.deletedFile(
+                            fileInfo, getController().getMySelf().getInfo(),
+                            getController().getMySelf().getAccountInfo(), new Date());
+                    currentScanResult.deletedFiles.add(deletedFileInfo);
+                } catch (RuntimeException e) {
+                    logWarning(fileInfo.toDetailString() + ": Problem while marking as deleted: " + e);
+                }
             }
 
             // result.setMovedFiles(moved);

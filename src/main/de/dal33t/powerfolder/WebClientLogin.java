@@ -1,6 +1,8 @@
 package de.dal33t.powerfolder;
 
 
+import de.dal33t.powerfolder.util.net.NetworkUtil;
+
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -206,7 +208,7 @@ public class WebClientLogin extends PFComponent {
         try {
             // Only bind to localhost
             testSocket = new ServerSocket(port, 30,
-                    InetAddress.getByName("127.0.0.1"));
+                    InetAddress.getByName(NetworkUtil.LOOPBACK_LOCALHOST_IPv4));
 
             // Server socket can be opened, no instance of PowerFolder running
             log.fine("No running instance found");

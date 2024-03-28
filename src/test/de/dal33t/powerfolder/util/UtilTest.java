@@ -891,6 +891,13 @@ public class UtilTest extends TestCase {
         controllerLisa.shutdown();
     }
 
+    public void testVersionIsMinimumOrHigher() {
+        assertTrue(Util.versionIsMinimumOrHigher("20.4.1", "20.4"));
+        assertTrue(Util.versionIsMinimumOrHigher("20.4.1", "20.4.1"));
+        assertTrue(Util.versionIsMinimumOrHigher("20.4.4", "20.4.1"));
+        assertFalse(Util.versionIsMinimumOrHigher("20.3.100", "20.4.1"));
+    }
+
     public void testCompareVersions() {
         String firstVersion = "8.1.0 aaa";
         String secondVersion = "8.1.0 bbb";

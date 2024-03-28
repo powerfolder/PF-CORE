@@ -299,11 +299,6 @@ public enum ConfigurationEntry {
     SERVER_HOST("server.host", "os007.powerfolder.com"),
 
     /**
-     * The D2D port of the server
-     */
-    SERVER_PORT_D2D("server.port.d2d", 0),
-
-    /**
      * HTTP tunnel relay URL.
      */
     SERVER_HTTP_TUNNEL_RPC_URL("provider.url.httptunnel",

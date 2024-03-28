@@ -741,6 +741,21 @@ public class Util {
     }
 
     /**
+     * Compares two version string which have the format "x.x.x aaa".
+     * <p>
+     * The last " aaa" is optional.
+     *
+     * @param version the version to check which is higher or same as the minimum version
+     * @param minimumVersion the minimum version version needs to be
+     * @return true if higherVersion is greater than compareVersion
+     */
+    public static boolean versionIsMinimumOrHigher(String version,
+                                          String minimumVersion)
+    {
+        return !compareVersions(minimumVersion, version);
+    }
+
+    /**
      * Comparse two version string which have the format "x.x.x aaa".
      * <p>
      * The last " aaa" is optional.

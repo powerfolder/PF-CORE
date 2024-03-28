@@ -82,7 +82,7 @@ public class Identity extends Message implements D2DObject, D2DEvent
     private String programVersion = Controller.PROGRAM_VERSION;
 
     // PFS-4234: Platform information
-    private String operatingSystem = System.getProperty("os.name");
+    private String operatingSystem;
 
     private Calendar timeGMT = Calendar.getInstance();
 
@@ -160,6 +160,7 @@ public class Identity extends Message implements D2DObject, D2DEvent
     {
         Reject.ifNull(controller, "Controller is null");
         Reject.ifNull(myself, "Member is null");
+        this.operatingSystem = System.getProperty("os.name");
         this.member = myself;
         this.magicId = magicId;
         this.supportsEncryption = supportsEncryption;
