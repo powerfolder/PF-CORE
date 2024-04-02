@@ -32,6 +32,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -77,6 +78,83 @@ public class FileTransferTest extends TwoControllerTestCase {
         
         // Let startup settle down.
         TestHelper.waitMilliSeconds(500);
+    }
+
+    /**
+     * PFC-3428
+     */
+    public void testDiffrentUnicodeEncodings() throws IOException {
+        String filename = StringUtils.AEL_SPECIAL_ENCODING_UNICODE + StringUtils.AEU_SPECIAL_ENCODING_UNICODE + ".txt";
+        Path f = TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), filename);
+        assertTrue(f.toString(), Files.exists(f));
+        scanFolder(getFolderAtBart());
+        assertEquals(getFolderAtBart().getKnownFiles().toString(), 1,
+                getFolderAtBart().getKnownFiles().size());
+        FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
+        assertEquals(filename, fInfo.getRelativeName());
+        LoggingManager.setConsoleLogging(Level.FINE);
+        // Give them time to copy
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+
+            @Override
+            public boolean reached() {
+                return 1 == getContollerLisa().getTransferManager()
+                        .countCompletedDownloads();
+            }
+
+            @Override
+            public String message() {
+                return "Number of actually completed downloads for Lisa: "
+                        + getContollerLisa().getTransferManager()
+                        .countCompletedDownloads() + " incoming on Lisa: "
+                        + getFolderAtLisa().getIncomingFiles().size();
+            }
+        });
+        FileInfo fInfoLisa = getFolderAtLisa().getKnownFiles().iterator()
+                .next();
+        assertEquals(filename, fInfoLisa.getRelativeName());
+        assertEquals(fInfo, fInfoLisa);
+
+        Path fLisa = fInfoLisa.getDiskFile(getContollerLisa()
+                .getFolderRepository());
+        assertTrue(
+                fInfoLisa + " @ " + fLisa.toString() + ". EXPECED: "
+                        + FileInfoFactory.encodeIllegalChars(filename),
+                fLisa.toAbsolutePath().toString().replace("\\", "/")
+                        .endsWith(FileInfoFactory.encodeIllegalChars(filename)));
+
+        // Test update
+        TestHelper.changeFile(fLisa);
+        scanFolder(getFolderAtLisa());
+        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+
+            @Override
+            public boolean reached() {
+                return 1 == getContollerBart().getTransferManager()
+                        .countCompletedDownloads();
+            }
+
+            @Override
+            public String message() {
+                return "Number of actually completed downloads for Bart: "
+                        + getContollerBart().getTransferManager()
+                        .countCompletedDownloads();
+            }
+        });
+        assertEquals(getFolderAtBart().getKnownFiles().toString(), 1,
+                getFolderAtBart().getKnownFiles().size());
+        fInfo = getFolderAtBart().getKnownFiles().iterator().next();
+        assertEquals(filename, fInfo.getRelativeName());
+
+        // Test restore from archive
+        assertTrue("Bart does not have file in archive: " + fInfo,
+                getFolderAtBart().getFileArchiver().hasArchivedFileInfo(fInfo));
+        FileInfo aFInfo = getFolderAtBart().getFileArchiver()
+                .getArchivedFilesInfos(fInfo).get(0);
+        assertTrue(
+                "Bart was unable to restore file from archive: " + fInfo,
+                getFolderAtBart().getFileArchiver().restore(aFInfo,
+                        aFInfo.getDiskFile(getContollerBart().getFolderRepository())));
     }
 
     /**

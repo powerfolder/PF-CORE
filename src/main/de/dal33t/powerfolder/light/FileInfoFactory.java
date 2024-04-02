@@ -383,7 +383,7 @@ public final class FileInfoFactory {
      * @return
      */
     public static String encodeIllegalChars(String relativeFilename) {
-        String output = StringUtils.convertToPrecomposedForm(relativeFilename);
+        String output = relativeFilename;
 
         if (OSUtil.isWindowsSystem()) {
             for (String illChar : ILLEGAL_WINDOWS_CHARS) {
@@ -431,7 +431,7 @@ public final class FileInfoFactory {
      * @return
      */
     public static String decodeIllegalChars(String relativeFilename) {
-        String output = StringUtils.convertToPrecomposedForm(relativeFilename);
+        String output = relativeFilename;
 
         if (OSUtil.isWindowsSystem()) {
             int start = 0;
