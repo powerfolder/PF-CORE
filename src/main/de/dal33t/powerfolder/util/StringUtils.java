@@ -117,6 +117,19 @@ public class StringUtils {
         return false;
     }
 
+    /**
+     * Replaces if necessary, faster than String#replace in case no replace is needed
+     */
+    public static String replaceIfNecessary(String input, String what, String with) {
+        if (input == null || what == null || with == null) {
+            return null;
+        }
+        if (!input.contains(what)) {
+            return input;
+        }
+        return input.replace(what, with);
+    }
+
     public static boolean isEqual(String string1, String string2) {
         if (string1 == null && string2 == null) {
             return true;
