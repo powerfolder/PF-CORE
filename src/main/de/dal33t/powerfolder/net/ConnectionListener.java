@@ -37,7 +37,9 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
-import java.io.*;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.*;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -529,30 +531,30 @@ public class ConnectionListener extends PFComponent implements Runnable {
         }
     }
 
-public class SocketAcceptor extends AbstractAcceptor {
-    protected Socket socket;
+    public class SocketAcceptor extends AbstractAcceptor {
+        protected Socket socket;
 
-    protected SocketAcceptor(Socket socket) {
-        super(ConnectionListener.this.getController());
-        Reject.ifNull(socket, "Socket is null");
-        this.socket = socket;
-    }
-
-    @Override
-    public String getConnectionInfo() {
-        return socket.getRemoteSocketAddress().toString();
-    }
-
-    @Override
-    protected void accept() throws ConnectionException {
-        if (isFiner()) {
-            logFiner("Accepting connection from: "
-                    + socket.getInetAddress() + ":" + socket.getPort());
+        protected SocketAcceptor(Socket socket) {
+            super(ConnectionListener.this.getController());
+            Reject.ifNull(socket, "Socket is null");
+            this.socket = socket;
         }
-        ConnectionHandler handler = getController().getIOProvider()
-                .getConnectionHandlerFactory()
-                .createAndInitSocketConnectionHandler(socket,
-                        ConnectionListener.this.useD2D);
+
+        @Override
+        public String getConnectionInfo() {
+            return socket.getRemoteSocketAddress().toString();
+        }
+
+        @Override
+        protected void accept() throws ConnectionException {
+            if (isFiner()) {
+                logFiner("Accepting connection from: "
+                        + socket.getInetAddress() + ":" + socket.getPort());
+            }
+            ConnectionHandler handler = getController().getIOProvider()
+                    .getConnectionHandlerFactory()
+                    .createAndInitSocketConnectionHandler(socket,
+                            ConnectionListener.this.useD2D);
 
             if (handler instanceof D2DSocketConnectionHandler) {
                 // For D2D accepting is done in the message handler
@@ -566,13 +568,13 @@ public class SocketAcceptor extends AbstractAcceptor {
             }
         }
 
-    @Override
-    protected void shutdown() {
-        try {
-            socket.close();
-        } catch (IOException e) {
-            logFiner("Unable to close socket from acceptor", e);
+        @Override
+        protected void shutdown() {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                logFiner("Unable to close socket from acceptor", e);
+            }
         }
     }
-}
 }
