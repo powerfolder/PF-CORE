@@ -23,10 +23,10 @@ import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.d2d.ClientWebSocketConnectionHandler;
 import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.*;
-import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
@@ -37,9 +37,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -57,7 +55,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     //
     // constants
     //
-    public static final int DEFAULT_PORT     = 1337;
+    public static final int DEFAULT_PORT = 1337;
     public static final int DEFAULT_D2D_PORT = 7331;
 
     // return constants from dyndns validation
@@ -74,72 +72,76 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private boolean hasIncomingConnection;
 
     public final boolean useD2D; ///< Whether to use D2D proto
+    public final boolean useWebClient = true; ///< Whether to use D2D proto
 
-    /** ConnectionListener
+    /**
+     * ConnectionListener
      * Init connection listener
+     *
+     * @param controller      The {@link Controller}
+     * @param port            Port to listen on
+     * @param bindToInterface Interface to bind to
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  controller       The {@link Controller}
-     * @param  port             Port to listen on
-     * @param  bindToInterface  Interface to bind to
      * @throw {@link ConnectionException} Raised when something is wrong
      */
 
-    public
-    ConnectionListener(Controller controller,
-      int port,
-      String bindToInterface) throws ConnectionException
-    {
-      this(controller, port, bindToInterface, false);
+    public ConnectionListener(Controller controller,
+                              int port,
+                              String bindToInterface) throws ConnectionException {
+        this(controller, port, bindToInterface, true);
     }
 
-    /** ConnectionListener
+    /**
+     * ConnectionListener
      * Init connection listener
+     *
+     * @param controller      The {@link Controller}
+     * @param port            Port to listen on
+     * @param bindToInterface Interface to bind to
+     * @param useD2D          Whether to use D2D proto
      * @author Christoph Kappel <kappel@powerfolder.com>
-     * @param  controller       The {@link Controller}
-     * @param  port             Port to listen on
-     * @param  bindToInterface  Interface to bind to
-     * @param  useD2D           Whether to use D2D proto
      * @throw {@link ConnectionException} Raised when something is wrong
      */
 
-    public
-    ConnectionListener(Controller controller,
-      int port,
-      String bindToInterface,
-      boolean useD2D) throws ConnectionException
-    {
-      super(controller);
+    public ConnectionListener(Controller controller,
+                              int port,
+                              String bindToInterface,
+                              boolean useD2D) throws ConnectionException {
+        super(controller);
+        if (0 > port) {
+            this.port = (useD2D ? ConfigurationEntry.NET_PORT_D2D.getValueInt(getController()) : DEFAULT_PORT);
+        } else this.port = port;
 
-      if(0 > port) {
-          this.port = (useD2D ? ConfigurationEntry.NET_PORT_D2D.getValueInt(getController()) : DEFAULT_PORT);
-      } else this.port = port;
+        this.hasIncomingConnection = false;
+        this.interfaceAddress = bindToInterface;
+        this.useD2D = useD2D;
 
-      this.hasIncomingConnection = false;
-      this.interfaceAddress      = bindToInterface;
-      this.useD2D                = useD2D;
+        // check our own dyndns address
+        String dns = ConfigurationEntry.HOSTNAME.getValue(getController());
 
-      // check our own dyndns address
-      String dns = ConfigurationEntry.HOSTNAME.getValue(getController());
+        // set the dyndns without any validations
+        // assuming it has been validated on the pevious time
+        // round when it was set.
+        setMyDynDns(dns, false);
 
-      // set the dyndns without any validations
-      // assuming it has been validated on the pevious time
-      // round when it was set.
-      setMyDynDns(dns, false);
-
-      // Open server socket
-      openServerSocket(); // Port is first valid after this call
+        // Open server socket
+        openServerSocket(); // Port is first valid after this call
     }
 
     /**
      * Opens the serversocket
      *
-     * @throws ConnectionException
-     *             if port is blocked
+     * @throws ConnectionException if port is blocked
      */
     private void openServerSocket() throws ConnectionException {
         InetAddress bAddress = null;
         try {
             logFiner("Opening listener on port " + port);
+
+
+            System.out.println("Opening listener on port " + port);
+
+
             String bind = interfaceAddress;
             if (bind != null && !StringUtils.isBlank(bind)) {
                 try {
@@ -169,11 +171,11 @@ public class ConnectionListener extends PFComponent implements Runnable {
             throw new ConnectionException("Cannot open D2D server socket: Cannot get SSL certificate", e);
         } catch (Exception e) {
             throw new ConnectionException(Translation.get(
-                "dialog.unable_to_open_port", port + ""), e);
+                    "dialog.unable_to_open_port", port + ""), e);
         }
         if (isFine()) {
             if (useD2D) {
-                logFine("Listening for incoming D2D connections on port " + ((InetSocketAddress)serverSocket.getLocalSocketAddress()).getPort() + ", own address: " + bAddress);
+                logFine("Listening for incoming D2D connections on port " + ((InetSocketAddress) serverSocket.getLocalSocketAddress()).getPort() + ", own address: " + bAddress);
             } else {
                 logFine("Listening for incoming connections on port " + serverSocket.getLocalPort() + (myDyndns != null ? ", own address: " + myDyndns : ""));
             }
@@ -197,6 +199,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
         SSLServerSocketFactory serverSocketFactory = sslContext.getServerSocketFactory();
         return serverSocketFactory.createServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
     }
+
     /**
      * Answers if the server socket is opened
      *
@@ -262,15 +265,15 @@ public class ConnectionListener extends PFComponent implements Runnable {
     /**
      * Tries to set a new dyndns address.
      *
+     * @return OK if succeded, CANNOT_RESOLVE if dyndns could not be resolved
+     * and VALIDATION_FAILED if dyndns does not match the local host
      * @newDns new dyndns to set
      * @validate flag indicating whether to perform dyndns validtion or just to
-     *           set it
-     * @return OK if succeded, CANNOT_RESOLVE if dyndns could not be resolved
-     *         and VALIDATION_FAILED if dyndns does not match the local host
+     * set it
      */
     public int setMyDynDns(String newDns, boolean validate) {
         logFine("Setting own dns to " + newDns + ". was: "
-            + (myDyndns != null ? myDyndns.getHostName() : ""));
+                + (myDyndns != null ? myDyndns.getHostName() : ""));
 
         // FIXME Don't reset!!! If nothing has changed! CLEAN UP THIS MESS!
         if (validate) {
@@ -301,7 +304,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     if (validate) {
                         getController().getDynDnsManager().close();
                         getController().getDynDnsManager().showWarningMsg(
-                            CANNOT_RESOLVE, myDyndns.getHostName());
+                                CANNOT_RESOLVE, myDyndns.getHostName());
                     }
 
                     logWarning("Unable to resolve own address '" + newDns + "'");
@@ -310,7 +313,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 }
             } catch (Exception e) {
                 logWarning("Unable to get hostname: " + newDns + ":" + port
-                    + ". " + e);
+                        + ". " + e);
                 myDyndns = null;
             }
 
@@ -327,7 +330,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 String strDyndnsIP = myDyndnsIP.getHostAddress(); // dyndns IP
                 // address
                 String externalIP = getController().getDynDnsManager()
-                    .getIPviaHTTPCheckIP(); // internet IP of the local host
+                        .getIPviaHTTPCheckIP(); // internet IP of the local host
 
                 boolean checkOK = false;
 
@@ -336,8 +339,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     InetAddress niAddrs = localIPs.get(i);
 
                     if (Util.compareIpAddresses(myDyndnsIP.getAddress(),
-                        niAddrs.getAddress()))
-                    {
+                            niAddrs.getAddress())) {
                         checkOK = true;
                         break;
                     }
@@ -354,7 +356,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     getController().getDynDnsManager().close();
 
                     logWarning("Own address " + newDns
-                        + " does not match any of the local network interfaces");
+                            + " does not match any of the local network interfaces");
                     return VALIDATION_FAILED;
                 }
 
@@ -368,15 +370,15 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
                 // check if dyndns really matches the external IP of this host
                 boolean dyndnsMatchesExternalIP = externalIP
-                    .equals(strDyndnsIP);
+                        .equals(strDyndnsIP);
                 boolean dyndnsMatchesLastUpdatedIP = externalIP
-                    .equals(ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
-                        .getValue(getController()));
+                        .equals(ConfigurationEntry.DYNDNS_LAST_UPDATED_IP
+                                .getValue(getController()));
                 if (!dyndnsMatchesExternalIP && !dyndnsMatchesLastUpdatedIP) {
                     // getController().getDynDnsManager().showWarningMsg(
                     // VALIDATION_FAILED, myDyndns.getHostName());
                     logWarning("Own address " + newDns
-                        + " does not match the external IP of this host");
+                            + " does not match the external IP of this host");
                     return VALIDATION_FAILED;
                 }
             }
@@ -393,8 +395,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     /**
      * Starts the connection listener
      *
-     * @throws ConnectionException
-     *             if port is blocked
+     * @throws ConnectionException if port is blocked
      */
     public void start() throws ConnectionException {
         if (!isServerSocketOpen()) {
@@ -438,21 +439,21 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
     /**
      * @return Address where incoming connects are possible. returns the own
-     *         dyndns address if available
+     * dyndns address if available
      */
     public InetSocketAddress getAddress() {
         return (myDyndns != null) ? myDyndns : (serverSocket == null)
-            ? null
-            : (InetSocketAddress) serverSocket.getLocalSocketAddress();
+                ? null
+                : (InetSocketAddress) serverSocket.getLocalSocketAddress();
     }
 
     /**
      * @return Address where incoming connects are possible. returns the bound
-     *         to address
+     * to address
      */
     public InetSocketAddress getLocalAddress() {
         return (serverSocket == null) ? null : (InetSocketAddress) serverSocket
-            .getLocalSocketAddress();
+                .getLocalSocketAddress();
     }
 
     /**
@@ -481,7 +482,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 boolean inAllowedNetworkScope = true;
                 if (getController().isLanOnly()) {
                     inAllowedNetworkScope = getController().getNodeManager()
-                        .isOnLANorConfiguredOnLAN(nodeSocket.getInetAddress());
+                            .isOnLANorConfiguredOnLAN(nodeSocket.getInetAddress());
                 }
                 if (!inAllowedNetworkScope) {
                     nodeSocket.close();
@@ -492,8 +493,8 @@ public class ConnectionListener extends PFComponent implements Runnable {
                 hasIncomingConnection = true;
                 if (isFiner()) {
                     logFiner("Incoming connection from: "
-                        + nodeSocket.getInetAddress() + ":"
-                        + nodeSocket.getPort());
+                            + nodeSocket.getInetAddress() + ":"
+                            + nodeSocket.getPort());
                 }
 
                 final MemberInfo me = getController().getMySelf().getInfo();
@@ -504,73 +505,74 @@ public class ConnectionListener extends PFComponent implements Runnable {
                     me.setConnectAddress(getAddress());
                     // Broadcast our new status, we want stats ;)
                     getController().getNodeManager().broadcastMessage(Identity.PROTOCOL_VERSION_107,
-                        new SingleMessageProducer() {
-                            @Override
-                            public Message getMessage(boolean useExt) {
-                                return useExt
-                                    ? new KnownNodesExt(me)
-                                    : new KnownNodes(me);
+                            new SingleMessageProducer() {
+                                @Override
+                                public Message getMessage(boolean useExt) {
+                                    return useExt
+                                            ? new KnownNodesExt(me)
+                                            : new KnownNodes(me);
 
-                            }
-                        }, null);
+                                }
+                            }, null);
                 }
 
                 // new member, accept it
                 getController().getNodeManager().acceptConnectionAsynchron(
-                    new SocketAcceptor(nodeSocket));
+                        new SocketAcceptor(nodeSocket));
             } catch (SocketException e) {
                 logFine("Listening socket on port "
-                    + serverSocket.getLocalPort() + " closed");
+                        + serverSocket.getLocalPort() + " closed");
                 break;
-            } catch (IOException e) {
-                logSevere("Exception while accepting socket: " + e, e);
-            } catch (RuntimeException e) {
+            } catch (IOException | RuntimeException e) {
                 logSevere("Exception while accepting socket: " + e, e);
             }
         }
     }
 
-    public class SocketAcceptor extends AbstractAcceptor {
-        protected Socket socket;
+public class SocketAcceptor extends AbstractAcceptor {
+    protected Socket socket;
 
-        protected SocketAcceptor(Socket socket) {
-            super(ConnectionListener.this.getController());
-            Reject.ifNull(socket, "Socket is null");
-            this.socket = socket;
-        }
+    protected SocketAcceptor(Socket socket) {
+        super(ConnectionListener.this.getController());
+        Reject.ifNull(socket, "Socket is null");
+        this.socket = socket;
+    }
 
-        @Override
-        public String getConnectionInfo() {
-            return socket.getRemoteSocketAddress().toString();
-        }
+    @Override
+    public String getConnectionInfo() {
+        return socket.getRemoteSocketAddress().toString();
+    }
 
-        @Override
-        protected void accept() throws ConnectionException {
-            if (isFiner()) {
-                logFiner("Accepting connection from: "
+    @Override
+    protected void accept() throws ConnectionException {
+        if (isFiner()) {
+            logFiner("Accepting connection from: "
                     + socket.getInetAddress() + ":" + socket.getPort());
-            }
-            ConnectionHandler handler = getController().getIOProvider()
+        }
+        ConnectionHandler handler = getController().getIOProvider()
                 .getConnectionHandlerFactory()
                 .createAndInitSocketConnectionHandler(socket,
-                  ConnectionListener.this.useD2D);
+                        ConnectionListener.this.useD2D);
 
             if (handler instanceof D2DSocketConnectionHandler) {
                 // For D2D accepting is done in the message handler
                 ((D2DSocketConnectionHandler) handler).setSocketAcceptor(this);
+            } else if (handler instanceof ClientWebSocketConnectionHandler) {
+                // For ClientWebSocketConnectionHandler accepting is done in the message handler
+                ((ClientWebSocketConnectionHandler) handler).setSocketAcceptor(this);
             } else {
                 // Accept node
                 acceptConnection(handler);
             }
         }
 
-        @Override
-        protected void shutdown() {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                logFiner("Unable to close socket from acceptor", e);
-            }
+    @Override
+    protected void shutdown() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            logFiner("Unable to close socket from acceptor", e);
         }
     }
+}
 }
