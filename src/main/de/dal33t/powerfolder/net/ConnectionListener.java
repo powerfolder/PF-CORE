@@ -553,7 +553,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             ConnectionHandler handler = getController().getIOProvider()
                     .getConnectionHandlerFactory()
                     .createAndInitSocketConnectionHandler(socket,
-                            ConnectionListener.this.useD2D);
+                            false);
 
             if (handler instanceof D2DSocketConnectionHandler) {
                 // For D2D accepting is done in the message handler

@@ -33,11 +33,11 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ClientWebSocketConnectionHandler extends AbstractSocketConnectionHandler
         implements ConnectionHandler {
 
-    private NodeStateMachine nodeStateMachine = NodeStateMachine.build();
+    private final NodeStateMachine nodeStateMachine = NodeStateMachine.build();
 
     private ConnectionListener.SocketAcceptor socketAcceptor;
 
-    protected ClientWebSocketConnectionHandler(Controller controller, Socket socket) {
+    public ClientWebSocketConnectionHandler(Controller controller, Socket socket) {
         super(controller, socket);
     }
 
@@ -75,6 +75,7 @@ public class ClientWebSocketConnectionHandler extends AbstractSocketConnectionHa
                 throw new ConnectionException("Unable to open connection: " + e.getMessage(), e).with(this);
             }
             getController().getIOProvider().startKeepAliveCheck(this);
+            return;
         }
 
         throw new ConnectionException("Connection to peer is closed")
