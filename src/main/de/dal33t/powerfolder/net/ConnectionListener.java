@@ -74,7 +74,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private boolean hasIncomingConnection;
 
     public final boolean useD2D; ///< Whether to use D2D proto
-    public final boolean useWebClient = true; ///< Whether to use D2D proto
+    public final boolean useClientWebSocket = true; ///< Whether to use D2D proto
 
     /**
      * ConnectionListener
@@ -140,10 +140,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
         try {
             logFiner("Opening listener on port " + port);
 
-
-            System.out.println("Opening listener on port " + port);
-
-
             String bind = interfaceAddress;
             if (bind != null && !StringUtils.isBlank(bind)) {
                 try {
@@ -165,7 +161,10 @@ public class ConnectionListener extends PFComponent implements Runnable {
             }
             if (createD2DSSLSocket) {
                 serverSocket = createD2DSSLServerSocket(bAddress);
-            } else {
+            } else if (useClientWebSocket){
+                serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
+            }
+            else{
                 serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
             }
         } catch (EOFException e) {
