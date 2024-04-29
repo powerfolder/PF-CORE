@@ -300,13 +300,18 @@ public class FolderList extends Message implements D2DObject, D2DEvent
     public void handle(Member node) {
         node.processFolderListD2D(this);
         // Execute additional code during handshake phase
-        D2DSocketConnectionHandler d2DSocketConnectionHandler = ((D2DSocketConnectionHandler)node.getPeer());
-        if (d2DSocketConnectionHandler == null) {
-            return;
+        D2DSocketConnectionHandler d2DSocketConnectionHandler = ((D2DSocketConnectionHandler) node.getPeer());
+        if (d2DSocketConnectionHandler != null) {
+            if (d2DSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_FOLDER_LIST_WAIT || d2DSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_LOGIN_REQUEST_WAIT) {
+                node.handshakeFolderList();
+                return;
+            }
         }
-
-        if (d2DSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_FOLDER_LIST_WAIT || d2DSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_LOGIN_REQUEST_WAIT) {
-            node.handshakeFolderList();
+        ClientWebSocketConnectionHandler webSocketConnectionHandler = ((ClientWebSocketConnectionHandler) node.getPeer());
+        if (webSocketConnectionHandler != null) {
+            if (webSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_FOLDER_LIST_WAIT || webSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_LOGIN_REQUEST_WAIT) {
+                node.handshakeFolderList();
+            }
         }
     }
 
