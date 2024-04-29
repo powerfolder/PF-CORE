@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.net;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.d2d.ClientWebSocketConnectionHandler;
 import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -177,7 +178,7 @@ public class ConnectionHandlerFactory extends PFComponent {
           conHan = new D2DSocketConnectionHandler(
             getController(), socket);
         }
-      else conHan = new PlainSocketConnectionHandler(
+      else conHan = new ClientWebSocketConnectionHandler(
         getController(), socket);
 
       /* Finally init this handler */
