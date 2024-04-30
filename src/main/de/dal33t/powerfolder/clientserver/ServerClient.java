@@ -2694,7 +2694,8 @@ public class ServerClient extends PFComponent {
      * @return true if a target server supports federation.
      */
     private boolean isFederatedLogin() throws RemoteCallException {
-        return ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(config);
+        return ConfigurationEntry.SERVER_FEDERATION_ENABLED.getValueBoolean(config)
+                && ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(config);
     }
 
     /**
