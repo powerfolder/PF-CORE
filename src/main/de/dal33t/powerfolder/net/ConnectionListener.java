@@ -74,7 +74,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
     private boolean hasIncomingConnection;
 
     public final boolean useD2D; ///< Whether to use D2D proto
-    public final boolean useClientWebSocket = true; ///< Whether to use D2D proto
 
     /**
      * ConnectionListener
@@ -116,7 +115,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
 
         this.hasIncomingConnection = false;
         this.interfaceAddress = bindToInterface;
-        this.useD2D = useD2D;
+        this.useD2D = false; //TODO logic with setting var
 
         // check our own dyndns address
         String dns = ConfigurationEntry.HOSTNAME.getValue(getController());
@@ -161,8 +160,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
             }
             if (createD2DSSLSocket) {
                 serverSocket = createD2DSSLServerSocket(bAddress);
-            } else if (useClientWebSocket){
-                serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
             }
             else{
                 serverSocket = new ServerSocket(port, Constants.MAX_INCOMING_CONNECTIONS, bAddress);
@@ -553,7 +550,7 @@ public class ConnectionListener extends PFComponent implements Runnable {
             ConnectionHandler handler = getController().getIOProvider()
                     .getConnectionHandlerFactory()
                     .createAndInitSocketConnectionHandler(socket,
-                            false);   //put var false if you want to use ClientWebSocketConnectionHandler
+                            useD2D);   //put var false if you want to use ClientWebSocketConnectionHandler
 
             if (handler instanceof D2DSocketConnectionHandler) {
                 // For D2D accepting is done in the message handler
