@@ -555,9 +555,6 @@ public class ConnectionListener extends PFComponent implements Runnable {
             if (handler instanceof D2DSocketConnectionHandler) {
                 // For D2D accepting is done in the message handler
                 ((D2DSocketConnectionHandler) handler).setSocketAcceptor(this);
-            } else if (handler instanceof ClientWebSocketConnectionHandler) {
-                // For ClientWebSocketConnectionHandler accepting is done in the message handler
-                ((ClientWebSocketConnectionHandler) handler).setSocketAcceptor(this);
             } else {
                 // Accept node
                 acceptConnection(handler);
