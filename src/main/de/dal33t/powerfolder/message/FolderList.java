@@ -304,13 +304,6 @@ public class FolderList extends Message implements D2DObject, D2DEvent
         if (d2DSocketConnectionHandler != null) {
             if (d2DSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_FOLDER_LIST_WAIT || d2DSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_LOGIN_REQUEST_WAIT) {
                 node.handshakeFolderList();
-                return;
-            }
-        }
-        ClientWebSocketConnectionHandler webSocketConnectionHandler = ((ClientWebSocketConnectionHandler) node.getPeer());
-        if (webSocketConnectionHandler != null) {
-            if (webSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_FOLDER_LIST_WAIT || webSocketConnectionHandler.getNodeStateMachine().getCurrentState() == NodeState.OPEN_LOGIN_REQUEST_WAIT) {
-                node.handshakeFolderList();
             }
         }
     }
