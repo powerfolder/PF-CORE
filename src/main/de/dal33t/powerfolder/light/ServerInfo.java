@@ -54,6 +54,8 @@ public class ServerInfo implements Serializable, D2DObject {
     public static final String PROPERTYNAME_WEB_URL = "webUrl";
     public static final String PROPERTYNAME_LAST_UP_TIME = "lastUpTime";
 
+    public static final String CLIENT_WEBSOCKET_URI = "/websocket_client";
+
     @Id
     private String id;
 
@@ -201,6 +203,14 @@ public class ServerInfo implements Serializable, D2DObject {
 
     public String getHTTPTunnelUrl() {
         return httpTunnelUrl;
+    }
+
+    public String getClientWebSocketEndpointURI() {
+        if (webUrl == null) {
+            return null;
+        }
+        String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
+        return Util.removeLastSlashFromURI(websocketBaseUrl) + CLIENT_WEBSOCKET_URI;
     }
 
     public void setHTTPTunnelUrl(String httpTunnelUrl) {
