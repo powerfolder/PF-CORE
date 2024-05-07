@@ -178,7 +178,7 @@ public class ConnectionHandlerFactory extends PFComponent {
             getController(), socket);
         }
       else conHan = new PlainSocketConnectionHandler(
-              getController(), socket);
+        getController(), socket);
 
       /* Finally init this handler */
       try
