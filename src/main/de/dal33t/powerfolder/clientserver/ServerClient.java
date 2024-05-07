@@ -557,6 +557,22 @@ public class ServerClient extends PFComponent {
         return fullURL;
     }
 
+    public URI getClientWebSocketURI() {
+        if (!hasWebURL()) {
+            return null;
+        }
+        String webUrl = getWebURL();
+        if (webUrl == null) {
+            return null;
+        }
+        String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
+        try {
+            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + ServerInfo.CLIENT_WEBSOCKET_URI);
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
+
     /**
      * @return true if the connected server offers a web interface.
      */
