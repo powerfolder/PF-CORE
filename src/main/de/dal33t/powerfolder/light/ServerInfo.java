@@ -35,6 +35,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
@@ -205,12 +207,16 @@ public class ServerInfo implements Serializable, D2DObject {
         return httpTunnelUrl;
     }
 
-    public String getClientWebSocketEndpointURI() {
+    public URI getClientWebSocketURI() {
         if (webUrl == null) {
             return null;
         }
         String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
-        return Util.removeLastSlashFromURI(websocketBaseUrl) + CLIENT_WEBSOCKET_URI;
+        try {
+            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + CLIENT_WEBSOCKET_URI);
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
 
     public void setHTTPTunnelUrl(String httpTunnelUrl) {
