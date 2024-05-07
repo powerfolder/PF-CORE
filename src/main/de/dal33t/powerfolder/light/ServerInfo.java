@@ -213,7 +213,7 @@ public class ServerInfo implements Serializable, D2DObject {
         }
         String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
         try {
-            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + CLIENT_WEBSOCKET_URI);
+            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + CLIENT_WEBSOCKET_URI + "/" + id);
         } catch (URISyntaxException e) {
             return null;
         }
