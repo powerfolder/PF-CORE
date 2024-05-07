@@ -55,8 +55,7 @@ public class ServerInfo implements Serializable, D2DObject {
     public static final String PROPERTYNAME_NODE = "node";
     public static final String PROPERTYNAME_WEB_URL = "webUrl";
     public static final String PROPERTYNAME_LAST_UP_TIME = "lastUpTime";
-
-    public static final String CLIENT_WEBSOCKET_URI = "/websocket_client";
+    public static final String WEBSOCKET_CLIENT_URI = "/ws_client";
 
     @Id
     private String id;
@@ -213,7 +212,7 @@ public class ServerInfo implements Serializable, D2DObject {
         }
         String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
         try {
-            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + CLIENT_WEBSOCKET_URI + "/" + id);
+            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + WEBSOCKET_CLIENT_URI + "/" + id);
         } catch (URISyntaxException e) {
             return null;
         }

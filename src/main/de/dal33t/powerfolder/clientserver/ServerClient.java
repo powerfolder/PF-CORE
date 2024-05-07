@@ -567,7 +567,7 @@ public class ServerClient extends PFComponent {
         }
         String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
         try {
-            String webSocketURI = Util.removeLastSlashFromURI(websocketBaseUrl) + ServerInfo.CLIENT_WEBSOCKET_URI;
+            String webSocketURI = Util.removeLastSlashFromURI(websocketBaseUrl) + ServerInfo.WEBSOCKET_CLIENT_URI;
             if (isNotBlank(webSocketURI)) {
                 webSocketURI += "/" + serverID;
             }
