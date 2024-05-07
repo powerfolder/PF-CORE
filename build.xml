@@ -232,7 +232,7 @@ For creation of the installer:
 	<target name="compile" depends="init">
 		<mkdir dir="${build.dir}" />
 
-		<javac destdir="${build.dir}" source="9" target="9" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" debuglevel="lines" deprecation="off">
+		<javac destdir="${build.dir}" source="9" target="9" encoding="UTF-8" nowarn="${NoCompileWarnings}" debug="${Debug}" debuglevel="lines" deprecation="off" includeantruntime="false">
 			<classpath>
 				<fileset refid="libs" />
 				<fileset refid="testlibs" />
