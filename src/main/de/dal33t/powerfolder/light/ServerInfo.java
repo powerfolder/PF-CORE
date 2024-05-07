@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.light;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.NodeInfoProto;
@@ -55,7 +56,6 @@ public class ServerInfo implements Serializable, D2DObject {
     public static final String PROPERTYNAME_NODE = "node";
     public static final String PROPERTYNAME_WEB_URL = "webUrl";
     public static final String PROPERTYNAME_LAST_UP_TIME = "lastUpTime";
-    public static final String WEBSOCKET_CLIENT_URI = "/ws_client";
 
     @Id
     private String id;
@@ -212,7 +212,7 @@ public class ServerInfo implements Serializable, D2DObject {
         }
         String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
         try {
-            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + WEBSOCKET_CLIENT_URI + "/" + id);
+            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + Constants.WEBSOCKET_CLIENT_URI + "/" + id);
         } catch (URISyntaxException e) {
             return null;
         }
