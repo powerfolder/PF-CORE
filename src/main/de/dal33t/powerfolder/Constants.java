@@ -377,9 +377,6 @@ public class Constants {
     public static final String FOLDER_WEBDAV_SUFFIX = ".webdav";
     public static final String FOLDER_WEBDAV_HTTP_PREFIX = "http";
 
-    public static final String POWERFOLDER_SERVER_ID_HEADER = "PF-Server-ID";
-    public static final String POWERFOLDER_SERVER_NAME_HEADER = "PF-Server-Name";
-
     // Pro related ************************************************************
 
     public static final String PACKAGE_PREFIX = "de.dal33t.powerfolder.";
