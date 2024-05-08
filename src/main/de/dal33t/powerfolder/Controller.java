@@ -86,11 +86,11 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
-    private static final int MAJOR_VERSION = 20;
-    private static final int MINOR_VERSION = 4;
-    private static final int REVISION_VERSION = 101;
+    private static final int MAJOR_VERSION = 21;
+    private static final int MINOR_VERSION = 0;
+    private static final int REVISION_VERSION = 100;
 
-    private static final int SPRINT_NUMBER = 53;
+    private static final int SPRINT_NUMBER = 54;
 
     /**
      * Program version.
@@ -1795,7 +1795,9 @@ public class Controller extends PFComponent {
     {
         boolean oldPausedValue = paused;
         paused = newPausedValue;
-        logInfo("Set paused=" + paused + ". wasPaused=" + oldPausedValue);
+        if (paused != oldPausedValue) {
+            logInfo("Set paused=" + paused + ". wasPaused=" + oldPausedValue);
+        }
 
         if (newPausedValue) {
             folderRepository.getFolderScanner().abortScan();

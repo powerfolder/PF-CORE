@@ -557,6 +557,26 @@ public class ServerClient extends PFComponent {
         return fullURL;
     }
 
+    public URI getClientWebSocketURI(String serverID) {
+        if (!hasWebURL()) {
+            return null;
+        }
+        String webUrl = getWebURL();
+        if (webUrl == null) {
+            return null;
+        }
+        String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
+        try {
+            String webSocketURI = Util.removeLastSlashFromURI(websocketBaseUrl) + Constants.WEBSOCKET_CLIENT_URI;
+            if (isNotBlank(webSocketURI)) {
+                webSocketURI += "/" + serverID;
+            }
+            return new URI(webSocketURI);
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
+
     /**
      * @return true if the connected server offers a web interface.
      */
@@ -2694,7 +2714,8 @@ public class ServerClient extends PFComponent {
      * @return true if a target server supports federation.
      */
     private boolean isFederatedLogin() throws RemoteCallException {
-        return ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(config);
+        return ConfigurationEntry.SERVER_FEDERATION_ENABLED.getValueBoolean(config)
+                && ConfigurationEntry.SERVER_FEDERATED_LOGIN.getValueBoolean(config);
     }
 
     /**

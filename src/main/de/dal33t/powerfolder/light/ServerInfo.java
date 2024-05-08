@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.light;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.NodeInfoProto;
@@ -35,6 +36,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
@@ -201,6 +204,18 @@ public class ServerInfo implements Serializable, D2DObject {
 
     public String getHTTPTunnelUrl() {
         return httpTunnelUrl;
+    }
+
+    public URI getClientWebSocketURI() {
+        if (webUrl == null) {
+            return null;
+        }
+        String websocketBaseUrl =  webUrl.replace("http://", "ws://").replace("https://", "wss://");
+        try {
+            return new URI(Util.removeLastSlashFromURI(websocketBaseUrl) + Constants.WEBSOCKET_CLIENT_URI + "/" + id);
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
 
     public void setHTTPTunnelUrl(String httpTunnelUrl) {

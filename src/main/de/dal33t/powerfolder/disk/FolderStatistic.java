@@ -52,7 +52,7 @@ public class FolderStatistic extends PFComponent {
      * to a maximum that can be configured in
      * {@link ConfigurationEntry#FOLDER_STATS_CALC_TIME}
      */
-    private static final int MAX_ITEMS = 2500;
+    public static final int MAX_ITEMS = 2500;
 
     private final Folder folder;
     private final long delay;

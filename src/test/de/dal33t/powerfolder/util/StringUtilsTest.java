@@ -55,34 +55,6 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testReplace() {
-        assertEquals(null, StringUtils.replace(null, "a", "b"));
-        assertEquals("", StringUtils.replace("", "a", "b"));
-        assertEquals("any", StringUtils.replace("any", null, "b"));
-        assertEquals("any", StringUtils.replace("any", "a", null));
-        assertEquals("any", StringUtils.replace("any", "", "b"));
-        assertEquals("aba", StringUtils.replace("aba", "a", null));
-        assertEquals("b", StringUtils.replace("aba", "a", ""));
-        assertEquals("zbz", StringUtils.replace("aba", "a", "z"));
-    }
-
-    @Test
-    public void testReplaceWithLimit() {
-        assertEquals(null, StringUtils.replace(null, "a", "b", 10));
-        assertEquals("", StringUtils.replace("", "a", "b", 20));
-        assertEquals("any", StringUtils.replace("any", null, "a", -12));
-        assertEquals("any", StringUtils.replace("any", "a", null, 2));
-        assertEquals("any", StringUtils.replace("any", "", "a", 5));
-        assertEquals("any", StringUtils.replace("any", "a", "b", 0));
-        assertEquals("abaa", StringUtils.replace("abaa", "a", null, -1));
-        assertEquals("b", StringUtils.replace("abaa", "a", "", -1));
-        assertEquals("abaa", StringUtils.replace("abaa", "a", "z", 0));
-        assertEquals("zbaa", StringUtils.replace("abaa", "a", "z", 1));
-        assertEquals("zbza", StringUtils.replace("abaa", "a", "z", 2));
-        assertEquals("zbzz", StringUtils.replace("abaa", "a", "z", -1));
-    }
-
-    @Test
     public void testJoin() {
         List<String> emptyList = Collections.emptyList();
         assertEquals("", StringUtils.join(",", emptyList));

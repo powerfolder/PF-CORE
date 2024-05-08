@@ -377,9 +377,6 @@ public class Constants {
     public static final String FOLDER_WEBDAV_SUFFIX = ".webdav";
     public static final String FOLDER_WEBDAV_HTTP_PREFIX = "http";
 
-    public static final String POWERFOLDER_SERVER_ID_HEADER = "PF-Server-ID";
-    public static final String POWERFOLDER_SERVER_NAME_HEADER = "PF-Server-Name";
-
     // Pro related ************************************************************
 
     public static final String PACKAGE_PREFIX = "de.dal33t.powerfolder.";
@@ -402,6 +399,7 @@ public class Constants {
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
     public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI + "/client";
     public static final String LOGIN_SHIBBOLETH_ANDROID_URI = LOGIN_SHIBBOLETH_URI + "/android";
+    public static final String WEBSOCKET_CLIENT_URI = "/websocket_client";
     public static final String WEBDAV_URI = "/webdav";
 
     public static final String LOGIN_PARAM_USERNAME = "Username";

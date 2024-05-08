@@ -2673,13 +2673,13 @@ public class TransferManager extends PFComponent {
 
             while (!Thread.currentThread().isInterrupted()) {
                 // Check uploads/downloads every 10 seconds
-                if (isFiner()) {
-                    logFiner("Checking uploads/downloads");
-                }
 
                 if (getController().isPaused()) {
                     logFine("Paused.");
                 } else {
+                    if (isFiner()) {
+                        logFiner("Checking uploads/downloads");
+                    }
 
                     // Check queued uploads
                     checkQueuedUploads();
