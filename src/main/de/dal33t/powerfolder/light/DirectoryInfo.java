@@ -86,7 +86,7 @@ public class DirectoryInfo extends FileInfo {
 
     @Override
     public String toString() {
-        return '[' + getFolderInfo().toString() + "]:"
+        return '[' + getFolderInfo().getName() + '/' + getFolderInfo().getId() + '/' + getFolderInfo().getVersion() + "]:"
             + (isDeleted() ? "(del) /" : "/") + getRelativeName() + " (D)";
     }
 
@@ -97,7 +97,7 @@ public class DirectoryInfo extends FileInfo {
      *            the stringbuilder to add the detail info to.
      */
     private final void toDetailString(StringBuilder str) {
-        str.append(toString());
+        str.append(this);
         str.append(", version: ");
         str.append(getVersion());
         if (isDeleted()) {

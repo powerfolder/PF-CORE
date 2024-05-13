@@ -825,7 +825,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     @Override
     public String toString() {
-        return '[' + folderInfo.getName() + '/' + folderInfo.getId() + "]:" + (deleted ? "(del) /" : "/")
+        return '[' + folderInfo.getName() + '/' + folderInfo.getId() + '/' + folderInfo.getVersion() + "]:" + (deleted ? "(del) /" : "/")
                 + fileName;
     }
 
@@ -835,7 +835,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * @param str the stringbuilder to add the detail info to.
      */
     private void toDetailString(StringBuilder str) {
-        str.append(toString());
+        str.append(this);
         str.append(", size: ");
         str.append(size);
         str.append(" bytes, version: ");
