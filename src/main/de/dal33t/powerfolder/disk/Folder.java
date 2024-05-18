@@ -1680,10 +1680,7 @@ public class Folder extends PFComponent {
                             deleteFileRecursive(fInfo, diskFile);
                             recommendScanOnNextMaintenance();
                         } catch (IOException e) {
-                            logWarning("Unable to delete local file. "
-                                + diskFile.toAbsolutePath()
-                                + ". "
-                                + fInfo.toDetailString());
+                            logWarning(this +": Unable to delete local directory. " + diskFile.toAbsolutePath() + ". " + fInfo.toDetailString());
                             // Failure.
                             return null;
                         } finally {
@@ -4310,14 +4307,18 @@ public class Folder extends PFComponent {
                     FileInfo lookupInstance = FileInfoFactory.lookupInstance(this, path);
                     FileInfo storedInfo = getFile(lookupInstance);
                     if (storedInfo == null) {
-                        logInfo("Deleting unknown file: " + lookupInstance);
+                        if (isFine()) {
+                            logFine(this + ": Deleting unknown file: " + lookupInstance);
+                        }
                         // Scan new files.
                         storedInfo = FileInfoFactory.newFile(this, path, null, getMySelf().getInfo(),
                                 getController().getMySelf().getAccountInfo(), null, Files.isDirectory(path),
                                 null);
                         getDAO().store(null, storedInfo);
                     } else {
-                        logInfo("  known file found: " + lookupInstance);
+                        if (isFine()) {
+                            logFine(this + ": Known file found: " + lookupInstance);
+                        }
                     }
                     logFileOperation("DELETED", storedInfo, storedInfo);
                     deleteFile(storedInfo, path);
@@ -4373,15 +4374,13 @@ public class Folder extends PFComponent {
                 } catch (IOException ioe) {
                     // PFC-2706: Improved handling of exception.
                     if (ioe instanceof DirectoryNotEmptyException) {
-                        logWarning(this + ": Directory not empty while deleting dir " + file
-                                + ". " + ioe);
+                        // Let upper code retry to clean this up...
+                        logFine(this + ": Directory not empty while deleting dir " + file + ". " + ioe);
                     } else if (isFine()) {
-                        logFine("IOException while deleting file " + file
-                            + ". " + ioe);
+                        logFine("IOException while deleting file " + file + ". " + ioe);
                     }
                     if (checkIfDeviceDisconnected()) {
-                        logWarning("Storage disconnected: Unable to delete file "
-                            + file + ". " + ioe);
+                        logWarning("Storage disconnected: Unable to delete file " + file + ". " + ioe);
                         return false;
                     } else if (Files.exists(file)) {
                         logFine("Unable to delete file " + file + ". " + ioe);
