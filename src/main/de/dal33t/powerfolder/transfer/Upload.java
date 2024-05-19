@@ -353,7 +353,7 @@ public class Upload extends Transfer {
         RequestFilePartsRecord r = null;
         synchronized (pendingRequests) {
             if (pendingRequests.isEmpty()) {
-                logWarning("Cancelled message too fast");
+                logWarning("Cancelled message too fast for " + getFile());
                 return false;
             }
             if (pendingRequests.peek() instanceof RequestFilePartsRecord) {
