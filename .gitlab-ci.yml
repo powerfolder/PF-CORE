@@ -5,6 +5,7 @@ test-Windows:
   stage: test
   tags:
     - Windows
+    - Terracloud
   script:
     ant run-tests
   artifacts:
