@@ -1630,6 +1630,15 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
+     * @param rpCandidate
+     * @return true if the recovery phrase candidate matches the recovery phrase of the
+     * account.
+     */
+    public boolean recoveryPhraseMatches(char[] rpCandidate) {
+        return LoginUtil.matches(rpCandidate, encodedRecoveryPhrase);
+    }
+
+    /**
      * @param foInfo
      * @return true if the user is owner of the folder.
      */
