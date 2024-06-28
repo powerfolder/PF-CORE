@@ -26,7 +26,10 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
+import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.StackDump;
+import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -37,6 +40,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Tests the correct synchronization of file deletions.
@@ -318,6 +322,56 @@ public class DeletionSyncTest extends TwoControllerTestCase {
             tearDown();
             setUp();
         }
+    }
+
+    /**
+     * Tests the synchronization of file deletions of one file.
+     */
+    public void testMassiveFileDeleteSync() throws IOException {
+        getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        final int nFiles = 1000;
+        for (int i = 0; i < nFiles; i++) {
+            TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
+        }
+        scanFolder(getFolderAtBart());
+
+        // Copy
+        TestHelper.waitForCondition(50, () -> getFolderAtLisa().getKnownItemCount() >= nFiles);
+        assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
+
+        // Now delete the file at lisa
+        for (FileInfo fileInfo : getFolderAtLisa().getKnownFiles()) {
+            Files.delete(fileInfo.getDiskFile(getContollerLisa().getFolderRepository()));
+        }
+        scanFolder(getFolderAtLisa());
+
+        assertEquals(nFiles, getFolderAtLisa().getKnownItemCount());
+        for (FileInfo fileInfo : getFolderAtLisa().getKnownFiles()) {
+            assertEquals("Expected Version 1, but got at lisa: "+ fileInfo.getVersion(), 1, fileInfo.getVersion());
+            assertTrue(fileInfo.isDeleted());
+        }
+
+        TestHelper.waitForCondition(30, new Condition() {
+            @Override
+            public boolean reached() {
+                System.out.println(Debug.dumpCurrentStacktraces(true));
+                return  getFolderAtBart().getStatistic().getTotalSize() == 0;
+            }
+        });
+        TestHelper.waitMilliSeconds(1000);
+
+        // Test the correct deletions state at bart
+        assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
+        for (FileInfo fileInfo : getFolderAtBart().getKnownFiles()) {
+            assertTrue(fileInfo.isDeleted());
+            assertEquals("Expected Version 1, but got at bart: "+ fileInfo.getVersion(), 1, fileInfo.getVersion());
+        }
+
+        // Assume only 1 file (=PowerFolder system dir)
+        assertEquals(1, Objects.requireNonNull(getFolderAtBart().getLocalBase().toFile().list()).length);
+
     }
 
     /**

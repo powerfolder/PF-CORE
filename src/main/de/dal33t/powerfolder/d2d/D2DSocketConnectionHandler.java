@@ -416,7 +416,7 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                     // Break connection
                     break;
                 } catch (RuntimeException e) {
-                    logSevere("RuntimeException. " + e, e);
+                    logWarning(e.toString(), e);
                     shutdownWithMember();
                     throw e;
                 }

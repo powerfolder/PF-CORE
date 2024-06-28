@@ -221,7 +221,7 @@ public class Constants {
      * PFC-2742: Maximum numbers of message in send queue. Will disconnect node
      * if maximum is reached.
      */
-    public static final int WARN_MESSAGES_IN_SEND_QUEUE = 1900;
+    public static final int WARN_MESSAGES_IN_SEND_QUEUE = 1998;
     public static final int MAX_MESSAGES_IN_SEND_QUEUE = 2000;
 
     /**
@@ -399,6 +399,7 @@ public class Constants {
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
     public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI + "/client";
     public static final String LOGIN_SHIBBOLETH_ANDROID_URI = LOGIN_SHIBBOLETH_URI + "/android";
+    public static final String LOGIN_SHIBBOLETH_IOS_URI = LOGIN_SHIBBOLETH_URI + "/ios";
     public static final String WEBSOCKET_CLIENT_URI = "/websocket_client";
     public static final String WEBDAV_URI = "/webdav";
 

@@ -152,6 +152,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Column(length = 512,name = "token_2fa")
     private String twoFactorAuthenticationToken;
 
+    @Column(length = 2048)
+    private String encodedRecoveryPhrase;
+
     // PFS-1656
     @Column(length = 4000)
     private String jsonData;
@@ -1616,6 +1619,23 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public void setTwoFactorAuthenticationToken(final String twoFactorAuthenticationToken) {
         this.twoFactorAuthenticationToken = twoFactorAuthenticationToken;
+    }
+
+    public void setEncodedRecoveryPhrase(String encodedRecoveryPhrase) {
+        this.encodedRecoveryPhrase = encodedRecoveryPhrase;
+    }
+
+    public String getEncodedRecoveryPhrase() {
+        return encodedRecoveryPhrase;
+    }
+
+    /**
+     * @param rpCandidate
+     * @return true if the recovery phrase candidate matches the recovery phrase of the
+     * account.
+     */
+    public boolean recoveryPhraseMatches(char[] rpCandidate) {
+        return LoginUtil.matches(rpCandidate, encodedRecoveryPhrase);
     }
 
     /**
