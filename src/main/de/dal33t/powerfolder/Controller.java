@@ -2905,7 +2905,7 @@ public class Controller extends PFComponent {
                 Class<?> distClass = Class
                     .forName(ConfigurationEntry.DIST_CLASSNAME
                         .getValue(getController()));
-                distribution = (Distribution) distClass.newInstance();
+                distribution = (Distribution) distClass.getDeclaredConstructor().newInstance();
             }
 
             if (distribution == null) {
