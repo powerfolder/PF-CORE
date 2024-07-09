@@ -88,7 +88,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 21;
     private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 90;
+    private static final int REVISION_VERSION = 100;
 
     private static final int SPRINT_NUMBER = 55;
 
@@ -2905,7 +2905,7 @@ public class Controller extends PFComponent {
                 Class<?> distClass = Class
                     .forName(ConfigurationEntry.DIST_CLASSNAME
                         .getValue(getController()));
-                distribution = (Distribution) distClass.newInstance();
+                distribution = (Distribution) distClass.getDeclaredConstructor().newInstance();
             }
 
             if (distribution == null) {
