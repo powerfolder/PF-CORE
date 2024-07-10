@@ -126,9 +126,6 @@ public interface FileInfoDAO {
      *
      * @param domain
      * @return all {@link FileInfo} objects of the given domain.
-     * @deprecated Try to implement a more intelligent method to obtain FileInfo
-     *             database information. Activation/Loading all FileInfos is a
-     *             BAD idea generally.
      */
     Collection<FileInfo> findAllFiles(String domain);
 
