@@ -152,7 +152,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Column(length = 512,name = "token_2fa")
     private String twoFactorAuthenticationToken;
 
-    @Column(length = 2048)
+    @Column(length = 100)
     private String encodedRecoveryPhrase;
 
     // PFS-1656
