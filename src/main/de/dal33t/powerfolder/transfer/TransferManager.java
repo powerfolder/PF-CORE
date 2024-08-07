@@ -2115,7 +2115,7 @@ public class TransferManager extends PFComponent {
         if (completedDownloads.remove(new FileInfoKey(dlMan.getFileInfo(),
             Type.VERSION_DATE_SIZE)) == null)
         {
-            logSevere("Completed download manager not found: " + dlMan);
+            logWarning(dlMan.getFileInfo().toDetailString()+ ": Completed download manager not found: " + dlMan);
         }
         for (Download download : dlMan.getSources()) {
             fireCompletedDownloadRemoved(new TransferManagerEvent(this,
