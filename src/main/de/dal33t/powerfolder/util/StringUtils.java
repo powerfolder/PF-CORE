@@ -247,7 +247,7 @@ public class StringUtils {
     }
     
     /**
-     * Cuts a string down to the last 1024 characters cutting only at line ends
+     * Cuts a string down to the last 2048 characters cutting only at line ends
      * 
      * @param notes
      *              input string
