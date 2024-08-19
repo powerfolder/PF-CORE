@@ -151,7 +151,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Column(length = 63)
     private String telephone;
 
-    @Column(length = 511,name = "token_2fa")
+    @Column(length = 511)
     private String twoFactorAuthenticationToken;
 
     @Column(length = 255)
