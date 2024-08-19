@@ -118,7 +118,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     @LazyCollection(LazyCollectionOption.FALSE)
     private Map<ServerInfo, String> tokens;
 
-    @Column(length = 7)
+    @Column(length = 15)
     private String language;
 
     @Index(name = "IDX_LDAPDN")
