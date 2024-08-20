@@ -774,7 +774,7 @@ public class ApplicationModel extends PFUIComponent {
             if (lock == null) {
                 return;
             }
-            final String displayName = lock.getAccountInfo().getDisplayName();
+            final String displayName = lock.getAccountDisplayName();
             final String name = fInfo.getFilenameOnly();
             final String date = new SimpleDateFormat("dd MMM yyyy HH:mm")
                 .format(lock.getCreated());

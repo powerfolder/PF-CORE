@@ -33,6 +33,7 @@ import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.util.UIUtil;
 import de.dal33t.powerfolder.util.Translation;
+import de.dal33t.powerfolder.util.Util;
 
 /**
  * Set file to be "NOT in use for edit" to display a message to the user.
@@ -88,7 +89,7 @@ class UnlockAction extends PFContextMenuAction {
             Lock lock = fileInfo.getLock(getController());
             boolean bySameDevice = lock.getMemberInfo().equals(
                 getController().getMySelf().getInfo());
-            boolean bySameAccount = lock.getAccountInfo().equals(
+            boolean bySameAccount = Util.equals(lock.getAccountInfo(),
                 getController().getOSClient().getAccountInfo());
 
             if (bySameDevice && bySameAccount) {
@@ -121,7 +122,7 @@ class UnlockAction extends PFContextMenuAction {
         @Override
         public void run() {
             String name = fileInfo.getFilenameOnly();
-            String displayName = lock.getAccountInfo().getDisplayName();
+            String displayName = lock.getAccountDisplayName();
             String date = new SimpleDateFormat("dd MMM yyyy HH:mm").format(lock
                 .getCreated());
             String memberName = Translation

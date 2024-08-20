@@ -70,6 +70,10 @@ public class Lock implements Serializable {
         return accountInfo;
     }
 
+    public String getAccountDisplayName() {
+        return accountInfo != null ? accountInfo.getDisplayName() : "";
+    }
+
     // General
 
     @Override
