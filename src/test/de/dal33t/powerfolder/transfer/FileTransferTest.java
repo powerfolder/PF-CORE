@@ -1631,7 +1631,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // testfile
         Path fileBart = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 30 * 1024 * 1024);
+            .getLocalBase(), 100 * 1024 * 1024);
         Files.setLastModifiedTime(fileBart,
             FileTime.fromMillis(System.currentTimeMillis() - 1000L * 60 * 60));
 
