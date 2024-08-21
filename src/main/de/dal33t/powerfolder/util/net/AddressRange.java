@@ -19,6 +19,8 @@
 */
 package de.dal33t.powerfolder.util.net;
 
+import de.dal33t.powerfolder.util.logging.LoggingManager;
+
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.text.ParseException;
@@ -62,6 +64,17 @@ public final class AddressRange {
 
 	public Inet4Address getEnd() {
 		return end;
+	}
+
+	/**
+	 * @param addr A inet address, only IPv4 supported at the moment
+	 * @return if matches in the address range
+	 */
+	public boolean contains(InetAddress addr) {
+		if (addr instanceof Inet4Address) {
+			return contains((Inet4Address) addr);
+		}
+		return false;
 	}
 
 	/**

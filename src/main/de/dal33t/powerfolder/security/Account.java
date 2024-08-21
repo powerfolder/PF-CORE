@@ -105,6 +105,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     private String password;
     // PFS-862: One time token password
     @Index(name = "IDX_AOTP")
+    @Column(length = 127)
     private String otp;
 
     // PFC-2455: Tokens for federation services
@@ -117,14 +118,15 @@ public class Account implements Serializable, D2DObject, Auditable {
     @LazyCollection(LazyCollectionOption.FALSE)
     private Map<ServerInfo, String> tokens;
 
+    @Column(length = 15)
     private String language;
 
     @Index(name = "IDX_LDAPDN")
-    @Column(length = 512)
+    @Column(length = 511)
     private String ldapDN;
 
     @Index(name = "IDX_SHIB_PID")
-    @Column(length = 2048)
+    @Column(length = 2047)
     private String shibbolethPersistentID;
     private Date registerDate;
     private Date lastLoginDate;
@@ -138,32 +140,32 @@ public class Account implements Serializable, D2DObject, Auditable {
      */
     private Integer maxFolders;
 
-    @Column(length = 255)
+    @Column(length = 63)
     private String title;
-    @Column(length = 255)
+    @Column(length = 127)
     @Index(name = "IDX_ACC_FIRSTNAME")
     private String firstname;
-    @Column(length = 255)
+    @Column(length = 127)
     @Index(name = "IDX_ACC_SURNAME")
     private String surname;
-    @Column(length = 255)
+    @Column(length = 63)
     private String telephone;
 
-    @Column(length = 512,name = "token_2fa")
+    @Column(length = 511)
     private String twoFactorAuthenticationToken;
 
-    @Column(length = 100)
+    @Column(length = 255)
     private String encodedRecoveryPhrase;
 
     // PFS-1656
-    @Column(length = 4000)
+    @Column(length = 2047)
     private String jsonData;
 
-    @Column(length = 2048)
+    @Column(length = 2047)
     private String notes;
 
     // PFS-1446
-    @Column(length = 512)
+    @Column(length = 511)
     private String basePath;
 
     @Index(name = "IDX_ACC_ORG_ID")

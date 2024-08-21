@@ -125,7 +125,7 @@ public class PersistentTaskManager extends PFComponent {
                 logSevere("ClassCastException", e);
             }
         } else {
-            logInfo("No taskfile found - probably first start of PF.");
+            logFine("No taskfile found - probably first start of PF.");
         }
         // If no taskfile was found or errors occurred while loading it
         if (tasks == null) {
