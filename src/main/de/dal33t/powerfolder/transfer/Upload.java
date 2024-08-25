@@ -40,6 +40,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Level;
 
 /**
  * Simple class for a scheduled Upload
@@ -596,12 +597,17 @@ public class Upload extends Transfer {
             getController().getFolderRepository());
         if (diskFile == null || Files.notExists(diskFile)) {
             if (!getFile().getFolderInfo().isMetaFolder()) {
-                logWarning("Upload broken because diskfile is not available, folder: "
+                Level level = Level.WARNING;
+                FileInfo currentFileInfo = getFile().getLocalFileInfo(getController().getFolderRepository());
+                if (currentFileInfo != null && currentFileInfo.isDeleted()) {
+                    level = Level.FINE;
+                }
+                logIt(level, "Upload broken because diskfile is not available, folder: "
                         + getFile().getFolder(getController().getFolderRepository())
                         + ", diskfile: "
                         + diskFile
                         + ", last contime: "
-                        + getPartner().getLastConnectTime());
+                        + getPartner().getLastConnectTime(), null);
             }
             return true;
         }
