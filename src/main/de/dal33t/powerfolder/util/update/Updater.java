@@ -24,8 +24,10 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -130,7 +132,64 @@ public class Updater extends Thread {
         if (releaseExe == null) {
             return null;
         }
+
+        try {
+            // Signaturprüfung
+            if (!verifySignatureWithPowerShell(releaseExe)) {
+                Files.delete(releaseExe);
+                LOG.warning("Signature not existing on " + releaseExe + ". The file has been deleted.");
+                return null;
+            }
+        } catch (Exception e) {
+            LOG.warning("Signature not existing on " + releaseExe + ". " + e);
+            return null;
+        }
+
         return openReleaseExe(releaseExe, silentUpdate);
+    }
+
+    private boolean verifySignatureWithPowerShell(Path exePath) throws IOException, InterruptedException {
+        // PowerShell-Befehl zur Überprüfung der Authenticode-Signatur ohne sprachabhängige Ausdrücke
+        String command = String.format(
+                "powershell.exe -Command \"& { " +
+                        "$signature = Get-AuthenticodeSignature -FilePath '%s'; " +
+                        "if ($signature.Status -eq 'Valid') { " +
+                        "Write-Output 'Valid'; " +
+                        "} elseif ($signature.Status -eq 'UnknownError' -and $signature.StatusMessage -match '(certificate|zeitstempel|timestamp)') { " +
+                        "Write-Output 'Valid-Ignoring-Timestamp'; " +
+                        "} else { " +
+                        "Write-Output 'Invalid'; " +
+                        "}; " +
+                        "}\"",
+                exePath.toString().replace("\\", "\\\\")
+        );
+
+        ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", command);
+        Process process = pb.start();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+             BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                LOG.fine(line); // Debugging-Ausgabe
+                if (line.contains("Valid") || line.contains("Valid-Ignoring-Timestamp")) {
+                    return true; // Signatur ist gültig, Zeitstempel ggf. ignoriert
+                }
+            }
+
+            // Fehlerausgabe lesen
+            while ((line = errorReader.readLine()) != null) {
+                LOG.warning("Error: " + line); // Debugging-Ausgabe der Fehlernachrichten
+            }
+        }
+
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            LOG.warning("PowerShell script failed with exit code " + exitCode);
+        }
+
+        return false; // Signatur ist ungültig oder Fehler aufgetreten
     }
 
     /**
@@ -167,9 +226,7 @@ public class Updater extends Thread {
         try {
             // Copy/Download from URL
             con.connect();
-            PathUtils.copyFromStreamToFile(con.getInputStream(), tempFile,
-                progressCallback != null ? progressCallback : null, con
-                    .getContentLength());
+            PathUtils.copyFromStreamToFile(con.getInputStream(), tempFile, progressCallback, con.getContentLength());
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Unable to download from " + url, e);
             return null;
