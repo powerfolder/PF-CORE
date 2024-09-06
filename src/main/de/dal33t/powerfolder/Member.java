@@ -1724,9 +1724,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                     WarningNotice notice = new WarningNotice(
                         Translation.get("warning_notice.title"),
                         Translation
-                            .get("warning_notice.insufficient_quota_summary"),
+                            .get("warning_notice.insufficient_storage_summary"),
                         Translation.get(
-                            "warning_notice.insufficient_quota_message",
+                            "warning_notice.insufficient_storage_message",
                             msg.account.getDisplayName(),
                             msg.file.getFilenameOnly()));
                     getController().getUIController().getApplicationModel()
