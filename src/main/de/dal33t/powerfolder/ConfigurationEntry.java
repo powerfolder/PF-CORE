@@ -1293,7 +1293,46 @@ public enum ConfigurationEntry {
      * How many days before an archive file is cleaned up. Values 1, 7, 31, 365,
      * 0 (== never)
      */
-    DEFAULT_ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 0),
+    DEFAULT_ARCHIVE_CLEANUP_DAYS("archive.cleanup.days", 0) {
+        @Override
+        public Integer getValueInt(Controller controller) {
+            String value = super.getValue(controller);
+
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                String[] parts = value.split("\\s+");
+
+                if (parts.length != 2) {
+                    return 0;
+                }
+
+                try {
+                    int factor = Integer.parseInt(parts[0]);
+                    String timeUnit = parts[1].toLowerCase();
+                    switch (timeUnit) {
+                        case "day":
+                        case "days":
+                            return factor;
+                        case "week":
+                        case "weeks":
+                            return 7 * factor;
+                        case "month":
+                        case "months":
+                            return 30 * factor;
+                        case "year":
+                        case "years":
+                            return 365 * factor;
+                        default:
+                            return 0;
+                    }
+                } catch (NumberFormatException ex) {
+                    return 0;
+                }
+            }
+        }
+
+    },
 
     /**
      * #2132: This transfer mode will be recommend by default.
