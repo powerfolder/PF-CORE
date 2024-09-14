@@ -36,6 +36,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1287,7 +1288,21 @@ public enum ConfigurationEntry {
     /**
      * The number of file versions to use when creating a new folder.
      */
-    DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 25),
+    DEFAULT_ARCHIVE_VERSIONS("default.archive.versions", 25) {
+        @Override
+        public Integer getValueInt(Controller controller) {
+            String value = super.getValue(controller);
+
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                if (Objects.equals(value, "unlimited")) {
+                    return Integer.MAX_VALUE;
+                }
+            }
+            return 0;
+        }
+    },
 
     /**
      * How many days before an archive file is cleaned up. Values 1, 7, 31, 365,
