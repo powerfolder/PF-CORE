@@ -155,7 +155,7 @@ public class AccountInfoReply extends D2DReplyMessage implements D2DReplyFromSer
             if (this.folderMapping != null) accountInfoBuilder.putAllFolderMapping(this.folderMapping);
             // Inject avatarLastModifiedDate into AccountInfo
             accountInfoBuilder.setAvatarLastModifiedDate(this.avatarLastModifiedDate);
-            // Inject quotas
+            // Inject storages
             accountInfoBuilder.setUsedQuota(this.usedQuota);
             accountInfoBuilder.setBackupQuota(this.backupQuota);
             accountInfoBuilder.setFreeQuota(this.freeQuota);
