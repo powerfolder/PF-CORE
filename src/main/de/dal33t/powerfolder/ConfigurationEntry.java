@@ -1297,10 +1297,10 @@ public enum ConfigurationEntry {
                 return Integer.parseInt(value);
             } catch (NumberFormatException e) {
                 if (Objects.equals(value, "unlimited")) {
-                    return Integer.MAX_VALUE;
+                    return -1;
                 }
             }
-            return 0;
+            return 25;
         }
     },
 
