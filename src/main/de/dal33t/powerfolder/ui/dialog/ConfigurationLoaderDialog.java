@@ -537,6 +537,7 @@ public class ConfigurationLoaderDialog extends PFUIComponent {
                 GenericDialogType.QUESTION); // Default is restart
 
             if (result == 0) { // Restart
+                getUIController().closePreferencesDialog();
                 getController().shutdownAndRequestRestart();
             }
         }
