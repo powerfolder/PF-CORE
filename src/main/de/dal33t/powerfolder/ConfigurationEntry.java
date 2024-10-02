@@ -1583,11 +1583,11 @@ public enum ConfigurationEntry {
             return null;
         }
         try {
-            return new Integer(value.trim());
+            return Integer.valueOf(value.trim());
         } catch (NumberFormatException e) {
             LOG.log(Level.WARNING, "Unable to parse configuration entry '"
                     + configKey + "' into a int. Value: " + value, e);
-            return new Integer(getDefaultValue());
+            return Integer.valueOf(getDefaultValue());
         }
     }
 
