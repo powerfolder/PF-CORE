@@ -338,28 +338,22 @@ public class ApplicationModel extends PFUIComponent {
         boolean moveContent, Folder folder)
     {
         if (!newDirectory.equals(originalDirectory)) {
-
             // Check for any problems with the new folder.
             if (checkNewLocalFolder(newDirectory)) {
-
-                // Confirm move.
-                if (shouldMoveLocal(newDirectory, folder)) {
-                    try {
-                        // Move contentes selected
-                        ActivityVisualizationWorker worker = new FolderMoveWorker(
-                            moveContent, originalDirectory, folder);
-                        worker.start();
-                    } catch (Exception e) {
-                        // Probably failed to create temp directory.
-                        DialogFactory
-                            .genericDialog(
-                                getController(),
-                                Translation
-                                    .get("settings_tab.move_error.title"),
-                                Translation
-                                    .get("settings_tab.move_error.temp"),
-                                getController().isVerbose(), e);
-                    }
+                try {
+                    // Move contentes selected
+                    ActivityVisualizationWorker worker = new FolderMoveWorker(moveContent, newDirectory, folder);
+                    worker.start();
+                } catch (Exception e) {
+                    // Probably failed to create temp directory.
+                    DialogFactory
+                        .genericDialog(
+                            getController(),
+                            Translation
+                                .get("settings_tab.move_error.title"),
+                            Translation
+                                .get("settings_tab.move_error.temp"),
+                            getController().isVerbose(), e);
                 }
             }
         }
@@ -404,8 +398,7 @@ public class ApplicationModel extends PFUIComponent {
                     .get("exp.settings_tab.folder_not_empty.title"),
                 Translation.get("exp.settings_tab.folder_not_empty",
                     newDirectory.toAbsolutePath().toString()),
-                new String[]{Translation.get("general.continue"),
-                    Translation.get("general.cancel")}, 1,
+                new String[]{Translation.get("general.ok")}, 0,
                 GenericDialogType.WARN); // Default is cancel.
             return result == 0;
         }
@@ -839,7 +832,7 @@ public class ApplicationModel extends PFUIComponent {
 
         @Override
         public void finished() {
-            if (get() != null) {
+            if (get() != null && get() instanceof Exception) {
                 displayError((Exception) get());
             }
         }
