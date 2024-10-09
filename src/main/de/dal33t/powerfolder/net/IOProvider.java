@@ -46,7 +46,7 @@ public class IOProvider extends PFComponent {
 
     private static final Logger log = Logger.getLogger(IOProvider.class
         .getName());
-    private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMOUT * 1000L;
+    private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMEOUT * 1000L;
     private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3L;
 
     /**

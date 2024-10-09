@@ -269,7 +269,7 @@ public class Constants {
     /**
      * The number of seconds with no-response until a connection times out.
      */
-    public static final long CONNECTION_KEEP_ALIVE_TIMOUT = 2 * 60;
+    public static final long CONNECTION_KEEP_ALIVE_TIMEOUT = 2 * 60;
 
     /**
      * The time interval to resize the reconnector pool in seconds.
