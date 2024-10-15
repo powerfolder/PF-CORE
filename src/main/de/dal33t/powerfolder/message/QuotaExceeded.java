@@ -23,7 +23,7 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 
 /**
- * PFS-1244: Notify a client, that a file could not be uploaded because it would exceed the quota
+ * PFS-1244: Notify a client, that a file could not be uploaded because it would exceed the storage
  * 
  * @author Christian Sprajc
  */

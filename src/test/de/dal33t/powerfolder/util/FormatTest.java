@@ -274,7 +274,7 @@ public class FormatTest {
     @Test
     public void formatTimeLongTest() {
         Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss aa zzz");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss\u202faa zzz");
 
         assertEquals(simpleDateFormat.format(date), Format.formatTimeLong(date));
 
@@ -289,7 +289,7 @@ public class FormatTest {
     public void formatTimeLongOtherValuesTest() {
         Date dateBefore1970 = new Date();
         dateBefore1970.setTime(-1000000000);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss aa zzz");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss\u202faa zzz");
 
         assertEquals(simpleDateFormat.format(dateBefore1970) ,Format.formatTimeLong(dateBefore1970));
 
@@ -304,7 +304,7 @@ public class FormatTest {
     @Test
     public void formatTimeShortTest() {
         Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm\u202faa");
 
         assertEquals(simpleDateFormat.format(date), Format.formatTimeShort(date));
 
@@ -320,7 +320,7 @@ public class FormatTest {
 
         Date dateBefore1970 = new Date();
         dateBefore1970.setTime(-100000000000000L);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm\u202faa");
 
         assertEquals(simpleDateFormat.format(dateBefore1970) ,Format.formatTimeShort(dateBefore1970));
 
@@ -414,7 +414,7 @@ public class FormatTest {
     @Test
     public void formatDateShortRenderTodayYesterdayTrueTest() {
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm\u202faa");
         Date today = new Date();
 
         assertEquals("Today " + simpleDateFormat.format(today), Format.formatDateShort(today, true));
@@ -432,7 +432,7 @@ public class FormatTest {
 
         assertEquals("Yesterday " + simpleDateFormat.format(yesterday), Format.formatDateShort(yesterday, true));
 
-        SimpleDateFormat format = new SimpleDateFormat("M/d/yy h:mm aa");
+        SimpleDateFormat format = new SimpleDateFormat("M/d/yy h:mm\u202faa");
 
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, 48);
@@ -446,7 +446,7 @@ public class FormatTest {
         Date date = null;
         assertNull(Format.formatDateShort(date, false));
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M/d/yy h:mm aa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M/d/yy h:mm\u202faa");
         Date today = new Date();
         today.setTime(-7200000);
         assertEquals(simpleDateFormat.format(today), Format.formatDateShort(today, false));
@@ -474,7 +474,7 @@ public class FormatTest {
 
     @Test
     public void formatDateShortTest() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm\u202faa");
         Date today = new Date();
         assertEquals("Today " + simpleDateFormat.format(today), Format.formatDateShort(today));
 

@@ -72,11 +72,11 @@ public abstract class AbstractAcceptor extends PFComponent implements Runnable {
         if (lastKeepAlive == null) {
             // No handler/We cannot check the last keepalive message.
             return System.currentTimeMillis() > startTime.getTime()
-                + (1000L * Constants.CONNECTION_KEEP_ALIVE_TIMOUT);
+                + (1000L * Constants.CONNECTION_KEEP_ALIVE_TIMEOUT);
         }
         // Check if the last keepalive timeout
         return System.currentTimeMillis() > lastKeepAlive.getTime()
-            + (1000L * Constants.CONNECTION_KEEP_ALIVE_TIMOUT);
+            + (1000L * Constants.CONNECTION_KEEP_ALIVE_TIMEOUT);
     }
 
     boolean isShutdown() {

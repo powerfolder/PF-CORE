@@ -338,28 +338,22 @@ public class ApplicationModel extends PFUIComponent {
         boolean moveContent, Folder folder)
     {
         if (!newDirectory.equals(originalDirectory)) {
-
             // Check for any problems with the new folder.
             if (checkNewLocalFolder(newDirectory)) {
-
-                // Confirm move.
-                if (shouldMoveLocal(newDirectory, folder)) {
-                    try {
-                        // Move contentes selected
-                        ActivityVisualizationWorker worker = new FolderMoveWorker(
-                            moveContent, originalDirectory, newDirectory, folder);
-                        worker.start();
-                    } catch (Exception e) {
-                        // Probably failed to create temp directory.
-                        DialogFactory
-                            .genericDialog(
-                                getController(),
-                                Translation
-                                    .get("settings_tab.move_error.title"),
-                                Translation
-                                    .get("settings_tab.move_error.temp"),
-                                getController().isVerbose(), e);
-                    }
+                try {
+                    // Move contentes selected
+                    ActivityVisualizationWorker worker = new FolderMoveWorker(moveContent, newDirectory, folder);
+                    worker.start();
+                } catch (Exception e) {
+                    // Probably failed to create temp directory.
+                    DialogFactory
+                        .genericDialog(
+                            getController(),
+                            Translation
+                                .get("settings_tab.move_error.title"),
+                            Translation
+                                .get("settings_tab.move_error.temp"),
+                            getController().isVerbose(), e);
                 }
             }
         }
@@ -404,8 +398,7 @@ public class ApplicationModel extends PFUIComponent {
                     .get("exp.settings_tab.folder_not_empty.title"),
                 Translation.get("exp.settings_tab.folder_not_empty",
                     newDirectory.toAbsolutePath().toString()),
-                new String[]{Translation.get("general.continue"),
-                    Translation.get("general.cancel")}, 1,
+                new String[]{Translation.get("general.ok")}, 0,
                 GenericDialogType.WARN); // Default is cancel.
             return result == 0;
         }
@@ -431,14 +424,11 @@ public class ApplicationModel extends PFUIComponent {
     /**
      * Moves the contents of a folder to another via a temporary directory.
      *
-     * @param moveContent Specify if content sould get moved as well
-     * @param originalDirectory The source directory
      * @param newDirectory The destination directory
      * @param folder The folder to move
      * @return {@code null} if everything worked well, an Exception object otherwise.
      */
-    private Object transferFolder(boolean moveContent, Path originalDirectory,
-        Path newDirectory, Folder folder)
+    private Object transferFolder(Folder folder, Path newDirectory)
     {
         newDirectory = PathUtils.removeInvalidFilenameChars(newDirectory);
 
@@ -452,11 +442,6 @@ public class ApplicationModel extends PFUIComponent {
             FolderRepository repository = getController().getFolderRepository();
             repository.removeFolder(folder, false);
 
-            // Move it.
-            if (moveContent) {
-                PathUtils.recursiveCopy(originalDirectory, newDirectory);
-            }
-
             Path commitDir = null;
             boolean hasCommitDir = folder.getCommitDir() != null;
             if (hasCommitDir) {
@@ -467,10 +452,7 @@ public class ApplicationModel extends PFUIComponent {
             }
 
             // Remember patterns if content not moving.
-            List<String> patterns = null;
-            if (!moveContent) {
-                patterns = folder.getDiskItemFilter().getPatterns();
-            }
+            List<String> patterns = folder.getDiskItemFilter().getPatterns();
 
             // Create the new Folder in the repository.
             FolderInfo fi = FolderInfoFactory.copyFrom(folder);
@@ -481,14 +463,10 @@ public class ApplicationModel extends PFUIComponent {
             folder = repository.createFolder(fi, fs);
 
             // Restore patterns if content not moved.
-            if (!moveContent && patterns != null) {
+            if (patterns != null) {
                 for (String pattern : patterns) {
                     folder.addPattern(pattern);
                 }
-            }
-
-            if (moveContent) {
-                PathUtils.recursiveDelete(originalDirectory);
             }
         } catch (Exception e) {
             return e;
@@ -821,23 +799,24 @@ public class ApplicationModel extends PFUIComponent {
     private class FolderMoveWorker extends ActivityVisualizationWorker {
 
         private final boolean moveContent;
-        private final Path originalDirectory;
         private final Path newDirectory;
         private final Folder folder;
 
-        FolderMoveWorker(boolean moveContent,
-            Path originalDirectory, Path newDirectory, Folder folder)
+        FolderMoveWorker(boolean moveContent, Path newDirectory, Folder folder)
         {
             super(getController().getUIController());
             this.moveContent = moveContent;
-            this.originalDirectory = originalDirectory;
             this.newDirectory = newDirectory;
             this.folder = folder;
         }
 
         @Override
         public Object construct() {
-            return transferFolder(moveContent, originalDirectory, newDirectory, folder);
+            if (moveContent) {
+                return getController().getFolderRepository().moveLocalFolder(folder, newDirectory);
+            } else {
+                return transferFolder(folder, newDirectory);
+            }
         }
 
         @Override
@@ -853,7 +832,7 @@ public class ApplicationModel extends PFUIComponent {
 
         @Override
         public void finished() {
-            if (get() != null) {
+            if (get() != null && get() instanceof Exception) {
                 displayError((Exception) get());
             }
         }
