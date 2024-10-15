@@ -530,6 +530,11 @@ For creation of the installer:
 				<fileset refid="testlibs" />
 			</classpath>
 
+			<jvmarg value="--add-opens" />
+			<jvmarg value="java.base/java.lang=ALL-UNNAMED" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="java.base/java.util=ALL-UNNAMED" />
+
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${build.reports.dir}/raw">
 				<fileset dir="${test.src.dir}">
