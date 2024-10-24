@@ -327,11 +327,11 @@ public class Controller extends PFComponent {
             preConfig = ConfigurationLoader.loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
         } catch (IOException ignored) {
         }
+
         String distributionName = preConfig != null && preConfig.containsKey("dist.name") ? preConfig.getProperty("dist.name") : "";
         if (StringUtils.isNotBlank(distributionName)) {
-            if (distributionName.equals("PowerFolder Server")) {
-                miscFilesLocationDirName = Constants.MISC_DIR_NAME;
-            } else {
+            boolean isClient = !distributionName.contains(Distribution.POWERFOLDER_SERVER);
+            if (isClient) {
                 miscFilesLocationDirName = distributionName.trim();
                 migrateConfigFileIfNecessary(configName);
             }
