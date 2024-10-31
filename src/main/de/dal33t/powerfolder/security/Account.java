@@ -809,6 +809,10 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.organizationOID = organizationOID;
     }
 
+    public boolean isMemberOfOrganization() {
+        return isNotBlank(organizationOID);
+    }
+
     public String getTitle() {
         return title;
     }

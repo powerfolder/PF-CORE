@@ -30,6 +30,9 @@ import de.dal33t.powerfolder.net.RelayFinder;
  * @version $Revision$
  */
 public interface Distribution {
+
+    String POWERFOLDER_SERVER = "PowerFolder Server";
+
     /**
      * @return name of the branding
      */

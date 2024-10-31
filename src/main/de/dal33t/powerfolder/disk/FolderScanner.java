@@ -244,11 +244,9 @@ public class FolderScanner extends PFComponent {
 
             if (isWarning()) {
                 if (unableToScanFiles.isEmpty()) {
-                    logFiner("Unable to scan " + unableToScanFiles.size()
-                        + " file(s)");
+                    logFiner("Unable to scan " + unableToScanFiles.size() + " file(s)");
                 } else {
-                    logWarning("Unable to scan " + unableToScanFiles.size()
-                        + " file(s)");
+                    logInfo("Unable to scan " + unableToScanFiles.size() + " file(s)");
                 }
             }
             // Remaining files = deleted! But only if they are not already

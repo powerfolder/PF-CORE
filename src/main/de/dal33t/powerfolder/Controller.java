@@ -87,10 +87,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 22;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 100;
+    private static final int MINOR_VERSION = 2;
+    private static final int REVISION_VERSION = 7;
 
-    private static final int SPRINT_NUMBER = 57;
+    private static final int SPRINT_NUMBER = 58;
 
     /**
      * Program version.
@@ -327,11 +327,11 @@ public class Controller extends PFComponent {
             preConfig = ConfigurationLoader.loadPreConfigFromClasspath(DEFAULT_CONFIG_FILENAME);
         } catch (IOException ignored) {
         }
+
         String distributionName = preConfig != null && preConfig.containsKey("dist.name") ? preConfig.getProperty("dist.name") : "";
         if (StringUtils.isNotBlank(distributionName)) {
-            if (distributionName.equals("PowerFolder Server")) {
-                miscFilesLocationDirName = Constants.MISC_DIR_NAME;
-            } else {
+            boolean isClient = !distributionName.contains(Distribution.POWERFOLDER_SERVER);
+            if (isClient) {
                 miscFilesLocationDirName = distributionName.trim();
                 migrateConfigFileIfNecessary(configName);
             }
