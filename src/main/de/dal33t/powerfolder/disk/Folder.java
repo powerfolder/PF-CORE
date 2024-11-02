@@ -944,10 +944,14 @@ public class Folder extends PFComponent {
                     // End: PFS-2427
                 } catch (IOException ioe) {
                     // PFS-1794: Does happen 530x
-                    logWarning("Was not able to move tempfile "
-                        + tempFile.toAbsolutePath() + " to "
-                        + targetFile.toAbsolutePath() + ". "
-                        + fInfo.toDetailString() + ". " + ioe);
+                    logWarning(fInfo + ": Was not able to move tempfile " + tempFile.toAbsolutePath() + " to "
+                            + targetFile.toAbsolutePath() + ". " + fInfo.toDetailString() + ". " + ioe);
+                    if (PathUtils.isFilenameTooLong(ioe)) {
+                        logWarning(fInfo.toDetailString() + ": moving file to local list of ignored " +
+                                "files to prevent further download attempts");
+                        addPattern(fInfo.getRelativeName());
+                        addProblem(new TooLongFilenameProblem(fInfo));
+                    }
                     return false;
                 }
             } else {

@@ -1911,4 +1911,9 @@ public class PathUtils {
         String folderName = path.getFileName().toString();
         return folderName.contains(Constants.FOLDER_WEBDAV_SUFFIX);
     }
+
+    public static boolean isFilenameTooLong(Exception e) {
+        Reject.ifNull(e, "Exception");
+        return e.getMessage().toLowerCase().contains("filename too long") || e.toString().toLowerCase().contains("filename too long");
+    }
 }
