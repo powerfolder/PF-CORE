@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.transfer;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
+import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.disk.problem.NoSpaceOnFileStoreProblem;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -1647,9 +1648,11 @@ public class TransferManager extends PFComponent {
                         + fInfo.toDetailString());
                 }
                 return null;
+            } else if (FileProblemHelper.isTooLong(fileToDl.getFilenameOnly())) {
+                logInfo(fileToDl + ": Not downloading file. Filename too long: " + fileToDl.toDetailString());
+                return null;
             } else if (fileToDl.inSyncWithDisk(fInfo
-                .getDiskFile(getController().getFolderRepository())))
-            {
+                    .getDiskFile(getController().getFolderRepository()))) {
                 if (isFiner()) {
                     logFiner("NOT requesting download, file seems already to exists on disk: "
                         + fInfo.toDetailString());
