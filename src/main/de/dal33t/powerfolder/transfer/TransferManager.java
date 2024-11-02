@@ -2829,8 +2829,7 @@ public class TransferManager extends PFComponent {
                 } else {
                     boolean alreadyUploadingTo;
                     // The total size planned+current uploading to that node.
-                    long totalPlannedSizeUploadingTo = uploadingToSize(upload
-                        .getPartner());
+                    long totalPlannedSizeUploadingTo = uploadingToSize(upload.getPartner());
                     if (totalPlannedSizeUploadingTo == -1) {
                         alreadyUploadingTo = false;
                         totalPlannedSizeUploadingTo = 0;
@@ -2842,15 +2841,11 @@ public class TransferManager extends PFComponent {
                         ? Constants.START_UPLOADS_TILL_PLANNED_SIZE_LAN
                         : Constants.START_UPLOADS_TILL_PLANNED_SIZE_INET;
                     if (!alreadyUploadingTo
-                        || totalPlannedSizeUploadingTo <= maxSizeUpload)
-                    {
+                        || totalPlannedSizeUploadingTo <= maxSizeUpload) {
                         // if (!alreadyUploadingTo) {
                         if (alreadyUploadingTo && isFiner()) {
-                            logFiner("Starting another upload to "
-                                + upload.getPartner().getNick()
-                                + ". Total size to upload to: "
-                                + Format
-                                    .formatBytesShort(totalPlannedSizeUploadingTo));
+                            logFiner("Starting another upload to " + upload.getPartner().getNick()
+                                + ". Total size to upload to: " + Format.formatBytesShort(totalPlannedSizeUploadingTo));
 
                         }
                         // start the upload if we have free slots
@@ -2888,8 +2883,7 @@ public class TransferManager extends PFComponent {
         }
 
         if (isFiner()) {
-            logFiner("Started " + uploadsStarted + " upload(s), "
-                + uploadsBroken + " broken upload(s)");
+            logFiner("Started " + uploadsStarted + " upload(s), " + uploadsBroken + " broken upload(s)");
         }
     }
 
