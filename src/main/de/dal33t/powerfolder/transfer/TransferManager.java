@@ -2805,8 +2805,8 @@ public class TransferManager extends PFComponent {
                             "isBroken()");
                     }
                 }
-            } catch (Exception e) {
-                logSevere("Exception while cheking downloads. " + e, e);
+            } catch (RuntimeException e) {
+                logWarning("While checking downloads. " + e, e);
             }
         }
     }
