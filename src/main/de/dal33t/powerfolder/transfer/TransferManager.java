@@ -2797,12 +2797,10 @@ public class TransferManager extends PFComponent {
 
         for (DownloadManager man : dlManagers.values()) {
             try {
-                downloadNewestVersion(man.getFileInfo(),
-                    man.isRequestedAutomatic());
+                downloadNewestVersion(man.getFileInfo(), man.isRequestedAutomatic());
                 for (Download download : man.getSources()) {
                     if (!download.isCompleted() && download.isBroken()) {
-                        download.setBroken(TransferProblem.BROKEN_DOWNLOAD,
-                            "isBroken()");
+                        download.setBroken(TransferProblem.BROKEN_DOWNLOAD, "isBroken()");
                     }
                 }
             } catch (RuntimeException e) {
