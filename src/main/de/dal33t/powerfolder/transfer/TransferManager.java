@@ -63,18 +63,11 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class TransferManager extends PFComponent {
 
-    /**
-     * The maximum size of a chunk transferred at once of older, prev 3.1.7/4.0
-     * versions.
-     */
-    public static final int OLD_MAX_CHUNK_SIZE = 32 * 1024;
-    public static final int OLD_MAX_REQUESTS_QUEUED = 20;
     public static final long PARTIAL_TRANSFER_DELAY = 5000; // Five seconds
     public static final long ONE_DAY = 24L * 3600 * 1000; // One day in ms
     public static final long SIX_HOURS = 6L * 3600 * 1000; // 6 hours
 
-    private static final DecimalFormat CPS_FORMAT = new DecimalFormat(
-        "#,###,###,###.##");
+    private static final DecimalFormat CPS_FORMAT = new DecimalFormat("#,###,###,###.##");
 
     private volatile boolean started;
 
@@ -150,11 +143,11 @@ public class TransferManager extends PFComponent {
     public TransferManager(Controller controller) {
         super(controller);
         started = false;
-        queuedUploads = new CopyOnWriteArrayList<Upload>();
-        activeUploads = new CopyOnWriteArrayList<Upload>();
-        completedUploads = new CopyOnWriteArrayList<Upload>();
+        queuedUploads = new CopyOnWriteArrayList<>();
+        activeUploads = new CopyOnWriteArrayList<>();
+        completedUploads = new CopyOnWriteArrayList<>();
         dlManagers = Util.createConcurrentHashMap();
-        pendingDownloads = new CopyOnWriteArrayList<Download>();
+        pendingDownloads = new CopyOnWriteArrayList<>();
         completedDownloads = Util.createConcurrentHashMap();
         downloadsCount = Util.createConcurrentHashMap();
         uploadCounter = new TransferCounter();
@@ -211,8 +204,7 @@ public class TransferManager extends PFComponent {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {
-                logWarning("Illegal value for kByte." + entry + " '" + cps
-                    + '\'');
+                logWarning("Illegal value for kByte." + entry + " '" + cps + '\'');
             }
         }
         return maxCps;
@@ -221,23 +213,18 @@ public class TransferManager extends PFComponent {
     // General ****************************************************************
 
     public void printStats() {
-        long total = totalDownloadTrafficCounter.getBytesTransferred()
-            + totalUploadTrafficCounter.getBytesTransferred();
-        long payload = downloadCounter.getBytesTransferred()
-            + uploadCounter.getBytesTransferred();
+        long total = totalDownloadTrafficCounter.getBytesTransferred() + totalUploadTrafficCounter.getBytesTransferred();
+        long payload = downloadCounter.getBytesTransferred() + uploadCounter.getBytesTransferred();
         long overhead = total - payload;
-        logInfo("Total: " + Format.formatBytes(total) + ", Payload: "
-            + Format.formatBytes(payload) + ". Overhead: " + overhead * 100
-            / payload + '%');
+        logInfo("Total: " + Format.formatBytes(total) + ", Payload: " + Format.formatBytes(payload)
+                + ". Overhead: " + overhead * 100 / payload + '%');
     }
 
     /**
      * Starts the transfermanager thread
      */
     public void start() {
-        if (!ConfigurationEntry.TRANSFER_MANAGER_ENABLED
-            .getValueBoolean(getController()))
-        {
+        if (!ConfigurationEntry.TRANSFER_MANAGER_ENABLED.getValueBoolean(getController())) {
             logWarning("Not starting TransferManager. disabled by config");
             return;
         }
@@ -260,8 +247,7 @@ public class TransferManager extends PFComponent {
         getController().scheduleAndRepeat(new PartialTransferStatsUpdater(),
             PARTIAL_TRANSFER_DELAY, PARTIAL_TRANSFER_DELAY);
 
-        getController().scheduleAndRepeat(new TransferCleaner(), SIX_HOURS,
-            SIX_HOURS);
+        getController().scheduleAndRepeat(new TransferCleaner(), SIX_HOURS, SIX_HOURS);
 
         started = true;
         logFine("Started");
@@ -273,8 +259,7 @@ public class TransferManager extends PFComponent {
      * older than AUTO_CLEANUP_FREQUENCY in days.
      */
     private void cleanupOldTransfers() {
-        int rawUploadCleanupFrequency = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
-            .getValueInt(getController());
+        int rawUploadCleanupFrequency = ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY.getValueInt(getController());
         int trueUploadCleanupFrequency;
         if (rawUploadCleanupFrequency <= 4) {
             trueUploadCleanupFrequency = Constants.CLEANUP_VALUES[rawUploadCleanupFrequency];
@@ -285,15 +270,13 @@ public class TransferManager extends PFComponent {
         for (Upload completedUpload : completedUploads) {
             long numberOfDays = calcDays(completedUpload.getCompletedDate());
             if (numberOfDays >= trueUploadCleanupFrequency) {
-                logInfo("Auto-cleaning up upload '"
-                    + completedUpload.getFile().getRelativeName() + "' (days="
+                logInfo("Auto-cleaning up upload '" + completedUpload.getFile().getRelativeName() + "' (days="
                     + numberOfDays + ')');
                 clearCompletedUpload(completedUpload);
             }
         }
 
-        int rawDownloadCleanupFrequency = ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
-            .getValueInt(getController());
+        int rawDownloadCleanupFrequency = ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY.getValueInt(getController());
         int trueDownloadCleanupFrequency;
         if (rawDownloadCleanupFrequency <= 4) {
             trueDownloadCleanupFrequency = Constants.CLEANUP_VALUES[rawDownloadCleanupFrequency];
@@ -481,9 +464,7 @@ public class TransferManager extends PFComponent {
     private DownloadManager getDownloadManagerFor(FileInfo info) {
         Validate.notNull(info);
         DownloadManager man = dlManagers.get(info);
-        if (man != null
-            && man.getFileInfo().isVersionDateAndSizeIdentical(info))
-        {
+        if (man != null && man.getFileInfo().isVersionDateAndSizeIdentical(info)) {
             return man;
         }
         return null;
@@ -509,8 +490,7 @@ public class TransferManager extends PFComponent {
             fireUploadStarted(new TransferManagerEvent(this, (Upload) transfer));
         } else if (transfer instanceof Download) {
             // Fire event
-            fireDownloadStarted(new TransferManagerEvent(this,
-                (Download) transfer));
+            fireDownloadStarted(new TransferManagerEvent(this, (Download) transfer));
         }
 
         if (isFine()) {
@@ -546,8 +526,7 @@ public class TransferManager extends PFComponent {
         String problemInfo)
     {
         if (isFine()) {
-            logFine("Download broken: " + download + ' '
-                    + (problem == null ? "" : problem) + ": " + problemInfo);
+            logFine("Download broken: " + download + ' ' + (problem == null ? "" : problem) + ": " + problemInfo);
         }
 
         download.setTransferProblem(problem);
@@ -556,8 +535,7 @@ public class TransferManager extends PFComponent {
         removeDownload(download);
 
         // Fire event
-        fireDownloadBroken(new TransferManagerEvent(this, download, problem,
-            problemInfo));
+        fireDownloadBroken(new TransferManagerEvent(this, download, problem, problemInfo));
     }
 
     /**
@@ -570,15 +548,13 @@ public class TransferManager extends PFComponent {
      * @param problemInformation
      *            specific information about the problem
      */
-    void uploadBroken(Upload upload, TransferProblem transferProblem,
-        String problemInformation)
+    void uploadBroken(Upload upload, TransferProblem transferProblem, String problemInformation)
     {
         // Ensure shutdown
         upload.shutdown();
 
         if (isFine()) {
-            logFine("Upload broken: " + upload + ' '
-                + (transferProblem == null ? "" : transferProblem) + ": "
+            logFine("Upload broken: " + upload + ' ' + (transferProblem == null ? "" : transferProblem) + ": "
                 + problemInformation);
         }
         
@@ -620,8 +596,7 @@ public class TransferManager extends PFComponent {
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
                 if (foInfo.equals(upload.getFile().getFolderInfo())) {
-                    uploadBroken(upload, TransferProblem.FOLDER_REMOVED,
-                        foInfo.getName());
+                    uploadBroken(upload, TransferProblem.FOLDER_REMOVED, foInfo.getName());
                 }
             }
         }
@@ -629,8 +604,7 @@ public class TransferManager extends PFComponent {
         if (!activeUploads.isEmpty()) {
             for (Upload upload : activeUploads) {
                 if (foInfo.equals(upload.getFile().getFolderInfo())) {
-                    uploadBroken(upload, TransferProblem.FOLDER_REMOVED,
-                        foInfo.getName());
+                    uploadBroken(upload, TransferProblem.FOLDER_REMOVED, foInfo.getName());
                 }
             }
         }
@@ -652,8 +626,7 @@ public class TransferManager extends PFComponent {
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
                 if (node.equals(upload.getPartner())) {
-                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED,
-                        node.getNick());
+                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED, node.getNick());
                 }
             }
         }
@@ -661,8 +634,7 @@ public class TransferManager extends PFComponent {
         if (!activeUploads.isEmpty()) {
             for (Upload upload : activeUploads) {
                 if (node.equals(upload.getPartner())) {
-                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED,
-                        node.getNick());
+                    uploadBroken(upload, TransferProblem.NODE_DISCONNECTED, node.getNick());
                 }
             }
         }
@@ -670,8 +642,7 @@ public class TransferManager extends PFComponent {
         for (DownloadManager man : dlManagers.values()) {
             for (Download download : man.getSources()) {
                 if (node.equals(download.getPartner())) {
-                    download.setBroken(TransferProblem.NODE_DISCONNECTED,
-                        node.getNick());
+                    download.setBroken(TransferProblem.NODE_DISCONNECTED, node.getNick());
                 }
             }
         }
@@ -689,8 +660,7 @@ public class TransferManager extends PFComponent {
         if (!queuedUploads.isEmpty()) {
             for (Upload upload : queuedUploads) {
                 if (fInfo.equals(upload.getFile())) {
-                    uploadBroken(upload, TransferProblem.FILE_CHANGED,
-                        fInfo.getRelativeName());
+                    uploadBroken(upload, TransferProblem.FILE_CHANGED, fInfo.getRelativeName());
                 }
             }
         }
@@ -699,16 +669,14 @@ public class TransferManager extends PFComponent {
             for (Upload upload : activeUploads) {
                 if (fInfo.equals(upload.getFile())) {
                     upload.abort();
-                    uploadBroken(upload, TransferProblem.FILE_CHANGED,
-                        fInfo.getRelativeName());
+                    uploadBroken(upload, TransferProblem.FILE_CHANGED, fInfo.getRelativeName());
                 }
             }
         }
 
         for (DownloadManager man : dlManagers.values()) {
             if (fInfo.equals(man.getFileInfo())) {
-                man.setBroken(TransferProblem.FILE_CHANGED,
-                    fInfo.getRelativeName());
+                man.setBroken(TransferProblem.FILE_CHANGED, fInfo.getRelativeName());
             }
         }
     }
@@ -718,8 +686,7 @@ public class TransferManager extends PFComponent {
 
         final FileInfo fInfo = dlManager.getFileInfo();
         // Inform other folder member of added file
-        final Folder folder = fInfo.getFolder(getController()
-            .getFolderRepository());
+        final Folder folder = fInfo.getFolder(getController().getFolderRepository());
         if (folder != null) {
             // scan in new downloaded file
             // TODO React on failed scan?
@@ -750,25 +717,20 @@ public class TransferManager extends PFComponent {
                     doWork(scriptRunner);
                 }
             } else {
-                logWarning("Scanning of completed file failed: "
-                    + fInfo.toDetailString() + " at " + dlManager.getTempFile());
-                dlManager.setBroken(
-                    TransferProblem.FILE_CHANGED,
-                    "Scanning of completed file failed: "
+                logWarning("Scanning of completed file failed: " + fInfo.toDetailString() + " at " + dlManager.getTempFile());
+                dlManager.setBroken(TransferProblem.FILE_CHANGED, "Scanning of completed file failed: "
                         + fInfo.toDetailString());
                 return;
             }
         }
-        completedDownloads.put(new FileInfoKey(fInfo, Type.VERSION_DATE_SIZE),
-            dlManager);
+        completedDownloads.put(new FileInfoKey(fInfo, Type.VERSION_DATE_SIZE), dlManager);
         for (Download d : dlManager.getSources()) {
             d.setCompleted();
         }
         removeDownloadManager(dlManager);
 
         // Auto cleanup of Downloads
-        boolean autoClean = dlManager.getFileInfo().getFolderInfo()
-            .isMetaFolder();
+        boolean autoClean = dlManager.getFileInfo().getFolderInfo().isMetaFolder();
         autoClean = autoClean
             || ConfigurationEntry.DOWNLOAD_AUTO_CLEANUP_FREQUENCY
                 .getValueInt(getController()) == 0
@@ -2901,15 +2863,8 @@ public class TransferManager extends PFComponent {
             try {
                 FileInfo fInfo = dl.getFile();
                 boolean notDownloading = getDownloadManagerFor(fInfo) == null;
-                if (notDownloading
-                    && getController().getFolderRepository().hasJoinedFolder(
-                        fInfo.getFolderInfo()))
-                {
-                    // MultiSourceDownload source = downloadNewestVersion(fInfo,
-                    // download
-                    // .isRequestedAutomatic());
-                    DownloadManager source = downloadNewestVersion(fInfo,
-                        dl.isRequestedAutomatic());
+                if (notDownloading && getController().getFolderRepository().hasJoinedFolder(fInfo.getFolderInfo())) {
+                    DownloadManager source = downloadNewestVersion(fInfo, dl.isRequestedAutomatic());
                     if (source != null) {
                         logFine("Pending download restored: " + fInfo
                             + " from " + source);
@@ -2917,9 +2872,7 @@ public class TransferManager extends PFComponent {
                             pendingDownloads.remove(dl);
                         }
                     }
-                } else if (dl.getDownloadManager() != null
-                    && !dl.getDownloadManager().isDone())
-                {
+                } else if (dl.getDownloadManager() != null && !dl.getDownloadManager().isDone()) {
                     // Not joined folder, break pending dl
                     logWarning("Pending download removed: " + fInfo);
                     synchronized (pendingDownloads) {
@@ -2961,33 +2914,26 @@ public class TransferManager extends PFComponent {
                     Date afterDownload = new Date();
                     // @todo please explain why / 4 ?
                     long uploadSize = 1047552 / 4;
-                    boolean uploadOk = countActiveUploads() == 0
-                        && testAvailabilityUpload(uploadSize);
+                    boolean uploadOk = countActiveUploads() == 0 && testAvailabilityUpload(uploadSize);
                     Date afterUpload = new Date();
 
                     // Calculate time differences.
-                    long downloadTime = afterDownload.getTime()
-                        - startDate.getTime();
-                    long uploadTime = afterUpload.getTime()
-                        - afterDownload.getTime();
+                    long downloadTime = afterDownload.getTime() - startDate.getTime();
+                    long uploadTime = afterUpload.getTime() - afterDownload.getTime();
                     // logWarning("Test availability download time " +
                     // downloadTime);
                     // logWarning("Test availability upload time " +
                     // uploadTime);
                     // Calculate rates in KiB/s.#
                     if (downloadOk) {
-                        downloadRate = downloadTime > 0 ? downloadSize * 1000
-                            / downloadTime : 0;
+                        downloadRate = downloadTime > 0 ? downloadSize * 1000 / downloadTime : 0;
                     }
-                    long uploadRate = uploadTime > 0 ? uploadSize * 1000
-                        / uploadTime : 0;
+                    long uploadRate = uploadTime > 0 ? uploadSize * 1000 / uploadTime : 0;
                     if (downloadOk) {
-                        logFine("Test availability download rate "
-                            + Format.formatBytesShort(downloadRate) + "/s");
+                        logFine("Test availability download rate " + Format.formatBytesShort(downloadRate) + "/s");
                     }
                     if (uploadOk) {
-                        logFine("Test availability upload rate "
-                            + Format.formatBytesShort(uploadRate) + "/s");
+                        logFine("Test availability upload rate " + Format.formatBytesShort(uploadRate) + "/s");
                     }
                     // Update bandwidth provider with 90% of new rates.
                     // By experience: Measured rates usually lower than actual
@@ -2995,8 +2941,7 @@ public class TransferManager extends PFComponent {
                     long modifiedDownloadRate = 90 * downloadRate / 100;
                     long modifiedUploadRate = 90 * uploadRate / 100;
 
-                    logInfo("Speed test finished: Download "
-                        + Format.formatBytesShort(downloadRate) + "/s, Upload "
+                    logInfo("Speed test finished: Download " + Format.formatBytesShort(downloadRate) + "/s, Upload "
                         + Format.formatBytesShort(uploadRate) + "/s");
 
                     // If the detected rate is too low the connection is
@@ -3036,8 +2981,7 @@ public class TransferManager extends PFComponent {
      */
     private boolean testAvailabilityUpload(long size) {
         try {
-            String path = getController().getOSClient().getWebURL()
-                + "/testavailability?action=upload";
+            String path = getController().getOSClient().getWebURL() + "/testavailability?action=upload";
             URL url = new URL(path);
 
             URLConnection connection = url.openConnection();
@@ -3078,8 +3022,7 @@ public class TransferManager extends PFComponent {
             }
 
             // Connection is lazily executed whenever you request any status.
-            int responseCode = ((HttpURLConnection) connection)
-                .getResponseCode();
+            int responseCode = ((HttpURLConnection) connection).getResponseCode();
             return responseCode == 200;
         } catch (Exception e) {
             logWarning("Test availability upload failed: " + e);
@@ -3095,8 +3038,7 @@ public class TransferManager extends PFComponent {
     private boolean testAvailabilityDownload(long size) {
         BufferedReader reader = null;
         try {
-            String path = getController().getOSClient().getWebURL()
-                + "/testavailability?action=download&size=" + size;
+            String path = getController().getOSClient().getWebURL() + "/testavailability?action=download&size=" + size;
             URL url = new URL(path);
             URLConnection connection = url.openConnection();
             reader = new BufferedReader(new InputStreamReader(
@@ -3128,14 +3070,10 @@ public class TransferManager extends PFComponent {
      * @param fInfo
      * @param member
      */
-    public void logTransfer(boolean download, boolean aborted, long took, FileInfo fInfo,
-        Member member)
-    {
-
+    public void logTransfer(boolean download, boolean aborted, long took, FileInfo fInfo, Member member) {
         String memberInfo = "";
         if (member != null) {
-            memberInfo = (download ? " from " : " to ") + '\''
-                + member.getNick() + '\'';
+            memberInfo = (download ? " from " : " to ") + '\'' + member.getNick() + '\'';
         }
 
         String cpsStr = "-";
@@ -3239,18 +3177,15 @@ public class TransferManager extends PFComponent {
     private class PartialTransferStatsUpdater extends TimerTask {
         @Override
         public void run() {
-            FolderRepository folderRepository = getController()
-                .getFolderRepository();
+            FolderRepository folderRepository = getController().getFolderRepository();
             for (FileInfo fileInfo : dlManagers.keySet()) {
                 DownloadManager downloadManager = dlManagers.get(fileInfo);
                 if (downloadManager != null) {
-                    Folder folder = folderRepository.getFolder(fileInfo
-                        .getFolderInfo());
+                    Folder folder = folderRepository.getFolder(fileInfo.getFolderInfo());
                     if (folder == null) {
                         continue;
                     }
-                    folder.getStatistic().putPartialSyncStat(fileInfo,
-                        getController().getMySelf(),
+                    folder.getStatistic().putPartialSyncStat(fileInfo, getController().getMySelf(),
                         downloadManager.getCounter().getBytesTransferred());
                 }
             }
@@ -3259,9 +3194,8 @@ public class TransferManager extends PFComponent {
                 if (folder == null) {
                     continue;
                 }
-                folder.getStatistic().putPartialSyncStat(upload.getFile(),
-                    upload.getPartner(),
-                    upload.getCounter().getBytesTransferred());
+                folder.getStatistic().putPartialSyncStat(upload.getFile(), upload.getPartner(),
+                        upload.getCounter().getBytesTransferred());
             }
         }
     }
