@@ -109,8 +109,8 @@ public class NoticesModel extends PFUIComponent {
         NoticeSeverity unreadSeverity = null;
         for (Notice notice : notices) {
             if (!notice.isRead()){
-                if(notice.getNoticeSeverity()==NoticeSeverity.WARINING) {
-                    return NoticeSeverity.WARINING;
+                if(notice.getNoticeSeverity()==NoticeSeverity.WARNING) {
+                    return NoticeSeverity.WARNING;
                 } else if(notice.getNoticeSeverity()==NoticeSeverity.INFORMATION) {
                     unreadSeverity = NoticeSeverity.INFORMATION;
                 }

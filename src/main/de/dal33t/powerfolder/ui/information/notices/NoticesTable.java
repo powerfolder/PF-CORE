@@ -99,7 +99,7 @@ public class NoticesTable extends JTable {
                         if (notice.getNoticeSeverity() == NoticeSeverity.INFORMATION)
                         {
                             icon = Icons.getIconById(Icons.INFORMATION);
-                        } else if (notice.getNoticeSeverity() == NoticeSeverity.WARINING)
+                        } else if (notice.getNoticeSeverity() == NoticeSeverity.WARNING)
                         {
                             icon = Icons.getIconById(Icons.WARNING);
                         } else {
