@@ -1648,9 +1648,9 @@ public class TransferManager extends PFComponent {
                         + fInfo.toDetailString());
                 }
                 return null;
-            } else if (FileProblemHelper.isTooLong(fileToDl.getFilenameOnly())) {
-                logInfo(fileToDl + ": Not downloading file. Filename too long: " + fileToDl.toDetailString());
-                return null;
+           // } else if (FileProblemHelper.isTooLong(fileToDl.getFilenameOnly())) {
+           //     logInfo(fileToDl + ": Not downloading file. Filename too long: " + fileToDl.toDetailString());
+           //     return null;
             } else if (fileToDl.inSyncWithDisk(fInfo
                     .getDiskFile(getController().getFolderRepository()))) {
                 if (isFiner()) {
