@@ -4852,7 +4852,7 @@ public class Folder extends PFComponent {
         return currentInfo;
     }
 
-    public void updateInfo(FolderInfo folderInfo) {
+    void updateInfo(FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "folderInfo");
         Reject.ifFalse(folderInfo.equals(currentInfo), "mismatch");
         if (currentInfo != null) {
