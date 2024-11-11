@@ -996,7 +996,7 @@ public class SettingsTab extends PFUIComponent {
             try {
                 onlineArchiveModeSelectorPanel.getUIComponent().setVisible(false);
                 onlineLabel.setVisible(false);
-                if (folderInfo != null) {
+                if (folderInfo != null && serverClient.isLoggedIn()) {
                     FolderService folderService = serverClient.getFolderService(folderInfo);
                     int perFile = folderService.getVersionsPerFile(folderInfo);
                     updatingOnlineArchiveMode = true;
