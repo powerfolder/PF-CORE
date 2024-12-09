@@ -1,8 +1,8 @@
 package de.dal33t.powerfolder.ui.util;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.util.*;
@@ -154,9 +154,20 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                         return null;
                     }
 
+                    String spConsumeURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller) + Constants.LOGIN_SHIBBOLETH_ANDROID_URI;
+                    String idpWebLoginURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller) + "/Shibboleth.sso/Login";
+                    idpWebLoginURL += "?SAMLDS=1&";
+                    idpWebLoginURL += "entityID=" + URLEncoder.encode(entity, Convert.UTF8);
+                    idpWebLoginURL += "&target=" + URLEncoder.encode(spConsumeURL, Convert.UTF8);
+
+                    try {
+                        BrowserLauncher.openURL(idpWebLoginURL);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
                     String idpLookupURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller)
-                            + "/api/idpd?entityID="
-                            + URLEncoder.encode(entity, Convert.UTF8.toString());
+                            + "/api/idpd?entityID=" + URLEncoder.encode(entity, Convert.UTF8);
 
                     HttpGet getBindingURL = new HttpGet(idpLookupURL);
                     // PFC-2669:
