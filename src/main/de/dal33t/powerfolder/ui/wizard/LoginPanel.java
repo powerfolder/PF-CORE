@@ -58,8 +58,7 @@ import java.util.logging.Logger;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {
-    private static final Logger LOG = Logger.getLogger(LoginPanel.class
-            .getName());
+    private static final Logger LOG = Logger.getLogger(LoginPanel.class.getName());
     private static final String TOKEN_PLACEHOLDER = "_TOKEN_PLACEHOLDER_";
 
     private ServerClient client;

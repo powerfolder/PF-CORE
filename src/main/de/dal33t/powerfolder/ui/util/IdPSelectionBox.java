@@ -26,6 +26,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
         super(new String[]{Translation.get("general.loading")});
         Reject.ifNull(controller, "Controller");
         this.listLoaded = false;
+        setEnabled(false);
 
         javax.swing.SwingWorker<Void, Void> worker = new SwingWorker<>() {
             @Override
