@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.security.Token;
 import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
 import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
+import de.dal33t.powerfolder.ui.util.IdPSelectionBox;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
@@ -67,8 +68,7 @@ public class LoginPanel extends PFWizardPanel {
     private JComboBox<String> serverURLBox;
     private JLabel serverURLLabel;
     private JLabel idPLabel;
-    private StyledComboBox<String> idPSelectBox;
-    private boolean listLoaded;
+    private IdPSelectionBox idPSelectBox;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private LinkLabel recoverPasswordLabel;
@@ -123,9 +123,8 @@ public class LoginPanel extends PFWizardPanel {
             && !StringUtils.isEmpty(usernameField.getText())
             && (passwordField.getPassword() != null && passwordField
                 .getPassword().length > 0)
-            && (StringUtils
-                .isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                    .getValue(getController())) ? listLoaded : true)
+            && (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                    .getValue(getController())) ? idPSelectBox.isListLoaded() : true)
             && (idPSelectBox == null || idPSelectBox.getSelectedIndex() != 0);
     }
 
@@ -270,124 +269,10 @@ public class LoginPanel extends PFWizardPanel {
             serverURLBox.addActionListener(new ServerSelectAction());
         }
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-            .getValue(getController())))
-        {
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(getController()))) {
             idPLabel = new JLabel(Translation.get("general.idp"));
-            idPSelectBox = new StyledComboBox<>(new String[]{Translation.get("general.loading")});
-            idPSelectBox.setEnabled(false);
-
-            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>()
-            {
-                @Override
-                protected Void doInBackground() throws Exception {
-
-                    URL url = new URL(
-                            ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                                    .getValue(getController()));
-
-                    HttpURLConnection con;
-                    if (url.toString().startsWith("https")) {
-                        con = (HttpsURLConnection) url.openConnection();
-                    } else {
-                        con = (HttpURLConnection) url.openConnection();
-                    }
-
-
-                    BufferedReader is = new BufferedReader(
-                        new InputStreamReader(con.getInputStream(),
-                            Convert.UTF8.toString()));
-                    String line = is.readLine();
-                    StringBuilder body = new StringBuilder();
-
-                    while (line != null) {
-                        body.append(line);
-                        line = is.readLine();
-                    }
-
-                    JSONArray resp = new JSONArray(body.toString());
-                    List<String> idPList = new ArrayList<>(resp.length());
-
-
-                    String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
-                        .getValue(getController());
-                    boolean lastIdPSet = false;
-
-                    idPSelectBox.removeAllItems();
-
-                    // PFS-2006
-                    idPSelectBox.addItem(Translation.get("wizard.login_online_storage.pre_selection_entry"));
-                    idPList.add(0, "");
-
-                    if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
-                        .hasNonBlankValue(getController()))
-                    {
-                        String[] extNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
-                            .getValue(getController()).split(",");
-
-                        for (String name : extNames) {
-                            if (StringUtils.isNotBlank(name)) {
-                                
-                                if (name.startsWith("!")){
-                                    name = name.substring(1);
-                                }
-
-                                idPSelectBox.addItem(name.trim());
-                                idPList.add(name.trim());
-                                if (!lastIdPSet && name.equals(lastIdP)) {
-                                    idPSelectBox.setSelectedIndex(idPSelectBox.getItemCount() - 1);
-                                    lastIdPSet = true;
-                                }
-                            }
-                        }
-                    } else {
-                        idPSelectBox.addItem(
-                            Translation.get("wizard.login.external_users"));
-                        idPList.add("ext");
-                    }
-
-                    for (int i = 0; i < resp.length(); i++) {
-                        JSONObject obj = resp.getJSONObject(i);
-
-                        String entity = obj.getString("entityID");
-                        String name = obj.getJSONArray("DisplayNames")
-                            .getJSONObject(0).getString("value");
-
-                        idPSelectBox.addItem(name);
-                        idPList.add(entity);
-
-                        if (!lastIdPSet && entity.equals(lastIdP)) {
-                            idPSelectBox.setSelectedIndex(idPSelectBox.getItemCount() - 1);
-                            lastIdPSet = true;
-                        }
-                    }
-
-                    if (!lastIdPSet) {
-                        idPSelectBox.setSelectedIndex(0);
-                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(
-                            getController(), "ext");
-                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                            .setValue(getController(), "ext");
-                    }
-
-                    idPSelectBox.addActionListener(new IdPSelectionAction(
-                        getController(), idPList));
-                    idPSelectBox.setEnabled(true);
-                    listLoaded = true;
-
-                    updateButtons();
-                    idPSelectBox.addItemListener(new ItemListener() {
-                        @Override
-                        public void itemStateChanged(ItemEvent e) {
-                            updateButtons();
-                        }
-                    });
-
-                    return null;
-                }
-            };
-
-            worker.execute();
+            idPSelectBox = new IdPSelectionBox(getController());
+            idPSelectBox.addItemListener(e -> updateButtons());
         }
 
         usernameLabel = new JLabel(LoginUtil.getUsernameLabel(getController()));
@@ -487,6 +372,8 @@ public class LoginPanel extends PFWizardPanel {
                 }
             }
         }, 60000L, 10000L);
+
+        updateButtons();
     }
 
     protected String getTitle() {
