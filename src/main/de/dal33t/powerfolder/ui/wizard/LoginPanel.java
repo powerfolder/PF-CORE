@@ -31,28 +31,17 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.security.Token;
-import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
-import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
 import de.dal33t.powerfolder.ui.util.IdPSelectionBox;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.*;
 import jwf.WizardPanel;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
