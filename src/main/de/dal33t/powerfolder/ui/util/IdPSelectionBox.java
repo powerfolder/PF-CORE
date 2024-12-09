@@ -88,8 +88,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                     JSONObject obj = resp.getJSONObject(i);
 
                     String entity = obj.getString("entityID");
-                    String name = obj.getJSONArray("DisplayNames")
-                            .getJSONObject(0).getString("value");
+                    String name = obj.getJSONArray("DisplayNames").getJSONObject(0).getString("value");
 
                     addItem(name);
                     idPList.add(entity);
