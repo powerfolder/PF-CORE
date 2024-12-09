@@ -10,6 +10,7 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.SwingWorker;
 
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -52,12 +53,11 @@ public class IdPSelectionAction extends PFComponent implements ActionListener {
                 if (StringUtils.isBlank(entity)) {
                     logFine("No entityID selected");
                     return null;
-                } else if ("ext".equals(entity)
-                    || (StringUtils.isNotBlank(externalNames)
-                        && externalNames.contains(entity)))
+                } else if (ServerClient.SAML_EXTERNAL_NON_SAML_USERS.equals(entity)
+                    || (StringUtils.isNotBlank(externalNames) && externalNames.contains(entity)))
                 {
-                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(
-                        getController(), "ext");
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
+                            .setValue(getController(), ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
                     logFine("External user: don't ask the server for the ECP URL.");
                     return null;
                 }

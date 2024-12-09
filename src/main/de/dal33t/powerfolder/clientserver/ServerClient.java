@@ -72,7 +72,7 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 public class ServerClient extends PFComponent {
     public static final String SERVER_NODES_URI = "/client_deployment/server.nodes";
     public static final String SERVER_PUBLIC_KEYS_URI = "/client_deployment/server.public_keys";
-
+    public static final String SAML_EXTERNAL_NON_SAML_USERS = "ext";
     private static final String MEMBER_ID_TEMP_PREFIX = "TEMP_IDENTITY_";
 
     /**
@@ -1415,7 +1415,7 @@ public class ServerClient extends PFComponent {
         } else if (userChanged) {
             shibUsername = null;
             shibToken = null;
-        } else if ("ext".equals(idpURLString)) {
+        } else if (SAML_EXTERNAL_NON_SAML_USERS.equals(idpURLString)) {
             return true;
         }
 
@@ -1498,9 +1498,8 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isBlank(entityID)) {
             // No entity ID given, using existing one.
             return ecpURL;
-        } else if ("ext".equals(entityID)
-                || (isNotBlank(externalNames)
-                && externalNames.contains(entityID)))
+        } else if (SAML_EXTERNAL_NON_SAML_USERS.equals(entityID)
+                || (isNotBlank(externalNames) && externalNames.contains(entityID)))
         {
             return ecpURL;
         }
@@ -2726,9 +2725,8 @@ public class ServerClient extends PFComponent {
      */
     private boolean federatedLoginSuccess() {
 
-        String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-            .getValue(getController());
-        if (isNotBlank(ecpURL) && !"ext".equals(ecpURL)) {
+        String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.getValue(getController());
+        if (isNotBlank(ecpURL) && !SAML_EXTERNAL_NON_SAML_USERS.equals(ecpURL)) {
             return true;
         }
 

@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.ui.util;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.Reject;
@@ -81,7 +82,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                     }
                 } else {
                     addItem(Translation.get("wizard.login.external_users"));
-                    idPList.add("ext");
+                    idPList.add(ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
                 }
 
                 for (int i = 0; i < resp.length(); i++) {
@@ -101,8 +102,8 @@ public class IdPSelectionBox extends StyledComboBox<String> {
 
                 if (!lastIdPSet) {
                     setSelectedIndex(0);
-                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, "ext");
-                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, "ext");
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
                 }
 
                 addActionListener(new IdPSelectionAction(controller, idPList));
