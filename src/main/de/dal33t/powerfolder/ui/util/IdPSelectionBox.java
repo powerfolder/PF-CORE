@@ -154,7 +154,10 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                         return null;
                     }
 
+                    // TODO: Sign with private key...
                     String spConsumeURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller) + Constants.LOGIN_SHIBBOLETH_ANDROID_URI;
+                    spConsumeURL += "?nodeID=" + controller.getMySelf().getId();
+                    spConsumeURL += "?nodeNick=" + controller.getMySelf().getNick();
                     String idpWebLoginURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller) + "/Shibboleth.sso/Login";
                     idpWebLoginURL += "?SAMLDS=1&";
                     idpWebLoginURL += "entityID=" + URLEncoder.encode(entity, Convert.UTF8);

@@ -398,8 +398,11 @@ public class Constants {
     public static final String OPEN_LINK_URI = "/open";
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
     public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI + "/client";
+    @Deprecated
     public static final String LOGIN_SHIBBOLETH_ANDROID_URI = LOGIN_SHIBBOLETH_URI + "/android";
+    @Deprecated
     public static final String LOGIN_SHIBBOLETH_IOS_URI = LOGIN_SHIBBOLETH_URI + "/ios";
+    public static final String LOGIN_SHIBBOLETH_BROWSER_URI = LOGIN_SHIBBOLETH_URI + "/browser";
     public static final String WEBSOCKET_CLIENT_URI = "/websocket_client";
     public static final String WEBDAV_URI = "/webdav";
 
