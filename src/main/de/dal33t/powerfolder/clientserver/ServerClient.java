@@ -1653,13 +1653,11 @@ public class ServerClient extends PFComponent {
      * Load all known (cluster) server nodes and their public keys.
      */
     public void loadServerNodes() {
-        if (!ConfigurationEntry.SERVER_LOAD_NODES
-                .getValueBoolean(getController())) {
+        if (!ConfigurationEntry.SERVER_LOAD_NODES.getValueBoolean(getController())) {
             return;
         }
         String serverNodesURL = getWebURL(SERVER_NODES_URI, false);
-        String serverPublicKeysURL = getWebURL(SERVER_PUBLIC_KEYS_URI,
-                false);
+        String serverPublicKeysURL = getWebURL(SERVER_PUBLIC_KEYS_URI, false);
         NodeList list = null;
         if (isNotBlank(serverNodesURL)) {
             try {
