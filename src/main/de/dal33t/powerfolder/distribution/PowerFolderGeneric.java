@@ -21,7 +21,7 @@ public class PowerFolderGeneric extends AbstractDistribution {
     public static final String WEB_ANDROID_CLIENT_URL = "https://market.android.com/details?id=de.goddchen.android.powerfolder.A";
     public static final String WEB_START_CLIENT_URL = "http://download.powerfolder.com/pro/webstart_generic/PowerFolder.jnlp";
     public static final String WEB_OUTLOOK_ADDIN_URL = "https://my.powerfolder.com/dl/fiLjw8DbauoYbM8QCJ8pdP/PowerFolder_Outlook_Latest.msi";
-    public static final String WEB_THUNDERBIRD_PLUGIN_URL = "https://addons.thunderbird.net/de/thunderbird/addon/power-folder/";
+    public static final String WEB_THUNDERBIRD_ADDON_URL = "https://addons.thunderbird.net/de/thunderbird/addon/power-folder/";
     public static final String CHECK_VERSION_URL = "http://checkversion.powerfolder.com/PowerFolderGeneric_LatestVersion.txt";
 
     public String getName() {
