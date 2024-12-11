@@ -331,7 +331,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         } else if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + SUCCESS_PARAM)) {
             String html = "<html><body>" + Translation.get("login.saml.browser_success") + "</body></html>";
             String httpResponse = "HTTP/1.1 200 OK\r\n" +
-                    "Content-Type: text/html\r\n" +
+                    "Content-Type: text/html; charset=UTF-8\r\n" +
                     "Content-Length: " + html.length() + "\r\n" +
                     "Connection: close\r\n" +
                     "\r\n" + html;
@@ -339,7 +339,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         } else {
             String html = "<html><body>" + Translation.get("login.saml.browser_failed") + "</body></html>";
             String httpResponse = "HTTP/1.1 400 Bad Request\r\n" +
-                    "Content-Type: text/plain\r\n" +
+                    "Content-Type: text/html; charset=UTF-8\r\n" +
                     "Content-Length: " + html.length() + "\r\n" +
                     "Connection: close\r\n" +
                     "\r\n" + html;
