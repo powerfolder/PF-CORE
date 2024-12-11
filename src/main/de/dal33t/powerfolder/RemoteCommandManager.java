@@ -321,11 +321,10 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             getController().getOSClient().login(token);
 
             String httpResponse = "HTTP/1.1 200 OK\r\n" +
-                    "Content-Type: text/html\r\n" +
-                    "Content-Length: 98\r\n" +
-                    "Connection: close\r\n" +
+                    "Content-Type: text/plain\r\n" +
+                    "Content-Length: 41\r\n" +
                     "\r\n" +
-                    "<html><body><script>window.close();</script>All ok, you may close the browser now</body></html>";
+                    "All ok, you may close the browser now";
             out.write(httpResponse.getBytes());
         } else {
             String httpResponse = "HTTP/1.1 400 Bad Request\r\n" +
