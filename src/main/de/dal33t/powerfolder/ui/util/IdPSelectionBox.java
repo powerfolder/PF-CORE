@@ -153,6 +153,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                                 .setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
                         return null;
                     }
+                    retrieveECP(entityID);
 
                     int port = controller.getRconManager().getPort();
                     if (port > 0) {
@@ -161,7 +162,6 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                     } else {
                         LOG.warning("Unable to provide browser based SAML login. Please make sure client is not running duplicate. Trying to login via ECP.");
                     }
-                    retrieveECP(entityID);
 
                     return null;
                 }

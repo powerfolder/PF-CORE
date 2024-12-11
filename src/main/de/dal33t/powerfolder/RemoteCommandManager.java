@@ -321,6 +321,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         // Send response
         if (token != null) {
             getController().getOSClient().login(token);
+            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
+            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
 
             String redirectUrl = LOGIN_URI + "?" + SUCCESS_PARAM;
             String httpResponse = "HTTP/1.1 302 Found\r\n" +
