@@ -155,13 +155,13 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                     }
 
                     int port = controller.getRconManager().getPort();
-                    if (port <= 0) {
-                        LOG.warning("Unable to provide browser based SAML login. Please make sure client is not running duplicate. Trying to login via ECP.");
-                        retrieveECP(entityID);
-                    } else {
+                    if (port > 0) {
                         String nodeConsumeTokenURL = "http://localhost:" + port + Constants.LOGIN_URI;
                         openSAMLLoginInBrowser(entityID, nodeConsumeTokenURL);
+                    } else {
+                        LOG.warning("Unable to provide browser based SAML login. Please make sure client is not running duplicate. Trying to login via ECP.");
                     }
+                    retrieveECP(entityID);
 
                     return null;
                 }
