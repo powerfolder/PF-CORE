@@ -300,6 +300,8 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
     }
 
+    private static final String SUCCESS_PARAM = "success=true";
+
     private void processWebRequest(String line, OutputStream out) throws IOException {
         // Extract the Token from the URL
         logFine("Received request: " + line);
@@ -320,18 +322,27 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         if (token != null) {
             getController().getOSClient().login(token);
 
+            String redirectUrl = LOGIN_URI + "?" + SUCCESS_PARAM;
+            String httpResponse = "HTTP/1.1 302 Found\r\n" +
+                    "Location: " + redirectUrl + "\r\n" +
+                    "Connection: close\r\n" +
+                    "\r\n";
+            out.write(httpResponse.getBytes());
+        } else if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + SUCCESS_PARAM)) {
+            String html = "<html><body>" + Translation.get("login.saml.browser_success") + "</body></html>";
             String httpResponse = "HTTP/1.1 200 OK\r\n" +
-                    "Content-Type: text/plain\r\n" +
-                    "Content-Length: 41\r\n" +
-                    "\r\n" +
-                    "All ok, you may close the browser now";
+                    "Content-Type: text/html\r\n" +
+                    "Content-Length: " + html.length() + "\r\n" +
+                    "Connection: close\r\n" +
+                    "\r\n" + html;
             out.write(httpResponse.getBytes());
         } else {
+            String html = "<html><body>" + Translation.get("login.saml.browser_failed") + "</body></html>";
             String httpResponse = "HTTP/1.1 400 Bad Request\r\n" +
                     "Content-Type: text/plain\r\n" +
-                    "Content-Length: 16\r\n" +
-                    "\r\n" +
-                    "Invalid Request";
+                    "Content-Length: " + html.length() + "\r\n" +
+                    "Connection: close\r\n" +
+                    "\r\n" + html;
             out.write(httpResponse.getBytes());
         }
 
