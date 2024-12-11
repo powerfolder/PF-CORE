@@ -1389,6 +1389,10 @@ public class Controller extends PFComponent {
         }
     }
 
+    public RemoteCommandManager getRconManager() {
+        return rconManager;
+    }
+
     /**
      * Starts the rcon manager.
      */

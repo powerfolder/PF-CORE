@@ -21,14 +21,15 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class IdPSelectionBox extends StyledComboBox<String> {
+    private static final Logger LOG = Logger.getLogger(IdPSelectionBox.class.getName());
     private final Controller controller;
     private List<String> idPList;
     private boolean listLoaded;
@@ -135,61 +136,76 @@ public class IdPSelectionBox extends StyledComboBox<String> {
 
         @Override
         public void actionPerformed(final ActionEvent e) {
-            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+            SwingWorker<Void, Void> worker = new SwingWorker<>() {
                 @Override
-                protected Void doInBackground() throws UnsupportedEncodingException {
+                protected Void doInBackground() {
                     int index = getSelectedIndex();
-                    String entity = idPList.get(index);
+                    String entityID = idPList.get(index);
 
-                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, entity);
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, entityID);
                     String externalNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.getValue(controller);
 
-                    if (StringUtils.isBlank(entity)) {
+                    if (StringUtils.isBlank(entityID)) {
                         return null;
-                    } else if (ServerClient.SAML_EXTERNAL_NON_SAML_USERS.equals(entity)
-                            || (StringUtils.isNotBlank(externalNames) && externalNames.contains(entity)))
-                    {
+                    } else if (ServerClient.SAML_EXTERNAL_NON_SAML_USERS.equals(entityID)
+                            || (StringUtils.isNotBlank(externalNames) && externalNames.contains(entityID))) {
                         ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
                                 .setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
                         return null;
                     }
 
-                    // TODO: Sign with private key...
-                    String spConsumeURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller) + Constants.LOGIN_SHIBBOLETH_ANDROID_URI;
-                    spConsumeURL += "?nodeID=" + controller.getMySelf().getId();
-                    spConsumeURL += "?nodeNick=" + controller.getMySelf().getNick();
-                    String idpWebLoginURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller) + "/Shibboleth.sso/Login";
-                    idpWebLoginURL += "?SAMLDS=1&";
-                    idpWebLoginURL += "entityID=" + URLEncoder.encode(entity, Convert.UTF8);
-                    idpWebLoginURL += "&target=" + URLEncoder.encode(spConsumeURL, Convert.UTF8);
-
-                    try {
-                        BrowserLauncher.openURL(idpWebLoginURL);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
+                    int port = controller.getRconManager().getPort();
+                    if (port <= 0) {
+                        LOG.warning("Unable to provide browser based SAML login. Please make sure client is not running duplicate. Trying to login via ECP.");
+                        retrieveECP(entityID);
+                    } else {
+                        String nodeConsumeTokenURL = "http://localhost:" + port + Constants.LOGIN_URI;
+                        openSAMLLoginInBrowser(entityID, nodeConsumeTokenURL);
                     }
 
-                    String idpLookupURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller)
-                            + "/api/idpd?entityID=" + URLEncoder.encode(entity, Convert.UTF8);
-
-                    HttpGet getBindingURL = new HttpGet(idpLookupURL);
-                    // PFC-2669:
-                    HttpClientBuilder builder = Util.createHttpClientBuilder(controller);
-                    HttpClient client = builder.build();
-
-                    try {
-                        HttpResponse httpResponse = client.execute(getBindingURL);
-                        String ecpURL = EntityUtils.toString(httpResponse.getEntity());
-                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ecpURL);
-                    } catch (IOException e1) {
-                    }
-
-                    controller.saveConfig();
                     return null;
                 }
             };
 
             worker.execute();
         }
+    }
+
+    private void openSAMLLoginInBrowser(String entityID, String nodeConsumeTokenURL) {
+        String spConsumeURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller) + Constants.LOGIN_SHIBBOLETH_BROWSER_URI;
+        spConsumeURL += "?nodeID=" + URLEncoder.encode(controller.getMySelf().getId(), Convert.UTF8);
+        spConsumeURL += "&nodeNick=" + URLEncoder.encode(controller.getMySelf().getNick(), Convert.UTF8);
+        spConsumeURL += "&nodeConsumeTokenURL=" +  URLEncoder.encode(nodeConsumeTokenURL, Convert.UTF8);
+
+        String idpWebLoginURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller) + "/Shibboleth.sso/Login";
+        idpWebLoginURL += "?SAMLDS=1&";
+        idpWebLoginURL += "entityID=" + URLEncoder.encode(entityID, Convert.UTF8);
+        idpWebLoginURL += "&target=" + URLEncoder.encode(spConsumeURL, Convert.UTF8);
+
+        try {
+            BrowserLauncher.openURL(idpWebLoginURL);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void retrieveECP(String entityID) {
+        String idpLookupURL = ConfigurationEntry.SERVER_WEB_URL.getValue(controller)
+                + "/api/idpd?entityID=" + URLEncoder.encode(entityID, Convert.UTF8);
+
+        HttpGet getBindingURL = new HttpGet(idpLookupURL);
+        // PFC-2669:
+        HttpClientBuilder builder = Util.createHttpClientBuilder(controller);
+        HttpClient client = builder.build();
+
+        try {
+            HttpResponse httpResponse = client.execute(getBindingURL);
+            String ecpURL = EntityUtils.toString(httpResponse.getEntity());
+            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ecpURL);
+        } catch (IOException e1) {
+            LOG.warning(e1.toString());
+        }
+
+        controller.saveConfig();
     }
 }
