@@ -114,6 +114,10 @@ public class IdPSelectionBox extends StyledComboBox<String> {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+
+        DialogFactory.genericDialog(controller, Translation.get("login.saml.browser_login_ongoing.title"),
+                Translation.get("login.saml.browser_login_ongoing.message"), new String[]{Translation
+                .get("general.cancel")}, 0, GenericDialogType.INFO);
     }
 
     private void retrieveECP(String entityID) {
