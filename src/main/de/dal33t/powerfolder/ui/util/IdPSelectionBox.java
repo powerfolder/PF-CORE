@@ -5,6 +5,9 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.ui.StyledComboBox;
+import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.GenericDialog;
+import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.util.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -153,14 +156,16 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                                 .setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
                         return null;
                     }
-                    retrieveECP(entityID);
 
                     int port = controller.getRconManager().getPort();
                     if (port > 0) {
                         String nodeConsumeTokenURL = "http://localhost:" + port + Constants.LOGIN_URI;
                         openSAMLLoginInBrowser(entityID, nodeConsumeTokenURL);
                     } else {
-                        LOG.warning("Unable to provide browser based SAML login. Please make sure client is not running multiple times. Trying to login via ECP.");
+                        retrieveECP(entityID);
+                        DialogFactory.genericDialog(controller, Translation.get("login.saml.browser_init_problem.title"),
+                                Translation.get("login.saml.browser_init_problem.message"), GenericDialogType.WARN);
+                        LOG.warning("Unable to provide browser based SAML login. Trying to login via ECP.");
                     }
 
                     return null;
@@ -202,6 +207,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
             HttpResponse httpResponse = client.execute(getBindingURL);
             String ecpURL = EntityUtils.toString(httpResponse.getEntity());
             ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ecpURL);
+            LOG.info(entityID + ": ECP URL is " + ecpURL);
         } catch (IOException e1) {
             LOG.warning(e1.toString());
         }
