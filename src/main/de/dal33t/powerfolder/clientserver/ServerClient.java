@@ -1145,8 +1145,7 @@ public class ServerClient extends PFComponent {
                     fireLogin(accountDetails, false);
                     return accountDetails.getAccount();
                 }
-                AccountDetails newAccountDetails = securityService
-                        .getAccountDetails();
+                AccountDetails newAccountDetails = securityService.getAccountDetails();
                 logInfo("Login to " + server.getReconnectAddress() + " (" + theUsername + ") result: "
                         + newAccountDetails);
                 if (newAccountDetails != null) {
@@ -1172,24 +1171,18 @@ public class ServerClient extends PFComponent {
                     if (isKeepLoggedIn()) {
                         if (StringUtils.isBlank(tokenSecret)) {
                             tokenSecret = requestAndSaveToken();
-                            if (isNotBlank(tokenSecret)
-                                    && !Token.isExpired(tokenSecret)) {
+                            if (isNotBlank(tokenSecret) && !Token.isExpired(tokenSecret)) {
                                 passwordObf = null;
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN
-                                        .setValue(config, tokenSecret);
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, tokenSecret);
                             } else {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN
-                                        .removeValue(config);
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(config);
                             }
 
                             webdavToken = requestWebDAVToken();
-                            if (isNotBlank(webdavToken)
-                                    && !Token.isExpired(webdavToken)) {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV
-                                        .setValue(config, webdavToken);
+                            if (isNotBlank(webdavToken) && !Token.isExpired(webdavToken)) {
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.setValue(config, webdavToken);
                             } else {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV
-                                        .removeValue(config);
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.removeValue(config);
                             }
                         }
                         if (StringUtils.isBlank(username)) {
