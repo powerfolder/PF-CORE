@@ -423,6 +423,11 @@ public class LoginPanel extends PFWizardPanel {
         }
 
         public void login(ServerClientEvent event) {
+            if (idPSelectBox.isBrowserLoginOpened()) {
+                JDialog diag = getWizardDialog();
+                diag.setVisible(false);
+                diag.dispose();
+            }
         }
 
         public void serverConnected(ServerClientEvent event) {
