@@ -1084,28 +1084,20 @@ public class ServerClient extends PFComponent {
                 try {
                     if (isKerberosLogin()) {
                         byte[] serviceTicket = prepareKerberosLogin();
-                        loginOk = securityService
-                                .login(username, serviceTicket);
+                        loginOk = securityService.login(username, serviceTicket);
                     } else if (isTokenLogin()) {
                         loginOk = securityService.login(tokenSecret);
                     } else if (isShibbolethLogin()) {
                         // PFC-2534: Start
                         try {
-                            String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                                    .getValue(config);
-                            boolean idpEqual = StringUtils.isEqual(lastIdPUsed,
-                                    currentIdP);
-                            boolean pwEqual = StringUtils.isEqual(
-                                    prevPasswordObf, passwordObf);
-                            boolean unEqual = StringUtils.isEqual(prevUsername,
-                                    username);
-                            if (shibbolethUnauthRetriesSkip != 0 && unEqual
-                                    && pwEqual && idpEqual) {
+                            String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.getValue(config);
+                            boolean idpEqual = StringUtils.isEqual(lastIdPUsed, currentIdP);
+                            boolean pwEqual = StringUtils.isEqual(prevPasswordObf, passwordObf);
+                            boolean unEqual = StringUtils.isEqual(prevUsername, username);
+                            if (shibbolethUnauthRetriesSkip != 0 && unEqual && pwEqual && idpEqual) {
                                 shibbolethUnauthRetriesSkip--;
                                 if (isFine()) {
-                                    logFine("Skipping login another "
-                                            + shibbolethUnauthRetriesSkip
-                                            + " times");
+                                    logFine("Skipping login another " + shibbolethUnauthRetriesSkip + " times");
                                 }
                                 setAnonAccount();
                                 return accountDetails.getAccount();
@@ -1114,23 +1106,17 @@ public class ServerClient extends PFComponent {
                             lastIdPUsed = currentIdP;
                             shibbolethUnauthRetriesSkip = 0;
                         } catch (RuntimeException e) {
-                            logWarning("An error occured skipping shibboleth login: "
-                                    + e);
+                            logWarning("An error occured skipping shibboleth login: " + e);
                         }
                         // PFC-2534: End
 
-                        boolean externalUser = prepareShibbolethLogin(
-                                username,
-                                pw,
-                                (prevUsername != null && !prevUsername
-                                        .equals(username))
-                                        || (prevPasswordObf != null && !prevPasswordObf
-                                        .equals(passwordObf)));
+                        boolean externalUser = prepareShibbolethLogin(username, pw,
+                                (prevUsername != null && !prevUsername.equals(username))
+                                        || (prevPasswordObf != null && !prevPasswordObf.equals(passwordObf)));
                         if (externalUser) {
                             loginOk = securityService.login(username, pw);
                         } else if (shibUsername != null && shibToken != null) {
-                            loginOk = securityService.login(shibUsername,
-                                    Util.toCharArray(shibToken));
+                            loginOk = securityService.login(shibUsername, Util.toCharArray(shibToken));
                         } else {
                             logWarning("Neither Shibboleth nor external login possible!");
                         }
