@@ -48,9 +48,93 @@ public class IdPSelectionBox extends StyledComboBox<String> {
         new Initializer().execute();
     }
 
+    private class Initializer extends SwingWorker<Void, Void> {
+        @Override
+        protected Void doInBackground() throws Exception {
+            URL url = new URL(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(controller));
+
+            HttpURLConnection con;
+            if (url.toString().startsWith("https")) {
+                con = (HttpsURLConnection) url.openConnection();
+            } else {
+                con = (HttpURLConnection) url.openConnection();
+            }
+
+            BufferedReader is = new BufferedReader(new InputStreamReader(con.getInputStream(), Convert.UTF8));
+            String line = is.readLine();
+            StringBuilder body = new StringBuilder();
+
+            while (line != null) {
+                body.append(line);
+                line = is.readLine();
+            }
+
+            JSONArray resp = new JSONArray(body.toString());
+
+            String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(controller);
+            boolean lastIdPSet = false;
+
+            removeAllItems();
+
+            // PFS-2006
+            addItem(Translation.get("wizard.login_online_storage.pre_selection_entry"));
+            idPList.add(0, "");
+
+            if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.hasNonBlankValue(controller)) {
+                String[] extNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.getValue(controller).split(",");
+
+                for (String name : extNames) {
+                    if (StringUtils.isNotBlank(name)) {
+
+                        if (name.startsWith("!")) {
+                            name = name.substring(1);
+                        }
+
+                        addItem(name.trim());
+                        idPList.add(name.trim());
+                        if (!lastIdPSet && name.equals(lastIdP)) {
+                            setSelectedIndex(getItemCount() - 1);
+                            lastIdPSet = true;
+                        }
+                    }
+                }
+            } else {
+                addItem(Translation.get("wizard.login.external_users"));
+                idPList.add(ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
+            }
+
+            for (int i = 0; i < resp.length(); i++) {
+                JSONObject obj = resp.getJSONObject(i);
+
+                String entity = obj.getString("entityID");
+                String name = obj.getJSONArray("DisplayNames").getJSONObject(0).getString("value");
+
+                addItem(name);
+                idPList.add(entity);
+
+                if (!lastIdPSet && entity.equals(lastIdP)) {
+                    setSelectedIndex(getItemCount() - 1);
+                    lastIdPSet = true;
+                }
+            }
+
+            if (!lastIdPSet) {
+                setSelectedIndex(0);
+                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
+                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
+            }
+
+            addActionListener(new IdPSelectionAction());
+            setEnabled(true);
+            listLoaded = true;
+            return null;
+        }
+    }
+
     public boolean isListLoaded() {
         return listLoaded;
     }
+
     public boolean isBrowserLoginOpened() {
         return browserLoginOpened;
     }
@@ -139,88 +223,5 @@ public class IdPSelectionBox extends StyledComboBox<String> {
         }
 
         controller.saveConfig();
-    }
-
-    private class Initializer extends SwingWorker<Void, Void> {
-        @Override
-        protected Void doInBackground() throws Exception {
-            URL url = new URL(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(controller));
-
-            HttpURLConnection con;
-            if (url.toString().startsWith("https")) {
-                con = (HttpsURLConnection) url.openConnection();
-            } else {
-                con = (HttpURLConnection) url.openConnection();
-            }
-
-            BufferedReader is = new BufferedReader(new InputStreamReader(con.getInputStream(), Convert.UTF8));
-            String line = is.readLine();
-            StringBuilder body = new StringBuilder();
-
-            while (line != null) {
-                body.append(line);
-                line = is.readLine();
-            }
-
-            JSONArray resp = new JSONArray(body.toString());
-
-            String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(controller);
-            boolean lastIdPSet = false;
-
-            removeAllItems();
-
-            // PFS-2006
-            addItem(Translation.get("wizard.login_online_storage.pre_selection_entry"));
-            idPList.add(0, "");
-
-            if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.hasNonBlankValue(controller)) {
-                String[] extNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.getValue(controller).split(",");
-
-                for (String name : extNames) {
-                    if (StringUtils.isNotBlank(name)) {
-
-                        if (name.startsWith("!")) {
-                            name = name.substring(1);
-                        }
-
-                        addItem(name.trim());
-                        idPList.add(name.trim());
-                        if (!lastIdPSet && name.equals(lastIdP)) {
-                            setSelectedIndex(getItemCount() - 1);
-                            lastIdPSet = true;
-                        }
-                    }
-                }
-            } else {
-                addItem(Translation.get("wizard.login.external_users"));
-                idPList.add(ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
-            }
-
-            for (int i = 0; i < resp.length(); i++) {
-                JSONObject obj = resp.getJSONObject(i);
-
-                String entity = obj.getString("entityID");
-                String name = obj.getJSONArray("DisplayNames").getJSONObject(0).getString("value");
-
-                addItem(name);
-                idPList.add(entity);
-
-                if (!lastIdPSet && entity.equals(lastIdP)) {
-                    setSelectedIndex(getItemCount() - 1);
-                    lastIdPSet = true;
-                }
-            }
-
-            if (!lastIdPSet) {
-                setSelectedIndex(0);
-                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
-                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
-            }
-
-            addActionListener(new IdPSelectionAction());
-            setEnabled(true);
-            listLoaded = true;
-            return null;
-        }
     }
 }
