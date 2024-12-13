@@ -118,11 +118,8 @@ public abstract class WizardPanel extends JPanel {
         if (wizardContext == null) {
             return;
         }
-        if (wizardContext
-            .getAttribute(WizardContextAttributes.WIZARD_ATTRIBUTE) instanceof Wizard)
-        {
-            Wizard wizard = (Wizard) wizardContext
-                .getAttribute(WizardContextAttributes.WIZARD_ATTRIBUTE);
+        if (wizardContext.getAttribute(WizardContextAttributes.WIZARD_ATTRIBUTE) instanceof Wizard) {
+            Wizard wizard = (Wizard) wizardContext.getAttribute(WizardContextAttributes.WIZARD_ATTRIBUTE);
             wizard.updateButtons();
         }
     }
