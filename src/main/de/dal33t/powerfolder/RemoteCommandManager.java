@@ -37,6 +37,7 @@ import jwf.WizardPanel;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -331,7 +332,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     "Location: " + redirectUrl + "\r\n" +
                     "Connection: close\r\n" +
                     "\r\n";
-            out.write(httpResponse.getBytes());
+            out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
         } else if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + SUCCESS_PARAM)) {
             String html = "<html><body>" + Translation.get("login.saml.browser_success") + "</body></html>";
             String httpResponse = "HTTP/1.1 200 OK\r\n" +
@@ -339,7 +340,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     "Content-Length: " + html.length() + "\r\n" +
                     "Connection: close\r\n" +
                     "\r\n" + html;
-            out.write(httpResponse.getBytes());
+            out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
         } else {
             String html = "<html><body>" + Translation.get("login.saml.browser_failed") + "</body></html>";
             String httpResponse = "HTTP/1.1 400 Bad Request\r\n" +
@@ -347,7 +348,7 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     "Content-Length: " + html.length() + "\r\n" +
                     "Connection: close\r\n" +
                     "\r\n" + html;
-            out.write(httpResponse.getBytes());
+            out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
         }
 
         out.close();
