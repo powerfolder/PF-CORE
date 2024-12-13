@@ -999,6 +999,10 @@ public class ServerClient extends PFComponent {
         securityService.logout();
 
         saveLastKnowLogin(null, null);
+
+        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
+        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
+
         setAnonAccount();
         fireLogin(accountDetails);
     }
