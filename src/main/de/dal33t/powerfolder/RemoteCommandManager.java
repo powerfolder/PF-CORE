@@ -322,7 +322,12 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         // Send response
         if (token != null) {
             getController().getOSClient().login(token);
-            ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController(), token);
+
+            if (getController().getOSClient().isKeepLoggedIn()) {
+                ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController(), token);
+            } else {
+                ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(getController());
+            }
             ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
             ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
             getController().saveConfig();
