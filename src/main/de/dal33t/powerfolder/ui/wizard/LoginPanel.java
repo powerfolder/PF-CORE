@@ -235,6 +235,7 @@ public class LoginPanel extends PFWizardPanel {
             idPLabel = new JLabel(Translation.get("general.idp"));
             idPSelectBox = new IdPSelectionBox(getController());
             idPSelectBox.addItemListener(e -> updateButtons());
+            idPSelectBox.addItemListener(e -> updateOnlineStatus());
         }
 
         usernameLabel = new JLabel(LoginUtil.getUsernameLabel(getController()));
@@ -319,10 +320,12 @@ public class LoginPanel extends PFWizardPanel {
             serverURLLabel.setVisible(true);
             serverURLBox.setVisible(true);
         }
-        usernameLabel.setVisible(connected);
-        usernameField.setVisible(connected);
-        passwordLabel.setVisible(connected);
-        passwordField.setVisible(connected);
+        boolean idpSelected = idPSelectBox == null || idPSelectBox.getSelectedIndex() > 0;
+        boolean unPwFieldVisible = connected && idpSelected;
+        usernameLabel.setVisible(unPwFieldVisible);
+        usernameField.setVisible(unPwFieldVisible);
+        passwordLabel.setVisible(unPwFieldVisible);
+        passwordField.setVisible(unPwFieldVisible);
         // loginButton.setVisible(enabled);
         rememberPasswordBox.setVisible(connected && changeLoginAllowed && rememberPasswordAllowed);
         recoverPasswordLabel.setVisible(connected && client.supportsRecoverPassword());
