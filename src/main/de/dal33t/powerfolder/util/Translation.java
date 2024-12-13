@@ -40,6 +40,7 @@ public class Translation {
     // Useful locales, which are not already included in Locale
     public static final Locale DUTCH = new Locale("nl");
     public static final Locale SPANISH = new Locale("es");
+    public static final Locale FRENCH = new Locale("fr");
     public static final Locale RUSSIAN = new Locale("ru");
     public static final Locale SWEDISH = new Locale("sv");
     public static final Locale ARABIC = new Locale("ar");
@@ -78,6 +79,7 @@ public class Translation {
             supportedLocales = new ArrayList<Locale>();
             supportedLocales.add(Locale.ENGLISH);
             supportedLocales.add(Locale.GERMAN);
+            supportedLocales.add(Locale.FRENCH);
             supportedLocales.add(POLISH);
             supportedLocales.add(PORTUGUESE);
             supportedLocales.add(SPANISH);
