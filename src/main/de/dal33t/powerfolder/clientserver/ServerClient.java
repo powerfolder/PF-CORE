@@ -278,9 +278,8 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    private boolean isKeepLoggedIn() {
-        return PreferencesEntry.SERVER_REMEMBER_PASSWORD
-                .getValueBoolean(getController());
+    public boolean isKeepLoggedIn() {
+        return PreferencesEntry.SERVER_REMEMBER_PASSWORD.getValueBoolean(getController());
     }
 
     // Basics *****************************************************************
@@ -2480,19 +2479,15 @@ public class ServerClient extends PFComponent {
 
     private void saveLastKnowLogin(String username, String passwordObf) {
         if (isNotBlank(username)) {
-            ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
-                    config, username);
+            ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, username);
         } else {
-            ConfigurationEntry.SERVER_CONNECT_USERNAME
-                    .removeValue(config);
+            ConfigurationEntry.SERVER_CONNECT_USERNAME.removeValue(config);
         }
 
         if (isKeepLoggedIn() && isNotBlank(passwordObf)) {
-            ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
-                    config, passwordObf);
+            ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(config, passwordObf);
         } else {
-            ConfigurationEntry.SERVER_CONNECT_PASSWORD
-                    .removeValue(config);
+            ConfigurationEntry.SERVER_CONNECT_PASSWORD.removeValue(config);
         }
 
         // Store if we are main client.
