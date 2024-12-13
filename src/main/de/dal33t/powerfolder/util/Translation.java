@@ -76,7 +76,7 @@ public class Translation {
      */
     public static synchronized List<Locale> getSupportedLocales() {
         if (supportedLocales == null) {
-            supportedLocales = new ArrayList<Locale>();
+            supportedLocales = new ArrayList<>();
             supportedLocales.add(Locale.ENGLISH);
             supportedLocales.add(Locale.GERMAN);
             supportedLocales.add(Locale.FRENCH);
@@ -205,21 +205,21 @@ public class Translation {
 
         Locale confLang = null;
 
-            // Intalize bundle
-            try {
-                // Get language out of preferences
-                String confLangStr = Preferences.userNodeForPackage(
-                        Translation.class).get("locale", null);
-                confLang = confLangStr != null
-                        ? new Locale(confLangStr)
-                        : null;
-                // Take default locale if config is empty
-                if (confLang == null) {
-                    confLang = Locale.getDefault();
-                }
-            } catch (MissingResourceException e) {
-                log.log(Level.SEVERE, "Unable to load translation file", e);
+        // Intalize bundle
+        try {
+            // Get language out of preferences
+            String confLangStr = Preferences.userNodeForPackage(
+                    Translation.class).get("locale", null);
+            confLang = confLangStr != null
+                    ? new Locale(confLangStr)
+                    : null;
+            // Take default locale if config is empty
+            if (confLang == null) {
+                confLang = Locale.getDefault();
             }
+        } catch (MissingResourceException e) {
+            log.log(Level.SEVERE, "Unable to load translation file", e);
+        }
 
         return confLang.toString();
     }
