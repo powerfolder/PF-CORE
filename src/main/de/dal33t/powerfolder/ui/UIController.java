@@ -214,6 +214,10 @@ public class UIController extends PFComponent {
         logger.addHandler(oomeHandler);
     }
 
+    public AgreeToSListener getAgreeToSListener() {
+        return agreeToSListener;
+    }
+
     /**
      * Starts the UI
      */

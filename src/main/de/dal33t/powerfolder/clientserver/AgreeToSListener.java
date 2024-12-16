@@ -39,6 +39,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
     private boolean wasPaused = false;
     private boolean changedPause = false;
     private boolean agreedOnToS = true;
+    private boolean autoOpenBrowser = true;
     private ToSNotice tosn;
 
     public AgreeToSListener(Controller controller) {
@@ -51,6 +52,10 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
     @Override
     public boolean fireInEventDispatchThread() {
         return false;
+    }
+
+    public void disableAutoOpenBrowser() {
+        this.autoOpenBrowser = false;
     }
 
     @Override
@@ -80,13 +85,15 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                     Translation.get("dialog.tos.text"),
                     new String[]{"OK"}, 0, GenericDialogType.INFO);
 
-                getController().getIOProvider().startIO(() -> {
-                    try {
-                        BrowserLauncher.openURL(client.getLoginURLWithCredentials());
-                    } catch (IOException ioe) {
-                        logWarning("Could not open browser to view ToS. " + ioe);
-                    }
-                });
+                if (autoOpenBrowser) {
+                    getController().schedule(() -> {
+                        try {
+                            BrowserLauncher.openURL(client.getLoginURLWithCredentials());
+                        } catch (IOException ioe) {
+                            logWarning("Could not open browser to view ToS. " + ioe);
+                        }
+                    }, 1000L);
+                }
             } else {
                 agreedOnToS = true;
                 getController().getUIController().getApplicationModel()

@@ -321,42 +321,62 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
         // Send response
         if (token != null) {
-            getController().getOSClient().login(token);
+            if (getController().getOSClient().login(token).isValid()) {
+                if (getController().getOSClient().isKeepLoggedIn()) {
+                    ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController(), token);
+                } else {
+                    ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(getController());
+                }
+                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
+                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
+                getController().saveConfig();
 
-            if (getController().getOSClient().isKeepLoggedIn()) {
-                ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController(), token);
+                String redirectUrl = LOGIN_URI + "?" + SUCCESS_PARAM;
+                if (getController().getOSClient().getAccountDetails().needsToAgreeToS()) {
+                    if (getController().isUIEnabled()) {
+                        getController().getUIController().getAgreeToSListener().disableAutoOpenBrowser();
+                    }
+                    redirectUrl = getController().getOSClient().getLoginURLWithCredentials();
+                }
+                redirectLoginSuccess(out, redirectUrl);
             } else {
-                ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(getController());
+                loginFailed(out);
             }
-            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
-            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
-            getController().saveConfig();
-
-            String redirectUrl = LOGIN_URI + "?" + SUCCESS_PARAM;
-            String httpResponse = "HTTP/1.1 302 Found\r\n" +
-                    "Location: " + redirectUrl + "\r\n" +
-                    "Connection: close\r\n" +
-                    "\r\n";
-            out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
         } else if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + SUCCESS_PARAM)) {
-            String html = "<html><body>" + Translation.get("login.saml.browser_success") + "</body></html>";
-            String httpResponse = "HTTP/1.1 200 OK\r\n" +
-                    "Content-Type: text/html; charset=UTF-8\r\n" +
-                    "Content-Length: " + html.length() + "\r\n" +
-                    "Connection: close\r\n" +
-                    "\r\n" + html;
-            out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
+            loginSuccess(out);
         } else {
-            String html = "<html><body>" + Translation.get("login.saml.browser_failed") + "</body></html>";
-            String httpResponse = "HTTP/1.1 400 Bad Request\r\n" +
-                    "Content-Type: text/html; charset=UTF-8\r\n" +
-                    "Content-Length: " + html.length() + "\r\n" +
-                    "Connection: close\r\n" +
-                    "\r\n" + html;
-            out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
+            loginFailed(out);
         }
 
         out.close();
+    }
+
+    private static void redirectLoginSuccess(OutputStream out, String redirectUrl) throws IOException {
+        String httpResponse = "HTTP/1.1 302 Found\r\n" +
+                "Location: " + redirectUrl + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n";
+        out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void loginSuccess(OutputStream out) throws IOException {
+        String html = "<html><body>" + Translation.get("login.saml.browser_success") + "</body></html>";
+        String httpResponse = "HTTP/1.1 200 OK\r\n" +
+                "Content-Type: text/html; charset=UTF-8\r\n" +
+                "Content-Length: " + html.length() + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n" + html;
+        out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void loginFailed(OutputStream out) throws IOException {
+        String html = "<html><body>" + Translation.get("login.saml.browser_failed") + "</body></html>";
+        String httpResponse = "HTTP/1.1 400 Bad Request\r\n" +
+                "Content-Type: text/html; charset=UTF-8\r\n" +
+                "Content-Length: " + html.length() + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n" + html;
+        out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
