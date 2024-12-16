@@ -59,6 +59,7 @@ import de.dal33t.powerfolder.util.update.UpdaterHandler;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -340,6 +341,18 @@ public class UIController extends PFComponent {
     public void askToPauseResume() {
         if (!agreeToSListener.hasAgreedOnToS()) {
             logInfo("Not agreed to latest version of Terms of Service.");
+            DialogFactory.genericDialog(getController(),
+                    Translation.get("dialog.tos.title"),
+                    Translation.get("dialog.tos.text"),
+                    new String[]{"OK"}, 0, GenericDialogType.INFO);
+
+            getController().getIOProvider().startIO(() -> {
+                try {
+                    BrowserLauncher.openURL(getController().getOSClient().getLoginURLWithCredentials());
+                } catch (IOException ioe) {
+                    logWarning("Could not open browser to view ToS. " + ioe);
+                }
+            });
             return;
         }
         final boolean silent = getController().isPaused();

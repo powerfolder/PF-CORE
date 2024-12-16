@@ -54,8 +54,8 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
         return false;
     }
 
-    public void disableAutoOpenBrowser() {
-        this.autoOpenBrowser = false;
+    public void setAutoOpenBrowser(boolean autoOpenBrowser) {
+        this.autoOpenBrowser = autoOpenBrowser;
     }
 
     @Override
@@ -80,19 +80,19 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                     .getNoticesModel().handleNotice(tosn);
 
                 // open Wizard with client.getToSURL();
-                DialogFactory.genericDialog(getController(),
-                    Translation.get("dialog.tos.title"),
-                    Translation.get("dialog.tos.text"),
-                    new String[]{"OK"}, 0, GenericDialogType.INFO);
-
                 if (autoOpenBrowser) {
-                    getController().schedule(() -> {
+                    DialogFactory.genericDialog(getController(),
+                            Translation.get("dialog.tos.title"),
+                            Translation.get("dialog.tos.text"),
+                            new String[]{"OK"}, 0, GenericDialogType.INFO);
+
+                    getController().getIOProvider().startIO(() -> {
                         try {
                             BrowserLauncher.openURL(client.getLoginURLWithCredentials());
                         } catch (IOException ioe) {
                             logWarning("Could not open browser to view ToS. " + ioe);
                         }
-                    }, 1000L);
+                    });
                 }
             } else {
                 agreedOnToS = true;

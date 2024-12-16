@@ -321,6 +321,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
         // Send response
         if (token != null) {
+            if (getController().isUIEnabled()) {
+                getController().getUIController().getAgreeToSListener().setAutoOpenBrowser(false);
+            }
             if (getController().getOSClient().login(token).isValid()) {
                 if (getController().getOSClient().isKeepLoggedIn()) {
                     ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController(), token);
@@ -333,14 +336,14 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
 
                 String redirectUrl = LOGIN_URI + "?" + SUCCESS_PARAM;
                 if (getController().getOSClient().getAccountDetails().needsToAgreeToS()) {
-                    if (getController().isUIEnabled()) {
-                        getController().getUIController().getAgreeToSListener().disableAutoOpenBrowser();
-                    }
                     redirectUrl = getController().getOSClient().getLoginURLWithCredentials();
                 }
                 redirectLoginSuccess(out, redirectUrl);
             } else {
                 loginFailed(out);
+            }
+            if (getController().isUIEnabled()) {
+                getController().getUIController().getAgreeToSListener().setAutoOpenBrowser(true);
             }
         } else if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + SUCCESS_PARAM)) {
             loginSuccess(out);
