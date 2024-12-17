@@ -5,6 +5,7 @@ test-Linux:
   stage: test
   tags:
     - Linux
+    - Tests
   script:
     ant run-tests
   artifacts:
@@ -17,6 +18,7 @@ test-macOS:
   stage: test
   tags:
     - macOS
+    - Tests
   script:
     ant run-tests
   artifacts:
@@ -29,6 +31,7 @@ test-Windows:
   stage: test
   tags:
     - Windows
+    - Tests
   script:
     ant run-tests
   artifacts:
