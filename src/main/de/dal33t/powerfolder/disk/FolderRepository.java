@@ -2215,7 +2215,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param newName the new name to rename to.
      * @return the new internalized FolderInfo with the new name.
      */
-    public FolderInfo renameFolderMetaData(FolderInfo foInfo, String newName) {
+    public FolderInfo renameFolder(FolderInfo foInfo, String newName) {
         Reject.ifNull(foInfo, "folder info is null");
         Reject.ifBlank(newName, "New name is blank");
 

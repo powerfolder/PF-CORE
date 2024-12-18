@@ -109,7 +109,7 @@ public class MemoryMonitor implements Runnable {
                         0, GenericDialogType.WARN);
                 }
             }
-        }, NoticeSeverity.WARINING);
+        }, NoticeSeverity.WARNING);
         controller.getUIController().getApplicationModel().getNoticesModel()
             .handleNotice(notice);
     }

@@ -58,7 +58,7 @@ public class WarningNotice extends NoticeBase {
     }
 
     public NoticeSeverity getNoticeSeverity() {
-        return NoticeSeverity.WARINING;
+        return NoticeSeverity.WARNING;
     }
 
     public boolean isPersistable() {

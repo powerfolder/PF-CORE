@@ -427,7 +427,7 @@ public class FolderScanner extends PFComponent {
                 } else {
                     boolean deviceDisconnected = currentScanningFolder
                         .checkIfDeviceDisconnected();
-                    logWarning("Unable to scan file: " + path.toAbsolutePath()
+                    logWarning(currentScanResult + ": Unable to scan file: " + path.toAbsolutePath()
                         + ". Folder device disconnected? " + deviceDisconnected);
                     if (deviceDisconnected) {
                         // Hardware not longer available? BREAK scan!
@@ -757,7 +757,7 @@ public class FolderScanner extends PFComponent {
                     } else {
                         boolean deviceDisconnected = currentScanningFolder
                             .checkIfDeviceDisconnected();
-                        logWarning("Unable to scan file: "
+                        logWarning(currentScanningFolder + ": Unable to scan file: "
                             + path.toAbsolutePath()
                             + ". Folder device disconnected? " + deviceDisconnected);
                         if (deviceDisconnected) {

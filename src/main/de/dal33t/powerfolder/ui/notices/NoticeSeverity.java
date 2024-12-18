@@ -22,7 +22,7 @@ package de.dal33t.powerfolder.ui.notices;
 public enum NoticeSeverity {
 
     INFORMATION("notice_severity.information"),
-    WARINING("notice_severity.warning");
+    WARNING("notice_severity.warning");
 
     private final String descriptionKey;
 

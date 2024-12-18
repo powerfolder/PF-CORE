@@ -87,10 +87,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 22;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 102;
+    private static final int MINOR_VERSION = 2;
+    private static final int REVISION_VERSION = 100;
 
-    private static final int SPRINT_NUMBER = 57;
+    private static final int SPRINT_NUMBER = 58;
 
     /**
      * Program version.
@@ -1387,6 +1387,10 @@ public class Controller extends PFComponent {
                 logWarning("Unable to backup file " + dbFile + ". " + e);
             }
         }
+    }
+
+    public RemoteCommandManager getRconManager() {
+        return rconManager;
     }
 
     /**

@@ -642,7 +642,7 @@ public class ApplicationModel extends PFUIComponent {
             status = SyncStatusEvent.SYNCING;
         } else if (repository.areAllFoldersInSync() && !noticeAvailable) {
             status = SyncStatusEvent.SYNCHRONIZED;
-        } else if (getNoticesModel().getHighestUnreadSeverity() == NoticeSeverity.WARINING
+        } else if (getNoticesModel().getHighestUnreadSeverity() == NoticeSeverity.WARNING
             || repository.getFolderProblemsCount() > 0)
         {
             status = SyncStatusEvent.WARNING;

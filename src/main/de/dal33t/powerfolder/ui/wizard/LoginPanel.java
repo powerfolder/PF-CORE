@@ -31,34 +31,23 @@ import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.security.SecurityException;
 import de.dal33t.powerfolder.security.Token;
-import de.dal33t.powerfolder.ui.StyledComboBox;
 import de.dal33t.powerfolder.ui.dialog.ConfigurationLoaderDialog;
-import de.dal33t.powerfolder.ui.util.IdPSelectionAction;
+import de.dal33t.powerfolder.ui.util.IdPSelectionBox;
 import de.dal33t.powerfolder.ui.util.SimpleComponentFactory;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
 import de.dal33t.powerfolder.ui.widget.LinkLabel;
 import de.dal33t.powerfolder.util.*;
 import jwf.WizardPanel;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @SuppressWarnings("serial")
 public class LoginPanel extends PFWizardPanel {
-    private static final Logger LOG = Logger.getLogger(LoginPanel.class
-        .getName());
+    private static final Logger LOG = Logger.getLogger(LoginPanel.class.getName());
     private static final String TOKEN_PLACEHOLDER = "_TOKEN_PLACEHOLDER_";
 
     private ServerClient client;
@@ -67,8 +56,7 @@ public class LoginPanel extends PFWizardPanel {
     private JComboBox<String> serverURLBox;
     private JLabel serverURLLabel;
     private JLabel idPLabel;
-    private StyledComboBox<String> idPSelectBox;
-    private boolean listLoaded;
+    private IdPSelectionBox idPSelectBox;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private LinkLabel recoverPasswordLabel;
@@ -87,29 +75,20 @@ public class LoginPanel extends PFWizardPanel {
      * Constructs a login panel for login to the default OS.
      *
      * @param controller
-     * @param nextPanel
-     *            the next panel to display
-     * @param showUseOS
-     *            if the checkbox to use Online Storage should be displayed
+     * @param nextPanel  the next panel to display
+     * @param showUseOS  if the checkbox to use Online Storage should be displayed
      */
-    public LoginPanel(Controller controller, WizardPanel nextPanel,
-        boolean showUseOS)
-    {
+    public LoginPanel(Controller controller, WizardPanel nextPanel, boolean showUseOS) {
         this(controller, controller.getOSClient(), nextPanel, showUseOS);
     }
 
     /**
      * @param controller
-     * @param client
-     *            the online storage client to use.
-     * @param nextPanel
-     *            the next panel to display
-     * @param showUseOS
-     *            if the checkbox to use Online Storage should be displayed
+     * @param client     the online storage client to use.
+     * @param nextPanel  the next panel to display
+     * @param showUseOS  if the checkbox to use Online Storage should be displayed
      */
-    public LoginPanel(Controller controller, ServerClient client,
-        WizardPanel nextPanel, boolean showUseOS)
-    {
+    public LoginPanel(Controller controller, ServerClient client, WizardPanel nextPanel, boolean showUseOS) {
         super(controller);
         Reject.ifNull(nextPanel, "Nextpanel is null");
         this.nextPanel = nextPanel;
@@ -120,60 +99,48 @@ public class LoginPanel extends PFWizardPanel {
 
     public boolean hasNext() {
         return client.isConnected()
-            && !StringUtils.isEmpty(usernameField.getText())
-            && (passwordField.getPassword() != null && passwordField
+                && !StringUtils.isEmpty(usernameField.getText())
+                && (passwordField.getPassword() != null && passwordField
                 .getPassword().length > 0)
-            && (StringUtils
-                .isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                    .getValue(getController())) ? listLoaded : true)
-            && (idPSelectBox == null || idPSelectBox.getSelectedIndex() != 0);
+                && (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
+                .getValue(getController())) ? idPSelectBox.isListLoaded() : true)
+                && (idPSelectBox == null || idPSelectBox.getSelectedIndex() != 0);
     }
 
     public WizardPanel next() {
         // PFC-2638: Desktop sync option
-        nextPanel = DesktopSyncSetupPanel.insertStepIfAvailable(
-            getController(), nextPanel, client);
+        nextPanel = DesktopSyncSetupPanel.insertStepIfAvailable(getController(), nextPanel, client);
 
         return new SwingWorkerPanel(getController(), new LoginTask(),
-            Translation
-                .get("wizard.login_online_storage.logging_in"),
-            Translation
-                .get("wizard.login_online_storage.logging_in.text"),
-            nextPanel);
+                Translation.get("wizard.login_online_storage.logging_in"),
+                Translation.get("wizard.login_online_storage.logging_in.text"),
+                nextPanel);
     }
 
     protected JPanel buildContent() {
         String layoutRows;
 
-        if (StringUtils.isBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
-            .getValue(getController()))
-            || StringUtils.isBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                .getValue(getController())))
-        {
+        if (StringUtils.isBlank(ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController()))
+                || StringUtils.isBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(getController()))) {
             layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 20dlu, pref, 3dlu, pref, 3dlu, pref";
         } else {
             layoutRows = "15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 7dlu, 15dlu, 3dlu, 15dlu, 3dlu, 15dlu, 34dlu, pref, 3dlu, pref, 20dlu, pref, 3dlu, pref";
         }
 
-        FormLayout layout = new FormLayout("50dlu, 3dlu, 110dlu, 40dlu, pref",
-            layoutRows);
+        FormLayout layout = new FormLayout("50dlu, 3dlu, 110dlu, 40dlu, pref", layoutRows);
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
-            .getValue(getController())))
-        {
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController()))) {
             builder.add(serverURLLabel, cc.xy(1, row));
             builder.add(serverURLBox, cc.xy(3, row));
             row += 2;
         }
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-            .getValue(getController())))
-        {
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(getController()))) {
             builder.add(idPLabel, cc.xy(1, row));
             builder.add(idPSelectBox, cc.xy(3, row));
             row += 2;
@@ -206,8 +173,8 @@ public class LoginPanel extends PFWizardPanel {
             builder.add(useOSBox, cc.xyw(1, row, 4));
             row += 2;
             LinkLabel link = new LinkLabel(getController(),
-                Translation.get("wizard.webservice.learn_more"),
-                ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
+                    Translation.get("wizard.webservice.learn_more"),
+                    ConfigurationEntry.PROVIDER_ABOUT_URL.getValue(getController()));
             builder.add(link.getUIComponent(), cc.xyw(1, row, 5));
             row += 2;
         }
@@ -222,12 +189,11 @@ public class LoginPanel extends PFWizardPanel {
      */
     protected void initComponents() {
         boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
-            .getValueBoolean(getController());
+                .getValueBoolean(getController());
         boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED
-            .getValueBoolean(getController());
+                .getValueBoolean(getController());
         serverLabel = new JLabel(Translation.get("general.server"));
-        serverInfoLabel = new ActionLabel(getController(), new AbstractAction()
-        {
+        serverInfoLabel = new ActionLabel(getController(), new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 new ConfigurationLoaderDialog(getController()).openAndWait();
             }
@@ -235,17 +201,13 @@ public class LoginPanel extends PFWizardPanel {
         serverInfoLabel.setText(client.getServerString());
         serverInfoLabel.setEnabled(changeLoginAllowed);
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
-            .getValue(getController())))
-        {
-            serverURLLabel = new JLabel(
-                Translation.get("general.server"));
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController()))) {
+            serverURLLabel = new JLabel(Translation.get("general.server"));
 
             String webURL = client.getWebURL();
             int selection = 0;
 
-            String allServers = ConfigurationEntry.SERVER_CONNECTION_URLS
-                .getValue(getController());
+            String allServers = ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController());
             String[] allServersArray = allServers.split(";");
             String[] serverLabels = new String[allServersArray.length];
 
@@ -253,14 +215,13 @@ public class LoginPanel extends PFWizardPanel {
                 try {
                     String server = allServersArray[i];
                     serverLabels[i] = server.substring(0, server.indexOf("="));
-                    String serverURL = server
-                        .substring(server.indexOf("=") + 1);
+                    String serverURL = server.substring(server.indexOf("=") + 1);
                     if (serverURL.equals(webURL)) {
                         selection = i;
                     }
                 } catch (Exception e) {
                     Logger.getLogger(LoginPanel.class.getName()).warning(
-                        "Unable to read servers config: " + allServers);
+                            "Unable to read servers config: " + allServers);
                 }
             }
 
@@ -270,143 +231,25 @@ public class LoginPanel extends PFWizardPanel {
             serverURLBox.addActionListener(new ServerSelectAction());
         }
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-            .getValue(getController())))
-        {
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(getController()))) {
             idPLabel = new JLabel(Translation.get("general.idp"));
-            idPSelectBox = new StyledComboBox<>(new String[]{Translation.get("general.loading")});
-            idPSelectBox.setEnabled(false);
-
-            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>()
-            {
-                @Override
-                protected Void doInBackground() throws Exception {
-
-                    URL url = new URL(
-                            ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                                    .getValue(getController()));
-
-                    HttpURLConnection con;
-                    if (url.toString().startsWith("https")) {
-                        con = (HttpsURLConnection) url.openConnection();
-                    } else {
-                        con = (HttpURLConnection) url.openConnection();
-                    }
-
-
-                    BufferedReader is = new BufferedReader(
-                        new InputStreamReader(con.getInputStream(),
-                            Convert.UTF8.toString()));
-                    String line = is.readLine();
-                    StringBuilder body = new StringBuilder();
-
-                    while (line != null) {
-                        body.append(line);
-                        line = is.readLine();
-                    }
-
-                    JSONArray resp = new JSONArray(body.toString());
-                    List<String> idPList = new ArrayList<>(resp.length());
-
-
-                    String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED
-                        .getValue(getController());
-                    boolean lastIdPSet = false;
-
-                    idPSelectBox.removeAllItems();
-
-                    // PFS-2006
-                    idPSelectBox.addItem(Translation.get("wizard.login_online_storage.pre_selection_entry"));
-                    idPList.add(0, "");
-
-                    if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
-                        .hasNonBlankValue(getController()))
-                    {
-                        String[] extNames = ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES
-                            .getValue(getController()).split(",");
-
-                        for (String name : extNames) {
-                            if (StringUtils.isNotBlank(name)) {
-                                
-                                if (name.startsWith("!")){
-                                    name = name.substring(1);
-                                }
-
-                                idPSelectBox.addItem(name.trim());
-                                idPList.add(name.trim());
-                                if (!lastIdPSet && name.equals(lastIdP)) {
-                                    idPSelectBox.setSelectedIndex(idPSelectBox.getItemCount() - 1);
-                                    lastIdPSet = true;
-                                }
-                            }
-                        }
-                    } else {
-                        idPSelectBox.addItem(
-                            Translation.get("wizard.login.external_users"));
-                        idPList.add("ext");
-                    }
-
-                    for (int i = 0; i < resp.length(); i++) {
-                        JSONObject obj = resp.getJSONObject(i);
-
-                        String entity = obj.getString("entityID");
-                        String name = obj.getJSONArray("DisplayNames")
-                            .getJSONObject(0).getString("value");
-
-                        idPSelectBox.addItem(name);
-                        idPList.add(entity);
-
-                        if (!lastIdPSet && entity.equals(lastIdP)) {
-                            idPSelectBox.setSelectedIndex(idPSelectBox.getItemCount() - 1);
-                            lastIdPSet = true;
-                        }
-                    }
-
-                    if (!lastIdPSet) {
-                        idPSelectBox.setSelectedIndex(0);
-                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(
-                            getController(), "ext");
-                        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                            .setValue(getController(), "ext");
-                    }
-
-                    idPSelectBox.addActionListener(new IdPSelectionAction(
-                        getController(), idPList));
-                    idPSelectBox.setEnabled(true);
-                    listLoaded = true;
-
-                    updateButtons();
-                    idPSelectBox.addItemListener(new ItemListener() {
-                        @Override
-                        public void itemStateChanged(ItemEvent e) {
-                            updateButtons();
-                        }
-                    });
-
-                    return null;
-                }
-            };
-
-            worker.execute();
+            idPSelectBox = new IdPSelectionBox(getController());
+            idPSelectBox.addItemListener(e -> updateButtons());
+            idPSelectBox.addItemListener(e -> updateOnlineStatus());
         }
 
         usernameLabel = new JLabel(LoginUtil.getUsernameLabel(getController()));
         usernameField = new JTextField();
         usernameField.addKeyListener(new MyKeyListener());
         usernameField.setEditable(changeLoginAllowed);
-        passwordLabel = new JLabel(
-            Translation.get("general.password") + ':');
+        passwordLabel = new JLabel(Translation.get("general.password") + ':');
         passwordField = new JPasswordField();
         passwordField.setEditable(changeLoginAllowed);
         passwordField.addKeyListener(new MyKeyListener());
 
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-            .getValue(getController())))
-        {
-            usernameField.setText(ConfigurationEntry.SERVER_CONNECT_USERNAME
-                    .getValue(getController()));
-            if (ConfigurationEntry.SERVER_CONNECT_PASSWORD
-                    .hasNonBlankValue(getController())) {
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(getController()))) {
+            usernameField.setText(ConfigurationEntry.SERVER_CONNECT_USERNAME.getValue(getController()));
+            if (ConfigurationEntry.SERVER_CONNECT_PASSWORD.hasNonBlankValue(getController())) {
                 passwordField.setText(new String(LoginUtil.deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
                         .getValue(getController()))));
             } else if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasNonBlankValue(getController())) {
@@ -429,64 +272,40 @@ public class LoginPanel extends PFWizardPanel {
             }
         }
 
-        // loginButton = new JButton("Login");
-        // loginButton.setOpaque(false);
-        // loginButton.addActionListener(new ActionListener() {
-        // public void actionPerformed(ActionEvent e) {
-        // Wizard wiz = (Wizard) getWizardContext().getAttribute(
-        // WizardContextAttributes.WIZARD_ATTRIBUTE);
-        // wiz.next();
-        // }
-        // });
-
-        rememberPasswordBox = BasicComponentFactory
-            .createCheckBox(
-                PreferencesEntry.SERVER_REMEMBER_PASSWORD
-                    .getModel(getController()),
-                Translation
-                    .get("wizard.login_online_storage.remember_password"));
+        rememberPasswordBox = BasicComponentFactory.createCheckBox(
+                        PreferencesEntry.SERVER_REMEMBER_PASSWORD.getModel(getController()),
+                        Translation.get("wizard.login_online_storage.remember_password"));
         rememberPasswordBox.setOpaque(false);
-        rememberPasswordBox.setVisible(changeLoginAllowed
-            && rememberPasswordAllowed);
+        rememberPasswordBox.setVisible(changeLoginAllowed && rememberPasswordAllowed);
 
         recoverPasswordLabel = new LinkLabel(getController(),
-            Translation
-                .get("exp.wizard.webservice.recover_password"),
-            client.getRecoverPasswordURL());
+                Translation.get("exp.wizard.webservice.recover_password"),
+                client.getRecoverPasswordURL());
         recoverPasswordLabel.setVisible(client.supportsRecoverPassword());
-        
-        createAccountLabel = new LinkLabel(getController(),
-            Translation.get("wizard.activation.signup_account"),
-            client.getRegisterURL());
+
+        createAccountLabel = new LinkLabel(getController(), Translation.get("wizard.activation.signup_account"),
+                client.getRegisterURL());
         createAccountLabel.setVisible(client.supportsWebRegistration());
 
-        useOSBox = new JCheckBox(
-            Translation.get("wizard.login_online_storage.no_os")); // @todo
-                                                                              // "Use online storage"?
-        useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE
-            .getValueBoolean(getController()));
-        useOSBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(),
-                    !useOSBox.isSelected());
-            }
-        });
+        useOSBox = new JCheckBox(Translation.get("wizard.login_online_storage.no_os")); // @todo
+        // "Use online storage"?
+        useOSBox.setSelected(!PreferencesEntry.USE_ONLINE_STORAGE.getValueBoolean(getController()));
+        useOSBox.addActionListener(e -> PreferencesEntry.USE_ONLINE_STORAGE.setValue(getController(), !useOSBox.isSelected()));
         useOSBox.setOpaque(false);
-        connectingLabel = SimpleComponentFactory.createLabel(Translation
-            .get("wizard.login_online_storage.connecting"));
+        connectingLabel = SimpleComponentFactory.createLabel(Translation.get("wizard.login_online_storage.connecting"));
         workingBar = new JProgressBar();
         workingBar.setIndeterminate(true);
         updateOnlineStatus();
         client.addListener(new MyServerClientListner());
 
         // Never run forever
-        getController().scheduleAndRepeat(new Runnable() {
-            public void run() {
-                if (!client.isConnected()) {
-                    getWizard().next();
-                }
+        getController().scheduleAndRepeat(() -> {
+            if (!client.isConnected()) {
+                getWizard().next();
             }
         }, 60000L, 10000L);
+
+        updateButtons();
     }
 
     protected String getTitle() {
@@ -495,23 +314,20 @@ public class LoginPanel extends PFWizardPanel {
 
     private void updateOnlineStatus() {
         boolean connected = client.isConnected();
-        boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED
-            .getValueBoolean(getController());
-        boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED
-            .getValueBoolean(getController());
-        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS
-            .getValue(getController())))
-        {
+        boolean changeLoginAllowed = ConfigurationEntry.SERVER_CONNECT_CHANGE_LOGIN_ALLOWED.getValueBoolean(getController());
+        boolean rememberPasswordAllowed = ConfigurationEntry.SERVER_CONNECT_REMEMBER_PASSWORD_ALLOWED.getValueBoolean(getController());
+        if (StringUtils.isNotBlank(ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController()))) {
             serverURLLabel.setVisible(true);
             serverURLBox.setVisible(true);
         }
-        usernameLabel.setVisible(connected);
-        usernameField.setVisible(connected);
-        passwordLabel.setVisible(connected);
-        passwordField.setVisible(connected);
+        boolean idpSelected = idPSelectBox == null || idPSelectBox.getSelectedIndex() > 0;
+        boolean unPwFieldVisible = connected && idpSelected;
+        usernameLabel.setVisible(unPwFieldVisible);
+        usernameField.setVisible(unPwFieldVisible);
+        passwordLabel.setVisible(unPwFieldVisible);
+        passwordField.setVisible(unPwFieldVisible);
         // loginButton.setVisible(enabled);
-        rememberPasswordBox.setVisible(connected && changeLoginAllowed
-            && rememberPasswordAllowed);
+        rememberPasswordBox.setVisible(connected && changeLoginAllowed && rememberPasswordAllowed);
         recoverPasswordLabel.setVisible(connected && client.supportsRecoverPassword());
         createAccountLabel.setVisible(client.supportsWebRegistration());
 
@@ -532,7 +348,7 @@ public class LoginPanel extends PFWizardPanel {
         }
         updateButtons();
     }
-    
+
     /**
      * Open the basedir in file browser iff the main frame is minimized.
      */
@@ -551,9 +367,7 @@ public class LoginPanel extends PFWizardPanel {
             try {
                 if (!client.isConnected()) {
                     LOG.log(Level.WARNING, "Unable to connect");
-                    throw new SecurityException(
-                        Translation
-                            .get("wizard.webservice.connect_failed"));
+                    throw new SecurityException(Translation.get("wizard.webservice.connect_failed"));
                 }
 
                 boolean loginOk = false;
@@ -576,40 +390,34 @@ public class LoginPanel extends PFWizardPanel {
                         return;
                     }
 
-                    throw new SecurityException(
-                        Translation
-                            .get("online_storage.account_data"));
+                    throw new SecurityException(Translation.get("online_storage.account_data"));
                 }
-                
+
                 // PFC-2517: if the main frame is minimized after activation, show
                 // PowerFolders to the user to make clear that the software is now active
                 if (getController().isFirstStart()) {
-                    openBasedirIfMinimized();                    
+                    openBasedirIfMinimized();
                 }
-                
+
             } catch (SecurityException e) {
                 LOG.log(Level.SEVERE, "Problem logging in: " + e.getMessage());
                 throw e;
             } catch (Exception e) {
                 LOG.log(Level.SEVERE, "Problem logging in: " + e, e);
-                throw new SecurityException(e.getMessage() == null
-                    ? e.toString()
-                    : e.getMessage());
+                throw new SecurityException(e.getMessage() == null ? e.toString() : e.getMessage());
             }
         }
     }
 
-    private boolean isShibbolethIDPMissing(){
-        if (!ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL
-                .hasNonBlankValue(getController())){
+    private boolean isShibbolethIDPMissing() {
+        if (!ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.hasNonBlankValue(getController())) {
             return false;
         }
         return !ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.hasNonBlankValue(getController());
     }
 
     private JDialog getWizardDialog() {
-        return (JDialog) getWizardContext().getAttribute(
-                WizardContextAttributes.DIALOG_ATTRIBUTE);
+        return (JDialog) getWizardContext().getAttribute(WizardContextAttributes.DIALOG_ATTRIBUTE);
     }
 
     private class MyServerClientListner implements ServerClientListener {
@@ -618,6 +426,11 @@ public class LoginPanel extends PFWizardPanel {
         }
 
         public void login(ServerClientEvent event) {
+            if (idPSelectBox.isBrowserLoginOpened()) {
+                JDialog diag = getWizardDialog();
+                diag.setVisible(false);
+                diag.dispose();
+            }
         }
 
         public void serverConnected(ServerClientEvent event) {
@@ -662,8 +475,7 @@ public class LoginPanel extends PFWizardPanel {
             JComboBox<String> source = (JComboBox<String>) e.getSource();
 
             String item = (String) source.getSelectedItem();
-            String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS
-                .getValue(getController());
+            String serversList = ConfigurationEntry.SERVER_CONNECTION_URLS.getValue(getController());
 
             // find the item, skip it an the equals-sign
             int begin = serversList.indexOf(item) + item.length() + 1;
@@ -674,12 +486,7 @@ public class LoginPanel extends PFWizardPanel {
             }
 
             final String server = serversList.substring(begin, end);
-            getController().getIOProvider().startIO(new Runnable() {
-                @Override
-                public void run() {
-                    client.loadConfigURL(server);
-                }
-            });
+            getController().getIOProvider().startIO(() -> client.loadConfigURL(server));
         }
     }
 }

@@ -54,12 +54,17 @@ public class TooLongFilenameProblem extends ResolvableProblem {
     }
 
     public Runnable resolution(final Controller controller) {
-        return new Runnable() {
-            public void run() {
-                String newFilename = FileProblemHelper.getShorterFilename(
-                        controller, fileInfo);
-                FileProblemHelper.resolve(controller, fileInfo, newFilename,
-                        TooLongFilenameProblem.this);
+        return () -> {
+            Folder folder = getFolder(controller);
+            if (folder == null) {
+                return;
+            }
+            if (folder.getDiskItemFilter().isExcluded(fileInfo.getRelativeName())) {
+                folder.removePattern(fileInfo.getRelativeName());
+            }
+            if (fileInfo.getLocalFileInfo(controller.getFolderRepository()) != null) {
+                String newFilename = FileProblemHelper.getShorterFilename(controller, fileInfo);
+                FileProblemHelper.resolve(controller, fileInfo, newFilename, TooLongFilenameProblem.this);
             }
         };
     }

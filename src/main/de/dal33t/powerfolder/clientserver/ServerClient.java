@@ -72,7 +72,7 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 public class ServerClient extends PFComponent {
     public static final String SERVER_NODES_URI = "/client_deployment/server.nodes";
     public static final String SERVER_PUBLIC_KEYS_URI = "/client_deployment/server.public_keys";
-
+    public static final String SAML_EXTERNAL_NON_SAML_USERS = "ext";
     private static final String MEMBER_ID_TEMP_PREFIX = "TEMP_IDENTITY_";
 
     /**
@@ -278,9 +278,8 @@ public class ServerClient extends PFComponent {
         }
     }
 
-    private boolean isKeepLoggedIn() {
-        return PreferencesEntry.SERVER_REMEMBER_PASSWORD
-                .getValueBoolean(getController());
+    public boolean isKeepLoggedIn() {
+        return PreferencesEntry.SERVER_REMEMBER_PASSWORD.getValueBoolean(getController());
     }
 
     // Basics *****************************************************************
@@ -999,6 +998,10 @@ public class ServerClient extends PFComponent {
         securityService.logout();
 
         saveLastKnowLogin(null, null);
+
+        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
+        ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
+
         setAnonAccount();
         fireLogin(accountDetails);
     }
@@ -1084,28 +1087,20 @@ public class ServerClient extends PFComponent {
                 try {
                     if (isKerberosLogin()) {
                         byte[] serviceTicket = prepareKerberosLogin();
-                        loginOk = securityService
-                                .login(username, serviceTicket);
+                        loginOk = securityService.login(username, serviceTicket);
                     } else if (isTokenLogin()) {
                         loginOk = securityService.login(tokenSecret);
                     } else if (isShibbolethLogin()) {
                         // PFC-2534: Start
                         try {
-                            String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-                                    .getValue(config);
-                            boolean idpEqual = StringUtils.isEqual(lastIdPUsed,
-                                    currentIdP);
-                            boolean pwEqual = StringUtils.isEqual(
-                                    prevPasswordObf, passwordObf);
-                            boolean unEqual = StringUtils.isEqual(prevUsername,
-                                    username);
-                            if (shibbolethUnauthRetriesSkip != 0 && unEqual
-                                    && pwEqual && idpEqual) {
+                            String currentIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.getValue(config);
+                            boolean idpEqual = StringUtils.isEqual(lastIdPUsed, currentIdP);
+                            boolean pwEqual = StringUtils.isEqual(prevPasswordObf, passwordObf);
+                            boolean unEqual = StringUtils.isEqual(prevUsername, username);
+                            if (shibbolethUnauthRetriesSkip != 0 && unEqual && pwEqual && idpEqual) {
                                 shibbolethUnauthRetriesSkip--;
                                 if (isFine()) {
-                                    logFine("Skipping login another "
-                                            + shibbolethUnauthRetriesSkip
-                                            + " times");
+                                    logFine("Skipping login another " + shibbolethUnauthRetriesSkip + " times");
                                 }
                                 setAnonAccount();
                                 return accountDetails.getAccount();
@@ -1114,23 +1109,17 @@ public class ServerClient extends PFComponent {
                             lastIdPUsed = currentIdP;
                             shibbolethUnauthRetriesSkip = 0;
                         } catch (RuntimeException e) {
-                            logWarning("An error occured skipping shibboleth login: "
-                                    + e);
+                            logWarning("An error occured skipping shibboleth login: " + e);
                         }
                         // PFC-2534: End
 
-                        boolean externalUser = prepareShibbolethLogin(
-                                username,
-                                pw,
-                                (prevUsername != null && !prevUsername
-                                        .equals(username))
-                                        || (prevPasswordObf != null && !prevPasswordObf
-                                        .equals(passwordObf)));
+                        boolean externalUser = prepareShibbolethLogin(username, pw,
+                                (prevUsername != null && !prevUsername.equals(username))
+                                        || (prevPasswordObf != null && !prevPasswordObf.equals(passwordObf)));
                         if (externalUser) {
                             loginOk = securityService.login(username, pw);
                         } else if (shibUsername != null && shibToken != null) {
-                            loginOk = securityService.login(shibUsername,
-                                    Util.toCharArray(shibToken));
+                            loginOk = securityService.login(shibUsername, Util.toCharArray(shibToken));
                         } else {
                             logWarning("Neither Shibboleth nor external login possible!");
                         }
@@ -1159,8 +1148,7 @@ public class ServerClient extends PFComponent {
                     fireLogin(accountDetails, false);
                     return accountDetails.getAccount();
                 }
-                AccountDetails newAccountDetails = securityService
-                        .getAccountDetails();
+                AccountDetails newAccountDetails = securityService.getAccountDetails();
                 logInfo("Login to " + server.getReconnectAddress() + " (" + theUsername + ") result: "
                         + newAccountDetails);
                 if (newAccountDetails != null) {
@@ -1186,24 +1174,18 @@ public class ServerClient extends PFComponent {
                     if (isKeepLoggedIn()) {
                         if (StringUtils.isBlank(tokenSecret)) {
                             tokenSecret = requestAndSaveToken();
-                            if (isNotBlank(tokenSecret)
-                                    && !Token.isExpired(tokenSecret)) {
+                            if (isNotBlank(tokenSecret) && !Token.isExpired(tokenSecret)) {
                                 passwordObf = null;
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN
-                                        .setValue(config, tokenSecret);
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(config, tokenSecret);
                             } else {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN
-                                        .removeValue(config);
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(config);
                             }
 
                             webdavToken = requestWebDAVToken();
-                            if (isNotBlank(webdavToken)
-                                    && !Token.isExpired(webdavToken)) {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV
-                                        .setValue(config, webdavToken);
+                            if (isNotBlank(webdavToken) && !Token.isExpired(webdavToken)) {
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.setValue(config, webdavToken);
                             } else {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV
-                                        .removeValue(config);
+                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.removeValue(config);
                             }
                         }
                         if (StringUtils.isBlank(username)) {
@@ -1415,7 +1397,7 @@ public class ServerClient extends PFComponent {
         } else if (userChanged) {
             shibUsername = null;
             shibToken = null;
-        } else if ("ext".equals(idpURLString)) {
+        } else if (SAML_EXTERNAL_NON_SAML_USERS.equals(idpURLString)) {
             return true;
         }
 
@@ -1498,9 +1480,8 @@ public class ServerClient extends PFComponent {
         if (StringUtils.isBlank(entityID)) {
             // No entity ID given, using existing one.
             return ecpURL;
-        } else if ("ext".equals(entityID)
-                || (isNotBlank(externalNames)
-                && externalNames.contains(entityID)))
+        } else if (SAML_EXTERNAL_NON_SAML_USERS.equals(entityID)
+                || (isNotBlank(externalNames) && externalNames.contains(entityID)))
         {
             return ecpURL;
         }
@@ -1654,13 +1635,11 @@ public class ServerClient extends PFComponent {
      * Load all known (cluster) server nodes and their public keys.
      */
     public void loadServerNodes() {
-        if (!ConfigurationEntry.SERVER_LOAD_NODES
-                .getValueBoolean(getController())) {
+        if (!ConfigurationEntry.SERVER_LOAD_NODES.getValueBoolean(getController())) {
             return;
         }
         String serverNodesURL = getWebURL(SERVER_NODES_URI, false);
-        String serverPublicKeysURL = getWebURL(SERVER_PUBLIC_KEYS_URI,
-                false);
+        String serverPublicKeysURL = getWebURL(SERVER_PUBLIC_KEYS_URI, false);
         NodeList list = null;
         if (isNotBlank(serverNodesURL)) {
             try {
@@ -2500,19 +2479,15 @@ public class ServerClient extends PFComponent {
 
     private void saveLastKnowLogin(String username, String passwordObf) {
         if (isNotBlank(username)) {
-            ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(
-                    config, username);
+            ConfigurationEntry.SERVER_CONNECT_USERNAME.setValue(config, username);
         } else {
-            ConfigurationEntry.SERVER_CONNECT_USERNAME
-                    .removeValue(config);
+            ConfigurationEntry.SERVER_CONNECT_USERNAME.removeValue(config);
         }
 
         if (isKeepLoggedIn() && isNotBlank(passwordObf)) {
-            ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(
-                    config, passwordObf);
+            ConfigurationEntry.SERVER_CONNECT_PASSWORD.setValue(config, passwordObf);
         } else {
-            ConfigurationEntry.SERVER_CONNECT_PASSWORD
-                    .removeValue(config);
+            ConfigurationEntry.SERVER_CONNECT_PASSWORD.removeValue(config);
         }
 
         // Store if we are main client.
@@ -2726,9 +2701,8 @@ public class ServerClient extends PFComponent {
      */
     private boolean federatedLoginSuccess() {
 
-        String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP
-            .getValue(getController());
-        if (isNotBlank(ecpURL) && !"ext".equals(ecpURL)) {
+        String ecpURL = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.getValue(getController());
+        if (isNotBlank(ecpURL) && !SAML_EXTERNAL_NON_SAML_USERS.equals(ecpURL)) {
             return true;
         }
 

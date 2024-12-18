@@ -39,6 +39,7 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
     private boolean wasPaused = false;
     private boolean changedPause = false;
     private boolean agreedOnToS = true;
+    private boolean autoOpenBrowser = true;
     private ToSNotice tosn;
 
     public AgreeToSListener(Controller controller) {
@@ -51,6 +52,10 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
     @Override
     public boolean fireInEventDispatchThread() {
         return false;
+    }
+
+    public void setAutoOpenBrowser(boolean autoOpenBrowser) {
+        this.autoOpenBrowser = autoOpenBrowser;
     }
 
     @Override
@@ -75,18 +80,20 @@ public class AgreeToSListener extends PFComponent implements ServerClientListene
                     .getNoticesModel().handleNotice(tosn);
 
                 // open Wizard with client.getToSURL();
-                DialogFactory.genericDialog(getController(),
-                    Translation.get("dialog.tos.title"),
-                    Translation.get("dialog.tos.text"),
-                    new String[]{"OK"}, 0, GenericDialogType.INFO);
+                if (autoOpenBrowser) {
+                    DialogFactory.genericDialog(getController(),
+                            Translation.get("dialog.tos.title"),
+                            Translation.get("dialog.tos.text"),
+                            new String[]{"OK"}, 0, GenericDialogType.INFO);
 
-                getController().getIOProvider().startIO(() -> {
-                    try {
-                        BrowserLauncher.openURL(client.getLoginURLWithCredentials());
-                    } catch (IOException ioe) {
-                        logWarning("Could not open browser to view ToS. " + ioe);
-                    }
-                });
+                    getController().getIOProvider().startIO(() -> {
+                        try {
+                            BrowserLauncher.openURL(client.getLoginURLWithCredentials());
+                        } catch (IOException ioe) {
+                            logWarning("Could not open browser to view ToS. " + ioe);
+                        }
+                    });
+                }
             } else {
                 agreedOnToS = true;
                 getController().getUIController().getApplicationModel()

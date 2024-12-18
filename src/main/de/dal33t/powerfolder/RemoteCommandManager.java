@@ -37,6 +37,7 @@ import jwf.WizardPanel;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,6 +48,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.dal33t.powerfolder.Constants.LOGIN_PARAM_OR_HEADER_TOKEN;
+import static de.dal33t.powerfolder.Constants.LOGIN_URI;
 import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 
 /**
@@ -245,6 +248,13 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
     }
 
+    public int getPort() {
+        if (serverSocket == null || serverSocket.isClosed()) {
+            return -1;
+        }
+        return serverSocket.getLocalPort();
+    }
+
     public void run() {
         log.fine("Listening for remote commands on port "
             + serverSocket.getLocalPort());
@@ -268,13 +278,9 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
                     if (line == null) {
                         logFine("Did not receive valid remote request");
                     } else if (line.startsWith(REMOTECOMMAND_PREFIX)) {
-                        processCommand(line.substring(REMOTECOMMAND_PREFIX
-                            .length() + 1));
-                    } else if (line.startsWith("GET")
-                        || line.startsWith("POST"))
-                    {
-                        logWarning("Web requests to client not longer supported");
-                        //processWebRequest(line, socket.getOutputStream());
+                        processCommand(line.substring(REMOTECOMMAND_PREFIX.length() + 1));
+                    } else if (line.startsWith("GET") || line.startsWith("POST")) {
+                        processWebRequest(line, socket.getOutputStream());
                     } else {
                         logWarning("Unknown remote command: " + line);
                     }
@@ -295,59 +301,85 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
         }
     }
 
-    private void processWebRequest(String line, OutputStream out)
-        throws IOException
-    {
-        // System.err.println(line);
-        out = new BufferedOutputStream(out);
-        Writer w = new OutputStreamWriter(out, Convert.UTF8);
-        w.write("HTTP/1.1 200 OK\n");
-        // w.write("Transfer-Encoding: chunked\n");
+    private static final String SUCCESS_PARAM = "success=true";
 
-        if (line.contains("/info")) {
-            w.write("Content-Type: text/javascript; charset=utf-8\n");
-            w.write("\n");
-            w.write("_jqjsp(\"");
+    private void processWebRequest(String line, OutputStream out) throws IOException {
+        // Extract the Token from the URL
+        logFine("Received request: " + line);
+        String token = null;
 
-            // JSON Start
-            w.write("{");
-            w.write("'nodeId':'"
-                + getController().getMySelf().getId().replace("'", "\\'") + '\'');
-            w.write(",");
-            w.write("'nodeName':'"
-                + getController().getMySelf().getNick().replace("'", "\\'")
-                + '\'');
-            w.write("}");
-            // JSON End
+        if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + LOGIN_PARAM_OR_HEADER_TOKEN + "=")) {
+            int startIndex = line.indexOf(LOGIN_URI + "?" + LOGIN_PARAM_OR_HEADER_TOKEN + "=")
+                    + (LOGIN_URI + "?" + LOGIN_PARAM_OR_HEADER_TOKEN + "=").length();
+            int endIndex = line.indexOf(" ", startIndex); // Space after the token
 
-            w.write("\");");
-            w.close();
-        } else if (line.contains("/open/")) {
-            // TODO Error handling
-            int start = line.indexOf("/open/");
-            int end = line.indexOf(" HTTP");
-            String addr = line.substring(start + 6, end);
-            int fIdEnd = addr.indexOf('/');
-            String fId64 = addr.substring(0, fIdEnd);
-            String folderId = Base64.decodeString(fId64);
-            Folder folder = getController().getFolderRepository().getFolder(
-                folderId);
-            String relativeName = addr.substring(fIdEnd + 1, addr.length());
-            try {
-                relativeName = URLDecoder.decode(relativeName, "UTF-8");
-                relativeName = relativeName.replace("%20", " ");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("Encoding UTF-8 not found", e);
+            if (startIndex > (LOGIN_URI + "?" + LOGIN_PARAM_OR_HEADER_TOKEN + "=").length() - 1 && endIndex > startIndex) {
+                token = line.substring(startIndex, endIndex);
+                logFine("Retrieved and extracted Token from web request: " + token);
             }
-
-            FileInfo lookupFile = FileInfoFactory.lookupInstance(
-                folder.getInfo(), relativeName);
-            Path file = lookupFile.getDiskFile(getController()
-                .getFolderRepository());
-            logInfo("Opening file: " + file);
-            PathUtils.openFile(file);
         }
-        w.close();
+
+        // Send response
+        if (token != null) {
+            if (getController().isUIEnabled()) {
+                getController().getUIController().getAgreeToSListener().setAutoOpenBrowser(false);
+            }
+            if (getController().getOSClient().login(token).isValid()) {
+                if (getController().getOSClient().isKeepLoggedIn()) {
+                    ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController(), token);
+                } else {
+                    ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(getController());
+                }
+                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
+                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
+                getController().saveConfig();
+
+                String redirectUrl = LOGIN_URI + "?" + SUCCESS_PARAM;
+                if (getController().getOSClient().getAccountDetails().needsToAgreeToS()) {
+                    redirectUrl = getController().getOSClient().getLoginURLWithCredentials();
+                }
+                redirectLoginSuccess(out, redirectUrl);
+            } else {
+                loginFailed(out);
+            }
+            if (getController().isUIEnabled()) {
+                getController().getUIController().getAgreeToSListener().setAutoOpenBrowser(true);
+            }
+        } else if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + SUCCESS_PARAM)) {
+            loginSuccess(out);
+        } else {
+            loginFailed(out);
+        }
+
+        out.close();
+    }
+
+    private static void redirectLoginSuccess(OutputStream out, String redirectUrl) throws IOException {
+        String httpResponse = "HTTP/1.1 302 Found\r\n" +
+                "Location: " + redirectUrl + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n";
+        out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void loginSuccess(OutputStream out) throws IOException {
+        String html = "<html><body>" + Translation.get("login.saml.browser_success") + "</body></html>";
+        String httpResponse = "HTTP/1.1 200 OK\r\n" +
+                "Content-Type: text/html; charset=UTF-8\r\n" +
+                "Content-Length: " + html.length() + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n" + html;
+        out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void loginFailed(OutputStream out) throws IOException {
+        String html = "<html><body>" + Translation.get("login.saml.browser_failed") + "</body></html>";
+        String httpResponse = "HTTP/1.1 400 Bad Request\r\n" +
+                "Content-Type: text/html; charset=UTF-8\r\n" +
+                "Content-Length: " + html.length() + "\r\n" +
+                "Connection: close\r\n" +
+                "\r\n" + html;
+        out.write(httpResponse.getBytes(StandardCharsets.UTF_8));
     }
 
     /**

@@ -173,7 +173,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
         return 0;
     }
 
-    private static Integer INTEGER_ONE = new Integer(1);
+    private static Integer INTEGER_ONE = Integer.valueOf(1);
 
     /**
      * Returns a {@link Map} mapping each unique element in the given
@@ -196,7 +196,7 @@ public class CompositeMap<K,V> implements Map<K,V> {
             if (c == null) {
                 count.put(obj, INTEGER_ONE);
             } else {
-                count.put(obj, new Integer(c.intValue() + 1));
+                count.put(obj, Integer.valueOf(c.intValue() + 1));
             }
         }
         return count;

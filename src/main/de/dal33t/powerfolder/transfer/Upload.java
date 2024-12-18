@@ -118,16 +118,10 @@ public class Upload extends Transfer {
                 TransferProblem.INVALID_PART);
             return;
         }
-        if (pr.getRange().getLength() > getTransferManager()
-            .getMaxFileChunkSize())
-        {
+        if (pr.getRange().getLength() > getTransferManager().getMaxFileChunkSize()) {
             if (isFine()) {
-                logFine("Got request for a range bigger then my max filechunk size ("
-                        + pr.getRange()
-                        + "): "
-                        + pr.getRange().getLength()
-                        + " on "
-                        + getFile().toDetailString());
+                logFine("Got request for a range bigger then my max filechunk size (" + pr.getRange() + "): "
+                        + pr.getRange().getLength() + " on " + getFile().toDetailString());
             }
         }
         state.setProgress(pr.getProgress());

@@ -128,6 +128,7 @@ public class D2DFileListRequest extends D2DRequestMessage {
             // Set criteria
             FileInfoCriteria fileInfoCriteria = new FileInfoCriteria();
             fileInfoCriteria.addConnectedAndMyself(folder);
+            fileInfoCriteria.setIncludeDeleted(true);
             if (this.recursive) {
                 fileInfoCriteria.setRecursive(true);
             }
@@ -146,6 +147,7 @@ public class D2DFileListRequest extends D2DRequestMessage {
                     FileInfoCriteria fileInfoCriteria = new FileInfoCriteria();
                     fileInfoCriteria.addConnectedAndMyself(folder);
                     fileInfoCriteria.setPath(fileInfo.getRelativeName());
+                    fileInfoCriteria.setIncludeDeleted(true);
                     // Only search recursive if explicitly requested
                     if (this.recursive) {
                         fileInfoCriteria.setRecursive(true);
