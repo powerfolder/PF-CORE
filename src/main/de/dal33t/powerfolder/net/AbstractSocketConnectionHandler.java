@@ -550,7 +550,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                     msg = msg.substring(0, 300);
                     msg += "...";
                 }
-                logWarning(msg);
+                logFine(msg);
             }
             // PFC-2591/PFC-2742: Start
             if (messagesToSendQueue
