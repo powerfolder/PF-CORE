@@ -1914,6 +1914,6 @@ public class PathUtils {
 
     public static boolean isFilenameTooLong(Exception e) {
         Reject.ifNull(e, "Exception");
-        return e.getMessage().toLowerCase().contains("filename too long") || e.toString().toLowerCase().contains("filename too long");
+        return e.getMessage().toLowerCase().contains("name too long") || e.toString().toLowerCase().contains("name too long");
     }
 }
