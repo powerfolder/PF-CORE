@@ -469,7 +469,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                 msg = msg.substring(0, 300);
                 msg += "...";
             }
-            logWarning(msg);
+            logFine(msg);
         }
         // PFC-2591/PFC-2742: Start
         if (messagesToSendQueue.size() > Constants.MAX_MESSAGES_IN_SEND_QUEUE) {
