@@ -121,7 +121,8 @@ public class Help {
             return null;
         }
         LOG.log(Level.FINE, "Wiki URL is " + wikiURL + '/' + article);
-        return wikiURL + '/' + article;
+        return wikiURL;
+        // return wikiURL + '/' + article;
     }
 
     /**
