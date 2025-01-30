@@ -1916,4 +1916,9 @@ public class PathUtils {
         Reject.ifNull(e, "Exception");
         return e.getMessage().toLowerCase().contains("name too long") || e.toString().toLowerCase().contains("name too long");
     }
+
+    public static boolean isQuotaLimitHit(Exception e) {
+        Reject.ifNull(e, "Exception");
+        return e.getMessage().toLowerCase().contains("quota exceeded");
+    }
 }
