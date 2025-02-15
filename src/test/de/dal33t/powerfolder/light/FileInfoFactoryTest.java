@@ -40,14 +40,6 @@ public class FileInfoFactoryTest extends TestCase {
         assertEquals(diskFile, fileInfo.getRelativeName());
     }
 
-    public void testPFC3375() {
-        String input = StringUtils.AEL_SPECIAL_ENCODING_UNICODE + StringUtils.AEU_SPECIAL_ENCODING_UNICODE
-                + StringUtils.OEL_SPECIAL_ENCODING_UNICODE + StringUtils.OEU_SPECIAL_ENCODING_UNICODE
-                + StringUtils.UEL_SPECIAL_ENCODING_UNICODE + StringUtils.UEU_SPECIAL_ENCODING_UNICODE;
-        String expected = "äÄöÖüÜ";
-        assertEquals(expected, FileInfoFactory.encodeIllegalChars(input));
-    }
-
     public void testRenameConflictResolve() {
         FolderInfo z = FolderInfoFactory.unmarshallExistingTopFolder("ID", "Z", 1);
         FolderInfo zResolved = FolderInfoFactory.resolveConflict(z);

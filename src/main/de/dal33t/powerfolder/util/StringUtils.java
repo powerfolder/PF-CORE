@@ -272,6 +272,12 @@ public class StringUtils {
     public static final String UEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x75, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
     public static final String UEU_SPECIAL_ENCODING_UNICODE = UEL_SPECIAL_ENCODING_UNICODE.toUpperCase(Locale.ROOT);
 
+    public boolean containsDecomposedForm(String input) {
+        return input.contains(AEL_SPECIAL_ENCODING_UNICODE) || input.contains(AEU_SPECIAL_ENCODING_UNICODE) ||
+                input.contains(OEL_SPECIAL_ENCODING_UNICODE) || input.contains(OEU_SPECIAL_ENCODING_UNICODE) ||
+                input.contains(UEL_SPECIAL_ENCODING_UNICODE) || input.contains(UEU_SPECIAL_ENCODING_UNICODE);
+    }
+
     public static String convertToPrecomposedForm(String input) {
         String output = input;
 
