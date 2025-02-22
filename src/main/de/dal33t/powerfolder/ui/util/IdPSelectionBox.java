@@ -14,9 +14,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.swing.*;
 import javax.swing.SwingWorker;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,8 +51,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
     }
 
     private class Initializer extends SwingWorker<Void, Void> {
-        @Override
-        protected Void doInBackground() throws Exception {
+        private JSONArray retrieve0() throws IOException, JSONException {
             URL url = new URL(ConfigurationEntry.SERVER_IDP_DISCO_FEED_URL.getValue(controller));
 
             HttpURLConnection con;
@@ -69,15 +70,36 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                 line = is.readLine();
             }
 
-            JSONArray resp = new JSONArray(body.toString());
+            return new JSONArray(body.toString());
+        }
 
+        private JSONArray retrieve() {
+            Exception lastException = null;
+            for (int i = 0; i < 10; i++) {
+                try {
+                    return retrieve0();
+                } catch (Exception e) {
+                    lastException = e;
+                }
+                Waiter.waitRandom(500);
+            }
+            throw new RuntimeException(lastException);
+        }
+
+        public void addEntry(String item) {
+            SwingUtilities.invokeLater(() -> addItem(item));
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
             String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(controller);
             boolean lastIdPSet = false;
 
+            JSONArray idps = retrieve();
             removeAllItems();
 
             // PFS-2006
-            addItem(Translation.get("wizard.login_online_storage.pre_selection_entry"));
+            addEntry(Translation.get("wizard.login_online_storage.pre_selection_entry"));
             idPList.add(0, "");
 
             if (ConfigurationEntry.SERVER_IDP_EXTERNAL_NAMES.hasNonBlankValue(controller)) {
@@ -90,7 +112,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                             name = name.substring(1);
                         }
 
-                        addItem(name.trim());
+                        addEntry(name.trim());
                         idPList.add(name.trim());
                         if (!lastIdPSet && name.equals(lastIdP)) {
                             setSelectedIndex(getItemCount() - 1);
@@ -99,17 +121,17 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                     }
                 }
             } else {
-                addItem(Translation.get("wizard.login.external_users"));
+                addEntry(Translation.get("wizard.login.external_users"));
                 idPList.add(ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
             }
 
-            for (int i = 0; i < resp.length(); i++) {
-                JSONObject obj = resp.getJSONObject(i);
+            for (int i = 0; i < idps.length(); i++) {
+                JSONObject obj = idps.getJSONObject(i);
 
                 String entity = obj.getString("entityID");
                 String name = obj.getJSONArray("DisplayNames").getJSONObject(0).getString("value");
 
-                addItem(name);
+                addEntry(name);
                 idPList.add(entity);
 
                 if (!lastIdPSet && entity.equals(lastIdP)) {
