@@ -90,6 +90,10 @@ public class IdPSelectionBox extends StyledComboBox<String> {
             SwingUtilities.invokeLater(() -> addItem(item));
         }
 
+        public void setSelectedIndex(int i) {
+            SwingUtilities.invokeLater(() -> setSelectedIndex(i));
+        }
+
         @Override
         protected Void doInBackground() throws Exception {
             String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(controller);
@@ -147,9 +151,15 @@ public class IdPSelectionBox extends StyledComboBox<String> {
             }
 
             addActionListener(new IdPSelectionAction());
-            setEnabled(true);
             listLoaded = true;
             return null;
+        }
+
+        @Override
+        protected void done() {
+            if (listLoaded) {
+                setEnabled(true);
+            }
         }
     }
 
