@@ -2004,8 +2004,8 @@ public class Controller extends PFComponent {
      */
     public void exit(int status) {
         if (Feature.EXIT_ON_SHUTDOWN.isDisabled()) {
-            System.err
-                .println("Running in JUnit testmode, no system.exit() called");
+            System.err.println("Running in JUnit testmode, no system.exit(" + status + ") called");
+            new StackDump().printStackTrace();
             return;
         }
         shutdown();
