@@ -838,9 +838,7 @@ public class UtilTest extends TestCase {
         file.getParentFile().mkdirs();
         file.createNewFile();
         FileWriter writer = new FileWriter(file);
-        writer.write("\n" +
-                "net.bindaddress=127.0.0.1\n" +
-                "random-port=false\n" +
+        writer.write("random-port=false\n" +
                 "net.port=3457\n" +
                 "net.broadcast=false\n" +
                 "disableui=true");
