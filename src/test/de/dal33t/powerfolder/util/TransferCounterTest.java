@@ -37,13 +37,12 @@ public class TransferCounterTest extends TestCase {
 
         ac.setAccessible(true);
         tc.startedTransfer();
-        Thread.sleep(900);
 
         // Starts out with counter2 active
         for (int i = 0; i < period / 1000; i++) {
             tc.calculateCurrentCPS();
             assertEquals("Counter2 run " + i, false, ac.getBoolean(tc));
-            Thread.sleep(1000);
+            Thread.sleep(999);
         }
         // Now the switch should happen
         tc.calculateCurrentCPS();
@@ -52,7 +51,7 @@ public class TransferCounterTest extends TestCase {
         for (int i = 1; i < period / 1000; i++) {
             tc.calculateCurrentCPS();
             assertEquals("Counter1 run " + i, true, ac.getBoolean(tc));
-            Thread.sleep(1000);
+            Thread.sleep(999);
         }
         tc.stoppedTransfer();
     }
