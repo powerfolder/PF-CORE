@@ -37,6 +37,7 @@ public class TransferCounterTest extends TestCase {
 
         ac.setAccessible(true);
         tc.startedTransfer();
+        Thread.sleep(900);
 
         // Starts out with counter2 active
         for (int i = 0; i < period / 1000; i++) {
