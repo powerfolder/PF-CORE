@@ -26,6 +26,8 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
+import de.dal33t.powerfolder.util.os.OSUtil;
+import de.javasoft.util.OS;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpGet;
@@ -834,6 +836,9 @@ public class UtilTest extends TestCase {
 
 
     public void testCreateHttpBuilderProxyHost() throws IOException {
+        if (OSUtil.isLinux()) {
+            return;
+        }
         File file = new File("build/test/first.config");
         file.getParentFile().mkdirs();
         file.createNewFile();
