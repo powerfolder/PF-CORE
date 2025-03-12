@@ -427,7 +427,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testSetClipboardContentsOk() throws IOException, UnsupportedFlavorException {
-        if (!isWindows()|| !GraphicsEnvironment.isHeadless()) {
+        if (!isWindows()|| GraphicsEnvironment.isHeadless()) {
             return;
         }
         assumeTrue("Windows system required to run this test", isWindows());
@@ -458,7 +458,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsOk() {
-        if (!isWindows() || !GraphicsEnvironment.isHeadless()) {
+        if (!isWindows() || GraphicsEnvironment.isHeadless()) {
             return;
         }
         assumeTrue("Windows system required to run this test", isWindows());
@@ -477,7 +477,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsNull() {
-        if (!isWindows() || !GraphicsEnvironment.isHeadless()) {
+        if (!isWindows() || GraphicsEnvironment.isHeadless()) {
             return;
         }
         assumeTrue("Windows system required to run this test", isWindows());
@@ -512,7 +512,7 @@ public class UtilTest extends TestCase {
     }
 
     public void testGetClipboardContentsUnsupportedFlavor() {
-        if (!isWindows() || !GraphicsEnvironment.isHeadless()) {
+        if (!isWindows() || GraphicsEnvironment.isHeadless()) {
             return;
         }
         assumeTrue("Windows system required to run this test", isWindows());
