@@ -508,7 +508,7 @@ public class FolderScanner extends PFComponent {
             "currentScanningFolder must not be null");
         currentScanResult.incrementTotalFilesCount();
         String filename;
-        if (currentDirName.length() == 0) {
+        if (currentDirName.isEmpty()) {
             filename = fileToScan.getFileName().toString();
         } else {
             filename = currentDirName + '/' + fileToScan.getFileName().toString();

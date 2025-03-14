@@ -69,8 +69,9 @@ public class Help {
      */
     public static void openWikiArticle(Controller controller, String article) {
         LOG.fine("Opening wiki article '" + article + '\'');
-        BrowserLauncher.openURL(controller,
-            getWikiArticleURL(controller, article));
+        if (hasWiki(controller)) {
+            BrowserLauncher.openURL(controller, getWikiArticleURL(controller, article));
+        }
     }
 
     /**
@@ -121,7 +122,8 @@ public class Help {
             return null;
         }
         LOG.log(Level.FINE, "Wiki URL is " + wikiURL + '/' + article);
-        return wikiURL + '/' + article;
+        return wikiURL;
+        // PFC-3449: Disabled deep links: return wikiURL + '/' + article;
     }
 
     /**

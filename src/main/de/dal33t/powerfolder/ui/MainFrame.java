@@ -113,6 +113,7 @@ public class MainFrame extends PFUIComponent {
 
     private ActionLabel loginActionLabel;
     private JProgressBar usagePB;
+    private JLabel noStorageText;
     private ActionLabel noticesActionLabel;
 
     private DelayedUpdater mainStatusUpdater;
@@ -207,6 +208,7 @@ public class MainFrame extends PFUIComponent {
         builderLower.add(new JLabel((Icon) null), cc.xywh(1, 1, 1, 2));
         builderLower.add(loginActionLabel.getUIComponent(), cc.xy(2, 1));
         builderLower.add(usagePB, cc.xy(2, 2));
+        builderLower.add(noStorageText, cc.xy(2, 2));
         // Make sure the noticesActionLabel vertical space is maintained.
         builderLower.add(new JLabel(" "), cc.xy(1, 3));
         builderLower.add(noticesActionLabel.getUIComponent(), cc.xy(2, 3));
@@ -461,28 +463,28 @@ public class MainFrame extends PFUIComponent {
             new MyShowNoticesAction(getController()));
         updateNoticesLabel();
 
-        usagePB = new JProgressBar();
-        usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        usagePB.addMouseListener(new MouseAdapter() {
+        MouseListener accountLoginOpener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1) {
                     if (StringUtils.isBlank(client.getUsername())) {
                         PFWizard.openLoginWizard(getController(), client);
-                    } else if (ConfigurationEntry.WEB_LOGIN_ALLOWED
-                        .getValueBoolean(getController()))
-                    {
-                        BrowserLauncher.open(getController(), new URLProducer()
-                        {
-                            public String url() {
-                                return client.getWebURL(
-                                    Constants.MY_ACCOUNT_URI, true);
-                            }
-                        });
+                    } else {
+                        BrowserLauncher.open(getController(), () -> client.getWebURL(
+                                Constants.MY_ACCOUNT_URI, true));
                     }
                 }
             }
-        });
+        };
+
+        noStorageText = SimpleComponentFactory.createLabel(Translation.get("main_frame.no_quota"));
+        noStorageText.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        noStorageText.addMouseListener(accountLoginOpener);
+        noStorageText.setVisible(false);
+
+        usagePB = new JProgressBar();
+        usagePB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        usagePB.addMouseListener(accountLoginOpener);
 
         createFolderActionLabel = new ActionLabel(getController(),
                 getApplicationModel().getActionModel().getNewFolderAction());
@@ -1145,6 +1147,7 @@ public class MainFrame extends PFUIComponent {
         double percentageUsed = 0;
         long totalStorage = 0;
         long spaceUsed = 0;
+        boolean ownStorage = true;
         if (StringUtils.isBlank(client.getUsername())) {
             loginActionLabel.setText(Translation
                 .get("main_frame.account_not_set.text"));
@@ -1166,6 +1169,7 @@ public class MainFrame extends PFUIComponent {
                         percentageUsed = 100.0d * (double) spaceUsed
                             / (double) totalStorage;
                     } else {
+                        ownStorage = false;
                         loginActionLabel.setText(Translation
                                 .get("main_frame.storage_subscription_disabled.text"));
                         percentageUsed = 100.0d;
@@ -1195,9 +1199,13 @@ public class MainFrame extends PFUIComponent {
             // .getTranslation("main_frame.connecting.text"));
             loginActionLabel.setText(" ");
         }
+
+        noStorageText.setVisible(!ownStorage);
+        usagePB.setVisible(ownStorage);
         usagePB.setValue((int) percentageUsed);
         usagePB.setToolTipText(Format.formatBytesShort(spaceUsed) + " / "
-            + Format.formatBytesShort(totalStorage));
+                + Format.formatBytesShort(totalStorage));
+
     }
 
     private void setFrameMode(FrameMode frameMode) {

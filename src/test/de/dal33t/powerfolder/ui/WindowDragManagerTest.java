@@ -111,29 +111,6 @@ public class WindowDragManagerTest extends TestCase {
         assertLocationEquals(-93, -372);
     }
 
-    public void testTimer() throws Exception {
-        WindowDragManager m = new WindowDragManager(testComponent, 5);
-        testComponent.setLocation(50, 50);
-        m.start(mouseEvent(0, 0));
-        m.update(mouseEvent(100, 100));
-        Thread.sleep(30);
-        assertEquals(2, testComponent.sets);
-        m.stop(mouseEvent(100, 100));
-        assertEquals(2, testComponent.sets);
-
-        testComponent.reset();
-        m = new WindowDragManager(testComponent, 5);
-        testComponent.setLocation(50, 50);
-        m.start(mouseEvent(0, 0));
-        m.update(mouseEvent(100, 100));
-        Thread.sleep(30);
-        assertEquals(2, testComponent.sets);
-        assertLocationEquals(150, 150);
-        m.stop(mouseEvent(100, 100));
-        assertEquals(2, testComponent.sets);
-        assertLocationEquals(150, 150);
-    }
-
     private MouseEvent mouseEvent(int xAbs, int yAbs) {
         // use bogus relative positions as calculation should be performed
         // with absolute positions

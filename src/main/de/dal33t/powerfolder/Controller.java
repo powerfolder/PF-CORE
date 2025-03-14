@@ -87,8 +87,8 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 22;
-    private static final int MINOR_VERSION = 2;
-    private static final int REVISION_VERSION = 103;
+    private static final int MINOR_VERSION = 3;
+    private static final int REVISION_VERSION = 100;
 
     private static final int SPRINT_NUMBER = 58;
 
@@ -2004,8 +2004,8 @@ public class Controller extends PFComponent {
      */
     public void exit(int status) {
         if (Feature.EXIT_ON_SHUTDOWN.isDisabled()) {
-            System.err
-                .println("Running in JUnit testmode, no system.exit() called");
+            System.err.println("Running in JUnit testmode, no system.exit(" + status + ") called");
+            new StackDump().printStackTrace();
             return;
         }
         shutdown();

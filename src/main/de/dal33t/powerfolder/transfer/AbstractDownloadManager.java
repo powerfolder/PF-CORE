@@ -28,6 +28,8 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.FileChunk;
 import de.dal33t.powerfolder.transfer.Transfer.State;
 import de.dal33t.powerfolder.transfer.Transfer.TransferState;
+import de.dal33t.powerfolder.ui.notices.Notice;
+import de.dal33t.powerfolder.ui.notices.WarningNotice;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.delta.*;
 import de.dal33t.powerfolder.util.delta.FilePartsState.PartState;
@@ -672,7 +674,17 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             tempFileChannel.position(chunk.offset);
             tempFileChannel.write(ByteBuffer.wrap(chunk.data));
         } catch (IOException e) {
-            logSevere("IOException while writing to " + tempFile, e);
+            if (PathUtils.isQuotaLimitHit(e)) {
+                logWarning("Pausing sync. Filesystem quota hit at " + tempFile);
+                getController().setPaused(true);
+                if (getController().isUIEnabled()) {
+                    Notice notice = new WarningNotice(Translation.get("disc_space_warning.title"),
+                            Translation.get("disc_space_warning.summary"), Translation.get("disc_space_warning.summary"));
+                    getController().getUIController().getApplicationModel().getNoticesModel().handleNotice(notice);
+                }
+            } else {
+                logWarning("IOException while writing to " + tempFile, e);
+            }
             setBroken(TransferProblem.IO_EXCEPTION, "Couldn't write to tempfile");
             return;
         }

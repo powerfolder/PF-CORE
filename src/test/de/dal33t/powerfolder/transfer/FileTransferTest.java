@@ -2312,13 +2312,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public String message() {
-                return "getContollerBart().getTransferManager().countAllUploads()="
-                        + getContollerBart().getTransferManager().countAllUploads();
+                return "getContollerBart().getTransferManager().countActiveUploads()="
+                        + getContollerBart().getTransferManager().countActiveUploads();
             }
 
             @Override
             public boolean reached() {
-                return getContollerBart().getTransferManager().countAllUploads() == 1;
+                return getContollerBart().getTransferManager().countActiveUploads() == 1;
             }
         });
 
@@ -2345,13 +2345,13 @@ public class FileTransferTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {
             @Override
             public String message() {
-                return "getContollerBart().getTransferManager().countAllUploads()="
-                        + getContollerBart().getTransferManager().countAllUploads() ;
+                return "getContollerBart().getTransferManager().countActiveUploads()="
+                        + getContollerBart().getTransferManager().countActiveUploads() ;
             }
 
             @Override
             public boolean reached() {
-                return getContollerBart().getTransferManager().countAllUploads() == 0;
+                return getContollerBart().getTransferManager().countActiveUploads() == 0;
             }
         });
 

@@ -1385,13 +1385,7 @@ public class PathUtils {
 
         if (Desktop.isDesktopSupported()) {
             try {
-                if (OSUtil.isWindowsSystem() && !Files.isDirectory(file)) {
-                    Runtime.getRuntime().exec(
-                            "rundll32 SHELL32.DLL,ShellExec_RunDLL \""
-                                    + file.toString() + "\"");
-                } else {
-                    Desktop.getDesktop().open(file.toFile());
-                }
+                Desktop.getDesktop().open(file.toFile());
                 return true;
             } catch (IOException e) {
                 log.warning("Unable to open file " + file + ". " + e);
@@ -1405,6 +1399,14 @@ public class PathUtils {
                         "/usr/bin/xdg-open " + file.toUri().toString());
                 return true;
             } catch (Exception e) {
+                log.warning("Unable to open file " + file + ". " + e);
+                return false;
+            }
+        } else if (OSUtil.isWindowsSystem()) {
+            try {
+                new ProcessBuilder("cmd", "/c", "start", file.toString()).start();
+                return true;
+            } catch (IOException e) {
                 log.warning("Unable to open file " + file + ". " + e);
                 return false;
             }
@@ -1915,5 +1917,10 @@ public class PathUtils {
     public static boolean isFilenameTooLong(Exception e) {
         Reject.ifNull(e, "Exception");
         return e.getMessage().toLowerCase().contains("name too long") || e.toString().toLowerCase().contains("name too long");
+    }
+
+    public static boolean isQuotaLimitHit(Exception e) {
+        Reject.ifNull(e, "Exception");
+        return e.getMessage().toLowerCase().contains("quota exceeded");
     }
 }
