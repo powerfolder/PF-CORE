@@ -840,10 +840,8 @@ public class ServerClient extends PFComponent {
      * @return the activation URL for this server.
      */
     public String getActivationURL() {
-        if (!hasWebURL()) {
-            return null;
-        }
-        return getWebURL(Constants.ACTIVATE_URI, false);
+        // Always: my.powerfolder.com
+        return ConfigurationEntry.SERVER_WEB_URL.getDefaultValue() + Constants.ACTIVATE_URI;
     }
 
     /**
