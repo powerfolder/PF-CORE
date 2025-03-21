@@ -321,6 +321,7 @@ public class TransferManager extends PFComponent {
             return;
         }
         try {
+            logFine("Cleaning up " + transfersPath);
             PathUtils.deleteIncompletedTransferFiles(transfersPath, INCOMPLETE_TRANSFERS_FILE_DELETE_DAYS_THRESHOLD);
         } catch (Exception e) {
             logWarning("Unable to clean old transfers files at " + transfersPath + " - " + e.getMessage(), e);

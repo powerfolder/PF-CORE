@@ -3147,6 +3147,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
                 getController().getTransferManager().cleanIncompletedDownloadFiles(folder);
             }
+            logInfo("Cleanup done for " + getFoldersCount() + " folders");
         } finally {
             fireCleanupFinished();
         }
