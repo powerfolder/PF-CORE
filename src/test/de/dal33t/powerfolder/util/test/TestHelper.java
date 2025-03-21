@@ -40,6 +40,8 @@ import java.nio.file.DirectoryStream.Filter;
 import java.util.*;
 import java.util.List;
 
+import static de.dal33t.powerfolder.util.PathUtils.TRANSFERS_DIR_NAME;
+
 /**
  * Offers several helping methods for junit tests.
  *
@@ -116,7 +118,7 @@ public class TestHelper {
      */
     public static void assertIncompleteFilesGone(List<Folder> folderList) {
         for (Folder f : folderList) {
-            Path transfers = f.getSystemSubDir().resolve("transfers");
+            Path transfers = f.getSystemSubDir().resolve(TRANSFERS_DIR_NAME);
             if (Files.notExists(transfers)) {
                 return;
             }

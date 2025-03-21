@@ -3117,31 +3117,35 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     /**
      * Delete any file archives over a specified age, if history is not set to
-     * "forever".
+     * "forever". And
      */
-    public void cleanupOldArchiveFiles() {
-        cleanupOldArchiveFiles(false);
+    public void cleanupOldFiles() {
+        cleanupOldFiles(false);
     }
 
     /**
      * @param force If {@code true} ignore the
      *              {@link ConfigurationEntry#DEFAULT_ARCHIVE_CLEANUP_DAYS} else
      *              take that setting into account.
-     * @see #cleanupOldArchiveFiles()
+     * @see #cleanupOldFiles()
      */
-    public void cleanupOldArchiveFiles(boolean force) {
+    public void cleanupOldFiles(boolean force) {
+        boolean cleanupArchive = true;
         int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
                 .getValueInt(getController());
         if (!force && (period == Integer.MAX_VALUE || period <= 0)) { // cleanup := never
-            return;
+            cleanupArchive = false;
         }
         try {
             fireCleanupStarted();
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DATE, -period);
             Date cleanupDate = cal.getTime();
-            for (Folder folder : getFolders()) {
-                folder.cleanupOldArchiveFiles(cleanupDate);
+            for (Folder folder : getFolders(true)) {
+                if (cleanupArchive) {
+                    folder.cleanupOldArchiveFiles(cleanupDate);
+                }
+                getController().getTransferManager().cleanIncompletedDownloadFiles(folder);
             }
         } finally {
             fireCleanupFinished();

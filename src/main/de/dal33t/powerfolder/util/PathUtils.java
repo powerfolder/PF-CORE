@@ -42,6 +42,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.spi.FileSystemProvider;
 import java.security.MessageDigest;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -65,6 +67,7 @@ public class PathUtils {
 
     public static final String DOWNLOAD_INCOMPLETE_FILE = "(incomplete) ";
     public static final String DOWNLOAD_META_FILE = "(downloadmeta) ";
+    public static final String TRANSFERS_DIR_NAME = "transfers";
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
     public static final String INVALID_CHARS = "/\\:*?\"<>|";
 
@@ -1896,6 +1899,38 @@ public class PathUtils {
         } catch (IOException ioe) {
             IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
             throw ioe;
+        }
+    }
+
+    private static final java.util.List<String> INCOMPLETE_FILES_PREFIXES =  java.util.List.of(DOWNLOAD_INCOMPLETE_FILE, DOWNLOAD_META_FILE);
+
+    public static boolean deleteIncompletedTransferFiles(Path dir, int daysOld) {
+        Reject.ifFalse(Files.isDirectory(dir), "Invalid directory: " + dir.toAbsolutePath());
+        Instant cutoff = Instant.now().minus(daysOld, ChronoUnit.DAYS);
+        try {
+            Files.walkFileTree(dir, new SimpleFileVisitor<>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)  {
+                    String filename = file.getFileName().toString();
+                    boolean matchesPrefix = INCOMPLETE_FILES_PREFIXES.stream().anyMatch(filename::startsWith);
+                    boolean isOldEnough = attrs.lastModifiedTime().toInstant().isBefore(cutoff);
+
+                    if (matchesPrefix && isOldEnough) {
+                        try {
+                            Files.delete(file);
+                            log.fine("[DELETED] " + file.toAbsolutePath());
+                            System.out.println("[DELETED] " + file.toAbsolutePath());
+                        } catch (IOException e) {
+                            log.fine("[FAILED] to delete " + file.toAbsolutePath() + " - " + e.getMessage());
+                        }
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+            return true;
+        } catch (IOException e) {
+            log.warning("[FAILED] to delete incompleted download files at " + dir.toAbsolutePath() + " - " + e.getMessage());
+            return false;
         }
     }
 

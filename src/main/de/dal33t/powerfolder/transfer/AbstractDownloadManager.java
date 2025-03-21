@@ -847,7 +847,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         metaDataBaseDir = getFileInfo()
             .getFolder(getController().getFolderRepository())
-            .getSystemSubDir().resolve("transfers").toAbsolutePath();
+            .getSystemSubDir().resolve(PathUtils.TRANSFERS_DIR_NAME).toAbsolutePath();
         if (Files.notExists(metaDataBaseDir)) {
             try {
                 Files.createDirectories(metaDataBaseDir);

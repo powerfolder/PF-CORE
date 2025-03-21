@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.transfer;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
-import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.disk.problem.NoSpaceOnFileStoreProblem;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.event.TransferManagerEvent;
@@ -56,6 +55,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static de.dal33t.powerfolder.util.PathUtils.TRANSFERS_DIR_NAME;
+
 /**
  * Transfer manager for downloading/uploading files
  *
@@ -67,6 +68,7 @@ public class TransferManager extends PFComponent {
     public static final long PARTIAL_TRANSFER_DELAY = 5000; // Five seconds
     public static final long ONE_DAY = 24L * 3600 * 1000; // One day in ms
     public static final long SIX_HOURS = 6L * 3600 * 1000; // 6 hours
+    private static final int INCOMPLETE_TRANSFERS_FILE_DELETE_DAYS_THRESHOLD = 30;
 
     private static final DecimalFormat CPS_FORMAT = new DecimalFormat("#,###,###,###.##");
 
@@ -304,6 +306,24 @@ public class TransferManager extends PFComponent {
         }
         if (n > 0) {
             logFine("Cleaned up " + n + " completed downloads");
+        }
+    }
+
+    private void cleanIncompletedDownloadFiles() {
+        for (Folder folder: getController().getFolderRepository().getFolders(true)) {
+            cleanIncompletedDownloadFiles(folder);
+        }
+    }
+
+    public void cleanIncompletedDownloadFiles(Folder folder) {
+        Path transfersPath = folder.getSystemSubDir().resolve(TRANSFERS_DIR_NAME);
+        if (Files.notExists(transfersPath)) {
+            return;
+        }
+        try {
+            PathUtils.deleteIncompletedTransferFiles(transfersPath, INCOMPLETE_TRANSFERS_FILE_DELETE_DAYS_THRESHOLD);
+        } catch (Exception e) {
+            logWarning("Unable to clean old transfers files at " + transfersPath + " - " + e.getMessage(), e);
         }
     }
 
@@ -3207,6 +3227,7 @@ public class TransferManager extends PFComponent {
         @Override
         public void run() {
             cleanupOldTransfers();
+            cleanIncompletedDownloadFiles();
         }
     }
 }

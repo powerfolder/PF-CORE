@@ -1330,7 +1330,7 @@ public class Controller extends PFComponent {
             logFine("Reconfigured logs for new day: " + now);
 
             backupConfigAssets();
-            folderRepository.cleanupOldArchiveFiles();            
+            folderRepository.cleanupOldFiles();
         }
         
         // Prune stats.

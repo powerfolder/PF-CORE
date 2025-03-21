@@ -605,6 +605,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             }
             return DateUtil.isNewerFileDateCrossPlattform(lastModifiedDate,
                     ofInfo.lastModifiedDate);
+
+            // Same: Then size
         }
         return version > ofInfo.version;
     }
