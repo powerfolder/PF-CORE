@@ -1464,6 +1464,10 @@ public class ServerClient extends PFComponent {
                 shibUsername = null;
                 shibToken = null;
                 throw new SecurityException(e);
+            } catch (Exception e) {
+                shibUsername = null;
+                shibToken = null;
+                logWarning(e.getMessage() + ": Fallback to external login.", e);
             }
         }
 
