@@ -58,15 +58,6 @@ public class UserDirectoriesTest {
     private Folder mockedFolder = mock(Folder.class);
     private Path mockedPath = mock(Path.class);
 
-    @Before
-    public void setUp() throws Exception {
-        if (OSUtil.isLinux()) {
-            // Create at least one expected dir under linux
-            Path userHome = Paths.get(System.getProperty("user.home"));
-            Files.createDirectory(userHome.resolve("Downloads"));
-        }
-    }
-
     @Test
     public void testGetUserDirectoriesFilteredShouldReturnEmptyCollection() {
         when(mockedController.getConfig()).thenReturn(mockedProperties);
