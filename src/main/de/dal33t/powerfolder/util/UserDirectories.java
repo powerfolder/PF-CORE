@@ -246,21 +246,15 @@ public class UserDirectories {
      */
     private static void findUserDirectories() {
         Path userHome = Paths.get(System.getProperty("user.home"));
-        addTargetDirectory(userHome, USER_DIR_CONTACTS, "user.dir.contacts",
-            false);
-        addTargetDirectory(userHome, USER_DIR_DESKTOP, "user.dir.desktop",
-            false);
-
-        addTargetDirectory(userHome, USER_DIR_EVOLUTION, "user.dir.evolution",
-            true);
+        addTargetDirectory(userHome, USER_DIR_CONTACTS, "user.dir.contacts", false);
+        addTargetDirectory(userHome, USER_DIR_DESKTOP, "user.dir.desktop", false);
+        addTargetDirectory(userHome, USER_DIR_EVOLUTION, "user.dir.evolution", true);
         addTargetDirectory(userHome, USER_DIR_LINKS, "user.dir.links", false);
         addTargetDirectory(userHome, USER_DIR_MOVIES, "user.dir.movies", false);
-        addTargetDirectory(userHome, USER_DIR_DOWNLOADS, "user.dir.downloads",
-            false);
+        addTargetDirectory(userHome, USER_DIR_DOWNLOADS, "user.dir.downloads", false);
         addTargetDirectory(userHome, USER_DIR_PUBLIC, "user.dir.public", false);
         addTargetDirectory(userHome, USER_DIR_SITES, "user.dir.sites", false);
-        addTargetDirectory(userHome, USER_DIR_DROPBOX, "user.dir.dropbox",
-            false);
+        addTargetDirectory(userHome, USER_DIR_DROPBOX, "user.dir.dropbox", false);
 
         boolean foundDocuments = false;
         boolean foundMusic = false;

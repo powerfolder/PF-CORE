@@ -35,11 +35,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
+import de.dal33t.powerfolder.util.os.OSUtil;
+import org.junit.Before;
 import org.junit.Test;
 
 import de.dal33t.powerfolder.Controller;
@@ -52,6 +56,15 @@ public class UserDirectoriesTest {
     private FolderRepository mockedFolderRepository = mock(FolderRepository.class);
     private Folder mockedFolder = mock(Folder.class);
     private Path mockedPath = mock(Path.class);
+
+    @Before
+    public void setUp() throws Exception {
+        if (OSUtil.isLinux()) {
+            // Create at least one expected dir under linux
+            Path userHome = Paths.get(System.getProperty("user.home"));
+            Files.createDirectory(userHome.resolve("Downloads"));
+        }
+    }
 
     @Test
     public void testGetUserDirectoriesFilteredShouldReturnEmptyCollection() {
