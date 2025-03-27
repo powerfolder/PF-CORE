@@ -35,6 +35,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -86,7 +87,9 @@ public class UserDirectoriesTest {
 
     @Test
     public void shouldGetDesktopDirectory() {
-        assertNotNull(getDesktopDirectory());
+        if (!GraphicsEnvironment.isHeadless()) {
+            assertNotNull(getDesktopDirectory());
+        }
     }
 
     @Test
