@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.ui.action;
 import static de.dal33t.powerfolder.light.FolderInfoFactory.newTopFolder;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.BACKUP_ONLINE_STOARGE;
 import static de.dal33t.powerfolder.ui.wizard.WizardContextAttributes.FOLDER_CREATE_ITEMS;
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
 
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
@@ -32,19 +33,16 @@ import javax.swing.SwingUtilities;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.light.FolderInfoFactory;
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.wizard.FolderCreateItem;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
-import de.dal33t.powerfolder.util.IdGenerator;
-import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -58,7 +56,6 @@ public class NewFolderAction extends BaseAction {
     public NewFolderAction(Controller controller) {
         super("action_new_folder", controller);
     }
-
     public void actionPerformed(ActionEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -72,142 +69,85 @@ public class NewFolderAction extends BaseAction {
                 folderRepository.setSuspendNewFolderSearch(true);
 
                 try {
-                    // Select directory
-                    List<Path> files = DialogFactory.chooseDirectory(
-                        getUIController(),
-                        folderRepository.getFoldersBasedir(), true);
-                    if (files == null || files.isEmpty()) {
+                    // Benutzereingabe für neuen Ordnernamen
+                    String folderName = DialogFactory.inputDialog(
+                            getController(),
+                            Translation.get("dialog.new_folder_name.title"),
+                            Translation.get("dialog.new_folder_name.prompt"),
+                            "");
+
+                    if (isBlank(folderName)) {
+                        return;
+                    }
+                    folderName = folderName.trim();
+                    Path baseDir = folderRepository.getFoldersBasedir();
+                    Path newFolderPath = baseDir.resolve(folderName);
+
+                    if (syncFolderWithSamePath(newFolderPath) || ownsFolderWithSameName(folderName)) {
+                        DialogFactory.genericDialog(
+                                getController(),
+                                Translation.get("general.directory"),
+                                Translation.get("general.folder_already_exists", folderName),
+                                GenericDialogType.ERROR);
                         return;
                     }
 
-                    if (isPowerFolderRootSelected(files)) {
-                        return;
-                    }
-
-                    if (isNonPowerFolderRootAllowedSelected(files)) {
-                        return;
-                    }
-
-                    // Setup success panel of this wizard path
-                    FolderCreatePanel createPanel = new FolderCreatePanel(
-                        getController());
-
+                    // Wizard-Setup
+                    FolderCreatePanel createPanel = new FolderCreatePanel(getController());
                     TextPanelPanel successPanel = new TextPanelPanel(
-                        getController(),
-                        Translation.get("wizard.setup_success"),
-                        Translation
-                            .get("wizard.what_to_do.folder_backup_success")
-                            + Translation
-                                .get("wizard.what_to_do.pcs_join"));
+                            getController(),
+                            Translation.get("wizard.setup_success"),
+                            Translation.get("wizard.what_to_do.folder_backup_success") +
+                                    Translation.get("wizard.what_to_do.pcs_join"));
 
-                    PFWizard wizard = new PFWizard(getController(), Translation
-                        .get("wizard.pfwizard.folder_title"));
+                    PFWizard wizard = new PFWizard(getController(),
+                            Translation.get("wizard.pfwizard.folder_title"));
 
                     wizard.getWizardContext().setAttribute(
-                        PFWizard.SUCCESS_PANEL, successPanel);
+                            PFWizard.SUCCESS_PANEL, successPanel);
                     wizard.getWizardContext().setAttribute(
-                        BACKUP_ONLINE_STOARGE,
-                        getController().getOSClient().isBackupByDefault());
+                            BACKUP_ONLINE_STOARGE,
+                            getController().getOSClient().isBackupByDefault());
 
-                    List<FolderCreateItem> folderCreateItems = new ArrayList<FolderCreateItem>();
-
-                    outer : for (Path file : files) {
-                        // Has user already got this folder?
-                        for (Folder folder : folderRepository.getFolders()) {
-                            if (folder.getBaseDirectoryInfo()
-                                .getDiskFile(folderRepository).equals(file))
-                            {
-                                continue outer;
-                            }
-                        }
-                        // Prevent user from syncing the base directory.
-                        if (file.equals(folderRepository
-                            .getFoldersBasedir()))
-                        {
-                            continue;
-                        }
-
-                        // FolderInfo
-                        String name = PathUtils.getSuggestedFolderName(file);
-                        FolderInfo fi = newTopFolder(name);
-
-                        FolderCreateItem item = new FolderCreateItem(file);
-                        item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
-                        item.setFolderInfo(fi);
-                        item.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
+                    FolderInfo folderInfo = newTopFolder(folderName);
+                    FolderCreateItem item = new FolderCreateItem(newFolderPath);
+                    item.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+                    item.setFolderInfo(folderInfo);
+                    item.setArchiveHistory(ConfigurationEntry.DEFAULT_ARCHIVE_VERSIONS
                             .getValueInt(getController()));
-                        folderCreateItems.add(item);
 
-                    }
+                    List<FolderCreateItem> folderCreateItems = new ArrayList<>();
+                    folderCreateItems.add(item);
 
-                    if (folderCreateItems.isEmpty()) {
-                        return;
-                    }
-
-                    // Wizard will also suspend new folder search.
-                    wizard.getWizardContext().setAttribute(FOLDER_CREATE_ITEMS,
-                        folderCreateItems);
+                    wizard.getWizardContext().setAttribute(FOLDER_CREATE_ITEMS, folderCreateItems);
                     wizard.open(createPanel);
-                    // Wizard unsuspends new folder search.
 
                 } finally {
                     try {
-                        // Unsuspend new folder search in the FolderRepository.
                         folderRepository.setSuspendNewFolderSearch(false);
                     } catch (Exception ex) {
-                        // Nothing much can be done now.
+                        // Ignore
                     }
                 }
             }
         });
     }
 
-    /**
-     * Is user is only allowed to select folder base subdirs and selects
-     * outside? Disallow (#2226).
-     *
-     * @param files
-     * @return
-     */
-    private boolean isNonPowerFolderRootAllowedSelected(List<Path> files) {
-        if (ConfigurationEntry.FOLDER_CREATE_IN_BASEDIR_ONLY
-            .getValueBoolean(getController()))
-        {
-            for (Path file : files) {
-                if (!file.getParent().equals(
-                    getController().getFolderRepository().getFoldersBasedir()))
-                {
-                    String title = Translation
-                        .get("general.directory");
-                    String message = Translation.get(
-                        "general.outside_basedir_error.text", getController()
-                            .getFolderRepository().getFoldersBasedirString());
-                    DialogFactory.genericDialog(getController(), title,
-                        message, GenericDialogType.ERROR);
-                    return true;
-                }
+    private boolean ownsFolderWithSameName(String folderName) {
+        Account account = getController().getOSClient().getAccount();
+        if (!account.isValid()) {
+            return false;
+        }
+        for (FolderInfo ownerFolderInfo : getController().getOSClient().getAccount().getFoldersCharged()) {
+            if (folderName.equalsIgnoreCase(ownerFolderInfo.getName())) {
+                return true;
             }
         }
         return false;
     }
 
-    /**
-     * Is one of the files the PowerFolder base directory? A bad thing if true.
-     * Should be managing a subdirectory of this.
-     *
-     * @param files
-     * @return
-     */
-    private boolean isPowerFolderRootSelected(List<Path> files) {
-        Path baseDir = getController().getFolderRepository().getFoldersBasedir();
-        for (Path file : files) {
-            if (file.equals(baseDir)) {
-                String title = Translation.get("general.directory");
-                String message =  Translation.get("general.basedir_error.text");
-                DialogFactory.genericDialog(getController(), title, message, GenericDialogType.ERROR);
-                return true;
-            }
-        }
-        return false;
+    private boolean syncFolderWithSamePath(Path newFolderPath) {
+        FolderRepository folderRepository = getController().getFolderRepository();
+        return folderRepository.findExistingFolder(newFolderPath) != null;
     }
 }

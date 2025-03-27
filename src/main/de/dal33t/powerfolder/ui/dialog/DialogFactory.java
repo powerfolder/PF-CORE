@@ -25,9 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 
@@ -60,10 +58,10 @@ public class DialogFactory {
      * @return the chosen directory
      */
     public static List<Path> chooseDirectory(UIController uiController,
-        String initialDirectoryName, boolean multiSelect)
+                                             String initialDirectoryName, boolean multiSelect)
     {
         Path file = initialDirectoryName != null ? Paths.get(
-            initialDirectoryName) : null;
+                initialDirectoryName) : null;
         return chooseDirectory(uiController, file, multiSelect);
     }
 
@@ -78,7 +76,7 @@ public class DialogFactory {
      * @return the chosen directory
      */
     public static List<Path> chooseDirectory(UIController uiController,
-        Path initialDirectory, boolean multiSelect) {
+                                             Path initialDirectory, boolean multiSelect) {
         return chooseDirectory(uiController, initialDirectory, null, multiSelect);
     }
     /**
@@ -150,11 +148,11 @@ public class DialogFactory {
      *            a {@link GenericDialogType}
      */
     public static void genericDialog(Controller controller, String title,
-        String message, GenericDialogType type)
+                                     String message, GenericDialogType type)
     {
 
         genericDialog(controller, title, message, new String[]{Translation
-            .get("general.ok")}, 0, type);
+                .get("general.ok")}, 0, type);
     }
 
     /**
@@ -173,7 +171,7 @@ public class DialogFactory {
      *            the throwable that is to be displayed in verbose mode
      */
     public static void genericDialog(Controller controller, String title,
-        String message, boolean verbose, Throwable throwable)
+                                     String message, boolean verbose, Throwable throwable)
     {
 
         String innerText;
@@ -184,7 +182,7 @@ public class DialogFactory {
         }
 
         genericDialog(controller, title, innerText, new String[]{Translation
-            .get("general.ok")}, 0, GenericDialogType.ERROR);
+                .get("general.ok")}, 0, GenericDialogType.ERROR);
     }
 
     /**
@@ -205,11 +203,11 @@ public class DialogFactory {
      * @return the index of the selected option button, -1 if dialog cancelled
      */
     public static int genericDialog(Controller controller, String title,
-        String message, String[] options, int defaultOption,
-        GenericDialogType type)
+                                    String message, String[] options, int defaultOption,
+                                    GenericDialogType type)
     {
         return genericDialog(controller, title, message, options,
-            defaultOption, null, type);
+                defaultOption, null, type);
     }
 
     /**
@@ -232,14 +230,14 @@ public class DialogFactory {
      * @return the index of the selected option button, -1 if dialog cancelled
      */
     public static int genericDialog(Controller controller, String title,
-        String message, String[] options, int defaultOption, String helpLink,
-        GenericDialogType type)
+                                    String message, String[] options, int defaultOption, String helpLink,
+                                    GenericDialogType type)
     {
 
         PanelBuilder panelBuilder = LinkedTextBuilder
-            .build(controller, message);
+                .build(controller, message);
         return genericDialog(controller, title, panelBuilder.getPanel(),
-            options, defaultOption, helpLink, type);
+                options, defaultOption, helpLink, type);
     }
 
     /**
@@ -261,11 +259,11 @@ public class DialogFactory {
      * @return the index of the selected option button, -1 if dialog cancelled
      */
     public static int genericDialog(Controller controller, String title,
-        JPanel panel, String[] options, int defaultOption,
-        GenericDialogType type)
+                                    JPanel panel, String[] options, int defaultOption,
+                                    GenericDialogType type)
     {
         return genericDialog(controller, title, panel, options, defaultOption,
-            null, type);
+                null, type);
     }
 
     /**
@@ -287,16 +285,16 @@ public class DialogFactory {
      * @return the index of the selected option button, -1 if dialog cancelled
      */
     public static int genericDialog(Controller controller, String title,
-        JPanel panel, String[] options, int defaultOption, String helpLink,
-        GenericDialogType type)
+                                    JPanel panel, String[] options, int defaultOption, String helpLink,
+                                    GenericDialogType type)
     {
         JButton helpButton = null;
         if (helpLink != null) {
             helpButton = Help.createWikiLinkButton(controller, helpLink);
         }
         GenericDialog dialog = new GenericDialog(controller.getUIController()
-            .getActiveFrame(), title, panel, type, options, defaultOption,
-            null, helpButton);
+                .getActiveFrame(), title, panel, type, options, defaultOption,
+                null, helpButton);
         return dialog.display();
     }
 
@@ -321,14 +319,14 @@ public class DialogFactory {
      *         selection and selected button index (-1 if dialog cancelled)
      */
     public static NeverAskAgainResponse genericDialog(Controller controller,
-        String title, String message, String[] options, int defaultOption,
-        GenericDialogType type, String neverAskAgainMessage)
+                                                      String title, String message, String[] options, int defaultOption,
+                                                      GenericDialogType type, String neverAskAgainMessage)
     {
 
         PanelBuilder panelBuilder = LinkedTextBuilder
-            .build(controller, message);
+                .build(controller, message);
         return genericDialog(controller, title, panelBuilder.getPanel(),
-            options, defaultOption, type, neverAskAgainMessage);
+                options, defaultOption, type, neverAskAgainMessage);
     }
 
     /**
@@ -353,14 +351,26 @@ public class DialogFactory {
      *         selection and selected button index (-1 if dialog cancelled)
      */
     public static NeverAskAgainResponse genericDialog(Controller controller,
-        String title, JPanel panel, String[] options, int defaultOption,
-        GenericDialogType type, String neverAskAgainMessage)
+                                                      String title, JPanel panel, String[] options, int defaultOption,
+                                                      GenericDialogType type, String neverAskAgainMessage)
     {
         GenericDialog dialog = new GenericDialog(controller.getUIController()
-            .getActiveFrame(), title, panel, type, options, defaultOption,
-            neverAskAgainMessage, null);
+                .getActiveFrame(), title, panel, type, options, defaultOption,
+                neverAskAgainMessage, null);
 
         return new NeverAskAgainResponse(dialog.display(), dialog
-            .isNeverAskAgain());
+                .isNeverAskAgain());
+    }
+
+    public static String inputDialog(Controller controller, String title, String message, String defaultValue) {
+        return (String) JOptionPane.showInputDialog(
+                controller.getUIController().getActiveFrame(),
+                message,
+                title,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                defaultValue
+        );
     }
 }
