@@ -43,6 +43,7 @@ import de.dal33t.powerfolder.ui.wizard.FolderCreateItem;
 import de.dal33t.powerfolder.ui.wizard.FolderCreatePanel;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.ui.wizard.TextPanelPanel;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -81,7 +82,7 @@ public class NewFolderAction extends BaseAction {
                     }
                     folderName = folderName.trim();
                     Path baseDir = folderRepository.getFoldersBasedir();
-                    Path newFolderPath = baseDir.resolve(folderName);
+                    Path newFolderPath = baseDir.resolve(PathUtils.removeInvalidFilenameChars(folderName));
 
                     if (syncFolderWithSamePath(newFolderPath) || ownsFolderWithSameName(folderName)) {
                         DialogFactory.genericDialog(
