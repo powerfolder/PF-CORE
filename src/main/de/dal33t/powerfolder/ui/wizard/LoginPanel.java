@@ -426,7 +426,7 @@ public class LoginPanel extends PFWizardPanel {
         }
 
         public void login(ServerClientEvent event) {
-            if (idPSelectBox.isBrowserLoginOpened()) {
+            if (idPSelectBox != null && idPSelectBox.isBrowserLoginOpened()) {
                 JDialog diag = getWizardDialog();
                 diag.setVisible(false);
                 diag.dispose();
