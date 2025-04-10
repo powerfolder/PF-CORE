@@ -267,7 +267,6 @@ public class IOProvider extends PFComponent {
             }
             if (newPing) {
                 // Send new ping
-                logInfo(conHan + ": ping");
                 conHan.sendMessagesAsynchron(new Ping(-1));
             }
             return true;
