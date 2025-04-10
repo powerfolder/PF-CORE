@@ -36,6 +36,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
     private static final Logger LOG = Logger.getLogger(IdPSelectionBox.class.getName());
     private final Controller controller;
     private final List<String> idPList;
+    private final List<String> samlIdPList;
     private boolean listLoaded;
     private boolean browserLoginOpened;
 
@@ -45,9 +46,16 @@ public class IdPSelectionBox extends StyledComboBox<String> {
 
         this.controller = controller;
         this.idPList = new ArrayList<>();
+        this.samlIdPList = new ArrayList<>();
         this.listLoaded = false;
         setEnabled(false);
         new Initializer().execute();
+    }
+
+    public boolean isSAMLIDPSelected() {
+        int index = getSelectedIndex();
+        String entityID = idPList.get(index);
+        return entityID != null && samlIdPList.contains(entityID);
     }
 
     private class Initializer extends SwingWorker<Void, Void> {
@@ -137,6 +145,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
 
                 addEntry(name);
                 idPList.add(entity);
+                samlIdPList.add(entity);
 
                 if (!lastIdPSet && entity.equals(lastIdP)) {
                     setSelectedIndex(getItemCount() - 1);
@@ -233,7 +242,7 @@ public class IdPSelectionBox extends StyledComboBox<String> {
 
         DialogFactory.genericDialog(controller, Translation.get("login.saml.browser_login_ongoing.title"),
                 Translation.get("login.saml.browser_login_ongoing.message"), new String[]{Translation
-                .get("general.cancel")}, 0, GenericDialogType.INFO);
+                .get("general.ok")}, 0, GenericDialogType.INFO);
     }
 
     private void retrieveECP(String entityID) {
