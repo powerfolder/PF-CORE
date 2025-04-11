@@ -1178,13 +1178,6 @@ public class ServerClient extends PFComponent {
                             } else {
                                 ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(config);
                             }
-
-                            webdavToken = requestWebDAVToken();
-                            if (isNotBlank(webdavToken) && !Token.isExpired(webdavToken)) {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.setValue(config, webdavToken);
-                            } else {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.removeValue(config);
-                            }
                         }
                         if (StringUtils.isBlank(username)) {
                             username = accountDetails.getAccount().getUsername();
@@ -1192,6 +1185,15 @@ public class ServerClient extends PFComponent {
                         saveLastKnowLogin(username, passwordObf);
                     } else {
                         saveLastKnowLogin(username, null);
+                    }
+
+                    if (Token.isExpired(getWebDavToken())) {
+                        webdavToken = requestWebDAVToken();
+                        if (isNotBlank(webdavToken) && !Token.isExpired(webdavToken)) {
+                            ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.setValue(config, webdavToken);
+                        } else {
+                            ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.removeValue(config);
+                        }
                     }
 
                     // Fire login success
