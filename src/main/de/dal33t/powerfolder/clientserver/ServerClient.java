@@ -1169,7 +1169,7 @@ public class ServerClient extends PFComponent {
                         }
                     }
                     // PFC-2548
-                    if (isKeepLoggedIn() || isShibbolethLogin()) {
+                    if (isKeepLoggedIn()) {
                         if (StringUtils.isBlank(tokenSecret)) {
                             tokenSecret = requestAndSaveToken();
                             if (isNotBlank(tokenSecret) && !Token.isExpired(tokenSecret)) {
