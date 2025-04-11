@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.*;
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
@@ -42,6 +43,12 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @version $Revision: 1.5 $
  */
 public class FileListTest extends TestCase {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Feature.setupForTests();
+    }
 
     public void testListSplitting() {
         testListSplitting(
