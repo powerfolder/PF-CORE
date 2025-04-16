@@ -23,10 +23,7 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.message.*;
-import de.dal33t.powerfolder.util.Range;
-import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.Validate;
+import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.delta.FilePartsRecord;
 
 import java.util.*;
@@ -383,6 +380,7 @@ public class Download extends Transfer {
         }
         shutdown();
         getTransferManager().downloadBroken(Download.this, problem, message);
+        logWarning(this + ": testDeltaFileChangedMultiple setBroken: " + problem + ": " + message, new StackDump());
     }
 
     private long lastBrokenCheck;
