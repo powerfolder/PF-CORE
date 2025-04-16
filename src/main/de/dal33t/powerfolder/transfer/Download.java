@@ -380,6 +380,7 @@ public class Download extends Transfer {
         }
         shutdown();
         getTransferManager().downloadBroken(Download.this, problem, message);
+        logWarning(this + ": testDeltaFileChangedMultiple setBroken: " + problem + ": " + message, new StackDump());
     }
 
     private long lastBrokenCheck;
