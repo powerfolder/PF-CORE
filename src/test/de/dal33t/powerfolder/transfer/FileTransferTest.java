@@ -2033,6 +2033,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testDeltaFileChangedMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
+            LoggingManager.setConsoleLogging(Level.WARNING);
             testDeltaFileChanged();
             tearDown();
             setUp();
