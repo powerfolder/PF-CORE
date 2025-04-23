@@ -2275,7 +2275,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        logInfo(newFolderInfo + ": Rename done");
+        logFine(newFolderInfo + ": Rename done");
         return true;
     }
 
