@@ -71,7 +71,6 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     /**
      * PFC-3136: Version number of this folder
      */
-    @Transient
     private int version;
 
     /**

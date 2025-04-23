@@ -236,7 +236,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.NONE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
