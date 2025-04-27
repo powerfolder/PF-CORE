@@ -234,7 +234,7 @@ public class Folder extends PFComponent {
         Reject.ifNull(folderSettings.getSyncProfile(), "Sync profile is null");
 
         if (fInfo.isLookupInstance()) {
-            currentInfo = FolderInfoFactory.unmarshallExistingFolder(fInfo.id, fInfo.getName(), 0, fInfo.getLocation()).intern();
+            currentInfo = FolderInfoFactory.unmarshallExistingFolder(fInfo.id, fInfo.getName(), 0, fInfo.getParent()).intern();
         } else {
             currentInfo = fInfo.intern(true);
         }
@@ -2288,7 +2288,7 @@ public class Folder extends PFComponent {
         // Also maintain meta folder
         if (!currentInfo.isMetaFolder()) {
             Folder mFolder = getController().getFolderRepository()
-                    .getMetaFolderForParent(currentInfo);
+                    .getMetaFolder(currentInfo);
             if (mFolder != null && mFolder != this) {
                 mFolder.maintainFolderDB(removeBefore);
             }
@@ -2793,7 +2793,7 @@ public class Folder extends PFComponent {
         FolderRepository folderRepository = getController()
             .getFolderRepository();
         Folder metaFolder = folderRepository
-            .getMetaFolderForParent(currentInfo);
+            .getMetaFolder(currentInfo);
         if (metaFolder == null) {
             // May happen at startup
             logFine("Could not yet find metaFolder for " + currentInfo);
@@ -3503,7 +3503,7 @@ public class Folder extends PFComponent {
         }
 
         Folder metaFolder = getController().getFolderRepository()
-            .getMetaFolderForParent(currentInfo);
+            .getMetaFolder(currentInfo);
         if (metaFolder == null) {
             logWarning("Could not find metaFolder for " + currentInfo);
             return;
@@ -4245,7 +4245,7 @@ public class Folder extends PFComponent {
 
             if (!currentInfo.isMetaFolder()) {
                 Folder metaFolder = getController().getFolderRepository()
-                    .getMetaFolderForParent(currentInfo);
+                    .getMetaFolder(currentInfo);
                 if (metaFolder != null) {
                     metaFolder.checkIfDeviceDisconnected();
                 }
@@ -4873,7 +4873,7 @@ public class Folder extends PFComponent {
         if (onDisk == null
                 || !onDisk.equals(currentInfo)
                 || onDisk.getVersion() < currentInfo.getVersion()
-                || !Util.equals(onDisk.getLocation(), currentInfo.getLocation())
+                || !Util.equals(onDisk.getParent(), currentInfo.getParent())
                 || !onDisk.getName().equals(currentInfo.getName())) {
             FolderInfoFactory.writeFolderInfo(this);
         }
@@ -5072,7 +5072,7 @@ public class Folder extends PFComponent {
             return hasRead;
         }
         hasRead = hasFolderPermission(member,
-            FolderPermission.read(lookupParentFolderInfo()));
+            FolderPermission.read(lookupContentFolderInfo()));
         hasReadCache.put(member, hasRead);
         return hasRead;
     }
@@ -5086,19 +5086,19 @@ public class Folder extends PFComponent {
             return hasWrite;
         }
         hasWrite = hasFolderPermission(member,
-                FolderPermission.readWrite(lookupParentFolderInfo()));
+                FolderPermission.readWrite(lookupContentFolderInfo()));
         hasWriteCache.put(member, hasWrite);
         return hasWrite;
     }
 
     public boolean hasAdminPermission(Member member) {
         return hasFolderPermission(member,
-            FolderPermission.admin(lookupParentFolderInfo()));
+            FolderPermission.admin(lookupContentFolderInfo()));
     }
 
     public boolean hasOwnerPermission(Member member) {
         return hasFolderPermission(member,
-            FolderPermission.owner(lookupParentFolderInfo()));
+            FolderPermission.owner(lookupContentFolderInfo()));
     }
 
     private boolean hasFolderPermission(Member member,
@@ -5108,11 +5108,11 @@ public class Folder extends PFComponent {
             .hasPermission(member.getInfo(), permission);
     }
 
-    private FolderInfo lookupParentFolderInfo() {
+    private FolderInfo lookupContentFolderInfo() {
         if (!currentInfo.isMetaFolder()) {
             return currentInfo;
         }
-        return currentInfo.lookupParentFolderInfo();
+        return currentInfo.lookupContentFolderInfo();
     }
 
     // General stuff **********************************************************
@@ -5396,7 +5396,7 @@ public class Folder extends PFComponent {
         FolderRepository folderRepository = getController()
             .getFolderRepository();
         Folder metaFolder = folderRepository
-            .getMetaFolderForParent(currentInfo);
+            .getMetaFolder(currentInfo);
         if (metaFolder == null) {
             logWarning("Could not find metaFolder for " + currentInfo);
             return;

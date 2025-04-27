@@ -613,7 +613,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         foInfo = lookupInstance(folderId, folderName);
                     } else if (!foInfo.getId().equals(folderId)) {
                         String folderIdFromFile = foInfo.getId();
-                        foInfo = unmarshallExistingFolder(folderId, folderName, foInfo.getVersion(), foInfo.getLocation());
+                        foInfo = unmarshallExistingFolder(folderId, folderName, foInfo.getVersion(), foInfo.getParent());
                         logInfo(foInfo + ": Adjusted ID, found in 'FolderInfo' meta-data file: " + folderIdFromFile + ". Set from config to " + foInfo.getId());
                     }
 
@@ -1421,7 +1421,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
 
             // Shutdown meta folder as well
-            Folder metaFolder = getMetaFolderForParent(folder.getInfo());
+            Folder metaFolder = getMetaFolder(folder.getInfo());
             if (metaFolder != null) {
                 metaFolders.remove(metaFolder.getInfo());
                 metaFolders.remove(folder.getInfo());
@@ -2247,7 +2247,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.updateInfo(newFolderInfo);
         folders.remove(newFolderInfo);
         folders.put(newFolderInfo, folder);
-        Folder metaFolder = getMetaFolderForParent(newFolderInfo);
+        Folder metaFolder = getMetaFolder(newFolderInfo);
         if (metaFolder != null) {
             metaFolder.updateInfo(newFolderInfo.getMetaFolderInfo());
             metaFolders.remove(newFolderInfo);
@@ -2561,26 +2561,26 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * Gets a metaFolder for a FolderInfo. NOTE: the folderInfo is the parent
+     * Gets a metaFolder for a FolderInfo. NOTE: the folderInfo is the content
      * Folder's FolderInfo, NOT the FolderInfo of the metaFolder. BUT the
-     * metaFolders Map key holds the parent FolderInfo
+     * metaFolders Map key holds the content FolderInfo
      *
-     * @param parentFolderInfo parent Folder's FolderInfo
+     * @param contentFolderInfo contents Folder's FolderInfo
      * @return the meta folder.
      */
-    public Folder getMetaFolderForParent(FolderInfo parentFolderInfo) {
-        return metaFolders.get(parentFolderInfo);
+    public Folder getMetaFolder(FolderInfo contentFolderInfo) {
+        return metaFolders.get(contentFolderInfo);
     }
 
     /**
      * @param metaFolderInfo
-     * @return the parent folder for a metaFolder's info.
+     * @return the content folder for a metaFolder's info.
      */
-    public Folder getParentFolder(FolderInfo metaFolderInfo) {
+    public Folder getContentFolder(FolderInfo metaFolderInfo) {
         if (!metaFolderInfo.isMetaFolder()) {
             return null;
         }
-        return getFolder(metaFolderInfo.lookupParentFolderInfo());
+        return getFolder(metaFolderInfo.lookupContentFolderInfo());
     }
 
     // Callbacks from ServerClient on login ***********************************

@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
@@ -33,9 +34,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Index;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +43,7 @@ import java.util.logging.Logger;
 
 import static de.dal33t.powerfolder.light.FolderInfoFactory.lookupInstance;
 import static de.dal33t.powerfolder.light.FolderInfoFactory.unmarshallExistingTopFolder;
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 
 /**
  * A Folder hash info
@@ -61,7 +61,8 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NAME = "name";
     public static final String PROPERTYNAME_VERSION = "version";
-    public static final String PROPERTYNAME_PARENT = "parent";
+    public static final String PROPERTYNAME_PARENT_FOLDER = "parentFolder";
+    public static final String PROPERTYNAME_PARENT_PATH = "parentPath";
 
     @Index(name="IDX_FOLDER_NAME")
     private String name;
@@ -73,11 +74,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     private int version;
 
-    /**
-     * PF-1790: The location of this folder in another folder. null if top level
-     */
-    @Transient
-    private DirectoryInfo location;
+    @ManyToOne
+    @JoinColumn(name = "parentFolderInfo_id")
+    private FolderInfo parentFolder;
+    @Column(length = 1024)
+    private String parentPath;
 
     /**
      * The cached hash info.
@@ -88,11 +89,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         // NOP - for Hibernate
     }
 
-    FolderInfo(String name, String id, int version, DirectoryInfo location) {
+    FolderInfo(String name, String id, int version, DirectoryInfo parent) {
         this.name = name;
         this.id = id;
         this.version = version;
-        this.location = location;
+        setParent(parent);
         hash = hashCode0();
     }
 
@@ -121,7 +122,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * @return the lookup {@link FolderInfo} of the PARENT folder if this is a meta
      *         folder.
      */
-    public FolderInfo lookupParentFolderInfo() {
+    public FolderInfo lookupContentFolderInfo() {
         if (!isMetaFolder()) {
             return this;
         }
@@ -169,12 +170,46 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return version;
     }
 
+    private void setParent(DirectoryInfo parent) {
+        if (parent != null) {
+            Reject.ifNull(parent.getRelativeName(), "Parent relative name / path must not be null");
+            this.parentFolder = parent.getFolderInfo();
+            this.parentPath = parent.getRelativeName();
+        } else {
+            this.parentFolder = null;
+            this.parentPath = null;
+        }
+    }
+
+    /**
+     * @return the parent under which the folder is located.
+     * e.g. if the structure is "subdir/is/here/subfolder" this would return "subdir/is/here"
+     */
+    public DirectoryInfo getParent() {
+        if (parentFolder == null) {
+            return null;
+        }
+        return FileInfoFactory.lookupDirectory(parentFolder, parentPath);
+    }
+
+    /**
+     * @return the location under which the folder is located.
+     * e.g. if the structure is "subdir/is/here/subfolder" this would return "subdir/is/here/subfolder"
+     */
     public DirectoryInfo getLocation() {
-        return location;
+        if (parentFolder == null) {
+            return null;
+        }
+        String path = parentPath;
+        if (isNotBlank(path)) {
+            path += '/';
+        }
+        path += name;
+        return FileInfoFactory.lookupDirectory(parentFolder, path);
     }
 
     public boolean isSubFolder() {
-        return location != null;
+        return parentFolder != null;
     }
 
     /**
@@ -267,7 +302,15 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (isLookupInstance()) {
             return "Folder " + name + '/' + id + '/' + "L";
         }
-        return "Folder " + name + '/' + id + '/' + version + (location != null ? "<-" + location : "");
+        String prefix = "";
+        if (parentFolder != null) {
+            prefix += "(" + parentFolder.name;
+            if (isNotBlank(parentPath)) {
+                prefix += "/" + parentPath;
+            }
+            prefix += ")/";
+        }
+        return "Folder " + prefix + name + '/' + id + '/' + version;
     }
 
     // Serialization optimization *********************************************
@@ -298,7 +341,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         }
         version = in.readInt();
         if (in.readBoolean()) {
-            location = (DirectoryInfo) FileInfoFactory.readExt(in);
+            DirectoryInfo parent = (DirectoryInfo) FileInfoFactory.readExt(in);
+            setParent(parent);
+        } else {
+            setParent(null);
         }
         // LOG.log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
     }
@@ -308,7 +354,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     public void writeExternal(ObjectOutput out, boolean includeVersionAndParent) throws IOException {
-        boolean requiresNewProtocol = version > 0 || location != null;
+        boolean requiresNewProtocol = version > 0 || parentFolder != null;
         if (includeVersionAndParent) {
             includeVersionAndParent = requiresNewProtocol;
         } else if (requiresNewProtocol && !isMetaFolder()) {
@@ -328,9 +374,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         }
         // LOG.log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
         out.writeInt(version);
-        if (location != null) {
+        if (parentPath != null) {
             out.writeBoolean(true);
-            location.writeExternal(out);
+            getParent().writeExternal(out);
         } else {
             out.writeBoolean(false);
         }
@@ -420,8 +466,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         try (InputStream fin = Files.newInputStream(file)) {
             ObjectInputStream oin = new ObjectInputStream(
                     new BufferedInputStream(fin));
-            FolderInfo folderInfo = (FolderInfo) oin.readObject();
-            return folderInfo;
+            return (FolderInfo) oin.readObject();
         } catch (Exception e) {
             LOG.warning("Unable to read FolderInfo from " + file + ". " + e);
         }
