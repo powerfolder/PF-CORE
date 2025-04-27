@@ -50,10 +50,10 @@ public class MetaFolderTest extends TwoControllerTestCase {
 
         FolderRepository lisaRepo = getContollerLisa().getFolderRepository();
         FolderRepository bartRepo = getContollerBart().getFolderRepository();
-        Folder bartMeta = bartRepo.getMetaFolderForParent(getFolderAtLisa()
+        Folder bartMeta = bartRepo.getMetaFolder(getFolderAtLisa()
             .getInfo());
         final Folder lisaMeta = lisaRepo
-            .getMetaFolderForParent(getFolderAtLisa().getInfo());
+            .getMetaFolder(getFolderAtLisa().getInfo());
         assertTrue(bartMeta.hasReadPermission(getContollerLisa().getMySelf()));
         assertEquals(2, bartMeta.getMembersCount());
         assertEquals(2, lisaMeta.getMembersCount());
@@ -146,11 +146,11 @@ public class MetaFolderTest extends TwoControllerTestCase {
         // Check folders are in repo
         Controller contollerBart = getContollerBart();
         Folder bartMetaFolder = contollerBart.getFolderRepository()
-            .getMetaFolderForParent(bartFolder.getInfo());
+            .getMetaFolder(bartFolder.getInfo());
         assertNotNull("No bart meta folder", bartMetaFolder);
 
         Folder lisaMetaFolder = contollerBart.getFolderRepository()
-            .getMetaFolderForParent(lisaFolder.getInfo());
+            .getMetaFolder(lisaFolder.getInfo());
         assertNotNull("No lisa meta folder", lisaMetaFolder);
 
         // Check sync between bart and lisa still works.
@@ -194,7 +194,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
 
         Controller contollerBart = getContollerBart();
         Folder bartMetaFolder = contollerBart.getFolderRepository()
-            .getMetaFolderForParent(bartFolder.getInfo());
+            .getMetaFolder(bartFolder.getInfo());
         // Wait for Bart's sync patterns to persist.
         TestHelper.waitMilliSeconds(2000);
         scanFolder(bartMetaFolder);

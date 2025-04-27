@@ -57,7 +57,7 @@ public class MetaFolderDataHandler extends PFComponent {
             return;
         }
         Folder parentFolder = getController().getFolderRepository()
-            .getParentFolder(fileInfo.getFolderInfo());
+            .getContentFolder(fileInfo.getFolderInfo());
         if (parentFolder == null) {
             logSevere("Parent folder for meta folder not found: "
                 + fileInfo.getFolderInfo() + '/' + fileInfo.getFolderInfo().id);

@@ -72,14 +72,14 @@ public class FolderJoinTest extends TwoControllerTestCase {
         assertTrue("Bart contains with meta", bartRepo.getFolders(true)
             .contains(getFolderAtBart()));
 
-        Folder bartMeta = bartRepo.getMetaFolderForParent(getFolderAtBart()
+        Folder bartMeta = bartRepo.getMetaFolder(getFolderAtBart()
             .getInfo());
         assertTrue("Bart joined", bartRepo.hasJoinedFolder(bartMeta.getInfo()));
         assertTrue("Bart is meta", bartMeta.getInfo().isMetaFolder());
         assertEquals("Bart profile", SyncProfile.META_FOLDER_SYNC, bartMeta
             .getSyncProfile());
         assertEquals("Bart parent", getFolderAtBart(), bartRepo
-            .getParentFolder(bartMeta.getInfo()));
+            .getContentFolder(bartMeta.getInfo()));
         assertNotNull("Bart info not null", bartRepo.getFolder(bartMeta
             .getInfo()));
         assertEquals("Bart members", 2, bartMeta.getMembersCount());
@@ -96,14 +96,14 @@ public class FolderJoinTest extends TwoControllerTestCase {
         assertTrue("Lisa contains with meta", lisaRepo.getFolders(true)
             .contains(getFolderAtLisa()));
 
-        Folder lisaMeta = lisaRepo.getMetaFolderForParent(getFolderAtLisa()
+        Folder lisaMeta = lisaRepo.getMetaFolder(getFolderAtLisa()
             .getInfo());
         assertTrue("Lisa joined", lisaRepo.hasJoinedFolder(lisaMeta.getInfo()));
         assertTrue("Lisa is meta", lisaMeta.getInfo().isMetaFolder());
         assertEquals("Lisa profile", SyncProfile.META_FOLDER_SYNC, lisaMeta
             .getSyncProfile());
         assertEquals("Lisa parent", getFolderAtLisa(), lisaRepo
-            .getParentFolder(lisaMeta.getInfo()));
+            .getContentFolder(lisaMeta.getInfo()));
         assertNotNull("Lisa info not null", lisaRepo.getFolder(lisaMeta
             .getInfo()));
         assertEquals("Lisa members", 2, lisaMeta.getMembersCount());

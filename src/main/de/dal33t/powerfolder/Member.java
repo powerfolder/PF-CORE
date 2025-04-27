@@ -2161,7 +2161,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                     if (!folderList.joinedMetaFolders) {
                         continue;
                     }
-                    Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
+                    Folder metaFolder = repo.getMetaFolder(folder.getInfo());
                     if (metaFolder == null) {
                         logFine("Unable to join meta folder. Not found " + folder);
                         continue;
@@ -2230,7 +2230,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                                 }
                                 joinedFolders.add(folder.getInfo());
                                 if (folderList.joinedMetaFolders) {
-                                    Folder metaFolder = repo.getMetaFolderForParent(folder.getInfo());
+                                    Folder metaFolder = repo.getMetaFolder(folder.getInfo());
                                     if (metaFolder != null) {
                                         if (metaFolder.join(this)) {
                                             joinedFolders.add(metaFolder.getInfo());
@@ -2369,7 +2369,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             if (fList.joinedMetaFolders && foInfo.isMetaFolder()) {
                 Folder parentFolder = getController().getFolderRepository()
-                    .getParentFolder(folder.getInfo());
+                    .getContentFolder(folder.getInfo());
                 if (parentFolder != null) {
                     foInfo = parentFolder.getInfo();
                 }
