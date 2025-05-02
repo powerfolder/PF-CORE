@@ -715,7 +715,7 @@ public class FileArchiver {
      */
     public void cleanupOldArchiveFiles(Date cleanupDate) {
 
-        log.info("Cleaning up " + archiveDirectory + " for files older than "
+        log.fine("Cleaning up " + archiveDirectory + " for files older than "
                 + cleanupDate);
 
         if (Files.exists(archiveDirectory)) {

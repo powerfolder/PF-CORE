@@ -44,7 +44,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -491,8 +490,6 @@ public abstract class TwoControllerTestCase extends TestCase {
      * After the method is invoked, it is ensured that folders on both
      * controllers have two members. Otherwise the test will fail.
      *
-     * @param foInfo
-     *            the folder to join
      * @param baseDir1
      *            the local base dir for the first controller
      * @param baseDir2
@@ -551,7 +548,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         folder1 = getContollerBart().getFolderRepository().createFolder(foInfo,
             folderSettings1);
         meta1 = getContollerBart().getFolderRepository()
-            .getMetaFolderForParent(folder1.getInfo());
+            .getMetaFolder(folder1.getInfo());
 
         FolderSettings folderSettings2 = new FolderSettings(baseDir2, profile,
             5);
@@ -562,7 +559,7 @@ public abstract class TwoControllerTestCase extends TestCase {
         }
 
         meta2 = getContollerLisa().getFolderRepository()
-            .getMetaFolderForParent(folder2.getInfo());
+            .getMetaFolder(folder2.getInfo());
 
         try {
             // Give them time to join

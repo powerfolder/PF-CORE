@@ -90,7 +90,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                         oldInstance.getId(),
                         foInfo.getName(),
                         oldInstance.getVersion(),
-                        oldInstance.getLocation());
+                        oldInstance.getParent());
             }
 
             INSTANCES.put(foInfo, foInfo);

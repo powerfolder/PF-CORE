@@ -109,7 +109,9 @@ public enum Feature {
     /**
      * PFS-981: Preserve NTFS file owner while updating file from remote
      */
-    NTFS_PRESERVE_FILE_OWNER(false);
+    NTFS_PRESERVE_FILE_OWNER(false),
+
+    FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT();
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 

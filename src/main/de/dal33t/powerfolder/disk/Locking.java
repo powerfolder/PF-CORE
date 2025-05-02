@@ -216,7 +216,7 @@ public class Locking extends PFComponent {
 
     private Path getLockFile(FileInfo fInfo) {
         Folder metaFolder = getController().getFolderRepository()
-                .getMetaFolderForParent(fInfo.getFolderInfo());
+                .getMetaFolder(fInfo.getFolderInfo());
         if (metaFolder == null) {
             logWarning("Meta-folder for " + fInfo.getFolderInfo()
                     + " not found");
@@ -429,7 +429,7 @@ public class Locking extends PFComponent {
         originalFileName = originalFileName.replace(Folder.METAFOLDER_LOCKS_DIR
                 + "/", "");
         originalFileName = originalFileName.replace(LOCK_FILE_EXT, "");
-        FolderInfo origFoInfo = lockFileInfo.getFolderInfo().lookupParentFolderInfo();
+        FolderInfo origFoInfo = lockFileInfo.getFolderInfo().lookupContentFolderInfo();
         return FileInfoFactory.lookupInstance(origFoInfo, originalFileName);
     }
 
@@ -522,7 +522,7 @@ public class Locking extends PFComponent {
 
     private void scanLockFile(FolderInfo foInfo, Path lockFile) {
         Folder metaFolder = getController().getFolderRepository()
-            .getMetaFolderForParent(foInfo);
+            .getMetaFolder(foInfo);
         if (metaFolder == null) {
             logWarning("Meta-folder for " + foInfo + " not found");
             return;

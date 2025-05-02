@@ -83,7 +83,7 @@ public class Group implements Serializable, D2DObject, Auditable {
 
     @CollectionOfElements
     @Type(type = "permissionType")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @Cache(usage = CacheConcurrencyStrategy.NONE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 

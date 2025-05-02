@@ -840,10 +840,8 @@ public class ServerClient extends PFComponent {
      * @return the activation URL for this server.
      */
     public String getActivationURL() {
-        if (!hasWebURL()) {
-            return null;
-        }
-        return getWebURL(Constants.ACTIVATE_URI, false);
+        // Always: my.powerfolder.com
+        return ConfigurationEntry.SERVER_WEB_URL.getDefaultValue() + Constants.ACTIVATE_URI;
     }
 
     /**
@@ -1180,13 +1178,6 @@ public class ServerClient extends PFComponent {
                             } else {
                                 ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(config);
                             }
-
-                            webdavToken = requestWebDAVToken();
-                            if (isNotBlank(webdavToken) && !Token.isExpired(webdavToken)) {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.setValue(config, webdavToken);
-                            } else {
-                                ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.removeValue(config);
-                            }
                         }
                         if (StringUtils.isBlank(username)) {
                             username = accountDetails.getAccount().getUsername();
@@ -1194,6 +1185,15 @@ public class ServerClient extends PFComponent {
                         saveLastKnowLogin(username, passwordObf);
                     } else {
                         saveLastKnowLogin(username, null);
+                    }
+
+                    if (Token.isExpired(getWebDavToken())) {
+                        webdavToken = requestWebDAVToken();
+                        if (isNotBlank(webdavToken) && !Token.isExpired(webdavToken)) {
+                            ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.setValue(config, webdavToken);
+                        } else {
+                            ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.removeValue(config);
+                        }
                     }
 
                     // Fire login success
@@ -1466,6 +1466,10 @@ public class ServerClient extends PFComponent {
                 shibUsername = null;
                 shibToken = null;
                 throw new SecurityException(e);
+            } catch (RuntimeException e) {
+                shibUsername = null;
+                shibToken = null;
+                logWarning(e.getMessage() + ": Fallback to external login.", e);
             }
         }
 

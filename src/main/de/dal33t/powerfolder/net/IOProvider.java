@@ -43,11 +43,10 @@ import java.util.logging.Logger;
  * @version $Revision: 1.5 $
  */
 public class IOProvider extends PFComponent {
-
-    private static final Logger log = Logger.getLogger(IOProvider.class
-        .getName());
+    private static final Logger log = Logger.getLogger(IOProvider.class.getName());
     private static final long CONNECTION_KEEP_ALIVE_TIMOUT_MS = Constants.CONNECTION_KEEP_ALIVE_TIMEOUT * 1000L;
-    private static final long TIME_WITHOUT_KEEPALIVE_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3L;
+    private static final long TIME_WITHOUT_KEEPALIVE_LEGACY_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 3L;
+    private static final long TIME_WITHOUT_KEEPALIVE_WEBSOCKET_UNTIL_PING = CONNECTION_KEEP_ALIVE_TIMOUT_MS / 9L;
 
     /**
      * The threadpool executing the basic I/O connections to the nodes.
@@ -92,7 +91,7 @@ public class IOProvider extends PFComponent {
             Executors.newCachedThreadPool(new NamedThreadFactory("IOThread-")));
         started = true;
         getController().scheduleAndRepeat(new KeepAliveChecker(),
-            TIME_WITHOUT_KEEPALIVE_UNTIL_PING);
+            TIME_WITHOUT_KEEPALIVE_WEBSOCKET_UNTIL_PING);
         relayedConManager.start();
     }
 
@@ -246,9 +245,12 @@ public class IOProvider extends PFComponent {
             if (lastKeepaliveMessage == null) {
                 newPing = true;
             } else {
-                long timeWithoutKeepalive = System.currentTimeMillis()
-                    - lastKeepaliveMessage.getTime();
-                newPing = timeWithoutKeepalive >= TIME_WITHOUT_KEEPALIVE_UNTIL_PING;
+                long timeWithoutKeepalive = System.currentTimeMillis() - lastKeepaliveMessage.getTime();
+                boolean legacy = conHan instanceof AbstractSocketConnectionHandler
+                        || conHan instanceof AbstractUDTSocketConnectionHandler
+                        || conHan instanceof AbstractRelayedConnectionHandler;
+                long timeWithoutKeepaliveAllowed = legacy ? TIME_WITHOUT_KEEPALIVE_LEGACY_UNTIL_PING : TIME_WITHOUT_KEEPALIVE_WEBSOCKET_UNTIL_PING;
+                newPing = timeWithoutKeepalive >= timeWithoutKeepaliveAllowed;
                 if (isFiner()) {
                     logFiner("Keep-alive check. Received last keep alive message "
                         + timeWithoutKeepalive

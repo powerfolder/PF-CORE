@@ -423,7 +423,7 @@ public class LockingTest extends TwoControllerTestCase {
     
     private Path getLockFile(FileInfo fInfo) {
         Folder metaFolder = getContollerBart().getFolderRepository()
-            .getMetaFolderForParent(fInfo.getFolderInfo());
+            .getMetaFolder(fInfo.getFolderInfo());
         if (metaFolder == null) {
             return null;
         }

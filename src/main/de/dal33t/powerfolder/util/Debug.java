@@ -849,6 +849,9 @@ public class Debug {
                 if (te.toString().contains("sun.nio.ch.EPoll.wait")) {
                     return null;
                 }
+                if (te.toString().contains("sun.nio.ch.Net.poll")) {
+                    return null;
+                }
                 if (te.toString().contains("sun.nio.ch.Net.accept")) {
                     return null;
                 }

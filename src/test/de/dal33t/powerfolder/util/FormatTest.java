@@ -274,24 +274,24 @@ public class FormatTest {
     @Test
     public void formatTimeLongTest() {
         Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss\u202faa zzz");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss aa zzz");
 
-        assertEquals(simpleDateFormat.format(date), Format.formatTimeLong(date));
+        assertEquals(simpleDateFormat.format(date), normalize(Format.formatTimeLong(date)));
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.SECOND, 25);
 
-        assertEquals(simpleDateFormat.format(calendar.getTime()), Format.formatTimeLong(calendar.getTime()));
+        assertEquals(simpleDateFormat.format(calendar.getTime()), normalize(Format.formatTimeLong(calendar.getTime())));
     }
 
     @Test
     public void formatTimeLongOtherValuesTest() {
         Date dateBefore1970 = new Date();
         dateBefore1970.setTime(-1000000000);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss\u202faa zzz");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm:ss aa zzz");
 
-        assertEquals(simpleDateFormat.format(dateBefore1970) ,Format.formatTimeLong(dateBefore1970));
+        assertEquals(simpleDateFormat.format(dateBefore1970), normalize(Format.formatTimeLong(dateBefore1970)));
 
     }
 
@@ -304,15 +304,15 @@ public class FormatTest {
     @Test
     public void formatTimeShortTest() {
         Date date = new Date();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm\u202faa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
 
-        assertEquals(simpleDateFormat.format(date), Format.formatTimeShort(date));
+        assertEquals(simpleDateFormat.format(date), normalize(Format.formatTimeShort(date)));
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.MINUTE, 2);
 
-        assertEquals(simpleDateFormat.format(calendar.getTime()), Format.formatTimeShort(calendar.getTime()));
+        assertEquals(simpleDateFormat.format(calendar.getTime()), normalize(Format.formatTimeShort(calendar.getTime())));
     }
 
     @Test
@@ -320,9 +320,9 @@ public class FormatTest {
 
         Date dateBefore1970 = new Date();
         dateBefore1970.setTime(-100000000000000L);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm\u202faa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
 
-        assertEquals(simpleDateFormat.format(dateBefore1970) ,Format.formatTimeShort(dateBefore1970));
+        assertEquals(simpleDateFormat.format(dateBefore1970), normalize(Format.formatTimeShort(dateBefore1970)));
 
     }
 
@@ -414,31 +414,34 @@ public class FormatTest {
     @Test
     public void formatDateShortRenderTodayYesterdayTrueTest() {
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm\u202faa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
         Date today = new Date();
 
-        assertEquals("Today " + simpleDateFormat.format(today), Format.formatDateShort(today, true));
+        assertEquals("Today " + simpleDateFormat.format(today),
+                normalize(Format.formatDateShort(today, true)));
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, 24);
         Date tomorrow = calendar.getTime();
 
-        assertEquals("Tomorrow " + simpleDateFormat.format(tomorrow), Format.formatDateShort(tomorrow, true));
+        assertEquals("Tomorrow " + simpleDateFormat.format(tomorrow),
+                normalize(Format.formatDateShort(tomorrow, true)));
 
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, -24);
         Date yesterday = calendar.getTime();
 
-        assertEquals("Yesterday " + simpleDateFormat.format(yesterday), Format.formatDateShort(yesterday, true));
+        assertEquals("Yesterday " + simpleDateFormat.format(yesterday),
+                normalize(Format.formatDateShort(yesterday, true)));
 
-        SimpleDateFormat format = new SimpleDateFormat("M/d/yy h:mm\u202faa");
+        SimpleDateFormat format = new SimpleDateFormat("M/d/yy h:mm aa");
 
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, 48);
         Date dayAfterTomorrow = calendar.getTime();
 
-        assertEquals(format.format(dayAfterTomorrow), Format.formatDateShort(dayAfterTomorrow));
+        assertEquals(format.format(dayAfterTomorrow), normalize(Format.formatDateShort(dayAfterTomorrow)));
     }
 
     @Test
@@ -446,23 +449,26 @@ public class FormatTest {
         Date date = null;
         assertNull(Format.formatDateShort(date, false));
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M/d/yy h:mm\u202faa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("M/d/yy h:mm aa");
         Date today = new Date();
         today.setTime(-7200000);
-        assertEquals(simpleDateFormat.format(today), Format.formatDateShort(today, false));
+        assertEquals(simpleDateFormat.format(today),
+                normalize(Format.formatDateShort(today, false)));
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, 24);
         Date tomorrow = calendar.getTime();
 
-        assertEquals(simpleDateFormat.format(tomorrow), Format.formatDateShort(tomorrow, false));
+        assertEquals(simpleDateFormat.format(tomorrow),
+                normalize(Format.formatDateShort(tomorrow, false)));
 
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, -24);
         Date yesterday = calendar.getTime();
 
-        assertEquals(simpleDateFormat.format(yesterday), Format.formatDateShort(yesterday, false));
+        assertEquals(simpleDateFormat.format(yesterday),
+                normalize(Format.formatDateShort(yesterday, false)));
 
     }
 
@@ -474,23 +480,26 @@ public class FormatTest {
 
     @Test
     public void formatDateShortTest() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm\u202faa");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("h:mm aa");
         Date today = new Date();
-        assertEquals("Today " + simpleDateFormat.format(today), Format.formatDateShort(today));
+        assertEquals("Today " + simpleDateFormat.format(today), normalize(Format.formatDateShort(today)));
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, 24);
         Date tomorrow = calendar.getTime();
 
-        assertEquals("Tomorrow " + simpleDateFormat.format(tomorrow), Format.formatDateShort(tomorrow));
+        assertEquals("Tomorrow " + simpleDateFormat.format(tomorrow), normalize(Format.formatDateShort(tomorrow)));
 
         calendar.setTime(today);
         calendar.add(Calendar.HOUR, -24);
         Date yesterday = calendar.getTime();
 
-        assertEquals("Yesterday " + simpleDateFormat.format(yesterday), Format.formatDateShort(yesterday));
+        assertEquals("Yesterday " + simpleDateFormat.format(yesterday), normalize(Format.formatDateShort(yesterday)));
+    }
 
+    private String normalize(String s) {
+        return s.replace("\u202F", " ").trim();
     }
 
     @Test

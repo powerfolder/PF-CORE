@@ -63,7 +63,7 @@ public class FolderInfoFactory {
         return new FolderInfo(folder.getInfo().getName(),
                 folder.getInfo().getId(),
                 folder.getInfo().getVersion(),
-                folder.getInfo().getLocation());
+                folder.getInfo().getParent());
     }
 
     public static FolderInfo newTopFolder(String name) {
@@ -75,12 +75,12 @@ public class FolderInfoFactory {
         return new FolderInfo(name, id, 0, null).intern();
     }
 
-    public static FolderInfo newFolder(String name, DirectoryInfo location) {
-        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, location).intern();
+    public static FolderInfo newFolder(String name, DirectoryInfo parent) {
+        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, parent).intern();
     }
 
-    public static FolderInfo newFolder(String id, String name, DirectoryInfo location) {
-        return new FolderInfo(name, id, 0, location).intern();
+    public static FolderInfo newFolder(String id, String name, DirectoryInfo parent) {
+        return new FolderInfo(name, id, 0, parent).intern();
     }
 
     // TODO Really needed?
@@ -96,8 +96,8 @@ public class FolderInfoFactory {
         return new FolderInfo(name, id, version, null).intern();
     }
 
-    public static FolderInfo unmarshallExistingFolder(String id, String name, int version, DirectoryInfo location) {
-        return new FolderInfo(name, id, version, location).intern();
+    public static FolderInfo unmarshallExistingFolder(String id, String name, int version, DirectoryInfo parent) {
+        return new FolderInfo(name, id, version, parent).intern();
     }
 
     public static FolderInfo resolveConflict(FolderInfo originalFolderInfo) {
@@ -112,7 +112,7 @@ public class FolderInfoFactory {
                 originalFolderInfo.getName(),
                 originalFolderInfo.getId(),
                 version,
-                originalFolderInfo.getLocation()
+                originalFolderInfo.getParent()
         ).intern(true);
     }
 
@@ -131,7 +131,7 @@ public class FolderInfoFactory {
                 newName,
                 originalFolderInfo.getId(),
                 version,
-                originalFolderInfo.getLocation()
+                originalFolderInfo.getParent()
         ).intern(true);
     }
 

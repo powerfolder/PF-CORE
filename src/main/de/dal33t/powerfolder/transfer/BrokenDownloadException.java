@@ -27,7 +27,7 @@ public class BrokenDownloadException extends Exception {
     public BrokenDownloadException(TransferProblem problem,
         Exception e)
     {
-        super(e);
+        super(e.getMessage() != null ? e.getMessage() : e.toString(), e);
         this.problem = problem;
     }
 

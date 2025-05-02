@@ -320,15 +320,15 @@ public class LoginPanel extends PFWizardPanel {
             serverURLLabel.setVisible(true);
             serverURLBox.setVisible(true);
         }
-        boolean idpSelected = idPSelectBox == null || idPSelectBox.getSelectedIndex() > 0;
-        boolean unPwFieldVisible = connected && idpSelected;
+        boolean nonSAMLidpSelected = idPSelectBox == null || (idPSelectBox.getSelectedIndex() > 0 && !idPSelectBox.isSAMLIDPSelected());
+        boolean unPwFieldVisible = connected && nonSAMLidpSelected;
         usernameLabel.setVisible(unPwFieldVisible);
         usernameField.setVisible(unPwFieldVisible);
         passwordLabel.setVisible(unPwFieldVisible);
         passwordField.setVisible(unPwFieldVisible);
         // loginButton.setVisible(enabled);
-        rememberPasswordBox.setVisible(connected && changeLoginAllowed && rememberPasswordAllowed);
-        recoverPasswordLabel.setVisible(connected && client.supportsRecoverPassword());
+        rememberPasswordBox.setVisible(connected && changeLoginAllowed && rememberPasswordAllowed && unPwFieldVisible);
+        recoverPasswordLabel.setVisible(connected && client.supportsRecoverPassword() && unPwFieldVisible);
         createAccountLabel.setVisible(client.supportsWebRegistration());
 
         connectingLabel.setVisible(!connected);
@@ -426,7 +426,7 @@ public class LoginPanel extends PFWizardPanel {
         }
 
         public void login(ServerClientEvent event) {
-            if (idPSelectBox.isBrowserLoginOpened()) {
+            if (idPSelectBox != null && idPSelectBox.isBrowserLoginOpened()) {
                 JDialog diag = getWizardDialog();
                 diag.setVisible(false);
                 diag.dispose();

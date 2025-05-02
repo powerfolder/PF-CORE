@@ -319,39 +319,50 @@ public class RemoteCommandManager extends PFComponent implements Runnable {
             }
         }
 
-        // Send response
-        if (token != null) {
-            if (getController().isUIEnabled()) {
-                getController().getUIController().getAgreeToSListener().setAutoOpenBrowser(false);
-            }
-            if (getController().getOSClient().login(token).isValid()) {
+        try {
+            // Send response
+            if (token != null) {
+                if (getController().isUIEnabled()) {
+                    getController().getUIController().getAgreeToSListener().setAutoOpenBrowser(false);
+                }
+
                 if (getController().getOSClient().isKeepLoggedIn()) {
                     ConfigurationEntry.SERVER_CONNECT_TOKEN.setValue(getController(), token);
                 } else {
                     ConfigurationEntry.SERVER_CONNECT_TOKEN.removeValue(getController());
                 }
-                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
-                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
                 getController().saveConfig();
 
-                String redirectUrl = LOGIN_URI + "?" + SUCCESS_PARAM;
-                if (getController().getOSClient().getAccountDetails().needsToAgreeToS()) {
-                    redirectUrl = getController().getOSClient().getLoginURLWithCredentials();
+                // TIMEOUT
+                // Save token before login
+                if (getController().getOSClient().login(token).isValid()) {
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.removeValue(getController());
+                    ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.removeValue(getController());
+                    getController().saveConfig();
+
+                    String redirectUrl = LOGIN_URI + "?" + SUCCESS_PARAM;
+                    if (getController().getOSClient().getAccountDetails().needsToAgreeToS()) {
+                        redirectUrl = getController().getOSClient().getLoginURLWithCredentials();
+                    }
+                    redirectLoginSuccess(out, redirectUrl);
+                } else {
+                    loginFailed(out);
                 }
-                redirectLoginSuccess(out, redirectUrl);
+            } else if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + SUCCESS_PARAM)) {
+                loginSuccess(out);
             } else {
                 loginFailed(out);
             }
+        } catch (RuntimeException e) {
+            logWarning(e);
+            loginFailed(out);
+        } finally {
             if (getController().isUIEnabled()) {
                 getController().getUIController().getAgreeToSListener().setAutoOpenBrowser(true);
             }
-        } else if (line.startsWith("GET ") && line.contains(LOGIN_URI + "?" + SUCCESS_PARAM)) {
-            loginSuccess(out);
-        } else {
-            loginFailed(out);
+            out.close();
         }
 
-        out.close();
     }
 
     private static void redirectLoginSuccess(OutputStream out, String redirectUrl) throws IOException {

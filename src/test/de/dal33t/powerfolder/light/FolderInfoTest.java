@@ -2,7 +2,6 @@ package de.dal33t.powerfolder.light;
 
 import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.util.IdGenerator;
 
 public class FolderInfoTest extends TestCase {
 
@@ -21,12 +20,12 @@ public class FolderInfoTest extends TestCase {
         assertTrue(metaFolder.getName(),
             metaFolder.getName().contains(Constants.METAFOLDER_ID_PREFIX));
 
-        assertEquals(foInfo, metaFolder.lookupParentFolderInfo());
+        assertEquals(foInfo, metaFolder.lookupContentFolderInfo());
         assertEquals(metaFolder, foInfo.getMetaFolderInfo());
 
         // Fallback stuff if something really is wrong in the code:
         assertEquals(metaFolder, metaFolder.getMetaFolderInfo());
-        assertEquals(foInfo, foInfo.lookupParentFolderInfo());
+        assertEquals(foInfo, foInfo.lookupContentFolderInfo());
         assertFalse(metaFolder.equals(foInfo));
     }
 

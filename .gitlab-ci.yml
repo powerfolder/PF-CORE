@@ -7,7 +7,8 @@ test-Linux:
     - Linux
     - Tests
   script:
-    ant run-tests
+    - pkill -f java || true
+    - ant run-tests
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml

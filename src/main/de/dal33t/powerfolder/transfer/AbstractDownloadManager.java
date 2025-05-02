@@ -439,6 +439,8 @@ public abstract class AbstractDownloadManager extends PFComponent implements
             throw new BrokenDownloadException(
                 TransferProblem.FILE_NOT_FOUND_EXCEPTION, e);
         } catch (IOException e) {
+            // ...
+            logWarning(this + ": testDeltaFileChangedMultiple BrokenDownloadException: " + e, e);
             throw new BrokenDownloadException(TransferProblem.IO_EXCEPTION, e);
         } catch (InterruptedException e) {
             throw e;
@@ -847,7 +849,7 @@ public abstract class AbstractDownloadManager extends PFComponent implements
 
         metaDataBaseDir = getFileInfo()
             .getFolder(getController().getFolderRepository())
-            .getSystemSubDir().resolve("transfers").toAbsolutePath();
+            .getSystemSubDir().resolve(PathUtils.TRANSFERS_DIR_NAME).toAbsolutePath();
         if (Files.notExists(metaDataBaseDir)) {
             try {
                 Files.createDirectories(metaDataBaseDir);

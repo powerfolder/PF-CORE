@@ -252,16 +252,12 @@ public class FolderScanner extends PFComponent {
             // Remaining files = deleted! But only if they are not already
             // flagged
             // as deleted or if the could not be scanned
-            for (Iterator<FileInfo> it = remaining.values().iterator(); it
-                .hasNext();)
-            {
+            for (Iterator<FileInfo> it = remaining.values().iterator(); it.hasNext();) {
                 FileInfo fInfo = it.next();
                 if (fInfo.isDeleted()) {
                     // This file was already flagged as deleted,
                     // = not a freshly deleted file
                     it.remove();
-                } else {
-                    logFine("Deleted file detected: " + fInfo.toDetailString());
                 }
             }
 
@@ -275,6 +271,7 @@ public class FolderScanner extends PFComponent {
                     FileInfo deletedFileInfo = FileInfoFactory.deletedFile(
                             fileInfo, getController().getMySelf().getInfo(),
                             getController().getMySelf().getAccountInfo(), new Date());
+                    currentScanningFolder.logFileOperation("DELETED", fileInfo, deletedFileInfo);
                     currentScanResult.deletedFiles.add(deletedFileInfo);
                 } catch (RuntimeException e) {
                     logWarning(fileInfo.toDetailString() + ": Problem while marking as deleted: " + e);
@@ -607,6 +604,7 @@ public class FolderScanner extends PFComponent {
                     fileToScan, null, getController().getMySelf().getInfo(),
                     getController().getMySelf().getAccountInfo(), null,
                     directory, null);
+                currentScanningFolder.logFileOperation("ADDED", null, info);
                 currentScanResult.newFiles.add(info);
                 if (isFiner()) {
                     logFiner("New found: " + filename + " @ " + fileToScan + ". Result: " + info.toDetailString()

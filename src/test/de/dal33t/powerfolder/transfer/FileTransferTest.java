@@ -54,6 +54,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
+import static de.dal33t.powerfolder.util.PathUtils.TRANSFERS_DIR_NAME;
+
 /**
  * Tests file transfer between nodes.
  *
@@ -1645,13 +1647,8 @@ public class FileTransferTest extends TwoControllerTestCase {
                 try (DirectoryStream<Path> stream = Files
                         .newDirectoryStream(
                                 getFolderAtLisa().getSystemSubDir().resolve(
-                                        "transfers"), new Filter<Path>() {
-                                    @Override
-                                    public boolean accept(Path dir) {
-                                        return dir.getFileName().toString()
-                                                .contains("(incomplete) ");
-                                    }
-                                })){
+                                        TRANSFERS_DIR_NAME), dir -> dir.getFileName().toString()
+                                                .contains("(incomplete) "))){
                     return getContollerLisa().getTransferManager()
                         .countActiveDownloads() > 0
                         && stream.iterator().hasNext();
@@ -1672,14 +1669,9 @@ public class FileTransferTest extends TwoControllerTestCase {
         final Path incompleteFile;
         try (DirectoryStream<Path> stream = Files
                 .newDirectoryStream(
-                        getFolderAtLisa().getSystemSubDir().resolve("transfers"),
-                        new Filter<Path>() {
-                            @Override
-                            public boolean accept(Path dir) {
-                                return dir.getFileName().toString()
-                                        .contains("(incomplete) ");
-                            }
-                        })){
+                        getFolderAtLisa().getSystemSubDir().resolve(TRANSFERS_DIR_NAME),
+                        dir -> dir.getFileName().toString()
+                                .contains("(incomplete) "))){
             incompleteFile = stream.iterator().next();
         }
         FileInfo bartFInfo = getFolderAtBart().getKnownFiles().iterator()
@@ -2041,6 +2033,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
     public void testDeltaFileChangedMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
+            LoggingManager.setConsoleLogging(Level.WARNING);
             testDeltaFileChanged();
             tearDown();
             setUp();
