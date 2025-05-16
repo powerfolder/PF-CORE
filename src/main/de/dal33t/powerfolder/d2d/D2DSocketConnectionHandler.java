@@ -155,7 +155,6 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                 "de.dal33t.powerfolder.protocol.%sProto$%s", klassName,
                 klassName);
 
-            logInfo("Deserializing anyMessage klassName: " + klassName);
             // Workaround for FolderFilesChanged (protected variables cannot be
             // set via reflection)
             if (klassName.equals("FolderFilesChanged")) {
@@ -275,8 +274,8 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
         if (message instanceof D2DObject) {
             AbstractMessage abstractMessage = ((D2DObject) message).toD2D();
 
-            if (isInfo()) {
-                logInfo("Sent " + abstractMessage.getClass().getCanonicalName());
+            if (isFiner()) {
+                logFiner("Sent " + abstractMessage.getClass().getCanonicalName());
             }
 
             data = abstractMessage.toByteArray();
@@ -353,8 +352,8 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
                     }
                     byte[] data = thisSerializer.read(in, totalSize);
                     message = deserialize(data, totalSize);
-                    if (isInfo()) {
-                        logInfo("Received: " + message);
+                    if (isFiner()) {
+                        logFiner("Received: " + message);
                     }
                     if (message instanceof D2DObject) {
                         if (message instanceof Identity) {
