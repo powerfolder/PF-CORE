@@ -154,9 +154,6 @@ public final class FileInfoFactory {
      */
     public static FileInfo changeModifiedAccount(FileInfo original, AccountInfo accountInfo) {
         Reject.ifNull(original, "Original FileInfo is null");
-        if (original.isLookupInstance()) {
-            return original;
-        }
         if (original.getModifiedByAccount() != null && accountInfo != null) {
             if (Util.equals(accountInfo.getUsername(), original.getModifiedByAccount().getUsername())
                     && Util.equals(accountInfo.getDisplayName(), original.getModifiedByAccount().getDisplayName())) {

@@ -1271,6 +1271,21 @@ public class Folder extends PFComponent {
     /**
      * Scans a new, deleted or restored File.
      *
+     * @param changer the changing account
+     * @param fileInfo
+     *            the file to scan
+     * @return the new {@link FileInfo} or null if file was not actually changed
+     */
+    public FileInfo scanChangedFile(AccountInfo changer, FileInfo fileInfo) {
+        if (changer != null) {
+            fileInfo = FileInfoFactory.changeModifiedAccount(fileInfo, changer);
+        }
+        return scanChangedFile(fileInfo);
+    }
+
+    /**
+     * Scans a new, deleted or restored File.
+     *
      * @param fileInfo
      *            the file to scan
      * @return the new {@link FileInfo} or null if file was not actually changed
