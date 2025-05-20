@@ -1490,10 +1490,11 @@ public class Folder extends PFComponent {
                                 + fInfo.toDetailString());
                         }
                         checkFile(fInfo);
+                        logFileOperation("ADDED", null, fInfo);
                         return fInfo;
                     }
 
-                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this, file, null);
+                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this, file, fInfo.getModifiedByAccount());
                     if (syncFile != null) {
                         store(getMySelf(), syncFile);
                         if (isFiner()) {
@@ -1507,6 +1508,17 @@ public class Folder extends PFComponent {
                         }
                         checkFile(localFile);
                     }
+
+                    if (syncFile != null) {
+                        if (syncFile.isDeleted()) {
+                            logFileOperation("DELETED", localFile, syncFile);
+                        } else if (syncFile != localFile && localFile.isDeleted() && !syncFile.isDeleted()) {
+                            logFileOperation("RESTORED", localFile, syncFile);
+                        } else {
+                            logFileOperation("CHANGED", localFile, syncFile);
+                        }
+                    }
+
                     return syncFile;
                 }
             }
@@ -3409,7 +3421,7 @@ public class Folder extends PFComponent {
     }
 
     void logFileOperation(String operation, FileInfo oldFileInfo, FileInfo newFileInfo) {
-        String msg = "File\t";
+        String msg = "Item\t";
         msg += operation;
         msg += "\t";
 
