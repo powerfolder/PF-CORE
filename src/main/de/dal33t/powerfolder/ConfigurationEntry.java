@@ -1424,6 +1424,11 @@ public enum ConfigurationEntry {
     WEB_CLIENT_PORT("web.client.port", 0),
 
     /**
+     * PFIOS-260 / PFM-633 Info to App
+     */
+    WEB_INLINE_VIEW_EXTENSIONS("web.inline_view.extensions"),
+
+    /**
      * PFS-1766: Event API to trigger WebHooks.
      */
     EVENT_API_URL_UPLOADED_FILE_CLIENT("event.api.file.uploaded.client"),
