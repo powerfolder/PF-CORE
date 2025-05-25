@@ -126,7 +126,7 @@ public class LinuxUtil {
         Path mountPath = serverClient.getController().getFolderRepository()
                 .getFoldersBasedir().resolve(name);
 
-        String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
+        String password = (serverClient.isTokenLogin() ? serverClient.getWebDAVToken() :
                 serverClient.getPasswordClearText());
         String username;
         Account account = serverClient.getAccount();

@@ -1187,7 +1187,7 @@ public class ServerClient extends PFComponent {
                         saveLastKnowLogin(username, null);
                     }
 
-                    if (Token.isExpired(getWebDavToken())) {
+                    if (Token.isExpired(getWebDAVToken())) {
                         webdavToken = requestWebDAVToken();
                         if (isNotBlank(webdavToken) && !Token.isExpired(webdavToken)) {
                             ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.setValue(config, webdavToken);
@@ -1851,7 +1851,7 @@ public class ServerClient extends PFComponent {
      *
      * @return Token secret
      */
-    public String getWebDavToken() {
+    public String getWebDAVToken() {
         return webdavToken;
     }
 
