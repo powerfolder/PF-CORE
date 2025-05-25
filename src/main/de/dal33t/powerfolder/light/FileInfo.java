@@ -495,6 +495,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         return size;
     }
 
+    /**
+     * @return the size of the file as Long. Might be null in case of Lookup instance
+     */
+    public Long getSizeLong() {
+        return size;
+    }
+
     @NotNull
     public Long getPreviousSize() {
         return previousSize;

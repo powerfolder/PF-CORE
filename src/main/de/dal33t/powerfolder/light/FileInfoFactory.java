@@ -167,7 +167,7 @@ public final class FileInfoFactory {
                         + original.toDetailString());
             }
             return new FileInfo(original.getRelativeName(),
-                    original.getOID(), original.getSize(),
+                    original.getOID(), original.getSizeLong(),
                     original.getModifiedBy(), accountInfo,
                     original.getModifiedDate(), original.getVersion(),
                     original.getHashes(), original.isDeleted(),
@@ -178,7 +178,7 @@ public final class FileInfoFactory {
                         + original.toDetailString());
             }
             return new DirectoryInfo(original.getRelativeName(),
-                    original.getOID(), original.getSize(),
+                    original.getOID(), original.getSizeLong(),
                     original.getModifiedBy(), accountInfo,
                     original.getModifiedDate(), original.getVersion(),
                     original.getHashes(), original.isDeleted(),
