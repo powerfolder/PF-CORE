@@ -754,15 +754,6 @@ public class FileArchiver {
 
     private void saveSize() {
         Path sizeFile = archiveDirectory.resolve(SIZE_INFO_FILE);
-        if (size == 0) {
-            try {
-                Files.deleteIfExists(sizeFile);
-                return;
-            } catch (IOException e) {
-                log.fine("Unable to delete meta data file: " + sizeFile + ". "
-                        + e);
-            }
-        }
         ByteArrayInputStream bin = new ByteArrayInputStream(String
                 .valueOf(size).getBytes());
         try {
