@@ -285,6 +285,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     public FolderInfo intern(boolean force) {
         if (force) {
+            LOG.info(this + ": rename (forced internalize)");
             return INTERNALIZER.rename(this);
         } else {
             return INTERNALIZER.intern(this);
