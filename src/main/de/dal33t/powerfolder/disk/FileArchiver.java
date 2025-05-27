@@ -724,15 +724,19 @@ public class FileArchiver {
     }
 
     private static void cleanupOldArchiveFiles(Path file, Date cleanupDate) {
+        boolean tryToDeleteItem = true;
         if (Files.isDirectory(file)) {
             try (DirectoryStream<Path> files = Files.newDirectoryStream(file)) {
                 for (Path path : files) {
+                    tryToDeleteItem = false; // Contains files. Do not try to delete
                     cleanupOldArchiveFiles(path, cleanupDate);
                 }
             } catch (IOException ioe) {
-                log.warning(ioe.toString());
+                log.warning(file + ": " + ioe);
             }
-        } else {
+        }
+
+        if (tryToDeleteItem) {
             try {
                 Date age = new Date(Files.getLastModifiedTime(file).toMillis());
                 if (age.before(cleanupDate)) {
@@ -746,10 +750,13 @@ public class FileArchiver {
                         log.severe("Could not delete archive file " + file + ". " + e);
                     }
                 }
+            } catch (DirectoryNotEmptyException e) {
+                log.fine(file + ": Directory not empty, while cleaning up. " + e);
             } catch (IOException ioe) {
                 log.warning("Could not read modification time of " + file + ". " + ioe);
             }
         }
+
     }
 
     private void saveSize() {
