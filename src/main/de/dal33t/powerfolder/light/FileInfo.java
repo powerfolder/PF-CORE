@@ -643,9 +643,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * @return the newest available version of this file
      */
     public FileInfo getNewestVersion(FolderRepository repo) {
-        if (repo == null) {
-            throw new NullPointerException("FolderRepo is null");
-        }
+        Reject.ifNull(repo, "FolderRepository");
         Folder folder = getFolder(repo);
         if (folder == null) {
             if (log.isLoggable(Level.FINER)) {
@@ -654,6 +652,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             }
             return null;
         }
+        return getNewestVersion(folder);
+    }
+
+    /**
+     * Also considers myself
+     *
+     * @param folder the folder of this FileInfo
+     * @return the newest available version of this file
+     */
+    public FileInfo getNewestVersion(Folder folder) {
+        Reject.ifFalse(folderInfo.equals(folder.getInfo()), "Folder mismatch");
+
         FileInfo newestVersion = null;
         for (Member member : folder.getMembersAsCollection()) {
             FileInfo remoteFile = member.getFile(this);

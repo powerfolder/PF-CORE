@@ -333,7 +333,7 @@ public class FolderStatistic extends PFComponent {
                 continue;
             }
 
-            FileInfo newestFileInfo = fileInfo.getNewestVersion(repo);
+            FileInfo newestFileInfo = fileInfo.getNewestVersion(folder);
             FileInfo myFileInfo = folder.getFile(fileInfo);
 
             if (newestFileInfo == null) {

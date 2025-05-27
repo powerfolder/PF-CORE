@@ -2375,7 +2375,7 @@ public class Folder extends PFComponent {
         }
 
         // Only proceed if file is out of sync:
-        FileInfo newestVersion = fileInfo.getNewestVersion(getController().getFolderRepository());
+        FileInfo newestVersion = fileInfo.getNewestVersion(this);
         if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
             // Ok in sync - return:
             return false;
@@ -4515,9 +4515,7 @@ public class Folder extends PFComponent {
                     // Check if remote file is newer
                     FileInfo localFile = getFile(remoteFile);
                     if (revert && localFile != null) {
-                        FileInfo newestFileInfo = remoteFile
-                            .getNewestVersion(getController()
-                                .getFolderRepository());
+                        FileInfo newestFileInfo = remoteFile.getNewestVersion(this);
                         if (localFile.isNewerThan(newestFileInfo)) {
                             // Ignore/Rever local files
                             if (!newestFileInfo.getFolderInfo().isMetaFolder()) {
