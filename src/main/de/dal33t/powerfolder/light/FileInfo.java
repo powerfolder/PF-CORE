@@ -159,7 +159,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         reupload = false;
     }
 
-    protected FileInfo(String relativeName, String oid, long size,
+    protected FileInfo(String relativeName, String oid, Long size,
                        MemberInfo modifiedByDevice, AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
                        String hashes, boolean deleted, String tags, FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "folder is null!");

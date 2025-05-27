@@ -131,7 +131,7 @@ public final class FileInfoFactory {
                         + original.toDetailString());
                 }
                 return new DirectoryInfo(original.getRelativeName(),
-                    original.getOID(), original.getSize(),
+                    original.getOID(),
                     original.getModifiedBy(), original.getModifiedByAccount(),
                     original.getModifiedDate(), original.getVersion(),
                     original.getHashes(), original.isDeleted(),
@@ -178,7 +178,7 @@ public final class FileInfoFactory {
                         + original.toDetailString());
             }
             return new DirectoryInfo(original.getRelativeName(),
-                    original.getOID(), original.getSizeLong(),
+                    original.getOID(),
                     original.getModifiedBy(), accountInfo,
                     original.getModifiedDate(), original.getVersion(),
                     original.getHashes(), original.isDeleted(),
@@ -203,8 +203,7 @@ public final class FileInfoFactory {
                 + fInfo.toDetailString());
         }
         if (fInfo instanceof DirectoryInfo) {
-            return new DirectoryInfo(fInfo.getRelativeName(), oid,
-                fInfo.getSize(), fInfo.getModifiedBy(),
+            return new DirectoryInfo(fInfo.getRelativeName(), oid, fInfo.getModifiedBy(),
                 fInfo.getModifiedByAccount(), fInfo.getModifiedDate(),
                 fInfo.getVersion(), fInfo.getHashes(), fInfo.isDeleted(),
                 fInfo.getTags(), fInfo.getFolderInfo());
@@ -221,7 +220,7 @@ public final class FileInfoFactory {
         boolean dir, String tags)
     {
         if (dir) {
-            return new DirectoryInfo(fileName, oid, size, modByDevice,
+            return new DirectoryInfo(fileName, oid, modByDevice,
                 modByAccount, modDate, version, hashes, false, tags, fi);
         }
         return new FileInfo(fileName, oid, size, modByDevice, modByAccount,
@@ -234,10 +233,10 @@ public final class FileInfoFactory {
         boolean dir, String tags)
     {
         if (dir) {
-            return new DirectoryInfo(fileName, oid, 0, modByDevice,
+            return new DirectoryInfo(fileName, oid, modByDevice,
                 modByAccount, modDate, version, hashes, true, tags, fi);
         }
-        return new FileInfo(fileName, oid, 0, modByDevice, modByAccount,
+        return new FileInfo(fileName, oid, 0L, modByDevice, modByAccount,
             modDate, version, hashes, true, tags, fi);
     }
 
@@ -298,8 +297,7 @@ public final class FileInfoFactory {
         try {
             if (original.isFile()) {
                 if (isDir) {
-                    return new DirectoryInfo(fn, original.getOID(),
-                        Files.size(localFile), modByDevice, modByAccount,
+                    return new DirectoryInfo(fn, original.getOID(), modByDevice, modByAccount,
                         new Date(Files.getLastModifiedTime(localFile)
                             .toMillis()), original.getVersion() + 1, newHashes,
                         false, original.getTags(), original.getFolderInfo());
@@ -317,9 +315,8 @@ public final class FileInfoFactory {
                             .toMillis()), original.getVersion() + 1, newHashes,
                         false, original.getTags(), original.getFolderInfo());
                 }
-                return new DirectoryInfo(fn, original.getOID(),
-                    Files.size(localFile), modByDevice, modByAccount, new Date(
-                        Files.getLastModifiedTime(localFile).toMillis()),
+                return new DirectoryInfo(fn, original.getOID(), modByDevice, modByAccount,
+                        new Date(Files.getLastModifiedTime(localFile).toMillis()),
                     original.getVersion() + 1, newHashes, false,
                     original.getTags(), original.getFolderInfo());
             } else {
@@ -347,7 +344,7 @@ public final class FileInfoFactory {
                 original.getTags(), original.getFolderInfo());
         } else if (original.isDiretory()) {
             return new DirectoryInfo(original.getRelativeName(),
-                original.getOID(), 0L, delbyDevice, delByAccount, delDate,
+                original.getOID(), delbyDevice, delByAccount, delDate,
                 original.getVersion() + 1, original.getHashes(), true,
                 original.getTags(), original.getFolderInfo());
         } else {

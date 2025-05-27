@@ -55,16 +55,7 @@ public class DirectoryInfo extends FileInfo {
         AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
         String hashes, boolean deleted, String tags, FolderInfo folderInfo)
     {
-        super(fileName, oid, 0, modifiedBy, modifiedByAccount,
-            lastModifiedDate, version, hashes, deleted, tags, folderInfo);
-    }
-
-    DirectoryInfo(String fileName, String oid, long size,
-        MemberInfo modifiedBy, AccountInfo modifiedByAccount,
-        Date lastModifiedDate, int version, String hashes, boolean deleted,
-        String tags, FolderInfo folderInfo)
-    {
-        super(fileName, oid, size, modifiedBy, modifiedByAccount,
+        super(fileName, oid, 0L, modifiedBy, modifiedByAccount,
             lastModifiedDate, version, hashes, deleted, tags, folderInfo);
     }
 
