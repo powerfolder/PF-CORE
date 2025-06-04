@@ -1308,6 +1308,7 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.autoRenewDevices = autoRenewDevices;
         this.autoRenewTill = autoRenewTill;
         this.proUser = proUser;
+        Logger.getLogger(Account.class.getName()).log(Level.INFO, "setAutoRenew? proUser=" + proUser, new StackDump());
     }
 
     public boolean willAutoRenew() {
