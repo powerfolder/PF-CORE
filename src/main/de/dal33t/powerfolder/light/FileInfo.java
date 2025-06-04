@@ -188,29 +188,24 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         validate();
     }
 
-    protected FileInfo(FolderInfo folder, String relativeName) {
+    protected FileInfo(FolderInfo folder, String relativeName, Date modificationDate, AccountInfo modifiedByAccount) {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
         Reject.ifTrue(relativeName.contains("../"), String.format("relativeName must not contain ../ Got:  %s", relativeName));
 
-        fileName = relativeName;
-        folderInfo = folder;
+        this.fileName = relativeName;
+        this.folderInfo = folder;
+        this.modifiedByAccount = modifiedByAccount;
+        this.lastModifiedDate = modificationDate;
 
         oid = null;
         hashes = null;
         tags = null;
         size = null;
         modifiedBy = null;
-        lastModifiedDate = null;
         version = 0;
         deleted = false;
         reupload = false;
-    }
-
-    protected FileInfo(FolderInfo folder, String relativeName, Date modificationDate) {
-        this(folder, relativeName);
-
-        lastModifiedDate = modificationDate;
     }
 
     /**
@@ -492,13 +487,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      */
     @Override
     public long getSize() {
-        return size;
-    }
-
-    /**
-     * @return the size of the file as Long. Might be null in case of Lookup instance
-     */
-    public Long getSizeLong() {
         return size;
     }
 

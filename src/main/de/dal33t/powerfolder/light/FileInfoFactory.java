@@ -84,9 +84,9 @@ public final class FileInfoFactory {
         boolean dir)
     {
         if (dir) {
-            return new DirectoryInfo(folder, name);
+            return new DirectoryInfo(folder, name, null, null);
         }
-        return new FileInfo(folder, name);
+        return new FileInfo(folder, name, null, null);
     }
 
     public static FileInfo lookupInstance(Folder folder, Path file) {
@@ -95,7 +95,7 @@ public final class FileInfoFactory {
     }
 
     public static FileInfo lookupInstanceForTest(FolderInfo folder, String name, Date modificationDate) {
-        return new FileInfo(folder, name, modificationDate);
+        return new FileInfo(folder, name, modificationDate, null);
     }
     /**
      * Returns a FileInfo with changed FolderInfo. No version update etc.
@@ -162,17 +162,25 @@ public final class FileInfoFactory {
             }
         }
         if (original.isFile()) {
+            if (original.isLookupInstance()) {
+                return new FileInfo(original.getFolderInfo(),
+                        original.getRelativeName(), original.getModifiedDate(), accountInfo);
+            }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Corrected AccountInfo on "
                         + original.toDetailString());
             }
             return new FileInfo(original.getRelativeName(),
-                    original.getOID(), original.getSizeLong(),
+                    original.getOID(), original.getSize(),
                     original.getModifiedBy(), accountInfo,
                     original.getModifiedDate(), original.getVersion(),
                     original.getHashes(), original.isDeleted(),
                     original.getTags(), original.getFolderInfo());
         } else if (original.isDiretory()) {
+            if (original.isLookupInstance()) {
+                return new DirectoryInfo(original.getFolderInfo(),
+                        original.getRelativeName(), original.getModifiedDate(), accountInfo);
+            }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Corrected AccountInfo on "
                         + original.toDetailString());
@@ -362,7 +370,7 @@ public final class FileInfoFactory {
     }
 
     public static DirectoryInfo createBaseDirectoryInfo(FolderInfo foInfo) {
-        return new DirectoryInfo(foInfo, "");
+        return new DirectoryInfo(foInfo, "", null, null);
     }
 
     private static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "?", "\"", "*",
