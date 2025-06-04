@@ -270,3 +270,4 @@ public class PermissionUserType extends Loggable implements UserType {
         }
     }
 }
+
