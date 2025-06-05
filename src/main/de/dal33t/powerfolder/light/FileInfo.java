@@ -180,7 +180,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         this.reupload = false;
 
         if (Feature.FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT.isEnabled()) {
-            if (modifiedByAccount == null && log.isLoggable(Level.WARNING) && !folderInfo.getName().endsWith("server_maintenance")) {
+            if (modifiedByAccount == null
+                    && log.isLoggable(Level.WARNING)
+                    && !folderInfo.isMetaFolder()
+                    && !folderInfo.getName().endsWith("server_maintenance")) {
+
                 log.log(Level.INFO, this.toDetailString() + ": Missing account information", new StackDump());
             }
         }
