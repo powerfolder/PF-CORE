@@ -144,8 +144,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      */
     private transient Reference<FileInfoStrings> cachedStrings;
 
-    private boolean reupload;
-
     protected FileInfo() {
         // ONLY for backward compatibility to MP3FileInfo
 
@@ -159,7 +157,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         version = 0;
         deleted = false;
         folderInfo = null;
-        reupload = false;
     }
 
     protected FileInfo(String relativeName, String oid, Long size,
@@ -192,7 +189,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         this.version = version;
         this.deleted = deleted;
         this.folderInfo = folderInfo;
-        this.reupload = false;
 
         validate();
     }
@@ -216,7 +212,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         modifiedBy = null;
         version = 0;
         deleted = false;
-        reupload = false;
     }
 
     /**
@@ -1154,21 +1149,5 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         builder.setVersion(this.version);
         if (this.size != null) builder.setSize(this.size);
         return builder.build();
-    }
-
-    /**
-     * Mark this fileInfo as reupload. Means: The file was deleted before and afterwards uploaded again.
-     *
-     * @param reupload
-     */
-    public void setReupload(boolean reupload) {
-        this.reupload = reupload;
-    }
-
-    /**
-     * Check if this fileInfo was reuploaded. Means: The file was deleted before and afterwards uploaded again.
-     */
-    public boolean isReupload() {
-        return reupload;
     }
 }
