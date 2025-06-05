@@ -536,7 +536,7 @@ public class FileArchiver {
                 String hashes = null;
                 String tags = null;
                 // PFC-2571: TODO: Add/Read modifier from meta-db
-                AccountInfo modAccount = null;
+                AccountInfo modAccount = FileInfo.UNKNOWN_FROM_ARCHIVE;
                 FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo,
                         name, oid, Files.size(file), mySelf, modAccount, modDate,
                         version, hashes, tags);

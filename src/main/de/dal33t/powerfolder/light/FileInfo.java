@@ -65,6 +65,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     public static final boolean IGNORE_CASE = OSUtil.isWindowsSystem()
             || OSUtil.isMacOS();
 
+    public static final AccountInfo UNKNOWN_FROM_ARCHIVE =
+            new AccountInfo("unknown_from_archive", "unknown_from_archive", "Unknown");
+
     public static final String PROPERTYNAME_FILE_NAME = "fileName";
     public static final String PROPERTYNAME_SIZE = "size";
     public static final String PROPERTYNAME_MODIFIED_BY = "modifiedBy";
@@ -166,19 +169,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(relativeName, "relativeName is null!");
         Reject.ifTrue(relativeName.contains("../"), String.format("relativeName must not contain ../ Got:  %s", relativeName));
 
-        this.fileName = relativeName;
-        this.oid = oid;
-        this.hashes = hashes;
-        this.tags = tags;
-        this.size = size;
-        this.modifiedBy = modifiedByDevice;
-        this.modifiedByAccount = modifiedByAccount;
-        this.lastModifiedDate = lastModifiedDate;
-        this.version = version;
-        this.deleted = deleted;
-        this.folderInfo = folderInfo;
-        this.reupload = false;
-
         if (Feature.FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT.isEnabled()) {
             if (modifiedByAccount == null
                     && log.isLoggable(Level.WARNING)
@@ -188,6 +178,21 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                 log.log(Level.INFO, this.toDetailString() + ": Missing account information", new StackDump());
             }
         }
+
+        this.fileName = relativeName;
+        this.oid = oid;
+        this.hashes = hashes;
+        this.tags = tags;
+        this.size = size;
+        this.modifiedBy = modifiedByDevice;
+        if (this.modifiedByAccount != UNKNOWN_FROM_ARCHIVE) {
+            this.modifiedByAccount = modifiedByAccount;
+        }
+        this.lastModifiedDate = lastModifiedDate;
+        this.version = version;
+        this.deleted = deleted;
+        this.folderInfo = folderInfo;
+        this.reupload = false;
 
         validate();
     }
@@ -199,8 +204,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
         this.fileName = relativeName;
         this.folderInfo = folder;
-        this.modifiedByAccount = modifiedByAccount;
         this.lastModifiedDate = modificationDate;
+        if (this.modifiedByAccount != UNKNOWN_FROM_ARCHIVE) {
+            this.modifiedByAccount = modifiedByAccount;
+        }
 
         oid = null;
         hashes = null;
