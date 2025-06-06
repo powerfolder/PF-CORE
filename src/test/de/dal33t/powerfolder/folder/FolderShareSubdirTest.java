@@ -27,14 +27,13 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         Path subDirPath = Files.createDirectories(folder.getPhysicalDir().resolve("structure/deep/sharedsubdir.123"));
         TestHelper.scanFolder(folder);
 
-        FileInfo subDirInfo = folder.getFileInfo(subDirPath);
-        assertTrue(subDirInfo instanceof DirectoryInfo);
-        assertEquals("structure/deep", ((DirectoryInfo) subDirInfo).getParent().getRelativeName());
+        DirectoryInfo subDirInfo = (DirectoryInfo) folder.getFileInfo(subDirPath);
+        assertEquals("structure/deep", subDirInfo.getParent().getRelativeName());
 
         LoggingManager.setConsoleLogging(Level.FINE);
 
         // Actually create the subfolder
-        Folder subFolder = folder.split((DirectoryInfo) subDirInfo);
+        Folder subFolder = folder.split(subDirInfo);
 
         assertNotNull(subFolder);
         assertEquals(folder.getInfo(), subFolder.getInfo().getParent().getFolderInfo());
