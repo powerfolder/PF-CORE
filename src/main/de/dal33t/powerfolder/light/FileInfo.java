@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -972,6 +973,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
         fileName = in.readUTF();
         size = in.readLong();
+        if (size == -1) {
+            // PF-1790 / Lookup instance of parent
+            size = null;
+        }
         if (in.readBoolean()) {
             modifiedBy = MemberInfo.readExt(in);
             modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
@@ -1023,7 +1028,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         out.writeInt(isFile() ? 0 : 1);
         out.writeLong(extUID);
         out.writeUTF(fileName);
-        out.writeLong(size);
+        // PF-1790 / Lookup instance of parent
+        out.writeLong(Objects.requireNonNullElse(size, (long) -1));
         out.writeBoolean(modifiedBy != null);
         if (modifiedBy != null) {
             modifiedBy.writeExternal(out);
