@@ -166,6 +166,16 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(relativeName, "relativeName is null!");
         Reject.ifTrue(relativeName.contains("../"), String.format("relativeName must not contain ../ Got:  %s", relativeName));
 
+        if (Feature.FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT.isEnabled()) {
+            if (modifiedByAccount == null
+                    && log.isLoggable(Level.WARNING)
+                    && !folderInfo.isMetaFolder()
+                    && !folderInfo.getName().endsWith("server_maintenance")) {
+
+                log.log(Level.INFO, this.toDetailString() + ": Missing account information", new StackDump());
+            }
+        }
+
         this.fileName = relativeName;
         this.oid = oid;
         this.hashes = hashes;
