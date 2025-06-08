@@ -204,6 +204,7 @@ public class GenericDialog {
                 dialog.getRootPane().setDefaultButton(button);
             }
         }
+        bar.addRelatedGap();
         barBuilder.add(bar.getPanel(), cc.xy(1, 1));
         if (helpButton != null) {
             barBuilder.add(helpButton, cc.xy(3, 1));
