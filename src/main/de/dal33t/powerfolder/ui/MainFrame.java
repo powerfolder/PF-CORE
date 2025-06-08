@@ -76,6 +76,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
+
 /**
  * Powerfolder gui mainframe
  *
@@ -1156,34 +1158,30 @@ public class MainFrame extends PFUIComponent {
                 .get("main_frame.password_required.text"));
         } else if (client.isConnected()) {
             if (client.isLoggedIn()) {
-                OnlineStorageSubscription storageSubscription = client
-                    .getAccount().getOSSubscription();
+                String text = "";
+
+                OnlineStorageSubscription storageSubscription = client.getAccount().getOSSubscription();
                 AccountDetails ad = client.getAccountDetails();
-                if (storageSubscription.isDisabled()) {
-                    loginActionLabel.setText(Translation
-                            .get("main_frame.storage_subscription_disabled.text"));
-                    if (storageSubscription.getStorageSize() == 0) {
-                        ownStorage = false;
-                    }
-                } else {
+
+                if (storageSubscription.getStorageSize() > 0) {
                     totalStorage = storageSubscription.getStorageSize();
                     spaceUsed = ad.getSpaceUsed();
-                    if (totalStorage > 0) {
-                        percentageUsed = 100.0d * (double) spaceUsed
-                            / (double) totalStorage;
-                    } else {
-                        ownStorage = false;
-                        loginActionLabel.setText(Translation
-                                .get("main_frame.storage_subscription_disabled.text"));
-                        percentageUsed = 100.0d;
-                    }
+
+                    percentageUsed = 100.0d * (double) spaceUsed / (double) totalStorage;
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
-                    String s = ad.getAccount().getDisplayName();
-                    if (!StringUtils.isEmpty(s)) {
-                        loginActionLabel.setText(s);
+                    if (percentageUsed >= 100d || storageSubscription.isDisabled()) {
+                        text = Translation.get("main_frame.storage_subscription_disabled.text");
                     }
+                } else {
+                    ownStorage = false;
                 }
+
+                String s = ad.getAccount().getDisplayName();
+                if (text.isBlank() && isNotBlank(s)) {
+                    text = s;
+                }
+                loginActionLabel.setText(text);
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
                 // loginActionLabel.setText(Translation
                 // .getTranslation("main_frame.logging_in.text"));
