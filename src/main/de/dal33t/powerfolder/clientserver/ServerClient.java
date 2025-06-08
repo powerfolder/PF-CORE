@@ -1960,28 +1960,6 @@ public class ServerClient extends PFComponent {
             getController().getNodeManager().setNetworkId(Constants.NETWORK_ID_ANY);
         }
         updateChildClients(a);
-        updateStorageNotices(ad);
-    }
-
-    private void updateStorageNotices(AccountDetails ad) {
-        long storageSize = ad.getAccount().getOSSubscription().getStorageSize();
-        if (storageSize <= 0) {
-            return;
-        }
-        long storageUsed = ad.getSpaceUsed();
-
-        double pct = (100.0 * storageUsed) / storageSize;
-        if (storageUsed > storageSize) {
-            logWarning(String.format(
-                    "Storage quota exceeded: used = %d bytes, quota = %d bytes (%.2f%%)", storageUsed, storageSize, pct
-            ));
-            
-        } else if (pct >= 90.0) {
-            logWarning(String.format(
-                    "Storage usage is at %.2f%% of quota: used = %d bytes, quota = %d bytes",
-                    pct, storageUsed, storageSize
-            ));
-        }
     }
 
     private volatile boolean spawnRetrying = false;
