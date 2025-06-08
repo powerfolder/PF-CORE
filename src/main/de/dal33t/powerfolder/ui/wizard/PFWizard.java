@@ -246,6 +246,7 @@ public class PFWizard extends PFUIComponent {
         PFWizard wizard = new PFWizard(controller, Translation.get("wizard.pfwizard.login_title"));
         WizardPanel nextFinishPanel = new TextPanelPanel(controller,Translation.get("wizard.finish.os_login_title"),
                 Translation.get("wizard.finish.os_login_text"), true);
+        // ONLY DO IT ONCE on first login
         WizardPanel nextPanel = new FileSyncSetupPanel(controller,client,nextFinishPanel);
         wizard.open(new LoginPanel(controller, client, nextPanel, false));
     }

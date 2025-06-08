@@ -100,9 +100,7 @@ public class FileSyncSetupPanel extends PFWizardPanel {
         // 2) Precondition: Space is insufficient to hold all data on default base path
         AccountDetails ad = serverClient.getAccountDetails();
         if (ad.getAccount().isValid() && getController().getFolderRepository().sufficientDiskSpaceAvailable(ad)) {
-            if (ConfigurationEntry.AUTO_SETUP_ACCOUNT_FOLDERS.getValueBoolean(getController())) {
-                getWizard().next();
-            }
+            getWizard().next();
         }
     }
 
@@ -154,22 +152,26 @@ public class FileSyncSetupPanel extends PFWizardPanel {
 
     @Override
     protected JComponent buildContent() {
-        FormLayout layout = new FormLayout("left:60dlu, 3dlu, 100dlu, 3dlu,100dlu", "pref");
+        FormLayout layout = new FormLayout("left:40dlu, 3dlu, 120dlu:grow", "pref");
         PanelBuilder builder = new PanelBuilder(layout);
         builder.setBorder(createFewContentBorder());
         CellConstraints cc = new CellConstraints();
 
         int row = 1;
 
-        builder.add(syncThisComRadioButton, cc.xy(3, row));
-        builder.add(syncNetDriveRadioButton, cc.xy(5, row));
+        builder.add(syncThisComRadioButton, cc.xyw(1, row, 3));
+
+        row += 2;
+        builder.appendUnrelatedComponentsGapRow();
+        builder.appendRow("top:20dlu");
+        JLabel localDrive = new JLabel(Translation.get("wizard.file_sync.location_label"));
+        builder.add(localDrive, cc.xy(1, row));
+        builder.add(locationField, cc.xy(3, row));
 
         row += 2;
         builder.appendUnrelatedComponentsGapRow();
         builder.appendRow("pref");
-        JLabel localDrive = new JLabel(Translation.get("wizard.file_sync.location_label"));
-        builder.add(localDrive, cc.xy(1, row));
-        builder.add(locationField, cc.xyw(3, row, 3));
+        builder.add(syncNetDriveRadioButton, cc.xyw(1, row, 3));
 
         syncThisComRadioButton.addActionListener(new ActionListener() {
             @Override
@@ -307,7 +309,7 @@ public class FileSyncSetupPanel extends PFWizardPanel {
      * @return The component containing a text field and button.
      */
     private JComponent createLocationField() {
-        FormLayout layout = new FormLayout("190dlu, 3dlu, pref", "pref");
+        FormLayout layout = new FormLayout("120dlu, 3dlu, pref", "pref");
 
         PanelBuilder builder = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
