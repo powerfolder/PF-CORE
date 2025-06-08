@@ -43,10 +43,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
-import de.dal33t.powerfolder.ui.notices.CloudStorageNotice;
-import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
-import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.NotificationHandlerBase;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.wizard.DesktopSyncSetupPanel;
@@ -227,6 +224,7 @@ public class ApplicationModel extends PFUIComponent {
             logWarning(ad.getAccount() + String.format(
                     ": Storage quota exceeded: used = %d bytes, quota = %d bytes (%.2f%%)", storageUsed, storageSize, pct
             ));
+            CloudStorageNotice.clear(noticesModel);
             noticesModel.handleNotice(CloudStorageNotice.full());
         } else if (pct >= 90.0) {
             logWarning(ad.getAccount() + String.format(
@@ -234,6 +232,8 @@ public class ApplicationModel extends PFUIComponent {
                     pct, storageUsed, storageSize
             ));
             noticesModel.handleNotice(CloudStorageNotice.almostFull());
+        } else {
+            CloudStorageNotice.clear(noticesModel);
         }
     }
 

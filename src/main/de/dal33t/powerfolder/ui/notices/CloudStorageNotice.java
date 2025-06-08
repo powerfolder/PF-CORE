@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.ui.notices;
 
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.ui.model.NoticesModel;
 import de.dal33t.powerfolder.util.BrowserLauncher;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -16,6 +17,14 @@ public class CloudStorageNotice extends WarningNotice {
     }
     private CloudStorageNotice(String summary) {
         super(Translation.get("warning_notice.title"),  summary, null);
+    }
+
+    public static void clear(NoticesModel model) {
+        for (Notice notice: model.getAllNotices()) {
+            if (notice instanceof CloudStorageNotice) {
+                model.clearNotice(notice);
+            }
+        }
     }
 
     public Runnable getPayload(final Controller controller) {
