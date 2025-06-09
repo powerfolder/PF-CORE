@@ -3,8 +3,6 @@ package de.dal33t.powerfolder.folder;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.DirectoryInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -24,10 +22,11 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
     }
     public void testSplit() throws IOException {
         Folder folder = getFolderAtBart();
-        Path subDirPath = Files.createDirectories(folder.getPhysicalDir().resolve("structure/deep/sharedsubdir.123"));
+        String subDirName = "structure/deep/sharedsubdir.123";
+        Path subDirPath = Files.createDirectories(folder.getPhysicalDir().resolve(subDirName));
         TestHelper.scanFolder(folder);
 
-        DirectoryInfo subDirInfo = (DirectoryInfo) folder.getFileInfo(subDirPath);
+        DirectoryInfo subDirInfo = (DirectoryInfo) folder.getFileInfo(subDirName);
         assertEquals("structure/deep", subDirInfo.getParent().getRelativeName());
 
         LoggingManager.setConsoleLogging(Level.FINE);
