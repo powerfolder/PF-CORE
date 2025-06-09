@@ -4869,6 +4869,12 @@ public class Folder extends PFComponent {
         return localFileInfo != null ? localFileInfo : lookupFileInfo;
     }
 
+    public FileInfo getFileInfo(String relativePath) {
+        FileInfo lookupFileInfo = FileInfoFactory.lookupInstance(currentInfo, relativePath);
+        FileInfo localFileInfo = getFile(lookupFileInfo);
+        return localFileInfo != null ? localFileInfo : lookupFileInfo;
+    }
+
     /**
      * @return true if members are there, were files can be downloaded from.
      *         Remote nodes have to have free upload capacity.
