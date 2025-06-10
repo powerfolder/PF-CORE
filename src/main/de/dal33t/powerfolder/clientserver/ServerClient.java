@@ -536,9 +536,7 @@ public class ServerClient extends PFComponent {
         if (uri.startsWith("/")) {
             uri = uri.substring(1);
         }
-        if (!withCredentials
-                || !ConfigurationEntry.WEB_PASSWORD_ALLOWED
-                .getValueBoolean(config)) {
+        if (!withCredentials) {
             return webURL + '/' + uri;
         }
         String fullURL = getLoginURLWithCredentials();
@@ -627,33 +625,25 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-
-        // PFS-862: Start
-        if (isLoggedIn()) {
-            try {
-                String otp = getSecurityService().requestOTP();
-                if (isFine()) {
-                    logFine("Retrieved OTP for "
-                            + accountDetails.getAccount().getUsername() + ": "
-                            + otp);
-                }
-                if (LoginUtil.isOTPValid(otp)) {
-                    return LoginUtil.decorateURL(
-                            getWebURL(Constants.LOGIN_URI, false), null, otp);
-                }
-            } catch (Exception e) {
-                // Not supported. Maybe old server version. Ignore
-                logFine("Unable to generate OTP. " + e);
-            }
-        }
-        // PFS-862: End
-
-        if (!ConfigurationEntry.WEB_PASSWORD_ALLOWED
-                .getValueBoolean(config)) {
+        if (!isLoggedIn()) {
             return getWebURL();
         }
-        return LoginUtil.decorateURL(getWebURL(Constants.LOGIN_URI, false),
-                username, passwordObf);
+        try {
+            String otp = getSecurityService().requestOTP();
+            if (isFine()) {
+                logFine("Retrieved OTP for "
+                        + accountDetails.getAccount().getUsername() + ": "
+                        + otp);
+            }
+            if (LoginUtil.isOTPValid(otp)) {
+                return LoginUtil.decorateURL(
+                        getWebURL(Constants.LOGIN_URI, false), null, otp);
+            }
+        } catch (Exception e) {
+            // Not supported. Maybe old server version. Ignore
+            logFine("Unable to generate OTP. " + e);
+        }
+        return getWebURL();
     }
 
     /**
