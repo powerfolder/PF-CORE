@@ -405,12 +405,6 @@ public enum ConfigurationEntry {
     WEB_LOGIN_ALLOWED("web.login.allowed", true),
 
     /**
-     * PFS-862: Change to FALSE after major distribution of v9.2 If the client
-     * is allowed to pass the current password to the web browser.
-     */
-    WEB_PASSWORD_ALLOWED("web.login.password", false),
-
-    /**
      * If WebDAV should be enabled.
      */
     WEB_DAV_ENABLED("web.dav.enabled", true),

@@ -40,13 +40,13 @@ import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
-import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.model.SyncingModel;
+import de.dal33t.powerfolder.ui.notices.CloudStorageNotice;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -459,10 +459,8 @@ public class MainFrame extends PFUIComponent {
             setupLabel = new ActionLabel(getController(), mySetupAction);
         }
 
-        loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
-            getController()));
-        noticesActionLabel = new ActionLabel(getController(),
-            new MyShowNoticesAction(getController()));
+        loginActionLabel = new ActionLabel(getController(), new MyLoginAction(getController()));
+        noticesActionLabel = new ActionLabel(getController(), new MyShowNoticesAction(getController()));
         updateNoticesLabel();
 
         MouseListener accountLoginOpener = new MouseAdapter() {
@@ -1160,17 +1158,15 @@ public class MainFrame extends PFUIComponent {
             if (client.isLoggedIn()) {
                 String text = "";
 
-                OnlineStorageSubscription storageSubscription = client.getAccount().getOSSubscription();
                 AccountDetails ad = client.getAccountDetails();
 
-                if (storageSubscription.getStorageSize() > 0) {
-                    totalStorage = storageSubscription.getStorageSize();
+                if (ad.getAccount().hasOwnStorage()) {
+                    totalStorage = ad.getAccount().getOSSubscription().getStorageSize();
                     spaceUsed = ad.getSpaceUsed();
-
                     percentageUsed = 100.0d * (double) spaceUsed / (double) totalStorage;
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
-                    if (percentageUsed >= 100d || storageSubscription.isDisabled()) {
+                    if (ad.isSpaceExceededOrDisabled()) {
                         text = Translation.get("main_frame.storage_subscription_disabled.text");
                     }
                 } else {
@@ -1518,10 +1514,17 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (getController().getNodeManager().isStarted()
-                || getApplicationModel().getLicenseModel()
-                    .getActivationAction() == null)
-            {
+            if (client.isLoggedIn()) {
+                AccountDetails ad = client.getAccountDetails();
+
+                if (ad.isSpaceExceededOrDisabled()) {
+                    getController().getIOProvider().startIO(CloudStorageNotice.full().getPayload(getController()));
+                    return;
+                }
+            }
+
+            if (getController().getNodeManager().isStarted() || getApplicationModel().getLicenseModel()
+                    .getActivationAction() == null) {
                 PFWizard.openLoginWizard(getController(), client);
             } else {
                 // Activate if not running
