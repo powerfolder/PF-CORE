@@ -65,6 +65,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     public static final boolean IGNORE_CASE = OSUtil.isWindowsSystem()
             || OSUtil.isMacOS();
 
+    public static final AccountInfo UNKNOWN_FROM_ARCHIVE =
+            new AccountInfo("unknown_from_archive", "unknown_from_archive", "Unknown");
+
     public static final String PROPERTYNAME_FILE_NAME = "fileName";
     public static final String PROPERTYNAME_SIZE = "size";
     public static final String PROPERTYNAME_MODIFIED_BY = "modifiedBy";
@@ -141,8 +144,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      */
     private transient Reference<FileInfoStrings> cachedStrings;
 
-    private boolean reupload;
-
     protected FileInfo() {
         // ONLY for backward compatibility to MP3FileInfo
 
@@ -156,10 +157,9 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         version = 0;
         deleted = false;
         folderInfo = null;
-        reupload = false;
     }
 
-    protected FileInfo(String relativeName, String oid, long size,
+    protected FileInfo(String relativeName, String oid, Long size,
                        MemberInfo modifiedByDevice, AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
                        String hashes, boolean deleted, String tags, FolderInfo folderInfo) {
         Reject.ifNull(folderInfo, "folder is null!");
@@ -172,15 +172,20 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         this.tags = tags;
         this.size = size;
         this.modifiedBy = modifiedByDevice;
-        this.modifiedByAccount = modifiedByAccount;
+        if (this.modifiedByAccount != UNKNOWN_FROM_ARCHIVE) {
+            this.modifiedByAccount = modifiedByAccount;
+        }
         this.lastModifiedDate = lastModifiedDate;
         this.version = version;
         this.deleted = deleted;
         this.folderInfo = folderInfo;
-        this.reupload = false;
 
         if (Feature.FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT.isEnabled()) {
-            if (modifiedByAccount == null && log.isLoggable(Level.WARNING) && !folderInfo.getName().endsWith("server_maintenance")) {
+            if (modifiedByAccount == null
+                    && log.isLoggable(Level.WARNING)
+                    && !folderInfo.isMetaFolder()
+                    && !folderInfo.getName().endsWith("server_maintenance")) {
+
                 log.log(Level.INFO, this.toDetailString() + ": Missing account information", new StackDump());
             }
         }
@@ -188,29 +193,25 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         validate();
     }
 
-    protected FileInfo(FolderInfo folder, String relativeName) {
+    protected FileInfo(FolderInfo folder, String relativeName, Date modificationDate, AccountInfo modifiedByAccount) {
         Reject.ifNull(folder, "folder is null!");
         Reject.ifNull(relativeName, "relativeName is null!");
         Reject.ifTrue(relativeName.contains("../"), String.format("relativeName must not contain ../ Got:  %s", relativeName));
 
-        fileName = relativeName;
-        folderInfo = folder;
+        this.fileName = relativeName;
+        this.folderInfo = folder;
+        this.lastModifiedDate = modificationDate;
+        if (this.modifiedByAccount != UNKNOWN_FROM_ARCHIVE) {
+            this.modifiedByAccount = modifiedByAccount;
+        }
 
         oid = null;
         hashes = null;
         tags = null;
         size = null;
         modifiedBy = null;
-        lastModifiedDate = null;
         version = 0;
         deleted = false;
-        reupload = false;
-    }
-
-    protected FileInfo(FolderInfo folder, String relativeName, Date modificationDate) {
-        this(folder, relativeName);
-
-        lastModifiedDate = modificationDate;
     }
 
     /**
@@ -636,9 +637,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * @return the newest available version of this file
      */
     public FileInfo getNewestVersion(FolderRepository repo) {
-        if (repo == null) {
-            throw new NullPointerException("FolderRepo is null");
-        }
+        Reject.ifNull(repo, "FolderRepository");
         Folder folder = getFolder(repo);
         if (folder == null) {
             if (log.isLoggable(Level.FINER)) {
@@ -647,6 +646,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
             }
             return null;
         }
+        return getNewestVersion(folder);
+    }
+
+    /**
+     * Also considers myself
+     *
+     * @param folder the folder of this FileInfo
+     * @return the newest available version of this file
+     */
+    public FileInfo getNewestVersion(Folder folder) {
+        Reject.ifFalse(folderInfo.equals(folder.getInfo()), "Folder mismatch");
+
         FileInfo newestVersion = null;
         for (Member member : folder.getMembersAsCollection()) {
             FileInfo remoteFile = member.getFile(this);
@@ -1138,21 +1149,5 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         builder.setVersion(this.version);
         if (this.size != null) builder.setSize(this.size);
         return builder.build();
-    }
-
-    /**
-     * Mark this fileInfo as reupload. Means: The file was deleted before and afterwards uploaded again.
-     *
-     * @param reupload
-     */
-    public void setReupload(boolean reupload) {
-        this.reupload = reupload;
-    }
-
-    /**
-     * Check if this fileInfo was reuploaded. Means: The file was deleted before and afterwards uploaded again.
-     */
-    public boolean isReupload() {
-        return reupload;
     }
 }

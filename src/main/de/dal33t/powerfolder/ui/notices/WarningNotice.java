@@ -29,7 +29,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 public class WarningNotice extends NoticeBase {
 
     private static final long serialVersionUID = 100L;
-    private String message;
+    private final String message;
 
     public WarningNotice(String title, String summary, String message) {
         super(title, summary);

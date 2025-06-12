@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.util.StringUtils;
  * @author sprajc
  */
 public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
+    private static final Logger LOG = Logger.getLogger(FolderInfoInternalizer.class.getName());
     private final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<FolderInfo, FolderInfo>();
 
     public FolderInfo intern(FolderInfo folderInfo) {
@@ -93,6 +94,9 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                         oldInstance.getParent());
             }
 
+            if (oldInstance != null) {
+                LOG.log(Level.INFO, foInfo + ": rename (forced internalize)");
+            }
             INSTANCES.put(foInfo, foInfo);
         }
 

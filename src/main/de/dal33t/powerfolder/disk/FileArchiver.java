@@ -82,6 +82,9 @@ public class FileArchiver {
         versionsPerFile = -1;
         this.mySelf = mySelf;
         this.size = loadSize();
+        if (Files.exists(archiveDirectory) && !PathUtils.isEmptyDir(archiveDirectory)) {
+            this.size = null;
+        }
     }
 
     private Long loadSize() {
@@ -536,7 +539,7 @@ public class FileArchiver {
                 String hashes = null;
                 String tags = null;
                 // PFC-2571: TODO: Add/Read modifier from meta-db
-                AccountInfo modAccount = null;
+                AccountInfo modAccount = FileInfo.UNKNOWN_FROM_ARCHIVE;
                 FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo,
                         name, oid, Files.size(file), mySelf, modAccount, modDate,
                         version, hashes, tags);
@@ -667,7 +670,9 @@ public class FileArchiver {
     public void purge(Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
 
-        purge(archiveDirectory);
+        purge0(archiveDirectory);
+        size = 0L; saveSize();
+
         folder.fireArchivePurged();
 
         String logMessage = "Successfully cleared versioning of folder " + folder.getName() +
@@ -687,25 +692,39 @@ public class FileArchiver {
     public void purge(FileInfo fileInfo, Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
 
+        long freedSpace = 0;
+        boolean purgedSubdirs = false;
         if (fileInfo.isDiretory()) {
-            purge(archiveDirectory.resolve(fileInfo.getRelativeName()));
+            purge0(archiveDirectory.resolve(fileInfo.getRelativeName()));
+            purgedSubdirs = true;
         } else {
             for (FileInfo archivedFileInfo : getArchivedFilesInfos(fileInfo)) {
-                purge(getArchivedFile(archivedFileInfo));
+                Path archivedFile = getArchivedFile(archivedFileInfo);
+                freedSpace += Files.size(archivedFile);
+                purge0(archivedFile);
             }
         }
+        if (!purgedSubdirs && size != null) {
+            size -= freedSpace;
+        } else {
+            size = null;
+        }
+        saveSize();
+
         folder.fireArchivePurged();
         String logMessage =
             "Successfully cleared versioning of " + (fileInfo.isDiretory() ? "Directory" : "File") + fileInfo.getRelativeName() + " by " + account;
-        logMessage = size == 0 ? logMessage : logMessage + " (Removed "
-            + FileUtils.byteCountToDisplaySize(size) + ")";
+        logMessage = purgedSubdirs ? logMessage : logMessage + " (Removed "
+            + FileUtils.byteCountToDisplaySize(freedSpace) + ")";
         log.info(logMessage);
+
+        if (purgedSubdirs) {
+            folder.getController().getIOProvider().startIO(this::getSize);
+        }
     }
 
-    private void purge(Path path) throws IOException {
+    private void purge0(Path path) throws IOException {
         PathUtils.recursiveDelete(path);
-        size = 0L;
-        saveSize();
     }
 
     /**
@@ -724,15 +743,19 @@ public class FileArchiver {
     }
 
     private static void cleanupOldArchiveFiles(Path file, Date cleanupDate) {
+        boolean tryToDeleteItem = true;
         if (Files.isDirectory(file)) {
             try (DirectoryStream<Path> files = Files.newDirectoryStream(file)) {
                 for (Path path : files) {
+                    tryToDeleteItem = false; // Contains files. Do not try to delete
                     cleanupOldArchiveFiles(path, cleanupDate);
                 }
             } catch (IOException ioe) {
-                log.warning(ioe.toString());
+                log.warning(file + ": " + ioe);
             }
-        } else {
+        }
+
+        if (tryToDeleteItem) {
             try {
                 Date age = new Date(Files.getLastModifiedTime(file).toMillis());
                 if (age.before(cleanupDate)) {
@@ -746,21 +769,22 @@ public class FileArchiver {
                         log.severe("Could not delete archive file " + file + ". " + e);
                     }
                 }
+            } catch (DirectoryNotEmptyException e) {
+                log.fine(file + ": Directory not empty, while cleaning up. " + e);
             } catch (IOException ioe) {
                 log.warning("Could not read modification time of " + file + ". " + ioe);
             }
         }
+
     }
 
     private void saveSize() {
         Path sizeFile = archiveDirectory.resolve(SIZE_INFO_FILE);
-        if (size == 0) {
+        if (size == null) {
             try {
                 Files.deleteIfExists(sizeFile);
-                return;
             } catch (IOException e) {
-                log.fine("Unable to delete meta data file: " + sizeFile + ". "
-                        + e);
+                log.warning("Unable to delete " + sizeFile + ". " + e);
             }
         }
         ByteArrayInputStream bin = new ByteArrayInputStream(String

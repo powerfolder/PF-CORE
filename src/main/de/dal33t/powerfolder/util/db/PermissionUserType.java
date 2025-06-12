@@ -118,10 +118,9 @@ public class PermissionUserType extends Loggable implements UserType {
                 fdInfo = FolderInfoFactory.lookupInstance(fiId);
             } else {
                 // /PF-1790: Remove all this later...
-                int v = fdInfo.getVersion();
-                fdInfo = fdInfo.intern();
-                if (fdInfo.getVersion() != v) {
-                    logInfo(fdInfo + ": Found newer version is memory. Was in DB version " + v);
+                if (fdInfo.intern().getVersion() > fdInfo.getVersion()) {
+                    logInfo(fdInfo.intern() + ": Found newer version is memory. in DB " + fdInfo);
+                    fdInfo = fdInfo.intern();
                 }
             }
 
@@ -271,3 +270,4 @@ public class PermissionUserType extends Loggable implements UserType {
         }
     }
 }
+

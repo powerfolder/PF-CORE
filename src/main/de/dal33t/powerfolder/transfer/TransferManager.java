@@ -1654,8 +1654,7 @@ public class TransferManager extends PFComponent {
 
             // Now walk through all sources and get the best one
             // Member bestSource = null;
-            FileInfo newestVersionFile = fInfo.getNewestVersion(getController()
-                .getFolderRepository());
+            FileInfo newestVersionFile = fInfo.getNewestVersion(folder);
             FileInfo localFile = folder.getFile(fInfo);
             FileInfo fileToDl = newestVersionFile != null
                 ? newestVersionFile

@@ -55,25 +55,12 @@ public class DirectoryInfo extends FileInfo {
         AccountInfo modifiedByAccount, Date lastModifiedDate, int version,
         String hashes, boolean deleted, String tags, FolderInfo folderInfo)
     {
-        super(fileName, oid, 0, modifiedBy, modifiedByAccount,
+        super(fileName, oid, 0L, modifiedBy, modifiedByAccount,
             lastModifiedDate, version, hashes, deleted, tags, folderInfo);
     }
 
-    DirectoryInfo(String fileName, String oid, long size,
-        MemberInfo modifiedBy, AccountInfo modifiedByAccount,
-        Date lastModifiedDate, int version, String hashes, boolean deleted,
-        String tags, FolderInfo folderInfo)
-    {
-        super(fileName, oid, size, modifiedBy, modifiedByAccount,
-            lastModifiedDate, version, hashes, deleted, tags, folderInfo);
-    }
-
-    DirectoryInfo(FolderInfo folder, String name) {
-        super(folder, name);
-    }
-
-    public static DirectoryInfo getTemplate(FolderInfo folder, String name) {
-        return new DirectoryInfo(folder, name);
+    DirectoryInfo(FolderInfo folder, String name, Date modificationDate, AccountInfo modifiedByAccount) {
+        super(folder, name, modificationDate, modifiedByAccount);
     }
 
     public boolean isDiretory() {

@@ -112,7 +112,7 @@ public class Locking extends PFComponent {
             byte[] buf = ByteSerializer.serializeStatic(lock, false);
             PathUtils.copyFromStreamToFile(new ByteArrayInputStream(buf),
                 lockFile);
-            scanLockFile(fInfo.getFolderInfo(), lockFile);
+            scanLockFile(fInfo, lockFile);
             fireLocked(fInfo);
             setWritableIfFromOtherMember(fInfo, lock, false);
             if (isInfo()) {
@@ -140,7 +140,7 @@ public class Locking extends PFComponent {
         try {
             boolean deleted = Files.deleteIfExists(lockFile);
             if (deleted) {
-                scanLockFile(fInfo.getFolderInfo(), lockFile);
+                scanLockFile(fInfo, lockFile);
                 fireUnlocked(fInfo);
                 setWritableIfFromOtherMember(fInfo, null, true);
                 logInfo("File un-locked: " + fInfo.toDetailString());
@@ -152,7 +152,7 @@ public class Locking extends PFComponent {
                 Thread.sleep(200);
                 boolean deleted = Files.deleteIfExists(lockFile);
                 if (deleted) {
-                    scanLockFile(fInfo.getFolderInfo(), lockFile);
+                    scanLockFile(fInfo, lockFile);
                     fireUnlocked(fInfo);
                     setWritableIfFromOtherMember(fInfo, null, true);
                     logInfo("File un-locked: " + fInfo.toDetailString());
@@ -520,15 +520,15 @@ public class Locking extends PFComponent {
         listenerSupport.autoLockForbidden(event);
     }
 
-    private void scanLockFile(FolderInfo foInfo, Path lockFile) {
+    private void scanLockFile(FileInfo fileInfo, Path lockFile) {
         Folder metaFolder = getController().getFolderRepository()
-            .getMetaFolder(foInfo);
+            .getMetaFolder(fileInfo.getFolderInfo());
         if (metaFolder == null) {
-            logWarning("Meta-folder for " + foInfo + " not found");
+            logWarning("Meta-folder for " + fileInfo.getFolderInfo() + " not found");
             return;
         }
-        FileInfo lockFileInfo = FileInfoFactory.lookupInstance(metaFolder,
-            lockFile);
+        FileInfo lockFileInfo = FileInfoFactory.lookupInstance(metaFolder, lockFile);
+        lockFileInfo = FileInfoFactory.changeModifiedAccount(lockFileInfo, fileInfo.getModifiedByAccount());
         if (metaFolder.scanChangedFile(lockFileInfo) == null) {
             logFine("Scanning of lock file not necessary: " + lockFileInfo);
         }

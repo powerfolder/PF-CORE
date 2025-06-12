@@ -1271,6 +1271,21 @@ public class Folder extends PFComponent {
     /**
      * Scans a new, deleted or restored File.
      *
+     * @param changer the changing account
+     * @param fileInfo
+     *            the file to scan
+     * @return the new {@link FileInfo} or null if file was not actually changed
+     */
+    public FileInfo scanChangedFile(AccountInfo changer, FileInfo fileInfo) {
+        if (changer != null) {
+            fileInfo = FileInfoFactory.changeModifiedAccount(fileInfo, changer);
+        }
+        return scanChangedFile(fileInfo);
+    }
+
+    /**
+     * Scans a new, deleted or restored File.
+     *
      * @param fileInfo
      *            the file to scan
      * @return the new {@link FileInfo} or null if file was not actually changed
@@ -1490,10 +1505,11 @@ public class Folder extends PFComponent {
                                 + fInfo.toDetailString());
                         }
                         checkFile(fInfo);
+                        logFileOperation("ADDED", null, fInfo);
                         return fInfo;
                     }
 
-                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this, file, null);
+                    FileInfo syncFile = localFile.syncFromDiskIfRequired(this, file, fInfo.getModifiedByAccount());
                     if (syncFile != null) {
                         store(getMySelf(), syncFile);
                         if (isFiner()) {
@@ -1507,6 +1523,17 @@ public class Folder extends PFComponent {
                         }
                         checkFile(localFile);
                     }
+
+                    if (syncFile != null) {
+                        if (syncFile.isDeleted()) {
+                            logFileOperation("DELETED", localFile, syncFile);
+                        } else if (syncFile != localFile && localFile.isDeleted() && !syncFile.isDeleted()) {
+                            logFileOperation("RESTORED", localFile, syncFile);
+                        } else {
+                            logFileOperation("CHANGED", localFile, syncFile);
+                        }
+                    }
+
                     return syncFile;
                 }
             }
@@ -2348,7 +2375,7 @@ public class Folder extends PFComponent {
         }
 
         // Only proceed if file is out of sync:
-        FileInfo newestVersion = fileInfo.getNewestVersion(getController().getFolderRepository());
+        FileInfo newestVersion = fileInfo.getNewestVersion(this);
         if (newestVersion != null && !fileInfo.isNewerThan(newestVersion)) {
             // Ok in sync - return:
             return false;
@@ -3409,7 +3436,7 @@ public class Folder extends PFComponent {
     }
 
     void logFileOperation(String operation, FileInfo oldFileInfo, FileInfo newFileInfo) {
-        String msg = "File\t";
+        String msg = "Item\t";
         msg += operation;
         msg += "\t";
 
@@ -4488,9 +4515,7 @@ public class Folder extends PFComponent {
                     // Check if remote file is newer
                     FileInfo localFile = getFile(remoteFile);
                     if (revert && localFile != null) {
-                        FileInfo newestFileInfo = remoteFile
-                            .getNewestVersion(getController()
-                                .getFolderRepository());
+                        FileInfo newestFileInfo = remoteFile.getNewestVersion(this);
                         if (localFile.isNewerThan(newestFileInfo)) {
                             // Ignore/Rever local files
                             if (!newestFileInfo.getFolderInfo().isMetaFolder()) {

@@ -463,7 +463,7 @@ public class WinUtils extends Loggable {
         char prefDriveChar, String webDAVURL)
     {
         try {
-            String password = (serverClient.isTokenLogin() ? serverClient.getWebDavToken() :
+            String password = (serverClient.isTokenLogin() ? serverClient.getWebDAVToken() :
                     serverClient.getPasswordClearText());
 
             String username;

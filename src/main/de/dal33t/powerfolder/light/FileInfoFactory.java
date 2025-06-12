@@ -84,9 +84,9 @@ public final class FileInfoFactory {
         boolean dir)
     {
         if (dir) {
-            return new DirectoryInfo(folder, name);
+            return new DirectoryInfo(folder, name, null, null);
         }
-        return new FileInfo(folder, name);
+        return new FileInfo(folder, name, null, null);
     }
 
     public static FileInfo lookupInstance(Folder folder, Path file) {
@@ -95,7 +95,7 @@ public final class FileInfoFactory {
     }
 
     public static FileInfo lookupInstanceForTest(FolderInfo folder, String name, Date modificationDate) {
-        return new FileInfo(folder, name, modificationDate);
+        return new FileInfo(folder, name, modificationDate, null);
     }
     /**
      * Returns a FileInfo with changed FolderInfo. No version update etc.
@@ -131,7 +131,7 @@ public final class FileInfoFactory {
                         + original.toDetailString());
                 }
                 return new DirectoryInfo(original.getRelativeName(),
-                    original.getOID(), original.getSize(),
+                    original.getOID(),
                     original.getModifiedBy(), original.getModifiedByAccount(),
                     original.getModifiedDate(), original.getVersion(),
                     original.getHashes(), original.isDeleted(),
@@ -154,9 +154,6 @@ public final class FileInfoFactory {
      */
     public static FileInfo changeModifiedAccount(FileInfo original, AccountInfo accountInfo) {
         Reject.ifNull(original, "Original FileInfo is null");
-        if (original.isLookupInstance()) {
-            return original;
-        }
         if (original.getModifiedByAccount() != null && accountInfo != null) {
             if (Util.equals(accountInfo.getUsername(), original.getModifiedByAccount().getUsername())
                     && Util.equals(accountInfo.getDisplayName(), original.getModifiedByAccount().getDisplayName())) {
@@ -165,6 +162,10 @@ public final class FileInfoFactory {
             }
         }
         if (original.isFile()) {
+            if (original.isLookupInstance()) {
+                return new FileInfo(original.getFolderInfo(),
+                        original.getRelativeName(), original.getModifiedDate(), accountInfo);
+            }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Corrected AccountInfo on "
                         + original.toDetailString());
@@ -176,12 +177,16 @@ public final class FileInfoFactory {
                     original.getHashes(), original.isDeleted(),
                     original.getTags(), original.getFolderInfo());
         } else if (original.isDiretory()) {
+            if (original.isLookupInstance()) {
+                return new DirectoryInfo(original.getFolderInfo(),
+                        original.getRelativeName(), original.getModifiedDate(), accountInfo);
+            }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Corrected AccountInfo on "
                         + original.toDetailString());
             }
             return new DirectoryInfo(original.getRelativeName(),
-                    original.getOID(), original.getSize(),
+                    original.getOID(),
                     original.getModifiedBy(), accountInfo,
                     original.getModifiedDate(), original.getVersion(),
                     original.getHashes(), original.isDeleted(),
@@ -206,8 +211,7 @@ public final class FileInfoFactory {
                 + fInfo.toDetailString());
         }
         if (fInfo instanceof DirectoryInfo) {
-            return new DirectoryInfo(fInfo.getRelativeName(), oid,
-                fInfo.getSize(), fInfo.getModifiedBy(),
+            return new DirectoryInfo(fInfo.getRelativeName(), oid, fInfo.getModifiedBy(),
                 fInfo.getModifiedByAccount(), fInfo.getModifiedDate(),
                 fInfo.getVersion(), fInfo.getHashes(), fInfo.isDeleted(),
                 fInfo.getTags(), fInfo.getFolderInfo());
@@ -224,7 +228,7 @@ public final class FileInfoFactory {
         boolean dir, String tags)
     {
         if (dir) {
-            return new DirectoryInfo(fileName, oid, size, modByDevice,
+            return new DirectoryInfo(fileName, oid, modByDevice,
                 modByAccount, modDate, version, hashes, false, tags, fi);
         }
         return new FileInfo(fileName, oid, size, modByDevice, modByAccount,
@@ -237,10 +241,10 @@ public final class FileInfoFactory {
         boolean dir, String tags)
     {
         if (dir) {
-            return new DirectoryInfo(fileName, oid, 0, modByDevice,
+            return new DirectoryInfo(fileName, oid, modByDevice,
                 modByAccount, modDate, version, hashes, true, tags, fi);
         }
-        return new FileInfo(fileName, oid, 0, modByDevice, modByAccount,
+        return new FileInfo(fileName, oid, 0L, modByDevice, modByAccount,
             modDate, version, hashes, true, tags, fi);
     }
 
@@ -301,8 +305,7 @@ public final class FileInfoFactory {
         try {
             if (original.isFile()) {
                 if (isDir) {
-                    return new DirectoryInfo(fn, original.getOID(),
-                        Files.size(localFile), modByDevice, modByAccount,
+                    return new DirectoryInfo(fn, original.getOID(), modByDevice, modByAccount,
                         new Date(Files.getLastModifiedTime(localFile)
                             .toMillis()), original.getVersion() + 1, newHashes,
                         false, original.getTags(), original.getFolderInfo());
@@ -320,9 +323,8 @@ public final class FileInfoFactory {
                             .toMillis()), original.getVersion() + 1, newHashes,
                         false, original.getTags(), original.getFolderInfo());
                 }
-                return new DirectoryInfo(fn, original.getOID(),
-                    Files.size(localFile), modByDevice, modByAccount, new Date(
-                        Files.getLastModifiedTime(localFile).toMillis()),
+                return new DirectoryInfo(fn, original.getOID(), modByDevice, modByAccount,
+                        new Date(Files.getLastModifiedTime(localFile).toMillis()),
                     original.getVersion() + 1, newHashes, false,
                     original.getTags(), original.getFolderInfo());
             } else {
@@ -350,7 +352,7 @@ public final class FileInfoFactory {
                 original.getTags(), original.getFolderInfo());
         } else if (original.isDiretory()) {
             return new DirectoryInfo(original.getRelativeName(),
-                original.getOID(), 0L, delbyDevice, delByAccount, delDate,
+                original.getOID(), delbyDevice, delByAccount, delDate,
                 original.getVersion() + 1, original.getHashes(), true,
                 original.getTags(), original.getFolderInfo());
         } else {
@@ -368,7 +370,7 @@ public final class FileInfoFactory {
     }
 
     public static DirectoryInfo createBaseDirectoryInfo(FolderInfo foInfo) {
-        return new DirectoryInfo(foInfo, "");
+        return new DirectoryInfo(foInfo, "", null, null);
     }
 
     private static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "?", "\"", "*",

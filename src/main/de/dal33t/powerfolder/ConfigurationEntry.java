@@ -405,12 +405,6 @@ public enum ConfigurationEntry {
     WEB_LOGIN_ALLOWED("web.login.allowed", true),
 
     /**
-     * PFS-862: Change to FALSE after major distribution of v9.2 If the client
-     * is allowed to pass the current password to the web browser.
-     */
-    WEB_PASSWORD_ALLOWED("web.login.password", false),
-
-    /**
      * If WebDAV should be enabled.
      */
     WEB_DAV_ENABLED("web.dav.enabled", true),
@@ -1422,6 +1416,11 @@ public enum ConfigurationEntry {
      * PFS-2871: Port for client authentication over web requests.
      */
     WEB_CLIENT_PORT("web.client.port", 0),
+
+    /**
+     * PFIOS-260 / PFM-633 Info to App
+     */
+    WEB_INLINE_VIEW_EXTENSIONS("web.inline_view.extensions"),
 
     /**
      * PFS-1766: Event API to trigger WebHooks.

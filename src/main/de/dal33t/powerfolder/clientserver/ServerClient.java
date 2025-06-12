@@ -536,9 +536,7 @@ public class ServerClient extends PFComponent {
         if (uri.startsWith("/")) {
             uri = uri.substring(1);
         }
-        if (!withCredentials
-                || !ConfigurationEntry.WEB_PASSWORD_ALLOWED
-                .getValueBoolean(config)) {
+        if (!withCredentials) {
             return webURL + '/' + uri;
         }
         String fullURL = getLoginURLWithCredentials();
@@ -627,33 +625,25 @@ public class ServerClient extends PFComponent {
         if (!hasWebURL()) {
             return null;
         }
-
-        // PFS-862: Start
-        if (isLoggedIn()) {
-            try {
-                String otp = getSecurityService().requestOTP();
-                if (isFine()) {
-                    logFine("Retrieved OTP for "
-                            + accountDetails.getAccount().getUsername() + ": "
-                            + otp);
-                }
-                if (LoginUtil.isOTPValid(otp)) {
-                    return LoginUtil.decorateURL(
-                            getWebURL(Constants.LOGIN_URI, false), null, otp);
-                }
-            } catch (Exception e) {
-                // Not supported. Maybe old server version. Ignore
-                logFine("Unable to generate OTP. " + e);
-            }
-        }
-        // PFS-862: End
-
-        if (!ConfigurationEntry.WEB_PASSWORD_ALLOWED
-                .getValueBoolean(config)) {
+        if (!isLoggedIn()) {
             return getWebURL();
         }
-        return LoginUtil.decorateURL(getWebURL(Constants.LOGIN_URI, false),
-                username, passwordObf);
+        try {
+            String otp = getSecurityService().requestOTP();
+            if (isFine()) {
+                logFine("Retrieved OTP for "
+                        + accountDetails.getAccount().getUsername() + ": "
+                        + otp);
+            }
+            if (LoginUtil.isOTPValid(otp)) {
+                return LoginUtil.decorateURL(
+                        getWebURL(Constants.LOGIN_URI, false), null, otp);
+            }
+        } catch (Exception e) {
+            // Not supported. Maybe old server version. Ignore
+            logFine("Unable to generate OTP. " + e);
+        }
+        return getWebURL();
     }
 
     /**
@@ -1187,7 +1177,7 @@ public class ServerClient extends PFComponent {
                         saveLastKnowLogin(username, null);
                     }
 
-                    if (Token.isExpired(getWebDavToken())) {
+                    if (Token.isExpired(getWebDAVToken())) {
                         webdavToken = requestWebDAVToken();
                         if (isNotBlank(webdavToken) && !Token.isExpired(webdavToken)) {
                             ConfigurationEntry.SERVER_CONNECT_TOKEN_WEBDAV.setValue(config, webdavToken);
@@ -1851,7 +1841,7 @@ public class ServerClient extends PFComponent {
      *
      * @return Token secret
      */
-    public String getWebDavToken() {
+    public String getWebDAVToken() {
         return webdavToken;
     }
 
