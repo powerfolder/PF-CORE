@@ -94,7 +94,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                         oldInstance.getParent());
             }
 
-            if (oldInstance != null) {
+            if (oldInstance != null && !foInfo.isMetaFolder()) {
                 LOG.log(Level.INFO, foInfo + ": rename (forced internalize)");
             }
             INSTANCES.put(foInfo, foInfo);
