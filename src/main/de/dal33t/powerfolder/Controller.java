@@ -523,6 +523,8 @@ public class Controller extends PFComponent {
         ConfigurationLoader.loadAndMergeCLI(this);
         // Config entry in file
         ConfigurationLoader.loadAndMergeConfigURL(this);
+        // On Mac read plist files
+        ConfigurationLoader.loadAndMergePList(this);
         // Read from installer temp file
         ConfigurationLoader.loadAndMergeFromInstaller(this);
 

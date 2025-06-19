@@ -19,10 +19,13 @@
  */
 package de.dal33t.powerfolder.util;
 
+import com.dd.plist.NSDictionary;
+import com.dd.plist.PropertyListParser;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.FileNotFoundException;
@@ -321,6 +324,41 @@ public class ConfigurationLoader {
     }
 
     /**
+     * PFC-3470 Loads the the config macs plist
+     *
+     * @param controller
+     * @return if a plist was successfully loaded
+     */
+    public static boolean loadAndMergePList(Controller controller) {
+        Reject.ifNull(controller, "Controller is null");
+        if (OSUtil.isMacOS()) {
+            return false;
+        }
+
+        try {
+            Properties plistProperties = loadMacOSPlist(controller.getDistribution().getBinaryName());
+            boolean overWrite = overwriteConfigEntries(plistProperties);
+            if (dropFolderSettings(plistProperties)) {
+                Set<String> entryIds = FolderSettings.loadEntryIds(controller.getConfig());
+                for (String entryId : entryIds) {
+                    FolderSettings.removeEntries(controller.getConfig(), entryId);
+                }
+            }
+            int i = mergeConfigs(plistProperties, controller.getConfig(), overWrite);
+
+            LOG.info("Loaded " + i + " config entries (overwrite? " + overWrite + ") from mac plist");
+
+            if (i > 0) {
+                controller.saveConfig();
+            }
+            return true;
+        } catch (Exception e) {
+            LOG.warning("Unable to load config from mac plist. " + e);
+            return false;
+        }
+    }
+
+    /**
      * Loads a pre-configuration from a server. Automatically adds HTTP:// and
      * url suffix.
      *
@@ -592,4 +630,58 @@ public class ConfigurationLoader {
         preConfig.load(in);
         return preConfig;
     }
+
+    /**
+     * Loads macOS .plist configurations from both user-specific and global locations.
+     *
+     * @param binaryName e.g. "PowerFolder"
+     * @return Combined Java Properties
+     * @throws Exception if loading fails
+     */
+    private static Properties loadMacOSPlist(String binaryName) throws Exception {
+        Reject.ifBlank(binaryName, "Domain is blank");
+        String domain = "de.dal33t.powerfolder." + binaryName;
+
+        Properties combinedProps = new Properties();
+
+        // User-specific plist
+        String userPlistPath = System.getProperty("user.home") + "/Library/Preferences/" + domain + ".plist";
+        Properties userProps = loadPlistFile(userPlistPath);
+        combinedProps.putAll(userProps);
+        LOG.info("Loaded " + userProps.size() + " entries from user plist: " + userPlistPath);
+
+        // Global (system-wide) plist
+        String systemPlistPath = "/Library/Preferences/" + domain + ".plist";
+        Properties systemProps = loadPlistFile(systemPlistPath);
+        combinedProps.putAll(systemProps);
+        LOG.info("Loaded " + systemProps.size() + " entries from system plist: " + systemPlistPath);
+
+        LOG.info("Total combined plist entries loaded: " + combinedProps.size());
+        return combinedProps;
+    }
+
+    /**
+     * Internal helper to load a single plist file as Properties
+     */
+    private static Properties loadPlistFile(String plistPath) throws Exception {
+        java.io.File plistFile = new java.io.File(plistPath);
+        Properties props = new Properties();
+
+        if (!plistFile.exists()) {
+            LOG.fine("Plist file not found: " + plistPath);
+            return props;
+        }
+
+        NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(plistFile);
+
+        for (String key : rootDict.allKeys()) {
+            String value = rootDict.objectForKey(key).toString();
+            props.setProperty(key, value);
+            LOG.finer("Plist key=" + key + ", value=" + value);
+        }
+
+        return props;
+    }
+
+
 }
