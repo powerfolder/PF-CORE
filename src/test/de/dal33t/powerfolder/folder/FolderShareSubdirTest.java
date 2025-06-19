@@ -20,7 +20,7 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
-    public void testSplit() throws IOException {
+    public void testShare() throws IOException {
         Folder folder = getFolderAtBart();
         String subDirName = "structure/deep/sharedsubdir.123";
         Path subDirPath = Files.createDirectories(folder.getPhysicalDir().resolve(subDirName));
@@ -32,7 +32,7 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         LoggingManager.setConsoleLogging(Level.FINE);
 
         // Actually create the subfolder
-        Folder subFolder = folder.split(subDirInfo);
+        Folder subFolder = folder.share(subDirInfo);
 
         assertNotNull(subFolder);
         assertEquals(folder.getInfo(), subFolder.getInfo().getParent().getFolderInfo());
