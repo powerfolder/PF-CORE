@@ -5488,7 +5488,7 @@ public class Folder extends PFComponent {
         archiver.cleanupOldArchiveFiles(cleanupDate);
     }
 
-    public Folder split(DirectoryInfo subDirInfo) {
+    public Folder share(DirectoryInfo subDirInfo) {
         Reject.ifNull(subDirInfo, "Subdirectory");
         Reject.ifFalse(subDirInfo.getFolderInfo().equals(currentInfo), "Folder mismatch");
 
