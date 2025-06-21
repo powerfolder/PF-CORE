@@ -35,7 +35,8 @@ import de.dal33t.powerfolder.task.FolderRenameTask;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.TransferManager;
 import de.dal33t.powerfolder.transfer.Upload;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.CloudStorageNotice;
+import de.dal33t.powerfolder.ui.notices.VersionTooOldNotice;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
@@ -1681,12 +1682,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else if (lastProblem.problemCode == Problem.VERSION_TOO_OLD) {
                     logWarning("Our program version is too old: " + lastProblem);
                     if (getController().isUIEnabled()) {
-                        WarningNotice notice = new WarningNotice(
-                                Translation.get("warning_notice.title"),
-                                Translation.get("warning_notice.version_too_old_summary"),
-                                Translation.get("warning_notice.version_too_old_message"));
                         getController().getUIController().getApplicationModel()
-                                .getNoticesModel().handleNotice(notice);
+                                .getNoticesModel().handleNotice(new VersionTooOldNotice());
                     }
                 } else {
                     logWarning("Received: " + lastProblem);
@@ -1719,18 +1716,9 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
 
             } else if (message instanceof QuotaExceeded) {
-                QuotaExceeded msg = (QuotaExceeded) message;
-                if (targetFolder != null && getController().isUIEnabled()) {
-                    WarningNotice notice = new WarningNotice(
-                        Translation.get("warning_notice.title"),
-                        Translation
-                            .get("warning_notice.insufficient_storage_summary"),
-                        Translation.get(
-                            "warning_notice.insufficient_storage_message",
-                            msg.account.getDisplayName(),
-                            msg.file.getFilenameOnly()));
+                if (getController().isUIEnabled()) {
                     getController().getUIController().getApplicationModel()
-                        .getNoticesModel().handleNotice(notice);
+                        .getNoticesModel().handleNotice(CloudStorageNotice.full());
                 }
 
             } else if (message instanceof RequestPart) {

@@ -82,6 +82,9 @@ public class FileArchiver {
         versionsPerFile = -1;
         this.mySelf = mySelf;
         this.size = loadSize();
+        if (Files.exists(archiveDirectory) && !PathUtils.isEmptyDir(archiveDirectory)) {
+            this.size = null;
+        }
     }
 
     private Long loadSize() {
@@ -667,7 +670,9 @@ public class FileArchiver {
     public void purge(Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
 
-        purge(archiveDirectory);
+        purge0(archiveDirectory);
+        size = 0L; saveSize();
+
         folder.fireArchivePurged();
 
         String logMessage = "Successfully cleared versioning of folder " + folder.getName() +
@@ -687,25 +692,39 @@ public class FileArchiver {
     public void purge(FileInfo fileInfo, Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
 
+        long freedSpace = 0;
+        boolean purgedSubdirs = false;
         if (fileInfo.isDiretory()) {
-            purge(archiveDirectory.resolve(fileInfo.getRelativeName()));
+            purge0(archiveDirectory.resolve(fileInfo.getRelativeName()));
+            purgedSubdirs = true;
         } else {
             for (FileInfo archivedFileInfo : getArchivedFilesInfos(fileInfo)) {
-                purge(getArchivedFile(archivedFileInfo));
+                Path archivedFile = getArchivedFile(archivedFileInfo);
+                freedSpace += Files.size(archivedFile);
+                purge0(archivedFile);
             }
         }
+        if (!purgedSubdirs && size != null) {
+            size -= freedSpace;
+        } else {
+            size = null;
+        }
+        saveSize();
+
         folder.fireArchivePurged();
         String logMessage =
             "Successfully cleared versioning of " + (fileInfo.isDiretory() ? "Directory" : "File") + fileInfo.getRelativeName() + " by " + account;
-        logMessage = size == 0 ? logMessage : logMessage + " (Removed "
-            + FileUtils.byteCountToDisplaySize(size) + ")";
+        logMessage = purgedSubdirs ? logMessage : logMessage + " (Removed "
+            + FileUtils.byteCountToDisplaySize(freedSpace) + ")";
         log.info(logMessage);
+
+        if (purgedSubdirs) {
+            folder.getController().getIOProvider().startIO(this::getSize);
+        }
     }
 
-    private void purge(Path path) throws IOException {
+    private void purge0(Path path) throws IOException {
         PathUtils.recursiveDelete(path);
-        size = 0L;
-        saveSize();
     }
 
     /**
@@ -761,6 +780,13 @@ public class FileArchiver {
 
     private void saveSize() {
         Path sizeFile = archiveDirectory.resolve(SIZE_INFO_FILE);
+        if (size == null) {
+            try {
+                Files.deleteIfExists(sizeFile);
+            } catch (IOException e) {
+                log.warning("Unable to delete " + sizeFile + ". " + e);
+            }
+        }
         ByteArrayInputStream bin = new ByteArrayInputStream(String
                 .valueOf(size).getBytes());
         try {

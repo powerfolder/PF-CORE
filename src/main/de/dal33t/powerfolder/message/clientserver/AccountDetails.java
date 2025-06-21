@@ -69,6 +69,14 @@ public class AccountDetails extends Message implements Serializable {
         return recycleBinSize;
     }
 
+    public boolean isSpaceExceededOrDisabled() {
+        if (!getAccount().hasOwnStorage()) {
+            return false;
+        }
+        return spaceUsed > getAccount().getOSSubscription().getStorageSize()
+                || getAccount().getOSSubscription().isDisabled();
+    }
+
     public boolean isUnknown() {
         return spaceUsed < 0;
     }

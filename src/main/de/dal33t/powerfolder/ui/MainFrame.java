@@ -40,13 +40,13 @@ import de.dal33t.powerfolder.event.PausedModeListener;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.ChangePreferencesPermission;
 import de.dal33t.powerfolder.security.FolderCreatePermission;
-import de.dal33t.powerfolder.security.OnlineStorageSubscription;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
 import de.dal33t.powerfolder.ui.model.SyncingModel;
+import de.dal33t.powerfolder.ui.notices.CloudStorageNotice;
 import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
 import de.dal33t.powerfolder.ui.util.*;
 import de.dal33t.powerfolder.ui.widget.ActionLabel;
@@ -75,6 +75,8 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 
 /**
  * Powerfolder gui mainframe
@@ -457,10 +459,8 @@ public class MainFrame extends PFUIComponent {
             setupLabel = new ActionLabel(getController(), mySetupAction);
         }
 
-        loginActionLabel = new ActionLabel(getController(), new MyLoginAction(
-            getController()));
-        noticesActionLabel = new ActionLabel(getController(),
-            new MyShowNoticesAction(getController()));
+        loginActionLabel = new ActionLabel(getController(), new MyLoginAction(getController()));
+        noticesActionLabel = new ActionLabel(getController(), new MyShowNoticesAction(getController()));
         updateNoticesLabel();
 
         MouseListener accountLoginOpener = new MouseAdapter() {
@@ -1156,34 +1156,28 @@ public class MainFrame extends PFUIComponent {
                 .get("main_frame.password_required.text"));
         } else if (client.isConnected()) {
             if (client.isLoggedIn()) {
-                OnlineStorageSubscription storageSubscription = client
-                    .getAccount().getOSSubscription();
+                String text = "";
+
                 AccountDetails ad = client.getAccountDetails();
-                if (storageSubscription.isDisabled()) {
-                    loginActionLabel.setText(Translation
-                            .get("main_frame.storage_subscription_disabled.text"));
-                    if (storageSubscription.getStorageSize() == 0) {
-                        ownStorage = false;
-                    }
-                } else {
-                    totalStorage = storageSubscription.getStorageSize();
+
+                if (ad.getAccount().hasOwnStorage()) {
+                    totalStorage = ad.getAccount().getOSSubscription().getStorageSize();
                     spaceUsed = ad.getSpaceUsed();
-                    if (totalStorage > 0) {
-                        percentageUsed = 100.0d * (double) spaceUsed
-                            / (double) totalStorage;
-                    } else {
-                        ownStorage = false;
-                        loginActionLabel.setText(Translation
-                                .get("main_frame.storage_subscription_disabled.text"));
-                        percentageUsed = 100.0d;
-                    }
+                    percentageUsed = 100.0d * (double) spaceUsed / (double) totalStorage;
                     percentageUsed = Math.max(0.0d, percentageUsed);
                     percentageUsed = Math.min(100.0d, percentageUsed);
-                    String s = ad.getAccount().getDisplayName();
-                    if (!StringUtils.isEmpty(s)) {
-                        loginActionLabel.setText(s);
+                    if (ad.isSpaceExceededOrDisabled()) {
+                        text = Translation.get("main_frame.storage_subscription_disabled.text");
                     }
+                } else {
+                    ownStorage = false;
                 }
+
+                String s = ad.getAccount().getDisplayName();
+                if (text.isBlank() && isNotBlank(s)) {
+                    text = s;
+                }
+                loginActionLabel.setText(text);
             } else if (client.isLoggingIn() || !client.isLoginExecuted()) {
                 // loginActionLabel.setText(Translation
                 // .getTranslation("main_frame.logging_in.text"));
@@ -1520,10 +1514,17 @@ public class MainFrame extends PFUIComponent {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (getController().getNodeManager().isStarted()
-                || getApplicationModel().getLicenseModel()
-                    .getActivationAction() == null)
-            {
+            if (client.isLoggedIn()) {
+                AccountDetails ad = client.getAccountDetails();
+
+                if (ad.isSpaceExceededOrDisabled()) {
+                    getController().getIOProvider().startIO(CloudStorageNotice.full().getPayload(getController()));
+                    return;
+                }
+            }
+
+            if (getController().getNodeManager().isStarted() || getApplicationModel().getLicenseModel()
+                    .getActivationAction() == null) {
                 PFWizard.openLoginWizard(getController(), client);
             } else {
                 // Activate if not running

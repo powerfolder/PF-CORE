@@ -189,7 +189,7 @@ For creation of the installer:
             <include name="cryptomator/cryptolib-1.1.6.jar"/>
             <include name="cryptomator/dagger-2.11.jar"/>
             <include name="cryptomator/dagger-producers-2.11.jar"/>
-            <include name="cryptomator/gson-2.8.1.jar"/>
+            <include name="cryptomator/gson-2.13.1.jar"/>
             <include name="cryptomator/guava-23.0.jar"/>
 			<include name="cryptomator/javax.inject-1.jar" />
 			<include name="cryptomator/slf4j-api-1.7.25.jar"/>
@@ -197,6 +197,8 @@ For creation of the installer:
 
             <include name="quartz-2.2.3.jar"/>
             <include name="quartz-jobs-2.2.3.jar"/>
+
+			<include name="dd-plist-1.28.jar"/>
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">

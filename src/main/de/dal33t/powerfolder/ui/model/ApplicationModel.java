@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.message.FileListRequest;
+import de.dal33t.powerfolder.message.clientserver.AccountDetails;
 import de.dal33t.powerfolder.security.AdminPermission;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.ActionModel;
@@ -42,9 +43,7 @@ import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.dialog.SyncFolderDialog;
 import de.dal33t.powerfolder.ui.event.SyncStatusEvent;
 import de.dal33t.powerfolder.ui.event.SyncStatusListener;
-import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
-import de.dal33t.powerfolder.ui.notices.SimpleNotificationNotice;
-import de.dal33t.powerfolder.ui.notices.WarningNotice;
+import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.NotificationHandlerBase;
 import de.dal33t.powerfolder.ui.widget.ActivityVisualizationWorker;
 import de.dal33t.powerfolder.ui.wizard.DesktopSyncSetupPanel;
@@ -205,30 +204,36 @@ public class ApplicationModel extends PFUIComponent {
         return forSeconds <= 10;
     }
 
-    private void checkCloudSpace() {
-        if (!PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(getController()))
-        {
+    private void checkCloudSpace(ServerClientEvent event) {
+        if (!PreferencesEntry.WARN_FULL_CLOUD.getValueBoolean(getController())) {
             return;
         }
-        ServerClient client = getServerClientModel().getClient();
-        if (client != null && client.isLoggedIn()) {
-            if (!client.getAccount().getOSSubscription().isDisabled()) {
-                long storageSize = client.getAccount().getOSSubscription()
-                    .getStorageSize();
-                long used = client.getAccountDetails().getSpaceUsed();
-                if ((storageSize + used) > 0 && used >= storageSize * 9 / 10
-                    && used < storageSize)
-                {
-                    // More than 90% used. Notify.
-                    WarningNotice notice = new WarningNotice(
-                        Translation.get("warning_notice.title"),
-                        Translation
-                            .get("warning_notice.cloud_full_summary"),
-                        Translation
-                            .get("warning_notice.cloud_full_message"));
-                    noticesModel.handleNotice(notice);
-                }
-            }
+        ServerClient client = event.getClient();
+        if (client == null || !client.isLoggedIn()) {
+            return;
+        }
+        AccountDetails ad = event.getAccountDetails();
+        if (!ad.getAccount().hasOwnStorage()) {
+            return;
+        }
+        long storageSize = ad.getAccount().getOSSubscription().getStorageSize();
+        long storageUsed = ad.getSpaceUsed();
+        double pct = (100.0 * storageUsed) / storageSize;
+
+        if (storageUsed > storageSize) {
+            logWarning(ad.getAccount() + String.format(
+                    ": Storage quota exceeded: used = %d bytes, quota = %d bytes (%.2f%%)", storageUsed, storageSize, pct
+            ));
+            CloudStorageNotice.clear(noticesModel);
+            noticesModel.handleNotice(CloudStorageNotice.full());
+        } else if (pct >= 90.0) {
+            logWarning(ad.getAccount() + String.format(
+                    ": Storage usage is at %.2f%% of quota: used = %d bytes, quota = %d bytes",
+                    pct, storageUsed, storageSize
+            ));
+            noticesModel.handleNotice(CloudStorageNotice.almostFull());
+        } else {
+            CloudStorageNotice.clear(noticesModel);
         }
     }
 
@@ -547,7 +552,7 @@ public class ApplicationModel extends PFUIComponent {
 
         public void login(ServerClientEvent event) {
             handleSyncStatusChange();
-            checkCloudSpace();
+            checkCloudSpace(event);
 
             if (event.getAccountDetails().getAccount()
                 .hasPermission(AdminPermission.INSTANCE))
@@ -569,7 +574,7 @@ public class ApplicationModel extends PFUIComponent {
 
         public void accountUpdated(ServerClientEvent event) {
             handleSyncStatusChange();
-            checkCloudSpace();
+            checkCloudSpace(event);
         }
 
         public void serverConnected(ServerClientEvent event) {

@@ -87,10 +87,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 23;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 12;
+    private static final int MINOR_VERSION = 2;
+    private static final int REVISION_VERSION = 2;
 
-    private static final int SPRINT_NUMBER = 61;
+    private static final int SPRINT_NUMBER = 62;
 
     /**
      * Program version.
@@ -523,6 +523,8 @@ public class Controller extends PFComponent {
         ConfigurationLoader.loadAndMergeCLI(this);
         // Config entry in file
         ConfigurationLoader.loadAndMergeConfigURL(this);
+        // On Mac read plist files
+        ConfigurationLoader.loadAndMergePList(this);
         // Read from installer temp file
         ConfigurationLoader.loadAndMergeFromInstaller(this);
 
