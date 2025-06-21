@@ -185,7 +185,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                     && log.isLoggable(Level.WARNING)
                     && !folderInfo.isMetaFolder()
                     && !folderInfo.getName().endsWith("server_maintenance")
-                    && relativeName.equalsIgnoreCase(PathUtils.DESKTOP_INI_FILENAME)) {
+                    && !relativeName.equalsIgnoreCase(PathUtils.DESKTOP_INI_FILENAME)) {
 
                 log.log(Level.INFO, this.toDetailString() + ": Missing account information", new StackDump());
             }
