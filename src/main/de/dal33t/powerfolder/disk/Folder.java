@@ -5496,6 +5496,10 @@ public class Folder extends PFComponent {
         FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo.getFilenameOnly(), subDirInfo.getParent());
         FolderSettings folderSettings = new FolderSettings(subDirPath, getSyncProfile(), getFileArchiver().getVersionsPerFile());
         Folder subFolder = getController().getFolderRepository().createFolder(subFolderInfo, folderSettings);
+        subFolder.addDefaultExcludes();
+        // From top folder:
+        // Excludes
+        // Archive
         return subFolder;
     }
 
