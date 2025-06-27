@@ -31,7 +31,10 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
     }
 
     private FileInfo toSub(FileInfo f) {
-        return FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+        if (FileInfoFactory.isInSubFolder(f, subfolderInfo)) {
+            return FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+        }
+        return null;
     }
 
     private Collection<FileInfo> toSub(Collection<FileInfo> files) {
@@ -85,7 +88,14 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
 
     @Override
     public void deleteDomain(String domain, int newInitialSize) {
-        delegate.deleteDomain(domain, newInitialSize);
+        Collection<FileInfo> toDelete = findAllFiles(domain);
+        for (FileInfo file : toDelete) {
+            delete(domain, file);
+        }
+        Collection<DirectoryInfo> dirInfosToDelete = findAllDirectories(domain);
+        for (DirectoryInfo dir : dirInfosToDelete) {
+            delete(domain, dir);
+        }
     }
 
     @Override
