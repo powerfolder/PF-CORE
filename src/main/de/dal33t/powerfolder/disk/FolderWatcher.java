@@ -75,7 +75,8 @@ public class FolderWatcher extends PFComponent {
         if (!systemSupport) {
             return false;
         }
-        boolean parentFolderExists = folder.getInfo().getParent().getFolder(getController().getFolderRepository()) != null;
+        boolean parentFolderExists = folder.getInfo().isSubFolder()
+                && folder.getInfo().getParent().getFolder(getController().getFolderRepository()) != null;
         return !parentFolderExists;
     }
 
