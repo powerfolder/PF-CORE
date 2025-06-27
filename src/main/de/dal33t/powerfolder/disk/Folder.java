@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
+import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.*;
 import de.dal33t.powerfolder.event.*;
@@ -1852,8 +1853,20 @@ public class Folder extends PFComponent {
             // Stop old DAO
             dao.stop();
         }
-        dao = new FileInfoDAOHashMapImpl(getMySelf().getId(),
-            diskItemFilter);
+        if (currentInfo.isTopLevel()) {
+            dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
+        } else {
+            Folder parent = currentInfo.getParent().getFolder(getController().getFolderRepository());
+            if (parent != null) {
+                FileInfoDAO parentDAO = parent.getDAO();
+                logInfo(this + ": Using DAO of parent " + parent + " at " + currentInfo.getLocation());
+                dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo);
+            } else {
+                logInfo(this + ": Using OWN DAO for subfolder. Parent folder not here.");
+                dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
+            }
+
+        }
     }
 
     /**
