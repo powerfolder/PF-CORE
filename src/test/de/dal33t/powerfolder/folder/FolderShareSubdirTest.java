@@ -4,6 +4,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
+import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -58,20 +59,14 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
                 null, 0, null, null, new Date(), 0, null, true, null);
 
         FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
-        System.out.println(subFolderInfo.getName());
-
         FileInfo subFileInfo = FileInfoFactory.mapToSubFolder(topFileInfo, subFolderInfo);
 
         assertEquals("project/path/Info.txt", subFileInfo.getRelativeName());
-
         assertEquals(topFileInfo.getFilenameOnly(), subFileInfo.getFilenameOnly());
         assertEquals(topFileInfo.getSize(), subFileInfo.getSize());
         assertEquals(topFileInfo.getModifiedDate(), subFileInfo.getModifiedDate());
         assertEquals(subFolderInfo, subFileInfo.getFolderInfo());
 
-        System.out.println(subFileInfo.getRelativeName());
-        System.out.println(subFileInfo.toDetailString());
-        System.out.println(subFileInfo.getFolderInfo());
 
         FileInfo topFileInfoBack = FileInfoFactory.mapToTopFolder(subFileInfo);
 
@@ -82,9 +77,45 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         assertEquals(topFileInfo.getFolderInfo(), topFileInfoBack.getFolderInfo());
     }
 
-    public void testFileInfoDAO() {
-        FileInfoDAO parentFileInfoDAO = new FileInfoDAOHashMapImpl("ME", null);
+    public void testDAO() {
+        String subDir = "structure/deep/sharedsubdir.123";
+        FolderInfo topFolderInfo = FolderInfoFactory.newTopFolder("TOP", "TopFolder");
+        DirectoryInfo subDirInfo = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(topFolderInfo,
+                subDir,
+                null, 0, null, null, new Date(), 0, null, true, null);
+        FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
 
+        FileInfoDAOHashMapImpl topDAO = new FileInfoDAOHashMapImpl("ME", null);
+        FileInfoDAO subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo);
+
+        FileInfo subFile = FileInfoFactory.unmarshallExistingFile(subFolderInfo,
+                "project/path/Info.txt",
+                null, 100, null, null, new Date(), 0, null, false, null);
+
+        subDAO.store(null, subFile);
+
+        int topCount = topDAO.count(null, true, true);
+        int subCount = subDAO.count(null, true, true);
+        assertEquals(1, topCount);
+        assertEquals(1, subCount);
+
+        FileInfo topOnlyFile = FileInfoFactory.unmarshallExistingFile(topFolderInfo,
+                "in/a/different/subdir/not.txt",
+                null, 100, null, null, new Date(), 0, null, false, null);
+
+        try {
+            subDAO.store(null, topOnlyFile);
+            fail("Must not be able to store file in subDAO");
+        } catch (Exception e) {
+            // Expected
+        }
+
+        topDAO.store(null, topOnlyFile);
+
+        topCount = topDAO.count(null, true, true);
+        subCount = subDAO.count(null, true, true);
+        assertEquals(2, topCount);
+        assertEquals(1, subCount);
 
     }
 }
