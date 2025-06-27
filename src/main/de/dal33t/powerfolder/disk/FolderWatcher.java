@@ -70,8 +70,13 @@ public class FolderWatcher extends PFComponent {
     }
 
     public boolean isSupported() {
-        return ConfigurationEntry.FOLDER_WATCHER_ENABLED
+        boolean systemSupport = ConfigurationEntry.FOLDER_WATCHER_ENABLED
             .getValueBoolean(getController()) && isLibLoaded();
+        if (!systemSupport) {
+            return false;
+        }
+        boolean parentFolderExists = folder.getInfo().getParent().getFolder(getController().getFolderRepository()) != null;
+        return !parentFolderExists;
     }
 
     /**
