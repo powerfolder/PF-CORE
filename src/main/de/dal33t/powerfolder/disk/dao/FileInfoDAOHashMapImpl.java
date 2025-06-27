@@ -59,62 +59,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
-    public int countInSync(String domain, boolean includeDirs,
-        boolean excludeIgnored)
-    {
-        Domain d = getDomain(domain);
-        int c = 0;
-        for (FileInfo fInfo : d.files.values()) {
-            if (filter.isExcluded(fInfo) || fInfo.isDeleted()) {
-                continue;
-            }
-            FileInfo newestFileInfo = findNewestVersion(fInfo, domains.keySet());
-            if (inSync(fInfo, newestFileInfo)) {
-                c++;
-            }
-        }
-        if (includeDirs) {
-            for (FileInfo fInfo : d.directories.values()) {
-                if (filter.isExcluded(fInfo) || fInfo.isDeleted()) {
-                    continue;
-                }
-                FileInfo newestFileInfo = findNewestVersion(fInfo,
-                    domains.keySet());
-                if (inSync(fInfo, newestFileInfo)) {
-                    c++;
-                }
-            }
-        }
-        return c;
-    }
-
-    public long bytesInSync(String domain) {
-        Domain d = getDomain(domain);
-        long bytes = 0;
-        for (FileInfo fInfo : d.files.values()) {
-            if (filter.isExcluded(fInfo) || fInfo.isDeleted()) {
-                continue;
-            }
-            FileInfo newestFileInfo = findNewestVersion(fInfo, domains.keySet());
-            if (inSync(fInfo, newestFileInfo)) {
-                bytes += fInfo.getSize();
-            }
-        }
-        return bytes;
-    }
-
-    private static boolean inSync(FileInfo fileInfo, FileInfo newestFileInfo) {
-        if (newestFileInfo == null) {
-            // It is intended not to use Reject.ifNull for performance reasons.
-            throw new NullPointerException("Newest FileInfo not found of "
-                + fileInfo.toDetailString());
-        }
-        if (fileInfo == null) {
-            return false;
-        }
-        return !newestFileInfo.isNewerThan(fileInfo);
-    }
-
     public void delete(String domain, FileInfo info) {
         if (isFiner()) {
             logFiner(info.getFolderInfo() + ": Deleting in " + domain + " " + info.toDetailString());
@@ -221,10 +165,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             .values());
     }
 
-    public FileInfo findNewestVersion(FileInfo info, String... domainStrings) {
-        return findNewestVersion(info, Arrays.asList(domainStrings));
-    }
-
     private FileInfo findNewestVersion(FileInfo info,
         Collection<String> domainStrings)
     {
@@ -291,26 +231,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 d.files.remove(fileInfo);
             }
         }
-    }
-
-    public Collection<FileInfo> findInDirectory(String domainStr,
-        DirectoryInfo directoryInfo, boolean recursive)
-    {
-        FileInfoCriteria crit = new FileInfoCriteria();
-        crit.addDomain(domainStr);
-        crit.setPath(directoryInfo);
-        crit.setRecursive(recursive);
-        return findFiles(crit);
-    }
-
-    public Collection<FileInfo> findInDirectory(String domainStr, String path,
-        boolean recursive)
-    {
-        FileInfoCriteria crit = new FileInfoCriteria();
-        crit.addDomain(domainStr);
-        crit.setPath(path);
-        crit.setRecursive(recursive);
-        return findFiles(crit);
     }
 
     public Collection<FileInfo> findFiles(FileInfoCriteria criteria) {
