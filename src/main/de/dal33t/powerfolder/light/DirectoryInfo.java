@@ -80,7 +80,7 @@ public class DirectoryInfo extends FileInfo {
         int lastSlash = getRelativeName().lastIndexOf('/');
         if (lastSlash <= 0) {
             // No slash found or only one leading segment (e.g., "dir" or "/dir")
-            return null;
+            return FileInfoFactory.lookupDirectory(getFolderInfo(), "");
         }
         String parentPath = getRelativeName().substring(0, lastSlash);
         return FileInfoFactory.lookupDirectory(getFolderInfo(), parentPath);

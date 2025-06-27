@@ -373,6 +373,55 @@ public final class FileInfoFactory {
         return new DirectoryInfo(foInfo, "", null, null);
     }
 
+    // PF-1790: Subfolder sharing
+
+    public static FileInfo mapToSubFolder(FileInfo topFileInfo, FolderInfo subFolderInfo) {
+        Reject.ifNull(topFileInfo, "FileInfo");
+        Reject.ifNull(subFolderInfo, "SubFolderInfo");
+        Reject.ifNull(subFolderInfo.getParent(), "Not a subfolder");
+
+        String fullPath = topFileInfo.getRelativeName();
+        String subPath = subFolderInfo.getParent().getRelativeName();
+
+        Reject.ifFalse(fullPath.startsWith(subPath), "FileInfo not in subfolder");
+
+        String strippedRelative = fullPath.substring(subPath.length() + 2 + subFolderInfo.getName().length());
+
+        return new FileInfo(
+                strippedRelative,
+                topFileInfo.getOID(),
+                topFileInfo.getSize(),
+                topFileInfo.getModifiedBy(),
+                topFileInfo.getModifiedByAccount(),
+                topFileInfo.getModifiedDate(),
+                topFileInfo.getVersion(),
+                topFileInfo.getHashes(),
+                topFileInfo.isDeleted(),
+                topFileInfo.getTags(),
+                subFolderInfo);
+    }
+
+    public static FileInfo mapToTopFolder(FileInfo subFileInfo) {
+        Reject.ifNull(subFileInfo, "FileInfo");
+        Reject.ifNull(subFileInfo.getFolderInfo().getParent(), "FileInfo not from subfolder");
+
+        String subPath = subFileInfo.getFolderInfo().getParent().getRelativeName();
+        String relativeName = subPath + '/' + subFileInfo.getFolderInfo().getName() + '/'  + subFileInfo.getRelativeName();
+
+        return new FileInfo(
+                relativeName,
+                subFileInfo.getOID(),
+                subFileInfo.getSize(),
+                subFileInfo.getModifiedBy(),
+                subFileInfo.getModifiedByAccount(),
+                subFileInfo.getModifiedDate(),
+                subFileInfo.getVersion(),
+                subFileInfo.getHashes(),
+                subFileInfo.isDeleted(),
+                subFileInfo.getTags(),
+                subFileInfo.getFolderInfo().getParent().getFolderInfo());
+    }
+
     private static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "?", "\"", "*",
         "<", ":", ">", "\r"};
 

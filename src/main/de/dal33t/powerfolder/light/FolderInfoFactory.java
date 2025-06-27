@@ -75,8 +75,8 @@ public class FolderInfoFactory {
         return new FolderInfo(name, id, 0, null).intern();
     }
 
-    public static FolderInfo newFolder(String name, DirectoryInfo parent) {
-        return new FolderInfo(name, IdGenerator.makeFolderId(), 0, parent).intern();
+    public static FolderInfo newFolder(DirectoryInfo subdir) {
+        return new FolderInfo(subdir.getFilenameOnly(), IdGenerator.makeFolderId(), 0, subdir.getParent()).intern();
     }
 
     public static FolderInfo newFolder(String id, String name, DirectoryInfo parent) {
