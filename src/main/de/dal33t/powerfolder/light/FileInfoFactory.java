@@ -375,17 +375,6 @@ public final class FileInfoFactory {
 
     // PF-1790: Subfolder sharing
 
-    public static boolean isInSubFolder(FileInfo topFileInfo, FolderInfo subFolderInfo) {
-        Reject.ifNull(topFileInfo, "FileInfo");
-        Reject.ifNull(subFolderInfo, "SubFolderInfo");
-        Reject.ifNull(subFolderInfo.getParent(), "Not a subfolder");
-
-        String filePath = topFileInfo.getRelativeName();
-        String subPath = subFolderInfo.getParent().getRelativeName();
-
-        return filePath.startsWith(subPath);
-    }
-
     public static FileInfo mapToSubFolder(FileInfo topFileInfo, FolderInfo subFolderInfo) {
         Reject.ifNull(topFileInfo, "FileInfo");
         Reject.ifNull(subFolderInfo, "SubFolderInfo");

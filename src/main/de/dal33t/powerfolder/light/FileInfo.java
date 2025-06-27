@@ -802,6 +802,17 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         return hashes.contains(hash);
     }
 
+    public boolean isInSubFolder(FolderInfo subFolderInfo) {
+        Reject.ifNull(this, "FileInfo");
+        Reject.ifNull(subFolderInfo, "SubFolderInfo");
+        Reject.ifNull(subFolderInfo.getParent(), "Subfolder must have a parent");
+
+        String filePath = this.getRelativeName();
+        String subPath = subFolderInfo.getParent().getRelativeName();
+
+        return filePath != null && filePath.startsWith(subPath);
+    }
+
     @Override
     public int hashCode() {
         if (hash == 0) {
