@@ -97,7 +97,9 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         int topCount = topDAO.count(null, true, true);
         int subCount = subDAO.count(null, true, true);
         assertEquals(1, topCount);
+        assertEquals(1, topDAO.findAllFiles(null).size());
         assertEquals(1, subCount);
+        assertEquals(1, subDAO.findAllFiles(null).size());
 
         FileInfo topOnlyFile = FileInfoFactory.unmarshallExistingFile(topFolderInfo,
                 "in/a/different/subdir/not.txt",
@@ -115,7 +117,14 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         topCount = topDAO.count(null, true, true);
         subCount = subDAO.count(null, true, true);
         assertEquals(2, topCount);
+        assertEquals(2, topDAO.findAllFiles(null).size());
         assertEquals(1, subCount);
+        assertEquals(1, subDAO.findAllFiles(null).size());
 
+        subDAO.deleteDomain(null, 4);
+        topCount = topDAO.count(null, true, true);
+        subCount = subDAO.count(null, true, true);
+        assertEquals(1, topCount);
+        assertEquals(0, subCount);
     }
 }
