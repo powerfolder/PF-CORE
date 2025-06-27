@@ -27,15 +27,14 @@ public class FolderInfoFactoryTest extends TestCase {
 
     public void testParentFolder() {
         FolderInfo top = FolderInfoFactory.newTopFolder("top");
-        DirectoryInfo topRoot = FileInfoFactory.lookupDirectory(top, "");
-        FolderInfo subDirect = FolderInfoFactory.newFolder("subDirect", topRoot);
-
+        DirectoryInfo subDir = FileInfoFactory.lookupDirectory(top, "subDirect");
+        FolderInfo subDirect = FolderInfoFactory.newFolder(subDir);
         assertEquals(top, subDirect.getParent().getFolderInfo());
         assertEquals("", subDirect.getParent().getRelativeName());
         assertEquals("subDirect", subDirect.getLocation().getRelativeName());
 
-        DirectoryInfo topDeepDir = FileInfoFactory.lookupDirectory(top, "this/is/in/a/deep/structure");
-        FolderInfo subDeep = FolderInfoFactory.newFolder("subDeep", topDeepDir);
+        DirectoryInfo topDeepDir = FileInfoFactory.lookupDirectory(top, "this/is/in/a/deep/structure/subDeep");
+        FolderInfo subDeep = FolderInfoFactory.newFolder(topDeepDir);
 
         assertEquals(top, subDeep.getParent().getFolderInfo());
         assertEquals("this/is/in/a/deep/structure", subDeep.getParent().getRelativeName());

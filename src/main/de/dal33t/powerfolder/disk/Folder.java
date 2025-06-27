@@ -5465,7 +5465,7 @@ public class Folder extends PFComponent {
         Reject.ifFalse(subDirInfo.getFolderInfo().equals(currentInfo), "Folder mismatch");
 
         Path subDirPath = subDirInfo.getDiskFile(getController().getFolderRepository());
-        FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo.getFilenameOnly(), subDirInfo.getParent());
+        FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
         FolderSettings folderSettings = new FolderSettings(subDirPath, getSyncProfile(), getFileArchiver().getVersionsPerFile());
         Folder subFolder = getController().getFolderRepository().createFolder(subFolderInfo, folderSettings);
         subFolder.addDefaultExcludes();
