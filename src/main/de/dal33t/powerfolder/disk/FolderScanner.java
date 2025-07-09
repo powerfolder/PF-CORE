@@ -212,9 +212,8 @@ public class FolderScanner extends PFComponent {
             int n = unableToScanFiles.size();
             for (int i = 0; i < n; i++) {
                 Path file = unableToScanFiles.get(i);
-                FileInfo fInfo = FileInfoFactory.lookupInstance(
-                    currentScanningFolder, file);
-                remaining.remove(fInfo.getRelativeName());
+                String relativeName = FileInfoFactory.buildFileName(currentScanningFolder.getLocalBase(), file);
+                remaining.remove(relativeName);
                 // TRAC #523
                 if (Files.isDirectory(file)) {
                     String dirPath = file.toAbsolutePath().toString().replace(
