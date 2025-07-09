@@ -302,7 +302,7 @@ public class FolderScanner extends PFComponent {
             }
             return myResult;
         } catch (RuntimeException re) {
-            logSevere("Folder scanner crashed at " + currentScanningFolder, re);
+            logWarning("Folder scanner crashed at " + currentScanningFolder, re);
             failure = true;
             reset();
             return new ScanResult(ScanResult.ResultState.FAILURE);
@@ -691,7 +691,7 @@ public class FolderScanner extends PFComponent {
                     }
 
                 } catch (RuntimeException e) {
-                    logSevere("Folder scanner crashed @ " + root + ". " + e, e);
+                    logWarning("Folder scanner crashed @ " + root + ". " + e, e);
                     failure = true;
                 } finally {
                     // scan of this directory is ready, notify FolderScanner we
