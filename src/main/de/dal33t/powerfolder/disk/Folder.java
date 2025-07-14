@@ -3335,13 +3335,8 @@ public class Folder extends PFComponent {
                                     }
                                     removeFileLocal(fileInfo, deletingAccount);
                                     if (isInfo()) {
-                                        logInfo(
-                                                "Deleted file in deleted directory: "
-                                                        + fileInfo.toDetailString()
-                                                        + ". Directory: "
-                                                        + fileInfo.toDetailString()
-                                                        + ". Message: "
-                                                        + ioe);
+                                        logInfo("Deleted file in deleted directory: " + fileInfo.toDetailString()
+                                                + ". Directory: " + fileInfo.toDetailString() + ". Message: " + ioe);
                                     }
                                 }
                             }
