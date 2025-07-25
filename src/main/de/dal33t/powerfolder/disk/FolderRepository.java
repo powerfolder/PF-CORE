@@ -3141,7 +3141,9 @@ public class FolderRepository extends PFComponent implements Runnable {
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DATE, -period);
             Date cleanupDate = cal.getTime();
-            for (Folder folder : getFolders(true)) {
+            Collection<Folder> folders = getFolders(true);
+            logInfo("Cleanup started for " + folders.size() + " folders");
+            for (Folder folder : folders) {
                 if (cleanupArchive) {
                     folder.cleanupOldArchiveFiles(cleanupDate);
                 }
