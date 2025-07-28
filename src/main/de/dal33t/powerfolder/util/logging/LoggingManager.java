@@ -297,9 +297,9 @@ public class LoggingManager {
         String logHost = ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller);
         int logPort = ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller);
         String connection = ConfigurationEntry.LOG_SYSLOG_CONNECTION.getValue(controller);
-        boolean useTLS = "TLS".equalsIgnoreCase(connection);
+        boolean useTLS = connection.toUpperCase().contains("TLS");
 
-        if ("TCP".equalsIgnoreCase(connection) || "TLS".equalsIgnoreCase(connection)) {
+        if ("TCP".equalsIgnoreCase(connection) || useTLS) {
             TCPTLSSyslogHandler handler = new TCPTLSSyslogHandler();
             handler.init(name, logHost, logPort, useTLS);
             syslogHandler = handler;
