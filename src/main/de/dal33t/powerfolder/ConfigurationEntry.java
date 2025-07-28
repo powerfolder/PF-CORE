@@ -1022,6 +1022,11 @@ public enum ConfigurationEntry {
      */
     LOG_SYSLOG_LEVEL("log.syslog.level", Level.INFO.getName(), true),
 
+    /**
+     * PFS-4549: Supported types: UDP, TCP and TLS (which is TCP with TLS)
+     */
+    LOG_SYSLOG_CONNECTION("log.syslog.connection", "UDP", true),
+
     LOG_SYSLOG_HOST("log.syslog.host", null, true),
 
     LOG_SYSLOG_PORT("log.syslog.port", 514, true),
