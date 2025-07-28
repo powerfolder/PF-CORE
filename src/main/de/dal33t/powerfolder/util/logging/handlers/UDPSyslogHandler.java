@@ -21,6 +21,7 @@ import de.dal33t.powerfolder.util.logging.handlers.AbstractSyslogHandler;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.logging.ErrorManager;
 
 /**
  * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
@@ -31,8 +32,13 @@ public class UDPSyslogHandler extends AbstractSyslogHandler {
     private SocketAddress address;
 
     public void init(String prefix, String host, int port) {
-        address = new InetSocketAddress(host, port);
         super.init(prefix);
+        address = new InetSocketAddress(host, port);
+        try {
+            connect();
+        } catch (IOException e) {
+            reportError("Initial connection failed", e, ErrorManager.OPEN_FAILURE);
+        }
     }
     @Override
     protected boolean isConnected() {
