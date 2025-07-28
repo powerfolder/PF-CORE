@@ -34,12 +34,8 @@ public class UDPSyslogHandler extends AbstractSyslogHandler {
     public void init(String prefix, String host, int port) {
         super.init(prefix);
         address = new InetSocketAddress(host, port);
-        try {
-            connect();
-        } catch (IOException e) {
-            reportError("Initial connection failed", e, ErrorManager.OPEN_FAILURE);
-        }
     }
+
     @Override
     protected boolean isConnected() {
         return socket != null && socket.isConnected();

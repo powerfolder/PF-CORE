@@ -309,16 +309,9 @@ public class LoggingManager {
             syslogHandler = handler;
         }
 
-        try {
-            syslogHandler.connect();
-            getRootLogger().addHandler(syslogHandler);
-        } catch (IOException e) {
-            e.printStackTrace();
-            getRootLogger().warning("Konnte Syslog-Handler nicht verbinden: " + e.getMessage());
-        }
-
         syslogLoggingLevel = level;
         syslogHandler.setLevel(level);
+        getRootLogger().addHandler(syslogHandler);
 
         setMinimumBaseLoggingLevel();
     }

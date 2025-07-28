@@ -52,11 +52,6 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
         this.host = host;
         this.port = port;
         this.useTLS = useTLS;
-        try {
-            connect();
-        } catch (IOException e) {
-            reportError("Initial connection failed", e, ErrorManager.OPEN_FAILURE);
-        }
     }
 
     @Override
