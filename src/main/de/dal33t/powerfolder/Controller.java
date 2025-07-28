@@ -470,6 +470,10 @@ public class Controller extends PFComponent {
             preferences = preferences.node(getConfigName().toLowerCase());
         }
 
+        if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY.getValueBoolean(getController())) {
+            NetworkUtil.installAllTrustingSSLManager();
+        }
+
         // initialize logger
         // Enabled verbose mode if in config.
         // This logs to file for analysis.
