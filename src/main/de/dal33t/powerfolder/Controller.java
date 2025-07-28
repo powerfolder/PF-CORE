@@ -921,7 +921,7 @@ public class Controller extends PFComponent {
             }
 
             if (ConfigurationEntry.LOG_SYSLOG_HOST.hasNonBlankValue(this)) {
-                str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
+                str = ConfigurationEntry.LOG_LEVEL_SYSLOG.getValue(this);
                 Level syslogLevel = LoggingManager.levelForName(str);
                 LoggingManager.setSyslogLogging(syslogLevel != null
                     ? syslogLevel
