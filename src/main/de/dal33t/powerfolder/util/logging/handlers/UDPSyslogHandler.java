@@ -40,7 +40,7 @@ public class UDPSyslogHandler extends AbstractSyslogHandler {
     }
 
     @Override
-    protected void connect() throws IOException {
+    public void connect() throws IOException {
         socket = new DatagramSocket();
         socket.connect(address);
     }

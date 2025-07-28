@@ -65,7 +65,7 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
     }
 
     @Override
-    protected void connect() throws IOException {
+    public void connect() throws IOException {
         close();
         if (useTLS) {
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
