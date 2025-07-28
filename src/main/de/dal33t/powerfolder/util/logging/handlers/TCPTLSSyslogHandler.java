@@ -17,8 +17,6 @@
  */
 package de.dal33t.powerfolder.util.logging.handlers;
 
-import de.dal33t.powerfolder.util.logging.handlers.AbstractSyslogHandler;
-
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
@@ -63,12 +61,17 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
     public void connect() throws IOException {
         close();
         if (useTLS) {
+            // 1. Erst normalen Socket mit Timeout bauen
+            Socket plainSocket = new Socket();
+            plainSocket.connect(new InetSocketAddress(host, port), 5000); // 5 Sek Timeout
+
+            // 2. Dann upgraden auf TLS (SSLSocket)
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            socket = factory.createSocket(host, port);
+            socket = factory.createSocket(plainSocket, host, port, true);
             ((SSLSocket) socket).startHandshake();
         } else {
             socket = new Socket();
-            socket.connect(new InetSocketAddress(host, port), 3000);
+            socket.connect(new InetSocketAddress(host, port), 5000);
         }
         outputStream = socket.getOutputStream();
     }
