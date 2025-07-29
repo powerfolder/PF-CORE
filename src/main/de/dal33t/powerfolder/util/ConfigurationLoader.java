@@ -22,7 +22,6 @@ package de.dal33t.powerfolder.util;
 import com.dd.plist.NSDictionary;
 import com.dd.plist.PropertyListParser;
 import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.FolderSettings;
 import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
@@ -337,13 +336,7 @@ public class ConfigurationLoader {
         }
 
         try {
-            String binaryName;
-            if (controller.getDistribution() != null) {
-                binaryName = controller.getDistribution().getBinaryName();
-            } else {
-                binaryName = ConfigurationEntry.DIST_BINARY_NAME.getValue(controller);
-            }
-            Properties plistProperties = loadMacOSPlist(binaryName);
+            Properties plistProperties = loadMacOSPlist(controller.getDistribution().getBinaryName());
             boolean overWrite = overwriteConfigEntries(plistProperties);
             if (dropFolderSettings(plistProperties)) {
                 Set<String> entryIds = FolderSettings.loadEntryIds(controller.getConfig());
