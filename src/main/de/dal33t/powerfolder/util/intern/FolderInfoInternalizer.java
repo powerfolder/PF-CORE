@@ -39,6 +39,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
     private final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<FolderInfo, FolderInfo>();
 
     public FolderInfo intern(FolderInfo folderInfo) {
+        LOG.log(Level.WARNING, folderInfo.toString(), new StackDump());
         if (folderInfo == null) {
             return null;
         }
@@ -95,7 +96,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
             }
 
             if (oldInstance != null && !foInfo.isMetaFolder()) {
-                LOG.log(Level.INFO, foInfo + ": rename (forced internalize)");
+                LOG.log(Level.INFO, foInfo + ": rename (forced internalize). old instance: " + oldInstance, new StackDump());
             }
             INSTANCES.put(foInfo, foInfo);
         }
