@@ -36,13 +36,13 @@ import de.dal33t.powerfolder.util.StringUtils;
  */
 public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
     private static final Logger LOG = Logger.getLogger(FolderInfoInternalizer.class.getName());
-    private final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<FolderInfo, FolderInfo>();
+    private final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<>();
 
     public FolderInfo intern(FolderInfo folderInfo) {
         if (folderInfo == null) {
             return null;
         }
-        FolderInfo internInstance = null;
+        FolderInfo internInstance;
         synchronized (INSTANCES) {
             internInstance = INSTANCES.get(folderInfo);
         }
@@ -95,7 +95,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
             }
 
             if (oldInstance != null && !foInfo.isMetaFolder()) {
-                LOG.log(Level.INFO, foInfo + ": rename (forced internalize)");
+                LOG.log(Level.INFO, foInfo + ": rename (forced internalize). old: " + oldInstance);
             }
             INSTANCES.put(foInfo, foInfo);
         }
