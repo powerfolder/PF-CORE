@@ -67,7 +67,7 @@ public class TransferManager extends PFComponent {
 
     public static final long PARTIAL_TRANSFER_DELAY = 5000; // Five seconds
     public static final long ONE_DAY = 24L * 3600 * 1000; // One day in ms
-    public static final long SIX_HOURS = 6L * 3600 * 1000; // 6 hours
+    public static final long ONE_MINUTE = 60L * 1000; // 1 minute
     private static final int INCOMPLETE_TRANSFERS_FILE_DELETE_DAYS_THRESHOLD = 30;
 
     private static final DecimalFormat CPS_FORMAT = new DecimalFormat("#,###,###,###.##");
@@ -250,7 +250,7 @@ public class TransferManager extends PFComponent {
         getController().scheduleAndRepeat(new PartialTransferStatsUpdater(),
             PARTIAL_TRANSFER_DELAY, PARTIAL_TRANSFER_DELAY);
 
-        getController().scheduleAndRepeat(new TransferCleaner(), SIX_HOURS, SIX_HOURS);
+        getController().scheduleAndRepeat(new TransferCleaner(), ONE_MINUTE, ONE_DAY);
 
         started = true;
         logFine("Started");
