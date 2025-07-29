@@ -336,7 +336,13 @@ public class ConfigurationLoader {
         }
 
         try {
-            Properties plistProperties = loadMacOSPlist(controller.getDistribution().getBinaryName());
+            String binaryName;
+            if (controller.getDistribution() != null) {
+                binaryName = controller.getDistribution().getBinaryName();
+            } else {
+                binaryName = ConfigurationEntry.DIST_BINARY_NAME.getValue(controller);
+            }
+            Properties plistProperties = loadMacOSPlist(binaryName);
             boolean overWrite = overwriteConfigEntries(plistProperties);
             if (dropFolderSettings(plistProperties)) {
                 Set<String> entryIds = FolderSettings.loadEntryIds(controller.getConfig());
