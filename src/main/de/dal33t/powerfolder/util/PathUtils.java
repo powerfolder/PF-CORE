@@ -48,6 +48,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -1907,26 +1908,29 @@ public class PathUtils {
     public static boolean deleteIncompletedTransferFiles(Path dir, int daysOld) {
         Reject.ifFalse(Files.isDirectory(dir), "Invalid directory: " + dir.toAbsolutePath());
         Instant cutoff = Instant.now().minus(daysOld, ChronoUnit.DAYS);
-        try {
-            Files.walkFileTree(dir, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)  {
-                    String filename = file.getFileName().toString();
-                    boolean matchesPrefix = INCOMPLETE_FILES_PREFIXES.stream().anyMatch(filename::startsWith);
-                    boolean isOldEnough = attrs.lastModifiedTime().toInstant().isBefore(cutoff);
 
-                    if (matchesPrefix && isOldEnough) {
-                        try {
-                            Files.delete(file);
-                            log.fine("[DELETED] " + file.toAbsolutePath());
-                            System.out.println("[DELETED] " + file.toAbsolutePath());
-                        } catch (IOException e) {
-                            log.fine("[FAILED] to delete " + file.toAbsolutePath() + " - " + e.getMessage());
-                        }
-                    }
-                    return FileVisitResult.CONTINUE;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, entry -> {
+            try {
+                if (!Files.isRegularFile(entry)) return false;
+
+                String filename = entry.getFileName().toString();
+                boolean matchesPrefix = INCOMPLETE_FILES_PREFIXES.stream().anyMatch(filename::startsWith);
+                boolean isOldEnough = Files.getLastModifiedTime(entry).toInstant().isBefore(cutoff);
+
+                return matchesPrefix && isOldEnough;
+            } catch (IOException e) {
+                log.fine("[SKIPPED] Could not check file " + entry.toAbsolutePath() + " - " + e.getMessage());
+                return false;
+            }
+        })) {
+            for (Path file : stream) {
+                try {
+                    Files.delete(file);
+                    log.fine("[DELETED] " + file.toAbsolutePath());
+                } catch (IOException e) {
+                    log.fine("[FAILED] to delete " + file.toAbsolutePath() + " - " + e.getMessage());
                 }
-            });
+            }
             return true;
         } catch (IOException e) {
             log.warning("[FAILED] to delete incompleted download files at " + dir.toAbsolutePath() + " - " + e.getMessage());

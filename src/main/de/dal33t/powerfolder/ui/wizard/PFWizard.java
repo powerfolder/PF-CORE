@@ -89,20 +89,6 @@ public class PFWizard extends PFUIComponent {
         wizard = new Wizard();
     }
 
-    /**
-     * Make absolutely sure decrementOpenWizards() gets called. Should have been
-     * called by Window closed / closing.
-     *
-     * @throws Throwable
-     */
-    protected void finalize() throws Throwable {
-        try {
-            decrementOpenWizards();
-        } finally {
-            super.finalize();
-        }
-    }
-
     private void decrementOpenWizards() {
         if (!doneWizardClose.getAndSet(true)) {
             NUMBER_OF_OPEN_WIZARDS.decrementAndGet();

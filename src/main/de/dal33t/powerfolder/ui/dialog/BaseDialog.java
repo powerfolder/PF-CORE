@@ -131,20 +131,6 @@ public abstract class BaseDialog extends PFUIComponent {
         this.resizable = resizable;
     }
 
-    /**
-     * Make absolutely sure decrementOpenDialogs() gets called.
-     * Should have been called by Window closed / closing.
-     *
-     * @throws Throwable
-     */
-    protected void finalize() throws Throwable {
-        try{
-            decrementOpenDialogCount();
-        } finally {
-            super.finalize();
-        }
-    }
-
     private void decrementOpenDialogCount() {
         if (!doneWizardClose.getAndSet(true)) {
             NUMBER_OF_OPEN_DIALOGS.decrementAndGet();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004 - 2014 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2025 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -14,19 +14,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
- *
- * $Id: ConsoleHandler.java 4734 2008-07-28 03:14:24Z harry $
  */
-package de.dal33t.powerfolder.util.logging;
+package de.dal33t.powerfolder.util.logging.handlers;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.ErrorManager;
@@ -34,61 +27,63 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import de.dal33t.powerfolder.util.Convert;
-
 /**
- * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
+ * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  */
-public class SyslogHandler extends Handler {
+public abstract class AbstractSyslogHandler extends Handler {
 
     private String prefix;
-    private DatagramSocket socket;
-    private SocketAddress address;
-    SimpleDateFormat smf;
+    private SimpleDateFormat smf;
 
-    public void init(String prefix, String host, int port)
-        throws SocketException
-    {
-        socket = new DatagramSocket();
-        address = new InetSocketAddress(host, port);
+    public void init(String prefix) {
         smf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        socket.connect(address);
         this.prefix = prefix;
     }
 
     @Override
     public void publish(LogRecord record) {
-        if (!isLoggable(record)) {
-            return;
-        }
-        if (socket == null || address == null) {
-            return;
-        }
+        if (!isLoggable(record)) return;
+
         try {
-            StringBuilder header = new StringBuilder();
-
-            int facility = 16 * 8; // 16: local use 0
-            int severity = getLevelPrio(record);
-
-            String pri = "<" + Integer.toString(facility + severity) + ">";
-            String version = "1";
-
-            header.append(pri);
-            header.append(version);
-            header.append(" ");
-            header.append(smf.format(new Date(record.getMillis())));
-            header.append(" ");
-            header.append(prefix);
-            header.append(" PowerFolder ");
-            header.append(getPID("-"));
-            header.append(" - - "); // MSGID and STRUCTURED-DATA are NILVALUE i.
-                                    // e. not used
-
-            send(header.toString(), record);
+            ensureConnected();
+            String header = buildHeader(record);
+            String message = formatMessage(record);
+            send(concat(header.getBytes(StandardCharsets.US_ASCII), message.getBytes(StandardCharsets.UTF_8)));
         } catch (IOException e) {
-            reportError(e.getMessage(), e, ErrorManager.WRITE_FAILURE);
+            reportError("Publish failed", e, ErrorManager.WRITE_FAILURE);
+            attemptReconnect();
         }
     }
+
+    private final Object lock = new Object();
+    private long lastConnectAttempt = 0;
+    private static final long reconnectDelayMillis = 10_000;
+
+    private void ensureConnected() throws IOException {
+        synchronized (lock) {
+            if (!isConnected()) {
+                if (System.currentTimeMillis() - lastConnectAttempt > reconnectDelayMillis) {
+                    connect();
+                } else {
+                    throw new IOException("Syslog connection unavailable");
+                }
+            }
+            lastConnectAttempt = System.currentTimeMillis();
+        }
+    }
+
+    private void attemptReconnect() {
+        try {
+            Thread.sleep(500); // short backoff
+            connect();
+        } catch (Exception e) {
+            // Suppress repeated error spam
+        }
+    }
+
+    abstract boolean isConnected();
+
+    public abstract void connect() throws IOException;
 
     private String getLoggerName(LogRecord record) {
         String loggerName = record.getLoggerName();
@@ -116,24 +111,24 @@ public class SyslogHandler extends Handler {
         return 7;
     }
 
-    private void send(String headerString, LogRecord record) throws IOException
-    {
-        StringBuilder message = new StringBuilder();
-        message.append("[");
-        message.append(getLoggerName(record));
-        message.append("] ");
-        message.append(record.getMessage());
-
-        byte[] headerData = headerString.getBytes(Charset.forName("ASCII"));
-        byte[] messageData = message.toString().getBytes(
-            Charset.forName(Convert.UTF8.toString()));
-
-        byte[] data = concat(headerData, messageData);
-        DatagramPacket packet = new DatagramPacket(data, data.length, address);
-        socket.send(packet);
+    private String buildHeader(LogRecord record) {
+        int facility = 16 * 8; // local0
+        int severity = getLevelPrio(record);
+        String pri = "<" + (facility + severity) + ">";
+        return pri + "1 " + smf.format(new Date(record.getMillis())) + " " +
+                prefix + " PowerFolder " + getPID("-") + " - - ";
     }
 
-    private byte[] concat(byte[] headerData, byte[] messageData) {
+    private String formatMessage(LogRecord record) {
+        StringBuilder message = new StringBuilder();
+        message.append("[").append(getLoggerName(record)).append("] ");
+        message.append(getFormatter() != null ? getFormatter().formatMessage(record) : record.getMessage());
+        return message.toString();
+    }
+
+    protected abstract void send(byte[] data) throws IOException;
+
+    protected byte[] concat(byte[] headerData, byte[] messageData) {
         int headerLength = headerData.length;
         int bataLength = messageData.length;
 
@@ -162,6 +157,5 @@ public class SyslogHandler extends Handler {
 
     @Override
     public void close() throws SecurityException {
-        socket.close();
     }
 }

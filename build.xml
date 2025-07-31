@@ -197,6 +197,8 @@ For creation of the installer:
 
             <include name="quartz-2.2.3.jar"/>
             <include name="quartz-jobs-2.2.3.jar"/>
+
+			<include name="dd-plist-1.28.jar"/>
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">

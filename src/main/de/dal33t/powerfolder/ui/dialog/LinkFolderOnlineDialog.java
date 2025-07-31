@@ -162,18 +162,6 @@ public class LinkFolderOnlineDialog extends BaseDialog {
         close();
     }
 
-    protected void finalize() throws Throwable {
-
-        try {
-            // Detatch listener.
-            if (listener != null) {
-                getController().getOSClient().removeListener(listener);
-            }
-        } finally {
-            super.finalize();
-        }
-    }
-
     private void populateOnlineFolders() {
         ServerClient client = getController().getOSClient();
         // Synchronize, so multiple events do not cause flickering.

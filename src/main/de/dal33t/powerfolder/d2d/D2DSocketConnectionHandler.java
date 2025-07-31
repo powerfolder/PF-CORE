@@ -226,15 +226,20 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
             return message;
         } catch (NoSuchMethodException | SecurityException
             | IllegalArgumentException | InvocationTargetException
-            | InstantiationException | IllegalAccessException
+            | InstantiationException | IllegalAccessException | IllegalStateException
             | InvalidProtocolBufferException | NullPointerException e)
         {
             if (isFiner()) {
-                logFiner("Cannot read message(" + klassName + "): " + e.toString());
+                logFiner("Cannot read message(" + klassName + "): " + e);
             }
 
             throw new ConnectionException(
-                "Unable to read message from peer, connection closed", e)
+                "Unable to read message (" + klassName + "), connection closed", e)
+                    .with(this);
+        } catch (RuntimeException e) {
+            logWarning(klassName + ": " + e.getMessage(), e);
+            throw new ConnectionException(
+                    "RuntimeException while reading message (" + klassName + "), connection closed", e)
                     .with(this);
         }
     }

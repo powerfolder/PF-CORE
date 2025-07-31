@@ -87,10 +87,10 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 23;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 102;
+    private static final int MINOR_VERSION = 2;
+    private static final int REVISION_VERSION = 100;
 
-    private static final int SPRINT_NUMBER = 61;
+    private static final int SPRINT_NUMBER = 62;
 
     /**
      * Program version.
@@ -470,6 +470,10 @@ public class Controller extends PFComponent {
             preferences = preferences.node(getConfigName().toLowerCase());
         }
 
+        if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY.getValueBoolean(getController())) {
+            NetworkUtil.installAllTrustingSSLManager();
+        }
+
         // initialize logger
         // Enabled verbose mode if in config.
         // This logs to file for analysis.
@@ -523,6 +527,8 @@ public class Controller extends PFComponent {
         ConfigurationLoader.loadAndMergeCLI(this);
         // Config entry in file
         ConfigurationLoader.loadAndMergeConfigURL(this);
+        // On Mac read plist files
+        ConfigurationLoader.loadAndMergePList(this);
         // Read from installer temp file
         ConfigurationLoader.loadAndMergeFromInstaller(this);
 
@@ -919,7 +925,7 @@ public class Controller extends PFComponent {
             }
 
             if (ConfigurationEntry.LOG_SYSLOG_HOST.hasNonBlankValue(this)) {
-                str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
+                str = ConfigurationEntry.LOG_LEVEL_SYSLOG.getValue(this);
                 Level syslogLevel = LoggingManager.levelForName(str);
                 LoggingManager.setSyslogLogging(syslogLevel != null
                     ? syslogLevel

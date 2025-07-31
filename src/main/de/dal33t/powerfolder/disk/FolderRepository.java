@@ -3131,23 +3131,25 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public void cleanupOldFiles(boolean force) {
         boolean cleanupArchive = true;
-        int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS
-                .getValueInt(getController());
+        int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.getValueInt(getController());
         if (!force && (period == Integer.MAX_VALUE || period <= 0)) { // cleanup := never
             cleanupArchive = false;
         }
         try {
+            logInfo("cleanupOldFiles starting");
             fireCleanupStarted();
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DATE, -period);
             Date cleanupDate = cal.getTime();
-            for (Folder folder : getFolders(true)) {
+            Collection<Folder> folders = getFolders(true);
+            logInfo("cleanupOldFiles started for " + folders.size() + " folders");
+            for (Folder folder : folders) {
                 if (cleanupArchive) {
                     folder.cleanupOldArchiveFiles(cleanupDate);
                 }
                 getController().getTransferManager().cleanIncompletedDownloadFiles(folder);
             }
-            logInfo("Cleanup done for " + getFoldersCount() + " folders");
+            logInfo("cleanupOldFiles done for " + getFoldersCount() + " folders");
         } finally {
             fireCleanupFinished();
         }

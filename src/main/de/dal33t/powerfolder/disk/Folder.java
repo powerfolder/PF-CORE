@@ -3328,16 +3328,15 @@ public class Folder extends PFComponent {
                                     .findFiles(c);
                             for (FileInfo fileInfo : filesInDir) {
                                 if (!fileInfo.isDeleted()) {
-                                    // PFS-2147:
-                                    removeFileLocal(fileInfo, member.getAccountInfo());
+                                    // PFS-2147: PFC-3479
+                                    AccountInfo deletingAccount = remoteFile.getModifiedByAccount();
+                                    if (deletingAccount == null) {
+                                        deletingAccount = member.getAccountInfo();
+                                    }
+                                    removeFileLocal(fileInfo, deletingAccount);
                                     if (isInfo()) {
-                                        logInfo(
-                                                "Deleted file in deleted directory: "
-                                                        + fileInfo.toDetailString()
-                                                        + ". Directory: "
-                                                        + fileInfo.toDetailString()
-                                                        + ". Message: "
-                                                        + ioe.toString());
+                                        logInfo("Deleted file in deleted directory: " + fileInfo.toDetailString()
+                                                + ". Directory: " + fileInfo.toDetailString() + ". Message: " + ioe);
                                     }
                                 }
                             }
