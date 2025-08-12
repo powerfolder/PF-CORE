@@ -25,4 +25,12 @@ public interface OrganizationService {
      * @param organizationId the organization id
      */
     void renewSubscription(String organizationId);
+
+    /**
+     * update max user count
+     *
+     * @param organizationId the organization id
+     * @param newMaxUsers the organization id
+     */
+    void changeMaxUsers(String organizationId, int newMaxUsers);
 }
