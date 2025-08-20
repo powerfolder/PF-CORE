@@ -837,7 +837,8 @@ public class Debug {
     }
 
     private static String dumpStackTrace(Thread t, boolean hideIdleThreds) {
-        if (hideIdleThreds && t.getState() != Thread.State.RUNNABLE) {
+        boolean runningOrBlocked = t.getState() == Thread.State.RUNNABLE || t.getState() == Thread.State.BLOCKED;
+        if (hideIdleThreds && !runningOrBlocked) {
             return null;
         }
         StringBuilder b = new StringBuilder();

@@ -486,7 +486,7 @@ public class FileRequestor extends PFComponent {
             for (Worker worker : workerPool) {
                 if (worker.isTimeout()) {
                     logWarning("Worker timed out detected. Restarting... " + worker);
-                    logWarning(Debug.dumpCurrentStacktraces(false));
+                    logWarning(Debug.dumpCurrentStacktraces(true));
                     worker.stopped = true;
                 }
             }
