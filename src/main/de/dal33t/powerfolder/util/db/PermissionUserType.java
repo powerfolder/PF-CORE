@@ -116,12 +116,14 @@ public class PermissionUserType extends Loggable implements UserType {
             if (fdInfo == null) {
                 logWarning("FolderInfo with ID " + fiId + " not found", new StackDump());
                 fdInfo = FolderInfoFactory.lookupInstance(fiId);
-            } else {
+            } else if (!fdInfo.isLookupInstance()) {
                 // /PF-1790: Remove all this later...
                 if (fdInfo.intern().getVersion() > fdInfo.getVersion()) {
                     logInfo(fdInfo.intern() + ": Found newer version is memory. in DB " + fdInfo);
                     fdInfo = fdInfo.intern();
                 }
+            } else {
+                logInfo(fdInfo + ": Found lookup instance in DB.");
             }
 
             if (StringUtils.isBlank(fdInfo.getName()) && isFine()) {
