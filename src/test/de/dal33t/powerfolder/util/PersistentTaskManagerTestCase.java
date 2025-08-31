@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.util;
 
-import de.dal33t.powerfolder.util.InvitationUtil;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 
@@ -63,7 +62,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         man.scheduleTask(
             new SendMessageTask(
                 getFolderAtBart().createInvitation(
-                    FolderPermission.read(getFolderAtBart().getInfo())),
+                    FolderPermission.read(getFolderAtBart().getInfo()),"sender","receiver"),
                 inf.id));
 
         man.shutdown();
@@ -90,7 +89,7 @@ public class PersistentTaskManagerTestCase extends TwoControllerTestCase {
         getContollerLisa().getFolderRepository().removeFolder(
             getFolderAtLisa(), true);
         Invitation inv = new Invitation(
-            FolderPermission.read(getFolderAtBart().getInfo()));
+            FolderPermission.read(getFolderAtBart().getInfo()),"sender","receiver");
         InvitationUtil.invitationToNode(getContollerBart(), inv, lisaAtBart);
         TestHelper.waitMilliSeconds(2500);
         // Should have one more task now.

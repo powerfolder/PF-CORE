@@ -43,12 +43,13 @@ import java.io.ObjectOutputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 /**
  * An invitation to a folder or an invitation of a user.
  *
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
- *
+ * <p>
  * Adapted the class to be stored to a database using hibernate.
  *
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
@@ -145,10 +146,14 @@ public class Invitation extends FolderRelatedMessage implements Auditable
      *
      * @param permission The permission to the folder of this invitation
      */
-    public Invitation(FolderPermission permission) {
+    public Invitation(FolderPermission permission, String sender, String recipient) {
+        Objects.requireNonNull(sender, "Sender cannot be null");
+        Objects.requireNonNull(recipient, "recipient cannot be null");
         oid = IdGenerator.makeId();
         this.permission = permission;
         this.folder = permission.getFolder();
+        this.sender = sender;
+        this.recipient = recipient;
     }
 
     /**
@@ -156,10 +161,14 @@ public class Invitation extends FolderRelatedMessage implements Auditable
      *
      * @param permission The permission to the folder of this invitation
      */
-    public Invitation(FolderPermission permission, String ID) {
+    public Invitation(FolderPermission permission, String ID,String sender, String recipient) {
+        Objects.requireNonNull(sender, "Sender cannot be null");
+        Objects.requireNonNull(recipient, "recipient cannot be null");
         oid = ID;
         this.permission = permission;
         this.folder = permission.getFolder();
+        this.sender = sender;
+        this.recipient = recipient;
     }
 
     /**
@@ -296,16 +305,8 @@ public class Invitation extends FolderRelatedMessage implements Auditable
         return sender;
     }
 
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
     public String getRecipient() {
         return recipient;
-    }
-
-    public void setRecipient(String recipient) {
-        this.recipient = recipient;
     }
 
     public ServerInfo getServer() {
@@ -396,16 +397,14 @@ public class Invitation extends FolderRelatedMessage implements Auditable
         /** suggestedLocalBase is relative to user home directory. */
         RELATIVE_USER_HOME(3);
 
-        int index;
+        final int index;
 
         PathType(int index) {
             this.index = index;
         }
 
-        PathType getPathTypeForIndex(int index) {
+        PathType getPathTypeForIndex(final int index) {
             switch (index) {
-                case 0:
-                    return ABSOLUTE;
                 case 1:
                     return RELATIVE_APP_DATA;
                 case 2:
@@ -577,38 +576,82 @@ public class Invitation extends FolderRelatedMessage implements Auditable
         return sender;
     }
 
-    /**
-     * @deprecated Since 11.1 use {@link #setSender(String)}
-     */
-    @Deprecated
-    public void setInvitorUsername(String username) {
-        this.username = username;
+    public static Builder builder() {
+        return new Builder();
     }
 
-    /**
-     * @deprecated Since 11.1 use {@link #getRecipient()}
-     */
-    @Deprecated
-    public String getInviteeUsername() {
-        return inviteeUsername;
+    public Builder toBuilder() {
+        return new Builder().from(this);
     }
 
-    /**
-     * @deprecated Since 11.1 use {@link #setRecipient(String)}
-     */
-    @Deprecated
-    public void setInviteeUsername(String username) {
-        this.inviteeUsername = username;
-    }
+    public static final class Builder {
+        private String oid;
 
-    public boolean isFolderInvitation() {
-        return StringUtils.isNotBlank(folder.getId())
-            && !folder.getId().startsWith("AI_");
-    }
+        private FolderInfo folder;
+        private MemberInfo senderDevice;
+        private String invitationText;
+        private String suggestedSyncProfileConfig;
+        private String suggestedLocalBasePath;
+        private int relative;
+        private PathType pathtype;
+        private FolderPermission permission;
+        private ServerInfo server;
+        private String sender;
+        private String recipient;
+        private AuditFields auditFields;
 
-    public boolean isAccountInvitation() {
-        return StringUtils.isBlank(folder.getId())
-            || folder.getId().startsWith("AI_");
+        private Builder from(Invitation src) {
+            this.oid = src.oid;
+            this.folder = src.folder;
+            this.senderDevice = src.senderDevice;
+            this.invitationText = src.invitationText;
+            this.suggestedSyncProfileConfig = src.suggestedSyncProfileConfig;
+            this.suggestedLocalBasePath = src.suggestedLocalBasePath;
+            this.relative = src.relative;
+            this.pathtype = src.pathtype;
+            this.permission = src.permission;
+            this.server = src.server;
+            this.sender = src.sender;
+            this.recipient = src.recipient;
+            this.auditFields = src.auditFields;
+            return this;
+        }
+
+        public Builder oid(String oid) { this.oid = oid; return this; }
+        public Builder folder(FolderInfo folder) { this.folder = folder; return this; }
+        public Builder senderDevice(MemberInfo senderDevice) { this.senderDevice = senderDevice; return this; }
+        public Builder invitationText(String invitationText) { this.invitationText = invitationText; return this; }
+        public Builder suggestedSyncProfileConfig(String cfg) { this.suggestedSyncProfileConfig = cfg; return this; }
+        public Builder suggestedLocalBasePath(String path) { this.suggestedLocalBasePath = path; return this; }
+        public Builder relative(int relative) { this.relative = relative; return this; }
+        public Builder pathtype(PathType pathtype) { this.pathtype = pathtype; return this; }
+        public Builder permission(FolderPermission permission) { this.permission = permission; return this; }
+        public Builder server(ServerInfo server) { this.server = server; return this; }
+        public Builder sender(String sender) { this.sender = sender; return this; }
+        public Builder recipient(String recipient) { this.recipient = recipient; return this; }
+        public Builder auditFields(AuditFields auditFields) { this.auditFields = auditFields; return this; }
+
+        public Invitation build() {
+            Invitation inv = new Invitation();
+
+            inv.oid = (this.oid != null ? this.oid : IdGenerator.makeId());
+            inv.folder = this.folder;
+            inv.senderDevice = this.senderDevice;
+            inv.invitationText = this.invitationText;
+            inv.suggestedSyncProfileConfig = this.suggestedSyncProfileConfig;
+            inv.suggestedLocalBasePath = this.suggestedLocalBasePath;
+            inv.pathtype = this.pathtype;
+            inv.relative = (this.pathtype != null) ? this.pathtype.getIndex() : this.relative;
+
+            inv.permission = this.permission;
+            inv.server = this.server;
+            inv.sender = this.sender;
+            inv.recipient = this.recipient;
+
+            inv.auditFields = (this.auditFields != null) ? this.auditFields : new AuditFields();
+
+            return inv;
+        }
     }
 
 }

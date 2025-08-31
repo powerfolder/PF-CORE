@@ -4921,8 +4921,8 @@ public class Folder extends PFComponent {
      * @return an Invitation to this folder. Includes a intelligent opposite
      *         sync profile.
      */
-    public Invitation createInvitation(FolderPermission fp) {
-        Invitation inv = new Invitation(fp);
+    public Invitation createInvitation(FolderPermission fp, String sender, String recipient) {
+        Invitation inv = new Invitation(fp, sender , recipient);
         inv.setSuggestedSyncProfile(syncProfile);
         if (syncProfile.equals(SyncProfile.BACKUP_SOURCE)) {
             inv.setSuggestedSyncProfile(SyncProfile.BACKUP_TARGET);
@@ -4932,10 +4932,6 @@ public class Folder extends PFComponent {
             inv.setSuggestedSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
         }
         inv.setSuggestedLocalBase(getController(), localBase);
-        String username = getController().getOSClient().getUsername();
-        if (StringUtils.isNotBlank(username)) {
-            inv.setInvitorUsername(username);
-        }
         return inv;
     }
 

@@ -147,10 +147,11 @@ public interface FolderService {
      * Creates an invitation for a given folder permission
      *
      * @param folderPermission The folder permission
-     *
+     * @param sender
+     * @param recipient
      * @return A folder invitation
      */
-    Invitation createInvitation(FolderPermission folderPermission);
+    Invitation createInvitation(FolderPermission folderPermission, String sender, String recipient);
 
     /**
      * @param request

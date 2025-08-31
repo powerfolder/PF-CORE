@@ -121,14 +121,15 @@ public class SendInvitationsPanel extends PFWizardPanel {
 
         // Send invite from text or list.
         if (viaPowerFolderText.getText().length() > 0) {
-            String text = viaPowerFolderText.getText();
-            if(text.contains("<") && text.contains(">")) {
-                text = text.substring(text.indexOf("<") + 1, text.indexOf(">")).trim();
+            String recipient = viaPowerFolderText.getText();
+            if(recipient.contains("<") && recipient.contains(">")) {
+                recipient = recipient.substring(recipient.indexOf("<") + 1, recipient.indexOf(">")).trim();
             }
-            if (LoginUtil.isValidUsername(getController(), text)) {
+            if (LoginUtil.isValidUsername(getController(), recipient)) {
+                String sender = getController().getOSClient().getAccount().getUsername();
                 Invitation invitation = folderInfo.getFolder(getController())
-                    .createInvitation(folderPermission);
-                sendInvite(candidates, text, invitation);
+                    .createInvitation(folderPermission, sender, recipient);
+                sendInvite(candidates, invitation);
             } else {
                 invalidEmail.setVisible(true);
                 return false;
@@ -136,11 +137,12 @@ public class SendInvitationsPanel extends PFWizardPanel {
             theResult = true;
         }
         for (Object o : inviteesListModel.toArray()) {
+            String recipient = (String) o;
+            String sender = getController().getOSClient().getAccount().getUsername();
             Invitation invitation = folderInfo.getFolder(getController())
-                .createInvitation(folderPermission);
+                .createInvitation(folderPermission, sender, recipient);
 
-            String invitee = (String) o;
-            sendInvite(candidates, invitee, invitation);
+            sendInvite(candidates, invitation);
             theResult = true;
         }
 
@@ -152,15 +154,13 @@ public class SendInvitationsPanel extends PFWizardPanel {
      * be a valid email.
      *
      * @param candidates
-     * @param invitee
      */
-    private void sendInvite(Collection<Member> candidates, String invitee, Invitation invitation) {
-        Reject.ifBlank(invitee, "Invitee");
+    private void sendInvite(Collection<Member> candidates, Invitation invitation) {
+        Reject.ifBlank(invitation.getRecipient(), "Invitee");
         RuntimeException rte = null;
-        invitee = invitee.trim().toLowerCase();
+        String invitee = invitation.getRecipient().trim().toLowerCase();
         // Invitation by email
         try {
-            invitation.setRecipient(invitee);
             getController().getOSClient().getFolderService(invitation.folder).sendInvitation(invitation, false);
         } catch (RuntimeException e) {
             LOG.log(Level.SEVERE, "Unable to send invitation to " + invitee
