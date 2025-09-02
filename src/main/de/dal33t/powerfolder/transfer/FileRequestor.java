@@ -190,8 +190,14 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (!folder.hasOwnDatabase()) {
-            if (isFine()) {
-                logFine("Not requesting files. No own database for " + folder);
+            if (folder.isScanning() || folder.isDeviceDisconnected()) {
+                if (isFine()) {
+                    logFine("Not requesting files. No own database for " + folder);
+                }
+            } else {
+                if (isInfo()) {
+                    logInfo("Not requesting files. No own database for " + folder);
+                }
             }
             return;
         }
