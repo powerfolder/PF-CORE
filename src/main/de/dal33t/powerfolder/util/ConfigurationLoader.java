@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -206,11 +207,11 @@ public class ConfigurationLoader {
             props.load(in);
 
             url = props.getProperty(ConfigurationEntry.CONFIG_URL
-                .getConfigKey());
+                    .getConfigKey());
             if (StringUtils.isBlank(url)) {
                 String fn = props
-                    .getProperty(ConfigurationEntry.INSTALLER_FILENAME
-                        .getConfigKey());
+                        .getProperty(ConfigurationEntry.INSTALLER_FILENAME
+                                .getConfigKey());
                 if (StringUtils.isNotBlank(fn)) {
                     url = PathUtils.decodeURLFromFilename(fn);
                 }
@@ -230,6 +231,9 @@ public class ConfigurationLoader {
             }
             delete = true;
             return true;
+        } catch (AccessDeniedException e) {
+            LOG.fine("Access denied to read configuration " + initFile + " / "
+                    + url + ". " + e);
         } catch (Exception e) {
             LOG.warning("Unable to read configuration " + initFile + " / "
                 + url + ". " + e);
