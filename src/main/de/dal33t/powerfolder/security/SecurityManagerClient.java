@@ -591,6 +591,8 @@ public class SecurityManagerClient extends PFComponent implements
                 if (node.isMySelf() && client.isConnected()) {
                     try {
                         client.refreshAccountDetails(true);
+                    } catch (NotLoggedInException e) {
+                        logFine("Unable to refresh. Not logged in.");
                     } catch (Exception e) {
                         logWarning("Unable to refresh account details. " + e);
                         logFiner(e);
