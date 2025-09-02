@@ -20,8 +20,10 @@
 package de.dal33t.powerfolder.util.os;
 
 import java.awt.SystemTray;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.security.KeyStore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +31,10 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 public class OSUtil {
 
@@ -312,16 +318,52 @@ public class OSUtil {
         return false;
     }
 
-    public static void configureTruststore() {
-        if (isWindowsSystem()) {
-            System.setProperty("javax.net.ssl.trustStoreType", "Windows-ROOT");
-            System.setProperty("javax.net.ssl.trustStore", "");
-        } else if (isMacOS()) {
-            System.setProperty("javax.net.ssl.trustStoreType", "KeychainStore");
-            System.setProperty("javax.net.ssl.trustStore", "");
-        } else {
-            // Linux/Unix: Standard bleibt aktiv (cacerts im JDK)
-            // Kein Setzen notwendig
+    public static boolean configureTruststore() {
+        Logger log = Logger.getLogger(OSUtil.class.getName());
+        try {
+            KeyStore ks;
+            try {
+                if (isWindowsSystem()) {
+                    log.fine("Using Windows-ROOT trust store");
+                    ks = KeyStore.getInstance("Windows-ROOT");
+                    ks.load(null, null);
+                } else if (isMacOS()) {
+                    log.fine("Using macOS KeychainStore");
+                    ks = KeyStore.getInstance("KeychainStore");
+                    ks.load(null, null);
+                } else {
+                    log.fine("Using default cacerts trust store");
+                    String cacertsPath = System.getProperty("java.home") + "/lib/security/cacerts";
+                    ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                    try (FileInputStream fis = new FileInputStream(cacertsPath)) {
+                        ks.load(fis, "changeit".toCharArray()); // default pw: changeit
+                    }
+                }
+            } catch (Exception e) {
+                log.info("Could not load OS trust store, falling back to cacerts: " + e);
+                String cacertsPath = System.getProperty("java.home") + "/lib/security/cacerts";
+                ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                try (FileInputStream fis = new FileInputStream(cacertsPath)) {
+                    ks.load(fis, "changeit".toCharArray());
+                }
+            }
+
+            // Build TrustManagerFactory
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+                    TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(ks);
+
+            // Build SSLContext
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, tmf.getTrustManagers(), null);
+
+            // Apply globally
+            HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
+            return true;
+
+        } catch (Exception e) {
+            log.info("Unable to load OS trust store, falling back to default java trust store. " + e);
+            return false;
         }
     }
 }
