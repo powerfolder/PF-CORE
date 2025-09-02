@@ -321,7 +321,9 @@ public class OSUtil {
     public static boolean configureTruststore() {
         Logger log = Logger.getLogger(OSUtil.class.getName());
         try {
-            KeyStore ks;
+            KeyStore ks = null;
+
+            // 1. OS Truststore versuchen
             try {
                 if (isWindowsSystem()) {
                     log.fine("Using Windows-ROOT trust store");
@@ -331,38 +333,46 @@ public class OSUtil {
                     log.fine("Using macOS KeychainStore");
                     ks = KeyStore.getInstance("KeychainStore");
                     ks.load(null, null);
-                } else {
-                    log.fine("Using default cacerts trust store");
-                    String cacertsPath = System.getProperty("java.home") + "/lib/security/cacerts";
-                    ks = KeyStore.getInstance(KeyStore.getDefaultType());
-                    try (FileInputStream fis = new FileInputStream(cacertsPath)) {
-                        ks.load(fis, "changeit".toCharArray()); // default pw: changeit
-                    }
                 }
             } catch (Exception e) {
-                log.info("Could not load OS trust store, falling back to cacerts: " + e);
-                String cacertsPath = System.getProperty("java.home") + "/lib/security/cacerts";
-                ks = KeyStore.getInstance(KeyStore.getDefaultType());
-                try (FileInputStream fis = new FileInputStream(cacertsPath)) {
-                    ks.load(fis, "changeit".toCharArray());
-                }
+                log.info("Could not load OS trust store: " + e);
+                ks = null;
             }
 
-            // Build TrustManagerFactory
+            // 2. Java cacerts laden
+            String cacertsPath = System.getProperty("java.home") + "/lib/security/cacerts";
+            KeyStore jks = KeyStore.getInstance(KeyStore.getDefaultType());
+            try (FileInputStream fis = new FileInputStream(cacertsPath)) {
+                jks.load(fis, "changeit".toCharArray());
+            }
+
+            // 3. Falls OS-Store da, kombiniere mit cacerts
+            if (ks != null) {
+                for (var alias : java.util.Collections.list(jks.aliases())) {
+                    if (!ks.containsAlias(alias)) {
+                        ks.setCertificateEntry(alias, jks.getCertificate(alias));
+                    }
+                }
+            } else {
+                ks = jks;
+                log.fine("Using only Java cacerts trust store");
+            }
+
+            // 4. TrustManagerFactory bauen
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(
                     TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(ks);
 
-            // Build SSLContext
+            // 5. SSLContext bauen
             SSLContext ctx = SSLContext.getInstance("TLS");
             ctx.init(null, tmf.getTrustManagers(), null);
 
-            // Apply globally
+            // 6. Global setzen
             HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
             return true;
 
         } catch (Exception e) {
-            log.info("Unable to load OS trust store, falling back to default java trust store. " + e);
+            log.log(Level.WARNING, "Unable to configure combined trust store", e);
             return false;
         }
     }
