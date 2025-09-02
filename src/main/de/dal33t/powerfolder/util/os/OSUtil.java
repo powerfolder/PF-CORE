@@ -355,16 +355,13 @@ public class OSUtil {
                 }
             }
 
-            // JDK-Zertifikate übernehmen
-            // Dazu den KeyStore aus der JDK-TMF auslesen:
-            // Trick: ein neues leeres KeyStore erzeugen und mit allen Zertis aus dem TrustManager befüllen
+            // Zertifikate aus JDK-TrustManagern hinzufügen
+            int i = 0;
             for (TrustManager tm : jdkTmf.getTrustManagers()) {
                 if (tm instanceof javax.net.ssl.X509TrustManager) {
-                    java.security.cert.X509Certificate[] accepted =
-                            ((javax.net.ssl.X509TrustManager) tm).getAcceptedIssuers();
-                    int i = 0;
-                    for (java.security.cert.X509Certificate cert : accepted) {
-                        String alias = "jdk-" + (i++);
+                    javax.net.ssl.X509TrustManager xtm = (javax.net.ssl.X509TrustManager) tm;
+                    for (java.security.cert.X509Certificate cert : xtm.getAcceptedIssuers()) {
+                        String alias = "jdk-" + (i++);  // immer weiter hochzählen
                         if (!combined.containsAlias(alias)) {
                             combined.setCertificateEntry(alias, cert);
                         }
