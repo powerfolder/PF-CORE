@@ -311,4 +311,17 @@ public class OSUtil {
             + " - see error above!");
         return false;
     }
+
+    public static void configureTruststore() {
+        if (isWindowsSystem()) {
+            System.setProperty("javax.net.ssl.trustStoreType", "Windows-ROOT");
+            System.setProperty("javax.net.ssl.trustStore", "");
+        } else if (isMacOS()) {
+            System.setProperty("javax.net.ssl.trustStoreType", "KeychainStore");
+            System.setProperty("javax.net.ssl.trustStore", "");
+        } else {
+            // Linux/Unix: Standard bleibt aktiv (cacerts im JDK)
+            // Kein Setzen notwendig
+        }
+    }
 }
