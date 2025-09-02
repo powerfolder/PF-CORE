@@ -348,7 +348,7 @@ public class OSUtil {
 
             // 3. Falls OS-Store da, kombiniere mit cacerts
             if (ks != null) {
-                for (var alias : java.util.Collections.list(jks.aliases())) {
+                for (String alias : java.util.Collections.list(jks.aliases())) {
                     if (!ks.containsAlias(alias)) {
                         ks.setCertificateEntry(alias, jks.getCertificate(alias));
                     }
