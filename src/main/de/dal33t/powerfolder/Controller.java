@@ -265,6 +265,7 @@ public class Controller extends PFComponent {
         System.setProperty("com.apple.mrj.application.apple.menu.about.name",
             "PowerFolder");
         System.setProperty("illegal-access", "deny");
+        OSUtil.configureTruststore();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         pausedModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(PausedModeListener.class);
