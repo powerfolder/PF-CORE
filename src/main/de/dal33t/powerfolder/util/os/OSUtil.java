@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.util.os.mac.MacUtils;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
 public class OSUtil {
@@ -321,49 +322,62 @@ public class OSUtil {
     public static boolean configureTruststore() {
         Logger log = Logger.getLogger(OSUtil.class.getName());
         try {
-            KeyStore ks = null;
+            // 1. JDK-Default-TrustManager ermitteln (dies lädt intern das "cacerts" oder "jssecacerts")
+            TrustManagerFactory jdkTmf = TrustManagerFactory.getInstance(
+                    TrustManagerFactory.getDefaultAlgorithm());
+            jdkTmf.init((KeyStore) null); // null = verwende Standard-TrustStore (in-memory)
 
-            // 1. OS Truststore versuchen
+            // 2. OS-Truststore versuchen
+            KeyStore osStore = null;
             try {
                 if (isWindowsSystem()) {
-                    log.fine("Using Windows-ROOT trust store");
-                    ks = KeyStore.getInstance("Windows-ROOT");
-                    ks.load(null, null);
+                    log.fine("Loading Windows-ROOT trust store");
+                    osStore = KeyStore.getInstance("Windows-ROOT");
+                    osStore.load(null, null);
                 } else if (isMacOS()) {
-                    log.fine("Using macOS KeychainStore");
-                    ks = KeyStore.getInstance("KeychainStore");
-                    ks.load(null, null);
+                    log.fine("Loading macOS KeychainStore");
+                    osStore = KeyStore.getInstance("KeychainStore");
+                    osStore.load(null, null);
                 }
             } catch (Exception e) {
                 log.info("Could not load OS trust store: " + e);
-                ks = null;
+                osStore = null;
             }
 
-            // 2. Java cacerts laden
-            String cacertsPath = System.getProperty("java.home") + "/lib/security/cacerts";
-            KeyStore jks = KeyStore.getInstance(KeyStore.getDefaultType());
-            try (FileInputStream fis = new FileInputStream(cacertsPath)) {
-                jks.load(fis, "changeit".toCharArray());
+            // 3. Kombinierten KeyStore anlegen
+            KeyStore combined = KeyStore.getInstance(KeyStore.getDefaultType());
+            combined.load(null, null);
+
+            // OS-Zertifikate übernehmen
+            if (osStore != null) {
+                for (String alias : java.util.Collections.list(osStore.aliases())) {
+                    combined.setCertificateEntry(alias, osStore.getCertificate(alias));
+                }
             }
 
-            // 3. Falls OS-Store da, kombiniere mit cacerts
-            if (ks != null) {
-                for (String alias : java.util.Collections.list(jks.aliases())) {
-                    if (!ks.containsAlias(alias)) {
-                        ks.setCertificateEntry(alias, jks.getCertificate(alias));
+            // JDK-Zertifikate übernehmen
+            // Dazu den KeyStore aus der JDK-TMF auslesen:
+            // Trick: ein neues leeres KeyStore erzeugen und mit allen Zertis aus dem TrustManager befüllen
+            for (TrustManager tm : jdkTmf.getTrustManagers()) {
+                if (tm instanceof javax.net.ssl.X509TrustManager) {
+                    java.security.cert.X509Certificate[] accepted =
+                            ((javax.net.ssl.X509TrustManager) tm).getAcceptedIssuers();
+                    int i = 0;
+                    for (java.security.cert.X509Certificate cert : accepted) {
+                        String alias = "jdk-" + (i++);
+                        if (!combined.containsAlias(alias)) {
+                            combined.setCertificateEntry(alias, cert);
+                        }
                     }
                 }
-            } else {
-                ks = jks;
-                log.fine("Using only Java cacerts trust store");
             }
 
-            // 4. TrustManagerFactory bauen
+            // 4. TrustManagerFactory mit kombiniertem Store
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(
                     TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(ks);
+            tmf.init(combined);
 
-            // 5. SSLContext bauen
+            // 5. SSLContext initialisieren
             SSLContext ctx = SSLContext.getInstance("TLS");
             ctx.init(null, tmf.getTrustManagers(), null);
 
@@ -372,7 +386,7 @@ public class OSUtil {
             return true;
 
         } catch (Exception e) {
-            log.log(Level.WARNING, "Unable to configure combined trust store", e);
+            log.log(Level.WARNING, "Unable to configure combined truststore. " + e, e);
             return false;
         }
     }
