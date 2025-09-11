@@ -338,8 +338,9 @@ public class FolderStatistic extends PFComponent {
 
             if (newestFileInfo == null) {
                 if (folder.hasWritePermission(member)) {
-                    logWarning("Newest version not found for "
-                        + fileInfo.toDetailString());
+                    if (isFine()) {
+                        logFine("Newest version not found for " + fileInfo.toDetailString());
+                    }
                 }
                 // newestFileInfo = fileInfo;
                 continue;
