@@ -742,6 +742,12 @@ public class FolderStatistic extends PFComponent {
             scheduleCalculate();
         }
 
+        @Override
+        public void archivePurged(FolderEvent folderEvent) {
+            // Recalculate statistics
+            scheduleCalculate();
+        }
+
         public void statisticsCalculated(FolderEvent folderEvent) {
             // do not implement may cause loop!
         }
