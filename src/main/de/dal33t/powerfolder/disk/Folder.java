@@ -878,7 +878,6 @@ public class Folder extends PFComponent {
                                 }
                             }
                             arch.archive(oldLocalFileInfo, targetFile, false);
-                            fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                         }
                         logFileOperation("UPDATED", oldLocalFileInfo, fInfo);
                     } catch (IOException e) {
@@ -1515,7 +1514,6 @@ public class Folder extends PFComponent {
                         if (isFiner()) {
                             logFiner("Scan file changed: " + syncFile.toDetailString());
                         }
-                        syncFile.setPreviousSize(localFile.getSize());
                         checkFile(syncFile);
                     } else {
                         if (isFiner()) {
@@ -2282,7 +2280,6 @@ public class Folder extends PFComponent {
                     fileInfo.getModifiedDate(), fileInfo.getVersion() + 1,
                     fileInfo.getHashes(), fileInfo.isDiretory(),
                     fileInfo.getTags());
-                newFileInfo.setPreviousSize(fileInfo.getSize());
                 brokenExisting.set(i, newFileInfo);
             }
             store(getMySelf(), brokenExisting);
@@ -3896,7 +3893,6 @@ public class Folder extends PFComponent {
                             + remoteFileInfo.toDetailString()
                             + ". Taking over modification infos");
                     }
-                    remoteFileInfo.setPreviousSize(remoteFileInfo.getSize());
                     found.add(remoteFileInfo);
                 }
             } else if (!fileCaseSame && dateSame && fileSizeSame) {
@@ -3931,7 +3927,6 @@ public class Folder extends PFComponent {
                     }
 
                     remoteFileInfo = correctFolderInfo(remoteFileInfo);
-                    remoteFileInfo.setPreviousSize(localFileInfo.getSize());
                     found.add(remoteFileInfo);
                 }
             }
