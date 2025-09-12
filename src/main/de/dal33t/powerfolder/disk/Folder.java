@@ -1668,9 +1668,8 @@ public class Folder extends PFComponent {
         return hasFile(fi);
     }
 
-    public boolean copyFile(FileInfo sourceFile, Path destinationFilePath) {
+    public boolean copy(FileInfo sourceFile, Path destinationFilePath) {
         Reject.ifNull(sourceFile, "sourceFile");
-        Reject.ifFalse(sourceFile.isFile(), "sourceFile");
         Reject.ifNull(destinationFilePath, "destinationFilePath");
 
         Path sourceFilePath = sourceFile.getDiskFile(getController().getFolderRepository());
