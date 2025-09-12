@@ -1668,6 +1668,26 @@ public class Folder extends PFComponent {
         return hasFile(fi);
     }
 
+    public boolean copyFile(FileInfo sourceFile, Path destinationFilePath) {
+        Reject.ifNull(sourceFile, "sourceFile");
+        Reject.ifFalse(sourceFile.isFile(), "sourceFile");
+        Reject.ifNull(destinationFilePath, "destinationFilePath");
+
+        Path sourceFilePath = sourceFile.getDiskFile(getController().getFolderRepository());
+        FileInfo destinationFile = FileInfoFactory.lookupInstance(this, destinationFilePath);
+        try {
+            watcher.addIgnoreFile(destinationFile);
+            PathUtils.recursiveCopyVisitor(sourceFilePath, destinationFilePath);
+            return true;
+        } catch (IOException e) {
+            logWarning(this + ": Unable to copy " + sourceFile +
+                    " to " + destinationFilePath + ". " + e);
+            return false;
+        } finally {
+            watcher.removeIgnoreFile(destinationFile);
+        }
+    }
+
     /**
      * Removes a file on local folder, diskfile will be removed and file tagged
      * as deleted
@@ -5471,22 +5491,4 @@ public class Folder extends PFComponent {
         }
 
     }
-
-    /**
-     * PFS-1994: Mark this Folder as a Folder which has been moved.
-     * @deprecated since 14.0
-     */
-    @Deprecated
-    public void setMovedFolder(boolean movedFolder){
-        isMovedFolder = movedFolder;
-    }
-
-    /**
-     * @deprecated since 14.0
-     */
-    @Deprecated
-    public boolean isMovedFolder() {
-        return isMovedFolder;
-    }
-
 }
