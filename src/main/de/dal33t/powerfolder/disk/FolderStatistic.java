@@ -47,15 +47,8 @@ public class FolderStatistic extends PFComponent {
 
     public static final int UNKNOWN_SYNC_STATUS = -1;
 
-    /**
-     * if the number of files is more than MAX_ITEMS the updates will be delayed
-     * to a maximum that can be configured in
-     * {@link ConfigurationEntry#FOLDER_STATS_CALC_TIME}
-     */
-    public static final int MAX_ITEMS = 2500;
-
     private final Folder folder;
-    private final long delay;
+    private final long maxDelay;
 
     private volatile FolderStatisticInfo calculating;
     private volatile FolderStatisticInfo current;
@@ -80,7 +73,7 @@ public class FolderStatistic extends PFComponent {
         estimator = new SimpleTimeEstimator();
         this.folder = folder;
         downloadCounter = new TransferCounter();
-        delay = 1000L * ConfigurationEntry.FOLDER_STATS_CALC_TIME
+        maxDelay = 1000L * ConfigurationEntry.FOLDER_STATS_CALC_TIME
             .getValueInt(getController());
 
         MyFolderListener listener = new MyFolderListener();
@@ -119,11 +112,12 @@ public class FolderStatistic extends PFComponent {
         if (calculatorTask != null) {
             return -1L;
         }
-        if (current.getAnalyzedFiles() < MAX_ITEMS) {
-            return setCalculateIn(4000);
-        } else {
-            return setCalculateIn(delay);
-        }
+        long delay = current.getAnalyzedFiles() / 1000;
+        delay = Math.max(100, delay);
+        delay = Math.min(delay, maxDelay);
+        delay = setCalculateIn(delay);
+        logInfo(folder + ": delay " + delay + "ms");
+        return delay;
     }
 
     // Calculator timer code
