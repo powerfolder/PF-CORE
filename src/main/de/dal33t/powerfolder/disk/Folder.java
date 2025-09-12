@@ -1671,9 +1671,15 @@ public class Folder extends PFComponent {
     public boolean copy(FileInfo sourceFile, Path destinationFilePath) {
         Reject.ifNull(sourceFile, "sourceFile");
         Reject.ifNull(destinationFilePath, "destinationFilePath");
+        Reject.ifTrue(Files.exists(destinationFilePath), destinationFilePath + ": already existing");
 
         Path sourceFilePath = sourceFile.getDiskFile(getController().getFolderRepository());
         FileInfo destinationFile = FileInfoFactory.lookupInstance(this, destinationFilePath);
+
+        Reject.ifFalse(Files.exists(sourceFilePath), sourceFilePath + " does not exist");
+        Reject.ifTrue(PathUtils.isSubdirectory(sourceFilePath, destinationFilePath),
+                destinationFilePath + " must not be a subdirectory of " + sourceFilePath);
+
         try {
             watcher.addIgnoreFile(destinationFile);
             PathUtils.recursiveCopyVisitor(sourceFilePath, destinationFilePath);
