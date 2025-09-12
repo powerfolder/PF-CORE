@@ -116,7 +116,7 @@ public class FolderStatistic extends PFComponent {
         delay = Math.max(100, delay);
         delay = Math.min(delay, maxDelay);
         delay = setCalculateIn(delay);
-        logInfo(folder + ": delay " + delay + "ms");
+        logInfo(folder + ": scheduleCalculate delay " + delay + "ms");
         return delay;
     }
 
