@@ -82,11 +82,6 @@ public class FileArchiver {
         versionsPerFile = -1;
         this.mySelf = mySelf;
         this.size = loadSize();
-        if (size != null && size == 0
-                && Files.exists(archiveDirectory) && !PathUtils.isEmptyDir(archiveDirectory)) {
-            // Recalculate
-            this.size = null;
-        }
     }
 
     private Long loadSize() {
