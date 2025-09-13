@@ -1061,7 +1061,9 @@ public class Folder extends PFComponent {
         if (currentInfo.isSubFolder()) {
             Folder parentFolder = currentInfo.getParent().getFolder(getController().getFolderRepository());
             if (parentFolder != null) {
-                logInfo(this + ": Skipping scan of local filesystem. is handled by parent " + parentFolder);
+                if (isFiner()) {
+                    logFiner(this + ": Skipping scan of local filesystem. is handled by parent " + parentFolder);
+                }
                 return false;
             }
         }
