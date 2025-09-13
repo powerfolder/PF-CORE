@@ -39,7 +39,10 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
     }
 
     private Collection<FileInfo> toSub(Collection<FileInfo> files) {
-        return files.stream().map(this::toSub).filter(Objects::nonNull).collect(Collectors.toList());
+        return files.stream()
+                .filter(f -> f.isInSubFolder(subfolderInfo))
+                .map(this::toSub)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -101,7 +104,10 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
 
     @Override
     public Collection<FileInfo> findAllFiles(String domain) {
-        return toSub(delegate.findAllFiles(domain));
+        return delegate.findAllFiles(domain).stream()
+                .filter(f -> f.isInSubFolder(subfolderInfo))
+                .map(this::toSub)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -113,7 +119,10 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
 
     @Override
     public Collection<FileInfo> findFiles(FileInfoCriteria criteria) {
-        return toSub(delegate.findFiles(criteria));
+        return delegate.findFiles(criteria).stream()
+                .filter(f -> f.isInSubFolder(subfolderInfo))
+                .map(this::toSub)
+                .collect(Collectors.toList());
     }
 
     @Override

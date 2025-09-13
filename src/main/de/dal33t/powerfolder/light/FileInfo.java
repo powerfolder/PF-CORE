@@ -808,8 +808,11 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(subFolderInfo.getParent(), "Subfolder must have a parent");
 
         String filePath = this.getRelativeName();
-        String subPath = subFolderInfo.getParent().getRelativeName();
-
+        String subPath = "";
+        if (!subFolderInfo.getParent().getRelativeName().isEmpty()) {
+            subPath += subFolderInfo.getParent().getRelativeName() + '/';
+        }
+        subPath += subFolderInfo.getName();
         return filePath != null && filePath.startsWith(subPath);
     }
 
