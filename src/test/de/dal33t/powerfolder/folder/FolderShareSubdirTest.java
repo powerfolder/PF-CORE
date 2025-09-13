@@ -50,6 +50,8 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         String subDir = "subdir";
 
         Folder folder = getFolderAtBart();
+        TestHelper.createRandomFile(folder.getLocalBase(), "ONLY_in_TOP_FOLDER.txt");
+
         Path subdirPath = Files.createDirectories(folder.getPhysicalDir().resolve(subDir));
         Path testFile = TestHelper.createRandomFile(subdirPath, "GANZERNAME.txt");
         TestHelper.scanFolder(folder);
