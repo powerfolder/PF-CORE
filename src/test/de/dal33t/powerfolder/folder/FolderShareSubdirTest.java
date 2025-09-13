@@ -2,6 +2,7 @@ package de.dal33t.powerfolder.folder;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
@@ -13,6 +14,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Level;
 
@@ -163,5 +165,43 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         subCount = subDAO.count(null, true, true);
         assertEquals(1, topCount);
         assertEquals(0, subCount);
-    }
+        // --- Re-store subFile for findFiles tests ---
+        subDAO.store(null, subFile);
+
+        // --- findFiles ---
+
+        FileInfoCriteria topCriteria = new FileInfoCriteria();
+        topCriteria.addDomain("ME");
+        topCriteria.setRecursive(true);
+        topCriteria.setIncludeDeleted(true);
+
+        FileInfoCriteria subCriteria = new FileInfoCriteria();
+        subCriteria.addDomain("ME");
+        subCriteria.setRecursive(true);
+        subCriteria.setIncludeDeleted(true);
+
+        Collection<FileInfo> resultTop = topDAO.findFiles(topCriteria);
+        Collection<FileInfo> resultSub = subDAO.findFiles(subCriteria);
+
+        assertEquals("Top DAO should return both files", 2, resultTop.size());
+        assertEquals("Sub DAO should return only scoped file via findFiles", 1, resultSub.size());
+
+        // --- findFilesFast ---
+
+        FileInfoCriteria topCriteriaFast = new FileInfoCriteria();
+        topCriteriaFast.addDomain("ME");
+        topCriteriaFast.setRecursive(true);
+        topCriteriaFast.setIncludeDeleted(true);
+
+        FileInfoCriteria subCriteriaFast = new FileInfoCriteria();
+        subCriteriaFast.addDomain("ME");
+        subCriteriaFast.setRecursive(true);
+        subCriteriaFast.setIncludeDeleted(true);
+
+        Collection<FileInfo> resultTopFast = topDAO.findFilesFast(topCriteriaFast);
+        Collection<FileInfo> resultSubFast = subDAO.findFilesFast(subCriteriaFast);
+
+        assertEquals("Top DAO should return both files (fast)", 2, resultTopFast.size());
+        assertEquals("Sub DAO should return only scoped file via findFilesFast", 1, resultSubFast.size());
+      }
 }
