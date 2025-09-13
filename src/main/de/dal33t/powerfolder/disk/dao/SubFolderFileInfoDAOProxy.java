@@ -31,6 +31,7 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
     }
 
     private FileInfo toSub(FileInfo f) {
+        Reject.ifNull(f, "FileInfo");
         if (f.isInSubFolder(subfolderInfo)) {
             return FileInfoFactory.mapToSubFolder(f, subfolderInfo);
         }

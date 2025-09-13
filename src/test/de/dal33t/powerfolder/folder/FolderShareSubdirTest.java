@@ -46,6 +46,35 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         LoggingManager.setConsoleLogging(Level.OFF);
     }
 
+    public void testSubdirDAOSingleFile() throws IOException {
+        String subDir = "subdir";
+
+        Folder folder = getFolderAtBart();
+        Path subdirPath = Files.createDirectories(folder.getPhysicalDir().resolve(subDir));
+        Path testFile = TestHelper.createRandomFile(subdirPath, "GANZERNAME.txt");
+        TestHelper.scanFolder(folder);
+
+        FileInfo testFileInfo = folder.getFileInfo(testFile);
+        assertNotNull(testFileInfo);
+        assertNotNull(folder.getFile(testFileInfo));
+        testFileInfo = folder.getFile(testFileInfo);
+
+        DirectoryInfo subDirInfo = (DirectoryInfo) folder.getFileInfo(subDir);
+        assertEquals("", subDirInfo.getParent().getRelativeName());
+
+        // Actually create the subfolder
+        Folder subFolder = folder.share(subDirInfo);
+
+        FileInfo testFileInfoInSub = FileInfoFactory.mapToSubFolder(testFileInfo, subFolder.getInfo());
+        assertNotNull(testFileInfoInSub);
+        assertEquals(testFileInfo.getFilenameOnly(), testFileInfoInSub.getFilenameOnly());
+        FileInfo testFileInfoAfterMapping = FileInfoFactory.mapToTopFolder(testFileInfoInSub);
+        assertNotNull(testFileInfoAfterMapping);
+        assertEquals(testFileInfo, testFileInfoAfterMapping);
+        assertNotNull(folder.getDAO().find(testFileInfoAfterMapping, null));
+    }
+
+
     public void testFileInfo() {
         String subDir = "structure/deep/sharedsubdir.123";
 
