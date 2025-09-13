@@ -127,7 +127,10 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
 
     @Override
     public Collection<FileInfo> findFilesFast(FileInfoCriteria criteria) {
-        return toSub(delegate.findFilesFast(criteria));
+        return delegate.findFilesFast(criteria).stream()
+                .filter(f -> f.isInSubFolder(subfolderInfo))
+                .map(this::toSub)
+                .collect(Collectors.toList());
     }
 
     @Override
