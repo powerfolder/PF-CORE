@@ -172,6 +172,26 @@ public class FileInfoCriteria {
         setPath(dirInfo != null ? dirInfo.getRelativeName() : null);
     }
 
+    /**
+     * Prepends the given subfolder path to this criteria's path.
+     * This modifies the current instance and returns it for chaining.
+     *
+     * @param subfolderPath The subfolder path to prepend (e.g. "docs/")
+     * @return this (for method chaining)
+     */
+    public FileInfoCriteria mapToSubFolder(String subfolderPath) {
+        Reject.ifNull(subfolderPath, "subfolderPath");
+
+        if (this.path == null || this.path.isEmpty()) {
+            this.path = subfolderPath;
+        } else {
+            boolean needsSlash = !subfolderPath.endsWith("/") && !this.path.startsWith("/");
+            String separator = needsSlash ? "/" : "";
+            this.path = subfolderPath + separator + this.path;
+        }
+        return this;
+    }
+
     public Type getType() {
         return type;
     }
