@@ -82,9 +82,6 @@ public class FileArchiver {
         versionsPerFile = -1;
         this.mySelf = mySelf;
         this.size = loadSize();
-        if (Files.exists(archiveDirectory) && !PathUtils.isEmptyDir(archiveDirectory)) {
-            this.size = null;
-        }
     }
 
     private Long loadSize() {
@@ -130,7 +127,7 @@ public class FileArchiver {
             return;
         }
 
-        long oldSize = getSize();
+        Long oldSize = size;
 
         try {
             if (Files.notExists(target.getParent())) {
@@ -184,7 +181,7 @@ public class FileArchiver {
                     fileInfo.getFilenameOnly());
             checkArchivedFile(list);
 
-            if (oldSize != size) {
+            if (oldSize != null && size != null && oldSize.longValue() != size.longValue()) {
                 saveSize();
             }
         } else {

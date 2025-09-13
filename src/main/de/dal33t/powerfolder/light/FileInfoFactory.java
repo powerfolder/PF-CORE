@@ -506,7 +506,7 @@ public final class FileInfoFactory {
         return output;
     }
 
-    private static String buildFileName(Path baseDirectory, Path file) {
+    public static String buildFileName(Path baseDirectory, Path file) {
         Reject.ifNull(baseDirectory, "Base directory is null");
         Reject.ifNull(file, "File is null");
         if (file.equals(baseDirectory)) {

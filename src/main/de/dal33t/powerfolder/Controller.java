@@ -265,6 +265,7 @@ public class Controller extends PFComponent {
         System.setProperty("com.apple.mrj.application.apple.menu.about.name",
             "PowerFolder");
         System.setProperty("illegal-access", "deny");
+        OSUtil.configureTruststore();
         invitationHandlers = new CopyOnWriteArrayList<InvitationHandler>();
         pausedModeListenerSupport = ListenerSupportFactory
             .createListenerSupport(PausedModeListener.class);
@@ -468,6 +469,10 @@ public class Controller extends PFComponent {
             // Node name must be lowercase to match with values set by installer
             // (see https://stackoverflow.com/a/23632932/5804550)
             preferences = preferences.node(getConfigName().toLowerCase());
+        }
+
+        if (ConfigurationEntry.SECURITY_SSL_TRUST_ANY.getValueBoolean(getController())) {
+            NetworkUtil.installAllTrustingSSLManager();
         }
 
         // initialize logger
@@ -921,7 +926,7 @@ public class Controller extends PFComponent {
             }
 
             if (ConfigurationEntry.LOG_SYSLOG_HOST.hasNonBlankValue(this)) {
-                str = ConfigurationEntry.LOG_SYSLOG_LEVEL.getValue(this);
+                str = ConfigurationEntry.LOG_LEVEL_SYSLOG.getValue(this);
                 Level syslogLevel = LoggingManager.levelForName(str);
                 LoggingManager.setSyslogLogging(syslogLevel != null
                     ? syslogLevel

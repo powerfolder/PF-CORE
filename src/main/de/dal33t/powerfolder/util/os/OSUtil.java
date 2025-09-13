@@ -20,8 +20,10 @@
 package de.dal33t.powerfolder.util.os;
 
 import java.awt.SystemTray;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.security.KeyStore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +31,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.os.mac.MacUtils;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 public class OSUtil {
 
@@ -310,5 +317,74 @@ public class OSUtil {
         log.warning(clazz.getName() + " --> Completely failed to load " + lib
             + " - see error above!");
         return false;
+    }
+
+    public static boolean configureTruststore() {
+        Logger log = Logger.getLogger(OSUtil.class.getName());
+        try {
+            // 1. JDK-Default-TrustManager ermitteln (dies lädt intern das "cacerts" oder "jssecacerts")
+            TrustManagerFactory jdkTmf = TrustManagerFactory.getInstance(
+                    TrustManagerFactory.getDefaultAlgorithm());
+            jdkTmf.init((KeyStore) null); // null = verwende Standard-TrustStore (in-memory)
+
+            // 2. OS-Truststore versuchen
+            KeyStore osStore = null;
+            try {
+                if (isWindowsSystem()) {
+                    log.fine("Loading Windows-ROOT trust store");
+                    osStore = KeyStore.getInstance("Windows-ROOT");
+                    osStore.load(null, null);
+                } else if (isMacOS()) {
+                    log.fine("Loading macOS KeychainStore");
+                    osStore = KeyStore.getInstance("KeychainStore");
+                    osStore.load(null, null);
+                }
+            } catch (Exception e) {
+                log.info("Could not load OS trust store: " + e);
+                osStore = null;
+            }
+
+            // 3. Kombinierten KeyStore anlegen
+            KeyStore combined = KeyStore.getInstance(KeyStore.getDefaultType());
+            combined.load(null, null);
+
+            // OS-Zertifikate übernehmen
+            if (osStore != null) {
+                for (String alias : java.util.Collections.list(osStore.aliases())) {
+                    combined.setCertificateEntry(alias, osStore.getCertificate(alias));
+                }
+            }
+
+            // Zertifikate aus JDK-TrustManagern hinzufügen
+            int i = 0;
+            for (TrustManager tm : jdkTmf.getTrustManagers()) {
+                if (tm instanceof javax.net.ssl.X509TrustManager) {
+                    javax.net.ssl.X509TrustManager xtm = (javax.net.ssl.X509TrustManager) tm;
+                    for (java.security.cert.X509Certificate cert : xtm.getAcceptedIssuers()) {
+                        String alias = "jdk-" + (i++);  // immer weiter hochzählen
+                        if (!combined.containsAlias(alias)) {
+                            combined.setCertificateEntry(alias, cert);
+                        }
+                    }
+                }
+            }
+
+            // 4. TrustManagerFactory mit kombiniertem Store
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+                    TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(combined);
+
+            // 5. SSLContext initialisieren
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, tmf.getTrustManagers(), null);
+
+            // 6. Global setzen
+            HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
+            return true;
+
+        } catch (Exception e) {
+            log.log(Level.WARNING, "Unable to configure combined truststore. " + e, e);
+            return false;
+        }
     }
 }

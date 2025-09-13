@@ -96,9 +96,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      */
     private Long size;
 
-    @NotNull
-    private Long previousSize = 0L;
-
     /**
      * modified info *
      * <p>
@@ -496,15 +493,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     @Override
     public long getSize() {
         return size;
-    }
-
-    @NotNull
-    public Long getPreviousSize() {
-        return previousSize;
-    }
-
-    public void setPreviousSize(@NotNull Long previousSize) {
-        this.previousSize = previousSize;
     }
 
     /**

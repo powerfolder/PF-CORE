@@ -110,6 +110,22 @@ public class SimpleCache<K, E> extends Loggable {
         }
     }
 
+    /**
+     * Invalidates all entries whose keys match the given filter.
+     *
+     * @param keyFilter
+     *            a visitor that returns true for keys to invalidate
+     */
+    public void invalidateKey(Visitor<K> keyFilter) {
+        Reject.ifNull(keyFilter, "Key");
+        for (Map.Entry<K, Pair<Date, E>> candidate : cache.entrySet()) {
+            K key = candidate.getKey();
+            if (keyFilter.visit(key)) {
+                invalidate(key);
+            }
+        }
+    }
+
     public void invalidateAll() {
         cache.clear();
     }

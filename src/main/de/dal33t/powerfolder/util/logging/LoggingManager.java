@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.util.logging;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -44,10 +43,7 @@ import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.logging.handlers.BufferedHandler;
-import de.dal33t.powerfolder.util.logging.handlers.ConsoleHandler;
-import de.dal33t.powerfolder.util.logging.handlers.CountingHandler;
-import de.dal33t.powerfolder.util.logging.handlers.DocumentHandler;
+import de.dal33t.powerfolder.util.logging.handlers.*;
 
 /**
  * Class to manage logging handler. This maintains up to three handlers;
@@ -82,7 +78,7 @@ public class LoggingManager {
     private static FileHandler fileHandler;
 
     /** The syslog handler */
-    private static SyslogHandler syslogHandler;
+    private static AbstractSyslogHandler syslogHandler;
 
     /** Lock object when creating file handler */
     private static final Object fileHandlerLock = new Object();
@@ -202,7 +198,7 @@ public class LoggingManager {
         documentHandler = new DocumentHandler();
         bufferedHandler = new BufferedHandler(200);
         countingHandler = new CountingHandler();
-        syslogHandler = new SyslogHandler();
+        syslogHandler = new UDPSyslogHandler();
 
         rootLogger.setFilter(DEFAULT_FILTER);
         consoleHandler.setFilter(DEFAULT_FILTER);
@@ -288,25 +284,34 @@ public class LoggingManager {
     }
 
     public static void setSyslogLogging(Level level, Controller controller) {
-        if (syslogLoggingLevel == null) {
-            try {
-                String name;
-                try {
-                    name = InetAddress.getLocalHost().getHostName();
-                } catch (UnknownHostException e) {
-                    name = ConfigurationEntry.HOSTNAME.getValue(controller);
-                }
-                syslogHandler.init(name,
-                    ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller),
-                    ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller));
-
-                getRootLogger().addHandler(syslogHandler);
-            } catch (SocketException e) {
-                e.printStackTrace();
-            }
+        if (syslogHandler != null) {
+            getRootLogger().removeHandler(syslogHandler);
         }
+
+        String name;
+        try {
+            name = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            name = ConfigurationEntry.HOSTNAME.getValue(controller);
+        }
+        String logHost = ConfigurationEntry.LOG_SYSLOG_HOST.getValue(controller);
+        int logPort = ConfigurationEntry.LOG_SYSLOG_PORT.getValueInt(controller);
+        String connection = ConfigurationEntry.LOG_SYSLOG_CONNECTION.getValue(controller);
+        boolean useTLS = connection.toUpperCase().contains("TLS");
+
+        if ("TCP".equalsIgnoreCase(connection) || useTLS) {
+            TCPTLSSyslogHandler handler = new TCPTLSSyslogHandler();
+            handler.init(name, logHost, logPort, useTLS);
+            syslogHandler = handler;
+        } else {
+            UDPSyslogHandler handler = new UDPSyslogHandler();
+            handler.init(name, logHost, logPort);
+            syslogHandler = handler;
+        }
+
         syslogLoggingLevel = level;
         syslogHandler.setLevel(level);
+        getRootLogger().addHandler(syslogHandler);
 
         setMinimumBaseLoggingLevel();
     }

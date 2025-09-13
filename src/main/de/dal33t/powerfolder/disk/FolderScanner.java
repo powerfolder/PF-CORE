@@ -212,9 +212,8 @@ public class FolderScanner extends PFComponent {
             int n = unableToScanFiles.size();
             for (int i = 0; i < n; i++) {
                 Path file = unableToScanFiles.get(i);
-                FileInfo fInfo = FileInfoFactory.lookupInstance(
-                    currentScanningFolder, file);
-                remaining.remove(fInfo.getRelativeName());
+                String relativeName = FileInfoFactory.buildFileName(currentScanningFolder.getLocalBase(), file);
+                remaining.remove(relativeName);
                 // TRAC #523
                 if (Files.isDirectory(file)) {
                     String dirPath = file.toAbsolutePath().toString().replace(
@@ -303,7 +302,7 @@ public class FolderScanner extends PFComponent {
             }
             return myResult;
         } catch (RuntimeException re) {
-            logSevere("Folder scanner crashed at " + currentScanningFolder, re);
+            logWarning("Folder scanner crashed at " + currentScanningFolder, re);
             failure = true;
             reset();
             return new ScanResult(ScanResult.ResultState.FAILURE);
@@ -583,7 +582,6 @@ public class FolderScanner extends PFComponent {
                     FileInfo restoredFile = exists.syncFromDiskIfRequired(currentScanningFolder, fileToScan, null);
                     if (restoredFile != null) {
                         currentScanningFolder.logFileOperation("RESTORED", exists, restoredFile);
-                        restoredFile.setPreviousSize(exists.getSize());
                         currentScanResult.restoredFiles.add(restoredFile);
                     }
                 } else {
@@ -592,8 +590,6 @@ public class FolderScanner extends PFComponent {
                         if (currentScanningFolder.getDiskItemFilter().isRetained(changedFile)) {
                             currentScanningFolder.logFileOperation("CHANGED", exists, changedFile);
                         }
-
-                        changedFile.setPreviousSize(exists.getSize());
                         currentScanResult.changedFiles.add(changedFile);
                     }
                 }
@@ -692,7 +688,7 @@ public class FolderScanner extends PFComponent {
                     }
 
                 } catch (RuntimeException e) {
-                    logSevere("Folder scanner crashed @ " + root + ". " + e, e);
+                    logWarning("Folder scanner crashed @ " + root + ". " + e, e);
                     failure = true;
                 } finally {
                     // scan of this directory is ready, notify FolderScanner we

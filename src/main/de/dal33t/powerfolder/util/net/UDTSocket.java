@@ -371,13 +371,6 @@ public class UDTSocket {
             + ", fd:" + sock + "}";
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        if (sock != -1) {
-            close();
-        }
-    }
-
     private native UDTSocket acceptImpl() throws IOException;
 
     private native void closeImpl() throws IOException;

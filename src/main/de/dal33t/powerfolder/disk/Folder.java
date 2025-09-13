@@ -879,7 +879,6 @@ public class Folder extends PFComponent {
                                 }
                             }
                             arch.archive(oldLocalFileInfo, targetFile, false);
-                            fInfo.setPreviousSize(oldLocalFileInfo.getSize());
                         }
                         logFileOperation("UPDATED", oldLocalFileInfo, fInfo);
                     } catch (IOException e) {
@@ -1523,7 +1522,6 @@ public class Folder extends PFComponent {
                         if (isFiner()) {
                             logFiner("Scan file changed: " + syncFile.toDetailString());
                         }
-                        syncFile.setPreviousSize(localFile.getSize());
                         checkFile(syncFile);
                     } else {
                         if (isFiner()) {
@@ -1676,6 +1674,31 @@ public class Folder extends PFComponent {
      */
     public boolean isKnown(FileInfo fi) {
         return hasFile(fi);
+    }
+
+    public boolean copy(FileInfo sourceFile, Path destinationFilePath) {
+        Reject.ifNull(sourceFile, "sourceFile");
+        Reject.ifNull(destinationFilePath, "destinationFilePath");
+        Reject.ifTrue(Files.exists(destinationFilePath), destinationFilePath + ": already existing");
+
+        Path sourceFilePath = sourceFile.getDiskFile(getController().getFolderRepository());
+        FileInfo destinationFile = FileInfoFactory.lookupInstance(this, destinationFilePath);
+
+        Reject.ifFalse(Files.exists(sourceFilePath), sourceFilePath + " does not exist");
+        Reject.ifTrue(PathUtils.isSubdirectory(sourceFilePath, destinationFilePath),
+                destinationFilePath + " must not be a subdirectory of " + sourceFilePath);
+
+        try {
+            watcher.addIgnoreFile(destinationFile);
+            PathUtils.recursiveCopyVisitor(sourceFilePath, destinationFilePath);
+            return true;
+        } catch (IOException e) {
+            logWarning(this + ": Unable to copy " + sourceFile +
+                    " to " + destinationFilePath + ". " + e);
+            return false;
+        } finally {
+            watcher.removeIgnoreFile(destinationFile);
+        }
     }
 
     /**
@@ -2301,7 +2324,6 @@ public class Folder extends PFComponent {
                     fileInfo.getModifiedDate(), fileInfo.getVersion() + 1,
                     fileInfo.getHashes(), fileInfo.isDiretory(),
                     fileInfo.getTags());
-                newFileInfo.setPreviousSize(fileInfo.getSize());
                 brokenExisting.set(i, newFileInfo);
             }
             store(getMySelf(), brokenExisting);
@@ -3347,16 +3369,15 @@ public class Folder extends PFComponent {
                                     .findFiles(c);
                             for (FileInfo fileInfo : filesInDir) {
                                 if (!fileInfo.isDeleted()) {
-                                    // PFS-2147:
-                                    removeFileLocal(fileInfo, member.getAccountInfo());
+                                    // PFS-2147: PFC-3479
+                                    AccountInfo deletingAccount = remoteFile.getModifiedByAccount();
+                                    if (deletingAccount == null) {
+                                        deletingAccount = member.getAccountInfo();
+                                    }
+                                    removeFileLocal(fileInfo, deletingAccount);
                                     if (isInfo()) {
-                                        logInfo(
-                                                "Deleted file in deleted directory: "
-                                                        + fileInfo.toDetailString()
-                                                        + ". Directory: "
-                                                        + fileInfo.toDetailString()
-                                                        + ". Message: "
-                                                        + ioe.toString());
+                                        logInfo("Deleted file in deleted directory: " + fileInfo.toDetailString()
+                                                + ". Directory: " + fileInfo.toDetailString() + ". Message: " + ioe);
                                     }
                                 }
                             }
@@ -3916,7 +3937,6 @@ public class Folder extends PFComponent {
                             + remoteFileInfo.toDetailString()
                             + ". Taking over modification infos");
                     }
-                    remoteFileInfo.setPreviousSize(remoteFileInfo.getSize());
                     found.add(remoteFileInfo);
                 }
             } else if (!fileCaseSame && dateSame && fileSizeSame) {
@@ -3951,7 +3971,6 @@ public class Folder extends PFComponent {
                     }
 
                     remoteFileInfo = correctFolderInfo(remoteFileInfo);
-                    remoteFileInfo.setPreviousSize(localFileInfo.getSize());
                     found.add(remoteFileInfo);
                 }
             }
@@ -5523,22 +5542,4 @@ public class Folder extends PFComponent {
         }
 
     }
-
-    /**
-     * PFS-1994: Mark this Folder as a Folder which has been moved.
-     * @deprecated since 14.0
-     */
-    @Deprecated
-    public void setMovedFolder(boolean movedFolder){
-        isMovedFolder = movedFolder;
-    }
-
-    /**
-     * @deprecated since 14.0
-     */
-    @Deprecated
-    public boolean isMovedFolder() {
-        return isMovedFolder;
-    }
-
 }

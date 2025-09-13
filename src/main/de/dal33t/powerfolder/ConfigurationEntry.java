@@ -1020,7 +1020,12 @@ public enum ConfigurationEntry {
     /**
      * PFS-1017: Logging to syslog
      */
-    LOG_SYSLOG_LEVEL("log.syslog.level", Level.INFO.getName(), true),
+    LOG_LEVEL_SYSLOG("log.syslog.level", Level.INFO.getName(), true),
+
+    /**
+     * PFS-4549: Supported types: UDP, TCP and TLS (which is TCP with TLS)
+     */
+    LOG_SYSLOG_CONNECTION("log.syslog.connection", "UDP", true),
 
     LOG_SYSLOG_HOST("log.syslog.host", null, true),
 
@@ -1076,11 +1081,10 @@ public enum ConfigurationEntry {
     FOLDER_REPOSITORY_ENABLED("folderepository.enabled", true),
 
     /**
-     * The number of seconds to wait to recalc a {@link FolderStatistic} when a
-     * change to the folder happened. Applies to large folders only, that host
-     * more files than {@link FolderStatistic#MAX_ITEMS}
+     * The number of seconds to wait maximum to recalc a {@link FolderStatistic} when a
+     * change to the folder happened. Helps on large folders.
      */
-    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", 60),
+    FOLDER_STATS_CALC_TIME("filedb.stats.seconds", 10),
 
     /**
      * The maximum time powerfolder keeps the folder database dirty in memory

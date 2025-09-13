@@ -279,6 +279,11 @@ public class Organization implements Serializable , Auditable {
         return false;
     }
 
+    public boolean isMember(Account account) {
+        Reject.ifNull(account, "Account");
+        return oid.equals(account.getOrganizationOID());
+    }
+
     /**
      * Adds a line of info with the current date to the notes of that account.
      *
