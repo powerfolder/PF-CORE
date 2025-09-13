@@ -119,7 +119,7 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
 
     @Override
     public Collection<FileInfo> findFiles(FileInfoCriteria criteria) {
-        return delegate.findFiles(criteria).stream()
+        return delegate.findFiles(criteria.mapToSubFolder(subfolderPath)).stream()
                 .filter(f -> f.isInSubFolder(subfolderInfo))
                 .map(this::toSub)
                 .collect(Collectors.toList());
@@ -127,7 +127,7 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
 
     @Override
     public Collection<FileInfo> findFilesFast(FileInfoCriteria criteria) {
-        return delegate.findFilesFast(criteria).stream()
+        return delegate.findFilesFast(criteria.mapToSubFolder(subfolderPath)).stream()
                 .filter(f -> f.isInSubFolder(subfolderInfo))
                 .map(this::toSub)
                 .collect(Collectors.toList());
@@ -142,7 +142,6 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
     public int count(String domain, boolean includeDirs, boolean excludeIgnored) {
         FileInfoCriteria fc = new FileInfoCriteria();
         fc.addDomain(domain);
-        fc.setPath(subfolderPath);
         fc.setRecursive(true);
         fc.setIncludeDeleted(true);
         return findFilesFast(fc).size();
