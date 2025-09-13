@@ -381,11 +381,16 @@ public final class FileInfoFactory {
         Reject.ifNull(subFolderInfo.getParent(), "Not a subfolder");
 
         String fullPath = topFileInfo.getRelativeName();
-        String subPath = subFolderInfo.getParent().getRelativeName();
+        String parentName = subFolderInfo.getParent().getRelativeName();
 
-        Reject.ifFalse(fullPath.startsWith(subPath), "FileInfo not in subfolder");
+        Reject.ifFalse(fullPath.startsWith(parentName), "FileInfo not in subfolder");
 
-        String strippedRelative = fullPath.substring(subPath.length() + 2 + subFolderInfo.getName().length());
+        int stripFrom = 1;
+        if (!parentName.isEmpty()) {
+            stripFrom += parentName.length() + 1;
+        }
+        stripFrom += subFolderInfo.getName().length();
+        String strippedRelative = fullPath.substring(stripFrom);
 
         return new FileInfo(
                 strippedRelative,
@@ -406,7 +411,11 @@ public final class FileInfoFactory {
         Reject.ifNull(subFileInfo.getFolderInfo().getParent(), "FileInfo not from subfolder");
 
         String subPath = subFileInfo.getFolderInfo().getParent().getRelativeName();
-        String relativeName = subPath + '/' + subFileInfo.getFolderInfo().getName() + '/'  + subFileInfo.getRelativeName();
+        String relativeName = "";
+        if (!subPath.isEmpty()) {
+            relativeName += subPath + '/';
+        }
+        relativeName += subFileInfo.getFolderInfo().getName() + '/'  + subFileInfo.getRelativeName();
 
         return new FileInfo(
                 relativeName,
