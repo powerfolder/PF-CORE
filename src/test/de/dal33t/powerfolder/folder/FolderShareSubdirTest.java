@@ -74,6 +74,12 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         assertNotNull(testFileInfoAfterMapping);
         assertEquals(testFileInfo, testFileInfoAfterMapping);
         assertNotNull(folder.getDAO().find(testFileInfoAfterMapping, null));
+
+        // ---
+
+        FileInfo rootOfSubdir = FileInfoFactory.lookupInstance(subFolder.getInfo(), "");
+        rootOfSubdir = subFolder.getFile(rootOfSubdir);
+        assertNotNull(rootOfSubdir);
     }
 
 

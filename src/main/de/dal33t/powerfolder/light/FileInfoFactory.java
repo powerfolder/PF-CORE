@@ -390,7 +390,19 @@ public final class FileInfoFactory {
             stripFrom += parentName.length() + 1;
         }
         stripFrom += subFolderInfo.getName().length();
+        if (stripFrom > fullPath.length()) {
+            stripFrom = fullPath.length() - 1;
+        }
+
         String strippedRelative = fullPath.substring(stripFrom);
+
+        if (topFileInfo.isLookupInstance()) {
+            return new FileInfo(
+                    subFolderInfo,
+                    strippedRelative,
+                    topFileInfo.getModifiedDate(),
+                    topFileInfo.getModifiedByAccount());
+        }
 
         return new FileInfo(
                 strippedRelative,
@@ -410,12 +422,26 @@ public final class FileInfoFactory {
         Reject.ifNull(subFileInfo, "FileInfo");
         Reject.ifNull(subFileInfo.getFolderInfo().getParent(), "FileInfo not from subfolder");
 
+        FolderInfo parentFolderInfo = subFileInfo.getFolderInfo().getParent().getFolderInfo();
+
         String subPath = subFileInfo.getFolderInfo().getParent().getRelativeName();
         String relativeName = "";
         if (!subPath.isEmpty()) {
             relativeName += subPath + '/';
         }
-        relativeName += subFileInfo.getFolderInfo().getName() + '/'  + subFileInfo.getRelativeName();
+        relativeName += subFileInfo.getFolderInfo().getName();
+        if (!subFileInfo.getRelativeName().isEmpty()) {
+            relativeName += '/' + subFileInfo.getRelativeName();
+        }
+
+        System.out.println(subFileInfo + " -> " + relativeName);
+        if (subFileInfo.isLookupInstance()) {
+            return new FileInfo(
+                    parentFolderInfo,
+                    relativeName,
+                    subFileInfo.getModifiedDate(),
+                    subFileInfo.getModifiedByAccount());
+        }
 
         return new FileInfo(
                 relativeName,
@@ -428,7 +454,7 @@ public final class FileInfoFactory {
                 subFileInfo.getHashes(),
                 subFileInfo.isDeleted(),
                 subFileInfo.getTags(),
-                subFileInfo.getFolderInfo().getParent().getFolderInfo());
+                parentFolderInfo);
     }
 
     private static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "?", "\"", "*",
