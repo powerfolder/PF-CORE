@@ -434,7 +434,6 @@ public final class FileInfoFactory {
             relativeName += '/' + subFileInfo.getRelativeName();
         }
 
-        System.out.println(subFileInfo + " -> " + relativeName);
         if (subFileInfo.isLookupInstance()) {
             return new FileInfo(
                     parentFolderInfo,
