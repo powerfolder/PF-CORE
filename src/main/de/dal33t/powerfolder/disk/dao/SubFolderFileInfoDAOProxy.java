@@ -4,8 +4,10 @@ import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +41,15 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
         }
         return null;
     }
+
+    private DirectoryInfo toSub(DirectoryInfo f) {
+        Reject.ifNull(f, "FileInfo");
+        if (f.isInSubFolder(subfolderInfo)) {
+            return (DirectoryInfo) FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+        }
+        return null;
+    }
+
 
     private Collection<FileInfo> toSub(Collection<FileInfo> files) {
         return files.stream()
@@ -124,6 +135,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     public Collection<DirectoryInfo> findAllDirectories(String domain) {
         return delegate.findAllDirectories(domain).stream()
                 .filter(d -> d.getRelativeName().startsWith(subfolderPath))
+                .map(this::toSub)
                 .collect(Collectors.toList());
     }
 
@@ -154,11 +166,6 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
         // Log output summary
         logInfo("findFilesFast result: " + result.size() + " file(s) in subfolder '" +
                 subfolderInfo.getName() + "'");
-
-        // Optionally: log first few file names
-        result.stream()
-                .limit(5)
-                .forEach(f -> logInfo(" - " + f.getRelativeName()));
 
         return result;
     }
