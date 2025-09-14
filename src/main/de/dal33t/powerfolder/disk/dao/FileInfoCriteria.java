@@ -174,12 +174,8 @@ public class FileInfoCriteria {
 
     /**
      * Maps this criteria's path into a subfolder scope.
-     * Appends the given subfolder path after the current path.
-     * This modifies the current instance and returns it for chaining.
-     *
-     * For example:
-     *   - if path is "project/a", and subfolderPath is "docs/", result: "project/a/docs/"
-     *   - if path is null, result: "docs/"
+     * Ensures exactly one slash between this.path and subfolderPath.
+     * Modifies this instance and returns it.
      *
      * @param subfolderPath The subfolder path to append (e.g. "docs/")
      * @return this (for method chaining)
@@ -189,13 +185,26 @@ public class FileInfoCriteria {
 
         if (this.path == null || this.path.isEmpty()) {
             this.path = subfolderPath;
-        } else {
-            boolean needsSlash = !this.path.endsWith("/") && !subfolderPath.startsWith("/");
-            String separator = needsSlash ? "/" : "";
-            this.path = this.path + separator + subfolderPath;
+            return this;
         }
+
+        String base = this.path;
+        String sub = subfolderPath;
+
+        // Remove trailing slash from base if present
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+
+        // Remove leading slash from sub if present
+        if (sub.startsWith("/")) {
+            sub = sub.substring(1);
+        }
+
+        this.path = base + "/" + sub;
         return this;
     }
+
 
 
     public Type getType() {
