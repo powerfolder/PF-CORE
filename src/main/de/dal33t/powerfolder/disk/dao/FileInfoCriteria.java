@@ -174,7 +174,8 @@ public class FileInfoCriteria {
 
     /**
      * Maps this criteria's path into a subfolder scope.
-     * Ensures exactly one slash between this.path and subfolderPath.
+     * Ensures there is exactly one slash between the current path and the subfolder path.
+     * Final path will never start with a slash.
      * Modifies this instance and returns it.
      *
      * @param subfolderPath The subfolder path to append (e.g. "docs/")
@@ -184,26 +185,22 @@ public class FileInfoCriteria {
         Reject.ifNull(subfolderPath, "subfolderPath");
 
         if (this.path == null || this.path.isEmpty()) {
-            this.path = subfolderPath;
-            return this;
+            this.path = subfolderPath.startsWith("/") ? subfolderPath.substring(1) : subfolderPath;
+        } else {
+            String base = this.path.endsWith("/") ? this.path.substring(0, this.path.length() - 1) : this.path;
+            String sub = subfolderPath.startsWith("/") ? subfolderPath.substring(1) : subfolderPath;
+
+            this.path = base + "/" + sub;
         }
 
-        String base = this.path;
-        String sub = subfolderPath;
-
-        // Remove trailing slash from base if present
-        if (base.endsWith("/")) {
-            base = base.substring(0, base.length() - 1);
+        // Remove leading slash if one somehow remains (safety)
+        if (this.path.startsWith("/")) {
+            this.path = this.path.substring(1);
         }
 
-        // Remove leading slash from sub if present
-        if (sub.startsWith("/")) {
-            sub = sub.substring(1);
-        }
-
-        this.path = base + "/" + sub;
         return this;
     }
+
 
 
 
