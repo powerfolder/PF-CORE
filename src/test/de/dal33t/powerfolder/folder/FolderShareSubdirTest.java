@@ -317,6 +317,4 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         assertEquals(3, topDAO.findAllFiles(null).size()); // 2 outside + 1 similar-path
         assertEquals(0, subDAO.findAllFiles(null).size());
     }
-
-
 }
