@@ -203,5 +203,8 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
 
         assertEquals("Top DAO should return both files (fast)", 2, resultTopFast.size());
         assertEquals("Sub DAO should return only scoped file via findFilesFast", 1, resultSubFast.size());
+
+        FileInfo subFileFound = resultSubFast.iterator().next();
+        assertEquals(subFile, subFileFound);
       }
 }
