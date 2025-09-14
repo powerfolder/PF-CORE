@@ -279,7 +279,6 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         critAll.setRecursive(true);
         critAll.setIncludeDeleted(true);
         Collection<FileInfo> allFiles = subDAO.findFiles(critAll);
-        System.out.println(allFiles);
         assertEquals(6, allFiles.size());
 
         // --- Criteria: exclude deleted ---

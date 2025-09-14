@@ -191,7 +191,7 @@ public class FileInfoCriteria {
             this.path = subfolderPath;
         } else {
             String base = this.path.endsWith("/") ? this.path.substring(0, this.path.length() - 1) : this.path;
-            this.path = base + "/" + subfolderPath;
+            this.path = subfolderPath + "/" + base;
         }
 
         // Remove leading slash if one somehow remains (safety)
