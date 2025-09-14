@@ -2,15 +2,17 @@ package de.dal33t.powerfolder.disk.dao;
 
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.logging.Loggable;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * A FileInfoDAO proxy that scopes all file access to a subfolder.
  * Transforms FileInfos between subfolder and top-level folder views.
  */
-public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
+public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
 
     private final FileInfoDAO delegate;
     private final FolderInfo subfolderInfo;
@@ -70,6 +72,10 @@ public class SubFolderFileInfoDAOProxy implements FileInfoDAO {
 
     @Override
     public FileInfo find(FileInfo fInfo, String domain) {
+        logInfo("find in " + domain + ": " + fInfo);
+        logInfo("toTop: " + toTop(fInfo));
+        logInfo("delegate: " + delegate.find(toTop(fInfo), domain));
+
         return toSub(delegate.find(toTop(fInfo), domain));
     }
 
