@@ -76,7 +76,11 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
         logInfo("toTop: " + toTop(fInfo));
         logInfo("delegate: " + delegate.find(toTop(fInfo), domain));
 
-        return toSub(delegate.find(toTop(fInfo), domain));
+        FileInfo topFInfo = delegate.find(toTop(fInfo), domain);
+        if (topFInfo == null) {
+            return null;
+        }
+        return toSub(topFInfo);
     }
 
     @Override
