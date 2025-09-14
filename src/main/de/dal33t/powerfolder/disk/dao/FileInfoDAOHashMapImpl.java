@@ -274,7 +274,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                         if (!items.contains(dInfo)
                             && matches(dInfo, criteria.getKeyWords()))
                         {
-                            items.add(dInfo);
+                            if (!dInfo.isDeleted() || criteria.includeDeleted()) {
+                                items.add(dInfo);
+                            }
                         }
                     }
                 }
@@ -298,7 +300,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                         if (!items.contains(fInfo)
                             && matches(fInfo, criteria.getKeyWords()))
                         {
-                            items.add(fInfo);
+                            if (!fInfo.isDeleted() || criteria.includeDeleted()) {
+                                items.add(fInfo);
+                            }
                         }
                     }
                 }
