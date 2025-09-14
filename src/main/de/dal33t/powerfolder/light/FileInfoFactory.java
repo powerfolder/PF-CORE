@@ -20,7 +20,10 @@
 package de.dal33t.powerfolder.light;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 import java.io.IOException;
@@ -28,7 +31,6 @@ import java.io.ObjectInput;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -397,14 +399,14 @@ public final class FileInfoFactory {
         String strippedRelative = fullPath.substring(stripFrom);
 
         if (topFileInfo.isLookupInstance()) {
-            if (topFileInfo instanceof FileInfo) {
-                return new FileInfo(
+            if (topFileInfo instanceof DirectoryInfo) {
+                return new DirectoryInfo(
                         subFolderInfo,
                         strippedRelative,
                         topFileInfo.getModifiedDate(),
                         topFileInfo.getModifiedByAccount());
             } else {
-                return new DirectoryInfo(
+                return new FileInfo(
                         subFolderInfo,
                         strippedRelative,
                         topFileInfo.getModifiedDate(),
@@ -412,11 +414,10 @@ public final class FileInfoFactory {
             }
         }
 
-        if (topFileInfo instanceof FileInfo) {
-            return new FileInfo(
+        if (topFileInfo instanceof DirectoryInfo) {
+            return new DirectoryInfo(
                     strippedRelative,
                     topFileInfo.getOID(),
-                    topFileInfo.getSize(),
                     topFileInfo.getModifiedBy(),
                     topFileInfo.getModifiedByAccount(),
                     topFileInfo.getModifiedDate(),
@@ -426,9 +427,10 @@ public final class FileInfoFactory {
                     topFileInfo.getTags(),
                     subFolderInfo);
         } else {
-            return new DirectoryInfo(
+            return new FileInfo(
                     strippedRelative,
                     topFileInfo.getOID(),
+                    topFileInfo.getSize(),
                     topFileInfo.getModifiedBy(),
                     topFileInfo.getModifiedByAccount(),
                     topFileInfo.getModifiedDate(),
@@ -442,7 +444,7 @@ public final class FileInfoFactory {
 
     public static FileInfo mapToTopFolder(FileInfo subFileInfo) {
         Reject.ifNull(subFileInfo, "FileInfo");
-        Reject.ifNull(subFileInfo.getFolderInfo().getParent(), "FileInfo not from subfolder");
+        Reject.ifNull(subFileInfo.getFolderInfo().getParent(), "FileInfo not from subfolder: " + subFileInfo.toDetailString());
 
         FolderInfo parentFolderInfo = subFileInfo.getFolderInfo().getParent().getFolderInfo();
 
@@ -457,14 +459,14 @@ public final class FileInfoFactory {
         }
 
         if (subFileInfo.isLookupInstance()) {
-            if (subFileInfo instanceof FileInfo) {
-                return new FileInfo(
+            if (subFileInfo instanceof DirectoryInfo) {
+                return new DirectoryInfo(
                         parentFolderInfo,
                         relativeName,
                         subFileInfo.getModifiedDate(),
                         subFileInfo.getModifiedByAccount());
             } else {
-                return new DirectoryInfo(
+                return new FileInfo(
                         parentFolderInfo,
                         relativeName,
                         subFileInfo.getModifiedDate(),
@@ -472,11 +474,10 @@ public final class FileInfoFactory {
             }
         }
 
-        if (subFileInfo instanceof FileInfo) {
-            return new FileInfo(
+        if (subFileInfo instanceof DirectoryInfo) {
+            return new DirectoryInfo(
                     relativeName,
                     subFileInfo.getOID(),
-                    subFileInfo.getSize(),
                     subFileInfo.getModifiedBy(),
                     subFileInfo.getModifiedByAccount(),
                     subFileInfo.getModifiedDate(),
@@ -486,9 +487,10 @@ public final class FileInfoFactory {
                     subFileInfo.getTags(),
                     parentFolderInfo);
         } else {
-            return new DirectoryInfo(
+            return new FileInfo(
                     relativeName,
                     subFileInfo.getOID(),
+                    subFileInfo.getSize(),
                     subFileInfo.getModifiedBy(),
                     subFileInfo.getModifiedByAccount(),
                     subFileInfo.getModifiedDate(),
