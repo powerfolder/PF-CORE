@@ -7,7 +7,6 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.light.*;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -16,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
-import java.util.logging.Level;
 
 public class FolderShareSubdirTest extends TwoControllerTestCase {
 
@@ -36,16 +34,12 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         DirectoryInfo subDirInfo = (DirectoryInfo) folder.getFileInfo(subDir);
         assertEquals("structure/deep", subDirInfo.getParent().getRelativeName());
 
-        LoggingManager.setConsoleLogging(Level.FINE);
-
         // Actually create the subfolder
         Folder subFolder = folder.share(subDirInfo);
 
         assertNotNull(subFolder);
         assertEquals(folder.getInfo(), subFolder.getInfo().getParent().getFolderInfo());
         assertEquals("structure/deep", subFolder.getInfo().getParent().getRelativeName());
-
-        LoggingManager.setConsoleLogging(Level.OFF);
     }
 
     public void testSubdirDAOSingleFile() throws IOException {
@@ -127,17 +121,21 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         FileInfoDAOHashMapImpl topDAO = new FileInfoDAOHashMapImpl("ME", null);
         FileInfoDAO subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo);
 
+        FileInfo dirInSubdir = FileInfoFactory.unmarshallExistingFile(topFolderInfo,
+                "structure/deep/sharedsubdir.123/project/path",
+                null, 100, null, null, new Date(), 0, null, true, null);
+        topDAO.store(null, dirInSubdir);
+
         FileInfo subFile = FileInfoFactory.unmarshallExistingFile(subFolderInfo,
                 "project/path/Info.txt",
                 null, 100, null, null, new Date(), 0, null, false, null);
-
         subDAO.store(null, subFile);
 
         int topCount = topDAO.count(null, true, true);
         int subCount = subDAO.count(null, true, true);
-        assertEquals(1, topCount);
+        assertEquals(2, topCount);
         assertEquals(1, topDAO.findAllFiles(null).size());
-        assertEquals(1, subCount);
+        assertEquals(2, subCount);
         assertEquals(1, subDAO.findAllFiles(null).size());
 
         FileInfo topOnlyFile = FileInfoFactory.unmarshallExistingFile(topFolderInfo,
@@ -155,10 +153,12 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
 
         topCount = topDAO.count(null, true, true);
         subCount = subDAO.count(null, true, true);
-        assertEquals(2, topCount);
+        assertEquals(3, topCount);
         assertEquals(2, topDAO.findAllFiles(null).size());
-        assertEquals(1, subCount);
+        assertEquals(1, topDAO.findAllDirectories(null).size());
+        assertEquals(2, subCount);
         assertEquals(1, subDAO.findAllFiles(null).size());
+        assertEquals(1, subDAO.findAllDirectories(null).size());
 
         subDAO.deleteDomain(null, 4);
         topCount = topDAO.count(null, true, true);
@@ -207,4 +207,116 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         FileInfo subFileFound = resultSubFast.iterator().next();
         assertEquals(subFile, subFileFound);
       }
+
+    public void testSubFolderDAOComplexHierarchyWithDeletedFilesAndDirs() {
+        // --- Setup: Top and subfolder ---
+        String subDir = "structure/deep/sharedsubdir.123";
+        FolderInfo topFolderInfo = FolderInfoFactory.newTopFolder("TOP", "TopFolder");
+        DirectoryInfo subDirInfo = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
+                topFolderInfo, subDir, null, 0, null, null, new Date(), 0, null, true, null);
+        FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
+
+        FileInfoDAOHashMapImpl topDAO = new FileInfoDAOHashMapImpl("ME", null);
+        FileInfoDAO subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo);
+
+        // --- Top-level files outside subfolder ---
+        topDAO.store(null, FileInfoFactory.unmarshallExistingFile(topFolderInfo,
+                "readme.md", null, 10, null, null, new Date(), 1, null, false, null));
+        topDAO.store(null, FileInfoFactory.unmarshallExistingFile(topFolderInfo,
+                "structure/deep/unrelated/file.log", null, 20, null, null, new Date(), 1, null, false, null));
+
+        // --- Files inside subfolder (active) ---
+        FileInfo[] activeFiles = new FileInfo[]{
+                FileInfoFactory.unmarshallExistingFile(subFolderInfo, "index.html", null, 100, null, null, new Date(), 1, null, false, null),
+                FileInfoFactory.unmarshallExistingFile(subFolderInfo, "sub/data.csv", null, 200, null, null, new Date(), 1, null, false, null),
+                FileInfoFactory.unmarshallExistingFile(subFolderInfo, "sub/deep/info.log", null, 300, null, null, new Date(), 1, null, false, null)
+        };
+        for (FileInfo file : activeFiles) {
+            subDAO.store(null, file);
+        }
+
+        // --- Deleted file in subfolder ---
+        FileInfo deletedFile = FileInfoFactory.unmarshallDeletedFile(
+                subFolderInfo,
+                "sub/deep/old_data.cfg",
+                null, null, null, new Date(), 1, null, false, null);
+        subDAO.store(null, deletedFile);
+
+        // --- Directory inside subfolder ---
+        FileInfo activeDir = FileInfoFactory.unmarshallExistingFile(
+                topFolderInfo,
+                "structure/deep/sharedsubdir.123/sub/deep",
+                null, 0, null, null, new Date(), 1, null, true, null);
+        topDAO.store(null, activeDir);
+
+        // --- Deleted directory in subfolder ---
+        FileInfo deletedDir = FileInfoFactory.unmarshallDeletedFile(
+                subFolderInfo,
+                "sub/deprecated_dir",
+                null, null, null, new Date(), 1, null, true, null);
+        subDAO.store(null, deletedDir);
+
+        // --- File with similar path outside subfolder ---
+        topDAO.store(null, FileInfoFactory.unmarshallExistingFile(
+                topFolderInfo,
+                "structure/deep/sharedsubdir_fake/sub/deep/old_data.cfg",
+                null, 999, null, null, new Date(), 1, null, false, null));
+
+        // --------------------------------------------
+        // Assertions and Validations
+        // --------------------------------------------
+
+        // --- TopDAO should see everything ---
+        assertEquals(7, topDAO.findAllFiles(null).size());
+
+        // --- SubDAO should only see scoped entries ---
+        assertEquals(4, subDAO.findAllFiles(null).size()); // 3 active + 1 deleted
+        assertEquals(2, subDAO.findAllDirectories(null).size());
+
+        // --- Criteria: include deleted ---
+        FileInfoCriteria critAll = new FileInfoCriteria();
+        critAll.addDomain("ME");
+        critAll.setRecursive(true);
+        critAll.setIncludeDeleted(true);
+        Collection<FileInfo> allFiles = subDAO.findFiles(critAll);
+        System.out.println(allFiles);
+        assertEquals(6, allFiles.size());
+
+        // --- Criteria: exclude deleted ---
+        FileInfoCriteria critNoDeleted = new FileInfoCriteria();
+        critNoDeleted.addDomain("ME");
+        critNoDeleted.setRecursive(true);
+        critNoDeleted.setIncludeDeleted(false);
+        Collection<FileInfo> activeOnly = subDAO.findFiles(critNoDeleted);
+        assertEquals(4, activeOnly.size());
+
+        // --- All files in sub must be correctly mapped ---
+        for (FileInfo f : allFiles) {
+            assertTrue("Must be in subfolder", f.isInSubFolder(subFolderInfo));
+            assertFalse("Path should not leak full folder", f.getRelativeName().contains("sharedsubdir.123"));
+            assertFalse("Must not contain sibling folder", f.getRelativeName().contains("sharedsubdir_fake"));
+        }
+
+        // --- findFilesFast parity ---
+        Collection<FileInfo> fastAll = subDAO.findFilesFast(critAll);
+        Collection<FileInfo> fastActive = subDAO.findFilesFast(critNoDeleted);
+        assertEquals(6, fastAll.size());
+        assertEquals(4, fastActive.size());
+
+        // --- Path filter test ---
+        FileInfoCriteria pathCrit = new FileInfoCriteria();
+        pathCrit.addDomain("ME");
+        pathCrit.setPath("sub/deep");
+        pathCrit.setRecursive(false);
+        pathCrit.setIncludeDeleted(true);
+        Collection<FileInfo> filtered = subDAO.findFiles(pathCrit);
+        assertEquals(2, filtered.size()); // info.log + old_data.cfg
+
+        // --- Deletion scope test ---
+        subDAO.deleteDomain(null, 0);
+        assertEquals(3, topDAO.findAllFiles(null).size()); // 2 outside + 1 similar-path
+        assertEquals(0, subDAO.findAllFiles(null).size());
+    }
+
+
 }

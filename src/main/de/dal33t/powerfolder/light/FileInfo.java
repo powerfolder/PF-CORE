@@ -31,7 +31,6 @@ import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.lang.ref.Reference;
@@ -806,6 +805,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         Reject.ifNull(this, "FileInfo");
         Reject.ifNull(subFolderInfo, "SubFolderInfo");
         Reject.ifNull(subFolderInfo.getParent(), "Subfolder must have a parent");
+
+        if (folderInfo.equals(subFolderInfo)) {
+            return true;
+        }
 
         String filePath = this.getRelativeName();
         String subPath = "";
