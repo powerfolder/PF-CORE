@@ -185,16 +185,18 @@ public class FileInfoCriteria {
     public void mapToSubFolderPath(String subfolderPath) {
         Reject.ifNull(subfolderPath, "subfolderPath");
 
-        String currentPath = this.path != null ? this.path : "";
+        subfolderPath = subfolderPath.startsWith("/") ? subfolderPath.substring(1) : subfolderPath;
 
-        // Remove trailing slash from subfolderPath and leading slash from currentPath
-        String sub = subfolderPath.endsWith("/") ? subfolderPath.substring(0, subfolderPath.length() - 1) : subfolderPath;
-        String path = currentPath.startsWith("/") ? currentPath.substring(1) : currentPath;
-
-        if (path.isEmpty()) {
-            this.path = sub;
+        if (isBlank(this.path)) {
+            this.path = subfolderPath;
         } else {
-            this.path = sub + "/" + path;
+            String base = this.path.endsWith("/") ? this.path.substring(0, this.path.length() - 1) : this.path;
+            this.path = base + "/" + subfolderPath;
+        }
+
+        // Remove leading slash if one somehow remains (safety)
+        if (this.path.startsWith("/")) {
+            this.path = this.path.substring(1);
         }
     }
 
