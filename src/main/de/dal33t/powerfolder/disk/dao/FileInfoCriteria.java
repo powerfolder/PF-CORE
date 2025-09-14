@@ -184,8 +184,7 @@ public class FileInfoCriteria {
      */
     public void mapToSubFolderPath(String subfolderPath) {
         Reject.ifNull(subfolderPath, "subfolderPath");
-
-        subfolderPath = subfolderPath.startsWith("/") ? subfolderPath.substring(1) : subfolderPath;
+        Reject.ifTrue(subfolderPath.startsWith("/"), "subfolderPath must not start with slash: " + subfolderPath);
 
         if (isBlank(this.path)) {
             this.path = subfolderPath;
