@@ -175,7 +175,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
                     .collect(Collectors.toList());
 
             // Log output summary
-            logInfo("findFilesFast result: " + result.size() + " file(s) in subfolder '" +
+            logFine("findFilesFast result: " + result.size() + " file(s) in subfolder '" +
                     subfolderInfo.getName() + "' final path of criteria: " + criteria.getPath());
 
             return result;
