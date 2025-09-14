@@ -203,9 +203,6 @@ public class FileInfoCriteria {
         return this;
     }
 
-
-
-
     public Type getType() {
         return type;
     }

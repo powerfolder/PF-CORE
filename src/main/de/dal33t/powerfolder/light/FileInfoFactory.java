@@ -397,25 +397,47 @@ public final class FileInfoFactory {
         String strippedRelative = fullPath.substring(stripFrom);
 
         if (topFileInfo.isLookupInstance()) {
-            return new FileInfo(
-                    subFolderInfo,
-                    strippedRelative,
-                    topFileInfo.getModifiedDate(),
-                    topFileInfo.getModifiedByAccount());
+            if (topFileInfo instanceof FileInfo) {
+                return new FileInfo(
+                        subFolderInfo,
+                        strippedRelative,
+                        topFileInfo.getModifiedDate(),
+                        topFileInfo.getModifiedByAccount());
+            } else {
+                return new DirectoryInfo(
+                        subFolderInfo,
+                        strippedRelative,
+                        topFileInfo.getModifiedDate(),
+                        topFileInfo.getModifiedByAccount());
+            }
         }
 
-        return new FileInfo(
-                strippedRelative,
-                topFileInfo.getOID(),
-                topFileInfo.getSize(),
-                topFileInfo.getModifiedBy(),
-                topFileInfo.getModifiedByAccount(),
-                topFileInfo.getModifiedDate(),
-                topFileInfo.getVersion(),
-                topFileInfo.getHashes(),
-                topFileInfo.isDeleted(),
-                topFileInfo.getTags(),
-                subFolderInfo);
+        if (topFileInfo instanceof FileInfo) {
+            return new FileInfo(
+                    strippedRelative,
+                    topFileInfo.getOID(),
+                    topFileInfo.getSize(),
+                    topFileInfo.getModifiedBy(),
+                    topFileInfo.getModifiedByAccount(),
+                    topFileInfo.getModifiedDate(),
+                    topFileInfo.getVersion(),
+                    topFileInfo.getHashes(),
+                    topFileInfo.isDeleted(),
+                    topFileInfo.getTags(),
+                    subFolderInfo);
+        } else {
+            return new DirectoryInfo(
+                    strippedRelative,
+                    topFileInfo.getOID(),
+                    topFileInfo.getModifiedBy(),
+                    topFileInfo.getModifiedByAccount(),
+                    topFileInfo.getModifiedDate(),
+                    topFileInfo.getVersion(),
+                    topFileInfo.getHashes(),
+                    topFileInfo.isDeleted(),
+                    topFileInfo.getTags(),
+                    subFolderInfo);
+        }
     }
 
     public static FileInfo mapToTopFolder(FileInfo subFileInfo) {
@@ -435,25 +457,47 @@ public final class FileInfoFactory {
         }
 
         if (subFileInfo.isLookupInstance()) {
-            return new FileInfo(
-                    parentFolderInfo,
-                    relativeName,
-                    subFileInfo.getModifiedDate(),
-                    subFileInfo.getModifiedByAccount());
+            if (subFileInfo instanceof FileInfo) {
+                return new FileInfo(
+                        parentFolderInfo,
+                        relativeName,
+                        subFileInfo.getModifiedDate(),
+                        subFileInfo.getModifiedByAccount());
+            } else {
+                return new DirectoryInfo(
+                        parentFolderInfo,
+                        relativeName,
+                        subFileInfo.getModifiedDate(),
+                        subFileInfo.getModifiedByAccount());
+            }
         }
 
-        return new FileInfo(
-                relativeName,
-                subFileInfo.getOID(),
-                subFileInfo.getSize(),
-                subFileInfo.getModifiedBy(),
-                subFileInfo.getModifiedByAccount(),
-                subFileInfo.getModifiedDate(),
-                subFileInfo.getVersion(),
-                subFileInfo.getHashes(),
-                subFileInfo.isDeleted(),
-                subFileInfo.getTags(),
-                parentFolderInfo);
+        if (subFileInfo instanceof FileInfo) {
+            return new FileInfo(
+                    relativeName,
+                    subFileInfo.getOID(),
+                    subFileInfo.getSize(),
+                    subFileInfo.getModifiedBy(),
+                    subFileInfo.getModifiedByAccount(),
+                    subFileInfo.getModifiedDate(),
+                    subFileInfo.getVersion(),
+                    subFileInfo.getHashes(),
+                    subFileInfo.isDeleted(),
+                    subFileInfo.getTags(),
+                    parentFolderInfo);
+        } else {
+            return new DirectoryInfo(
+                    relativeName,
+                    subFileInfo.getOID(),
+                    subFileInfo.getModifiedBy(),
+                    subFileInfo.getModifiedByAccount(),
+                    subFileInfo.getModifiedDate(),
+                    subFileInfo.getVersion(),
+                    subFileInfo.getHashes(),
+                    subFileInfo.isDeleted(),
+                    subFileInfo.getTags(),
+                    parentFolderInfo);
+        }
     }
 
     private static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "?", "\"", "*",
