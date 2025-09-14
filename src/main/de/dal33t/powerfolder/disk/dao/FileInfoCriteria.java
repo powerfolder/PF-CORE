@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
-import de.dal33t.powerfolder.util.StringUtils;
 
 import java.util.*;
 
@@ -175,33 +174,30 @@ public class FileInfoCriteria {
     }
 
     /**
-     * Maps this criteria's path into a subfolder scope.
-     * Ensures there is exactly one slash between the current path and the subfolder path.
-     * Final path will never start with a slash.
-     * Modifies this instance and returns it.
+     * Prepends the given subfolder path to this criteria's path.
+     * This modifies the current instance and returns it for chaining.
      *
-     * @param subfolderPath The subfolder path to append (e.g. "docs/")
-     * @return this (for method chaining)
+     * Ensures there is exactly one "/" between both segments and
+     * the resulting path does NOT start with a "/".
+     *
+     * @param subfolderPath The subfolder path to prepend (e.g. "docs")
      */
-    public FileInfoCriteria mapToSubFolder(String subfolderPath) {
+    public void mapToSubFolderPath(String subfolderPath) {
         Reject.ifNull(subfolderPath, "subfolderPath");
 
-        subfolderPath = subfolderPath.startsWith("/") ? subfolderPath.substring(1) : subfolderPath;
+        String currentPath = this.path != null ? this.path : "";
 
-        if (isBlank(this.path)) {
-            this.path = subfolderPath;
+        // Remove trailing slash from subfolderPath and leading slash from currentPath
+        String sub = subfolderPath.endsWith("/") ? subfolderPath.substring(0, subfolderPath.length() - 1) : subfolderPath;
+        String path = currentPath.startsWith("/") ? currentPath.substring(1) : currentPath;
+
+        if (path.isEmpty()) {
+            this.path = sub;
         } else {
-            String base = this.path.endsWith("/") ? this.path.substring(0, this.path.length() - 1) : this.path;
-            this.path = base + "/" + subfolderPath;
+            this.path = sub + "/" + path;
         }
-
-        // Remove leading slash if one somehow remains (safety)
-        if (this.path.startsWith("/")) {
-            this.path = this.path.substring(1);
-        }
-
-        return this;
     }
+
 
     public Type getType() {
         return type;

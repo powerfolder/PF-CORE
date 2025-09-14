@@ -141,33 +141,32 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
 
     @Override
     public Collection<FileInfo> findFiles(FileInfoCriteria criteria) {
-        return delegate.findFiles(criteria.mapToSubFolder(subfolderPath)).stream()
-                .filter(f -> f.isInSubFolder(subfolderInfo))
-                .map(this::toSub)
-                .collect(Collectors.toList());
+        String originalPath = criteria.getPath();
+
+        criteria.mapToSubFolderPath(subfolderPath); // modifies in-place
+        try {
+            return delegate.findFiles(criteria).stream()
+                    .filter(f -> f.isInSubFolder(subfolderInfo))
+                    .map(this::toSub)
+                    .collect(Collectors.toList());
+        } finally {
+            criteria.setPath(originalPath); // restore path afterward
+        }
     }
 
     @Override
     public Collection<FileInfo> findFilesFast(FileInfoCriteria criteria) {
         String originalPath = criteria.getPath();
 
-        FileInfoCriteria adjusted = criteria.mapToSubFolder(subfolderPath);
-
-        if (!Objects.equals(originalPath, adjusted.getPath())) {
-            logInfo("Adjusted FileInfoCriteria path in findFilesFast: INPUT='" + originalPath +
-                    "' + '" + subfolderPath + "' -> OUTPUT='" + adjusted.getPath() + "'");
+        criteria.mapToSubFolderPath(subfolderPath); // modifies in-place
+        try {
+            return delegate.findFilesFast(criteria).stream()
+                    .filter(f -> f.isInSubFolder(subfolderInfo))
+                    .map(this::toSub)
+                    .collect(Collectors.toList());
+        } finally {
+            criteria.setPath(originalPath); // restore to avoid breaking caller
         }
-
-        Collection<FileInfo> result = delegate.findFilesFast(adjusted).stream()
-                .filter(f -> f.isInSubFolder(subfolderInfo))
-                .map(this::toSub)
-                .collect(Collectors.toList());
-
-        // Log output summary
-        logInfo("findFilesFast result: " + result.size() + " file(s) in subfolder '" +
-                subfolderInfo.getName() + "'");
-
-        return result;
     }
 
 
