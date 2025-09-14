@@ -803,7 +803,6 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     }
 
     public boolean isInSubFolder(FolderInfo subFolderInfo) {
-        Reject.ifNull(this, "FileInfo");
         Reject.ifNull(subFolderInfo, "SubFolderInfo");
         Reject.ifNull(subFolderInfo.getParent(), "Subfolder must have a parent");
 
@@ -818,6 +817,15 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
         subPath += subFolderInfo.getName();
         return filePath != null && filePath.startsWith(subPath);
+    }
+
+    public boolean isInSubFolder(String subFolderPath) {
+        Reject.ifNull(subFolderPath, "subFolderPath");
+
+        if (subFolderPath == null || subFolderPath.isBlank()) {
+            return true;
+        }
+        return getRelativeName().startsWith(subFolderPath);
     }
 
     @Override
