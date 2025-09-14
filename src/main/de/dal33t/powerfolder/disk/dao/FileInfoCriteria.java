@@ -28,6 +28,8 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 import java.util.*;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+
 /**
  * Object that holds criterias to select {@link FileInfo}s from a
  * {@link FileInfoDAO}
@@ -121,7 +123,7 @@ public class FileInfoCriteria {
      *            the keywords to add as filter.
      */
     public void addKeyWord(String keyWord) {
-        if (StringUtils.isBlank(keyWord)) {
+        if (isBlank(keyWord)) {
             return;
         }
         keyWords.add(keyWord.trim().toLowerCase());
@@ -184,13 +186,13 @@ public class FileInfoCriteria {
     public FileInfoCriteria mapToSubFolder(String subfolderPath) {
         Reject.ifNull(subfolderPath, "subfolderPath");
 
-        if (this.path == null || this.path.isEmpty()) {
-            this.path = subfolderPath.startsWith("/") ? subfolderPath.substring(1) : subfolderPath;
+        subfolderPath = subfolderPath.startsWith("/") ? subfolderPath.substring(1) : subfolderPath;
+
+        if (isBlank(this.path)) {
+            this.path = subfolderPath;
         } else {
             String base = this.path.endsWith("/") ? this.path.substring(0, this.path.length() - 1) : this.path;
-            String sub = subfolderPath.startsWith("/") ? subfolderPath.substring(1) : subfolderPath;
-
-            this.path = base + "/" + sub;
+            this.path = base + "/" + subfolderPath;
         }
 
         // Remove leading slash if one somehow remains (safety)
