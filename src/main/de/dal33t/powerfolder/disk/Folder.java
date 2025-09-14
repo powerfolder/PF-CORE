@@ -155,7 +155,7 @@ public class Folder extends PFComponent {
      * Flag indicating that folder has a set of own know files will be true
      * after first scan ever
      */
-    private volatile boolean hasOwnDatabase;
+    private volatile boolean isDAOpopulated;
 
     /** Flag indicating */
     private volatile boolean shutdown;
@@ -249,7 +249,7 @@ public class Folder extends PFComponent {
             .createListenerSupport(ProblemListener.class);
 
         // Not until first scan or db load
-        hasOwnDatabase = false;
+        isDAOpopulated = false;
         dirty = false;
         problems = new CopyOnWriteArrayList<>();
 
@@ -366,7 +366,7 @@ public class Folder extends PFComponent {
             && PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter))
         {
             // Empty folder... no scan required for database
-            hasOwnDatabase = true;
+            isDAOpopulated = true;
         }
 
         transferPriorities = new TransferPriorities();
@@ -414,15 +414,15 @@ public class Folder extends PFComponent {
         recommendScanOnNextMaintenance();
 
         if (isFine()) {
-            if (hasOwnDatabase) {
+            if (isDAOpopulated) {
                 logFiner("Has own database (" + getName() + ")? "
-                    + hasOwnDatabase);
+                    + isDAOpopulated);
             } else {
                 logFine("Has own database (" + getName() + ")? "
-                    + hasOwnDatabase);
+                    + isDAOpopulated);
             }
         }
-        if (hasOwnDatabase) {
+        if (isDAOpopulated) {
             // Write filelist
             writeFilelist(getMySelf());
         }
@@ -587,8 +587,8 @@ public class Folder extends PFComponent {
             }
         }
 
-        boolean hadOwnDatabase = hasOwnDatabase;
-        hasOwnDatabase = true;
+        boolean wasDAOpopulated = isDAOpopulated;
+        isDAOpopulated = true;
 
         if (isInfo() || isFine()) {
             String msg = this + ": Scanned " + scanResult.getTotalFilesCount() + " total, "
@@ -644,13 +644,13 @@ public class Folder extends PFComponent {
             logFiner("commitScanResult DONE");
         }
 
-        if (!hadOwnDatabase) {
+        if (!wasDAOpopulated) {
             getController().getFolderRepository().getFileRequestor().triggerFileRequesting(currentInfo);
         }
     }
 
     public boolean hasOwnDatabase() {
-        return hasOwnDatabase;
+        return isDAOpopulated;
     }
 
     public DiskItemFilter getDiskItemFilter() {
@@ -1893,6 +1893,8 @@ public class Folder extends PFComponent {
                 FileInfoDAO parentDAO = parent.getDAO();
                 logInfo(this + ": Using DAO of parent " + parent + " at " + currentInfo.getLocation());
                 dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo);
+                // Well, it actually does not have an OWN, but
+                isDAOpopulated = true;
             } else {
                 logInfo(this + ": Using OWN DAO for subfolder. Parent folder not here.");
                 dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
@@ -1937,7 +1939,7 @@ public class Folder extends PFComponent {
                 }
 
                 // Ok has own database
-                hasOwnDatabase = true;
+                isDAOpopulated = true;
 
                 // read them always ..
                 MemberInfo[] members1 = (MemberInfo[]) in.readObject();
@@ -2821,7 +2823,7 @@ public class Folder extends PFComponent {
                 waitForScan();
 
                 Message[] filelistMsgs;
-                if (hasOwnDatabase) {
+                if (isDAOpopulated) {
                     filelistMsgs = FileList.create(this,
                         supportExternalizable(member));
                 } else {
@@ -4058,7 +4060,7 @@ public class Folder extends PFComponent {
         }
         logFiner("Persisting settings");
 
-        if ((hasOwnDatabase || getKnownItemCount() > 0)
+        if ((isDAOpopulated || getKnownItemCount() > 0)
             && Files.notExists(getSystemSubDir0()))
         {
             logWarning("Not storing folder database. Local system directory does not exists: "
