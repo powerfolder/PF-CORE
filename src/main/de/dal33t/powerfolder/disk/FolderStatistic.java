@@ -456,7 +456,7 @@ public class FolderStatistic extends PFComponent {
      * @return the number of files this member has
      */
     public int getFilesCount(Member member) {
-        Integer count = current.getFilesCount().get(member.getInfo());
+        Integer count = current.getFilesCount(member.getInfo());
         return count != null ? count : 0;
     }
 
@@ -474,7 +474,7 @@ public class FolderStatistic extends PFComponent {
      * @return the members ACTUAL size of this folder.
      */
     public long getSize(Member member) {
-        Long size = current.getSizes().get(member.getInfo());
+        Long size = current.getSize(member.getInfo());
         return size != null ? size : 0;
     }
 
@@ -492,7 +492,7 @@ public class FolderStatistic extends PFComponent {
      * @return number of local files
      */
     public int getLocalFilesCount() {
-        Integer integer = current.getFilesCount().get(getMySelf().getInfo());
+        Integer integer = current.getFilesCount(getMySelf().getInfo());
         return integer != null ? integer : 0;
     }
 
@@ -609,7 +609,7 @@ public class FolderStatistic extends PFComponent {
      * @return my ACTUAL size of this folder.
      */
     public long getLocalSize() {
-        Long size = current.getSizes().get(getMySelf().getInfo());
+        Long size = current.getSize(getMySelf().getInfo());
         return size != null ? size : 0;
     }
 
