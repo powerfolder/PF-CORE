@@ -5507,13 +5507,20 @@ public class Folder extends PFComponent {
         Reject.ifFalse(subDirInfo.getFolderInfo().equals(currentInfo), "Folder mismatch");
 
         Path subDirPath = subDirInfo.getDiskFile(getController().getFolderRepository());
+        Folder subFolder = getController().getFolderRepository().findExistingFolder(subDirPath);
+        if (subFolder != null) {
+            return subFolder;
+        }
+
         FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
         FolderSettings folderSettings = new FolderSettings(subDirPath, getSyncProfile(), getFileArchiver().getVersionsPerFile());
-        Folder subFolder = getController().getFolderRepository().createFolder(subFolderInfo, folderSettings);
+        subFolder = getController().getFolderRepository().createFolder(subFolderInfo, folderSettings);
         subFolder.addDefaultExcludes();
+
         // From top folder:
         // Excludes
         // Archive
+
         return subFolder;
     }
 
