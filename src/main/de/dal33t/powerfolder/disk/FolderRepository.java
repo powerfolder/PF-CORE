@@ -625,6 +625,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                         return;
                     }
 
+                    // PFC-3472: Improve this
+                    if (foInfo.isSubFolder()) {
+                        Waiter w = new Waiter(60000L);
+                        while (foInfo.getParent().getFolderInfo().getFolder(getController()) == null && !w.isTimeout()) {
+                            logWarning(foInfo + ". Waiting for parent folder to load: " + foInfo.getParent().getFolderInfo());
+                            w.waitABit();
+                        }
+                    }
+
                     // Fix for PFS-2319: Repair broken encrypted folders
                     if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
 
