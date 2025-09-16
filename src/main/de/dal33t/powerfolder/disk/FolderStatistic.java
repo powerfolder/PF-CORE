@@ -50,6 +50,7 @@ public class FolderStatistic extends PFComponent {
     private final Folder folder;
     private final long maxDelay;
 
+    private volatile FolderStatisticInfo previous;
     private volatile FolderStatisticInfo calculating;
     private volatile FolderStatisticInfo current;
     private SimpleTimeEstimator estimator;
@@ -204,6 +205,7 @@ public class FolderStatistic extends PFComponent {
         // Switch figures / Take over partial sync infos.
         calculating.getPartialSyncStatMap().putAll(
             current.getPartialSyncStatMap());
+        previous = current;
         current = calculating;
         calculating = null;
 
@@ -246,10 +248,13 @@ public class FolderStatistic extends PFComponent {
         if (isFine()) {
             long took = System.currentTimeMillis() - startTime;
             double perf = took != 0 ? (current.getAnalyzedFiles() / took) : 0;
-            logFine(folder.getName() + ": Recalculation completed (" + current.getAnalyzedFiles()
-                + " Files analyzed) in " + took + "ms. Performance: " + perf
-                + " ana/ms. Sync: " + getHarmonizedSyncPercentage() +
-                    ". Local count: " + folder.getStatistic().getLocalFilesCount() + ". Local size: " + folder.getStatistic().getLocalSize());
+            if (!folder.getInfo().isMetaFolder()) {
+                logFine(folder.getName() + ": Recalculation completed (" + current.getAnalyzedFiles()
+                        + " Files analyzed) in " + took + "ms. Performance: " + perf
+                        + " ana/ms. Sync: " + getHarmonizedSyncPercentage() +
+                        ". Local count: " + folder.getStatistic().getLocalFilesCount() + ". Local size: " + folder.getStatistic().getLocalSize());
+
+            }
         }
 
         Profiling.end(pe);
@@ -430,6 +435,13 @@ public class FolderStatistic extends PFComponent {
     }
 
     /**
+     * @return the previous statistic info.
+     */
+    public FolderStatisticInfo getPreviousInfo() {
+        return previous;
+    }
+
+    /**
      * @return the current statistic info.
      */
     public FolderStatisticInfo getInfo() {
@@ -453,7 +465,7 @@ public class FolderStatistic extends PFComponent {
      * @return the number of files this member has
      */
     public int getFilesCount(Member member) {
-        Integer count = current.getFilesCount().get(member.getInfo());
+        Integer count = current.getFilesCount(member.getInfo());
         return count != null ? count : 0;
     }
 
@@ -471,7 +483,7 @@ public class FolderStatistic extends PFComponent {
      * @return the members ACTUAL size of this folder.
      */
     public long getSize(Member member) {
-        Long size = current.getSizes().get(member.getInfo());
+        Long size = current.getSize(member.getInfo());
         return size != null ? size : 0;
     }
 
@@ -489,7 +501,7 @@ public class FolderStatistic extends PFComponent {
      * @return number of local files
      */
     public int getLocalFilesCount() {
-        Integer integer = current.getFilesCount().get(getMySelf().getInfo());
+        Integer integer = current.getFilesCount(getMySelf().getInfo());
         return integer != null ? integer : 0;
     }
 
@@ -606,7 +618,7 @@ public class FolderStatistic extends PFComponent {
      * @return my ACTUAL size of this folder.
      */
     public long getLocalSize() {
-        Long size = current.getSizes().get(getMySelf().getInfo());
+        Long size = current.getSize(getMySelf().getInfo());
         return size != null ? size : 0;
     }
 

@@ -783,6 +783,7 @@ public class FileArchiver {
             } catch (IOException e) {
                 log.warning("Unable to delete " + sizeFile + ". " + e);
             }
+            return;
         }
         ByteArrayInputStream bin = new ByteArrayInputStream(String
                 .valueOf(size).getBytes());

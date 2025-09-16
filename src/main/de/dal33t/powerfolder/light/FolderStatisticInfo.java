@@ -19,21 +19,6 @@
  */
 package de.dal33t.powerfolder.light;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.FolderStatistic;
@@ -41,6 +26,15 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
+
+import java.io.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Contains the statistic calculation result / infos about one folder. This
@@ -157,12 +151,20 @@ public class FolderStatisticInfo extends Loggable implements Serializable {
         return filesCount;
     }
 
+    public Integer getFilesCount(MemberInfo memberInfo) {
+        return filesCount.get(memberInfo);
+    }
+
     public Map<MemberInfo, Integer> getFilesCountInSync() {
         return filesCountInSync;
     }
 
     public Map<MemberInfo, Long> getSizes() {
         return sizes;
+    }
+
+    public Long getSize(MemberInfo memberInfo) {
+        return sizes.get(memberInfo);
     }
 
     public Map<MemberInfo, Long> getSizesInSync() {
