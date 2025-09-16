@@ -7,6 +7,7 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -15,8 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
+import java.util.logging.Level;
 
-public class FolderShareSubdirTest extends TwoControllerTestCase {
+public class SubFolderTest extends TwoControllerTestCase {
 
     @Override
     protected void setUp() throws Exception {
@@ -76,9 +78,71 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
 
         // ---
 
+        LoggingManager.setConsoleLogging(Level.INFO);
+        FileInfo rootOfSubdir = FileInfoFactory.lookupInstance(subFolder.getInfo(), "");
+        rootOfSubdir = subFolder.getFile(rootOfSubdir);
+        assertEquals("", rootOfSubdir.getRelativeName());
+    }
+
+    public void testSubdirDAOWithNestedSubdir() throws IOException {
+        String subDir = "subdir";
+        String nestedSubDir = "subdir-1";
+
+        Folder folder = getFolderAtBart();
+        TestHelper.createRandomFile(folder.getLocalBase(), "ONLY_in_TOP_FOLDER.txt");
+
+        // create subdir and one file
+        Path subdirPath = Files.createDirectories(folder.getPhysicalDir().resolve(subDir));
+        Path testFile = TestHelper.createRandomFile(subdirPath, "GANZERNAME.txt");
+        TestHelper.scanFolder(folder);
+
+        FileInfo testFileInfo = folder.getFileInfo(testFile);
+        assertNotNull(testFileInfo);
+        assertNotNull(folder.getFile(testFileInfo));
+
+        DirectoryInfo subDirInfo = (DirectoryInfo) folder.getFileInfo(subDir);
+        assertEquals("", subDirInfo.getParent().getRelativeName());
+
+        // Actually create the subfolder as new shared folder
+        Folder subFolder = folder.share(subDirInfo);
+
+        FileInfo testFileInfoInSub = FileInfoFactory.mapToSubFolder(testFileInfo, subFolder.getInfo());
+        assertNotNull(testFileInfoInSub);
+        assertEquals(testFileInfo.getFilenameOnly(), testFileInfoInSub.getFilenameOnly());
+
+        FileInfo testFileInfoAfterMapping = FileInfoFactory.mapToTopFolder(testFileInfoInSub);
+        assertNotNull(testFileInfoAfterMapping);
+        assertEquals(testFileInfo, testFileInfoAfterMapping);
+        assertNotNull(folder.getDAO().find(testFileInfoAfterMapping, null));
+
+        // --- Check root of subdir
         FileInfo rootOfSubdir = FileInfoFactory.lookupInstance(subFolder.getInfo(), "");
         rootOfSubdir = subFolder.getFile(rootOfSubdir);
         assertNotNull(rootOfSubdir);
+
+        // --- Now create nested subdir inside subFolder
+        Path nestedSubdirPath = Files.createDirectories(subdirPath.resolve(nestedSubDir));
+        Path nestedFile = TestHelper.createRandomFile(nestedSubdirPath, "NESTEDFILE.txt");
+        TestHelper.scanFolder(folder);
+
+        FileInfo nestedFileInfo = folder.getFileInfo(nestedFile);
+        assertNotNull(nestedFileInfo);
+
+        // map to subfolder view
+        FileInfo nestedFileInfoInSub = FileInfoFactory.mapToSubFolder(nestedFileInfo, subFolder.getInfo());
+        assertNotNull(nestedFileInfoInSub);
+        assertEquals(nestedFileInfo.getFilenameOnly(), nestedFileInfoInSub.getFilenameOnly());
+
+        // back to top
+        FileInfo nestedFileInfoBack = FileInfoFactory.mapToTopFolder(nestedFileInfoInSub);
+        assertEquals(nestedFileInfo, nestedFileInfoBack);
+
+        // ensure DAO finds it
+        assertNotNull(folder.getDAO().find(nestedFileInfoBack, null));
+
+        DirectoryInfo nestedDirInfo = (DirectoryInfo) folder.getFileInfo(subDir + "/" + nestedSubDir);
+        assertNotNull(nestedDirInfo);
+        assertEquals(subDir, nestedDirInfo.getParent().getRelativeName());
     }
 
 
