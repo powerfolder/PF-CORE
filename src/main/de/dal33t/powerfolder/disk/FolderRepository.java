@@ -629,7 +629,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     if (foInfo.isSubFolder()) {
                         Waiter w = new Waiter(60000L);
                         while (foInfo.getParent().getFolderInfo().getFolder(getController()) == null && !w.isTimeout()) {
-                            logWarning(foInfo + ". Waiting for parent folder to load: " + foInfo.getParent().getFolderInfo());
+                            logInfo(foInfo + ". Waiting for parent folder to load: " + foInfo.getParent().getFolderInfo());
                             w.waitABit();
                         }
                     }

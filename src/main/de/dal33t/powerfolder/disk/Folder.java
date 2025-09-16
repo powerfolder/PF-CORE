@@ -1905,7 +1905,7 @@ public class Folder extends PFComponent {
                 // Well, it actually does not have an OWN, but
                 isDAOpopulated = true;
             } else {
-                logInfo(this + ": Using OWN DAO for subfolder. Parent folder not here.");
+                logWarning(this + ": Using own FileInfo DAO for subfolder. Parent folder not here.");
                 dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
             }
         }
