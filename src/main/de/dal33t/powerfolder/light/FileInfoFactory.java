@@ -393,7 +393,7 @@ public final class FileInfoFactory {
         }
         stripFrom += subFolderInfo.getName().length();
         if (stripFrom > fullPath.length()) {
-            stripFrom = fullPath.length() - 1;
+            stripFrom = fullPath.length();
         }
 
         String strippedRelative = fullPath.substring(stripFrom);
@@ -415,6 +415,9 @@ public final class FileInfoFactory {
         }
 
         if (topFileInfo instanceof DirectoryInfo) {
+            if (strippedRelative.isEmpty()) {
+                return createBaseDirectoryInfo(subFolderInfo);
+            }
             return new DirectoryInfo(
                     strippedRelative,
                     topFileInfo.getOID(),
