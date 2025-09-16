@@ -40,6 +40,9 @@ public class FolderShareSubdirTest extends TwoControllerTestCase {
         assertNotNull(subFolder);
         assertEquals(folder.getInfo(), subFolder.getInfo().getParent().getFolderInfo());
         assertEquals("structure/deep", subFolder.getInfo().getParent().getRelativeName());
+
+        Folder subFolderAgain = folder.share(subDirInfo);
+        assertSame(subFolder, subFolderAgain);
     }
 
     public void testSubdirDAOSingleFile() throws IOException {
