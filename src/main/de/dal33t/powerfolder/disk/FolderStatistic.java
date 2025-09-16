@@ -50,6 +50,7 @@ public class FolderStatistic extends PFComponent {
     private final Folder folder;
     private final long maxDelay;
 
+    private volatile FolderStatisticInfo previous;
     private volatile FolderStatisticInfo calculating;
     private volatile FolderStatisticInfo current;
     private SimpleTimeEstimator estimator;
@@ -204,6 +205,7 @@ public class FolderStatistic extends PFComponent {
         // Switch figures / Take over partial sync infos.
         calculating.getPartialSyncStatMap().putAll(
             current.getPartialSyncStatMap());
+        previous = current;
         current = calculating;
         calculating = null;
 
@@ -430,6 +432,13 @@ public class FolderStatistic extends PFComponent {
 
     public String toString() {
         return "Folder statistic on '" + folder.getName() + '\'';
+    }
+
+    /**
+     * @return the previous statistic info.
+     */
+    public FolderStatisticInfo getPreviousInfo() {
+        return previous;
     }
 
     /**
