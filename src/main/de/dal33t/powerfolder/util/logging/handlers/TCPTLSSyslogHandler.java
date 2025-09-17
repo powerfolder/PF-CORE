@@ -78,10 +78,11 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
 
     @Override
     protected void send(byte[] data) throws IOException {
-        if (outputStream != null) {
-            outputStream.write(data);
-            outputStream.write('\n');
-            outputStream.flush();
+        OutputStream thisOutputStream = outputStream;
+        if (thisOutputStream != null) {
+            thisOutputStream.write(data);
+            thisOutputStream.write('\n');
+            thisOutputStream.flush();
         } else {
             throw new IOException("No open Syslog output stream");
         }
