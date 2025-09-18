@@ -5530,6 +5530,8 @@ public class Folder extends PFComponent {
         // Excludes
         // Archive
 
+        logInfo(this + ": Split/Shared subdirectory " + subDirInfo + ". New subfolder: " + subFolder);
+
         return subFolder;
     }
 
