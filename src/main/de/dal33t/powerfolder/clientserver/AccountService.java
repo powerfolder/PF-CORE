@@ -241,15 +241,9 @@ public interface AccountService {
 
     List<Group> getAll(GroupFilterModel filter);
 
-    List<Organization> getAll(OrganizationFilterModel filter);
-
     Collection<Invitation> getInvitationsFor(AccountInfo accountInfo);
 
     Collection<Token> getTokensFor(AccountInfo accountInfo);
-
-    void setOrganizationValidTill(String organizationID, Date validTillDate);
-
-    void deleteOrganization(String organizationID);
 
     void requestToCloseOwnAccount();
 }
