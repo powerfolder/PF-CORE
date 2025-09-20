@@ -43,5 +43,5 @@ public interface OrganizationService {
      * @param newMaxStorageSize new max storage
      *
      */
-    void changeStorageSize(String organizationId, long oldMaxStorageSize, long newMaxStorageSize);
+    void changeSpaceAllowed(String organizationId, long oldMaxStorageSize, long newMaxStorageSize);
 }
