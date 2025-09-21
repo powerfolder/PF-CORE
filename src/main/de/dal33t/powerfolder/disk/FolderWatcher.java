@@ -251,7 +251,7 @@ public class FolderWatcher extends PFComponent {
                             // Ignore.
                             continue;
                         }
-                        fileInfos.add(dirtyFile);
+                        fileInfos.add(FileInfoFactory.changeModifiedAccount(dirtyFile, null));
                     }
                     dirtyFiles.clear();
                 }
