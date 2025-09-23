@@ -45,6 +45,14 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         Folder subFolderAgain = folder.share(subDirInfo);
         assertSame(subFolder, subFolderAgain);
+
+        try {
+            subFolder.share(subDirInfo);
+            fail("Was able to share a subfolder in subfolder");
+        } catch (Exception e) {
+            // OK, should fail
+        }
+
     }
 
     public void testSubdirDAOSingleFile() throws IOException {

@@ -5514,6 +5514,7 @@ public class Folder extends PFComponent {
     public Folder share(DirectoryInfo subDirInfo) {
         Reject.ifNull(subDirInfo, "Subdirectory");
         Reject.ifFalse(subDirInfo.getFolderInfo().equals(currentInfo), "Folder mismatch");
+        Reject.ifTrue(getInfo().isSubFolder(), "Folder is Subfolder. Sharing subfolder only allowed on top level folder");
 
         Path subDirPath = subDirInfo.getDiskFile(getController().getFolderRepository());
         Folder subFolder = getController().getFolderRepository().findExistingFolder(subDirPath);
