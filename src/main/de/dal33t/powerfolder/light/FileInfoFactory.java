@@ -416,7 +416,11 @@ public final class FileInfoFactory {
 
         if (topFileInfo instanceof DirectoryInfo) {
             if (strippedRelative.isEmpty()) {
-                return createBaseDirectoryInfo(subFolderInfo);
+                return new DirectoryInfo(
+                        subFolderInfo,
+                        "",
+                        topFileInfo.getModifiedDate(),
+                        topFileInfo.getModifiedByAccount());
             }
             return new DirectoryInfo(
                     strippedRelative,
