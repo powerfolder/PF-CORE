@@ -1058,11 +1058,11 @@ public class Folder extends PFComponent {
             logFine(getName() + ": Already shutdown: Not scanLocalFiles");
             return false;
         }
-        if (currentInfo.isSubFolder()) {
-            Folder parentFolder = currentInfo.getParent().getFolder(getController().getFolderRepository());
-            if (parentFolder != null) {
+        if (isSubFolder()) {
+            Folder topFolder = getTopFolder();
+            if (topFolder != null) {
                 if (isFiner()) {
-                    logFiner(this + ": Skipping scan of local filesystem. is handled by parent " + parentFolder);
+                    logFiner(this + ": Skipping scan of local filesystem. is handled by top folder " + topFolder);
                 }
                 return false;
             }
@@ -1888,10 +1888,10 @@ public class Folder extends PFComponent {
         if (currentInfo.isTopLevel()) {
             dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
         } else {
-            Folder parent = currentInfo.getParent().getFolder(getController().getFolderRepository());
-            if (parent != null) {
-                FileInfoDAO parentDAO = parent.getDAO();
-                logInfo(this + ": Using DAO of parent " + parent + " at " + currentInfo.getLocation());
+            Folder topFolder = getTopFolder();
+            if (topFolder != null) {
+                FileInfoDAO parentDAO = topFolder.getDAO();
+                logInfo(this + ": Using DAO of topfolder " + topFolder + " at " + currentInfo.getLocation());
                 dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo);
                 // Well, it actually does not have an OWN, but
                 isDAOpopulated = true;
@@ -3060,6 +3060,15 @@ public class Folder extends PFComponent {
      */
     public boolean isStarted() {
         return !shutdown;
+    }
+
+    public boolean isSubFolder() {
+        return currentInfo.isSubFolder();
+    }
+
+    public Folder getTopFolder() {
+        Reject.ifFalse(isSubFolder(), "Not a subfolder");
+        return currentInfo.getTopFolder().getFolder(getController());
     }
 
     /**
@@ -5505,14 +5514,14 @@ public class Folder extends PFComponent {
     public Folder share(DirectoryInfo subDirInfo) {
         Reject.ifNull(subDirInfo, "Subdirectory");
         Reject.ifFalse(subDirInfo.getFolderInfo().equals(currentInfo), "Folder mismatch");
-        Reject.ifTrue(getInfo().isSubFolder(), "Folder is Subfolder. Sharing subfolder only allowed from top level folder");
+        Reject.ifTrue(isSubFolder(), "Folder is Subfolder. Sharing subfolder only allowed from top level folder");
 
-        Path subDirPath = subDirInfo.getDiskFile(getController().getFolderRepository());
-        Folder subFolder = getController().getFolderRepository().findExistingFolder(subDirPath);
+        Folder subFolder = getController().getFolderRepository().findSubFolder(subDirInfo);
         if (subFolder != null) {
             return subFolder;
         }
 
+        Path subDirPath = subDirInfo.getDiskFile(getController().getFolderRepository());
         FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
         FolderSettings folderSettings = new FolderSettings(subDirPath, getSyncProfile(), getFileArchiver().getVersionsPerFile());
         subFolder = getController().getFolderRepository().createFolder(subFolderInfo, folderSettings);

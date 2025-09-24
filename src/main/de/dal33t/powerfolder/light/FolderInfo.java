@@ -192,14 +192,6 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return FileInfoFactory.lookupDirectory(parentFolder, parentPath);
     }
 
-    public boolean isTopLevel() {
-        return parentFolder == null;
-    }
-
-    public boolean isSubFolder() {
-        return parentFolder != null;
-    }
-
     /**
      * @return the location under which the folder is located.
      * e.g. if the structure is "subdir/is/here/subfolder" this would return "subdir/is/here/subfolder"
@@ -214,6 +206,18 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         }
         path += name;
         return FileInfoFactory.lookupDirectory(parentFolder, path);
+    }
+
+    public FolderInfo getTopFolder() {
+        return parentFolder;
+    }
+
+    public boolean isTopLevel() {
+        return parentFolder == null;
+    }
+
+    public boolean isSubFolder() {
+        return parentFolder != null;
     }
 
     /**

@@ -628,8 +628,8 @@ public class FolderRepository extends PFComponent implements Runnable {
                     // PFC-3472: Improve this
                     if (foInfo.isSubFolder()) {
                         Waiter w = new Waiter(60000L);
-                        while (foInfo.getParent().getFolderInfo().getFolder(getController()) == null && !w.isTimeout()) {
-                            logInfo(foInfo + ". Waiting for parent folder to load: " + foInfo.getParent().getFolderInfo());
+                        while (foInfo.getTopFolder().getFolder(getController()) == null && !w.isTimeout()) {
+                            logInfo(foInfo + ". Waiting for top folder to load: " + foInfo.getTopFolder());
                             loadPermit.release();
                             w.waitABit(1000L);
                         }
@@ -1079,6 +1079,18 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder findContainingFolder(Path path) {
         for (Folder folder : folders.values()) {
             if (path.startsWith(folder.getLocalBase().toAbsolutePath())) {
+                return folder;
+            }
+        }
+        return null;
+    }
+
+    public Folder findSubFolder(DirectoryInfo directoryInfo) {
+        for (Folder folder : getController().getFolderRepository().getFolders()) {
+            if (folder.getInfo().isTopLevel()) {
+                continue;
+            }
+            if (folder.getInfo().getLocation().equals(directoryInfo)) {
                 return folder;
             }
         }

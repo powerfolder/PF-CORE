@@ -804,7 +804,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     public boolean isInSubFolder(FolderInfo subFolderInfo) {
         Reject.ifNull(subFolderInfo, "SubFolderInfo");
-        Reject.ifNull(subFolderInfo.getParent(), "Subfolder must have a parent");
+        Reject.ifFalse(subFolderInfo.isSubFolder(), "Must be subfolder");
 
         if (folderInfo.equals(subFolderInfo)) {
             return true;

@@ -23,17 +23,11 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     public SubFolderFileInfoDAOProxy(FileInfoDAO delegate, FolderInfo subfolderInfo) {
         Reject.ifNull(delegate, "delegate");
         Reject.ifNull(subfolderInfo, "subfolderInfo");
-        Reject.ifNull(subfolderInfo.getParent(), "subfolderInfo must have a parent FolderInfo");
+        Reject.ifFalse(subfolderInfo.isSubFolder(), "Must be subfolder");
 
         this.delegate = delegate;
         this.subfolderInfo = subfolderInfo;
-        String parentPath = subfolderInfo.getParent().getRelativeName();
-        String name = subfolderInfo.getName();
-        if (parentPath == null || parentPath.isEmpty()) {
-            this.subfolderPath = name;
-        } else {
-            this.subfolderPath = parentPath + '/' + name;
-        }
+        this.subfolderPath =  subfolderInfo.getLocation().getRelativeName();
         logInfo(subfolderInfo + " initialized at subfolderPath=" + subfolderPath);
     }
 
