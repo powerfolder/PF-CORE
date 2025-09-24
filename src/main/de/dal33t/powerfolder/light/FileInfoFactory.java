@@ -380,7 +380,7 @@ public final class FileInfoFactory {
     public static FileInfo mapToSubFolder(FileInfo topFileInfo, FolderInfo subFolderInfo) {
         Reject.ifNull(topFileInfo, "FileInfo");
         Reject.ifNull(subFolderInfo, "SubFolderInfo");
-        Reject.ifNull(subFolderInfo.getParent(), "Not a subfolder");
+        Reject.ifFalse(subFolderInfo.isSubFolder(), "Not a subfolder");
 
         String fullPath = topFileInfo.getRelativeName();
         String parentName = subFolderInfo.getParent().getRelativeName();
