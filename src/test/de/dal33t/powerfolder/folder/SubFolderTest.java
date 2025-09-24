@@ -183,6 +183,24 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals(topFileInfo.getSize(), topFileInfoBack.getSize());
         assertEquals(topFileInfo.getModifiedDate(), topFileInfoBack.getModifiedDate());
         assertEquals(topFileInfo.getFolderInfo(), topFileInfoBack.getFolderInfo());
+
+        FileInfo topBaseFileInfo = FileInfoFactory.unmarshallExistingFile(topFolderInfo, subDir,
+                null, 100, null, null, new Date(), 0, null, true, null);
+        subFileInfo = FileInfoFactory.mapToSubFolder(topBaseFileInfo, subFolderInfo);
+
+        assertEquals("", subFileInfo.getRelativeName());
+        assertEquals("", subFileInfo.getFilenameOnly());
+        assertEquals(topBaseFileInfo.getModifiedDate(), subFileInfo.getModifiedDate());
+        assertEquals(subFolderInfo, subFileInfo.getFolderInfo());
+
+        FileInfo topSingleCharFilename = FileInfoFactory.unmarshallExistingFile(topFolderInfo, subDir + "/N",
+                null, 100, null, null, new Date(), 0, null, false, null);
+        subFileInfo = FileInfoFactory.mapToSubFolder(topSingleCharFilename, subFolderInfo);
+
+        assertEquals("N", subFileInfo.getRelativeName());
+        assertEquals("N", subFileInfo.getFilenameOnly());
+        assertEquals(topBaseFileInfo.getModifiedDate(), subFileInfo.getModifiedDate());
+        assertEquals(subFolderInfo, subFileInfo.getFolderInfo());
     }
 
     public void testDAO() {

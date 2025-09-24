@@ -382,21 +382,16 @@ public final class FileInfoFactory {
         Reject.ifNull(subFolderInfo, "SubFolderInfo");
         Reject.ifFalse(subFolderInfo.isSubFolder(), "Not a subfolder");
 
-        String fullPath = topFileInfo.getRelativeName();
-        String parentName = subFolderInfo.getParent().getRelativeName();
+        String topFileInfoRelativeName = topFileInfo.getRelativeName();
+        String locationName = subFolderInfo.getLocation().getRelativeName();
 
-        Reject.ifFalse(fullPath.startsWith(parentName), "FileInfo not in subfolder");
+        Reject.ifFalse(topFileInfoRelativeName.startsWith(locationName), "FileInfo not in subfolder");
 
-        int stripFrom = 1;
-        if (!parentName.isEmpty()) {
-            stripFrom += parentName.length() + 1;
+        int stripFrom = locationName.length();
+        if (locationName.length() < topFileInfoRelativeName.length()) {
+            stripFrom++;
         }
-        stripFrom += subFolderInfo.getName().length();
-        if (stripFrom > fullPath.length()) {
-            stripFrom = fullPath.length();
-        }
-
-        String strippedRelative = fullPath.substring(stripFrom);
+        String strippedRelative = topFileInfoRelativeName.substring(stripFrom);
 
         if (topFileInfo.isLookupInstance()) {
             if (topFileInfo instanceof DirectoryInfo) {
