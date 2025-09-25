@@ -321,7 +321,8 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             assertFalse(getContollerLisa().getMySelf().isConnecting());
             assertFalse(getContollerLisa().getMySelf().isConnected());
         } catch (InvalidIdentityException e) {
-            // Expected
+            // Expected, but not mandatory.
+            // Could be thrown at other side of the connection. We might only get an EOF here
         }
 
         // File DB intact:
