@@ -44,5 +44,5 @@ public interface CoreListener {
      * @return true if the events should be fired in the Swing Event Dispatch
      *         Thread.
      */
-    public boolean fireInEventDispatchThread();
+    boolean fireInEventDispatchThread();
 }

@@ -62,7 +62,7 @@ public class Spacetree {
         }
 
         if (Files.notExists(pathToExe)) {
-            Logger.getLogger(Spacetree.class.getName()).warning("Unable to install. Not found: " + pathToExe);
+            Logger.getLogger(Spacetree.class.getName()).warning("Unable to show up in Windows-Explorer. Not found: " + pathToExe);
             return null;
         }
         return new Spacetree(name, pathToExe, baseDir);

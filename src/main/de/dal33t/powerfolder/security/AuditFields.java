@@ -19,12 +19,15 @@
  */
 package de.dal33t.powerfolder.security;
 
+import de.dal33t.powerfolder.util.StackDump;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Embeddable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -90,6 +93,10 @@ public class AuditFields implements Serializable {
 
     private String toAccountField(Account account) {
         if (account == null) {
+            return null;
+        }
+        if (account.getUsername() == null) {
+            Logger.getLogger(AuditFields.class.getName()).log(Level.WARNING, "Audit user account username is null", new StackDump());
             return null;
         }
         return account.getOID() + SEPARATOR + account.getUsername();

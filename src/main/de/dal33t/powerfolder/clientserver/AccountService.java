@@ -226,6 +226,10 @@ public interface AccountService {
     @NotNull
     UpdateEmailResponse updateEmails(@NotNull Account account, @Nullable String[] emails);
 
+    public void closeAccount(Account account);
+
+    public void deleteAccount(Account account);
+
     /**
      * PF-1812 / PFS-3954
      *

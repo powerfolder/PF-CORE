@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.FolderList;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.net.NodeList;
@@ -1270,6 +1271,8 @@ public class ServerClient extends PFComponent {
         } catch (RemoteCallException e) {
             if (e.getCause() instanceof NoSuchMethodException) {
                 logWarning("WebDAV token generation not supported by server");
+            } else if (e.getCause() instanceof ConnectionException) {
+                logFine("Disconnected while retrieving WebDAV token for this device: " + e);
             } else {
                 logWarning("Unable to retrieve WebDAV token for this device: " + e);
             }

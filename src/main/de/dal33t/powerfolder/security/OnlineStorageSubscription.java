@@ -111,6 +111,24 @@ public class OnlineStorageSubscription implements Serializable {
         return System.currentTimeMillis() > validFrom.getTime();
     }
 
+    public boolean isServicedMoreThanOneDay() {
+        if (validFrom == null || validTill == null) {
+            return true;
+        }
+
+        long serviceTimeMS = validTill.getTime() - validFrom.getTime();
+
+        // Negative or zero duration means invalid or no service
+        if (serviceTimeMS <= 0) {
+            return false;
+        }
+
+        // One day in milliseconds
+        long oneDayMS = 24L * 60 * 60 * 1000;
+
+        return serviceTimeMS > oneDayMS;
+    }
+
     public boolean isServicedInMonth(int month, int year) {
         if (validFrom != null) {
             Calendar calendar = Calendar.getInstance();

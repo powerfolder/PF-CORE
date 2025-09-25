@@ -192,13 +192,11 @@ public class FileRequestor extends PFComponent {
         if (!folder.hasOwnDatabase()) {
             if (folder.isScanning() || folder.isDeviceDisconnected()) {
                 if (isFine()) {
-                    logFine("Not requesting files. No own database for "
-                        + folder);
+                    logFine("Not requesting files. No own database for " + folder);
                 }
             } else {
-                if (isWarning()) {
-                    logWarning("Not requesting files. No own database for "
-                        + folder);
+                if (isInfo()) {
+                    logInfo("Not requesting files. No own database for " + folder);
                 }
             }
             return;
@@ -486,7 +484,7 @@ public class FileRequestor extends PFComponent {
             for (Worker worker : workerPool) {
                 if (worker.isTimeout()) {
                     logWarning("Worker timed out detected. Restarting... " + worker);
-                    logWarning(Debug.dumpCurrentStacktraces(false));
+                    logWarning(Debug.dumpCurrentStacktraces(true));
                     worker.stopped = true;
                 }
             }

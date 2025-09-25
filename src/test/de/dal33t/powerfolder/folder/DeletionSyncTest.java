@@ -26,10 +26,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.transfer.DownloadManager;
-import de.dal33t.powerfolder.util.Debug;
 import de.dal33t.powerfolder.util.PathUtils;
-import de.dal33t.powerfolder.util.StackDump;
-import de.dal33t.powerfolder.util.Waiter;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -356,8 +353,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(30, new Condition() {
             @Override
             public boolean reached() {
-                System.out.println(Debug.dumpCurrentStacktraces(true));
-                return  getFolderAtBart().getStatistic().getTotalSize() == 0;
+                return  getFolderAtBart().getStatistic().getLocalSize() == 0;
             }
         });
         TestHelper.waitMilliSeconds(1000);
@@ -365,7 +361,7 @@ public class DeletionSyncTest extends TwoControllerTestCase {
         // Test the correct deletions state at bart
         assertEquals(nFiles, getFolderAtBart().getKnownItemCount());
         for (FileInfo fileInfo : getFolderAtBart().getKnownFiles()) {
-            assertTrue(fileInfo.isDeleted());
+            assertTrue(fileInfo.toDetailString() + " not marked as deleted", fileInfo.isDeleted());
             assertEquals("Expected Version 1, but got at bart: "+ fileInfo.getVersion(), 1, fileInfo.getVersion());
         }
 

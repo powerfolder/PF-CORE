@@ -3136,7 +3136,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             cleanupArchive = false;
         }
         try {
-            logInfo("cleanupOldFiles starting");
+            logFine("cleanupOldFiles starting");
             fireCleanupStarted();
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DATE, -period);

@@ -123,7 +123,7 @@ public class PermissionUserType extends Loggable implements UserType {
                     fdInfo = fdInfo.intern();
                 }
             } else {
-                logInfo(fdInfo + ": Found lookup instance in DB.");
+                logWarning(fdInfo + ": Found lookup instance in DB. Please correct this via SQL if the problem persists: UPDATE FolderInfo SET version = 0 WHERE version < 0;");
             }
 
             if (StringUtils.isBlank(fdInfo.getName()) && isFine()) {

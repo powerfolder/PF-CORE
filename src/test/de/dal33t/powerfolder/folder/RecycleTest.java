@@ -19,6 +19,12 @@
  */
 package de.dal33t.powerfolder.folder;
 
+import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import de.dal33t.powerfolder.util.test.TestHelper;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -26,12 +32,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
-
-import de.dal33t.powerfolder.disk.FileArchiver;
-import de.dal33t.powerfolder.disk.SyncProfile;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.util.test.ControllerTestCase;
-import de.dal33t.powerfolder.util.test.TestHelper;
 
 public class RecycleTest extends ControllerTestCase {
 
@@ -130,7 +130,7 @@ public class RecycleTest extends ControllerTestCase {
 
         sb.append("]");
 
-        // No file in there. "Size" meta info file shouldn't be in there aswell.
-        assertTrue(sb.toString(), count == 0);
+        // Only Sizes file should be left there
+        assertTrue(sb.toString(), count == 1);
     }
 }

@@ -25,4 +25,23 @@ public interface OrganizationService {
      * @param organizationId the organization id
      */
     void renewSubscription(String organizationId);
+
+    /**
+     * update max user count
+     *
+     * @param organizationId the organization id
+     * @param oldMaxUsers old max Users count
+     * @param newMaxUsers new max Users count
+     */
+    void changeMaxUsers(String organizationId, int oldMaxUsers, int newMaxUsers);
+
+    /**
+     * update Storage Size
+     *
+     * @param organizationId the organization id
+     * @param oldMaxStorageSize the previous max storage
+     * @param newMaxStorageSize new max storage
+     *
+     */
+    void changeSpaceAllowed(String organizationId, long oldMaxStorageSize, long newMaxStorageSize);
 }
