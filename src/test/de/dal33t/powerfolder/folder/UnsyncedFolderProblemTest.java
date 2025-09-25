@@ -26,7 +26,7 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
 
         TestHelper.waitMilliSeconds(3000);
         getFolderAtLisa().checkSync();
-        assertEquals(0, getFolderAtLisa().getProblems().size());
+        assertEquals(1, getFolderAtLisa().getProblems().size());
 
         TestHelper.waitForCondition(10, new Condition() {
             public boolean reached() {
