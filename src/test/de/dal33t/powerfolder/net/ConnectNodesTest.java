@@ -27,13 +27,10 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.util.Util;
-import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
-
-import java.util.logging.Level;
 
 /**
  * Test the reconnection behaviour.
@@ -316,7 +313,6 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // Reconnect manager has to be started therefore!
         getContollerLisa().getReconnectManager().start();
         try {
-            LoggingManager.setConsoleLogging(Level.FINE);
             assertFalse(getContollerLisa().getMySelf().reconnect().isSuccess());
             assertFalse(getContollerLisa().getMySelf().isConnecting());
             assertFalse(getContollerLisa().getMySelf().isConnected());
