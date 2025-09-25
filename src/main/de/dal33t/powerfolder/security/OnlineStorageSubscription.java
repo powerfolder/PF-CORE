@@ -113,7 +113,7 @@ public class OnlineStorageSubscription implements Serializable {
 
     public boolean isServicedMoreThanOneDay() {
         if (validFrom == null || validTill == null) {
-            return false;
+            return true;
         }
 
         long serviceTimeMS = validTill.getTime() - validFrom.getTime();
