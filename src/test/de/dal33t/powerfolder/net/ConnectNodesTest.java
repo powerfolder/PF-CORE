@@ -19,11 +19,7 @@
  */
 package de.dal33t.powerfolder.net;
 
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.ConnectResult;
-import de.dal33t.powerfolder.Feature;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.NetworkingMode;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -318,9 +314,11 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         getContollerLisa().getReconnectManager().start();
         try {
             assertFalse(getContollerLisa().getMySelf().reconnect().isSuccess());
-            fail("Loopback connection should fail");
+            assertFalse(getContollerLisa().getMySelf().isConnecting());
+            assertFalse(getContollerLisa().getMySelf().isConnected());
         } catch (InvalidIdentityException e) {
-            // Expected
+            // Expected, but not mandatory.
+            // Could be thrown at other side of the connection. We might only get an EOF here
         }
 
         // File DB intact:

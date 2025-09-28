@@ -18,10 +18,10 @@ public class OnlineStorageSubscriptionTest {
     }
 
     @Test
-    public void nullDates_returnFalse() {
-        assertFalse(sub(null, null).isServicedMoreThanOneDay());
-        assertFalse(sub(new Date(), null).isServicedMoreThanOneDay());
-        assertFalse(sub(null, new Date()).isServicedMoreThanOneDay());
+    public void nullDates_returnTrue() {
+        assertTrue(sub(null, null).isServicedMoreThanOneDay());
+        assertTrue(sub(new Date(), null).isServicedMoreThanOneDay());
+        assertTrue(sub(null, new Date()).isServicedMoreThanOneDay());
     }
 
     @Test
