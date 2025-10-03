@@ -1590,7 +1590,7 @@ public class Folder extends PFComponent {
         }
 
         if (PathUtils.isReplicatedSubdir(dir)) {
-            logWarning("Unable to scan directory. Replication found: " + dir);
+            logInfo("Unable to scan directory. Replication found: " + dir);
             return;
         }
         if (isDeviceDisconnected()) {
