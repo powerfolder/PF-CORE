@@ -1674,6 +1674,11 @@ public class Folder extends PFComponent {
         Reject.ifTrue(Files.exists(destinationFilePath), destinationFilePath + ": already existing");
 
         Path sourceFilePath = sourceFile.getDiskFile(getController().getFolderRepository());
+        if (sourceFilePath == null) {
+            logWarning(this + ": Unable to copy " + sourceFile +
+                    " to " + destinationFilePath + ". Source folder not mounted: " + sourceFile.getFolderInfo());
+            return false;
+        }
         FileInfo destinationFile = FileInfoFactory.lookupInstance(this, destinationFilePath);
 
         Reject.ifFalse(Files.exists(sourceFilePath), sourceFilePath + " does not exist");
