@@ -1504,12 +1504,7 @@ public class Folder extends PFComponent {
                                 + fInfo.toDetailString());
                         }
                         checkFile(fInfo);
-                        if (fInfo.isDeleted()) {
-                            logFileOperation("DELETED", null, fInfo);
-                        } else {
-                            logFileOperation("ADDED", null, fInfo);
-                        }
-
+                        logFileOperation("ADDED", null, fInfo);
                         return fInfo;
                     }
 
