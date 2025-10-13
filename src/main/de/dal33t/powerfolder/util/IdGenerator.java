@@ -76,6 +76,14 @@ public class IdGenerator {
     }
 
     /**
+     * @return a random entry ID usable in config
+     */
+    public static String makeConfigEntryId() {
+        return new String(Util.encodeHex(Util.md5(IdGenerator
+                .makeIdBytes())));
+    }
+
+    /**
      * @return a random UUID as byte array (16 bytes strong)
      */
     public static byte[] makeIdBytes() {

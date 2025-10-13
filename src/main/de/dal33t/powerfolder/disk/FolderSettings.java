@@ -155,8 +155,7 @@ public class FolderSettings {
         this.syncWarnSeconds = syncWarnSeconds;
         this.excludes = null;
         // Generate a unique entry id for config file.
-        this.configEntryId = new String(Util.encodeHex(Util.md5(IdGenerator
-            .makeIdBytes())));
+        this.configEntryId = IdGenerator.makeConfigEntryId();
     }
 
     // /////////////
@@ -395,6 +394,11 @@ public class FolderSettings {
         settings.excludes = excludes;
         return settings;
     }
+
+    public void generateNewConfigEntryId() {
+        this.configEntryId = IdGenerator.makeConfigEntryId();
+    }
+
 
     public void set(FolderInfo folderInfo, Properties config) {
         String entryId = this.configEntryId;
