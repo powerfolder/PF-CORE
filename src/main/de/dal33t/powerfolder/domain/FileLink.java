@@ -196,34 +196,48 @@ public class FileLink implements Serializable {
     // Accessing modalities ***************************************************
 
     /**
-     * Checks if this FileLink grants read access to the given file.
+     * Checks if this FileLink grants read access to a file or directory path.
      * Validates expiration, optional password, and path correctness.
+     *
+     * @param controller Controller instance (needed to resolve folder/file info)
+     * @param folderInfo Folder containing the file/directory being accessed
+     * @param relativeName Relative path of the file/directory within the folder
+     * @param optionalPassword Optional password provided by user (may be null)
+     * @return true if read access is allowed, false otherwise
      */
-    public boolean hasReadPermissions(Controller controller, FileInfo fileInfo, String optionalPassword) {
-        return checkAccessPermissions(controller, fileInfo, optionalPassword, false);
+    public boolean hasReadPermissions(Controller controller, FolderInfo folderInfo, String relativeName, String optionalPassword) {
+        return checkAccessPermissions(controller, folderInfo, relativeName, optionalPassword, false);
     }
 
     /**
-     * Checks if this FileLink grants write access (e.g., upload) to the given file.
+     * Checks if this FileLink grants write access (e.g., upload) to a file or directory path.
      * Validates expiration, optional password, and path correctness.
+     *
+     * @param controller Controller instance (needed to resolve folder/file info)
+     * @param folderInfo Folder containing the file/directory being accessed
+     * @param relativeName Relative path of the file/directory within the folder
+     * @param optionalPassword Optional password provided by user (may be null)
+     * @return true if write access is allowed, false otherwise
      */
-    public boolean hasWritePermissions(Controller controller, FileInfo fileInfo, String optionalPassword) {
-        return checkAccessPermissions(controller, fileInfo, optionalPassword, true);
+    public boolean hasWritePermissions(Controller controller, FolderInfo folderInfo, String relativeName, String optionalPassword) {
+        return checkAccessPermissions(controller, folderInfo, relativeName, optionalPassword, true);
     }
 
     /**
-     * Internal helper for access control. Used by both read and write checks.
+     * Internal helper for both read and write permission checks.
      *
      * @param controller Controller instance
-     * @param fileInfo File to check access for
+     * @param folderInfo Folder being accessed
+     * @param relativeName Relative path within the folder
      * @param optionalPassword Optional password, may be null
      * @param write True if checking write access, false for read access
-     * @return true if access is allowed
+     * @return true if access is allowed, false otherwise
      */
-    private boolean checkAccessPermissions(Controller controller, FileInfo fileInfo,
-                                           String optionalPassword, boolean write) {
+    private boolean checkAccessPermissions(Controller controller, FolderInfo folderInfo,
+                                           String relativeName, String optionalPassword, boolean write) {
         Reject.ifNull(controller, "Controller");
-        Reject.ifNull(fileInfo, "FileInfo");
+        Reject.ifNull(folderInfo, "FolderInfo");
+        Reject.ifBlank(relativeName, "relativeName");
 
         // Expired link
         if (isExpired()) {
@@ -236,31 +250,31 @@ public class FileLink implements Serializable {
         }
 
         // Folder must match
-        if (!folderInfo.equals(fileInfo.getFolderInfo())) {
+        if (!this.folderInfo.equals(folderInfo)) {
             return false;
         }
 
-        // Determine if this link points to a file or directory
+        // Determine if link points to a file or directory
         FileInfo linkedFileInfo = getFileInfo(controller);
         if (linkedFileInfo == null) {
             return false;
         }
 
-        // For file links, only the exact same file may be accessed
+        // If this link points to a single file, only that exact file is allowed
         if (!linkedFileInfo.isDiretory()) {
-            if (!fileInfo.getRelativeName().equals(relativeName)) {
+            if (!this.relativeName.equals(relativeName)) {
                 return false;
             }
         } else {
-            // Directory link: path must start with linked path
-            if (!fileInfo.getRelativeName().startsWith(relativeName)) {
+            // Directory link: must be within or equal to linked path
+            if (!relativeName.startsWith(this.relativeName)) {
                 return false;
             }
         }
 
         // Permission check
         if (write) {
-            // Write requires full read/write permission
+            // Write requires explicit read/write permission
             return publicPermission instanceof FolderReadWritePermission;
         } else {
             // Read requires at least read or read/write
