@@ -465,10 +465,15 @@ public class Folder extends PFComponent {
             searchIndexManager = new LuceneIndexManager(this);
             searchIndexManager.setExtractContentEnabled(true);
             searchIndexManager.setOcrEnabled(true);
+            searchIndexManager.rebuildIndex(getKnownFiles());
             logInfo(this + ": Initialized Lucene search index manager");
         } catch (IOException e) {
             logWarning(this + ": Unable to initialize Lucene index manager: " + e);
         }
+    }
+
+    public LuceneIndexManager getSearchIndexManager() {
+        return searchIndexManager;
     }
 
     public void addProblemListener(ProblemListener l) {

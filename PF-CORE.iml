@@ -71,15 +71,6 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library" exported="">
-      <library name="commons-cli-1.0.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/commons-cli-1.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="module-library" exported="">
       <library name="looks-2.1.4.jar">
@@ -606,6 +597,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/search/jna-platform-5.13.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/commons-cli-1.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
