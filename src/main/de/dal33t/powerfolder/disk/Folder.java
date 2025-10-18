@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.event.api.DeletedFile;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.search.LuceneIndexManager;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
 import de.dal33t.powerfolder.transfer.TransferPriorities;
@@ -215,9 +216,9 @@ public class Folder extends PFComponent {
     private ScheduledFuture<?> persisterFuture;
 
     /**
-     * PFS-1994: Mark this folder as a folder which has been moved.
+     * PF-1930
      */
-    private boolean isMovedFolder;
+    private LuceneIndexManager searchIndexManager;
 
     /**
      * Constructor for folder.
@@ -452,6 +453,20 @@ public class Folder extends PFComponent {
 
         // Write meta-data
         updateInfo(currentInfo);
+
+        initSearchIndex();
+    }
+
+    private void initSearchIndex() {
+        if (!ConfigurationEntry.SEARCH_INDEX_ENABLED.getValueBoolean(getController())) {
+            return;
+        }
+        try {
+            searchIndexManager = new LuceneIndexManager(this);
+            logInfo(this + ": Initialized Lucene search index manager");
+        } catch (IOException e) {
+            logWarning(this + ": Unable to initialize Lucene index manager: " + e);
+        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -601,6 +616,10 @@ public class Folder extends PFComponent {
             } else {
                 logFine(msg);
             }
+        }
+
+        if (searchIndexManager != null) { // PF-1930
+            searchIndexManager.updateIndex(scanResult);
         }
 
         // Fire scan result
@@ -1376,6 +1395,9 @@ public class Folder extends PFComponent {
             }
         }
         if (!fileInfos.isEmpty()) {
+            if (searchIndexManager != null) {
+                searchIndexManager.indexFiles(fileInfos);
+            }
             fireFilesChanged(fileInfos);
             setDBDirty();
 
@@ -1830,6 +1852,9 @@ public class Folder extends PFComponent {
         }
 
         if (!removedFiles.isEmpty()) {
+            if (searchIndexManager != null) {
+                searchIndexManager.deleteFiles(removedFiles);
+            }
             fireFilesDeleted(removedFiles);
             setDBDirty();
 
@@ -2055,6 +2080,9 @@ public class Folder extends PFComponent {
             logFine("Shutting down " + this);
         }
         shutdown = true;
+        if (searchIndexManager != null) {
+            searchIndexManager.close();
+        }
         if (ConfigurationEntry.FOLDER_WATCHER_ENABLED.getValueBoolean(getController())) {
             watcher.remove();
         }
@@ -3224,6 +3252,9 @@ public class Folder extends PFComponent {
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
+            if (searchIndexManager != null) {
+                searchIndexManager.deleteFiles(removedFiles);
+            }
             fireFilesDeleted(removedFiles);
             setDBDirty();
 
@@ -5210,33 +5241,27 @@ public class Folder extends PFComponent {
         filesChanged(Arrays.asList(fileInfos));
     }
 
-    private void filesChanged(final List<FileInfo> fileInfosList) {
-        Reject.ifNull(fileInfosList, "FileInfo is null");
+    private void filesChanged(final List<FileInfo> fileInfos) {
+        Reject.ifNull(fileInfos, "FileInfo is null");
 
-        for (int i = 0; i < fileInfosList.size(); i++) {
-            FileInfo fileInfo = fileInfosList.get(i);
-            // TODO Bulk fire event
-            fireFileChanged(fileInfo);
+        for (int i = 0; i < fileInfos.size(); i++) {
+            FileInfo fileInfo = fileInfos.get(i);
             final FileInfo localInfo = getFile(fileInfo);
-            fileInfosList.set(i, localInfo);
+            fileInfos.set(i, localInfo);
         }
 
+        if (searchIndexManager != null) {
+            searchIndexManager.indexFiles(fileInfos);
+        }
+        fireFilesChanged(fileInfos);
         setDBDirty();
 
-        if (fileInfosList.size() >= 1
-            || diskItemFilter.isRetained(fileInfosList.get(0)))
+        if (fileInfos.size() >= 1
+            || diskItemFilter.isRetained(fileInfos.get(0)))
         {
-            broadcastMessages(useExt -> FolderFilesChanged.create(getInfo(), fileInfosList,
+            broadcastMessages(useExt -> FolderFilesChanged.create(getInfo(), fileInfos,
                     diskItemFilter, useExt));
         }
-    }
-
-    private void fireFileChanged(FileInfo fileInfo) {
-        if (isFiner()) {
-            logFiner("fireFileChanged: " + this);
-        }
-        FolderEvent folderEvent = new FolderEvent(this, fileInfo);
-        folderListenerSupport.fileChanged(folderEvent);
     }
 
     private void fireFilesChanged(List<FileInfo> fileInfos) {
