@@ -463,6 +463,8 @@ public class Folder extends PFComponent {
         }
         try {
             searchIndexManager = new LuceneIndexManager(this);
+            searchIndexManager.setExtractContentEnabled(true);
+            searchIndexManager.setOcrEnabled(true);
             logInfo(this + ": Initialized Lucene search index manager");
         } catch (IOException e) {
             logWarning(this + ": Unable to initialize Lucene index manager: " + e);

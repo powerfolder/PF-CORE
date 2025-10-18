@@ -139,7 +139,7 @@ For creation of the installer:
 
 		<!-- External Libraries -->
 		<fileset id="libs" dir="lib" casesensitive="yes">
-			<include name="commons-io-1.3.1.jar" />
+			<include name="commons-io-2.15.1.jar" />
 			<include name="commons-cli-1.0.jar" />
 
 			<include name="jdic.jar" />
@@ -215,6 +215,9 @@ For creation of the installer:
 
 			<!-- Tess4J for OCR support -->
 			<include name="search/tess4j-5.16.0.jar"/>
+			<include name="search/lept4j-1.21.1.jar"/>
+			<include name="search/jna-5.13.0.jar"/>
+			<include name="search/jna-platform-5.13.0.jar"/>
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
