@@ -23,12 +23,18 @@ package de.dal33t.powerfolder.search;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.*;
-import org.apache.lucene.store.*;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.*;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -37,8 +43,11 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Manages a Lucene index for a specific PowerFolder Folder.
@@ -195,6 +204,47 @@ public class LuceneIndexManager extends Loggable {
         } catch (Exception e) {
             logWarning("Lucene index update failed for folder " + folder.getName() + ": " + e.getMessage());
         }
+    }
+
+    public List<FileInfo> searchFiles(String query, int maxResults) {
+        Reject.ifBlank(query, "query");
+
+        List<FileInfo> results = new ArrayList<>();
+
+        try (DirectoryReader reader = DirectoryReader.open(FSDirectory.open(indexPath))) {
+            IndexSearcher searcher = new IndexSearcher(reader);
+
+            // Search both content and name fields
+            QueryParser parser = new QueryParser("content", analyzer);
+            parser.setAllowLeadingWildcard(true);
+            org.apache.lucene.search.Query contentQuery = parser.parse(query);
+
+            Query nameQuery = new TermQuery(new Term("name", query.toLowerCase()));
+
+            BooleanQuery combinedQuery = new BooleanQuery.Builder()
+                    .add(contentQuery, BooleanClause.Occur.SHOULD)
+                    .add(nameQuery, BooleanClause.Occur.SHOULD)
+                    .build();
+
+            TopDocs topDocs = searcher.search(combinedQuery, maxResults > 0 ? maxResults : 100);
+
+            for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+                Document doc = searcher.storedFields().document(scoreDoc.doc);
+                String relPath = doc.get("relativePath");
+
+                if (relPath == null) continue;
+                FileInfo lookup = FileInfoFactory.lookupInstance(folder.getInfo(), relPath);
+                FileInfo fileInfo = folder.getFile(lookup);
+                if (fileInfo != null) results.add(fileInfo);
+            }
+
+            logFine("Lucene search for '" + query + "' returned " + results.size() + " hits in folder " + folder.getName());
+        } catch (Exception e) {
+            logWarning("Lucene search failed for query '" + query + "' in folder " +
+                    folder.getName() + ": " + e.getMessage());
+        }
+
+        return results;
     }
 
     private int safeSize(Collection<?> c) {
