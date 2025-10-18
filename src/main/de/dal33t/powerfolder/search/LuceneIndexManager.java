@@ -25,8 +25,6 @@ import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
-import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
@@ -44,9 +42,9 @@ import java.nio.file.*;
 import java.util.Collection;
 
 /**
- * Embedded Lucene index manager for a PowerFolder Folder.
+ * Manages a Lucene index for a specific PowerFolder Folder.
  * Handles metadata, optional text extraction via Apache Tika,
- * and optional OCR via Tess4J/Tesseract.
+ * and optional OCR via TesseractOCR.
  */
 public class LuceneIndexManager extends Loggable {
 
@@ -55,7 +53,7 @@ public class LuceneIndexManager extends Loggable {
     private final StandardAnalyzer analyzer;
     private final IndexWriter writer;
     private final Tika tika;
-    private final Tesseract tesseract;
+    private final TesseractOCR ocrEngine;
 
     private boolean extractContentEnabled = true;
     private boolean ocrEnabled = true;
@@ -72,12 +70,7 @@ public class LuceneIndexManager extends Loggable {
         this.writer = new IndexWriter(FSDirectory.open(indexPath), config);
 
         this.tika = new Tika();
-
-        // Initialize OCR engine
-        this.tesseract = new Tesseract();
-        this.tesseract.setDatapath(System.getenv()
-                .getOrDefault("TESSDATA_PREFIX", "/usr/share/tesseract-ocr/4.00/tessdata"));
-        this.tesseract.setLanguage("eng+deu");
+        this.ocrEngine = new TesseractOCR();
 
         logFine("Lucene index initialized for folder: " + folder.getName() +
                 " at " + indexPath.toAbsolutePath());
@@ -213,7 +206,6 @@ public class LuceneIndexManager extends Loggable {
     private String extractContent(FileInfo fileInfo) {
         if (!extractContentEnabled) return null;
 
-        // ✅ Correct PowerFolder method to resolve actual disk path
         Path filePath = fileInfo.getDiskFile(folder.getController().getFolderRepository());
         if (filePath == null || !Files.exists(filePath)) return null;
 
@@ -225,11 +217,9 @@ public class LuceneIndexManager extends Loggable {
             return handler.toString();
         } catch (IOException | SAXException | TikaException e) {
             if (ocrEnabled && filePath.toString().matches(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$")) {
-                try {
-                    logFine("Performing OCR for " + fileInfo.getFilenameOnly());
-                    return tesseract.doOCR(filePath.toFile());
-                } catch (TesseractException tex) {
-                    logWarning("OCR failed for " + fileInfo + ": " + tex.getMessage());
+                String ocrText = ocrEngine.performOCR(filePath);
+                if (ocrText != null && !ocrText.isBlank()) {
+                    return ocrText;
                 }
             }
             logFiner("No text extracted from " + fileInfo + ": " + e.getMessage());
