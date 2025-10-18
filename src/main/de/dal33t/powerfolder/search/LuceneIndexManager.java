@@ -29,7 +29,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.store.*;
-import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -43,8 +42,9 @@ import java.util.Collection;
 
 /**
  * Manages a Lucene index for a specific PowerFolder Folder.
+ * <p>
  * Handles metadata, optional text extraction via Apache Tika,
- * and optional OCR via TesseractOCR.
+ * and optional OCR via the shared TesseractOCR singleton.
  */
 public class LuceneIndexManager extends Loggable {
 
@@ -52,11 +52,14 @@ public class LuceneIndexManager extends Loggable {
     private final Path indexPath;
     private final StandardAnalyzer analyzer;
     private final IndexWriter writer;
-    private final Tika tika;
     private final TesseractOCR ocrEngine;
 
     private boolean extractContentEnabled = true;
     private boolean ocrEnabled = true;
+
+    // ------------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------------
 
     public LuceneIndexManager(Folder folder) throws IOException {
         super();
@@ -69,8 +72,7 @@ public class LuceneIndexManager extends Loggable {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         this.writer = new IndexWriter(FSDirectory.open(indexPath), config);
 
-        this.tika = new Tika();
-        this.ocrEngine = new TesseractOCR();
+        this.ocrEngine = TesseractOCR.getInstance();
 
         logFine("Lucene index initialized for folder: " + folder.getName() +
                 " at " + indexPath.toAbsolutePath());
@@ -211,14 +213,21 @@ public class LuceneIndexManager extends Loggable {
 
         try (InputStream stream = Files.newInputStream(filePath)) {
             Metadata metadata = new Metadata();
-            BodyContentHandler handler = new BodyContentHandler(-1);
-            AutoDetectParser parser = new AutoDetectParser();
+            BodyContentHandler handler = new BodyContentHandler(5 * 1024 * 1024);
+            AutoDetectParser parser = new AutoDetectParser();  // thread-safe now
             parser.parse(stream, handler, metadata);
-            return handler.toString();
+
+            String content = handler.toString();
+            logFiner("Extracted text from " + fileInfo + " (" +
+                    metadata.get(Metadata.CONTENT_TYPE) + ")");
+            return content;
+
         } catch (IOException | SAXException | TikaException e) {
+            // Fallback to OCR for supported binary formats
             if (ocrEnabled && filePath.toString().matches(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$")) {
                 String ocrText = ocrEngine.performOCR(filePath);
                 if (ocrText != null && !ocrText.isBlank()) {
+                    logFiner("Extracted OCR text from " + fileInfo);
                     return ocrText;
                 }
             }

@@ -620,7 +620,7 @@ public class Folder extends PFComponent {
             }
         }
 
-        if (searchIndexManager != null) { // PF-1930
+        if (searchIndexManager != null && !currentInfo.isMetaFolder()) { // PF-1930
             searchIndexManager.updateIndex(scanResult);
         }
 
@@ -1397,7 +1397,7 @@ public class Folder extends PFComponent {
             }
         }
         if (!fileInfos.isEmpty()) {
-            if (searchIndexManager != null) {
+            if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.indexFiles(fileInfos);
             }
             fireFilesChanged(fileInfos);
@@ -1854,7 +1854,7 @@ public class Folder extends PFComponent {
         }
 
         if (!removedFiles.isEmpty()) {
-            if (searchIndexManager != null) {
+             if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.deleteFiles(removedFiles);
             }
             fireFilesDeleted(removedFiles);
@@ -2082,7 +2082,7 @@ public class Folder extends PFComponent {
             logFine("Shutting down " + this);
         }
         shutdown = true;
-        if (searchIndexManager != null) {
+         if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
             searchIndexManager.close();
         }
         if (ConfigurationEntry.FOLDER_WATCHER_ENABLED.getValueBoolean(getController())) {
@@ -3254,7 +3254,7 @@ public class Folder extends PFComponent {
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
-            if (searchIndexManager != null) {
+             if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.deleteFiles(removedFiles);
             }
             fireFilesDeleted(removedFiles);
@@ -5252,7 +5252,7 @@ public class Folder extends PFComponent {
             fileInfos.set(i, localInfo);
         }
 
-        if (searchIndexManager != null) {
+         if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
             searchIndexManager.indexFiles(fileInfos);
         }
         fireFilesChanged(fileInfos);
