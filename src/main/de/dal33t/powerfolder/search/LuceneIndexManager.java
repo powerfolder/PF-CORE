@@ -87,7 +87,7 @@ public class LuceneIndexManager extends Loggable {
     // Indexing
     // ------------------------------------------------------------------------
 
-    public void indexFile(FileInfo fileInfo) {
+    private void indexFile(FileInfo fileInfo) {
         try {
             String docId = buildDocId(fileInfo);
             Document doc = new Document();
@@ -108,8 +108,7 @@ public class LuceneIndexManager extends Loggable {
             }
 
             writer.updateDocument(new Term("docId", docId), doc);
-            writer.commit();
-            logFine("Indexed file: " + fileInfo);
+            logFiner("Indexed file (queued): " + fileInfo);
         } catch (Exception e) {
             logWarning("Failed to index file " + fileInfo + ": " + e.getMessage());
         }
@@ -128,11 +127,21 @@ public class LuceneIndexManager extends Loggable {
         }
     }
 
+    private void deleteFile(FileInfo fileInfo) {
+        if (fileInfo == null) return;
+        try {
+            writer.deleteDocuments(new Term("docId", buildDocId(fileInfo)));
+            logFiner("Deleted file from index: " + fileInfo);
+        } catch (Exception e) {
+            logWarning("Failed to delete file " + fileInfo + ": " + e.getMessage());
+        }
+    }
+
     public void deleteFiles(Collection<FileInfo> files) {
         if (files == null || files.isEmpty()) return;
         try {
             for (FileInfo fileInfo : files) {
-                writer.deleteDocuments(new Term("docId", buildDocId(fileInfo)));
+                deleteFile(fileInfo);
             }
             writer.commit();
             logFine("Bulk deleted " + files.size() + " files from index of folder " + folder.getName());
@@ -145,15 +154,17 @@ public class LuceneIndexManager extends Loggable {
         try {
             logFine("Rebuilding Lucene index for folder: " + folder.getName());
             writer.deleteAll();
+
             if (allFiles != null && !allFiles.isEmpty()) {
                 for (FileInfo f : allFiles) {
-                    if (!f.isDeleted()) {
-                        indexFile(f);
+                    if (f.isDeleted()) {
+                        deleteFile(f);
                     } else {
-                        writer.deleteDocuments(new Term("docId", buildDocId(f)));
+                        indexFile(f);
                     }
                 }
             }
+
             writer.commit();
             logFine("Rebuild completed for folder " + folder.getName());
         } catch (Exception e) {
@@ -227,40 +238,50 @@ public class LuceneIndexManager extends Loggable {
 
     private String extractContent(FileInfo fileInfo) {
         if (!extractContentEnabled) return null;
+
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             logWarning("extractContent: File not found " + fileInfo.getRelativeName());
             return null;
         }
-        logInfo("Extracting content from " + fileInfo.getFilenameOnly() + " (" + filePath + ")");
+
+        logFine("Extracting content from " + fileInfo.getFilenameOnly() + " (" + filePath + ")");
         long start = System.currentTimeMillis();
+
         try (InputStream stream = Files.newInputStream(filePath)) {
             Metadata metadata = new Metadata();
             BodyContentHandler handler = new BodyContentHandler(-1);
             AutoDetectParser parser = new AutoDetectParser();
             parser.parse(stream, handler, metadata);
             String text = handler.toString();
+
             long duration = System.currentTimeMillis() - start;
             if (text != null && !text.isBlank()) {
-                logInfo("Tika extracted " + text.length() + " chars from " + fileInfo.getFilenameOnly() + " in " + duration + " ms.");
+                logFine("Tika extracted " + text.length() + " chars from " + fileInfo.getFilenameOnly() + " in " + duration + " ms.");
                 return text;
             } else {
-                logInfo("Tika found no text in " + fileInfo.getFilenameOnly());
+                logFiner("Tika found no text in " + fileInfo.getFilenameOnly());
             }
         } catch (IOException | SAXException | TikaException e) {
-            logInfo("Tika extraction failed for " + fileInfo.getFilenameOnly() + ": " + e.getMessage());
+            logFiner("Tika extraction failed for " + fileInfo.getFilenameOnly() + ": " + e.getMessage());
         }
+
         if (ocrEnabled && filePath.toString().matches(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$")) {
-            logInfo("Running OCR fallback for " + fileInfo.getFilenameOnly());
-            String ocrText = ocrEngine.performOCR(filePath);
-            if (ocrText != null && !ocrText.isBlank()) {
-                logInfo("OCR extracted " + ocrText.length() + " chars from " + fileInfo.getFilenameOnly());
-                return ocrText;
-            } else {
-                logWarning("OCR produced no text for " + fileInfo.getFilenameOnly());
+            try {
+                logFine("Running OCR fallback for " + fileInfo.getFilenameOnly());
+                String ocrText = ocrEngine.performOCR(filePath);
+                if (ocrText != null && !ocrText.isBlank()) {
+                    logFine("OCR extracted " + ocrText.length() + " chars from " + fileInfo.getFilenameOnly());
+                    return ocrText;
+                } else {
+                    logWarning("OCR produced no text for " + fileInfo.getFilenameOnly());
+                }
+            } catch (NoClassDefFoundError e) {
+                logWarning("OCR unavailable (missing jai-imageio-core or PDFBox mismatch). Skipping OCR for " + fileInfo.getFilenameOnly());
             }
         }
-        logInfo("No extractable content found for " + fileInfo.getFilenameOnly());
+
+        logFiner("No extractable content found for " + fileInfo.getFilenameOnly());
         return null;
     }
 
