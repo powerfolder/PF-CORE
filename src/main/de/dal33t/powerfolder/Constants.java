@@ -20,9 +20,6 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Central constants holder for all important constants in PowerFolder.
  *
@@ -428,6 +425,7 @@ public class Constants {
     public static final String FOLDER_PERSONAL_FILES = "$personal_files";
     public static final String FOLDER_PUBLIC_SHARED_FILES = "$public_shared_files";
     public static final String MAIL_ATTACHMENT_FOLDER = "$mail_attachments";
+    public static final String FOLDER_SERVER_MAINTENANCE = "server_maintenance";
 
     // Locking ****************************************************************
 

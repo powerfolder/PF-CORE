@@ -461,14 +461,19 @@ public class Folder extends PFComponent {
         if (!ConfigurationEntry.SEARCH_INDEX_ENABLED.getValueBoolean(getController())) {
             return;
         }
+        if (currentInfo.isMetaFolder()) {
+            return;
+        }
         try {
             searchIndexManager = new LuceneIndexManager(this);
             searchIndexManager.setExtractContentEnabled(true);
             searchIndexManager.setOcrEnabled(true);
-            searchIndexManager.rebuildIndex(getKnownFiles());
+            if (!getName().equals(Constants.FOLDER_SERVER_MAINTENANCE)) {
+                searchIndexManager.rebuildIndex(getKnownFiles());
+            }
             logInfo(this + ": Initialized Lucene search index manager");
-        } catch (IOException e) {
-            logWarning(this + ": Unable to initialize Lucene index manager: " + e);
+        } catch (Throwable t) {
+            logWarning(this + ": Unable to initialize Lucene index manager: " + t, t);
         }
     }
 
@@ -4897,6 +4902,7 @@ public class Folder extends PFComponent {
      *         exist!! check before use
      */
     public Path getDiskFile(FileInfo fInfo) {
+        Reject.ifFalse(fInfo.getFolderInfo().equals(currentInfo), "FolderInfo mismatch");
         return localBase.resolve(FileInfoFactory.encodeIllegalChars(fInfo
             .getRelativeName()));
     }
