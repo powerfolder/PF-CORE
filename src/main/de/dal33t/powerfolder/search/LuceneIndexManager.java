@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.search;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -42,10 +41,6 @@ import java.io.InputStream;
 import java.nio.file.*;
 import java.util.*;
 
-/**
- * Manages a Lucene index for a specific PowerFolder Folder.
- * Handles metadata, full-text extraction (Tika), and optional OCR (TesseractOCR).
- */
 public class LuceneIndexManager extends Loggable {
 
     private final Folder folder;
@@ -61,7 +56,6 @@ public class LuceneIndexManager extends Loggable {
     public LuceneIndexManager(Folder folder) throws IOException {
         super();
         this.folder = folder;
-
         this.indexPath = folder.getSystemSubDir().resolve("index");
         Files.createDirectories(indexPath);
 
@@ -72,8 +66,7 @@ public class LuceneIndexManager extends Loggable {
         this.tika = new Tika();
         this.ocrEngine = TesseractOCR.getInstance();
 
-        logFine("Lucene index initialized for folder: " + folder.getName() +
-                " at " + indexPath.toAbsolutePath());
+        logFine("Lucene index initialized for folder: " + folder.getName() + " at " + indexPath.toAbsolutePath());
     }
 
     // ------------------------------------------------------------------------
@@ -82,18 +75,16 @@ public class LuceneIndexManager extends Loggable {
 
     public void setExtractContentEnabled(boolean enabled) {
         this.extractContentEnabled = enabled;
-        logFine("Content extraction " + (enabled ? "enabled" : "disabled") +
-                " for folder " + folder.getName());
+        logFine("Content extraction " + (enabled ? "enabled" : "disabled") + " for folder " + folder.getName());
     }
 
     public void setOcrEnabled(boolean enabled) {
         this.ocrEnabled = enabled;
-        logFine("OCR " + (enabled ? "enabled" : "disabled") +
-                " for folder " + folder.getName());
+        logFine("OCR " + (enabled ? "enabled" : "disabled") + " for folder " + folder.getName());
     }
 
     // ------------------------------------------------------------------------
-    // Core indexing
+    // Indexing
     // ------------------------------------------------------------------------
 
     public void indexFile(FileInfo fileInfo) {
@@ -106,22 +97,21 @@ public class LuceneIndexManager extends Loggable {
             doc.add(new StoredField("folderName", folder.getName()));
             doc.add(new TextField("name", fileInfo.getFilenameOnly(), Field.Store.YES));
             doc.add(new TextField("relativePath", fileInfo.getRelativeName(), Field.Store.YES));
-            doc.add(new LongPoint("modified",
-                    fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0));
+            doc.add(new LongPoint("modified", fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0));
             doc.add(new StoredField("size", fileInfo.getSize()));
 
             if (extractContentEnabled) {
                 String content = extractContent(fileInfo);
                 if (content != null && !content.isBlank()) {
-                    doc.add(new TextField("content", content, Field.Store.NO));
+                    doc.add(new TextField("content", content.toLowerCase(Locale.ROOT), Field.Store.NO));
                 }
             }
 
             writer.updateDocument(new Term("docId", docId), doc);
-            logInfo("Indexed file " + fileInfo);
+            writer.commit();
+            logFine("Indexed file: " + fileInfo);
         } catch (Exception e) {
-            logWarning("Failed to index file " + fileInfo + " in folder " +
-                    folder.getName() + ": " + e.getMessage());
+            logWarning("Failed to index file " + fileInfo + ": " + e.getMessage());
         }
     }
 
@@ -135,17 +125,6 @@ public class LuceneIndexManager extends Loggable {
             logFine("Bulk indexed " + files.size() + " files in folder " + folder.getName());
         } catch (Exception e) {
             logWarning("Bulk indexing failed for folder " + folder.getName() + ": " + e.getMessage());
-        }
-    }
-
-    public void deleteFile(FileInfo fileInfo) {
-        if (fileInfo == null) return;
-        try {
-            writer.deleteDocuments(new Term("docId", buildDocId(fileInfo)));
-            writer.commit();
-            logFine("Deleted file from index: " + fileInfo + " in folder " + folder.getName());
-        } catch (Exception e) {
-            logWarning("Failed to delete file from index: " + fileInfo + " in folder " + folder.getName() + ": " + e.getMessage());
         }
     }
 
@@ -171,7 +150,7 @@ public class LuceneIndexManager extends Loggable {
                     if (!f.isDeleted()) {
                         indexFile(f);
                     } else {
-                        deleteFile(f);
+                        writer.deleteDocuments(new Term("docId", buildDocId(f)));
                     }
                 }
             }
@@ -182,41 +161,26 @@ public class LuceneIndexManager extends Loggable {
         }
     }
 
-    // ------------------------------------------------------------------------
-    // Incremental update from ScanResult
-    // ------------------------------------------------------------------------
-
     public void updateIndex(ScanResult scanResult) {
         Reject.ifNull(scanResult, "ScanResult");
-
         if (!scanResult.isChangeDetected()) {
             logFiner("No changes detected for folder " + folder.getName());
             return;
         }
-
         try {
             indexFiles(scanResult.getNewFiles());
             indexFiles(scanResult.getChangedFiles());
             indexFiles(scanResult.getRestoredFiles());
             deleteFiles(scanResult.getDeletedFiles());
             commit();
-
-            logFine("Lucene index updated for folder " + folder.getName() +
-                    " (new=" + safeSize(scanResult.getNewFiles()) +
-                    ", changed=" + safeSize(scanResult.getChangedFiles()) +
-                    ", restored=" + safeSize(scanResult.getRestoredFiles()) +
-                    ", deleted=" + safeSize(scanResult.getDeletedFiles()) + ")");
+            logFine("Lucene index updated for folder " + folder.getName());
         } catch (Exception e) {
             logWarning("Lucene index update failed for folder " + folder.getName() + ": " + e.getMessage());
         }
     }
 
-    private int safeSize(Collection<?> c) {
-        return c == null ? 0 : c.size();
-    }
-
     // ------------------------------------------------------------------------
-    // Search
+    // Search (substring + multi-field)
     // ------------------------------------------------------------------------
 
     public List<FileInfo> searchFiles(String queryText, int maxResults) {
@@ -224,8 +188,7 @@ public class LuceneIndexManager extends Loggable {
         if (queryText == null || queryText.isBlank()) return results;
 
         try {
-            writer.commit(); // ensure latest changes visible
-
+            writer.commit();
             try (DirectoryReader reader = DirectoryReader.open(writer)) {
                 IndexSearcher searcher = new IndexSearcher(reader);
 
@@ -233,9 +196,7 @@ public class LuceneIndexManager extends Loggable {
                 String wildcardQuery = "*" + sanitized + "*";
 
                 MultiFieldQueryParser parser = new MultiFieldQueryParser(
-                        new String[]{"name", "relativePath", "content"},
-                        analyzer
-                );
+                        new String[]{"name", "relativePath", "content"}, analyzer);
                 parser.setAllowLeadingWildcard(true);
                 Query query = parser.parse(wildcardQuery);
 
@@ -247,7 +208,7 @@ public class LuceneIndexManager extends Loggable {
                     String relPath = doc.get("relativePath");
                     if (relPath == null) continue;
 
-                    FileInfo lookup = FileInfoFactory.lookupInstance(folder.getInfo(), relPath);
+                    FileInfo lookup = de.dal33t.powerfolder.light.FileInfoFactory.lookupInstance(folder.getInfo(), relPath);
                     FileInfo fileInfo = folder.getFile(lookup);
                     if (fileInfo != null) {
                         results.add(fileInfo);
@@ -255,52 +216,57 @@ public class LuceneIndexManager extends Loggable {
                 }
             }
         } catch (Exception e) {
-            logWarning("Lucene search failed for query '" + queryText + "' in folder " + folder.getName() + ": " + e.getMessage());
+            logWarning("Lucene search failed for '" + queryText + "' in " + folder.getName() + ": " + e.getMessage());
         }
         return results;
     }
 
-
     // ------------------------------------------------------------------------
-    // Content extraction + OCR
+    // Content extraction (debug)
     // ------------------------------------------------------------------------
 
     private String extractContent(FileInfo fileInfo) {
         if (!extractContentEnabled) return null;
-
-        Path filePath = fileInfo.getDiskFile(folder.getController().getFolderRepository());
-        if (filePath == null || !Files.exists(filePath)) return null;
-
+        Path filePath = fileInfo.getDiskFile(folder);
+        if (filePath == null || !Files.exists(filePath)) {
+            logWarning("extractContent: File not found " + fileInfo.getRelativeName());
+            return null;
+        }
+        logInfo("Extracting content from " + fileInfo.getFilenameOnly() + " (" + filePath + ")");
+        long start = System.currentTimeMillis();
         try (InputStream stream = Files.newInputStream(filePath)) {
             Metadata metadata = new Metadata();
             BodyContentHandler handler = new BodyContentHandler(-1);
             AutoDetectParser parser = new AutoDetectParser();
             parser.parse(stream, handler, metadata);
-            return handler.toString();
-        } catch (IOException | SAXException | TikaException e) {
-            if (ocrEnabled && filePath.toString().matches(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$")) {
-                String ocrText = ocrEngine.performOCR(filePath);
-                if (ocrText != null && !ocrText.isBlank()) {
-                    return ocrText;
-                }
+            String text = handler.toString();
+            long duration = System.currentTimeMillis() - start;
+            if (text != null && !text.isBlank()) {
+                logInfo("Tika extracted " + text.length() + " chars from " + fileInfo.getFilenameOnly() + " in " + duration + " ms.");
+                return text;
+            } else {
+                logInfo("Tika found no text in " + fileInfo.getFilenameOnly());
             }
-            logFiner("No text extracted from " + fileInfo + ": " + e.getMessage());
-            return null;
+        } catch (IOException | SAXException | TikaException e) {
+            logInfo("Tika extraction failed for " + fileInfo.getFilenameOnly() + ": " + e.getMessage());
         }
+        if (ocrEnabled && filePath.toString().matches(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$")) {
+            logInfo("Running OCR fallback for " + fileInfo.getFilenameOnly());
+            String ocrText = ocrEngine.performOCR(filePath);
+            if (ocrText != null && !ocrText.isBlank()) {
+                logInfo("OCR extracted " + ocrText.length() + " chars from " + fileInfo.getFilenameOnly());
+                return ocrText;
+            } else {
+                logWarning("OCR produced no text for " + fileInfo.getFilenameOnly());
+            }
+        }
+        logInfo("No extractable content found for " + fileInfo.getFilenameOnly());
+        return null;
     }
 
     // ------------------------------------------------------------------------
-    // Utility + lifecycle
+    // Utility
     // ------------------------------------------------------------------------
-
-    public int getDocumentCount() {
-        try {
-            return writer.getDocStats().numDocs;
-        } catch (Exception e) {
-            logWarning("Failed to get document count: " + e.getMessage());
-            return -1;
-        }
-    }
 
     private String buildDocId(FileInfo fileInfo) {
         Reject.ifNull(fileInfo, "FileInfo");
@@ -311,7 +277,7 @@ public class LuceneIndexManager extends Loggable {
         try {
             writer.commit();
         } catch (Exception e) {
-            logWarning("Commit failed for folder " + folder.getName() + ": " + e.getMessage());
+            logWarning("Commit failed for " + folder.getName() + ": " + e.getMessage());
         }
     }
 
@@ -320,7 +286,7 @@ public class LuceneIndexManager extends Loggable {
             writer.close();
             logFine("Lucene index closed for folder: " + folder.getName());
         } catch (Exception e) {
-            logWarning("Failed to close Lucene index for folder " + folder.getName() + ": " + e.getMessage());
+            logWarning("Failed to close Lucene index for " + folder.getName() + ": " + e.getMessage());
         }
     }
 }
