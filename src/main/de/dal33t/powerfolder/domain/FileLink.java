@@ -36,6 +36,7 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Date;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
 import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 
 /**
@@ -54,6 +55,8 @@ public class FileLink implements Serializable {
 
     // Properties
     public static final String FILE_LINK_PREFIX = IdGenerator.FILE_LINK_PREFIX;
+    public static final String FILE_LINK_TOKEN_PARAMETER_NAME = "fileLinkToken";
+
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_RELATIVE_NAME = "relativeName";
     public static final String PROPERTYNAME_CREATION_DATE = "creationDate";
@@ -209,11 +212,11 @@ public class FileLink implements Serializable {
      * @param controller Controller instance (needed to resolve folder/file info)
      * @param folderID Folder ID containing the file/directory being accessed
      * @param relativeName Relative path of the file/directory within the folder
-     * @param optionalPassword Optional password provided by user (may be null)
+     * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @return true if read access is allowed, false otherwise
      */
-    public boolean hasReadPermissions(Controller controller, String folderID, String relativeName, String optionalPassword) {
-        return checkAccessPermissions(controller, folderID, relativeName, optionalPassword, false);
+    public boolean hasReadPermissions(Controller controller, String folderID, String relativeName, String optionalPasswordOrToken) {
+        return checkAccessPermissions(controller, folderID, relativeName, optionalPasswordOrToken, false);
     }
 
     /**
@@ -223,11 +226,11 @@ public class FileLink implements Serializable {
      * @param controller Controller instance (needed to resolve folder/file info)
      * @param folderID Folder ID containing the file/directory being accessed
      * @param relativeName Relative path of the file/directory within the folder
-     * @param optionalPassword Optional password provided by user (may be null)
+     * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @return true if write access is allowed, false otherwise
      */
-    public boolean hasWritePermissions(Controller controller, String folderID, String relativeName, String optionalPassword) {
-        return checkAccessPermissions(controller, folderID, relativeName, optionalPassword, true);
+    public boolean hasWritePermissions(Controller controller, String folderID, String relativeName, String optionalPasswordOrToken) {
+        return checkAccessPermissions(controller, folderID, relativeName, optionalPasswordOrToken, true);
     }
 
     /**
@@ -236,12 +239,13 @@ public class FileLink implements Serializable {
      * @param controller Controller instance
      * @param folderID Folder being accessed
      * @param relativeName Relative path within the folder
-     * @param optionalPassword Optional password, may be null
+     * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @param write True if checking write access, false for read access
      * @return true if access is allowed, false otherwise
      */
     private boolean checkAccessPermissions(Controller controller, String folderID,
-                                           String relativeName, String optionalPassword, boolean write) {
+                                           String relativeName, String optionalPasswordOrToken, boolean write) {
+
         Reject.ifNull(controller, "Controller");
         Reject.ifBlank(folderID, "folderID");
         Reject.ifBlank(relativeName, "relativeName");
@@ -252,7 +256,9 @@ public class FileLink implements Serializable {
         }
 
         // Password check
-        if (isPasswordProtected() && !isCorrectPassword(optionalPassword)) {
+        if (isPasswordProtected()
+                && !isCorrectPassword(optionalPasswordOrToken)
+                && !isCorrectToken(optionalPasswordOrToken)) {
             return false;
         }
 
@@ -287,14 +293,6 @@ public class FileLink implements Serializable {
             // Read requires at least read or read/write
             return publicPermission instanceof FolderReadPermission
                     || publicPermission instanceof FolderReadWritePermission;
-        }
-    }
-
-    public String getAccessToken() {
-        if (isPasswordProtected())  {
-            return Base58.encode((getId() + password).getBytes());
-        } else {
-            return null;
         }
     }
 
@@ -402,7 +400,17 @@ public class FileLink implements Serializable {
         return LoginUtil.matches(Util.toCharArray(password), this.password);
     }
 
-    public boolean isCorrectAccessToken(String token) {
+    public String getToken(String password) {
+        if (!isCorrectPassword(password)) {
+            return ""; // Do not generate a token with invalid password
+        }
+        return Base58.encode((id + password).getBytes());
+    }
+
+    public boolean isCorrectToken(String token) {
+        if (isBlank(token) && !isPasswordProtected()) {
+            return true;
+        }
         final String decoded = new String(Base58.decode(token)).replace(getId(), "");
         return isCorrectPassword(decoded);
     }
