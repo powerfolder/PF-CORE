@@ -36,6 +36,8 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Date;
 
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
+
 /**
  * PFS-623: Public file/directory links: Option to get an obfuscated link to
  * download a file with expiry date
@@ -140,7 +142,7 @@ public class FileLink implements Serializable {
     }
 
     /**
-     * @return everything after the last point (.) in the fileName in upper case
+     * @return everything after the last point (.) in the fileName
      */
     public String getExtension() {
         String tmpFileName = getFilenameOnly();
@@ -148,7 +150,7 @@ public class FileLink implements Serializable {
         if (index == -1) {
             return "";
         }
-        return tmpFileName.substring(index + 1).toUpperCase();
+        return tmpFileName.substring(index + 1);
     }
 
     public String getLinkURI() {
@@ -162,8 +164,13 @@ public class FileLink implements Serializable {
     // Helpers ****************************************************************
 
     public FileInfo getFileInfo(Controller controller) {
-        FileInfo fInfo = FileInfoFactory.lookupDirectory(folderInfo,
-            relativeName);
+        FileInfo fInfo;
+        if (isNotBlank(getExtension())) {
+            // Well, this is a good guess, that it is a file not a directory
+            fInfo = FileInfoFactory.lookupInstance(folderInfo, relativeName);
+        } else {
+            fInfo = FileInfoFactory.lookupDirectory(folderInfo, relativeName);
+        }
         Folder folder = folderInfo.getFolder(controller);
         if (folder != null) {
             FileInfo fLocalInfo = folder.getFile(fInfo);
@@ -380,7 +387,7 @@ public class FileLink implements Serializable {
     }
 
     public boolean isPasswordProtected() {
-        return StringUtils.isNotBlank(password);
+        return isNotBlank(password);
     }
 
     public boolean isCorrectPassword(String password) {
