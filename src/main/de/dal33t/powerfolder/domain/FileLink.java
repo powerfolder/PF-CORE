@@ -200,13 +200,13 @@ public class FileLink implements Serializable {
      * Validates expiration, optional password, and path correctness.
      *
      * @param controller Controller instance (needed to resolve folder/file info)
-     * @param folderInfo Folder containing the file/directory being accessed
+     * @param folderID Folder ID containing the file/directory being accessed
      * @param relativeName Relative path of the file/directory within the folder
      * @param optionalPassword Optional password provided by user (may be null)
      * @return true if read access is allowed, false otherwise
      */
-    public boolean hasReadPermissions(Controller controller, FolderInfo folderInfo, String relativeName, String optionalPassword) {
-        return checkAccessPermissions(controller, folderInfo, relativeName, optionalPassword, false);
+    public boolean hasReadPermissions(Controller controller, String folderID, String relativeName, String optionalPassword) {
+        return checkAccessPermissions(controller, folderID, relativeName, optionalPassword, false);
     }
 
     /**
@@ -214,29 +214,29 @@ public class FileLink implements Serializable {
      * Validates expiration, optional password, and path correctness.
      *
      * @param controller Controller instance (needed to resolve folder/file info)
-     * @param folderInfo Folder containing the file/directory being accessed
+     * @param folderID Folder ID containing the file/directory being accessed
      * @param relativeName Relative path of the file/directory within the folder
      * @param optionalPassword Optional password provided by user (may be null)
      * @return true if write access is allowed, false otherwise
      */
-    public boolean hasWritePermissions(Controller controller, FolderInfo folderInfo, String relativeName, String optionalPassword) {
-        return checkAccessPermissions(controller, folderInfo, relativeName, optionalPassword, true);
+    public boolean hasWritePermissions(Controller controller, String folderID, String relativeName, String optionalPassword) {
+        return checkAccessPermissions(controller, folderID, relativeName, optionalPassword, true);
     }
 
     /**
      * Internal helper for both read and write permission checks.
      *
      * @param controller Controller instance
-     * @param folderInfo Folder being accessed
+     * @param folderID Folder being accessed
      * @param relativeName Relative path within the folder
      * @param optionalPassword Optional password, may be null
      * @param write True if checking write access, false for read access
      * @return true if access is allowed, false otherwise
      */
-    private boolean checkAccessPermissions(Controller controller, FolderInfo folderInfo,
+    private boolean checkAccessPermissions(Controller controller, String folderID,
                                            String relativeName, String optionalPassword, boolean write) {
         Reject.ifNull(controller, "Controller");
-        Reject.ifNull(folderInfo, "FolderInfo");
+        Reject.ifBlank(folderID, "folderID");
         Reject.ifBlank(relativeName, "relativeName");
 
         // Expired link
@@ -250,7 +250,7 @@ public class FileLink implements Serializable {
         }
 
         // Folder must match
-        if (!this.folderInfo.equals(folderInfo)) {
+        if (!this.folderInfo.getId().equals(folderID)) {
             return false;
         }
 
