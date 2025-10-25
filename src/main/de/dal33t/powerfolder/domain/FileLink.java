@@ -290,6 +290,14 @@ public class FileLink implements Serializable {
         }
     }
 
+    public String getAccessToken() {
+        if (isPasswordProtected())  {
+            return Base58.encode((getId() + password).getBytes());
+        } else {
+            return null;
+        }
+    }
+
     public FolderPermission getPublicPermission(){
         return publicPermission;
     }
