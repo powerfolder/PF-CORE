@@ -402,6 +402,11 @@ public class FileLink implements Serializable {
         return LoginUtil.matches(Util.toCharArray(password), this.password);
     }
 
+    public boolean isCorrectAccessToken(String token) {
+        final String decoded = new String(Base58.decode(token)).replace(getId(), "");
+        return isCorrectPassword(decoded);
+    }
+
     @Override
     public String toString() {
         return "FileLink [id=" + id + ", folderInfo=" + folderInfo
