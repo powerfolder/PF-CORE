@@ -250,6 +250,13 @@ public class FileLink implements Serializable {
         Reject.ifBlank(folderID, "folderID");
         Reject.ifBlank(relativeName, "relativeName");
 
+        // Normalize path to prevent traversal attacks (../, ./, etc.)
+        // This prevents attacks like: b/../c/d.docx which would bypass startsWith("b/") check
+        relativeName = PathUtils.normalizePath(relativeName);
+        if (relativeName == null) {
+            return false; // Invalid path (e.g., too many ../ leading outside root)
+        }
+
         // Expired link
         if (isExpired()) {
             return false;
@@ -280,7 +287,21 @@ public class FileLink implements Serializable {
             }
         } else {
             // Directory link: must be within or equal to linked path
-            if (!relativeName.startsWith(this.relativeName)) {
+            // to prevent access to sibling folders (e.g., "test/mehrtest" should not allow "test/mehrtest_sibling")
+            boolean allowed = false;
+            if (relativeName.equals(this.relativeName)) {
+                // Exact match - accessing the shared directory itself
+                allowed = true;
+            } else if (StringUtils.isBlank(this.relativeName)) {
+                // Link to entire folder root - all paths allowed
+                allowed = true;
+            } else if (relativeName.startsWith(this.relativeName + "/")) {
+                // Properly nested within the shared directory
+                allowed = true;
+            }
+
+            if (!allowed) {
+                // Outside the shared path - deny access
                 return false;
             }
         }
