@@ -248,7 +248,7 @@ public class FileLink implements Serializable {
 
         Reject.ifNull(controller, "Controller");
         Reject.ifBlank(folderID, "folderID");
-        Reject.ifBlank(relativeName, "relativeName");
+        Reject.ifNull(relativeName, "relativeName");
 
         // Normalize path to prevent traversal attacks (../, ./, etc.)
         // This prevents attacks like: b/../c/d.docx which would bypass startsWith("b/") check
