@@ -248,7 +248,7 @@ public class FileLink implements Serializable {
 
         Reject.ifNull(controller, "Controller");
         Reject.ifBlank(folderID, "folderID");
-        Reject.ifBlank(relativeName, "relativeName");
+        Reject.ifNull(relativeName, "relativeName");
 
         // Expired link
         if (isExpired()) {
