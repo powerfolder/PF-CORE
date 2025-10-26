@@ -56,6 +56,7 @@ public class FileLink implements Serializable {
     // Properties
     public static final String FILE_LINK_PREFIX = IdGenerator.FILE_LINK_PREFIX;
     public static final String FILE_LINK_TOKEN_PARAMETER_NAME = "fileLinkToken";
+    public static final String FILE_LINK_ID_PARAMETER_NAME = "fileLinkId";
 
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_RELATIVE_NAME = "relativeName";
