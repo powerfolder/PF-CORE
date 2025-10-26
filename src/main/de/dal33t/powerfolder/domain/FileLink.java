@@ -408,8 +408,10 @@ public class FileLink implements Serializable {
     }
 
     public boolean isCorrectToken(String token) {
-        if (isBlank(token) && !isPasswordProtected()) {
+        if (!isPasswordProtected()) {
             return true;
+        } else if (isBlank(token)) {
+            return false;
         }
         final String decoded = new String(Base58.decode(token)).replace(getId(), "");
         return isCorrectPassword(decoded);
