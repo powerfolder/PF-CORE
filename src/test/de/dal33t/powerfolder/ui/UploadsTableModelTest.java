@@ -210,7 +210,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // no active upload
         assertEquals(0, bartModel.getRowCount());
         // Check correct events from model
-        assertEquals(3, bartModelListener.events.size());
+        assertEquals(bartModelListener.events.toString(), 3, bartModelListener.events.size());
         // Upload requested
         assertTrue(bartModelListener.events.get(0)
             .getType() == TableModelEvent.INSERT);
