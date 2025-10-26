@@ -173,8 +173,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             "1000");
 
         assertEquals(0, bartModelListener.events.size());
-        // Create a 20 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
+        // Create a 200 megs file
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 200000000);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
