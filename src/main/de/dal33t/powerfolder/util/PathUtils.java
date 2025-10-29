@@ -1962,4 +1962,52 @@ public class PathUtils {
         Reject.ifNull(e, "Exception");
         return e.getMessage().toLowerCase().contains("quota exceeded");
     }
+
+    /**
+     * Normalizes a path by resolving . and .. components and removing redundant slashes.
+     * This method prevents path traversal attacks by rejecting paths that attempt to
+     * escape the root directory.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li>"a/b/c" → "a/b/c"</li>
+     *   <li>"a/./b" → "a/b"</li>
+     *   <li>"a/b/../c" → "a/c"</li>
+     *   <li>"a//b" → "a/b"</li>
+     *   <li>"a\\b" → "a/b" (Windows compatibility)</li>
+     *   <li>"../a" → null (escape attempt)</li>
+     *   <li>"a/../.." → null (escape attempt)</li>
+     * </ul>
+     *
+     * @param path The path to normalize
+     * @return Normalized path, or null if path attempts to escape root (too many ../)
+     */
+    public static String normalizePath(String path) {
+        if (StringUtils.isBlank(path)) {
+            return "";
+        }
+
+        path = path.replace('\\', '/');
+
+        String[] parts = path.split("/");
+        java.util.List<String> normalized = new java.util.ArrayList<>();
+
+        for (String part : parts) {
+            if (part.isEmpty() || ".".equals(part)) {
+                continue;
+            } else if ("..".equals(part)) {
+                if (normalized.isEmpty()) {
+                    return null;
+                }
+                normalized.remove(normalized.size() - 1);
+            } else {
+                normalized.add(part);
+            }
+        }
+
+        if (normalized.isEmpty()) {
+            return "";
+        }
+        return String.join("/", normalized);
+    }
 }

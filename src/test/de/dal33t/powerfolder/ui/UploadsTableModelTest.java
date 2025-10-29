@@ -173,8 +173,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             "1000");
 
         assertEquals(0, bartModelListener.events.size());
-        // Create a 20 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
+        // Create a 200 megs file
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 200000000);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -210,7 +210,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // no active upload
         assertEquals(0, bartModel.getRowCount());
         // Check correct events from model
-        assertEquals(3, bartModelListener.events.size());
+        assertEquals(bartModelListener.events.toString(), 3, bartModelListener.events.size());
         // Upload requested
         assertTrue(bartModelListener.events.get(0)
             .getType() == TableModelEvent.INSERT);

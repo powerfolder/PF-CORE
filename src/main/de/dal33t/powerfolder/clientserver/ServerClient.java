@@ -1615,6 +1615,7 @@ public class ServerClient extends PFComponent {
             ConfigurationEntry.CONFIG_URL.setValue(config, configURL);
 
             getController().saveConfig();
+            loadServerNodes();
 
             if (networkIDChanged) {
                 getController().getNodeManager().start();
