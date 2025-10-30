@@ -1504,7 +1504,11 @@ public class Folder extends PFComponent {
                                 + fInfo.toDetailString());
                         }
                         checkFile(fInfo);
-                        logFileOperation("ADDED", null, fInfo);
+                        if (deleted) {
+                            logFileOperation("DELETED", null, fInfo);
+                        } else {
+                            logFileOperation("ADDED", null, fInfo);
+                        }
                         return fInfo;
                     }
 
@@ -1590,7 +1594,7 @@ public class Folder extends PFComponent {
         }
 
         if (PathUtils.isReplicatedSubdir(dir)) {
-            logWarning("Unable to scan directory. Replication found: " + dir);
+            logInfo("Unable to scan directory. Replication found: " + dir);
             return;
         }
         if (isDeviceDisconnected()) {

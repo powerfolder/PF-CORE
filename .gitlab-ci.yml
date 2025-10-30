@@ -21,7 +21,8 @@ test-macOS:
     - macOS
     - Tests
   script:
-    ant run-tests
+    - pkill -f java || true
+    - ant run-tests
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
@@ -34,7 +35,8 @@ test-Windows:
     - Windows
     - Tests
   script:
-    ant run-tests
+    - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'Old Java processes killed (if any)'"
+    - ant run-tests
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
