@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.clientserver;
 
+import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.Organization;
 
 public interface OrganizationService {
@@ -11,6 +12,13 @@ public interface OrganizationService {
      */
 
     Organization simplifiedCreate(final String name);
+
+    /**
+     *
+     * @param name the organization name (company / team name)
+     * @return the newly created Organization with default trial values
+     */
+    Organization createTrial(final String name, final Account creator);
 
     /**
      * cancel subscription (Disable organization)
