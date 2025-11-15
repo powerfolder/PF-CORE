@@ -914,7 +914,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     public void setJSONObject(JSONObject jsonObject) {
-        if (jsonObject == null) {
+        if (jsonObject == null || jsonObject.length() == 0) {
             this.jsonData = null;
             return;
         }
