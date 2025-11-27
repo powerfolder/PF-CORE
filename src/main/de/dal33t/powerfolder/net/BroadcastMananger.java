@@ -434,7 +434,14 @@ public class BroadcastMananger extends PFComponent implements Runnable {
             return false;
         } finally {
             if (node != null) {
-                node.setOnLAN(true);
+                ConnectionHandler connectionHandler = node.getPeer();
+                if (connectionHandler != null
+                        && connectionHandler.getRemoteAddress() != null
+                        && connectionHandler.getRemoteAddress().getAddress() != null) {
+                     if (receivedBroadcast(connectionHandler.getRemoteAddress().getAddress())) {
+                         node.setOnLAN(true);
+                     }
+                }
             }
         }
     }
