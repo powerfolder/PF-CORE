@@ -404,8 +404,12 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                     return false;
                 }
 
-                if (node.isConnected() || node.isConnecting()) {
+                if (node.isConnecting()) {
                     // Avoid duplicate connection attempts
+                    return false;
+                }
+
+                if (node.isConnected() && node.isOnLAN()) {
                     return false;
                 }
 
