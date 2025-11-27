@@ -811,7 +811,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 && !logMember.isMySelf()
                 && !logMember.isConnected()
                 && !getController().isShuttingDown()
-                && getController().isStarted();
+                && getController().isStarted()
+                && !(e instanceof EOFException);
 
         msg += ". Caused by ";
         if (logMember != null && logMember.getLastProblem() != null) {
