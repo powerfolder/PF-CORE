@@ -424,7 +424,7 @@ public class BroadcastMananger extends PFComponent implements Runnable {
                 }
             }
 
-            logFine("Connecting to node on LAN: " + address + ((node != null) ? ", " + node : ""));
+            logInfo("Connecting to node on LAN: " + address + ((node != null) ? ", " + node : ""));
             node = getController().connect(address, isPowerFolderD2DBroadcast(packet));
 
             return true;
