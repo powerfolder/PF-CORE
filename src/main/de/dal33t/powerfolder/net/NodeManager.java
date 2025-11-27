@@ -1149,9 +1149,9 @@ public class NodeManager extends PFComponent {
             if (member.getPeer() != handler) {
                 if (member.isConnected()) {
                     logInfo("Switching to better connection for "
-                        + member.getNick() + ". current: " + member.getPeer()
+                        + member.getNick() + " from: " + member.getPeer()
                         + ", onLAN? " + member.isOnLAN() + "/"
-                        + member.getPeer().isOnLAN() + ". new: " + handler
+                        + member.getPeer().isOnLAN() + ". to: " + handler
                         + ", onLAN? " + handler.isOnLAN());
                     member.shutdown();
                 }
