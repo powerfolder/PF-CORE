@@ -20,9 +20,6 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Central constants holder for all important constants in PowerFolder.
  *
@@ -86,6 +83,8 @@ public class Constants {
      * @see ConfigurationEntry#FOLDER_BASEDIR
      */
     public static String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
+
+    public static final String LEGACY_BACKUP_REMOVE = "BACKUP_REMOVE";
 
     /**
      * PFC-2538
