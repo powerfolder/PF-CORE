@@ -84,6 +84,9 @@ public class Constants {
      */
     public static String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
 
+    /**
+     * PFS-4687
+     */
     public static final String LEGACY_BACKUP_REMOVE = "BACKUP_REMOVE";
 
     /**
