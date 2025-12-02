@@ -458,11 +458,6 @@ public enum ConfigurationEntry {
     CONFIG_DROP_FOLDER_SETTINGS("config.drop.folders.settings", false),
 
     /**
-     * PFS-4701: For new or any account to create the folders given in the config
-     */
-    CONFIG_CREATE_FOLDER_FOR_NEW_ACCOUNTS_ONLY("config.create.folders.new.accounts.only", true),
-
-    /**
      * #2248 Automatically assign client to server by IP address
      */
     CONFIG_ASSIGN_IP_LIST("config.assign.iplist"),
