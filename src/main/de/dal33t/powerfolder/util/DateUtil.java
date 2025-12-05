@@ -374,4 +374,20 @@ public class DateUtil {
             }
         }
     }
+
+    /**
+     * Formats a Date to ISO-8601 UTC format string.
+     * Example output: "2026-01-17T18:56:46Z"
+     *
+     * @param date the date to format
+     * @return ISO-8601 formatted string in UTC, or null if date is null
+     */
+    public static String formatDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return date.toInstant()
+                .atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
 }
