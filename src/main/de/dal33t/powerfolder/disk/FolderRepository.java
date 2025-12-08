@@ -1171,7 +1171,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         for (Folder folder : folders.values()) {
             if (folder.getCommitOrLocalDir().equals(
                     folderSettings.getLocalBaseDir())) {
-                logWarning("Tried to create duplicate folder "
+                logInfo("Tried to create duplicate folder "
                         + folder.getName() + ". at "
                         + folder.getCommitOrLocalDir()
                         + ". Existing folder ID: " + folder.getId()
@@ -1864,11 +1864,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
                 return false;
             }
-            if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                    .getValue(getController()))
-                    || name
-                    .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                            .getDefaultValue())) {
+            if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR.getValue(getController()))
+                    || name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR.getDefaultValue())) {
+                return false;
+            }
+            if (name.equals(Constants.LEGACY_BACKUP_REMOVE)) {
                 return false;
             }
             // PFS-2319: Remove after major version 14.
@@ -2498,11 +2498,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (name.equals(Constants.POWERFOLDER_SYSTEM_SUBDIR)) {
                 return false;
             }
-            if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                    .getValue(getController()))
-                    || name
-                    .equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR
-                            .getDefaultValue())) {
+            if (name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR.getValue(getController()))
+                    || name.equals(ConfigurationEntry.FOLDER_BASEDIR_DELETED_DIR.getDefaultValue())) {
+                return false;
+            }
+            if (name.equals(Constants.LEGACY_BACKUP_REMOVE)) {
                 return false;
             }
             if (name.equalsIgnoreCase(DIRNAME_SNAPSHOT)) {

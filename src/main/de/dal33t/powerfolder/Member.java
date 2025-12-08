@@ -1200,7 +1200,11 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (!isConnected()) {
                 return false;
             }
-            waiter.waitABit();
+            try {
+                waiter.waitABit();
+            } catch (Waiter.WaiterInterruptedException e) {
+                return false;
+            }
         }
         return lastHandshakeCompleted != null && handshaked;
     }

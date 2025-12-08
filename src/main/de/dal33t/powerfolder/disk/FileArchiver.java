@@ -633,6 +633,30 @@ public class FileArchiver {
         }
     }
 
+    /**
+     * Restore a file version, archiving the current file first to preserve it.
+     *
+     * @param versionInfo the FileInfo of the archived version to restore.
+     * @param currentFile the FileInfo of the current file (may be null if no current file exists).
+     * @param target the target path to restore to.
+     * @return true if restore succeeded, false if archived version not found.
+     */
+    public boolean restore(FileInfo versionInfo, FileInfo currentFile, Path target)
+            throws IOException {
+        // Temporarily suspend version limit to prevent deletion of versions
+        int originalLimit = this.versionsPerFile;
+        this.versionsPerFile = -1;
+        try {
+            // Archive current file before overwriting
+            if (currentFile != null && !currentFile.isDeleted() && Files.exists(target)) {
+                archive(currentFile, target, true);
+            }
+            return restore(versionInfo, target);
+        } finally {
+            this.versionsPerFile = originalLimit;
+        }
+    }
+
     public int getVersionsPerFile() {
         return versionsPerFile;
     }

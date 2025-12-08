@@ -223,14 +223,16 @@ public class Organization implements Serializable , Auditable {
         this.domains = domainsLower;
     }
 
-    public void setJSONData(String jsonData) {
-        this.jsonData = jsonData;
-    }
-
-    public String getJSONData() {
-        return jsonData;
-    }
-
+    /**
+     * Returns the JSON payload parsed into a {@link JSONObject}.
+     * <p>
+     * This method should be used for all structured access to the
+     * JSON content. It *always* returns a valid {@code JSONObject}.
+     * Even if the underlying raw string is null, empty, or invalid,
+     * a non-null (possibly empty) {@code JSONObject} is returned.
+     *
+     * @return a non-null JSONObject representing the JSON payload
+     */
     public JSONObject getJSONObject() {
         if (StringUtils.isBlank(jsonData)) {
             return new JSONObject();
@@ -247,12 +249,30 @@ public class Organization implements Serializable , Auditable {
         }
     }
 
+    /**
+     * Returns the raw JSON payload as a String.
+     * <p>
+     * ⚠️ This method should only be used when access to the unparsed,
+     * raw JSON string is explicitly required (e.g. for logging,
+     * debugging, or passing through unchanged).
+     * Prefer {@link #getJSONObject()} for structured access.
+     *
+     * @return the raw JSON data string
+     */
+    public String getJSONData() {
+        return jsonData;
+    }
+
     public void setJSONObject(JSONObject jsonObject) {
-        if (jsonObject == null) {
+        if (jsonObject == null || jsonObject.length() == 0) {
             this.jsonData = null;
             return;
         }
         this.jsonData = jsonObject.toString();
+    }
+
+    public void setJSONData(String jsonData) {
+        this.jsonData = jsonData;
     }
 
     public boolean isRestrictedToDomain() {

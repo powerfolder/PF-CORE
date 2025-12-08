@@ -1148,11 +1148,12 @@ public class NodeManager extends PFComponent {
         if (acceptHandler) {
             if (member.getPeer() != handler) {
                 if (member.isConnected()) {
-                    logInfo("Taking a better conHandler for "
-                        + member.getNick() + ". current: " + member.getPeer()
+                    logInfo("Switching to better connection for "
+                        + member.getNick() + " from: " + member.getPeer()
                         + ", onLAN? " + member.isOnLAN() + "/"
-                        + member.getPeer().isOnLAN() + ". new: " + handler
+                        + member.getPeer().isOnLAN() + ". to: " + handler
                         + ", onLAN? " + handler.isOnLAN());
+                    member.shutdown();
                 }
                 // Complete handshake
                 try {
