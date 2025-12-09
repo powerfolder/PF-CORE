@@ -915,10 +915,9 @@ public enum ConfigurationEntry {
     FOLDER_BASEDIR_FALLBACK_TO_DEFAULT("folderbase.fallback.enabled", false),
 
     /**
-     * Lets do this flexible. PFS-4687: Now .PowerFolder/archive
+     * Lets do this flexible.
      */
-    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir",
-            Constants.POWERFOLDER_SYSTEM_SUBDIR + '/' + ARCHIVE_DIRECTORY_NAME.getDefaultValue()),
+    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", Constants.LEGACY_BACKUP_REMOVE),
 
     /**
      * Contains a comma-separated list of all plugins to load.
