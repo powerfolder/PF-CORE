@@ -394,12 +394,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (name == null) {
             return null;
         }
-        if (name.contains(Constants.FOLDER_PUBLIC_SHARED_FILES)
-                || name.contains(Constants.FOLDER_PERSONAL_FILES)
+        if (name.contains(Constants.FOLDER_PERSONAL_FILES)
                 || name.contains(Constants.MAIL_ATTACHMENT_FOLDER)) {
             return name
-                    .replace(Constants.FOLDER_PUBLIC_SHARED_FILES,
-                            Translation.get("general.public_shared_files"))
                     .replace(Constants.FOLDER_PERSONAL_FILES,
                             Translation.get("general.personal_files"))
                     .replace(Constants.MAIL_ATTACHMENT_FOLDER,
