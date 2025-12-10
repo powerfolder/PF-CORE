@@ -327,15 +327,10 @@ public class FileLink implements Serializable {
      * <p>
      * 1. If publicFolderPermission is read/write -> FileLink uploads are allowed.
      * 2. If publicFolderPermission is read only -> Default FileLink behaviour without uploads.
-     * 3. If publicFolderPermission is null -> This is the case if e.g. a FileLink requires
-     * a password (set by PasswordPolicy.REQUIRED).
      * <p>
-     * 4. publicAccessAllowed is for checking if ConfigurationServerEntry.WEB_PUBLIC_ACCESS_ALLOWED
-     * is set on this server. This is a bit ugly but necessary because we have no controller in this class.
      */
-    public void setPublicPermission(FolderPermission publicFolderPermission, boolean publicAccessAllowed){
-
-        if (!publicAccessAllowed || publicFolderPermission == null){
+    public void setPublicPermission(FolderPermission publicFolderPermission){
+        if (publicFolderPermission == null){
             this.publicPermission = null;
         } else {
             Reject.ifFalse(publicFolderPermission instanceof FolderReadPermission
