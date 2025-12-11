@@ -1727,7 +1727,6 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public void setActivationDate(Date activationDate) {
         this.activated = activationDate;
-        LOG.log(Level.INFO, this + ": Activated account now", new StackDump());
     }
 
     @Override
