@@ -917,7 +917,7 @@ public enum ConfigurationEntry {
     /**
      * Lets do this flexible.
      */
-    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", "BACKUP_REMOVE"),
+    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", Constants.LEGACY_BACKUP_REMOVE),
 
     /**
      * Contains a comma-separated list of all plugins to load.

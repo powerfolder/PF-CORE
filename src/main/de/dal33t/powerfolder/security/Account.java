@@ -523,6 +523,34 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
+     * Checks whether this account owns a folder with the specified name.
+     * <p>
+     * The comparison is case-insensitive and is performed against both the folder's
+     * internal name and its localized (display) name. All folders returned by
+     * {@link #getFoldersCharged()} are examined.
+     * </p>
+     *
+     * @param folderName
+     *        the name of the folder to look for; if {@code null}, the method will
+     *        always return {@code false}
+     *
+     * @return {@code true} if a folder exists whose name or localized name matches
+     *         the given {@code folderName} (case-insensitive), otherwise {@code false}
+     */
+    public boolean ownsFolderWithName(String folderName) {
+        if (folderName == null) {
+            return false;
+        }
+        for (FolderInfo folderInfo : getFoldersCharged()) {
+            if (folderName.equalsIgnoreCase(folderInfo.getName())
+                    || folderName.equalsIgnoreCase(folderInfo.getLocalizedName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @return the list of folders this account gets charged for.
      */
     public Collection<FolderInfo> getFoldersCharged() {
@@ -876,14 +904,30 @@ public class Account implements Serializable, D2DObject, Auditable {
         getCustomFields().setCustom3(custom3);
     }
 
+    /**
+     * Returns the raw JSON payload as a String.
+     * <p>
+     * ⚠️ This method should only be used when access to the unparsed,
+     * raw JSON string is explicitly required (e.g. for logging,
+     * debugging, or passing through unchanged).
+     * Prefer {@link #getJSONObject()} for structured access.
+     *
+     * @return the raw JSON data string
+     */
     public String getJSONData() {
         return jsonData;
     }
 
-    public void setJSONData(String jsonData) {
-        this.jsonData = jsonData;
-    }
-
+    /**
+     * Returns the JSON payload parsed into a {@link JSONObject}.
+     * <p>
+     * This method should be used for all structured access to the
+     * JSON content. It *always* returns a valid {@code JSONObject}.
+     * Even if the underlying raw string is null, empty, or invalid,
+     * a non-null (possibly empty) {@code JSONObject} is returned.
+     *
+     * @return a non-null JSONObject representing the JSON payload
+     */
     public JSONObject getJSONObject() {
         if (isBlank(jsonData)) {
             return new JSONObject();
@@ -898,11 +942,15 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     public void setJSONObject(JSONObject jsonObject) {
-        if (jsonObject == null) {
+        if (jsonObject == null || jsonObject.length() == 0) {
             this.jsonData = null;
             return;
         }
         this.jsonData = jsonObject.toString();
+    }
+
+    public void setJSONData(String jsonData) {
+        this.jsonData = jsonData;
     }
 
     public void put(String key, String value) {
@@ -1679,6 +1727,7 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public void setActivationDate(Date activationDate) {
         this.activated = activationDate;
+        LOG.log(Level.INFO, this + ": Activated account now", new StackDump());
     }
 
     @Override

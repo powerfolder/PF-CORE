@@ -39,6 +39,7 @@ public class Format {
     private static final CanonicalDateFormat CANONICAL_DATE_FORMAT = new CanonicalDateFormat();
     private static Pattern CANONICAL_DATE_PATTERN = Pattern.compile("^\\d{2} \\w{3} \\d{4}$");
     private static final CanonicalDateWithTimeFormat CANONICAL_DATE_WITH_TIME_FORMAT = new CanonicalDateWithTimeFormat();
+    private static final DateWithTimezoneFormat DATE_WITH_TIMEZONE_FORMAT = new DateWithTimezoneFormat();
     private static final ShortDateFormat SHORT_DATE_FORMAT = new ShortDateFormat();
     private static final ShortTimeFormat SHORT_TIME_FORMAT = new ShortTimeFormat();
     private static final LongTimeFormat LONG_TIME_FORMAT = new LongTimeFormat();
@@ -173,6 +174,10 @@ public class Format {
 
     public static String formatDateWithTimeCanonical(Date date) {
         return CANONICAL_DATE_WITH_TIME_FORMAT.get().format(date);
+    }
+
+    public static String formatDateWithTimezone(Date date) {
+        return DATE_WITH_TIMEZONE_FORMAT.get().format(date);
     }
 
     /**
@@ -357,6 +362,12 @@ public class Format {
     private static class CanonicalDateWithTimeFormat extends ThreadLocal<DateFormat> {
         protected DateFormat initialValue() {
             return new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.ENGLISH);
+        }
+    }
+
+    private static class DateWithTimezoneFormat extends ThreadLocal<DateFormat> {
+        protected DateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.ENGLISH);
         }
     }
 

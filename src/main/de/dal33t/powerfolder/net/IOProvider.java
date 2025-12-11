@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -139,21 +140,21 @@ public class IOProvider extends PFComponent {
     /**
      * Starts a general connection handling working.
      *
-     * @param ioWorker
-     *            a io worker
+     * @param ioWorker a io worker
+     * @return
      */
-    public void startIO(final Runnable ioWorker) {
+    public Future<?> startIO(final Runnable ioWorker) {
         Reject.ifNull(ioWorker, "IO Worker is null");
         if (ioThreadPool.isTerminated() || ioThreadPool.isShutdown()) {
             logFine("Rejected executing of ioWorker, already stopped: "
                 + ioWorker);
-            return;
+            return null;
         }
         if (isFiner()) {
             logFiner("Starting IO for " + ioWorker);
         }
         try {
-            ioThreadPool.submit(ioWorker);
+            return ioThreadPool.submit(ioWorker);
         } catch (OutOfMemoryError oom) {
             // PFS-1722
             oom.printStackTrace();

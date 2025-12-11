@@ -20,9 +20,6 @@ package de.dal33t.powerfolder;
 import de.dal33t.powerfolder.util.JavaVersion;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Central constants holder for all important constants in PowerFolder.
  *
@@ -86,6 +83,11 @@ public class Constants {
      * @see ConfigurationEntry#FOLDER_BASEDIR
      */
     public static String FOLDERS_BASE_DIR_SUBDIR_NAME = "PowerFolders";
+
+    /**
+     * PFS-4687
+     */
+    public static final String LEGACY_BACKUP_REMOVE = "BACKUP_REMOVE";
 
     /**
      * PFC-2538
@@ -390,7 +392,6 @@ public class Constants {
     public static final String UI_LOCK_UNLOCK_URI = "/unlock";
     public static final String LOGIN_URI = "/login";
     public static final String REGISTER_URI = "/register";
-    public static final String CHECK_MAILS_URI = "/check_mails";
     public static final String ACTIVATE_URI = "/activate";
     public static final String GET_LINK_URI = "/getlink";
     public static final String DL_LINK_URI = "/dl";
