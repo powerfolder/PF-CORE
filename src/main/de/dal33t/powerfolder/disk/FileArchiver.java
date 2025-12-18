@@ -666,7 +666,8 @@ public class FileArchiver {
     }
 
     public synchronized long getSize() {
-        if (size == null) {
+        Long thisSize = size;
+        if (thisSize == null) {
             long s = PathUtils.calculateDirectorySizeAndCount(archiveDirectory)[0];
             Path sizeFile = archiveDirectory.resolve(SIZE_INFO_FILE);
             if (Files.exists(sizeFile)) {
@@ -677,9 +678,10 @@ public class FileArchiver {
                 }
             }
             size = s;
+            thisSize = s;
             saveSize();
         }
-        return size;
+        return thisSize;
     }
 
     /**
