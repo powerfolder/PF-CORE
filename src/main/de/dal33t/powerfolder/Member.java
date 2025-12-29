@@ -730,7 +730,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         // return false;
         // }
         if (isFine()) {
-            logFine("Reconnecting (tried " + connectionRetries + " times");
+            logFine("Reconnecting (tried " + connectionRetries + " times)");
         }
 
         connectionRetries++;
