@@ -572,8 +572,11 @@ public class Member extends PFComponent implements Comparable<Member> {
 
             // tell remote client
             try {
-                newPeer.sendMessage(IdentityReply.reject("Invalid identity: "
-                    + identityId + ", expeced " + info));
+                newPeer.sendMessage(IdentityReply.reject("Invalid node id: "
+                    + identityId + ", expected " + info.id));
+                if (isServer()) {
+                    logInfo(this + ": Invalid server.nodeid=" + identityId + ", expected=" + info.id);
+                }
             } catch (ConnectionException e) {
                 logFiner("Unable to send identity reject", e);
             } finally {
