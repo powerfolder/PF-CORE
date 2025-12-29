@@ -556,9 +556,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         Set<String> entryIds = FolderSettings.loadEntryIds(config);
 
         // Load on many processors
-        int loaders = Runtime.getRuntime().availableProcessors() - 2;
-        if (loaders <= 0) {
-            loaders = 1;
+        int loaders = (Runtime.getRuntime().availableProcessors() - 2) * 2;
+        if (loaders <= 1) {
+            loaders = 2;
         }
 
         final Semaphore loadPermit = new Semaphore(loaders + 20);
