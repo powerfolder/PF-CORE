@@ -561,7 +561,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             loaders = 1;
         }
 
-        final Semaphore loadPermit = new Semaphore(loaders);
+        final Semaphore loadPermit = new Semaphore(loaders + 20);
         final AtomicInteger nCreated = new AtomicInteger();
 
         // Scan config for all found folder MD5s.
