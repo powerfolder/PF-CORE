@@ -170,6 +170,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return version;
     }
 
+    public FolderInfo getParentFolder() {
+        return parentFolder;
+    }
+
     private void setParent(DirectoryInfo parent) {
         if (parent != null) {
             Reject.ifNull(parent.getRelativeName(), "Parent relative name / path must not be null");
