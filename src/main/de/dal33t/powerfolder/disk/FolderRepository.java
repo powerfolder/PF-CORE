@@ -630,7 +630,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                         Waiter w = new Waiter(60000L);
                         while (foInfo.getTopFolder().getFolder(getController()) == null && !w.isTimeout()) {
                             loadPermit.release();
-                            logInfo(foInfo + ". Waiting for top folder to load: " + foInfo.getTopFolder() + ". getQueueLength:" + loadPermit.getQueueLength());
+                            logInfo(foInfo + ". Waiting for top folder to load: " + foInfo.getTopFolder() + ". availablePermits:" + loadPermit.availablePermits());
                             w.waitABit(1000L);
                         }
                         try {
