@@ -1,6 +1,9 @@
 stages:
   - test
 
+variables:
+  GIT_DEPTH: "1"
+
 test-Linux:
   stage: test
   resource_group: tests
