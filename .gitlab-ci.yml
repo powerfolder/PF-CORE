@@ -6,7 +6,7 @@ variables:
 
 test-Linux:
   stage: test
-  resource_group: tests-Linux-$CI_RUNNER_ID
+  resource_group: tests-Linux
   tags:
     - Linux
   script:
@@ -20,7 +20,7 @@ test-Linux:
 
 test-macOS:
   stage: test
-  resource_group: tests-macOS-$CI_RUNNER_ID
+  resource_group: tests-macOS
   tags:
     - macOS
   script:
@@ -34,7 +34,7 @@ test-macOS:
 
 test-Windows:
   stage: test
-  resource_group: tests-Windows-$CI_RUNNER_ID
+  resource_group: tests-Windows
   tags:
     - Windows
   script:
