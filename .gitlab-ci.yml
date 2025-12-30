@@ -3,9 +3,9 @@ stages:
 
 test-Linux:
   stage: test
+  resource_group: tests
   tags:
     - Linux
-    - Tests
   script:
     - pkill -f java || true
     - ant run-tests
@@ -17,9 +17,9 @@ test-Linux:
 
 test-macOS:
   stage: test
+  resource_group: tests
   tags:
     - macOS
-    - Tests
   script:
     - pkill -f java || true
     - ant run-tests
@@ -31,9 +31,9 @@ test-macOS:
 
 test-Windows:
   stage: test
+  resource_group: tests
   tags:
     - Windows
-    - Tests
   script:
     - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'Old Java processes killed (if any)'"
     - ant run-tests
