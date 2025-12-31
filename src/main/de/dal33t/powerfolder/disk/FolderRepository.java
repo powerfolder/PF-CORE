@@ -544,149 +544,190 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().saveConfig();
     }
 
-    /**
-     * Version 4 format is like f.<md5>.XXXX, where md5 is the MD5 of the folder
-     * id. This format allows folders with the same name to be stored.
-     */
     private void processV4Format() {
 
         final Properties config = getController().getConfig();
 
-        // Find all folder entries.
+        // ---------------------------------------------------------------------
+        // Phase 1: Discovery – FolderInfos & Settings laden und klassifizieren
+        // ---------------------------------------------------------------------
+
         Set<String> entryIds = FolderSettings.loadEntryIds(config);
 
-        // Load on many processors
-        int loaders = (Runtime.getRuntime().availableProcessors() - 2) * 2;
-        if (loaders <= 1) {
-            loaders = 2;
-        }
+        Map<FolderInfo, FolderSettings> topLevelFolders = new LinkedHashMap<>();
+        Map<FolderInfo, FolderSettings> subFolders = new LinkedHashMap<>();
 
-        final Semaphore loadPermit = new Semaphore(loaders + 20);
-        final AtomicInteger nCreated = new AtomicInteger();
-
-        // Scan config for all found folder MD5s.
-        for (final String folderEntryId : entryIds) {
-
+        for (String folderEntryId : entryIds) {
             try {
-                loadPermit.acquire();
-            } catch (InterruptedException e) {
-                logFiner(e);
-                return;
-            }
-
-            Runnable folderCreator = () -> {
-                try {
-                    String folderId = config
-                            .getProperty(PREFIX_V4
-                                    + folderEntryId + ID);
-                    if (StringUtils.isBlank(folderId)) {
-                        logWarning("Folder id blank. Removed illegal folder config entry: "
-                                + folderEntryId);
-                        removeConfigEntries(folderEntryId);
-                        return;
-                    }
-                    String folderName = FolderSettings.loadFolderName(
-                            getController().getConfig(), folderEntryId);
-                    if (StringUtils.isBlank(folderName)) {
-                        logWarning("Foldername not found."
-                                + "Removed illegal folder config entry: "
-                                + folderName + '/' + folderEntryId);
-                        removeConfigEntries(folderEntryId);
-                        return;
-                    }
-
-                    // #2203 Load later if folder id should be taken from
-                    // account.
-                    if (folderId
-                            .contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT)) {
-                        logFine("Folder load scheduled after first login: "
-                                + folderName + '/' + folderEntryId);
-                        onLoginFolderEntryIds.add(folderEntryId);
-                        return;
-                    }
-
-                    FolderSettings folderSettings = FolderSettings.load(
-                            getController(), folderEntryId);
-
-                    FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
-                    if (foInfo == null) {
-                        foInfo = lookupInstance(folderId, folderName);
-                    } else if (!foInfo.getId().equals(folderId)) {
-                        String folderIdFromFile = foInfo.getId();
-                        foInfo = unmarshallExistingFolder(folderId, folderName, foInfo.getVersion(), foInfo.getParent());
-                        logInfo(foInfo + ": Adjusted ID, found in 'FolderInfo' meta-data file: " + folderIdFromFile + ". Set from config to " + foInfo.getId());
-                    }
-
-                    if (folderSettings == null) {
-                        logWarning("Unable to load folder settings."
-                                + "Removed folder config entry: " + folderName
-                                + '/' + folderEntryId);
-                        removeConfigEntries(folderEntryId);
-                        return;
-                    }
-
-                    // PFC-3472: Improve this
-                    if (foInfo.isSubFolder()) {
-                        Waiter w = new Waiter(60000L);
-                        while (foInfo.getTopFolder().getFolder(getController()) == null && !w.isTimeout()) {
-                            loadPermit.release();
-                            logInfo(foInfo + ". Waiting for top folder to load: " + foInfo.getTopFolder() + ". availablePermits:" + loadPermit.availablePermits());
-                            w.waitABit(1000L);
-                        }
-                        try {
-                            loadPermit.acquire();
-                        } catch (InterruptedException e) {
-                            logFiner(e);
-                            return;
-                        }
-                    }
-
-                    // Fix for PFS-2319: Repair broken encrypted folders
-                    if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
-
-                        // Construct temporary basePath
-                        folderName = folderName + Constants.FOLDER_ENCRYPTION_SUFFIX;
-                        Path folderDirectoryForRecoveredFolders = getFoldersBasedir().resolve("RECOVERED").resolve(folderName);
-                        Path temporaryBasePath = PathUtils.createEmptyDirectory(folderDirectoryForRecoveredFolders);
-
-                        folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
-                        logWarning("Repaired broken encrypted Folder " + folderName + "/" + foInfo.getId() +
-                                ". New storage path: " + temporaryBasePath);
-                    }
-
-                    // Do not add0 if already added
-                    if (!hasJoinedFolder(foInfo) && folderSettings != null) {
-                        if (ConfigurationEntry.FOLDER_CREATE_ON_STARTUP.getValueBoolean(getController()) && Files.notExists(folderSettings.getLocalBaseDir())) {
-                            Files.createDirectories(folderSettings.getLocalBaseDir());
-                        }
-                        createFolder(foInfo, folderSettings, false, true);
-                    }
-                } catch (Exception e) {
-                    logWarning("Problem loading/creating folder #" + folderEntryId + ". " + e, e);
-                } finally {
-                    loadPermit.release();
-                    synchronized (nCreated) {
-                        nCreated.incrementAndGet();
-                        nCreated.notify();
-                    }
+                String folderId = config.getProperty(PREFIX_V4 + folderEntryId + ID);
+                if (StringUtils.isBlank(folderId)) {
+                    logWarning("Folder id blank. Removed illegal folder config entry: " + folderEntryId);
+                    removeConfigEntries(folderEntryId);
+                    continue;
                 }
-            };
 
-            getController().getIOProvider().startIO(folderCreator);
+                String folderName = FolderSettings.loadFolderName(config, folderEntryId);
+                if (StringUtils.isBlank(folderName)) {
+                    logWarning("Foldername not found. Removed illegal folder config entry: "
+                            + folderName + '/' + folderEntryId);
+                    removeConfigEntries(folderEntryId);
+                    continue;
+                }
+
+                // Load later if folder id should be taken from account
+                if (folderId.contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT)) {
+                    logFine("Folder load scheduled after first login: " + folderName + '/' + folderEntryId);
+                    onLoginFolderEntryIds.add(folderEntryId);
+                    continue;
+                }
+
+                FolderSettings folderSettings = FolderSettings.load(getController(), folderEntryId);
+                if (folderSettings == null) {
+                    logWarning("Unable to load folder settings. Removed folder config entry: "
+                            + folderName + '/' + folderEntryId);
+                    removeConfigEntries(folderEntryId);
+                    continue;
+                }
+
+                FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
+                if (foInfo == null) {
+                    // TODO: Analyze if local base dir is subfolder of top level as fallback
+                    foInfo = lookupInstance(folderId, folderName);
+                } else if (!foInfo.getId().equals(folderId)) {
+                    String folderIdFromFile = foInfo.getId();
+                    foInfo = unmarshallExistingFolder(
+                            folderId,
+                            folderName,
+                            foInfo.getVersion(),
+                            foInfo.getParent());
+                    logInfo(foInfo + ": Adjusted ID, found in 'FolderInfo' meta-data file: "
+                            + folderIdFromFile + ". Set from config to " + foInfo.getId());
+                }
+
+                // Fix for PFS-2319: Repair broken encrypted folders
+                if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
+
+                    String recoveredName = folderName + Constants.FOLDER_ENCRYPTION_SUFFIX;
+                    Path recoveredBaseDir = getFoldersBasedir().resolve("RECOVERED").resolve(recoveredName);
+                    Path temporaryBasePath = PathUtils.createEmptyDirectory(recoveredBaseDir);
+                    folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
+
+                    logWarning("Repaired broken encrypted Folder " + recoveredName + "/" + foInfo.getId()
+                            + ". New storage path: " + temporaryBasePath);
+                }
+
+                if (foInfo.isSubFolder()) {
+                    subFolders.put(foInfo, folderSettings);
+                } else {
+                    topLevelFolders.put(foInfo, folderSettings);
+                }
+
+            } catch (Exception e) {
+                logWarning("Problem loading folder config entry " + folderEntryId, e);
+            }
         }
 
-        // Wait for creators to complete
-        while (nCreated.get() < entryIds.size()) {
-            synchronized (nCreated) {
+        // ---------------------------------------------------------------------
+        // Phase 2: Execution – begrenzte Parallelität (2 × CPU)
+        // ---------------------------------------------------------------------
+
+        int threads = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
+
+        ExecutorService executor = Executors.newFixedThreadPool(
+                threads,
+                r -> {
+                    Thread t = new Thread(r, "Folder-loader");
+                    t.setDaemon(true);
+                    return t;
+                }
+        );
+
+        try {
+            // -------------------------------------------------------------
+            // Phase 2.1: Top-Level-Folder erstellen
+            // -------------------------------------------------------------
+
+            List<Future<?>> topLevelTasks = new ArrayList<>();
+
+            for (Map.Entry<FolderInfo, FolderSettings> e : topLevelFolders.entrySet()) {
+                FolderInfo foInfo = e.getKey();
+                FolderSettings folderSettings = e.getValue();
+
+                topLevelTasks.add(
+                        executor.submit(() -> {
+                            if (hasJoinedFolder(foInfo)) {
+                                return;
+                            }
+                            try {
+                                if (ConfigurationEntry.FOLDER_CREATE_ON_STARTUP.getValueBoolean(getController())
+                                        && Files.notExists(folderSettings.getLocalBaseDir())) {
+                                    Files.createDirectories(folderSettings.getLocalBaseDir());
+                                }
+
+                                createFolder(foInfo, folderSettings, false, true);
+                            } catch (Exception ex) {
+                                logWarning("Problem creating top-level folder " + foInfo, ex);
+                            }
+                        })
+                );
+            }
+
+            // Explizite Barriere: Alle Top-Level-Folder müssen abgeschlossen sein
+            for (Future<?> f : topLevelTasks) {
                 try {
-                    nCreated.wait(10);
-                } catch (InterruptedException e) {
-                    logFiner(e);
+                    f.get();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
                     return;
+                } catch (Exception e) {
+                    logWarning("Top-level folder creation failed", e);
                 }
             }
+
+            // -------------------------------------------------------------
+            // Phase 2.2: Subfolder erstellen
+            // -------------------------------------------------------------
+
+            List<Future<?>> subFolderTasks = new ArrayList<>();
+
+            for (Map.Entry<FolderInfo, FolderSettings> e : subFolders.entrySet()) {
+                FolderInfo foInfo = e.getKey();
+                FolderSettings folderSettings = e.getValue();
+
+                subFolderTasks.add(
+                        executor.submit(() -> {
+                            try {
+                                if (hasJoinedFolder(foInfo)) {
+                                    return;
+                                }
+                                Folder parent = foInfo.getTopFolder().getFolder(getController());
+                                if (parent == null) {
+                                    logWarning(foInfo + ": Parent folder missing, skipping subfolder creation.");
+                                    return;
+                                }
+
+                                createFolder(foInfo, folderSettings, false, true);
+                            } catch (Exception ex) {
+                                logWarning("Problem creating subfolder " + foInfo, ex);
+                            }
+                        })
+                );
+            }
+
+            for (Future<?> f : subFolderTasks) {
+                try {
+                    f.get();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception e) {
+                    logWarning("Subfolder creation failed", e);
+                }
+            }
+
+        } finally {
+            executor.shutdown();
         }
-        logInfo("Loaded " + getFoldersCount() + " folders");
     }
 
     /**
