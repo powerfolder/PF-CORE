@@ -128,37 +128,156 @@ public abstract class FolderPermission
         return new FolderOwnerPermission(foInfo);
     }
 
-    protected boolean isSameOrBelow(FolderInfo thisFolder, FolderInfo otherFolder) {
+    /**
+     * Returns the additional {@link FolderPermission} types that are implied by
+     * this permission.
+     * <p>
+     * The permission's own class is <b>always</b> implied implicitly and must
+     * therefore NOT be returned here.
+     * <p>
+     * Returning {@code null} or an empty array means that no additional
+     * folder permissions are implied.
+     *
+     * @return an array of additional implied folder permission types,
+     *         or {@code null} if none are implied
+     */
+    protected Class<? extends FolderPermission>[] getImpliedFolderPermissionTypes() {
+        return null; // default: no additional implied folder permissions
+    }
 
-        // --- 1) Topfolder bestimmen ---
+    /**
+     * Checks whether the given folder permission type is allowed to be implied
+     * by this permission.
+     * <p>
+     * Rules:
+     * <ul>
+     *   <li>The permission's own class is always allowed (self-implication).</li>
+     *   <li>Additional allowed permission types are defined by
+     *       {@link #getImpliedFolderPermissionTypes()}.</li>
+     * </ul>
+     *
+     * @param otherPermission the target permission to check
+     * @return {@code true} if the permission type is allowed to be implied
+     */
+    private boolean isAllowedFolderPermission(FolderPermission otherPermission) {
+
+        // Self-implication is always allowed
+        if (this.getClass().equals(otherPermission.getClass())) {
+            return true;
+        }
+
+        Class<? extends FolderPermission>[] impliedTypes =
+                getImpliedFolderPermissionTypes();
+
+        // No additional implied permissions defined
+        if (impliedTypes == null || impliedTypes.length == 0) {
+            return false;
+        }
+
+        for (Class<? extends FolderPermission> clazz : impliedTypes) {
+            if (clazz.isInstance(otherPermission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines whether this permission implies another permission.
+     * <p>
+     * A folder permission implies another folder permission if:
+     * <ul>
+     *   <li>The target permission type is allowed
+     *       (see {@link #getImpliedFolderPermissionTypes()}).</li>
+     *   <li>Both permissions refer to the same top-level folder.</li>
+     *   <li>The target folder is the same as, or located below, the source folder
+     *       in the folder hierarchy.</li>
+     *   <li>The target folder does not explicitly opt out of permission inheritance.</li>
+     * </ul>
+     *
+     * @param impliedPermission the permission to check
+     * @return {@code true} if this permission implies the given permission
+     */
+    @Override
+    public boolean implies(Permission impliedPermission) {
+
+        // Only folder permissions can be implied
+        if (!(impliedPermission instanceof FolderPermission)) {
+            return false;
+        }
+
+        FolderPermission otherPermission = (FolderPermission) impliedPermission;
+
+        // Check whether the permission type is allowed
+        if (!isAllowedFolderPermission(otherPermission)) {
+            return false;
+        }
+
+        FolderInfo thisFolder = getFolder();
+        FolderInfo otherFolder = otherPermission.getFolder();
+
+        // Respect explicit opt-out on target subfolders
+        if (otherFolder.isSubFolder() && !otherFolder.inheritsPermissions()) {
+            return false;
+        }
+
+        return isSameOrBelow(thisFolder, otherFolder);
+    }
+
+    /**
+     * Checks whether the target folder is the same as, or hierarchically below,
+     * the source folder.
+     * <p>
+     * Folder hierarchy rules:
+     * <ul>
+     *   <li>Permissions never cross top-level folders.</li>
+     *   <li>A top-level folder applies to all its subfolders.</li>
+     *   <li>Subfolder permissions never apply upwards.</li>
+     *   <li>Hierarchy comparison is based on {@code parentPath + folder name}.</li>
+     * </ul>
+     *
+     * @param thisFolder  the source folder of the permission
+     * @param otherFolder the target folder of the implied permission
+     * @return {@code true} if {@code otherFolder} is the same as or below {@code thisFolder}
+     */
+    private boolean isSameOrBelow(FolderInfo thisFolder, FolderInfo otherFolder) {
+        // Determine top-level folders
         FolderInfo thisTopFolder = thisFolder.isSubFolder() ? thisFolder.getParentFolder() : thisFolder;
         FolderInfo otherTopFolder = otherFolder.isSubFolder() ? otherFolder.getParentFolder() : otherFolder;
 
-        // Unterschiedliche Topfolder -> keine Vererbung
+        // Different top-level folders -> no inheritance
         if (!thisTopFolder.equals(otherTopFolder)) {
             return false;
         }
 
-        // --- 2) Location-/Scope-Regel ---
-        // Topfolder gilt für alles darunter
+        // Top-level folder applies to all subfolders
         if (thisFolder.isTopFolder()) {
             return true;
         }
 
-        // Subfolder gilt nie nach oben
+        // Subfolder permissions never apply upwards
         if (otherFolder.isTopFolder()) {
             return false;
         }
 
-        // --- 2) Scope-Regel über parentPath + name (fullPath) ---
+        // Compare full paths (parentPath + name)
         String thisFullPath = buildFullPath(thisFolder);
         String otherFullPath = buildFullPath(otherFolder);
 
-        // Identisch oder echtes Unterverzeichnis
-        return otherFullPath.equals(thisFullPath)
-                || otherFullPath.startsWith(thisFullPath + "/");
+        // Same folder or descendant folder
+        return otherFullPath.equals(thisFullPath) || otherFullPath.startsWith(thisFullPath + '/');
     }
 
+    /**
+     * Builds the logical full path of a folder based on its parent path and name.
+     * <p>
+     * The returned path is used exclusively for hierarchical comparison and does
+     * not represent a filesystem path.
+     *
+     * @param folderInfo the folder to build the path for
+     * @return the logical full path of the folder
+     */
     private static String buildFullPath(FolderInfo folderInfo) {
         String parentPath = folderInfo.getParentPath();
         String name = folderInfo.getName();
@@ -168,7 +287,6 @@ public abstract class FolderPermission
         }
         return parentPath + '/' + name;
     }
-
 
     @Override
     public String toString() {

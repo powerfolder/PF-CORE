@@ -38,30 +38,6 @@ public class FolderDeletePermission extends FolderPermission {
     FolderDeletePermission(FolderInfo foInfo) {
         super(foInfo);
     }
-    @Override
-    public boolean implies(Permission impliedPermission) {
-
-        if (this.equals(impliedPermission)) {
-            return true;
-        }
-
-        if (impliedPermission instanceof FolderDeletePermission) {
-
-            FolderPermission folderPermission = (FolderPermission) impliedPermission;
-
-            FolderInfo thisFolder = getFolder();                 // Quelle (this)
-            FolderInfo otherFolder = folderPermission.getFolder(); // Ziel (other)
-
-            // Opt-out auf Zielordner respektieren
-            if (otherFolder.isSubFolder() && !otherFolder.inheritsPermissions()) {
-                return false;
-            }
-
-            return isSameOrBelow(thisFolder, otherFolder);
-        }
-
-        return false;
-    }
 
     @Override
     public String getName() {
@@ -72,5 +48,4 @@ public class FolderDeletePermission extends FolderPermission {
     public AccessMode getMode() {
         return null;
     }
-
 }
