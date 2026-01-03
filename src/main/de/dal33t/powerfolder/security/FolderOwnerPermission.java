@@ -62,28 +62,29 @@ public class FolderOwnerPermission extends FolderPermission {
     }
 
     @Override
-    public boolean implies(Permission impliedPermision) {
+    public boolean implies(Permission impliedPermission) {
 
-        if (this.equals(impliedPermision)) {
+        if (this.equals(impliedPermission)) {
             return true;
         }
 
-        if (impliedPermision instanceof FolderReadPermission
-                || impliedPermision instanceof FolderReadWritePermission
-                || impliedPermision instanceof FolderAdminPermission
-                || impliedPermision instanceof FolderOwnerPermission
-                || impliedPermision instanceof FolderDeletePermission) {
+        if (impliedPermission instanceof FolderReadPermission
+                || impliedPermission instanceof FolderReadWritePermission
+                || impliedPermission instanceof FolderAdminPermission
+                || impliedPermission instanceof FolderOwnerPermission
+                || impliedPermission instanceof FolderDeletePermission) {
 
-            FolderPermission folderPermission = (FolderPermission) impliedPermision;
-            FolderInfo folderOfPermission = folderPermission.getFolder();
-            FolderInfo thisFolder = getFolder();
+            FolderPermission folderPermission = (FolderPermission) impliedPermission;
 
-            if (folderOfPermission.isSubFolder()) {
-                return folderOfPermission.inheritsPermissions() &&
-                        thisFolder.equals(folderOfPermission.getParentFolder());
-            } else {
-                return thisFolder.equals(folderOfPermission);
+            FolderInfo thisFolder = getFolder();                 // Quelle (this)
+            FolderInfo otherFolder = folderPermission.getFolder(); // Ziel (other)
+
+            // Opt-out auf Zielordner respektieren
+            if (otherFolder.isSubFolder() && !otherFolder.inheritsPermissions()) {
+                return false;
             }
+
+            return isSameOrBelow(thisFolder, otherFolder);
         }
 
         return false;

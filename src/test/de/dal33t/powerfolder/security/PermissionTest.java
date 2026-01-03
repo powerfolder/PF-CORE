@@ -473,6 +473,122 @@ public class PermissionTest extends TestCase {
         );
     }
 
+    public void testTopFolderPermissionIsInheritedToSubAndSubSubFolder() {
+        // --- given: top folder ---
+        FolderInfo topFolder =
+                FolderInfoFactory.newTopFolderForTest("TopFolder", "TOP-SUB-SUBSUB");
+
+        // --- and: subfolder ---
+        FolderInfo subFolder =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(topFolder, "sub")
+                );
+
+        // --- and: sub-subfolder ---
+        FolderInfo subSubFolder =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(topFolder, "sub/deep")
+                );
+
+        // --- OWNER on top (strongest permission) ---
+        Permission topOwner =
+                new FolderOwnerPermission(topFolder);
+
+        // OWNER must imply all non-owner permissions on subfolder
+        assertTrue(topOwner.implies(new FolderAdminPermission(subFolder)));
+        assertTrue(topOwner.implies(new FolderReadWritePermission(subFolder)));
+        assertTrue(topOwner.implies(new FolderReadPermission(subFolder)));
+        assertTrue(topOwner.implies(new FolderDeletePermission(subFolder)));
+
+        // OWNER must imply all non-owner permissions on sub-subfolder
+        assertTrue(topOwner.implies(new FolderAdminPermission(subSubFolder)));
+        assertTrue(topOwner.implies(new FolderReadWritePermission(subSubFolder)));
+        assertTrue(topOwner.implies(new FolderReadPermission(subSubFolder)));
+        assertTrue(topOwner.implies(new FolderDeletePermission(subSubFolder)));
+
+        // --- ADMIN on top ---
+        Permission topAdmin =
+                new FolderAdminPermission(topFolder);
+
+        assertTrue(topAdmin.implies(new FolderAdminPermission(subSubFolder)));
+        assertTrue(topAdmin.implies(new FolderReadWritePermission(subSubFolder)));
+        assertTrue(topAdmin.implies(new FolderReadPermission(subSubFolder)));
+        assertTrue(topAdmin.implies(new FolderDeletePermission(subSubFolder)));
+
+        // --- READ_WRITE on top ---
+        Permission topReadWrite =
+                new FolderReadWritePermission(topFolder);
+
+        assertTrue(topReadWrite.implies(new FolderReadWritePermission(subSubFolder)));
+        assertTrue(topReadWrite.implies(new FolderReadPermission(subSubFolder)));
+        assertFalse(topReadWrite.implies(new FolderDeletePermission(subSubFolder)));
+
+        // --- READ on top ---
+        Permission topRead =
+                new FolderReadPermission(topFolder);
+
+        assertTrue(topRead.implies(new FolderReadPermission(subSubFolder)));
+        assertFalse(topRead.implies(new FolderReadWritePermission(subSubFolder)));
+        assertFalse(topRead.implies(new FolderDeletePermission(subSubFolder)));
+
+        // --- DELETE on top ---
+        Permission topDelete =
+                new FolderDeletePermission(topFolder);
+
+        assertTrue(topDelete.implies(new FolderDeletePermission(subSubFolder)));
+        assertFalse(topDelete.implies(new FolderReadPermission(subSubFolder)));
+    }
+
+    public void testSubfolderPermissionIsInheritedToSubSubFolder() {
+        // --- given: top folder ---
+        FolderInfo topFolder =
+                FolderInfoFactory.newTopFolderForTest("TopFolder", "SUB-SUBSUB-1");
+
+        // --- and: subfolder ---
+        FolderInfo subFolder =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(topFolder, "sub")
+                );
+
+        // --- and: sub-subfolder ---
+        FolderInfo subSubFolder =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(topFolder, "sub/deep")
+                );
+
+        // --- ADMIN on subfolder ---
+        Permission subAdmin =
+                new FolderAdminPermission(subFolder);
+
+        assertTrue(subAdmin.implies(new FolderAdminPermission(subSubFolder)));
+        assertTrue(subAdmin.implies(new FolderReadWritePermission(subSubFolder)));
+        assertTrue(subAdmin.implies(new FolderReadPermission(subSubFolder)));
+        assertTrue(subAdmin.implies(new FolderDeletePermission(subSubFolder)));
+
+        // --- READ_WRITE on subfolder ---
+        Permission subReadWrite =
+                new FolderReadWritePermission(subFolder);
+
+        assertTrue(subReadWrite.implies(new FolderReadWritePermission(subSubFolder)));
+        assertTrue(subReadWrite.implies(new FolderReadPermission(subSubFolder)));
+        assertFalse(subReadWrite.implies(new FolderDeletePermission(subSubFolder)));
+
+        // --- READ on subfolder ---
+        Permission subRead =
+                new FolderReadPermission(subFolder);
+
+        assertTrue(subRead.implies(new FolderReadPermission(subSubFolder)));
+        assertFalse(subRead.implies(new FolderReadWritePermission(subSubFolder)));
+        assertFalse(subRead.implies(new FolderDeletePermission(subSubFolder)));
+
+        // --- DELETE on subfolder ---
+        Permission subDelete =
+                new FolderDeletePermission(subFolder);
+
+        assertTrue(subDelete.implies(new FolderDeletePermission(subSubFolder)));
+        assertFalse(subDelete.implies(new FolderReadPermission(subSubFolder)));
+    }
+
 
     private FolderInfo createTopFolder(String id) {
         return FolderInfoFactory.newTopFolderForTest("TopFolder", id);

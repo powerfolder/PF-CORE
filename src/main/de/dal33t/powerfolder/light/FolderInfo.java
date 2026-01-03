@@ -196,6 +196,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return FileInfoFactory.lookupDirectory(parentFolder, parentPath);
     }
 
+    public String getParentPath() {
+        return parentPath;
+    }
+
     /**
      * @return the location under which the folder is located.
      * e.g. if the structure is "subdir/is/here/subfolder" this would return "subdir/is/here/subfolder"
@@ -216,7 +220,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return parentFolder;
     }
 
-    public boolean isTopLevel() {
+    public boolean isTopFolder() {
         return parentFolder == null;
     }
 

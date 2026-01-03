@@ -1894,7 +1894,7 @@ public class Folder extends PFComponent {
             // Stop old DAO
             dao.stop();
         }
-        if (currentInfo.isTopLevel()) {
+        if (currentInfo.isTopFolder()) {
             dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
         } else {
             Folder topFolder = getTopFolder();

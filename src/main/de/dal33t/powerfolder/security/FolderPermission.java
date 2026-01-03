@@ -128,6 +128,48 @@ public abstract class FolderPermission
         return new FolderOwnerPermission(foInfo);
     }
 
+    protected boolean isSameOrBelow(FolderInfo thisFolder, FolderInfo otherFolder) {
+
+        // --- 1) Topfolder bestimmen ---
+        FolderInfo thisTopFolder = thisFolder.isSubFolder() ? thisFolder.getParentFolder() : thisFolder;
+        FolderInfo otherTopFolder = otherFolder.isSubFolder() ? otherFolder.getParentFolder() : otherFolder;
+
+        // Unterschiedliche Topfolder -> keine Vererbung
+        if (!thisTopFolder.equals(otherTopFolder)) {
+            return false;
+        }
+
+        // --- 2) Location-/Scope-Regel ---
+        // Topfolder gilt für alles darunter
+        if (thisFolder.isTopFolder()) {
+            return true;
+        }
+
+        // Subfolder gilt nie nach oben
+        if (otherFolder.isTopFolder()) {
+            return false;
+        }
+
+        // --- 2) Scope-Regel über parentPath + name (fullPath) ---
+        String thisFullPath = buildFullPath(thisFolder);
+        String otherFullPath = buildFullPath(otherFolder);
+
+        // Identisch oder echtes Unterverzeichnis
+        return otherFullPath.equals(thisFullPath)
+                || otherFullPath.startsWith(thisFullPath + "/");
+    }
+
+    private static String buildFullPath(FolderInfo folderInfo) {
+        String parentPath = folderInfo.getParentPath();
+        String name = folderInfo.getName();
+
+        if (parentPath == null || parentPath.isEmpty()) {
+            return name;
+        }
+        return parentPath + '/' + name;
+    }
+
+
     @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + folder;
