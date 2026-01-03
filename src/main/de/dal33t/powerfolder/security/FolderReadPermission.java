@@ -61,31 +61,6 @@ public class FolderReadPermission extends FolderPermission {
     }
 
     @Override
-    public boolean implies(Permission impliedPermission) {
-
-        if (this.equals(impliedPermission)) {
-            return true;
-        }
-
-        if (impliedPermission instanceof FolderReadPermission) {
-
-            FolderPermission folderPermission = (FolderPermission) impliedPermission;
-
-            FolderInfo thisFolder = getFolder();                 // Quelle (this)
-            FolderInfo otherFolder = folderPermission.getFolder(); // Ziel (other)
-
-            // Opt-out auf Zielordner respektieren
-            if (otherFolder.isSubFolder() && !otherFolder.inheritsPermissions()) {
-                return false;
-            }
-
-            return isSameOrBelow(thisFolder, otherFolder);
-        }
-
-        return false;
-    }
-
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
