@@ -45,13 +45,18 @@ public class FolderDeletePermission extends FolderPermission {
             return true;
         }
 
-        // Subfolder sharing permission checks
         if (impliedPermision instanceof FolderDeletePermission) {
-            FolderDeletePermission folderPermission = (FolderDeletePermission) impliedPermision;
-            FolderInfo folderInfo = folderPermission.getFolder();
-            return folderInfo.inheritsPermissions() &&
-                    folderInfo.isSubFolder() &&
-                    folderInfo.getParentFolder().equals(getFolder());
+
+            FolderPermission folderPermission = (FolderPermission) impliedPermision;
+            FolderInfo folderOfPermission = folderPermission.getFolder();
+            FolderInfo thisFolder = getFolder();
+
+            if (folderOfPermission.isSubFolder()) {
+                return folderOfPermission.inheritsPermissions() &&
+                        thisFolder.equals(folderOfPermission.getParentFolder());
+            } else {
+                return thisFolder.equals(folderOfPermission);
+            }
         }
 
         return false;

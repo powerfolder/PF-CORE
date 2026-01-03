@@ -20,8 +20,8 @@
 package de.dal33t.powerfolder.security;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -40,6 +40,7 @@ public class FolderOwnerPermission extends FolderPermission {
      */
     FolderOwnerPermission(FolderInfo foInfo) {
         super(foInfo);
+        Reject.ifTrue(foInfo.isSubFolder(), "Cannot create owner permission of subfolder");
     }
 
     /**
@@ -67,27 +68,22 @@ public class FolderOwnerPermission extends FolderPermission {
             return true;
         }
 
-        if (impliedPermision instanceof FolderReadPermission) {
-            FolderReadPermission rp = (FolderReadPermission) impliedPermision;
-            return rp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderReadWritePermission) {
-            FolderReadWritePermission rwp = (FolderReadWritePermission) impliedPermision;
-            return rwp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderAdminPermission) {
-            FolderAdminPermission p = (FolderAdminPermission) impliedPermision;
-            return p.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderDeletePermission) {
-            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
-            return p.getFolder().equals(getFolder());
-        }
+        if (impliedPermision instanceof FolderReadPermission
+                || impliedPermision instanceof FolderReadWritePermission
+                || impliedPermision instanceof FolderAdminPermission
+                || impliedPermision instanceof FolderOwnerPermission
+                || impliedPermision instanceof FolderDeletePermission) {
 
-        // Subfolder sharing permission checks
-        if (impliedPermision instanceof FolderOwnerPermission) {
-            FolderOwnerPermission folderPermission = (FolderOwnerPermission) impliedPermision;
-            FolderInfo folderInfo = folderPermission.getFolder();
-            return folderInfo.inheritsPermissions() &&
-                    folderInfo.isSubFolder() &&
-                    folderInfo.getParentFolder().equals(getFolder());
+            FolderPermission folderPermission = (FolderPermission) impliedPermision;
+            FolderInfo folderOfPermission = folderPermission.getFolder();
+            FolderInfo thisFolder = getFolder();
+
+            if (folderOfPermission.isSubFolder()) {
+                return folderOfPermission.inheritsPermissions() &&
+                        thisFolder.equals(folderOfPermission.getParentFolder());
+            } else {
+                return thisFolder.equals(folderOfPermission);
+            }
         }
 
         return false;
