@@ -21,7 +21,6 @@ package de.dal33t.powerfolder.security;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
 
 /**
@@ -40,7 +39,6 @@ public class FolderOwnerPermission extends FolderPermission {
      */
     FolderOwnerPermission(FolderInfo foInfo) {
         super(foInfo);
-        Reject.ifTrue(foInfo.isSubFolder(), "Cannot create owner permission of subfolder");
     }
 
     /**

@@ -123,6 +123,10 @@ public class Group implements Serializable, D2DObject, Auditable {
                 // Skip
                 continue;
             } else {
+                if (p instanceof FolderOwnerPermission) {
+                    FolderInfo folder = ((FolderOwnerPermission) p).getFolder();
+                    Reject.ifTrue(folder.isSubFolder(), "Cannot grant owner permission on subfolder");
+                }
                 permissions.add(p);
             }
         }

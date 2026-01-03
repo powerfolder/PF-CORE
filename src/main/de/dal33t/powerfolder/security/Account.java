@@ -318,6 +318,10 @@ public class Account implements Serializable, D2DObject, Auditable {
                 // Skip
                 continue;
             }
+            if (p instanceof FolderOwnerPermission) {
+                FolderInfo folder = ((FolderOwnerPermission) p).getFolder();
+                Reject.ifTrue(folder.isSubFolder(), "Cannot grant owner permission on subfolder");
+            }
             if (p instanceof FolderPermission) {
                 FolderInfo foInfo = ((FolderPermission) p).getFolder();
                 revokeAllFolderPermission(foInfo);
