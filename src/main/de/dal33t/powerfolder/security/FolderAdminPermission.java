@@ -77,24 +77,21 @@ public class FolderAdminPermission extends FolderPermission {
             return true;
         }
 
-        if (impliedPermision instanceof FolderReadPermission) {
-            FolderReadPermission rp = (FolderReadPermission) impliedPermision;
-            return rp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderReadWritePermission) {
-            FolderReadWritePermission rwp = (FolderReadWritePermission) impliedPermision;
-            return rwp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderDeletePermission) {
-            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
-            return p.getFolder().equals(getFolder());
-        }
+        if (impliedPermision instanceof FolderReadPermission
+                || impliedPermision instanceof FolderReadWritePermission
+                || impliedPermision instanceof FolderAdminPermission
+                || impliedPermision instanceof FolderDeletePermission) {
 
-        // Subfolder sharing permission checks
-        if (impliedPermision instanceof FolderAdminPermission) {
-            FolderAdminPermission folderPermission = (FolderAdminPermission) impliedPermision;
-            FolderInfo folderInfo = folderPermission.getFolder();
-            return folderInfo.inheritsPermissions() &&
-                    folderInfo.isSubFolder() &&
-                    folderInfo.getParentFolder().equals(getFolder());
+            FolderPermission folderPermission = (FolderPermission) impliedPermision;
+            FolderInfo folderOfPermission = folderPermission.getFolder();
+            FolderInfo thisFolder = getFolder();
+
+            if (folderOfPermission.isSubFolder()) {
+                return folderOfPermission.inheritsPermissions() &&
+                        thisFolder.equals(folderOfPermission.getParentFolder());
+            } else {
+                return thisFolder.equals(folderOfPermission);
+            }
         }
 
         return false;

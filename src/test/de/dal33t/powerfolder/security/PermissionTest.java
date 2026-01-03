@@ -270,41 +270,134 @@ public class PermissionTest extends TestCase {
         assertFalse(acc.hasOwnerPermission(fi));
     }
 
-
     public void testTopFolderPermissionImpliesSamePermissionOnSubfolder() {
         // --- given: top folder ---
         FolderInfo topFolder =
-                FolderInfoFactory.newTopFolderForTest("TopFolder", "TOP-1");
+                FolderInfoFactory.newTopFolderForTest("TopFolder", "TOP-INH-1");
 
-        // --- and: subfolder created exactly like runtime does ---
-        // IMPORTANT: Subfolder is defined by relative path inside top folder
-        DirectoryInfo subDirInfo =
-                FileInfoFactory.lookupDirectory(topFolder, "structure/deep/shared");
-
+        // --- and: subfolder created like runtime does ---
         FolderInfo subFolder =
-                FolderInfoFactory.newFolder(subDirInfo);
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(topFolder, "sub")
+                );
 
-        // --- when / then: permission inheritance ---
-        Permission[] topPermissions = new Permission[] {
-                new FolderOwnerPermission(topFolder),
-                new FolderAdminPermission(topFolder),
-                new FolderReadWritePermission(topFolder),
-                new FolderReadPermission(topFolder)
-        };
+        // --- OWNER on top: implies all non-owner permissions on subfolder ---
+        Permission topOwner = new FolderOwnerPermission(topFolder);
 
-        Permission[] subPermissions = new Permission[] {
-                new FolderOwnerPermission(subFolder),
-                new FolderAdminPermission(subFolder),
-                new FolderReadWritePermission(subFolder),
-                new FolderReadPermission(subFolder)
-        };
+        assertTrue(topOwner.implies(new FolderAdminPermission(subFolder)));
+        assertTrue(topOwner.implies(new FolderReadWritePermission(subFolder)));
+        assertTrue(topOwner.implies(new FolderReadPermission(subFolder)));
+        assertTrue(topOwner.implies(new FolderDeletePermission(subFolder)));
 
-        for (int i = 0; i < topPermissions.length; i++) {
-            assertTrue(
-                    topPermissions[i].getClass().getSimpleName()
-                            + " must imply same permission on subfolder",
-                    topPermissions[i].implies(subPermissions[i])
-            );
+        // --- ADMIN on top: same permission on subfolder ---
+        Permission topAdmin = new FolderAdminPermission(topFolder);
+        assertTrue(topAdmin.implies(new FolderAdminPermission(subFolder)));
+
+        // --- READ_WRITE on top ---
+        Permission topReadWrite = new FolderReadWritePermission(topFolder);
+        assertTrue(topReadWrite.implies(new FolderReadWritePermission(subFolder)));
+
+        // --- READ on top ---
+        Permission topRead = new FolderReadPermission(topFolder);
+        assertTrue(topRead.implies(new FolderReadPermission(subFolder)));
+
+        // --- DELETE on top ---
+        Permission topDelete = new FolderDeletePermission(topFolder);
+        assertTrue(topDelete.implies(new FolderDeletePermission(subFolder)));
+    }
+
+    public void testTopFolderAdminImpliesReadPermissionOnSubfolder() {
+        // --- given: top folder ---
+        FolderInfo topFolder =
+                FolderInfoFactory.newTopFolderForTest("TopFolder", "ADM-READ-1");
+
+        // --- and: subfolder created like runtime does ---
+        FolderInfo subFolder =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(topFolder, "sub")
+                );
+
+        // --- when: admin permission on top folder ---
+        Permission topAdmin =
+                new FolderAdminPermission(topFolder);
+
+        // --- then: read permission on subfolder must be implied ---
+        Permission subRead =
+                new FolderReadPermission(subFolder);
+
+        assertTrue(
+                "Admin permission on top folder must imply read permission on subfolder",
+                topAdmin.implies(subRead)
+        );
+    }
+
+    public void testTopFolderToSubfolderPermissionMatrix() {
+        FolderInfo top =
+                FolderInfoFactory.newTopFolderForTest("TopFolder", "MATRIX-NO-SUB-OWNER");
+
+        FolderInfo sub =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(top, "sub")
+                );
+
+        // --- Top-level permissions ---
+        Permission topOwner = new FolderOwnerPermission(top);
+        Permission topAdmin = new FolderAdminPermission(top);
+        Permission topReadWrite = new FolderReadWritePermission(top);
+        Permission topRead = new FolderReadPermission(top);
+        Permission topDelete = new FolderDeletePermission(top);
+
+        // --- Subfolder permissions (NO OWNER!) ---
+        Permission subAdmin = new FolderAdminPermission(sub);
+        Permission subReadWrite = new FolderReadWritePermission(sub);
+        Permission subRead = new FolderReadPermission(sub);
+        Permission subDelete = new FolderDeletePermission(sub);
+
+        // --- OWNER on top ---
+        assertTrue(topOwner.implies(subAdmin));
+        assertTrue(topOwner.implies(subReadWrite));
+        assertTrue(topOwner.implies(subRead));
+        assertTrue(topOwner.implies(subDelete));
+
+        // --- ADMIN ---
+        assertTrue(topAdmin.implies(subAdmin));
+        assertTrue(topAdmin.implies(subReadWrite));
+        assertTrue(topAdmin.implies(subRead));
+        assertTrue(topAdmin.implies(subDelete));
+
+        // --- READ_WRITE ---
+        assertFalse(topReadWrite.implies(subAdmin));
+        assertTrue(topReadWrite.implies(subReadWrite));
+        assertTrue(topReadWrite.implies(subRead));
+        assertFalse(topReadWrite.implies(subDelete));
+
+        // --- READ ---
+        assertFalse(topRead.implies(subAdmin));
+        assertFalse(topRead.implies(subReadWrite));
+        assertTrue(topRead.implies(subRead));
+        assertFalse(topRead.implies(subDelete));
+
+        // --- DELETE ---
+        assertFalse(topDelete.implies(subAdmin));
+        assertFalse(topDelete.implies(subReadWrite));
+        assertFalse(topDelete.implies(subRead));
+        assertTrue(topDelete.implies(subDelete));
+    }
+
+    public void testOwnerPermissionMustNotBeUsedOnSubfolder() {
+        FolderInfo top =
+                FolderInfoFactory.newTopFolderForTest("TopFolder", "NO-SUB-OWNER");
+
+        FolderInfo sub =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(top, "sub")
+                );
+
+        try {
+            new FolderOwnerPermission(sub);
+            fail("FolderOwnerPermission must not be created for subfolders");
+        } catch (Exception expected) {
+            // correct
         }
     }
 
