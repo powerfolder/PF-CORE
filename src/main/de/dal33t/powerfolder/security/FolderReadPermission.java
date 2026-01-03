@@ -62,15 +62,25 @@ public class FolderReadPermission extends FolderPermission {
 
     @Override
     public boolean implies(Permission impliedPermision) {
+
+        if (this.equals(impliedPermision)) {
+            return true;
+        }
+
         if (impliedPermision instanceof FolderDeletePermission) {
             FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
             return p.getFolder().equals(getFolder());
         }
+
+        // Subfolder sharing permission checks
         if (impliedPermision instanceof FolderReadPermission) {
             FolderReadPermission folderPermission = (FolderReadPermission) impliedPermision;
             FolderInfo folderInfo = folderPermission.getFolder();
-            return folderInfo.isSubFolder() && folderInfo.getParentFolder().equals(getFolder());
+            return folderInfo.inheritsPermissions() &&
+                    folderInfo.isSubFolder() &&
+                    folderInfo.getParentFolder().equals(getFolder());
         }
+
         return false;
     }
 
