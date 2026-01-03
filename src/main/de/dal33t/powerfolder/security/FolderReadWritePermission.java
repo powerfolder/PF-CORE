@@ -61,25 +61,26 @@ public class FolderReadWritePermission extends FolderPermission {
     }
 
     @Override
-    public boolean implies(Permission impliedPermision) {
+    public boolean implies(Permission impliedPermission) {
 
-        if (this.equals(impliedPermision)) {
+        if (this.equals(impliedPermission)) {
             return true;
         }
 
-        if (impliedPermision instanceof FolderReadPermission ||
-                impliedPermision instanceof FolderReadWritePermission) {
+        if (impliedPermission instanceof FolderReadPermission
+                || impliedPermission instanceof FolderReadWritePermission) {
 
-            FolderPermission folderPermission = (FolderPermission) impliedPermision;
-            FolderInfo folderOfPermission = folderPermission.getFolder();
-            FolderInfo thisFolder = getFolder();
+            FolderPermission folderPermission = (FolderPermission) impliedPermission;
 
-            if (folderOfPermission.isSubFolder()) {
-                return folderOfPermission.inheritsPermissions() &&
-                        thisFolder.equals(folderOfPermission.getParentFolder());
-            } else {
-                return thisFolder.equals(folderOfPermission);
+            FolderInfo thisFolder = getFolder();                 // Quelle (this)
+            FolderInfo otherFolder = folderPermission.getFolder(); // Ziel (other)
+
+            // Opt-out auf Zielordner respektieren
+            if (otherFolder.isSubFolder() && !otherFolder.inheritsPermissions()) {
+                return false;
             }
+
+            return isSameOrBelow(thisFolder, otherFolder);
         }
 
         return false;

@@ -1128,7 +1128,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
     public Folder findSubFolder(DirectoryInfo directoryInfo) {
         for (Folder folder : getController().getFolderRepository().getFolders()) {
-            if (folder.getInfo().isTopLevel()) {
+            if (folder.getInfo().isTopFolder()) {
                 continue;
             }
             if (folder.getInfo().getLocation().equals(directoryInfo)) {
