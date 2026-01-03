@@ -589,6 +589,52 @@ public class PermissionTest extends TestCase {
         assertFalse(subDelete.implies(new FolderReadPermission(subSubFolder)));
     }
 
+    public void testSubfolderDoesNotImplySimilarPrefixFolder() {
+        FolderInfo top =
+                FolderInfoFactory.newTopFolderForTest("Top", "CC-1");
+
+        FolderInfo sub =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(top, "sub")
+                );
+
+        FolderInfo subdir =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(top, "subdir")
+                );
+
+        Permission subAdmin =
+                new FolderAdminPermission(sub);
+
+        assertFalse(
+                "Subfolder 'sub' must not imply permissions on 'subdir'",
+                subAdmin.implies(new FolderAdminPermission(subdir))
+        );
+    }
+
+    public void testSubfolderImpliesNestedFolderWithSlashBoundary() {
+        FolderInfo top =
+                FolderInfoFactory.newTopFolderForTest("Top", "CC-2");
+
+        FolderInfo sub =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(top, "sub")
+                );
+
+        FolderInfo subDir =
+                FolderInfoFactory.newFolder(
+                        FileInfoFactory.lookupDirectory(top, "sub/dir")
+                );
+
+        Permission subAdmin =
+                new FolderAdminPermission(sub);
+
+        assertTrue(
+                "Subfolder 'sub' must imply permissions on 'sub/dir'",
+                subAdmin.implies(new FolderAdminPermission(subDir))
+        );
+    }
+
 
     private FolderInfo createTopFolder(String id) {
         return FolderInfoFactory.newTopFolderForTest("TopFolder", id);
