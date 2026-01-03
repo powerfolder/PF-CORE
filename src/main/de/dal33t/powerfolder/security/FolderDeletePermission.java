@@ -40,6 +40,20 @@ public class FolderDeletePermission extends FolderPermission {
     }
     @Override
     public boolean implies(Permission impliedPermision) {
+
+        if (this.equals(impliedPermision)) {
+            return true;
+        }
+
+        // Subfolder sharing permission checks
+        if (impliedPermision instanceof FolderDeletePermission) {
+            FolderDeletePermission folderPermission = (FolderDeletePermission) impliedPermision;
+            FolderInfo folderInfo = folderPermission.getFolder();
+            return folderInfo.inheritsPermissions() &&
+                    folderInfo.isSubFolder() &&
+                    folderInfo.getParentFolder().equals(getFolder());
+        }
+
         return false;
     }
 

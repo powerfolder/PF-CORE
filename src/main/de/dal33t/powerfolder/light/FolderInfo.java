@@ -224,6 +224,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return parentFolder != null;
     }
 
+    public boolean inheritsPermissions() {
+        // Default
+        return true;
+    }
+
     /**
      * Returns the joined folder, or null if folder is not joined
      *
