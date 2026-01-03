@@ -218,6 +218,24 @@ public class Group implements Serializable, D2DObject, Auditable {
 
         return folder;
     }
+
+    /**
+     * @param folder
+     * @return the permission on the given folder. AccessMode.NO_ACCESS for no
+     * access.
+     */
+    public AccessMode getAllowedAccess(FolderInfo folder) {
+        if (hasPermission(FolderPermission.owner(folder))) {
+            return FolderPermission.owner(folder).getMode();
+        } else if (hasPermission(FolderPermission.admin(folder))) {
+            return FolderPermission.admin(folder).getMode();
+        } else if (hasPermission(FolderPermission.readWrite(folder))) {
+            return FolderPermission.readWrite(folder).getMode();
+        } else if (hasPermission(FolderPermission.read(folder))) {
+            return FolderPermission.read(folder).getMode();
+        }
+        return AccessMode.NO_ACCESS;
+    }
     
     /**
      * @return An unmodifiable collection of all
