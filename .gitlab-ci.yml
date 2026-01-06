@@ -1,8 +1,35 @@
 stages:
   - test
+  - security
 
 variables:
   GIT_DEPTH: "1"
+
+security-java-scan:
+  stage: security
+  tags:
+    - Linux
+    - Development
+  image: eclipse-temurin:17-jdk
+  variables:
+    GIT_STRATEGY: clone
+  needs: []
+  before_script:
+    - apt-get update && apt-get install -y ant unzip curl
+    - mkdir -p reports
+  script:
+    - ant -f security-scan.xml dependency-check
+  artifacts:
+    paths:
+      - reports/
+    expire_in: 30 days
+    when: always
+  dependencies: []
+  allow_failure: false
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: on_success
+    - when: never
 
 test-Linux:
   stage: test
