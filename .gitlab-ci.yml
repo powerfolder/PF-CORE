@@ -25,11 +25,7 @@ security-java-scan:
     expire_in: 30 days
     when: always
   dependencies: []
-  allow_failure: false
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: on_success
-    - when: never
+  allow_failure: false7
 
 test-Linux:
   stage: test
