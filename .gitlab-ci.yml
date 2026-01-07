@@ -25,7 +25,7 @@ security-java-scan:
     expire_in: 30 days
     when: always
   dependencies: []
-  allow_failure: false7
+  allow_failure: false
 
 test-Linux:
   stage: test
