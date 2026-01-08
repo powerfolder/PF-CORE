@@ -1,19 +1,17 @@
 stages:
   - test
-  - security
 
 variables:
   GIT_DEPTH: "1"
 
 security-java-scan:
-  stage: security
+  stage: test
   tags:
     - Linux
     - Development
   image: eclipse-temurin:17-jdk
   variables:
     GIT_STRATEGY: clone
-  needs: []
   before_script:
     - apt-get update && apt-get install -y ant unzip curl
     - mkdir -p reports
@@ -24,8 +22,6 @@ security-java-scan:
       - reports/
     expire_in: 30 days
     when: always
-  dependencies: []
-  allow_failure: false
 
 test-Linux:
   stage: test
