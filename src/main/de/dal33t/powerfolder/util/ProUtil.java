@@ -59,8 +59,7 @@ public class ProUtil {
             return simpleURL;
         }
 
-        String internalShopURL = controller.getOSClient().getWebURL(simpleURL, true);
-        return internalShopURL;
+        return controller.getOSClient().getWebURL(simpleURL, true);
     }
 
     /**
