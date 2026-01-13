@@ -9,3 +9,7 @@
 /junit*.properties
 /.idea/
 /.DS_Store
+
+# Security scanning tools and reports
+/tools/
+/reports/
