@@ -1894,7 +1894,7 @@ public class Folder extends PFComponent {
             // Stop old DAO
             dao.stop();
         }
-        if (currentInfo.isTopFolder()) {
+        if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
             dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
         } else {
             Folder topFolder = getTopFolder();
@@ -1905,7 +1905,7 @@ public class Folder extends PFComponent {
                 // Well, it actually does not have an OWN, but
                 isDAOpopulated = true;
             } else {
-                logWarning(this + ": Using own FileInfo DAO for subfolder. Parent folder not here.");
+                logWarning(this + ": Using own fallback FileInfo DAO for subfolder. Parent folder not here.");
                 dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
             }
         }
