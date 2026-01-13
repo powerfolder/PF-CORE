@@ -243,8 +243,8 @@ public abstract class FolderPermission
      */
     private boolean isSameOrBelow(FolderInfo thisFolder, FolderInfo otherFolder) {
         // Determine top-level folders
-        FolderInfo thisTopFolder = thisFolder.isSubFolder() ? thisFolder.getParentFolder() : thisFolder;
-        FolderInfo otherTopFolder = otherFolder.isSubFolder() ? otherFolder.getParentFolder() : otherFolder;
+        FolderInfo thisTopFolder = thisFolder.isSubFolder() ? thisFolder.getTopFolder() : thisFolder;
+        FolderInfo otherTopFolder = otherFolder.isSubFolder() ? otherFolder.getTopFolder() : otherFolder;
 
         // Different top-level folders -> no inheritance
         if (!thisTopFolder.equals(otherTopFolder)) {
