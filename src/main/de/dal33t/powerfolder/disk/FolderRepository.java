@@ -1034,6 +1034,17 @@ public class FolderRepository extends PFComponent implements Runnable {
         return folders.size() + (includeMetaFolders ? metaFolders.size() : 0);
     }
 
+    public Map<DirectoryInfo, Folder> getSubFolders(Folder topFolder) {
+        Map<DirectoryInfo, Folder> subFolders = new TreeMap<>();
+        for (Folder folder: folders.values()) {
+            if (!folder.isSubFolder() || !folder.getTopFolder().equals(topFolder)) {
+                continue;
+            }
+            subFolders.put(folder.getInfo().getLocation(), folder);
+        }
+        return subFolders;
+    }
+
     public int getFolderProblemsCount() {
         int i = 0;
         for (Folder folder : getFolders()) {
