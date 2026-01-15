@@ -189,7 +189,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (parentFolder == null) {
             return null;
         }
-        return FileInfoFactory.lookupDirectory(parentFolder, parentPath);
+        return FileInfoFactory.lookupDirectory(parentFolder, parentPath != null ? parentPath : "");
     }
 
     public String getParentPath() {
