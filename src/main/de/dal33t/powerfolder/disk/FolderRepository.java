@@ -1034,10 +1034,66 @@ public class FolderRepository extends PFComponent implements Runnable {
         return folders.size() + (includeMetaFolders ? metaFolders.size() : 0);
     }
 
+    /**
+     * Returns all subfolders belonging to the specified top-level folder.
+     *
+     * <p>
+     * A <em>top-level folder</em> represents a logical root, while <em>subfolders</em>
+     * are folders that are explicitly marked as subfolders and associated with the
+     * given top-level folder.
+     * </p>
+     *
+     * <h3>Folder Structure Example</h3>
+     *
+     * <pre>{@code
+     * /projects                    (top folder)
+     * ├── alpha                    (subfolder)
+     * ├── beta                     (subfolder)
+     * │   ├── docs                 (subfolder)
+     * │   └── tmp                  (directory, NOT a subfolder)
+     * └── internal                 (directory, NOT a subfolder)
+     * }</pre>
+     *
+     * <p>
+     * In this example:
+     * <ul>
+     *   <li>{@code alpha}, {@code beta}, and {@code beta/docs} are marked as subfolders</li>
+     *   <li>{@code beta/tmp} and {@code internal} exist in the directory tree but are
+     *       <strong>not</strong> marked as subfolders and are therefore ignored</li>
+     * </ul>
+     * </p>
+     *
+     * <h3>Resulting Map for {@code topFolder = /projects}</h3>
+     *
+     * <pre>{@code
+     * {
+     *   "alpha"      -> Folder(alpha),
+     *   "beta"       -> Folder(beta),
+     *   "beta/docs"  -> Folder(beta/docs)
+     * }
+     * }</pre>
+     *
+     * <p>
+     * The map is sorted by the relative folder name.
+     * Directories that are not explicitly marked as subfolders are excluded,
+     * even if they are located beneath the top-level folder in the hierarchy.
+     * </p>
+     *
+     * @param topFolder
+     *         the top-level folder whose subfolders should be returned;
+     *         must not be {@code null}
+     * @return
+     *         a sorted {@link Map} mapping {@link DirectoryInfo} instances
+     *         to their corresponding {@link Folder} objects;
+     *         empty if no matching subfolders exist
+     */
     public Map<DirectoryInfo, Folder> getSubFolders(Folder topFolder) {
+        Reject.ifNull(topFolder, "TopFolder");
+        Reject.ifFalse(topFolder.getInfo().isTopFolder(), "Is not TopFolder");
+
         Map<DirectoryInfo, Folder> subFolders = new TreeMap<>(Comparator.comparing(FileInfo::getRelativeName));
         for (Folder folder: folders.values()) {
-            if (!folder.isSubFolder() || !folder.getTopFolder().equals(topFolder)) {
+            if (!folder.isSubFolder() || !topFolder.equals(folder.getTopFolder())) {
                 continue;
             }
             subFolders.put(folder.getInfo().getLocation(), folder);

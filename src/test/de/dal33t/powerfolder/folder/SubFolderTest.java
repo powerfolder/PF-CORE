@@ -1,6 +1,7 @@
 package de.dal33t.powerfolder.folder;
 
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class SubFolderTest extends TwoControllerTestCase {
@@ -408,5 +410,130 @@ public class SubFolderTest extends TwoControllerTestCase {
         subDAO.deleteDomain(null, 0);
         assertEquals(3, topDAO.findAllFiles(null).size()); // 2 outside + 1 similar-path
         assertEquals(0, subDAO.findAllFiles(null).size());
+    }
+
+    public void testGetSubFoldersExplicitVsDirectoryOnly() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+
+        /*
+         * Logical structure:
+         *
+         * /top
+         * ├── sharedA              (explicit subfolder)
+         * ├── sharedB              (explicit subfolder)
+         * │   └── implicitC        (directory, NOT a subfolder)
+         * └── implicitD            (directory, NOT a subfolder)
+         */
+        Path root = topFolder.getPhysicalDir();
+
+        Files.createDirectories(root.resolve("sharedA"));
+        Files.createDirectories(root.resolve("sharedB"));
+        Files.createDirectories(root.resolve("sharedB/implicitC"));
+        Files.createDirectories(root.resolve("implicitD"));
+
+        TestHelper.scanFolder(topFolder);
+
+        // --- Explicitly create subfolders ---
+        DirectoryInfo sharedAInfo =
+                (DirectoryInfo) topFolder.getFileInfo("sharedA");
+        DirectoryInfo sharedBInfo =
+                (DirectoryInfo) topFolder.getFileInfo("sharedB");
+
+        LoggingManager.setConsoleLogging(Level.INFO);
+        Folder subA = topFolder.share(sharedAInfo);
+        Folder subB = topFolder.share(sharedBInfo);
+
+        assertEquals(3, getContollerBart().getFolderRepository().getFoldersCount());
+
+        assertNotNull(subA);
+        assertNotNull(subB);
+
+        // --- Call API under test ---
+        Map<DirectoryInfo, Folder> result =
+                repository.getSubFolders(topFolder);
+
+        // --- Only explicitly shared folders must be returned ---
+        assertEquals(2, result.size());
+        assertTrue(result.toString(), result.containsKey(sharedAInfo));
+        assertTrue(result.toString(), result.containsKey(sharedBInfo));
+
+        // --- Directory-only entries (not subfolders) ---
+        DirectoryInfo implicitC =
+                (DirectoryInfo) topFolder.getFileInfo("sharedB/implicitC");
+        DirectoryInfo implicitD =
+                (DirectoryInfo) topFolder.getFileInfo("implicitD");
+
+        assertNotNull(implicitC);
+        assertNotNull(implicitD);
+
+        assertFalse(result.containsKey(implicitC));
+        assertFalse(result.containsKey(implicitD));
+    }
+
+
+    public void testGetSubFoldersWithNestedSharedFolder() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository =
+                getContollerBart().getFolderRepository();
+
+        /*
+         * Physical structure:
+         *
+         * /top
+         * ├── sharedA                    (shared subfolder)
+         * │   ├── implicit1              (directory, NOT shared)
+         * │   └── sharedA1               (shared subfolder, same top)
+         * │       └── implicit2          (directory, NOT shared)
+         * └── implicitRoot               (directory, NOT shared)
+         */
+        Path root = topFolder.getPhysicalDir();
+
+        Files.createDirectories(root.resolve("sharedA/implicit1"));
+        Files.createDirectories(root.resolve("sharedA/sharedA1/implicit2"));
+        Files.createDirectories(root.resolve("implicitRoot"));
+
+        TestHelper.scanFolder(topFolder);
+
+        // --- Share subfolder ---
+        DirectoryInfo sharedAInfo =
+                (DirectoryInfo) topFolder.getFileInfo("sharedA");
+        Folder subA = topFolder.share(sharedAInfo);
+        assertNotNull(subA);
+
+        // --- Share nested folder (still same top folder) ---
+        DirectoryInfo sharedA1Info =
+                (DirectoryInfo) topFolder.getFileInfo("sharedA/sharedA1");
+        Folder subA1 = topFolder.share(sharedA1Info);
+        assertNotNull(subA1);
+
+        // --- Sanity: both must point to the same top folder ---
+        assertEquals(topFolder, subA.getTopFolder());
+        assertEquals(topFolder, subA1.getTopFolder());
+
+        // --- Call API under test ---
+        Map<DirectoryInfo, Folder> result =
+                repository.getSubFolders(topFolder);
+
+        // --- Both shared folders must be returned ---
+        assertEquals(2, result.size());
+        assertTrue(result.containsKey(sharedAInfo));
+        assertTrue(result.containsKey(sharedA1Info));
+
+        // --- Implicit directories must NOT be returned ---
+        DirectoryInfo implicit1 =
+                (DirectoryInfo) topFolder.getFileInfo("sharedA/implicit1");
+        DirectoryInfo implicit2 =
+                (DirectoryInfo) topFolder.getFileInfo("sharedA/sharedA1/implicit2");
+        DirectoryInfo implicitRoot =
+                (DirectoryInfo) topFolder.getFileInfo("implicitRoot");
+
+        assertNotNull(implicit1);
+        assertNotNull(implicit2);
+        assertNotNull(implicitRoot);
+
+        assertFalse(result.containsKey(implicit1));
+        assertFalse(result.containsKey(implicit2));
+        assertFalse(result.containsKey(implicitRoot));
     }
 }
