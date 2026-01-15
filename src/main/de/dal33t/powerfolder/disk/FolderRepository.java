@@ -1035,7 +1035,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public Map<DirectoryInfo, Folder> getSubFolders(Folder topFolder) {
-        Map<DirectoryInfo, Folder> subFolders = new TreeMap<>();
+        Map<DirectoryInfo, Folder> subFolders = new TreeMap<>(Comparator.comparing(FileInfo::getRelativeName));
         for (Folder folder: folders.values()) {
             if (!folder.isSubFolder() || !folder.getTopFolder().equals(topFolder)) {
                 continue;
