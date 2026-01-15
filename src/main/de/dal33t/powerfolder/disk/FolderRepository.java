@@ -1092,6 +1092,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifFalse(topFolder.getInfo().isTopFolder(), "Is not TopFolder");
 
         Map<DirectoryInfo, Folder> subFolders = new TreeMap<>(Comparator.comparing(FileInfo::getRelativeName));
+        subFolders.put(topFolder.getBaseDirectoryInfo(), topFolder);
+
         for (Folder folder: folders.values()) {
             if (!folder.isSubFolder() || !topFolder.equals(folder.getTopFolder())) {
                 continue;
