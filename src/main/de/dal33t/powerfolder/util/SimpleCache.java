@@ -19,12 +19,12 @@
  */
 package de.dal33t.powerfolder.util;
 
+import de.dal33t.powerfolder.util.logging.Loggable;
+
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import de.dal33t.powerfolder.util.logging.Loggable;
 
 /**
  * A simple, unlimited cache for short term and low volume
@@ -64,10 +64,11 @@ public class SimpleCache<K, E> extends Loggable {
      * @param entry
      *            the entry to cache.
      */
-    public void put(K key, E entry) {
+    public E put(K key, E entry) {
         Reject.ifNull(key, "Key is null. Not supported");
         Reject.ifNull(entry, "Value is null. Not supported");
-        cache.put(key, new Pair<>(new Date(), entry));
+        Pair<Date, E> previousEntry = cache.put(key, new Pair<>(new Date(), entry));
+        return previousEntry != null ? previousEntry.getSecond() : null;
     }
 
     /**
