@@ -3076,7 +3076,9 @@ public class Folder extends PFComponent {
     }
 
     public Folder getTopFolder() {
-        Reject.ifFalse(isSubFolder(), "Not a subfolder");
+        if (!isSubFolder()) {
+            return this;
+        }
         return currentInfo.getTopFolder().getFolder(getController());
     }
 

@@ -453,8 +453,8 @@ public class SubFolderTest extends TwoControllerTestCase {
         Map<DirectoryInfo, Folder> result =
                 repository.getSubFolders(topFolder);
 
-        // --- Only explicitly shared folders must be returned ---
-        assertEquals(2, result.size());
+        // --- Only explicitly shared folders must be returned and the top folder ---
+        assertEquals(3, result.size());
         assertTrue(result.toString(), result.containsKey(sharedAInfo));
         assertTrue(result.toString(), result.containsKey(sharedBInfo));
 
@@ -515,8 +515,8 @@ public class SubFolderTest extends TwoControllerTestCase {
         Map<DirectoryInfo, Folder> result =
                 repository.getSubFolders(topFolder);
 
-        // --- Both shared folders must be returned ---
-        assertEquals(2, result.size());
+        // --- Both shared folders must be returned and top folder ---
+        assertEquals(3, result.size());
         assertTrue(result.containsKey(sharedAInfo));
         assertTrue(result.containsKey(sharedA1Info));
 
