@@ -764,7 +764,7 @@ public class Folder extends PFComponent {
      * situations are logged but not force-corrected.</p>
      */
     boolean correctTopAndSubfolderRelation() {
-        if (isDeviceDisconnected()) {
+        if (isDeviceDisconnected() || currentInfo.isMetaFolder()) {
             return false;
         }
 
