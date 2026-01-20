@@ -79,7 +79,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     @ManyToOne
     @JoinColumn(name = "parentFolderInfo_id")
     private FolderInfo topFolder;
-    @Column(length = 1024)
+    @Column(name="parentPath", length = 1024)
     private String topPath;
 
     /**
