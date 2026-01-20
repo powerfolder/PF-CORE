@@ -19,15 +19,15 @@
  */
 package de.dal33t.powerfolder.util.intern;
 
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
+
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * To internalize {@link FolderInfo}s into a weak hash map.
@@ -95,7 +95,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
             }
 
             if (oldInstance != null && !foInfo.isMetaFolder()) {
-                LOG.log(Level.INFO, foInfo + ": rename (forced internalize). old: " + oldInstance);
+                LOG.log(Level.INFO, foInfo + ": update (forced internalize). old: " + oldInstance);
             }
             INSTANCES.put(foInfo, foInfo);
         }

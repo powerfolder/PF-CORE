@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.StackDump;
 
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -132,6 +133,25 @@ public class FolderInfoFactory {
                 originalFolderInfo.getId(),
                 version,
                 originalFolderInfo.getParent()
+        ).intern(true);
+    }
+
+    public static FolderInfo changeParent(FolderInfo originalFolderInfo, DirectoryInfo newParent) {
+        if (Objects.equals(originalFolderInfo.getParent(), newParent)) {
+            return originalFolderInfo;
+        }
+        int version;
+        if (originalFolderInfo.isLookupInstance()) {
+            version = 0;
+            LOG.log(Level.WARNING, originalFolderInfo + ": Change parent from lookup instance is discouraged, but used.", new StackDump());
+        } else {
+            version = originalFolderInfo.getVersion() + 1;
+        }
+        return new FolderInfo(
+                originalFolderInfo.getName(),
+                originalFolderInfo.getId(),
+                version,
+                newParent
         ).intern(true);
     }
 
