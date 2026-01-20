@@ -373,9 +373,9 @@ public class Folder extends PFComponent {
 
         diskItemFilter = new DiskItemFilter();
 
-        checkIfDeviceDisconnected();
         correctTopAndSubfolderRelation();
         initFileInfoDAO();
+        checkIfDeviceDisconnected();
 
         members = new ConcurrentHashMap<>();
 
