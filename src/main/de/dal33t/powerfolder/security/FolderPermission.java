@@ -234,7 +234,7 @@ public abstract class FolderPermission
      *   <li>Permissions never cross top-level folders.</li>
      *   <li>A top-level folder applies to all its subfolders.</li>
      *   <li>Subfolder permissions never apply upwards.</li>
-     *   <li>Hierarchy comparison is based on {@code parentPath + folder name}.</li>
+     *   <li>Hierarchy comparison is based on {@code topPath + folder name}.</li>
      * </ul>
      *
      * @param thisFolder  the source folder of the permission
@@ -261,7 +261,7 @@ public abstract class FolderPermission
             return false;
         }
 
-        // Compare full paths (parentPath + name)
+        // Compare full paths (topPath + name)
         String thisFullPath = buildFullPath(thisFolder);
         String otherFullPath = buildFullPath(otherFolder);
 
@@ -270,7 +270,7 @@ public abstract class FolderPermission
     }
 
     /**
-     * Builds the logical full path of a folder based on its parent path and name.
+     * Builds the logical full path of a folder based on its top path and name.
      * <p>
      * The returned path is used exclusively for hierarchical comparison and does
      * not represent a filesystem path.
@@ -279,13 +279,13 @@ public abstract class FolderPermission
      * @return the logical full path of the folder
      */
     private static String buildFullPath(FolderInfo folderInfo) {
-        String parentPath = folderInfo.getParentPath();
+        String topPath = folderInfo.getTopPath();
         String name = folderInfo.getName();
 
-        if (parentPath == null || parentPath.isEmpty()) {
+        if (topPath == null || topPath.isEmpty()) {
             return name;
         }
-        return parentPath + '/' + name;
+        return topPath + '/' + name;
     }
 
     @Override

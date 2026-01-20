@@ -61,7 +61,8 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NAME = "name";
     public static final String PROPERTYNAME_VERSION = "version";
-    public static final String PROPERTYNAME_PARENT_FOLDER = "parentFolder";
+    public static final String PROPERTYNAME_TOP_FOLDER = "topFolder";
+    // PFS-4790 TODO: Rename this to topPath
     public static final String PROPERTYNAME_PARENT_PATH = "parentPath";
 
     @Index(name="IDX_FOLDER_NAME")
@@ -74,11 +75,12 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     private int version;
 
+    // PFS-4790 TODO: Rename field to topFolderInfo_id
     @ManyToOne
     @JoinColumn(name = "parentFolderInfo_id")
-    private FolderInfo parentFolder;
+    private FolderInfo topFolder;
     @Column(length = 1024)
-    private String parentPath;
+    private String topPath;
 
     /**
      * The cached hash info.
@@ -119,7 +121,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     /**
-     * @return the lookup {@link FolderInfo} of the PARENT folder if this is a meta
+     * @return the lookup {@link FolderInfo} of the CONTENT folder if this is a meta
      *         folder.
      */
     public FolderInfo lookupContentFolderInfo() {
@@ -136,7 +138,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             return lookupInstance(folderId, name);
         } catch (Exception e) {
             LOG.log(Level.WARNING,
-                "Unable to get parent folder info for meta-folder: " + this, e);
+                "Unable to get content folder info for meta-folder: " + this, e);
             return this;
         }
     }
@@ -173,11 +175,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private void setParent(DirectoryInfo parent) {
         if (parent != null) {
             Reject.ifNull(parent.getRelativeName(), "Parent relative name / path must not be null");
-            this.parentFolder = parent.getFolderInfo();
-            this.parentPath = parent.getRelativeName();
+            this.topFolder = parent.getFolderInfo();
+            this.topPath = parent.getRelativeName();
         } else {
-            this.parentFolder = null;
-            this.parentPath = null;
+            this.topFolder = null;
+            this.topPath = null;
         }
     }
 
@@ -186,14 +188,14 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * e.g. if the structure is "subdir/is/here/subfolder" this would return "subdir/is/here"
      */
     public DirectoryInfo getParent() {
-        if (parentFolder == null) {
+        if (topFolder == null) {
             return null;
         }
-        return FileInfoFactory.lookupDirectory(parentFolder, parentPath != null ? parentPath : "");
+        return FileInfoFactory.lookupDirectory(topFolder, topPath != null ? topPath : "");
     }
 
-    public String getParentPath() {
-        return parentPath;
+    public String getTopPath() {
+        return topPath;
     }
 
     /**
@@ -201,27 +203,27 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * e.g. if the structure is "subdir/is/here/subfolder" this would return "subdir/is/here/subfolder"
      */
     public DirectoryInfo getLocation() {
-        if (parentFolder == null) {
+        if (topFolder == null) {
             return null;
         }
-        String path = parentPath;
+        String path = topPath;
         if (isNotBlank(path)) {
             path += '/';
         }
         path += name;
-        return FileInfoFactory.lookupDirectory(parentFolder, path);
+        return FileInfoFactory.lookupDirectory(topFolder, path);
     }
 
     public FolderInfo getTopFolder() {
-        return parentFolder;
+        return topFolder;
     }
 
     public boolean isTopFolder() {
-        return parentFolder == null;
+        return topFolder == null;
     }
 
     public boolean isSubFolder() {
-        return parentFolder != null;
+        return topFolder != null;
     }
 
     public boolean inheritsPermissions() {
@@ -320,10 +322,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             return "Folder " + name + '/' + id + '/' + "L";
         }
         String prefix = "";
-        if (parentFolder != null) {
-            prefix += "(" + parentFolder.name;
-            if (isNotBlank(parentPath)) {
-                prefix += "/" + parentPath;
+        if (topFolder != null) {
+            prefix += "(" + topFolder.name;
+            if (isNotBlank(topPath)) {
+                prefix += "/" + topPath;
             }
             prefix += ")/";
         }
@@ -371,7 +373,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     public void writeExternal(ObjectOutput out, boolean includeVersionAndParent) throws IOException {
-        boolean requiresNewProtocol = version > 0 || parentFolder != null;
+        boolean requiresNewProtocol = version > 0 || topFolder != null;
         if (includeVersionAndParent) {
             includeVersionAndParent = requiresNewProtocol;
         } else if (requiresNewProtocol && !isMetaFolder()) {
@@ -391,7 +393,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         }
         // LOG.log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
         out.writeInt(version);
-        if (parentPath != null) {
+        if (topPath != null) {
             out.writeBoolean(true);
             getParent().writeExternal(out);
         } else {
