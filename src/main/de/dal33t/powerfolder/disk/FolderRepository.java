@@ -700,9 +700,9 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 if (hasJoinedFolder(foInfo)) {
                                     return;
                                 }
-                                Folder parent = foInfo.getTopFolder().getFolder(getController());
-                                if (parent == null) {
-                                    logWarning(foInfo + ": Parent folder missing, skipping subfolder creation.");
+                                Folder topFolder = foInfo.getTopFolder().getFolder(getController());
+                                if (topFolder == null) {
+                                    logWarning(foInfo + ": top folder missing, skipping subfolder creation.");
                                     return;
                                 }
 
