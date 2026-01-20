@@ -373,9 +373,9 @@ public class Folder extends PFComponent {
 
         diskItemFilter = new DiskItemFilter();
 
-        // Initialize the DAO
-        initFileInfoDAO();
         checkIfDeviceDisconnected();
+        correctTopAndSubfolderRelation();
+        initFileInfoDAO();
 
         members = new ConcurrentHashMap<>();
 
@@ -451,7 +451,6 @@ public class Folder extends PFComponent {
             statistic.calculate0();
         }
 
-        correctTopAndSubfolderRelation();
         // Write meta-data
         updateInfo(currentInfo);
     }
