@@ -451,6 +451,7 @@ public class Folder extends PFComponent {
             statistic.calculate0();
         }
 
+        correctTopAndSubfolderRelation();
         // Write meta-data
         updateInfo(currentInfo);
     }
@@ -737,6 +738,107 @@ public class Folder extends PFComponent {
                 "foldercreate.error.it_is_base_dir",
                 localBase.toAbsolutePath().toString()));
         }
+    }
+
+    /**
+     * Ensures that this folder’s top-/subfolder relationship matches its actual
+     * filesystem location.
+     *
+     * <p>The method compares the folder’s local base path with all known folders
+     * and corrects the hierarchy if necessary:</p>
+     *
+     * <ul>
+     *   <li>If the folder is located inside another top folder, it is corrected
+     *       to be a subfolder of that top folder.</li>
+     *   <li>If the folder is no longer located inside any top folder but is marked
+     *       as a subfolder, it is promoted to a top folder.</li>
+     *   <li>The correct parent directory inside the top folder is derived from the
+     *       filesystem path.</li>
+     * </ul>
+     *
+     * <p>The method is safe to call repeatedly and is intended to be executed
+     * whenever folder paths may have changed (e.g. after configuration updates,
+     * startup, or consistency checks).</p>
+     *
+     * <p>Folders on disconnected devices are ignored. Inconsistent or unsafe
+     * situations are logged but not force-corrected.</p>
+     */
+    boolean correctTopAndSubfolderRelation() {
+        if (isDeviceDisconnected()) {
+            return false;
+        }
+
+        Folder foundTopFolder = null;
+        Path path = getLocalBase().getParent();
+        while (path != null) {
+            Folder candidate = getController().getFolderRepository().findExistingFolder(path);
+            foundTopFolder = candidate != null ? candidate : foundTopFolder;
+            path = path.getParent();
+        }
+
+        if (foundTopFolder == null && isTopFolder()) {
+            // Regular case for top folders
+            return false;
+        }
+
+        if (foundTopFolder == null && isSubFolder()) {
+            logWarning(this + ": Promoting folder to topfolder based on filesystem location");
+            FolderInfo corrected = FolderInfoFactory.changeParent(getInfo(), null);
+            updateInfo(corrected);
+            return true;
+        }
+
+        if (foundTopFolder == null) {
+            return false;
+        }
+
+        if (foundTopFolder.isSubFolder()) {
+            logWarning(
+                    foundTopFolder + ": Invalid folder hierarchy detected. "
+                            + "Folder is marked as subfolder but no top folder exists in the filesystem path. "
+                            + "Path: " + foundTopFolder.getLocalBase()
+            );
+            return false;
+        }
+
+        if (getTopFolder().equals(foundTopFolder)) {
+            return false;
+        }
+
+        logWarning(this + ": Correcting to subfolder of top " + foundTopFolder);
+
+        FolderInfo folderInfo = getInfo();
+        Path folderBase = getLocalBase();
+        Path topFolderBase = foundTopFolder.getLocalBase();
+
+        // Safety: ensure folder is actually inside topfolder
+        if (!folderBase.normalize().startsWith(topFolderBase.normalize())) {
+            logWarning(this + ": Cannot correct parent. Folder path is not under topfolder base. "
+                    + "folder=" + folderBase + ", top=" + topFolderBase);
+            return false;
+        }
+
+        // Compute parent within topfolder:
+        Path folderParent = folderBase.getParent(); // parent on filesystem
+        Path relativeParent = (folderParent != null)
+                ? topFolderBase.relativize(folderParent)
+                : null;
+
+        // Convert to relative name string (use forward slashes for API consistency)
+        String relativeParentName = "";
+        if (relativeParent != null) {
+            relativeParentName = relativeParent.toString().replace('\\', '/');
+        }
+
+        // Resolve DirectoryInfo of the parent inside the topfolder structure
+        DirectoryInfo parentDir = FileInfoFactory.lookupDirectory(
+                foundTopFolder.getInfo(),
+                relativeParentName
+        );
+
+        FolderInfo corrected = FolderInfoFactory.changeParent(folderInfo, parentDir);
+        updateInfo(corrected);
+        return true;
     }
 
     /*
@@ -3069,6 +3171,10 @@ public class Folder extends PFComponent {
      */
     public boolean isStarted() {
         return !shutdown;
+    }
+
+    public boolean isTopFolder() {
+        return currentInfo.isTopFolder();
     }
 
     public boolean isSubFolder() {

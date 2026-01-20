@@ -229,7 +229,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         fixPFS3334();
         processV4Format();
-        ensureSubfolderConsistency();
+        correctTopAndSubfolderRelations();
 
         // Maintain link
         if (getController().isFirstStart()) {
@@ -2499,69 +2499,9 @@ public class FolderRepository extends PFComponent implements Runnable {
         return foInfo;
     }
 
-    private void ensureSubfolderConsistency() {
+    private void correctTopAndSubfolderRelations() {
         for (Folder folder: getFolders()) {
-            if (folder.isDeviceDisconnected()) {
-                continue;
-            }
-
-            Folder foundTopFolder = null;
-            Path path = folder.getLocalBase().getParent();
-            while (path != null) {
-                Folder candidate = findExistingFolder(path);
-                foundTopFolder = candidate != null ? candidate : foundTopFolder;
-                path = path.getParent();
-            }
-
-            if (foundTopFolder == null && folder.isTopFolder()) {
-                // Regular case for top folders
-                continue;
-            }
-            if (foundTopFolder.isSubFolder()) {
-                logWarning(foundTopFolder + ": Inconsistency found for subfolder. " +
-                        "No topfolder found filesystem structure at " + foundTopFolder.getLocalBase());
-                continue;
-            }
-            if (foundTopFolder == null) {
-                continue;
-            }
-            if (folder.getTopFolder().equals(foundTopFolder)) {
-                continue;
-            }
-
-            logWarning(folder + ": Correcting to subfolder of top " + foundTopFolder);
-
-            FolderInfo folderInfo = folder.getInfo();
-            Path folderBase = folder.getLocalBase();
-            Path topFolderBase = foundTopFolder.getLocalBase();
-
-            // Safety: ensure folder is actually inside topfolder
-            if (!folderBase.normalize().startsWith(topFolderBase.normalize())) {
-                logWarning(folder + ": Cannot correct parent. Folder path is not under topfolder base. "
-                        + "folder=" + folderBase + ", top=" + topFolderBase);
-                continue;
-            }
-
-            // Compute parent within topfolder:
-            Path folderParent = folderBase.getParent(); // parent on filesystem
-            Path relativeParent = (folderParent != null)
-                    ? topFolderBase.relativize(folderParent)
-                    : null;
-
-            // Convert to relative name string (use forward slashes for API consistency)
-            String relativeParentName = "";
-            if (relativeParent != null) {
-                relativeParentName = relativeParent.toString().replace('\\', '/');
-            }
-
-            // Resolve DirectoryInfo of the parent inside the topfolder structure
-            DirectoryInfo parentDir = FileInfoFactory.lookupDirectory(
-                    foundTopFolder.getInfo(),
-                    relativeParentName
-            );
-
-            FolderInfo corrected = FolderInfoFactory.changeParent(folderInfo, parentDir);
-            folder.updateInfo(corrected);
+            folder.correctTopAndSubfolderRelation();
         }
     }
 
