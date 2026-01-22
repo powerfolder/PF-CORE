@@ -141,6 +141,28 @@ public class AccountFilterModel implements Serializable {
         setQueryname(query);
     }
 
+    public void applyFromQuery(String query) {
+        if (isNotBlank(query)) {
+            Pattern p = Pattern.compile("\\bsort(?:down|up):([a-zA-Z0-9_]+)\\b", Pattern.CASE_INSENSITIVE);
+            Matcher m = p.matcher(query);
+
+            if (m.find()) {
+                String sortField = m.group(1); // e.g. "username"
+                boolean ascending = m.group(0).toLowerCase().contains("sortup");
+
+                setSortingProperty(sortField);
+                setSortingAscending(ascending);
+
+                // Remove the sorting directive from the query and reset it
+                String cleanedQuery = query.replace(m.group(0), "").trim();
+                setQueryname(cleanedQuery);
+                return;
+            }
+        }
+        // If nothing matched, just keep the original query
+        setQueryname(query);
+    }
+
     public String getMemberOfOrganizationOID() {
         return memberOfOrganizationOID;
     }
