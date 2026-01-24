@@ -43,8 +43,8 @@ public class AccountFilterModel implements Serializable {
     private String[] permissionNames;
     private String sortingProperty;
     private boolean sortingAscending = true;
-    private int pageNumber;
 
+    private int pageNumber;
     private int maxResults;
 
     // Getter and Setter ******************************************************
@@ -181,11 +181,24 @@ public class AccountFilterModel implements Serializable {
     }
 
     public void setPageNumber(int pageNumber) {
+        if (pageNumber < 1) {
+            pageNumber = 1;
+        }
         this.pageNumber = pageNumber;
     }
 
     public int getPageNumber() {
         return pageNumber;
+    }
+
+    /**
+     * Calculates the offset for database queries.
+     */
+    public int getOffset() {
+        if (pageNumber <= 1 || maxResults <= 0) {
+            return 0;
+        }
+        return (pageNumber - 1) * maxResults;
     }
 
     public String[] getFilterByPermission() {

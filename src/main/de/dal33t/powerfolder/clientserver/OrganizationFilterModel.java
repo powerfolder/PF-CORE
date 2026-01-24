@@ -28,7 +28,7 @@ public class OrganizationFilterModel implements Serializable {
 
     private String name;
     private int maxResults;
-    private int pageNumber = 1;
+    private int pageNumber;
     private List<String> orgOIDs;
     private String adminAccountOID;
     private String adminAccountUsername;
