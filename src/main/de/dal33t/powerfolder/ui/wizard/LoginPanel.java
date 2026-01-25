@@ -270,6 +270,8 @@ public class LoginPanel extends PFWizardPanel {
                     passwordField.setText("");
                 }
             }
+        } else {
+            passwordField.setText("");
         }
 
         rememberPasswordBox = BasicComponentFactory.createCheckBox(
@@ -440,6 +442,8 @@ public class LoginPanel extends PFWizardPanel {
             } else if (client.isTokenLogin()) {
                 if (!Token.isExpired(client.getDeviceToken())) {
                     passwordField.setText(TOKEN_PLACEHOLDER);
+                } else {
+                    passwordField.setText("");
                 }
             }
             updateOnlineStatus();
