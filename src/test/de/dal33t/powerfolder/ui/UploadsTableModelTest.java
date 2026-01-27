@@ -237,7 +237,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().setUploadCPSForWAN(40000);
 
         // Create a 30 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 300000000);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -252,7 +252,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             @Override
             public String message() {
                 return "Bart rowcount: " + bartModel.getRowCount()
-                    + ". Bart events: " + bartModelListener.events.size();
+                    + ". Bart events: " + bartModelListener.events.size() +
+                        ". Bart active uploads: " + getContollerBart().getTransferManager().countActiveUploads();
             }
         });
 
