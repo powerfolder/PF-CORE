@@ -266,7 +266,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 .getType() == TableModelEvent.DELETE)
             {
                 fail(
-                    "Premature file transfer finish. increase filesize for testfile.");
+                    "Premature file transfer finish. increase filesize for testfile. " +
+                            "completed uploads=" + getContollerBart().getTransferManager().countCompletedDownloads());
             }
         }
         // Upload requested
