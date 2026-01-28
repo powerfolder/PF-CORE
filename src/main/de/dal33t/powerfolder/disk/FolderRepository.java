@@ -1197,6 +1197,9 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     public Folder findSubFolder(DirectoryInfo directoryInfo) {
+
+        directoryInfo = FileInfoFactory.lookupNormalizeToTopFolder(directoryInfo);
+
         for (Folder folder : getController().getFolderRepository().getFolders()) {
             if (folder.isTopFolder()) {
                 continue;
@@ -1205,6 +1208,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return folder;
             }
         }
+
         return null;
     }
 
