@@ -96,6 +96,25 @@ public final class FileInfoFactory {
         return lookupInstance(folder.getInfo(), fn, Files.isDirectory(file));
     }
 
+    public static DirectoryInfo lookupNormalizeToTopFolder(DirectoryInfo directoryInfo) {
+        if (directoryInfo == null) {
+            return null;
+        }
+
+        FolderInfo folderInfo = directoryInfo.getFolderInfo();
+        if (folderInfo != null && folderInfo.isSubFolder()) {
+
+            String topRelativePath = folderInfo.getLocation().getRelativeName();
+            if (!directoryInfo.isBaseDirectory()) {
+                topRelativePath += '/' + directoryInfo.getRelativeName();
+            }
+
+            return lookupDirectory(folderInfo.getTopFolder(), topRelativePath);
+        }
+
+        return directoryInfo;
+    }
+
     public static FileInfo lookupInstanceForTest(FolderInfo folder, String name, Date modificationDate) {
         return new FileInfo(folder, name, modificationDate, null);
     }
