@@ -2158,6 +2158,10 @@ public class Folder extends PFComponent {
      * Loads the folder db from disk
      */
     private void loadFolderDB() {
+        if (getDAO() instanceof SubFolderFileInfoDAOProxy) {
+            return;
+        }
+
         if (loadFolderDB(getSystemSubDir0().resolve(Constants.DB_FILENAME))) {
             return;
         }
