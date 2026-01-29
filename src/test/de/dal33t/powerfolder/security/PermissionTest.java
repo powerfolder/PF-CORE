@@ -384,7 +384,7 @@ public class PermissionTest extends TestCase {
         assertTrue(topDelete.implies(subDelete));
     }
 
-    public void testOwnerPermissionMustNotBeUsedOnSubfolder() {
+    public void testOwnerPermissionMustNotBeGrantedOnSubfolder() {
         FolderInfo top =
                 FolderInfoFactory.newTopFolderForTest("TopFolder", "NO-SUB-OWNER");
 
@@ -394,8 +394,9 @@ public class PermissionTest extends TestCase {
                 );
 
         try {
-            new FolderOwnerPermission(sub);
-            fail("FolderOwnerPermission must not be created for subfolders");
+            Account account = new Account();
+            account.grant(new FolderOwnerPermission(sub));
+            fail("FolderOwnerPermission must not be granted on subfolders");
         } catch (Exception expected) {
             // correct
         }
