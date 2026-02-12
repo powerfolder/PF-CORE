@@ -128,6 +128,10 @@ public class IdGenerator {
         return FILE_LINK_PREFIX + Base58.encode(md5(fileId.getBytes(Convert.UTF8)));
     }
 
+    public static boolean isFileLinkId(String candidateId) {
+        return candidateId != null && candidateId.startsWith(FILE_LINK_PREFIX);
+    }
+
     /**
      * Calculates the MD5 digest and returns the value as a 16 element
      * <code>byte[]</code>.
