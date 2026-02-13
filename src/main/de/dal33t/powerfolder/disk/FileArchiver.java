@@ -209,7 +209,7 @@ public class FileArchiver {
         Path[] versionArray = versions.toArray(new Path[0]);
         Arrays.sort(versionArray, VERSION_COMPARATOR);
         int toDelete = versionArray.length - versionsPerFile;
-        long oldSize = size;
+        Long oldSize = size;
         for (Path f : versionArray) {
             if (toDelete <= 0) {
                 break;
@@ -229,7 +229,7 @@ public class FileArchiver {
                 throw new IOException("Could not delete old version: " + f);
             }
         }
-        if (oldSize != size) {
+        if (!Objects.equals(oldSize, size)) {
             saveSize();
         }
     }
@@ -654,6 +654,12 @@ public class FileArchiver {
             return restore(versionInfo, target);
         } finally {
             this.versionsPerFile = originalLimit;
+            Path archiveTarget = getArchiveTarget(versionInfo);
+            if (Files.exists(archiveTarget.getParent())) {
+                List<Path> list = getArchivedFiles(archiveTarget.getParent(),
+                        versionInfo.getFilenameOnly());
+                checkArchivedFile(list);
+            }
         }
     }
 
