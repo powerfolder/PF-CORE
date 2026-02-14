@@ -76,6 +76,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     public static final String PROPERTYNAME_LANGUAGE = "language";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
+    public static final String PROPERTYNAME_ACTIVATED = "activated";
     public static final String PROPERTYNAME_LAST_LOGIN_DATE = "lastLoginDate";
     public static final String PROPERTYNAME_LAST_LOGIN_FROM = "lastLoginFrom";
     public static final String PROPERTYNAME_NEWSLETTER = "newsLetter";
