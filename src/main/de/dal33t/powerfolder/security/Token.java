@@ -323,6 +323,14 @@ public class Token implements Serializable {
         }
     }
 
+    public boolean isWebDAV() {
+        return notes != null && notes.toLowerCase().contains("webdav");
+    }
+
+    public void setWebDAV() {
+        notes = "webdav";
+    }
+
     public boolean isAndroid() {
         return notes != null && notes.toLowerCase().contains("android");
     }

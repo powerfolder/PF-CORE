@@ -35,6 +35,7 @@ public class AccountFilterModel implements Serializable {
     private boolean disabledOnly;
     private boolean proUsersOnly;
     private boolean activeTrial;
+    private Boolean activatedOnly;
     private String username;
     private String queryname;
     private String memberOfOrganizationOID = Organization.FILTER_MATCH_ALL;
@@ -82,6 +83,14 @@ public class AccountFilterModel implements Serializable {
     public void setActiveTrial(boolean activeTrial) {
         Object oldValue = isActiveTrial();
         this.activeTrial = activeTrial;
+    }
+
+    public void setActivatedOnly(Boolean activatedOnly) {
+        this.activatedOnly = activatedOnly;
+    }
+
+    public Boolean getActivatedOnly() {
+        return activatedOnly;
     }
 
     public String getUsername() {
