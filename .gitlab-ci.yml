@@ -1,11 +1,33 @@
 stages:
   - test
 
-test-Linux:
+variables:
+  GIT_DEPTH: "1"
+
+security-java-scan:
   stage: test
   tags:
     - Linux
-    - Tests
+    - Development
+  image: eclipse-temurin:17-jdk
+  variables:
+    GIT_STRATEGY: clone
+  before_script:
+    - apt-get update && apt-get install -y ant unzip curl
+    - mkdir -p reports
+  script:
+    - ant -f security-scan.xml dependency-check
+  artifacts:
+    paths:
+      - reports/
+    expire_in: 30 days
+    when: always
+
+test-Linux:
+  stage: test
+  resource_group: tests-Linux
+  tags:
+    - Linux
   script:
     - pkill -f java || true
     - ant run-tests
@@ -17,11 +39,12 @@ test-Linux:
 
 test-macOS:
   stage: test
+  resource_group: tests-macOS
   tags:
     - macOS
-    - Tests
   script:
-    ant run-tests
+    - pkill -f java || true
+    - ant run-tests
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
@@ -30,11 +53,12 @@ test-macOS:
 
 test-Windows:
   stage: test
+  resource_group: tests-Windows
   tags:
     - Windows
-    - Tests
   script:
-    ant run-tests
+    - powershell -Command "Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host 'Old Java processes killed (if any)'"
+    - ant run-tests
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml

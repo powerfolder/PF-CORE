@@ -19,15 +19,15 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.lang.reflect.Method;
-import java.security.PublicKey;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.light.MemberInfo;
+
+import java.lang.reflect.Method;
+import java.security.PublicKey;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility to get information about Pro stuff.
@@ -49,34 +49,17 @@ public class ProUtil {
      * @return the primary buy now URL
      */
     public static final String getBuyNowURL(Controller controller) {
-        String simpleURL = ConfigurationEntry.PROVIDER_BUY_URL
-            .getValue(controller);
+        String simpleURL = ConfigurationEntry.PROVIDER_BUY_URL.getValue(controller);
         if (StringUtils.isBlank(simpleURL)) {
             return null;
-        } else {
+        }
+
+        boolean absoluteURL = simpleURL.toLowerCase().startsWith("http:");
+        if (absoluteURL) {
             return simpleURL;
         }
-        // ServerClient client = controller.getOSClient();
-        // if (StringUtils.isBlank(client.getUsername())
-        // && client.getPassword() != null)
-        // {
-        // return simpleURL;
-        // }
 
-        // String loginURL = client.getLoginURLWithCredentials();
-        // HACK(tm) Redirect to https://my.powerfolder.com/upgrade.html does
-        // not work!
-        // return loginURL;
-
-        // String url = simpleURL;
-        // url = loginURL;
-        // if (loginURL.contains("?")) {
-        // url += '&';
-        // } else {
-        // url += '?';
-        // }
-        // url += "originalURI=" + Util.endcodeForURL(simpleURL);
-        // return url;
+        return controller.getOSClient().getWebURL(simpleURL, true);
     }
 
     /**

@@ -5007,7 +5007,7 @@ public class Folder extends PFComponent {
         inv.setSuggestedLocalBase(getController(), localBase);
         String username = getController().getOSClient().getUsername();
         if (StringUtils.isNotBlank(username)) {
-            inv.setInvitorUsername(username);
+            inv.setSender(username);
         }
         return inv;
     }
@@ -5151,7 +5151,7 @@ public class Folder extends PFComponent {
     // Security methods *******************************************************
 
     // PFS-638
-    private static final long HAS_PERMISSION_CACHE_TIMEOUT = 987L;
+    private static final long HAS_PERMISSION_CACHE_TIMEOUT = 60_000L;
     private final SimpleCache<Member, Boolean> hasReadCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
     private final SimpleCache<Member, Boolean> hasWriteCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
 

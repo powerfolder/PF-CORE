@@ -22,17 +22,24 @@ package de.dal33t.powerfolder.util;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.logging.Logger;
 
 /**
  * General date and time utilities.
  * See Format class for formatting dates and times as String.
  */
 public class DateUtil {
+
+    private static final Logger log = Logger.getLogger(DateUtil.class.getName());
 
     /**
      * Compares with a marge of 2000 milliseconds to solve the rounding problems
@@ -285,5 +292,86 @@ public class DateUtil {
             }
         }
         return newDate;
+    }
+
+    /**
+     * Parses an ISO date-time string, handling both offset and local date-time formats.
+     * If the string has no timezone, it is treated as UTC.
+     *
+     * @param dateString the date string to parse
+     * @return the parsed Date, or null if the string is null, empty, or unparseable
+     */
+    public static Date parseISODateTime(String dateString) {
+        if (dateString == null || dateString.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return parseISODateTimeStrict(dateString);
+        } catch (DateTimeParseException e) {
+            log.fine("Unable to parse date string '" + dateString + "': " + e.getMessage() +
+                    ". Parsing will be handled by caller.");
+            return null;
+        }
+    }
+
+    /**
+     * Parses an ISO date-time string strictly, throwing an exception if parsing fails.
+     * Handles both offset date-time (with timezone) and local date-time (without timezone).
+     * If the string has no timezone, it is treated as UTC.
+     *
+     * @param dateString the date string to parse
+     * @return the parsed Date
+     * @throws DateTimeParseException if the string cannot be parsed
+     */
+    public static Date parseISODateTimeStrict(String dateString) throws DateTimeParseException {
+        if (dateString == null || dateString.trim().isEmpty()) {
+            throw new DateTimeParseException("Date string is null or empty", "", 0);
+        }
+
+        String trimmed = dateString.trim();
+
+        try {
+            OffsetDateTime offsetDateTime = OffsetDateTime.parse(trimmed);
+            return Date.from(offsetDateTime.toInstant());
+        } catch (DateTimeParseException e) {
+            try {
+                LocalDateTime localDateTime = LocalDateTime.parse(trimmed);
+                return Date.from(localDateTime.atZone(ZoneOffset.UTC).toInstant());
+            } catch (DateTimeParseException ex) {
+                throw new DateTimeParseException(
+                    "Unable to parse date string '" + trimmed + "' as OffsetDateTime or LocalDateTime",
+                    trimmed,
+                    0
+                );
+            }
+        }
+    }
+
+    /**
+     * Parses an ISO date-time string to an Instant.
+     * Handles both offset date-time (with timezone) and local date-time (without timezone).
+     * If the string has no timezone, it is treated as UTC.
+     *
+     * @param dateString the date string to parse
+     * @return the parsed Instant, or null if the string is null, empty, or unparseable
+     */
+    public static Instant parseISODateTimeToInstant(String dateString) {
+        if (dateString == null || dateString.trim().isEmpty()) {
+            return null;
+        }
+
+        String trimmed = dateString.trim();
+
+        try {
+            return OffsetDateTime.parse(trimmed).toInstant();
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDateTime.parse(trimmed).atZone(ZoneOffset.UTC).toInstant();
+            } catch (DateTimeParseException ex) {
+                log.fine("Unable to parse date string '" + trimmed + "' to Instant: " + ex.getMessage());
+                return null;
+            }
+        }
     }
 }

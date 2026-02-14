@@ -24,6 +24,10 @@ import de.dal33t.powerfolder.security.Organization;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 
 public class AccountFilterModel implements Serializable {
     private static final long serialVersionUID = 100L;
@@ -31,6 +35,7 @@ public class AccountFilterModel implements Serializable {
     private boolean disabledOnly;
     private boolean proUsersOnly;
     private boolean activeTrial;
+    private Boolean activatedOnly;
     private String username;
     private String queryname;
     private String memberOfOrganizationOID = Organization.FILTER_MATCH_ALL;
@@ -39,8 +44,8 @@ public class AccountFilterModel implements Serializable {
     private String[] permissionNames;
     private String sortingProperty;
     private boolean sortingAscending = true;
-    private int pageNumber;
 
+    private int pageNumber;
     private int maxResults;
 
     // Getter and Setter ******************************************************
@@ -80,6 +85,14 @@ public class AccountFilterModel implements Serializable {
         this.activeTrial = activeTrial;
     }
 
+    public void setActivatedOnly(Boolean activatedOnly) {
+        this.activatedOnly = activatedOnly;
+    }
+
+    public Boolean getActivatedOnly() {
+        return activatedOnly;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -98,6 +111,28 @@ public class AccountFilterModel implements Serializable {
         this.queryname = queryname != null
             ? queryname.toLowerCase().trim()
             : null;
+    }
+
+    public void applyFromQuery(String query) {
+        if (isNotBlank(query)) {
+            Pattern p = Pattern.compile("\\bsort(?:down|up):([a-zA-Z0-9_]+)\\b", Pattern.CASE_INSENSITIVE);
+            Matcher m = p.matcher(query);
+
+            if (m.find()) {
+                String sortField = m.group(1); // e.g. "username"
+                boolean ascending = m.group(0).toLowerCase().contains("sortup");
+
+                setSortingProperty(sortField);
+                setSortingAscending(ascending);
+
+                // Remove the sorting directive from the query and reset it
+                String cleanedQuery = query.replace(m.group(0), "").trim();
+                setQueryname(cleanedQuery);
+                return;
+            }
+        }
+        // If nothing matched, just keep the original query
+        setQueryname(query);
     }
 
     public String getMemberOfOrganizationOID() {
@@ -155,11 +190,24 @@ public class AccountFilterModel implements Serializable {
     }
 
     public void setPageNumber(int pageNumber) {
+        if (pageNumber < 1) {
+            pageNumber = 1;
+        }
         this.pageNumber = pageNumber;
     }
 
     public int getPageNumber() {
         return pageNumber;
+    }
+
+    /**
+     * Calculates the offset for database queries.
+     */
+    public int getOffset() {
+        if (pageNumber <= 1 || maxResults <= 0) {
+            return 0;
+        }
+        return (pageNumber - 1) * maxResults;
     }
 
     public String[] getFilterByPermission() {

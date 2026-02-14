@@ -305,31 +305,41 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
 
         getController().getIOProvider().removeKeepAliveCheck(this);
 
-        // close out stream
+
         try {
             if (out != null) {
-                out.close();
+                out.flush();
             }
-        } catch (IOException ioe) {
-            logSevere("Could not close out stream", ioe);
-        }
 
-        // close in stream
-        try {
-            if (in != null) {
-                in.close();
-            }
-        } catch (IOException ioe) {
-            logSevere("Could not close in stream", ioe);
-        }
-
-        // close socket
-        if (socket != null) {
+            // Graceful TCP half-close
             try {
-                socket.close();
-            } catch (IOException e) {
-                logFiner("IOException", e);
+                socket.shutdownOutput();
+            } catch (IOException ignore) {
+                // On TLS sockets this may throw "unsupported", so ignore
             }
+
+            socket.setSoTimeout(200);
+
+            // Drain input without blocking forever
+            if (in != null) {
+                byte[] buf = new byte[1024];
+                try {
+                    while (in.read(buf) != -1) {
+                        // ignore incoming data
+                    }
+                } catch (SocketTimeoutException ignore) {
+                    // timeout = normal, stop reading
+                }
+            }
+        } catch (IOException e) {
+            // Ignore
+        } finally {
+            // Close streams AFTER shutdown + drain
+            try { if (out != null) out.close(); } catch (IOException ignore) {}
+            try { if (in != null) in.close(); } catch (IOException ignore) {}
+
+            // Close socket last
+            try { if (socket != null) socket.close(); } catch (IOException ignore) {}
         }
 
         // Trigger all waiting treads
@@ -801,7 +811,8 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 && !logMember.isMySelf()
                 && !logMember.isConnected()
                 && !getController().isShuttingDown()
-                && getController().isStarted();
+                && getController().isStarted()
+                && !(e instanceof EOFException);
 
         msg += ". Caused by ";
         if (logMember != null && logMember.getLastProblem() != null) {

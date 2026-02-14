@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PowerFolder-Core-Security-Scan" default="dependency-check" basedir="."
+         xmlns:if="ant:if" xmlns:unless="ant:unless">
+
+    <property environment="env"/>
+
+    <property name="dependency-check.version" value="12.1.0"/>
+    <property name="dependency-check.home" value="${basedir}/tools/dependency-check"/>
+    <property name="reports.dir" value="${basedir}/reports"/>
+    <property name="cvss.fail.threshold" value="7"/>
+
+    <target name="init">
+        <mkdir dir="${reports.dir}"/>
+        <mkdir dir="${dependency-check.home}"/>
+    </target>
+
+    <target name="download-dependency-check" depends="init">
+        <available file="${dependency-check.home}/dependency-check/bin/dependency-check.sh" property="dc.available"/>
+    </target>
+
+    <target name="fetch-dependency-check" depends="download-dependency-check" unless="dc.available">
+        <get src="https://github.com/jeremylong/DependencyCheck/releases/download/v${dependency-check.version}/dependency-check-${dependency-check.version}-release.zip"
+             dest="${dependency-check.home}/dependency-check-${dependency-check.version}-release.zip"
+             skipexisting="false"/>
+        <unzip src="${dependency-check.home}/dependency-check-${dependency-check.version}-release.zip"
+               dest="${dependency-check.home}"/>
+        <chmod file="${dependency-check.home}/dependency-check/bin/dependency-check.sh" perm="755"/>
+    </target>
+
+    <target name="dependency-check" depends="fetch-dependency-check">
+        <condition property="dc.executable" value="${dependency-check.home}/dependency-check/bin/dependency-check.bat" else="${dependency-check.home}/dependency-check/bin/dependency-check.sh">
+            <os family="windows"/>
+        </condition>
+
+        <condition property="nvd.api.key.set">
+            <isset property="env.NVD_API_KEY"/>
+        </condition>
+
+        <exec executable="${dc.executable}" failonerror="false" resultproperty="dc.result">
+            <arg value="--project"/>
+            <arg value="PowerFolder-CORE"/>
+            <arg value="--scan"/>
+            <arg value="${basedir}/lib"/>
+            <arg value="--out"/>
+            <arg value="${reports.dir}"/>
+            <arg value="--format"/>
+            <arg value="HTML"/>
+            <arg value="--format"/>
+            <arg value="JSON"/>
+            <arg value="--failOnCVSS"/>
+            <arg value="${cvss.fail.threshold}"/>
+            <arg value="--disableAssembly"/>
+            <arg value="--disableOssIndex"/>
+            <arg value="--nvdApiKey" if:set="nvd.api.key.set"/>
+            <arg value="${env.NVD_API_KEY}" if:set="nvd.api.key.set"/>
+        </exec>
+        <condition property="dc.vulnerabilities.found">
+            <not><equals arg1="${dc.result}" arg2="0"/></not>
+        </condition>
+        <echo if:set="dc.vulnerabilities.found" level="warning" message="WARNING: Vulnerabilities with CVSS >= ${cvss.fail.threshold} were found! Check reports in ${reports.dir}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${reports.dir}"/>
+    </target>
+
+    <target name="clean-all" depends="clean">
+        <delete dir="${dependency-check.home}"/>
+    </target>
+
+</project>

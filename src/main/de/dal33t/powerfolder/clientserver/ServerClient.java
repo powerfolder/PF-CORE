@@ -52,6 +52,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.PrivilegedExceptionAction;
@@ -541,17 +542,12 @@ public class ServerClient extends PFComponent {
             return webURL + '/' + uri;
         }
         String fullURL = getLoginURLWithCredentials();
-        try {
-            if (fullURL.contains("?")) {
-                fullURL += "&";
-            } else {
-                fullURL += "?";
-            }
-            fullURL += Constants.LOGIN_PARAM_ORIGINAL_URI + "="
-                    + URLEncoder.encode(uri, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+        if (fullURL.contains("?")) {
+            fullURL += "&";
+        } else {
+            fullURL += "?";
         }
+        fullURL += Constants.LOGIN_PARAM_ORIGINAL_URI + "=" + URLEncoder.encode(uri, StandardCharsets.UTF_8);
         return fullURL;
     }
 

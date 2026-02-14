@@ -173,8 +173,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             "1000");
 
         assertEquals(0, bartModelListener.events.size());
-        // Create a 20 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20000000);
+        // Create a 200 megs file
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 200000000);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -210,7 +210,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // no active upload
         assertEquals(0, bartModel.getRowCount());
         // Check correct events from model
-        assertEquals(3, bartModelListener.events.size());
+        assertEquals(bartModelListener.events.toString(), 3, bartModelListener.events.size());
         // Upload requested
         assertTrue(bartModelListener.events.get(0)
             .getType() == TableModelEvent.INSERT);
@@ -237,12 +237,12 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         getContollerLisa().getTransferManager().setUploadCPSForWAN(40000);
 
         // Create a 30 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 30000000);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 300000000);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 return getContollerBart().getTransferManager()
                     .countActiveUploads() > 0 && bartModel.getRowCount() >= 1
@@ -252,7 +252,8 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             @Override
             public String message() {
                 return "Bart rowcount: " + bartModel.getRowCount()
-                    + ". Bart events: " + bartModelListener.events.size();
+                    + ". Bart events: " + bartModelListener.events.size() +
+                        ". Bart active uploads: " + getContollerBart().getTransferManager().countActiveUploads();
             }
         });
 
@@ -260,12 +261,13 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // is then empty!
         assertEquals("Rowcount mismatch", 1, bartModel.getRowCount());
         // Requested and Started
-        if (bartModelListener.events.size() == 3) {
+        if (bartModelListener.events.size() >= 3) {
             if (bartModelListener.events.get(2)
                 .getType() == TableModelEvent.DELETE)
             {
                 fail(
-                    "Premature file transfer finish. increase filesize for testfile.");
+                    "Premature file transfer finish. increase filesize for testfile. " +
+                            "completed uploads=" + getContollerBart().getTransferManager().countCompletedDownloads());
             }
         }
         // Upload requested
@@ -278,17 +280,13 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
             bartModelListener.events.size());
 
         disconnectBartAndLisa();
-        TestHelper.waitForCondition(10, new Condition() {
-            public boolean reached() {
-                return getContollerBart().getTransferManager()
-                    .countLiveUploads() == 0;
-            }
-        });
+        TestHelper.waitForCondition(30, () -> getContollerBart().getTransferManager()
+            .countLiveUploads() == 0);
 
         // Give EDT time
         TestHelper.waitForEmptyEDT();
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             public boolean reached() {
                 return bartModel.getRowCount() == 0
                     && bartModelListener.events.size() == 3;

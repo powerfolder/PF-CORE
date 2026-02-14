@@ -244,6 +244,7 @@ public class Debug {
             b.append("\nMemory: " + Format.formatBytesShort(usedMemory)
                     + "/" + Format.formatBytesShort(Runtime.getRuntime().totalMemory())
                     + "/" + Format.formatBytesShort(Runtime.getRuntime().maxMemory()));
+            b.append("\nDataitems: " + countDataitems(c));
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());
             double uptimeDays = ((double) c.getUptime()) / 1000 / 60 / 60 / 24;

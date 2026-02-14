@@ -209,7 +209,7 @@ public class FileArchiver {
         Path[] versionArray = versions.toArray(new Path[0]);
         Arrays.sort(versionArray, VERSION_COMPARATOR);
         int toDelete = versionArray.length - versionsPerFile;
-        long oldSize = size;
+        Long oldSize = size;
         for (Path f : versionArray) {
             if (toDelete <= 0) {
                 break;
@@ -229,7 +229,7 @@ public class FileArchiver {
                 throw new IOException("Could not delete old version: " + f);
             }
         }
-        if (oldSize != size) {
+        if (!Objects.equals(oldSize, size)) {
             saveSize();
         }
     }
@@ -633,6 +633,36 @@ public class FileArchiver {
         }
     }
 
+    /**
+     * Restore a file version, archiving the current file first to preserve it.
+     *
+     * @param versionInfo the FileInfo of the archived version to restore.
+     * @param currentFile the FileInfo of the current file (may be null if no current file exists).
+     * @param target the target path to restore to.
+     * @return true if restore succeeded, false if archived version not found.
+     */
+    public boolean restore(FileInfo versionInfo, FileInfo currentFile, Path target)
+            throws IOException {
+        // Temporarily suspend version limit to prevent deletion of versions
+        int originalLimit = this.versionsPerFile;
+        this.versionsPerFile = -1;
+        try {
+            // Archive current file before overwriting
+            if (currentFile != null && !currentFile.isDeleted() && Files.exists(target)) {
+                archive(currentFile, target, true);
+            }
+            return restore(versionInfo, target);
+        } finally {
+            this.versionsPerFile = originalLimit;
+            Path archiveTarget = getArchiveTarget(versionInfo);
+            if (Files.exists(archiveTarget.getParent())) {
+                List<Path> list = getArchivedFiles(archiveTarget.getParent(),
+                        versionInfo.getFilenameOnly());
+                checkArchivedFile(list);
+            }
+        }
+    }
+
     public int getVersionsPerFile() {
         return versionsPerFile;
     }
@@ -642,7 +672,8 @@ public class FileArchiver {
     }
 
     public synchronized long getSize() {
-        if (size == null) {
+        Long thisSize = size;
+        if (thisSize == null) {
             long s = PathUtils.calculateDirectorySizeAndCount(archiveDirectory)[0];
             Path sizeFile = archiveDirectory.resolve(SIZE_INFO_FILE);
             if (Files.exists(sizeFile)) {
@@ -653,9 +684,10 @@ public class FileArchiver {
                 }
             }
             size = s;
+            thisSize = s;
             saveSize();
         }
-        return size;
+        return thisSize;
     }
 
     /**

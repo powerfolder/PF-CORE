@@ -29,8 +29,14 @@ public class AccountExpiredException extends AuthenticationFailedException {
 
     private static final long serialVersionUID = 100L;
 
-    public AccountExpiredException() {
+    private Account account;
+
+    public AccountExpiredException(Account account) {
         super("Account expired");
+        this.account = account;
     }
 
+    public Account getAccount() {
+        return account;
+    }
 }

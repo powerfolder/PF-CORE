@@ -111,7 +111,7 @@ public enum Feature {
      */
     NTFS_PRESERVE_FILE_OWNER(false),
 
-    FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT();
+    FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
