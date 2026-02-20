@@ -90,8 +90,6 @@ public class Controller extends PFComponent {
     private static final int MINOR_VERSION = 1;
     private static final int REVISION_VERSION = 100;
 
-    private static final int SPRINT_NUMBER = 65;
-
     /**
      * Program version.
      */
@@ -101,8 +99,6 @@ public class Controller extends PFComponent {
      * Federation version.
      */
     public static final String FEDERATION_VERSION = MAJOR_VERSION + "." + MINOR_VERSION;
-
-    public static final String INCREMENT_VERSION = MAJOR_VERSION + "." + MINOR_VERSION + "." + REVISION_VERSION + "." + SPRINT_NUMBER;
 
     /** Subdir of misc files */
     private static String miscFilesLocationDirName = Constants.MISC_DIR_NAME;
@@ -568,7 +564,7 @@ public class Controller extends PFComponent {
         // Initialize branding/preconfiguration of the client
         initDistribution();
         logFine("Build time: " + getBuildTime());
-        logInfo("Program version " + INCREMENT_VERSION);
+        logInfo("Program version " + PROGRAM_VERSION);
 
         if (getDistribution().getBinaryName().toLowerCase()
             .contains("powerfolder"))
