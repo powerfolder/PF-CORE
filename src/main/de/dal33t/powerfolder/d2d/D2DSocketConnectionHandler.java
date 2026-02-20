@@ -43,10 +43,14 @@ import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -78,6 +82,29 @@ public class D2DSocketConnectionHandler extends AbstractSocketConnectionHandler
 
     public D2DSocketConnectionHandler(Controller controller, Socket socket) {
         super(controller, socket);
+    }
+
+    private static final ConcurrentHashMap<Integer, String> realClientIpByPort = new ConcurrentHashMap<>();
+
+    public static void registerRealClientIp(int localPort, String clientIp) {
+        realClientIpByPort.put(localPort, clientIp);
+    }
+
+    public static void unregisterRealClientIp(int localPort) {
+        realClientIpByPort.remove(localPort);
+    }
+
+    @Override
+    public InetSocketAddress getRemoteAddress() {
+        String realIp = realClientIpByPort.get(socket.getPort());
+        if (realIp != null) {
+            try {
+                return new InetSocketAddress(InetAddress.getByName(realIp), socket.getPort());
+            } catch (UnknownHostException e) {
+                logFiner("Unable to resolve real client IP: " + realIp);
+            }
+        }
+        return (InetSocketAddress) socket.getRemoteSocketAddress();
     }
 
     public NodeStateMachine getNodeStateMachine() {
