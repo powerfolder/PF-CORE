@@ -335,7 +335,7 @@ public class ConfigurationLoader {
      */
     public static boolean loadAndMergePList(Controller controller) {
         Reject.ifNull(controller, "Controller is null");
-        if (OSUtil.isMacOS()) {
+        if (!OSUtil.isMacOS()) {
             return false;
         }
 

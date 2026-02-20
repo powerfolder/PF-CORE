@@ -104,9 +104,6 @@ public class IdPSelectionBox extends StyledComboBox<String> {
 
         @Override
         protected Void doInBackground() throws Exception {
-            String lastIdP = ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.getValue(controller);
-            boolean lastIdPSet = false;
-
             JSONArray idps = retrieve();
             removeAllItems();
 
@@ -126,10 +123,6 @@ public class IdPSelectionBox extends StyledComboBox<String> {
 
                         addEntry(name.trim());
                         idPList.add(name.trim());
-                        if (!lastIdPSet && name.equals(lastIdP)) {
-                            setSelectedIndex(getItemCount() - 1);
-                            lastIdPSet = true;
-                        }
                     }
                 }
             } else {
@@ -146,18 +139,11 @@ public class IdPSelectionBox extends StyledComboBox<String> {
                 addEntry(name);
                 idPList.add(entity);
                 samlIdPList.add(entity);
-
-                if (!lastIdPSet && entity.equals(lastIdP)) {
-                    setSelectedIndex(getItemCount() - 1);
-                    lastIdPSet = true;
-                }
             }
 
-            if (!lastIdPSet) {
-                setSelectedIndex(0);
-                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
-                ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
-            }
+            setSelectedIndex(0);
+            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
+            ConfigurationEntry.SERVER_IDP_LAST_CONNECTED_ECP.setValue(controller, ServerClient.SAML_EXTERNAL_NON_SAML_USERS);
 
             addActionListener(new IdPSelectionAction());
             listLoaded = true;

@@ -253,7 +253,7 @@ public class LoginPanel extends PFWizardPanel {
                 passwordField.setText(new String(LoginUtil.deobfuscate(ConfigurationEntry.SERVER_CONNECT_PASSWORD
                         .getValue(getController()))));
             } else if (ConfigurationEntry.SERVER_CONNECT_TOKEN.hasNonBlankValue(getController())) {
-                if (!Token.isExpired(client.getDeviceToken())) {
+                if (!Token.isExpired(client.getDeviceToken()) && client.isLoggedIn()) {
                     passwordField.setText(TOKEN_PLACEHOLDER);
                 } else {
                     passwordField.setText("");
@@ -264,12 +264,14 @@ public class LoginPanel extends PFWizardPanel {
             if (!client.isPasswordEmpty()) {
                 passwordField.setText(client.getPasswordClearText());
             } else if (client.isTokenLogin()) {
-                if (!Token.isExpired(client.getDeviceToken())) {
+                if (!Token.isExpired(client.getDeviceToken()) && client.isLoggedIn()) {
                     passwordField.setText(TOKEN_PLACEHOLDER);
                 } else {
                     passwordField.setText("");
                 }
             }
+        } else {
+            passwordField.setText("");
         }
 
         rememberPasswordBox = BasicComponentFactory.createCheckBox(
@@ -382,6 +384,8 @@ public class LoginPanel extends PFWizardPanel {
 
                 LoginUtil.clear(pw);
                 if (!loginOk) {
+                    passwordField.setText("");
+
                     if (isShibbolethIDPMissing()) {
                         JDialog diag = getWizardDialog();
                         diag.setVisible(false);
@@ -431,6 +435,14 @@ public class LoginPanel extends PFWizardPanel {
                 diag.setVisible(false);
                 diag.dispose();
             }
+
+            if (client.isTokenLogin()) {
+                if (!Token.isExpired(client.getDeviceToken())) {
+                    passwordField.setText(TOKEN_PLACEHOLDER);
+                } else {
+                    passwordField.setText("");
+                }
+            }
         }
 
         public void serverConnected(ServerClientEvent event) {
@@ -438,8 +450,10 @@ public class LoginPanel extends PFWizardPanel {
             if (!client.isPasswordEmpty()) {
                 passwordField.setText(client.getPasswordClearText());
             } else if (client.isTokenLogin()) {
-                if (!Token.isExpired(client.getDeviceToken())) {
+                if (!Token.isExpired(client.getDeviceToken()) && client.isLoggedIn()) {
                     passwordField.setText(TOKEN_PLACEHOLDER);
+                } else {
+                    passwordField.setText("");
                 }
             }
             updateOnlineStatus();

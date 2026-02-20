@@ -20,14 +20,12 @@
 package de.dal33t.powerfolder.light;
 
 import com.google.protobuf.AbstractMessage;
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.NodeInfoProto;
 import de.dal33t.powerfolder.util.ExternalizableUtil;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.db.InetSocketAddressUserType;
 import de.dal33t.powerfolder.util.intern.Internalizer;
@@ -43,6 +41,8 @@ import javax.persistence.Transient;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Member information class. contains all important informations about a member
@@ -135,6 +135,10 @@ public class MemberInfo implements Serializable, D2DObject {
         if (Util.equals(connectAddress, newConnectAddress)) {
             // System.err.println("Skipping set of connect addres");
             return;
+        }
+        if (isSupernode && newConnectAddress == null && Feature.INTERNAL_USE.isEnabled()) {
+            Logger.getLogger(MemberInfo.class.getName()).log(Level.WARNING,
+                    this + ": setConnectAddress to null" , new StackDump());
         }
         this.connectAddress = newConnectAddress;
         // Clear cache

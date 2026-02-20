@@ -19,28 +19,15 @@
  */
 package de.dal33t.powerfolder.net;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import de.dal33t.powerfolder.ConfigurationEntry;
-import de.dal33t.powerfolder.ConnectResult;
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.Member;
-import de.dal33t.powerfolder.NetworkingMode;
-import de.dal33t.powerfolder.PFComponent;
+import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.compare.MemberComparator;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Responsible for reconnecting to remote nodes.
@@ -568,7 +555,7 @@ public class ReconnectManager extends PFComponent {
                                 boolean rec = considerReconnectionTo(otherNode);
                                 logFine("Invalid identity from " + currentNode
                                     + ". Found: " + otherNode
-                                    + ". Going to reconned it ? " + rec);
+                                    + ". Going to reconnect to it ? " + rec);
                             }
                         }
                     } else {

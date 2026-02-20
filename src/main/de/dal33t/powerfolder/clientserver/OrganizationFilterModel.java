@@ -28,6 +28,7 @@ public class OrganizationFilterModel implements Serializable {
 
     private String name;
     private int maxResults;
+    private int pageNumber;
     private List<String> orgOIDs;
     private String adminAccountOID;
     private String adminAccountUsername;
@@ -49,6 +50,29 @@ public class OrganizationFilterModel implements Serializable {
 
     public void setMaxResults(int maxResults) {
         this.maxResults = maxResults;
+    }
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(int pageNumber) {
+        if (pageNumber < 1) {
+            pageNumber = 1;
+        }
+        this.pageNumber = pageNumber;
+    }
+
+
+    /**
+     * Calculates the offset for database queries.
+     * Same semantics as AccountFilterModel.
+     */
+    public int getOffset() {
+        if (pageNumber <= 1 || maxResults <= 0) {
+            return 0;
+        }
+        return (pageNumber - 1) * maxResults;
     }
 
     public boolean isEmptyOrgOIDs() {
