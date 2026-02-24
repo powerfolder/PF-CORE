@@ -27,9 +27,6 @@ import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.os.OSUtil;
-
 /**
  * Bare Bones Browser Launch
  * <p>
@@ -115,9 +112,12 @@ public class BrowserLauncher {
             log.warning("Not opening blank url!");
             return;
         }
+
+        // Prefer Desktop if it works
         if (java6impl(url)) {
             return;
         }
+
         try {
             if (OSUtil.isMacOS()) {
                 Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
@@ -125,18 +125,26 @@ public class BrowserLauncher {
                     new Class[]{String.class});
                 openURL.invoke(null, url);
             } else if (OSUtil.isWindowsSystem()) {
-                Runtime.getRuntime().exec(
-                    "rundll32 url.dll,FileProtocolHandler " + url);
-            } else { // assume Unix or Linux
+                Runtime.getRuntime().exec(new String[]{"rundll32", "url.dll,FileProtocolHandler", url});
+            } else {
+                // Modern Linux/Unix: xdg-open is the standard handler
+                if (Runtime.getRuntime().exec(new String[]{"which", "xdg-open"}).waitFor() == 0) {
+                    Runtime.getRuntime().exec(new String[]{"xdg-open", url});
+                    return;
+                }
+
+                // Legacy fallback list (kept as a last resort)
                 String[] browsers = {"firefox", "opera", "konqueror",
                     "epiphany", "mozilla", "netscape"};
                 String browser = null;
-                for (int count = 0; count < browsers.length && browser == null; count++)
+                for (int count = 0; count < browsers.length && browser == null; count++) {
                     if (Runtime.getRuntime()
-                        .exec(new String[]{"which", browsers[count]}).waitFor() == 0)
+                        .exec(new String[]{"which", browsers[count]}).waitFor() == 0) {
                         browser = browsers[count];
+                    }
+                }
                 if (browser == null) {
-                    throw new Exception("Could not find web browser");
+                    throw new Exception("Could not find web browser (no xdg-open and no known browser in PATH)");
                 }
                 Runtime.getRuntime().exec(new String[]{browser, url});
             }
@@ -149,12 +157,18 @@ public class BrowserLauncher {
         log.fine("Launching " + url);
         try {
             if (Desktop.isDesktopSupported()) {
-                log.fine("Using Java6 Desktop.browse()");
-                Desktop.getDesktop().browse(new URI(url));
-                return true;
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                    log.fine("Using Desktop.browse()");
+                    desktop.browse(new URI(url));
+                    return true;
+                }
             }
         } catch (LinkageError err) {
             log.log(Level.FINER, "LinkageError", err);
+        } catch (RuntimeException re) {
+            // Covers HeadlessException and other runtime failures in some Linux/CI environments
+            log.fine("Cannot open URL using Desktop (runtime). Trying fallback. " + re.toString());
         } catch (URISyntaxException | IOException e) {
             log.fine("Cannot open URL using Desktop. Trying fallback. " + e.toString());
         }
