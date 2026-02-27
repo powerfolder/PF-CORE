@@ -19,7 +19,10 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.awt.Desktop;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
+import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
