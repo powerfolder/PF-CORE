@@ -270,9 +270,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         Domain d = getDomain(domain);
 
         for (FileInfo fileInfo : infos) {
-            if (StringUtils.containsDecomposedForm(fileInfo.getRelativeName())) {
-                //XXX
-            }
 
             if (fileInfo.isFile()) {
                 if (isFiner()) {
