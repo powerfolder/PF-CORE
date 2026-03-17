@@ -36,10 +36,8 @@ public class GroupFilterModel implements Serializable {
     }
 
     public void setQueryname(String queryname) {
-        Object oldValue = getQueryname();
-        this.queryname = queryname != null
-                ? queryname.toLowerCase().trim()
-                : null;
+        this.queryname = queryname ;
+
     }
 
     public String getMemberOfOrganizationOID() {
