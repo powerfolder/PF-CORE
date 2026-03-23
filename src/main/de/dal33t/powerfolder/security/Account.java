@@ -1379,6 +1379,9 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public void setMaxFolders(int maxFolders) {
         this.maxFolders = Integer.valueOf(maxFolders);
+        if (maxFolders < 0) {
+            setMaxFoldersUnlimited();
+        }
     }
 
     public boolean isMaxFoldersUnlimited() {
