@@ -78,6 +78,10 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         synchronized (INSTANCES) {
             oldInstance = INSTANCES.get(foInfo);
 
+            if (oldInstance == foInfo) {
+                return foInfo;
+            }
+
             if (oldInstance != null
                     && oldInstance.getName().equals(foInfo.getName())
                     && oldInstance.getVersion() == foInfo.getVersion())
@@ -96,8 +100,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
             }
 
             if (oldInstance != null && !foInfo.isMetaFolder() && Feature.INTERNAL_USE.isEnabled()) {
-                LOG.log(Level.INFO, foInfo + ": rename (forced internalize). " +
-                        "old: " + oldInstance);
+                LOG.log(Level.INFO, foInfo + ": rename (forced internalize). oldInstance: " + oldInstance);
             }
             INSTANCES.put(foInfo, foInfo);
         }
