@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.event.api.DeletedFile;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.*;
+import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.search.LuceneIndexManager;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
@@ -468,10 +469,10 @@ public class Folder extends PFComponent {
             searchIndexManager = new LuceneIndexManager(this);
             searchIndexManager.setExtractContentEnabled(true);
             searchIndexManager.setOcrEnabled(true);
-            if (!getName().equals(Constants.FOLDER_SERVER_MAINTENANCE)) {
-                searchIndexManager.rebuildIndexIfRequired(getController().getIOProvider(), getKnownFiles());
-            }
-            logInfo(this + ": Initialized Lucene search index (" + searchIndexManager.getIndexEntryCount() + " entries)");
+            IOProvider ioProvider = getController().getIOProvider();
+            boolean rebuild = searchIndexManager.rebuildIndexIfRequired(getKnownFiles(), ioProvider);
+            logInfo(this + ": Initialized " + (rebuild ? "and rebuilt" : "")
+                    + " Lucene search index (" + searchIndexManager.getIndexEntryCount() + " entries)");
         } catch (Throwable t) {
             logWarning(this + ": Unable to initialize Lucene index manager: " + t, t);
         }

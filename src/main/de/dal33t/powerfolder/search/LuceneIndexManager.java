@@ -404,7 +404,7 @@ public class LuceneIndexManager extends Loggable {
 
         rwLock.writeLock().lock();
         try {
-            logInfo(folder + ": Rebuild pass 1 (no OCR) — "
+            logFine(folder + ": Rebuild pass 1 (no OCR) — "
                     + (allFiles != null ? allFiles.size() : 0)
                     + " files");
             writer.deleteAll();
@@ -450,7 +450,7 @@ public class LuceneIndexManager extends Loggable {
     private void rebuildPassTwo(List<FileInfo> ocrCandidates) {
         if (ocrCandidates.isEmpty() || !ocrEnabled || closed) return;
 
-        logInfo(folder + ": Rebuild pass 2 (OCR) — "
+        logFine(folder + ": Rebuild pass 2 (OCR) — "
                 + ocrCandidates.size() + " files");
         int indexed = 0;
 
