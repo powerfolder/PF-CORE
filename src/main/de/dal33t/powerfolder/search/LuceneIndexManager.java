@@ -475,7 +475,7 @@ public class LuceneIndexManager extends Loggable {
                 }
             } catch (Exception e) {
                 logWarning(folder + ": OCR pass failed for "
-                        + f.getFilenameOnly() + ": " + e.getMessage());
+                        + f.getRelativeName() + ": " + e.getMessage());
             } finally {
                 rwLock.writeLock().unlock();
             }
@@ -802,7 +802,7 @@ public class LuceneIndexManager extends Loggable {
         }
 
         logFine(folder + ": Extracting content from "
-                + fileInfo.getFilenameOnly() + " (" + filePath + ")"
+                + fileInfo.getRelativeName() + " (" + filePath + ")"
                 + (useOcr ? "" : " [no-OCR]"));
         long start = System.currentTimeMillis();
 
@@ -818,16 +818,16 @@ public class LuceneIndexManager extends Loggable {
             long duration = System.currentTimeMillis() - start;
             if (text != null && !text.isBlank()) {
                 logFine(folder + ": Tika extracted " + text.length()
-                        + " chars from " + fileInfo.getFilenameOnly()
+                        + " chars from " + fileInfo.getRelativeName()
                         + " in " + duration + " ms.");
                 return text;
             } else {
                 logFiner(folder + ": Tika found no text in "
-                        + fileInfo.getFilenameOnly());
+                        + fileInfo.getRelativeName());
             }
         } catch (IOException | SAXException | TikaException e) {
             logFiner(folder + ": Tika extraction failed for "
-                    + fileInfo.getFilenameOnly() + ": "
+                    + fileInfo.getRelativeName() + ": "
                     + e.getMessage());
         }
 
@@ -837,27 +837,27 @@ public class LuceneIndexManager extends Loggable {
                 filePath.toString()).matches()) {
             try {
                 logFine(folder + ": Running OCR fallback for "
-                        + fileInfo.getFilenameOnly());
+                        + fileInfo.getRelativeName());
                 String ocrText = ocrEngine.performOCR(filePath);
                 if (ocrText != null && !ocrText.isBlank()) {
                     logFine(folder + ": OCR extracted "
                             + ocrText.length() + " chars from "
-                            + fileInfo.getFilenameOnly());
+                            + fileInfo.getRelativeName());
                     return ocrText;
                 } else {
                     logInfo(folder + ": OCR produced no text for "
-                            + fileInfo.getFilenameOnly());
+                            + fileInfo.getRelativeName());
                 }
             } catch (NoClassDefFoundError e) {
                 logWarning(folder
                         + ": OCR unavailable (missing jai-imageio-core"
                         + " or PDFBox mismatch). Skipping OCR for "
-                        + fileInfo.getFilenameOnly());
+                        + fileInfo.getRelativeName());
             }
         }
 
         logFiner(folder + ": No extractable content found for "
-                + fileInfo.getFilenameOnly());
+                + fileInfo.getRelativeName());
         return null;
     }
 

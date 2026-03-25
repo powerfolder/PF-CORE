@@ -238,7 +238,7 @@ public class TesseractOCR extends Loggable {
         try {
             long fileSize = Files.size(file);
             if (fileSize > MAX_OCR_FILE_SIZE_BYTES) {
-                logFine("Skipping OCR for " + file.getFileName()
+                logInfo("Skipping OCR for " + file
                         + " — file size " + (fileSize / (1024 * 1024))
                         + " MB exceeds limit of "
                         + (MAX_OCR_FILE_SIZE_BYTES / (1024 * 1024))
@@ -271,7 +271,7 @@ public class TesseractOCR extends Loggable {
             } catch (TimeoutException e) {
                 future.cancel(true);
                 logWarning("OCR timed out after " + OCR_TIMEOUT_SECONDS
-                        + "s for " + file.getFileName());
+                        + "s for " + file);
                 return null;
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause();
