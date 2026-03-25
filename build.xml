@@ -201,10 +201,10 @@ For creation of the installer:
 			<include name="dd-plist-1.28.jar"/>
 
 			<!-- Search / Indexing Libraries -->
-			<include name="search/lucene-core-10.3.1.jar"/>
-			<include name="search/lucene-analysis-common-10.3.1.jar"/>
-			<include name="search/lucene-queries-10.3.1.jar"/>
-			<include name="search/lucene-queryparser-10.3.1.jar"/>
+			<include name="search/lucene-core-9.12.3.jar"/>
+			<include name="search/lucene-analysis-common-9.12.3.jar"/>
+			<include name="search/lucene-queries-9.12.3.jar"/>
+			<include name="search/lucene-queryparser-9.12.3.jar"/>
 
 			<!-- Apache Tika for fulltext extraction -->
 			<include name="search/tika-core-3.2.3.jar"/>
