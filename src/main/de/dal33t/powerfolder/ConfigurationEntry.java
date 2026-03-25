@@ -310,6 +310,7 @@ public enum ConfigurationEntry {
      *
      * @deprecated for testing use {@link Feature#P2P_REQUIRES_LOGIN_AT_SERVER}
      */
+    @Deprecated
     SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
         @Override
         public String getValue(Controller controller) {
