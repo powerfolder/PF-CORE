@@ -469,9 +469,9 @@ public class Folder extends PFComponent {
             searchIndexManager.setExtractContentEnabled(true);
             searchIndexManager.setOcrEnabled(true);
             if (!getName().equals(Constants.FOLDER_SERVER_MAINTENANCE)) {
-                searchIndexManager.rebuildIndex(getKnownFiles());
+                searchIndexManager.rebuildIndexIfRequired(getController().getIOProvider(), getKnownFiles());
             }
-            logInfo(this + ": Initialized Lucene search index manager");
+            logInfo(this + ": Initialized Lucene search index (" + searchIndexManager.getIndexEntryCount() + " entries)");
         } catch (Throwable t) {
             logWarning(this + ": Unable to initialize Lucene index manager: " + t, t);
         }
@@ -1865,7 +1865,7 @@ public class Folder extends PFComponent {
 
         if (!removedFiles.isEmpty()) {
              if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
-                searchIndexManager.deleteFiles(removedFiles);
+                searchIndexManager.markDeleted(removedFiles);
             }
             fireFilesDeleted(removedFiles);
             setDBDirty();
@@ -2093,7 +2093,7 @@ public class Folder extends PFComponent {
         }
         shutdown = true;
          if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
-            searchIndexManager.close();
+            searchIndexManager.shutdown();
         }
         if (ConfigurationEntry.FOLDER_WATCHER_ENABLED.getValueBoolean(getController())) {
             watcher.remove();
@@ -3265,7 +3265,7 @@ public class Folder extends PFComponent {
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
              if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
-                searchIndexManager.deleteFiles(removedFiles);
+                searchIndexManager.markDeleted(removedFiles);
             }
             fireFilesDeleted(removedFiles);
             setDBDirty();

@@ -988,9 +988,9 @@ public enum ConfigurationEntry {
     LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
 
     /**
-     * PF-1930
+     * PF-1930: Full text search
      */
-    SEARCH_INDEX_ENABLED("search.index.enabled", true),
+    SEARCH_INDEX_ENABLED("search.index.enabled", false),
 
     /**
      * Whether to log verbose.
