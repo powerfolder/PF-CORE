@@ -17,11 +17,11 @@
  */
 package de.dal33t.powerfolder.util.logging.handlers;
 
-import de.dal33t.powerfolder.util.logging.handlers.AbstractSyslogHandler;
-
 import java.io.IOException;
-import java.net.*;
-import java.util.logging.ErrorManager;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 /**
  * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
@@ -33,23 +33,35 @@ public class UDPSyslogHandler extends AbstractSyslogHandler {
 
     public void init(String prefix, String host, int port) {
         super.init(prefix);
-        address = new InetSocketAddress(host, port);
+        this.address = new InetSocketAddress(host, port);
     }
 
     @Override
     protected boolean isConnected() {
-        return socket != null && socket.isConnected();
+        return socket != null && socket.isConnected() && !socket.isClosed();
     }
 
     @Override
-    public void connect() throws IOException {
+    public synchronized void connect() throws IOException {
+        close();
         socket = new DatagramSocket();
         socket.connect(address);
     }
 
     @Override
-    protected void send(byte[] data) throws IOException {
+    protected synchronized void send(byte[] data) throws IOException {
+        if (!isConnected()) {
+            throw new IOException("UDP syslog socket is not connected");
+        }
         DatagramPacket packet = new DatagramPacket(data, data.length, address);
         socket.send(packet);
+    }
+
+    @Override
+    public synchronized void close() throws SecurityException {
+        if (socket != null) {
+            socket.close();
+            socket = null;
+        }
     }
 }
