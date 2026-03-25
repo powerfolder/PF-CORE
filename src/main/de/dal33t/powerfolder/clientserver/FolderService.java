@@ -73,8 +73,12 @@ public interface FolderService {
      */
     void createFolder(FolderInfo foInfo, SyncProfile profile);
 
+    @Deprecated
     void createFolder(FolderInfo foInfo, SyncProfile profile,
-                      Path targetDir, boolean isEncryptedFolder);
+                      Path path, boolean isEncryptedFolder);
+
+    void createFolder(FolderInfo foInfo, SyncProfile profile,
+                      String pathStr, boolean isEncryptedFolder);
 
     /**
      * Removes a folder from the account. Required owner permission if

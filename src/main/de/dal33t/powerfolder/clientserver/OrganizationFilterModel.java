@@ -32,6 +32,7 @@ public class OrganizationFilterModel implements Serializable {
     private List<String> orgOIDs;
     private String adminAccountOID;
     private String adminAccountUsername;
+    private Boolean expiredOnly;
 
     // Getter and Setter
 
@@ -108,5 +109,13 @@ public class OrganizationFilterModel implements Serializable {
 
     public void setAdminAccountUsername(String adminAccountUsername) {
         this.adminAccountUsername = adminAccountUsername;
+    }
+
+    public Boolean getExpiredOnly() {
+        return expiredOnly;
+    }
+
+    public void setExpiredOnly(Boolean expiredOnly) {
+        this.expiredOnly = expiredOnly;
     }
 }

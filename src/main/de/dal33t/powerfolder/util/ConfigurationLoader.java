@@ -354,7 +354,7 @@ public class ConfigurationLoader {
                     FolderSettings.removeEntries(controller.getConfig(), entryId);
                 }
             }
-            int i = mergeConfigs(plistProperties, controller.getConfig(), overWrite);
+            int i = merge(plistProperties, controller.getConfig(), controller.getPreferences(), overWrite);
 
             LOG.info("Loaded " + i + " config entries (overwrite? " + overWrite + ") from mac plist");
 
