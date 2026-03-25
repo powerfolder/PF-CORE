@@ -37,6 +37,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -244,7 +245,7 @@ public class LuceneIndexManager extends Loggable {
         props.setProperty("lastRebuilt",
                 String.valueOf(System.currentTimeMillis()));
 
-        try (var out = Files.newOutputStream(metaFile)) {
+        try (OutputStream out = Files.newOutputStream(metaFile)) {
             props.store(out,
                     "PowerFolder Lucene index metadata — do not edit");
         } catch (IOException e) {
