@@ -104,31 +104,37 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
     @Override
     public synchronized void connect() throws IOException {
         closeSocket();
-        if (useTLS) {
-            Socket plainSocket = new Socket();
-            plainSocket.connect(new InetSocketAddress(host, port), 5000);
-            plainSocket.setSoTimeout(5000);
+        String target = host + ":" + port;
+        try {
+            if (useTLS) {
+                Socket plainSocket = new Socket();
+                plainSocket.connect(new InetSocketAddress(host, port), 5000);
+                plainSocket.setSoTimeout(5000);
 
-            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            socket = factory.createSocket(plainSocket, host, port, true);
-            SSLSocket sslSocket = (SSLSocket) socket;
-            sslSocket.setSoTimeout(5000);
+                SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+                socket = factory.createSocket(plainSocket, host, port, true);
+                SSLSocket sslSocket = (SSLSocket) socket;
+                sslSocket.setSoTimeout(5000);
 
-            try {
-                sslSocket.startHandshake();
-            } catch (IOException e) {
-                reportTLSFailure(sslSocket, e);
-                closeSocket();
-                throw e;
+                try {
+                    sslSocket.startHandshake();
+                } catch (IOException e) {
+                    reportTLSFailure(sslSocket, e);
+                    closeSocket();
+                    throw e;
+                }
+
+                logTLSSuccess(sslSocket);
+            } else {
+                socket = new Socket();
+                socket.connect(new InetSocketAddress(host, port), 5000);
+                socket.setSoTimeout(5000);
             }
-
-            logTLSSuccess(sslSocket);
-        } else {
-            socket = new Socket();
-            socket.connect(new InetSocketAddress(host, port), 5000);
-            socket.setSoTimeout(5000);
+            outputStream = socket.getOutputStream();
+        } catch (IOException e) {
+            throw new IOException("Syslog connect failed to " + target
+                    + " (TLS=" + useTLS + "): " + e.getMessage(), e);
         }
-        outputStream = socket.getOutputStream();
     }
 
     // ── Send: the base class calls this from publish() ─────────────
