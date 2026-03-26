@@ -28,30 +28,26 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.ErrorManager;
 import java.util.logging.LogRecord;
 
 /**
  * TCP und TLS-fähiger SyslogHandler für java.util.logging.
  * <p>
- * Uses an internal bounded message buffer so that application threads
- * calling {@link #publish(LogRecord)} never block on TCP I/O.
- * A single background daemon thread drains the buffer and sends
- * messages over the wire.
+ * Fully non-blocking for application threads: {@link #publish(LogRecord)}
+ * formats the message and enqueues it into a bounded buffer. A single
+ * background daemon thread handles connecting, reconnecting, and sending.
  * <p>
- * Drop-in replacement alongside {@link UDPSyslogHandler} — both extend
- * {@link AbstractSyslogHandler} and follow the same init/connect/send/close
- * lifecycle.
+ * Connection and reconnection are managed by the drain thread using
+ * {@link AbstractSyslogHandler#ensureConnected()} with its built-in
+ * rate limiting. The application thread never touches the network.
  *
  * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  */
 public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
 
-    /** Default capacity of the internal message buffer. */
     private static final int DEFAULT_BUFFER_CAPACITY = 10_000;
-
-    /** Max time (ms) the drain thread waits before retrying a failed connection. */
-    private static final long RECONNECT_DELAY_MS = 5_000;
 
     private String host;
     private int port;
@@ -64,25 +60,14 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
     private BlockingQueue<byte[]> messageBuffer;
     private Thread drainThread;
     private final AtomicBoolean running = new AtomicBoolean(false);
-    private volatile long droppedMessages = 0;
+    private final AtomicLong droppedMessages = new AtomicLong(0);
 
-    // ── Init (mirrors UDPSyslogHandler.init) ───────────────────────
+    // ── Init ───────────────────────────────────────────────────────
 
-    /**
-     * Initialisiere den Handler mit Standard-Puffergröße.
-     *
-     * @param prefix Präfix für Hostnamen
-     * @param host   Zielhost (Syslog-Server)
-     * @param port   Zielport (514 = TCP, 6514 = TLS)
-     * @param useTLS true für TLS, false für Plain TCP
-     */
     public void init(String prefix, String host, int port, boolean useTLS) {
         init(prefix, host, port, useTLS, DEFAULT_BUFFER_CAPACITY);
     }
 
-    /**
-     * Initialisiere den Handler mit konfigurierbarer Puffergröße.
-     */
     public void init(String prefix, String host, int port, boolean useTLS, int bufferCapacity) {
         super.init(prefix);
         this.host = host;
@@ -90,11 +75,53 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
         this.useTLS = useTLS;
         this.bufferCapacity = bufferCapacity;
         this.messageBuffer = new ArrayBlockingQueue<>(bufferCapacity);
-
         startDrainThread();
     }
 
-    // ── Connection (synchronized like UDPSyslogHandler) ────────────
+    // ── Publish: non-blocking, bypasses base class ensureConnected ─
+
+    /**
+     * Overrides base class to avoid any network I/O on the caller thread.
+     * Formats the record and enqueues the payload for async delivery.
+     */
+    @Override
+    public void publish(LogRecord record) {
+        if (!isLoggable(record)) {
+            return;
+        }
+        try {
+            byte[] payload = buildPayload(record);
+            enqueue(payload);
+        } catch (Exception e) {
+            reportError("Failed to enqueue syslog message",
+                    e, ErrorManager.WRITE_FAILURE);
+        }
+    }
+
+    /**
+     * No-op: the drain thread calls {@code super.ensureConnected()} itself.
+     * This override prevents the base class {@code publish()} path from
+     * ever being used to connect on an application thread.
+     */
+    @Override
+    protected void ensureConnected() {
+        // connection managed by drain thread only
+    }
+
+    // ── Buffer ─────────────────────────────────────────────────────
+
+    private void enqueue(byte[] data) {
+        boolean accepted = messageBuffer.offer(data);
+        if (!accepted) {
+            long dropped = droppedMessages.incrementAndGet();
+            reportError(
+                    "Syslog buffer full (" + bufferCapacity + ") for "
+                            + host + ":" + port + ", message dropped. Total dropped: " + dropped,
+                    null, ErrorManager.WRITE_FAILURE);
+        }
+    }
+
+    // ── Connection ─────────────────────────────────────────────────
 
     @Override
     protected boolean isConnected() {
@@ -104,7 +131,7 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
     @Override
     public synchronized void connect() throws IOException {
         closeSocket();
-        String target = host + ":" + port;
+        String target = host + ":" + port + " (TLS=" + useTLS + ")";
         try {
             if (useTLS) {
                 Socket plainSocket = new Socket();
@@ -123,7 +150,6 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
                     closeSocket();
                     throw e;
                 }
-
                 logTLSSuccess(sslSocket);
             } else {
                 socket = new Socket();
@@ -133,34 +159,21 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
             outputStream = socket.getOutputStream();
         } catch (IOException e) {
             throw new IOException("Syslog connect failed to " + target
-                    + " (TLS=" + useTLS + "): " + e.getMessage(), e);
+                    + ": " + e.getMessage(), e);
         }
     }
 
-    // ── Send: the base class calls this from publish() ─────────────
-    //    We override to enqueue instead of writing to the socket
-    //    directly, making publish() non-blocking for the caller.
+    // ── Send ───────────────────────────────────────────────────────
 
     /**
-     * Called by {@link AbstractSyslogHandler#publish(LogRecord)}.
-     * Instead of writing to the socket directly (which would block),
-     * this enqueues the data into the internal buffer for async delivery.
+     * Required by abstract parent. Only called from drain thread via
+     * {@link #sendToSocket(byte[])}.
      */
     @Override
     protected void send(byte[] data) throws IOException {
-        boolean accepted = messageBuffer.offer(data);
-        if (!accepted) {
-            droppedMessages++;
-            reportError(
-                    "Syslog buffer full (" + bufferCapacity + "), message dropped. "
-                            + "Total dropped: " + droppedMessages,
-                    null, ErrorManager.WRITE_FAILURE);
-        }
+        sendToSocket(data);
     }
 
-    /**
-     * Actual TCP write — called only by the drain thread.
-     */
     private void sendToSocket(byte[] data) throws IOException {
         OutputStream out = outputStream;
         if (out != null) {
@@ -168,7 +181,7 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
             out.write('\n');
             out.flush();
         } else {
-            throw new IOException("No open Syslog output stream");
+            throw new IOException("No open Syslog output stream to " + host + ":" + port);
         }
     }
 
@@ -189,47 +202,38 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
                     continue;
                 }
 
-                ensureConnected();
+                // Use the base class reconnection logic (rate-limited)
+                super.ensureConnected();
                 sendToSocket(message);
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             } catch (IOException e) {
-                reportError("Syslog send failed, will reconnect", e, ErrorManager.WRITE_FAILURE);
+                reportError("Syslog send failed to " + host + ":" + port
+                        + " (TLS=" + useTLS + "), will reconnect: "
+                        + e.getMessage(), e, ErrorManager.WRITE_FAILURE);
                 closeSocket();
-                try {
-                    Thread.sleep(RECONNECT_DELAY_MS);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
             }
         }
         drainRemaining();
-    }
-
-    private void ensureConnected() throws IOException {
-        if (!isConnected()) {
-            connect();
-        }
     }
 
     private void drainRemaining() {
         byte[] message;
         while ((message = messageBuffer.poll()) != null) {
             try {
-                ensureConnected();
+                super.ensureConnected();
                 sendToSocket(message);
             } catch (IOException e) {
-                reportError("Failed to drain remaining message on shutdown",
-                        e, ErrorManager.WRITE_FAILURE);
+                reportError("Failed to drain remaining syslog message to "
+                        + host + ":" + port, e, ErrorManager.WRITE_FAILURE);
                 break;
             }
         }
     }
 
-    // ── Flush / Close (Handler contract) ───────────────────────────
+    // ── Flush / Close ──────────────────────────────────────────────
 
     @Override
     public void flush() {
@@ -301,12 +305,10 @@ public class TCPTLSSyslogHandler extends AbstractSyslogHandler {
 
     // ── Monitoring ─────────────────────────────────────────────────
 
-    /** Number of messages dropped since init due to full buffer. */
     public long getDroppedMessages() {
-        return droppedMessages;
+        return droppedMessages.get();
     }
 
-    /** Current number of messages waiting in the buffer. */
     public int getBufferSize() {
         return messageBuffer.size();
     }
