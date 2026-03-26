@@ -48,7 +48,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -1317,7 +1316,7 @@ public class PathUtils {
         while (w > 0) {
             int read = in.read(ByteBuffer.wrap(buf));
             if (read < 0) {
-                throw new EOFException();
+                throw new EOFException("Expected " + n + " remaining bytes");
             }
             out.write(ByteBuffer.wrap(buf, 0, read));
             w -= read;

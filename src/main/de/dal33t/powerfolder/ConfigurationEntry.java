@@ -310,6 +310,7 @@ public enum ConfigurationEntry {
      *
      * @deprecated for testing use {@link Feature#P2P_REQUIRES_LOGIN_AT_SERVER}
      */
+    @Deprecated
     SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
         @Override
         public String getValue(Controller controller) {
@@ -986,6 +987,11 @@ public enum ConfigurationEntry {
     },
 
     LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
+
+    /**
+     * PF-1930: Full text search
+     */
+    SEARCH_INDEX_ENABLED("search.index.enabled", false),
 
     /**
      * Whether to log verbose.

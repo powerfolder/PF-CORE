@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -80,6 +79,8 @@ public class FileTransferTest extends TwoControllerTestCase {
         
         // Let startup settle down.
         TestHelper.waitMilliSeconds(500);
+
+        LoggingManager.setConsoleLogging(Level.INFO);
     }
 
     /**

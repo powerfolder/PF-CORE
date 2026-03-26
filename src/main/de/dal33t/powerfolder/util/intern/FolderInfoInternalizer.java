@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.util.intern;
 
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.StackDump;
@@ -77,6 +78,10 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
         synchronized (INSTANCES) {
             oldInstance = INSTANCES.get(foInfo);
 
+            if (oldInstance == foInfo) {
+                return foInfo;
+            }
+
             if (oldInstance != null
                     && oldInstance.getName().equals(foInfo.getName())
                     && oldInstance.getVersion() == foInfo.getVersion())
@@ -94,8 +99,8 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                         oldInstance.getParent());
             }
 
-            if (oldInstance != null && !foInfo.isMetaFolder()) {
-                LOG.log(Level.INFO, foInfo + ": update (forced internalize). old: " + oldInstance);
+            if (oldInstance != null && !foInfo.isMetaFolder() && Feature.INTERNAL_USE.isEnabled()) {
+                LOG.log(Level.INFO, foInfo + ": rename (forced internalize). oldInstance: " + oldInstance);
             }
             INSTANCES.put(foInfo, foInfo);
         }

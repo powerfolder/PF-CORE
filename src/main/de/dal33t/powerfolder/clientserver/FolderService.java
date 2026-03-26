@@ -73,20 +73,12 @@ public interface FolderService {
      */
     void createFolder(FolderInfo foInfo, SyncProfile profile);
 
+    @Deprecated
     void createFolder(FolderInfo foInfo, SyncProfile profile,
-                      Path targetDir, boolean isEncryptedFolder);
+                      Path path, boolean isEncryptedFolder);
 
-    /**
-     * Removes a folder from the account. Required owner permission if
-     * deletedFiles is true.
-     *
-     * @param foInfo
-     * @param deleteFiles
-     *            true to delete all file contained in the folder. Requires
-     *            ownership.
-     * @deprecated legacy support. remove after major 4.0 distribution
-     */
-    void removeFolder(FolderInfo foInfo, boolean deleteFiles);
+    void createFolder(FolderInfo foInfo, SyncProfile profile,
+                      String pathStr, boolean isEncryptedFolder);
 
     /**
      * Removes a folder from the account. Required owner permission if
@@ -156,6 +148,7 @@ public interface FolderService {
      * @param request
      * @deprecated use {@link #sendInvitation(Invitation, boolean)}
      */
+    @Deprecated
     void sendInvitationEmail(SendInvitationEmail request);
 
     /**
@@ -163,6 +156,7 @@ public interface FolderService {
      * @param wait block until send process is finished
      * @deprecated use {@link #sendInvitation(Invitation, boolean)}
      */
+    @Deprecated
     void sendInvitationEmail(SendInvitationEmail request, boolean wait);
 
     /**
@@ -334,13 +328,6 @@ public interface FolderService {
      * @return true if the folder is hosted on this service or any federated service
      */
     boolean isHostedInCloud(FolderInfo foInfo);
-
-    /**
-     * @param foInfo
-     * @return true if stored locally or on a federation cloud service.
-     * @deprecated Use {@link #isHostedInCloud(FolderInfo)}
-     */
-    boolean isStoredInCloud(FolderInfo foInfo);
 
     /**
      * The web DAV URL of a folder.
