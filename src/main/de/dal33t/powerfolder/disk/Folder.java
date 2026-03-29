@@ -30,7 +30,6 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.event.api.DeletedFile;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.*;
-import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.search.LuceneIndexManager;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.transfer.MetaFolderDataHandler;
@@ -466,11 +465,10 @@ public class Folder extends PFComponent {
             return;
         }
         try {
-            searchIndexManager = new LuceneIndexManager(this);
+            searchIndexManager = new LuceneIndexManager(this, getController().getIOProvider());
             searchIndexManager.setExtractContentEnabled(true);
             searchIndexManager.setOcrEnabled(true);
-            IOProvider ioProvider = getController().getIOProvider();
-            boolean rebuild = searchIndexManager.rebuildIndexIfRequired(getKnownFiles(), ioProvider);
+            boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
             logInfo(this + ": Initialized " + (rebuild ? "and rebuilt" : "")
                     + " Lucene search index (" + searchIndexManager.getIndexEntryCount() + " entries)");
         } catch (Throwable t) {
