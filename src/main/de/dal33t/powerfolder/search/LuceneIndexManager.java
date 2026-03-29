@@ -26,9 +26,11 @@ import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
-import org.apache.lucene.store.*;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -38,30 +40,25 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
- * Per-folder Lucene index manager. Maintains a full-text search index that
- * includes both live and deleted files (deleted files carry a flag and can
- * be searched separately for recycle-bin views).
+ * Per-folder Lucene index manager with asynchronous background indexing.
  * <p>
- * <b>Two-pass rebuild strategy:</b>
- * <ol>
- *   <li><b>Pass 1 (fast):</b> indexes all files with metadata and Tika text
- *       extraction only — no OCR. This makes files searchable by name, path,
- *       and text content as quickly as possible.</li>
- *   <li><b>Pass 2 (background):</b> re-indexes only OCR-eligible files
- *       (images, scanned PDFs) that had no content extracted in pass 1.
- *       Runs on a background thread so the application remains responsive.</li>
- * </ol>
+ * All indexing is non-blocking: callers add {@link FileInfo} objects to a
+ * queue, and a single background worker (running on the shared
+ * {@link IOProvider} thread pool) processes them one by one. Each file
+ * gets full indexing: metadata, Tika text extraction, and OCR fallback
+ * if applicable.
  * <p>
- * Thread safety: all public methods that mutate the index acquire a write
- * lock; search methods acquire a read lock. The underlying {@link IndexWriter}
- * is itself thread-safe for writes, but we need to coordinate commit + refresh
- * sequences and protect the {@link SearcherManager} lifecycle.
+ * Searches are synchronous and run against the latest committed state.
  */
 public class LuceneIndexManager extends Loggable {
 
@@ -81,27 +78,46 @@ public class LuceneIndexManager extends Loggable {
             Pattern.compile(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$",
                     Pattern.CASE_INSENSITIVE);
 
+    /**
+     * Files indexed before an automatic commit+refresh.
+     * Override with {@code powerfolder.index.commitInterval}.
+     */
+    private static final int COMMIT_INTERVAL =
+            Integer.getInteger("powerfolder.index.commitInterval", 50);
+
+    // -----------------------------------------------------------------------
+    // Instance fields
+    // -----------------------------------------------------------------------
+
     private final Folder folder;
+    private final IOProvider ioProvider;
     private final Path indexPath;
     private final StandardAnalyzer analyzer;
     private final IndexWriter writer;
     private final SearcherManager searcherManager;
     private final TesseractOCR ocrEngine;
 
-    /** Read-write lock: write-lock for mutations, read-lock for searches. */
-    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private final LinkedBlockingQueue<FileInfo> indexQueue = new LinkedBlockingQueue<>();
+    private final AtomicInteger uncommittedCount = new AtomicInteger(0);
+    private final AtomicBoolean closed = new AtomicBoolean(false);
+
+    /** True while the worker is running on the IO thread pool. */
+    private final AtomicBoolean workerRunning = new AtomicBoolean(false);
 
     private volatile boolean extractContentEnabled = true;
     private volatile boolean ocrEnabled = true;
-    private volatile boolean closed = false;
 
     // ------------------------------------------------------------------------
-    // Construction — guarded so partial init cleans up
+    // Construction
     // ------------------------------------------------------------------------
 
-    public LuceneIndexManager(Folder folder) throws IOException {
+    public LuceneIndexManager(Folder folder, IOProvider ioProvider)
+            throws IOException {
         super();
+        Reject.ifNull(folder, "Folder");
+        Reject.ifNull(ioProvider, "IOProvider");
         this.folder = folder;
+        this.ioProvider = ioProvider;
         this.indexPath = folder.getSystemSubDir().resolve("index");
         Files.createDirectories(indexPath);
 
@@ -139,12 +155,10 @@ public class LuceneIndexManager extends Loggable {
 
     public void setExtractContentEnabled(boolean enabled) {
         this.extractContentEnabled = enabled;
-        logFine(folder + ": Content extraction " + (enabled ? "enabled" : "disabled"));
     }
 
     public void setOcrEnabled(boolean enabled) {
         this.ocrEnabled = enabled;
-        logFine(folder + ": OCR " + (enabled ? "enabled" : "disabled"));
     }
 
     // ------------------------------------------------------------------------
@@ -211,21 +225,13 @@ public class LuceneIndexManager extends Loggable {
         }
 
         // 3) Verify index is readable
-        rwLock.readLock().lock();
         try {
-            searcherManager.maybeRefreshBlocking();
-            IndexSearcher searcher = searcherManager.acquire();
-            try {
-                searcher.getIndexReader().numDocs(); // smoke test
-            } finally {
-                searcherManager.release(searcher);
-            }
+            IndexSearcher s = searcherManager.acquire();
+            try { s.getIndexReader().numDocs(); }
+            finally { searcherManager.release(s); }
         } catch (Exception e) {
-            logWarning(folder + ": Index corrupt or unreadable: "
-                    + e.getMessage() + " — rebuild required");
+            logWarning(folder + ": Index corrupt — rebuild required");
             return true;
-        } finally {
-            rwLock.readLock().unlock();
         }
 
         logFine(folder + ": Index is up-to-date");
@@ -254,124 +260,36 @@ public class LuceneIndexManager extends Loggable {
     }
 
     // ------------------------------------------------------------------------
-    // Indexing
+    // Public API — non-blocking, queue-based
     // ------------------------------------------------------------------------
 
     /**
-     * Indexes a single file. Deleted files are kept in the index with a
-     * {@code deleted=true} flag so they remain searchable in the recycle
-     * bin.
-     * <p>
-     * The {@code useOcr} parameter controls whether OCR is attempted as
-     * a fallback when Tika finds no text. During pass 1 of a rebuild
-     * this is {@code false} for speed; during pass 2 and normal
-     * incremental updates it is {@code true}.
-     * <p>
-     * Caller must hold the write lock.
-     *
-     * @param fileInfo the file to index
-     * @param useOcr   whether to attempt OCR fallback
-     * @return true if content was extracted (Tika or OCR), false if only
-     *         metadata was indexed
+     * Queues files for background indexing. Returns immediately.
      */
-    private boolean indexFile(FileInfo fileInfo, boolean useOcr) {
-        try {
-            String docId = buildDocId(fileInfo);
-            Document doc = new Document();
-
-            doc.add(new StringField("docId", docId, Field.Store.YES));
-            doc.add(new StringField("folderId", folder.getId(),
-                    Field.Store.YES));
-            doc.add(new StoredField("folderName", folder.getName()));
-            doc.add(new TextField("name", fileInfo.getFilenameOnly(),
-                    Field.Store.YES));
-            doc.add(new TextField("extension", fileInfo.getExtension(),
-                    Field.Store.YES));
-            doc.add(new TextField("relativeName",
-                    fileInfo.getRelativeName(), Field.Store.YES));
-            doc.add(new LongPoint("modified",
-                    fileInfo.getModifiedDate() != null
-                            ? fileInfo.getModifiedDate().getTime() : 0));
-            doc.add(new StoredField("size", fileInfo.getSize()));
-
-            // Deleted flag — stored and indexed for filtering
-            boolean deleted = fileInfo.isDeleted();
-            doc.add(new StringField("deleted",
-                    deleted ? "true" : "false", Field.Store.YES));
-
-            // Content extraction (skip for deleted files — content is
-            // gone)
-            boolean contentExtracted = false;
-            if (extractContentEnabled && !deleted) {
-                String content = extractContent(fileInfo, useOcr);
-                if (content != null && !content.isBlank()) {
-                    // StandardAnalyzer handles case-folding and
-                    // tokenization on both index and query side.
-                    doc.add(new TextField("content", content,
-                            Field.Store.NO));
-                    contentExtracted = true;
-                }
-            }
-
-            writer.updateDocument(new Term("docId", docId), doc);
-            if (isFiner()) {
-                logFiner(folder + ": Indexed file (queued): " + fileInfo
-                        + (deleted ? " [deleted]" : "")
-                        + (contentExtracted ? " [content]" : " [meta-only]"));
-            }
-            return contentExtracted;
-        } catch (Exception e) {
-            logWarning(folder + ": Failed to index file " + fileInfo
-                    + ": " + e.getMessage());
-            return false;
-        }
-    }
-
     public void indexFiles(Collection<FileInfo> files) {
         if (files == null || files.isEmpty()) return;
-        rwLock.writeLock().lock();
-        try {
-            for (FileInfo fileInfo : files) {
-                indexFile(fileInfo, true);
-            }
-            commitAndRefresh();
-            logFine(folder + ": Bulk indexed " + files.size() + " files");
-        } catch (Exception e) {
-            logWarning(folder + ": Bulk indexing failed: " + e.getMessage());
-        } finally {
-            rwLock.writeLock().unlock();
-        }
+        indexQueue.addAll(files);
+        ensureWorkerRunning();
+        logFine(folder + ": Queued " + files.size() + " files");
     }
 
     /**
-     * Marks files as deleted in the index (updates the deleted flag to
-     * true) rather than removing them, so they remain searchable in the
-     * recycle bin.
+     * Queues deleted files for re-indexing with deleted flag.
+     * Returns immediately. The worker reads {@code isDeleted()} and
+     * sets the flag accordingly.
      */
     public void markDeleted(Collection<FileInfo> files) {
         if (files == null || files.isEmpty()) return;
-        rwLock.writeLock().lock();
-        try {
-            for (FileInfo fileInfo : files) {
-                indexFile(fileInfo, false); // no content needed
-            }
-            commitAndRefresh();
-            logFine(folder + ": Marked " + files.size()
-                    + " files as deleted in index");
-        } catch (Exception e) {
-            logWarning(folder + ": Mark-deleted failed: " + e.getMessage());
-        } finally {
-            rwLock.writeLock().unlock();
-        }
+        indexQueue.addAll(files);
+        ensureWorkerRunning();
     }
 
     /**
-     * Permanently removes documents from the index. Use only for purging
-     * files that have been removed from the recycle bin / version history.
+     * Permanently removes files from the index. Synchronous — purge
+     * must be immediate so recycle bin views don't show stale entries.
      */
     public void purgeFiles(Collection<FileInfo> files) {
         if (files == null || files.isEmpty()) return;
-        rwLock.writeLock().lock();
         try {
             for (FileInfo fileInfo : files) {
                 writer.deleteDocuments(
@@ -381,219 +299,233 @@ public class LuceneIndexManager extends Loggable {
             logFine(folder + ": Purged " + files.size() + " files from index");
         } catch (Exception e) {
             logWarning(folder + ": Purge failed: " + e.getMessage());
-        } finally {
-            rwLock.writeLock().unlock();
         }
     }
 
-    // ------------------------------------------------------------------------
-    // Two-pass rebuild
-    // ------------------------------------------------------------------------
-
     /**
-     * <b>Pass 1 — fast rebuild without OCR.</b>
-     * <p>
-     * Deletes the entire index and re-indexes all files using Tika text
-     * extraction only. Returns the list of OCR-eligible files that had
-     * no content extracted, so pass 2 can backfill them.
-     *
-     * @param allFiles all files known to the folder (live + deleted)
-     * @return OCR-eligible files that need a second pass, or empty list
+     * Wipes the index synchronously and queues all files for
+     * re-indexing in the background.
      */
-    private List<FileInfo> rebuildPassOne(Collection<FileInfo> allFiles) {
-        List<FileInfo> ocrCandidates = new ArrayList<>();
+    public void rebuildIndex(Collection<FileInfo> allFiles) {
+        indexQueue.clear();
 
-        rwLock.writeLock().lock();
         try {
-            logFine(folder + ": Rebuild pass 1 (no OCR) — "
-                    + (allFiles != null ? allFiles.size() : 0)
-                    + " files");
             writer.deleteAll();
-
-            int count = 0;
-            if (allFiles != null) {
-                for (FileInfo f : allFiles) {
-                    boolean hadContent = indexFile(f, false);
-
-                    // Collect live, OCR-eligible files that Tika could
-                    // not extract text from
-                    if (!f.isDeleted() && !hadContent
-                            && isOcrEligible(f)) {
-                        ocrCandidates.add(f);
-                    }
-                    count++;
-                }
-            }
-
             commitAndRefresh();
-            writeIndexMeta(count);
-            logFine(folder + ": Rebuild pass 1 completed (" + count
-                    + " files, " + ocrCandidates.size()
-                    + " OCR candidates)");
+            logFine(folder + ": Index wiped for rebuild");
         } catch (Exception e) {
-            logWarning(folder + ": Rebuild pass 1 failed: " + e.getMessage());
-        } finally {
-            rwLock.writeLock().unlock();
+            logWarning(folder + ": Failed to wipe index: "
+                    + e.getMessage());
+            return;
         }
 
-        return ocrCandidates;
+        int count = 0;
+        if (allFiles != null) {
+            indexQueue.addAll(allFiles);
+            count = allFiles.size();
+        }
+
+        writeIndexMeta(count);
+        ensureWorkerRunning();
+        logInfo(folder + ": Rebuild queued — " + count + " files");
     }
 
-    /**
-     * <b>Pass 2 — background OCR backfill.</b>
-     * <p>
-     * Re-indexes only the given files with OCR enabled. Each file is
-     * individually committed so partial progress is preserved if the
-     * process is interrupted.
-     *
-     * @param ocrCandidates files that need OCR extraction
-     */
-    private void rebuildPassTwo(List<FileInfo> ocrCandidates) {
-        if (ocrCandidates.isEmpty() || !ocrEnabled || closed) return;
+    public boolean rebuildIndexIfRequired() {
+        Collection<FileInfo> allItems = new ArrayList<>();
+        allItems.addAll(folder.getKnownFiles());
+        allItems.addAll(folder.getKnownDirectories());
 
-        logFine(folder + ": Rebuild pass 2 (OCR) — "
-                + ocrCandidates.size() + " files");
-        int indexed = 0;
-
-        for (FileInfo f : ocrCandidates) {
-            if (closed || Thread.currentThread().isInterrupted()) {
-                logFine(folder + ": OCR pass interrupted after "
-                        + indexed + "/" + ocrCandidates.size()
-                        + " files");
-                break;
-            }
-
-            rwLock.writeLock().lock();
-            try {
-                boolean hadContent = indexFile(f, true);
-                if (hadContent) {
-                    indexed++;
-                    // Commit periodically so progress is durable and
-                    // searches see new content incrementally
-                    if (indexed % 10 == 0) {
-                        commitAndRefresh();
-                    }
-                }
-            } catch (Exception e) {
-                logWarning(folder + ": OCR pass failed for "
-                        + f.getRelativeName() + ": " + e.getMessage());
-            } finally {
-                rwLock.writeLock().unlock();
-            }
-        }
-
-        // Final commit for any remaining uncommitted docs
-        if (indexed > 0) {
-            rwLock.writeLock().lock();
-            try {
-                commitAndRefresh();
-            } finally {
-                rwLock.writeLock().unlock();
-            }
-        }
-
-        logFine(folder + ": Rebuild pass 2 completed — OCR extracted "
-                + "content from " + indexed + "/"
-                + ocrCandidates.size() + " files");
-    }
-
-    /**
-     * Full two-pass rebuild. Pass 1 runs synchronously (fast, no OCR).
-     * Pass 2 runs on the same thread — callers that want non-blocking
-     * behavior should invoke this from a background thread (see
-     * {@link #rebuildIndexIfRequired}).
-     */
-    private void rebuildIndex(Collection<FileInfo> allFiles, IOProvider ioProvider) {
-        List<FileInfo> ocrCandidates = rebuildPassOne(allFiles);
-
-        if (!ocrCandidates.isEmpty() && ocrEnabled) {
-            ioProvider.startIO(() -> rebuildPassTwo(ocrCandidates));
-        }
-    }
-
-    /**
-     * Conditionally rebuilds the index only if
-     * {@link #isRebuildRequired} determines it is necessary.
-     * <p>
-     * Pass 1 (metadata + Tika, no OCR) runs on the IO thread pool for
-     * fast results. Pass 2 (OCR backfill) follows automatically on the
-     * same background thread, so the main thread is never blocked.
-     *
-     * @param allFiles   all files known to the folder (live + deleted)
-     * @param ioProvider provides background thread scheduling
-     * @return true if a rebuild was scheduled
-     */
-    public boolean rebuildIndexIfRequired(Collection<FileInfo> allFiles, IOProvider ioProvider) {
-        int fileCount = allFiles != null ? allFiles.size() : 0;
-        if (isRebuildRequired(fileCount)) {
-            rebuildIndex(allFiles, ioProvider);
+        if (isRebuildRequired(allItems.size())) {
+            rebuildIndex(allItems);
             return true;
         }
         return false;
     }
 
-    /**
-     * Checks whether a file's extension makes it eligible for OCR
-     * fallback.
-     */
-    private boolean isOcrEligible(FileInfo fileInfo) {
-        Path filePath = fileInfo.getDiskFile(folder);
-        return filePath != null
-                && OCR_ELIGIBLE_PATTERN.matcher(
-                filePath.toString()).matches();
-    }
-
-    // ------------------------------------------------------------------------
-    // Incremental updates
-    // ------------------------------------------------------------------------
-
     public void updateIndex(ScanResult scanResult) {
         Reject.ifNull(scanResult, "ScanResult");
-        if (!scanResult.isChangeDetected()) {
-            logFiner(folder + ": No changes detected");
-            return;
+        if (!scanResult.isChangeDetected()) return;
+
+        int count = 0;
+        for (FileInfo f : safe(scanResult.getNewFiles())) {
+            indexQueue.add(f); count++;
         }
-        rwLock.writeLock().lock();
+        for (FileInfo f : safe(scanResult.getChangedFiles())) {
+            indexQueue.add(f); count++;
+        }
+        for (FileInfo f : safe(scanResult.getRestoredFiles())) {
+            indexQueue.add(f); count++;
+        }
+        for (FileInfo f : safe(scanResult.getDeletedFiles())) {
+            indexQueue.add(f); count++;
+        }
+
+        ensureWorkerRunning();
+        logFine(folder + ": Queued " + count + " index updates");
+    }
+
+    // ------------------------------------------------------------------------
+    // Worker management
+    // ------------------------------------------------------------------------
+
+    /**
+     * Ensures exactly one worker is running on the IO thread pool.
+     * If the worker has already finished (queue was empty) and new
+     * work arrives, it is restarted.
+     */
+    private void ensureWorkerRunning() {
+        if (closed.get()) return;
+        if (workerRunning.compareAndSet(false, true)) {
+            ioProvider.startIO(this::workerLoop);
+        }
+    }
+
+    /**
+     * Single worker loop: polls FileInfo objects from the queue and
+     * indexes them. Commits periodically. Exits when the queue is
+     * empty — will be restarted by {@link #ensureWorkerRunning()}
+     * when new work arrives.
+     */
+    private void workerLoop() {
+        logFine(folder + ": Index worker started");
+
         try {
-            for (FileInfo f : safe(scanResult.getNewFiles())) {
-                indexFile(f, true);
-            }
-            for (FileInfo f : safe(scanResult.getChangedFiles())) {
-                indexFile(f, true);
-            }
-            for (FileInfo f : safe(scanResult.getRestoredFiles())) {
-                indexFile(f, true);
-            }
-            // Mark deleted rather than remove — keeps them searchable
-            // in recycle bin
-            for (FileInfo f : safe(scanResult.getDeletedFiles())) {
-                indexFile(f, false);
-            }
+            while (!closed.get()) {
+                FileInfo fileInfo = indexQueue.poll(
+                        2, TimeUnit.SECONDS);
 
-            commitAndRefresh();
-
-            // Update meta with approximate current count
-            try {
-                IndexSearcher s = searcherManager.acquire();
-                try {
-                    writeIndexMeta(s.getIndexReader().numDocs());
-                } finally {
-                    searcherManager.release(s);
+                if (fileInfo == null) {
+                    // Queue empty — commit remaining and exit.
+                    // Worker will be restarted when new work arrives.
+                    if (uncommittedCount.get() > 0) {
+                        commitAndRefresh();
+                    }
+                    break;
                 }
-            } catch (Exception ignored) {
-                // Non-critical — meta will be corrected on next rebuild
+
+                try {
+                    doIndexFile(fileInfo);
+                } catch (Exception e) {
+                    logWarning(folder + ": Failed to index "
+                            + fileInfo.getFilenameOnly() + ": "
+                            + e.getMessage());
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            // Final commit for anything remaining
+            if (uncommittedCount.get() > 0) {
+                commitAndRefresh();
+            }
+            workerRunning.set(false);
+
+            // Race guard: if items were added between the poll timeout
+            // and workerRunning.set(false), restart the worker.
+            if (!indexQueue.isEmpty() && !closed.get()) {
+                ensureWorkerRunning();
             }
 
-            logFine(folder + ": Lucene index updated");
-        } catch (Exception e) {
-            logWarning(folder + ": Lucene index update failed: " + e.getMessage());
-        } finally {
-            rwLock.writeLock().unlock();
+            logFine(folder + ": Index worker stopped (pending: "
+                    + indexQueue.size() + ")");
         }
     }
 
     // ------------------------------------------------------------------------
-    // Search
+    // Core indexing (called by worker)
+    // ------------------------------------------------------------------------
+
+    private void doIndexFile(FileInfo fileInfo) {
+        try {
+            String docId = buildDocId(fileInfo);
+            Document doc = new Document();
+
+            doc.add(new StringField("docId", docId, Field.Store.YES));
+            doc.add(new StringField("folderId", folder.getId(), Field.Store.YES));
+            doc.add(new StoredField("folderName", folder.getName()));
+            doc.add(new TextField("name", fileInfo.getFilenameOnly(), Field.Store.YES));
+            doc.add(new TextField("extension", fileInfo.getExtension(), Field.Store.YES));
+            doc.add(new TextField("relativeName", fileInfo.getRelativeName(), Field.Store.YES));
+            doc.add(new LongPoint("modified",
+                    fileInfo.getModifiedDate() != null
+                            ? fileInfo.getModifiedDate().getTime()
+                            : 0));
+            doc.add(new StoredField("size", fileInfo.getSize()));
+
+            boolean deleted = fileInfo.isDeleted();
+            doc.add(new StringField("deleted",
+                    deleted ? "true" : "false", Field.Store.YES));
+
+            if (extractContentEnabled && !deleted) {
+                String content = extractContent(fileInfo);
+                if (content != null && !content.isBlank()) {
+                    doc.add(new TextField("content", content,
+                            Field.Store.NO));
+                }
+            }
+
+            writer.updateDocument(new Term("docId", docId), doc);
+
+            if (isFiner()) {
+                logFiner(folder + ": Indexed: "
+                        + fileInfo.getFilenameOnly()
+                        + (deleted ? " [deleted]" : ""));
+            }
+
+            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
+                commitAndRefresh();
+            }
+        } catch (Exception e) {
+            logWarning(folder + ": Index error for "
+                    + fileInfo.getFilenameOnly() + ": "
+                    + e.getMessage());
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Content extraction (Tika + OCR)
+    // ------------------------------------------------------------------------
+
+    private String extractContent(FileInfo fileInfo) {
+        Path filePath = fileInfo.getDiskFile(folder);
+        if (filePath == null || !Files.exists(filePath)) return null;
+
+        // Tika
+        try (InputStream stream = Files.newInputStream(filePath)) {
+            BodyContentHandler handler =
+                    new BodyContentHandler(-1);
+            new AutoDetectParser().parse(stream, handler,
+                    new Metadata());
+            String text = handler.toString();
+            if (text != null && !text.isBlank()) return text;
+        } catch (IOException | SAXException | TikaException e) {
+            logFiner(folder + ": Tika failed for "
+                    + fileInfo.getFilenameOnly() + ": "
+                    + e.getMessage());
+        }
+
+        // OCR fallback
+        if (ocrEnabled && OCR_ELIGIBLE_PATTERN.matcher(
+                filePath.toString()).matches()) {
+            try {
+                String ocrText = ocrEngine.performOCR(filePath);
+                if (ocrText != null && !ocrText.isBlank()) {
+                    logFine(folder + ": OCR extracted "
+                            + ocrText.length() + " chars from "
+                            + fileInfo.getFilenameOnly());
+                    return ocrText;
+                }
+            } catch (NoClassDefFoundError e) {
+                logWarning(folder + ": OCR unavailable for "
+                        + fileInfo.getFilenameOnly());
+            }
+        }
+
+        return null;
+    }
+
+    // ------------------------------------------------------------------------
+    // Search (synchronous)
     // ------------------------------------------------------------------------
 
     /**
@@ -656,7 +588,6 @@ public class LuceneIndexManager extends Loggable {
         List<FileInfo> results = new ArrayList<>();
         if (queryText == null || queryText.isBlank()) return results;
 
-        rwLock.readLock().lock();
         IndexSearcher searcher = null;
         try {
             searcherManager.maybeRefreshBlocking();
@@ -725,7 +656,6 @@ public class LuceneIndexManager extends Loggable {
                             + e.getMessage());
                 }
             }
-            rwLock.readLock().unlock();
         }
         return results;
     }
@@ -781,120 +711,62 @@ public class LuceneIndexManager extends Loggable {
     }
 
     // ------------------------------------------------------------------------
-    // Content extraction
+    // Commit helper
     // ------------------------------------------------------------------------
 
-    /**
-     * Extracts text content from the given file.
-     *
-     * @param fileInfo the file to extract content from
-     * @param useOcr   if true, attempt OCR as fallback when Tika finds
-     *                 no text
-     * @return extracted text, or null if no text could be extracted
-     */
-    private String extractContent(FileInfo fileInfo, boolean useOcr) {
-        if (!extractContentEnabled) return null;
-
-        Path filePath = fileInfo.getDiskFile(folder);
-        if (filePath == null || !Files.exists(filePath)) {
-            logWarning(folder + ": extractContent: File not found "
-                    + fileInfo.getRelativeName());
-            return null;
-        }
-
-        logFine(folder + ": Extracting content from "
-                + fileInfo.getRelativeName() + " (" + filePath + ")"
-                + (useOcr ? "" : " [no-OCR]"));
-        long start = System.currentTimeMillis();
-
-        // Tika extraction
-        try (InputStream stream = Files.newInputStream(filePath)) {
-            Metadata metadata = new Metadata();
-            BodyContentHandler handler =
-                    new BodyContentHandler(-1);
-            AutoDetectParser parser = new AutoDetectParser();
-            parser.parse(stream, handler, metadata);
-            String text = handler.toString();
-
-            long duration = System.currentTimeMillis() - start;
-            if (text != null && !text.isBlank()) {
-                logFine(folder + ": Tika extracted " + text.length()
-                        + " chars from " + fileInfo.getRelativeName()
-                        + " in " + duration + " ms.");
-                return text;
-            } else {
-                logFiner(folder + ": Tika found no text in "
-                        + fileInfo.getRelativeName());
-            }
-        } catch (IOException | SAXException | TikaException e) {
-            logFiner(folder + ": Tika extraction failed for "
-                    + fileInfo.getRelativeName() + ": "
+    private void commitAndRefresh() {
+        try {
+            writer.commit();
+            searcherManager.maybeRefresh();
+            uncommittedCount.set(0);
+        } catch (Exception e) {
+            logWarning(folder + ": Commit failed: "
                     + e.getMessage());
         }
-
-        // OCR fallback — only if caller permits and file is eligible
-        if (useOcr && ocrEnabled
-                && OCR_ELIGIBLE_PATTERN.matcher(
-                filePath.toString()).matches()) {
-            try {
-                logFine(folder + ": Running OCR fallback for "
-                        + fileInfo.getRelativeName());
-                String ocrText = ocrEngine.performOCR(filePath);
-                if (ocrText != null && !ocrText.isBlank()) {
-                    logFine(folder + ": OCR extracted "
-                            + ocrText.length() + " chars from "
-                            + fileInfo.getRelativeName());
-                    return ocrText;
-                } else {
-                    logInfo(folder + ": OCR produced no text for "
-                            + fileInfo.getRelativeName());
-                }
-            } catch (NoClassDefFoundError e) {
-                logWarning(folder
-                        + ": OCR unavailable (missing jai-imageio-core"
-                        + " or PDFBox mismatch). Skipping OCR for "
-                        + fileInfo.getRelativeName());
-            }
-        }
-
-        logFiner(folder + ": No extractable content found for "
-                + fileInfo.getRelativeName());
-        return null;
     }
 
     // ------------------------------------------------------------------------
-    // Index statistics
+    // Statistics
     // ------------------------------------------------------------------------
 
-    /**
-     * Returns the total number of documents in the index (including
-     * deleted files that are still indexed with a deleted flag).
-     *
-     * @return document count, or -1 if the count could not be determined
-     */
     public int getIndexEntryCount() {
-        rwLock.readLock().lock();
-        IndexSearcher searcher = null;
         try {
-            searcherManager.maybeRefreshBlocking();
-            searcher = searcherManager.acquire();
-            return searcher.getIndexReader().numDocs();
+            IndexSearcher s = searcherManager.acquire();
+            try { return s.getIndexReader().numDocs(); }
+            finally { searcherManager.release(s); }
         } catch (Exception e) {
-            logWarning(folder + ": Failed to get index entry count: "
-                    + e.getMessage());
             return -1;
-        } finally {
-            if (searcher != null) {
-                try {
-                    searcherManager.release(searcher);
-                } catch (IOException e) {
-                    logWarning(folder
-                            + ": Failed to release searcher: "
-                            + e.getMessage());
-                }
-            }
-            rwLock.readLock().unlock();
         }
+    }
+
+    /** Number of files waiting to be indexed. */
+    public int getPendingCount() {
+        return indexQueue.size();
+    }
+
+    // ------------------------------------------------------------------------
+    // Shutdown
+    // ------------------------------------------------------------------------
+
+    public void shutdown() {
+        if (!closed.compareAndSet(false, true)) return;
+        logFine(folder + ": Shutting down...");
+
+        // Drain remaining queue items
+        FileInfo f;
+        while ((f = indexQueue.poll()) != null) {
+            try { doIndexFile(f); }
+            catch (Exception ignored) {}
+        }
+
+        commitAndRefresh();
+        try { searcherManager.close(); }
+        catch (Exception ignored) {}
+        try { writer.close(); }
+        catch (Exception ignored) {}
+        ocrEngine.shutdown();
+
+        logFine(folder + ": Shutdown complete");
     }
 
     // ------------------------------------------------------------------------
@@ -906,67 +778,6 @@ public class LuceneIndexManager extends Loggable {
         return folder.getId() + ":" + fileInfo.getRelativeName();
     }
 
-    /**
-     * Commits the writer and refreshes the searcher. Caller must hold
-     * the write lock.
-     */
-    private void commitAndRefresh() {
-        try {
-            writer.commit();
-        } catch (Exception e) {
-            logWarning(folder + ": Commit failed: " + e.getMessage());
-        }
-        try {
-            searcherManager.maybeRefresh();
-        } catch (IOException e) {
-            logWarning(folder + ": Searcher refresh failed: " + e.getMessage());
-        }
-    }
-
-    public void commit() {
-        rwLock.writeLock().lock();
-        try {
-            writer.commit();
-        } catch (Exception e) {
-            logWarning(folder + ": Commit failed: " + e.getMessage());
-        } finally {
-            rwLock.writeLock().unlock();
-        }
-    }
-
-    public void shutdown() {
-        if (closed) return;
-        rwLock.writeLock().lock();
-        try {
-            closed = true;
-            try {
-                writer.commit();
-            } catch (Exception e) {
-                logWarning(folder + ": Final commit failed: " + e.getMessage());
-            }
-            try {
-                searcherManager.close();
-            } catch (Exception e) {
-                logWarning(folder
-                        + ": Failed to close SearcherManager: "
-                        + e.getMessage());
-            }
-            try {
-                writer.close();
-                logFine(folder + ": Lucene index closed");
-            } catch (Exception e) {
-                logWarning(folder
-                        + ": Failed to close Lucene index: "
-                        + e.getMessage());
-            }
-            ocrEngine.shutdown();
-            logFine(folder + ": Shutdown complete");
-        } finally {
-            rwLock.writeLock().unlock();
-        }
-    }
-
-    /** Null-safe wrapper for collections from ScanResult. */
     private static Collection<FileInfo> safe(Collection<FileInfo> c) {
         return c != null ? c : Collections.emptyList();
     }
