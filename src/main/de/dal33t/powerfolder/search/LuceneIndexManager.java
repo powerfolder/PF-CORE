@@ -429,8 +429,7 @@ public class LuceneIndexManager extends Loggable {
 
         try {
             while (!closed.get()) {
-                FileInfo fileInfo = indexQueue.poll(
-                        2, TimeUnit.SECONDS);
+                FileInfo fileInfo = indexQueue.poll(100, TimeUnit.MILLISECONDS);
 
                 if (fileInfo == null) {
                     // Queue empty — commit remaining and exit.
