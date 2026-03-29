@@ -123,13 +123,28 @@ public class LuceneIndexManager extends Loggable {
 
         this.analyzer = new StandardAnalyzer();
 
-        // Guard: if anything after the writer creation throws, close the
-        // writer so we don't leak file handles or lock files.
         IndexWriter w = null;
         try {
             IndexWriterConfig config = new IndexWriterConfig(analyzer);
             FSDirectory directory = FSDirectory.open(indexPath);
             w = new IndexWriter(directory, config);
+        } catch (Exception e) {
+            // Index incompatible (e.g. created by a newer/older Lucene
+            // version) or corrupt. Wipe and start fresh.
+            logWarning(folder
+                    + ": Incompatible or corrupt index, rebuilding: "
+                    + e.getMessage());
+            if (w != null) {
+                try { w.close(); } catch (Exception ignored) {}
+                w = null;
+            }
+            deleteIndexFiles();
+            IndexWriterConfig config = new IndexWriterConfig(analyzer);
+            FSDirectory directory = FSDirectory.open(indexPath);
+            w = new IndexWriter(directory, config);
+        }
+
+        try {
             this.searcherManager =
                     new SearcherManager(w, true, true, null);
             this.writer = w;
@@ -147,6 +162,29 @@ public class LuceneIndexManager extends Loggable {
         this.ocrEngine = TesseractOCR.getInstance();
 
         logFine(folder + ": Lucene index initialized at " + indexPath.toAbsolutePath());
+    }
+
+    /**
+     * Deletes all files in the index directory. Used when the existing
+     * index is incompatible (e.g. created by a different Lucene major
+     * version) or corrupt. Also removes the meta file so
+     * {@link #rebuildIndexIfRequired()} detects the need for a full
+     * rebuild on next call.
+     */
+    private void deleteIndexFiles() {
+        try {
+            if (Files.exists(indexPath)) {
+                try (var stream = Files.newDirectoryStream(indexPath)) {
+                    for (Path file : stream) {
+                        Files.deleteIfExists(file);
+                    }
+                }
+            }
+            logFine(folder + ": Index files deleted");
+        } catch (IOException e) {
+            logWarning(folder + ": Failed to delete index files: "
+                    + e.getMessage());
+        }
     }
 
     // ------------------------------------------------------------------------

@@ -469,6 +469,11 @@ public class Folder extends PFComponent {
             searchIndexManager.setExtractContentEnabled(true);
             searchIndexManager.setOcrEnabled(true);
             boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
+            if (rebuild) {
+                logInfo(this + ": Initialized and rebuilding Lucene search index");
+            } else {
+                logInfo(this + ": Initialized Lucene search index with " + searchIndexManager.getIndexEntryCount() + " entries");
+            }
             logInfo(this + ": Initialized " + (rebuild ? "and rebuilt" : "")
                     + " Lucene search index (" + searchIndexManager.getIndexEntryCount() + " entries)");
         } catch (Throwable t) {
