@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -174,7 +175,7 @@ public class LuceneIndexManager extends Loggable {
     private void deleteIndexFiles() {
         try {
             if (Files.exists(indexPath)) {
-                try (var stream = Files.newDirectoryStream(indexPath)) {
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(indexPath)) {
                     for (Path file : stream) {
                         Files.deleteIfExists(file);
                     }
