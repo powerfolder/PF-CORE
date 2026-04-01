@@ -53,6 +53,15 @@ public class BrowserLauncher {
 
     private static final String errMsg = "Error attempting to launch web browser";
 
+    private static final String[] LINUX_OPENERS = {
+        "xdg-open", "gio", "kde-open6", "kde-open5", "kde-open"
+    };
+
+    private static final String[] FALLBACK_BROWSERS = {
+        "firefox", "chromium", "google-chrome", "opera",
+        "konqueror", "epiphany", "mozilla", "netscape"
+    };
+
     /**
      * Opens the browser in background thread. This method does not BLOCK. Can
      * safely be used from UI-EDT Thread.
@@ -130,30 +139,44 @@ public class BrowserLauncher {
             } else if (OSUtil.isWindowsSystem()) {
                 Runtime.getRuntime().exec(new String[]{"rundll32", "url.dll,FileProtocolHandler", url});
             } else {
-                // Modern Linux/Unix: xdg-open is the standard handler
-                if (Runtime.getRuntime().exec(new String[]{"which", "xdg-open"}).waitFor() == 0) {
-                    Runtime.getRuntime().exec(new String[]{"xdg-open", url});
-                    return;
-                }
-
-                // Legacy fallback list (kept as a last resort)
-                String[] browsers = {"firefox", "opera", "konqueror",
-                    "epiphany", "mozilla", "netscape"};
-                String browser = null;
-                for (int count = 0; count < browsers.length && browser == null; count++) {
-                    if (Runtime.getRuntime()
-                        .exec(new String[]{"which", browsers[count]}).waitFor() == 0) {
-                        browser = browsers[count];
-                    }
-                }
-                if (browser == null) {
-                    throw new Exception("Could not find web browser (no xdg-open and no known browser in PATH)");
-                }
-                Runtime.getRuntime().exec(new String[]{browser, url});
+                openURLOnLinux(url);
             }
         } catch (Exception e) {
             throw (IOException) new IOException(errMsg).initCause(e);
         }
+    }
+
+    private static void openURLOnLinux(String url) throws Exception {
+        for (String opener : LINUX_OPENERS) {
+            if (isCommandAvailable(opener)) {
+                String[] cmd = "gio".equals(opener)
+                    ? new String[]{opener, "open", url}
+                    : new String[]{opener, url};
+                Process p = Runtime.getRuntime().exec(cmd);
+                if (p.waitFor() == 0) {
+                    return;
+                }
+                log.fine(opener + " exited with code " + p.exitValue()
+                    + ", trying next");
+            }
+        }
+
+        for (String browser : FALLBACK_BROWSERS) {
+            if (isCommandAvailable(browser)) {
+                Runtime.getRuntime().exec(new String[]{browser, url});
+                return;
+            }
+        }
+
+        throw new Exception("Could not find web browser"
+            + " (no URL opener and no known browser in PATH)");
+    }
+
+    private static boolean isCommandAvailable(String command)
+        throws IOException, InterruptedException
+    {
+        return Runtime.getRuntime()
+            .exec(new String[]{"which", command}).waitFor() == 0;
     }
 
     private static boolean java6impl(String url) {
