@@ -329,7 +329,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             }
             prefix += ")/";
         }
-        return "Folder " + prefix + name + '/' + id + '/' + version;
+        return (isSubFolder() ? "Sub" : "") + "Folder " + prefix + name + '/' + id + '/' + version;
     }
 
     // Serialization optimization *********************************************
