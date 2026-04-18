@@ -78,7 +78,7 @@ public class Translation {
             supportedLocales = new ArrayList<>();
             supportedLocales.add(Locale.ENGLISH);
             supportedLocales.add(Locale.GERMAN);
-            // supportedLocales.add(TURKISH);
+            supportedLocales.add(TURKISH);
             supportedLocales.add(Locale.FRENCH);
             supportedLocales.add(SPANISH);
             supportedLocales.add(Locale.ITALIAN);
