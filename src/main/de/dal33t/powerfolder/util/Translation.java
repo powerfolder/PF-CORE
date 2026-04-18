@@ -47,6 +47,14 @@ public class Translation {
     public static final Locale PORTUGUESE = new Locale("pt");
     public static final Locale HUNGARIAN = new Locale("hu");
     public static final Locale TURKISH = new Locale("tr");
+    public static final Locale BULGARIAN = new Locale("bg");
+    public static final Locale CZECH = new Locale("cs");
+    public static final Locale DANISH = new Locale("da");
+    public static final Locale FINNISH = new Locale("fi");
+    public static final Locale GREEK = new Locale("el");
+    public static final Locale NORWEGIAN = new Locale("no");
+    public static final Locale ROMANIAN = new Locale("ro");
+    public static final Locale SLOVAK = new Locale("sk");
 
     /**
      * List of all supported locales
@@ -78,20 +86,25 @@ public class Translation {
             supportedLocales = new ArrayList<>();
             supportedLocales.add(Locale.ENGLISH);
             supportedLocales.add(Locale.GERMAN);
-            supportedLocales.add(TURKISH);
             supportedLocales.add(Locale.FRENCH);
             supportedLocales.add(SPANISH);
             supportedLocales.add(Locale.ITALIAN);
-            supportedLocales.add(POLISH);
             supportedLocales.add(DUTCH);
+            supportedLocales.add(POLISH);
             supportedLocales.add(PORTUGUESE);
-
-            // supportedLocales.add(RUSSIAN);
-            // supportedLocales.add(Locale.CHINESE);
-            // supportedLocales.add(Locale.JAPANESE);
-            // supportedLocales.add(SWEDISH);
-            // supportedLocales.add(ARABIC);
-            // supportedLocales.add(HUNGARIAN);
+            supportedLocales.add(TURKISH);
+            supportedLocales.add(BULGARIAN);
+            supportedLocales.add(CZECH);
+            supportedLocales.add(DANISH);
+            supportedLocales.add(FINNISH);
+            supportedLocales.add(GREEK);
+            supportedLocales.add(HUNGARIAN);
+            supportedLocales.add(NORWEGIAN);
+            supportedLocales.add(ROMANIAN);
+            supportedLocales.add(SLOVAK);
+            supportedLocales.add(SWEDISH);
+            supportedLocales.add(RUSSIAN);
+            supportedLocales.add(ARABIC);
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
         return Collections.unmodifiableList(supportedLocales);
