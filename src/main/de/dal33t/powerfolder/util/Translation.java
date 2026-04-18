@@ -78,19 +78,20 @@ public class Translation {
             supportedLocales = new ArrayList<>();
             supportedLocales.add(Locale.ENGLISH);
             supportedLocales.add(Locale.GERMAN);
-            supportedLocales.add(POLISH);
-            supportedLocales.add(PORTUGUESE);
+            // supportedLocales.add(TURKISH);
+            supportedLocales.add(Locale.FRENCH);
             supportedLocales.add(SPANISH);
             supportedLocales.add(Locale.ITALIAN);
+            supportedLocales.add(POLISH);
             supportedLocales.add(DUTCH);
+            supportedLocales.add(PORTUGUESE);
+
             // supportedLocales.add(RUSSIAN);
-            // supportedLocales.add(Locale.FRENCH);
             // supportedLocales.add(Locale.CHINESE);
             // supportedLocales.add(Locale.JAPANESE);
             // supportedLocales.add(SWEDISH);
             // supportedLocales.add(ARABIC);
             // supportedLocales.add(HUNGARIAN);
-            // supportedLocales.add(TURKISH);
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
         return Collections.unmodifiableList(supportedLocales);
