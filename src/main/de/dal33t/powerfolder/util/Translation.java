@@ -55,6 +55,15 @@ public class Translation {
     public static final Locale NORWEGIAN = new Locale("no");
     public static final Locale ROMANIAN = new Locale("ro");
     public static final Locale SLOVAK = new Locale("sk");
+    public static final Locale CROATIAN = new Locale("hr");
+    public static final Locale SLOVENIAN = new Locale("sl");
+    public static final Locale SERBIAN = new Locale("sr");
+    public static final Locale LITHUANIAN = new Locale("lt");
+    public static final Locale LATVIAN = new Locale("lv");
+    public static final Locale ESTONIAN = new Locale("et");
+    public static final Locale JAPANESE = new Locale("ja");
+    public static final Locale KOREAN = new Locale("ko");
+    public static final Locale CHINESE_SIMPLIFIED = new Locale("zh", "CN");
 
     /**
      * List of all supported locales
@@ -105,6 +114,15 @@ public class Translation {
             supportedLocales.add(SWEDISH);
             supportedLocales.add(RUSSIAN);
             supportedLocales.add(ARABIC);
+            supportedLocales.add(CROATIAN);
+            supportedLocales.add(SLOVENIAN);
+            supportedLocales.add(SERBIAN);
+            supportedLocales.add(LITHUANIAN);
+            supportedLocales.add(LATVIAN);
+            supportedLocales.add(ESTONIAN);
+            supportedLocales.add(JAPANESE);
+            supportedLocales.add(KOREAN);
+            supportedLocales.add(CHINESE_SIMPLIFIED);
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
         return Collections.unmodifiableList(supportedLocales);
