@@ -94,13 +94,16 @@ public class FileLink implements Serializable {
         super();
         Reject.ifNull(fInfo, "FileInfo");
         Reject.ifNull(fInfo.getFolderInfo(), "FolderInfo");
-        this.folderInfo = fInfo.getFolderInfo();
-        this.relativeName = fInfo.getRelativeName();
+        FolderInfo fi = fInfo.getFolderInfo();
+        FileInfo resolved = fi.isSubFolder() && fi.inheritsPermissions()
+            ? FileInfoFactory.mapToTopFolder(fInfo) : fInfo;
+        this.folderInfo = resolved.getFolderInfo();
+        this.relativeName = resolved.getRelativeName();
         this.maxDownloads = -1;
         if (generateRandomID) {
             this.id = IdGenerator.generateFileLinkRandomID();
         } else {
-            this.id = IdGenerator.generateFileLinkID(fInfo);
+            this.id = IdGenerator.generateFileLinkID(resolved);
         }
         this.creationDate = new Date();
     }

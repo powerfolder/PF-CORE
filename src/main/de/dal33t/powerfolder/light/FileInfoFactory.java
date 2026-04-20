@@ -96,7 +96,7 @@ public final class FileInfoFactory {
         return lookupInstance(folder.getInfo(), fn, Files.isDirectory(file));
     }
 
-    public static DirectoryInfo lookupNormalizeToTopFolder(DirectoryInfo directoryInfo) {
+    public static DirectoryInfo mapToTopFolder(DirectoryInfo directoryInfo) {
         if (directoryInfo == null) {
             return null;
         }
@@ -114,6 +114,23 @@ public final class FileInfoFactory {
 
         return directoryInfo;
     }
+
+    public static FileInfo mapToTopFolder(FileInfo fileInfo) {
+        if (fileInfo == null) {
+            return null;
+        }
+        if (fileInfo instanceof DirectoryInfo) {
+            return mapToTopFolder((DirectoryInfo) fileInfo);
+        }
+
+        FolderInfo folderInfo = fileInfo.getFolderInfo();
+        if (folderInfo == null || !folderInfo.isSubFolder()) {
+            return fileInfo;
+        }
+
+        return mapToTopFolder0(fileInfo);
+    }
+
 
     public static FileInfo lookupInstanceForTest(FolderInfo folder, String name, Date modificationDate) {
         return new FileInfo(folder, name, modificationDate, null);
@@ -463,7 +480,7 @@ public final class FileInfoFactory {
         }
     }
 
-    public static FileInfo mapToTopFolder(FileInfo subFileInfo) {
+    private static FileInfo mapToTopFolder0(FileInfo subFileInfo) {
         Reject.ifNull(subFileInfo, "FileInfo");
         Reject.ifNull(subFileInfo.getFolderInfo().getParent(), "FileInfo not from subfolder: " + subFileInfo.toDetailString());
 
