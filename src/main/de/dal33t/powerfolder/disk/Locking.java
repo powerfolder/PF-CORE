@@ -256,10 +256,10 @@ public class Locking extends PFComponent {
         Lock lock = getLock(fInfo);
         setWritableIfFromOtherMember(fInfo, lock, lockFileInfo.isDeleted());
         if (lockFileInfo.isDeleted()) {
-            logInfo("File un-locked by remote: " + fInfo.toDetailString());
+            logInfo("File un-locked by remote: " + fInfo);
             fireUnlocked(fInfo);
         } else {
-            logInfo("File locked by remote: " + fInfo.toDetailString());
+            logInfo("File locked by remote: " + fInfo);
             fireLocked(fInfo);
         }
     }
