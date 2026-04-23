@@ -476,7 +476,7 @@ public class LuceneIndexManager extends Loggable {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 4;
+    private static final int INDEX_FORMAT_VERSION = 5;
 
     private void doIndexFile(FileInfo fileInfo) {
         try {
@@ -487,13 +487,24 @@ public class LuceneIndexManager extends Loggable {
             doc.add(new StringField("folderId", folder.getId(), Field.Store.YES));
             doc.add(new StoredField("folderName", folder.getName()));
             doc.add(new TextField("fileName", fileInfo.getFilenameOnly(), Field.Store.YES));
-            doc.add(new TextField("extension", fileInfo.getExtension(), Field.Store.YES));
-            doc.add(new StringField("extensionLC", fileInfo.getExtension().toLowerCase(Locale.ROOT), Field.Store.NO));
+            doc.add(new StoredField("extension", fileInfo.getExtension()));
+            doc.add(new StringField("extensionExact", fileInfo.getExtension().toLowerCase(Locale.ROOT), Field.Store.NO));
             doc.add(new TextField("relativeName", fileInfo.getRelativeName(), Field.Store.YES));
-            doc.add(new StringField("relativeNameLC", fileInfo.getRelativeName().toLowerCase(Locale.ROOT), Field.Store.NO));
+            doc.add(new StringField("relativeNameExact", fileInfo.getRelativeName().toLowerCase(Locale.ROOT), Field.Store.NO));
             long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
             doc.add(new LongPoint("modifiedDate", modifiedDate));
+            doc.add(new StoredField("modifiedDate", modifiedDate));
             doc.add(new StoredField("size", fileInfo.getSize()));
+            doc.add(new StoredField("version", fileInfo.getVersion()));
+            if (StringUtils.isNotBlank(fileInfo.getOID())) {
+                doc.add(new StoredField("oid", fileInfo.getOID()));
+            }
+            if (StringUtils.isNotBlank(fileInfo.getHashes())) {
+                doc.add(new StoredField("hashes", fileInfo.getHashes()));
+            }
+            if (StringUtils.isNotBlank(fileInfo.getTags())) {
+                doc.add(new StoredField("tags", fileInfo.getTags()));
+            }
 
             AccountInfo modAccount = fileInfo.getModifiedByAccount();
             if (modAccount != null) {
@@ -650,7 +661,7 @@ public class LuceneIndexManager extends Loggable {
      *       queries across searchable fields</li>
      *   <li><b>Deleted filter:</b> include, exclude, or only deleted</li>
      *   <li><b>Directory:</b> {@link PrefixQuery} on path (non-analyzed)</li>
-     *   <li><b>Extension:</b> exact {@link TermQuery} on extensionLC (non-analyzed)</li>
+     *   <li><b>Extension:</b> exact {@link TermQuery} on extensionExact (non-analyzed)</li>
      *   <li><b>ModifiedBy:</b> {@link WildcardQuery} on the modifiedBy
      *       field (display name, username, device nick)</li>
      * </ul>
@@ -705,13 +716,13 @@ public class LuceneIndexManager extends Loggable {
             if (directory != null && !directory.isEmpty() && !"/".equals(directory)) {
                 String prefix = directory.endsWith("/") ? directory : directory + "/";
                 bqBuilder.add(
-                        new PrefixQuery(new Term("relativeNameLC", prefix.toLowerCase(Locale.ROOT))),
+                        new PrefixQuery(new Term("relativeNameExact", prefix.toLowerCase(Locale.ROOT))),
                         BooleanClause.Occur.MUST);
             }
 
             if (StringUtils.isNotBlank(extension)) {
                 bqBuilder.add(
-                        new TermQuery(new Term("extensionLC", extension.toLowerCase(Locale.ROOT))),
+                        new TermQuery(new Term("extensionExact", extension.toLowerCase(Locale.ROOT))),
                         BooleanClause.Occur.MUST);
             }
 
