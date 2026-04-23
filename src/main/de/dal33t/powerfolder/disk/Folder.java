@@ -486,6 +486,28 @@ public class Folder extends PFComponent {
         return searchIndexManager;
     }
 
+    /**
+     * Searches for files matching the given criteria. Uses the Lucene
+     * search index if available; otherwise falls back to the DAO.
+     *
+     * @param criteria the search criteria
+     * @return matching FileInfo objects
+     */
+    public List<FileInfo> searchFiles(FileInfoCriteria criteria) {
+        List<FileInfo> files;
+        if (searchIndexManager != null && criteria.hasSearchCriteria()) {
+            files = searchIndexManager.searchFiles(criteria);
+        } else {
+            files = new ArrayList<>(getDAO().findFilesFast(criteria));
+        }
+        filterExcludedFromSync(files);
+        return files;
+    }
+
+    private void filterExcludedFromSync(List<FileInfo> files) {
+        files.removeIf(diskItemFilter::isExcluded);
+    }
+
     public void addProblemListener(ProblemListener l) {
         Reject.ifNull(l, "Listener is null");
         ListenerSupportFactory.addListener(problemListenerSupport, l);

@@ -20,9 +20,13 @@ package de.dal33t.powerfolder.search;
 
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
@@ -63,16 +67,11 @@ import java.util.regex.Pattern;
  */
 public class LuceneIndexManager extends Loggable {
 
-    // -----------------------------------------------------------------------
-    // Index versioning — bump when Lucene/Tika/OCR libs change in a way
-    // that makes existing index data incompatible or stale.
-    // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 1;
     private static final String META_FILE_NAME = ".index_meta";
 
     /** Searchable fields used by all query methods. */
     private static final String[] SEARCH_FIELDS =
-            {"name", "relativeName", "content"};
+            {"fileName", "relativeName", "content"};
 
     /** Pattern matching file extensions eligible for OCR fallback. */
     private static final Pattern OCR_ELIGIBLE_PATTERN =
@@ -473,6 +472,12 @@ public class LuceneIndexManager extends Loggable {
     // Core indexing (called by worker)
     // ------------------------------------------------------------------------
 
+    // -----------------------------------------------------------------------
+    // Index versioning — bump when Lucene/Tika/OCR libs change in a way
+    // that makes existing index data incompatible or stale.
+    // -----------------------------------------------------------------------
+    private static final int INDEX_FORMAT_VERSION = 5;
+
     private void doIndexFile(FileInfo fileInfo) {
         try {
             String docId = buildDocId(fileInfo);
@@ -481,18 +486,40 @@ public class LuceneIndexManager extends Loggable {
             doc.add(new StringField("docId", docId, Field.Store.YES));
             doc.add(new StringField("folderId", folder.getId(), Field.Store.YES));
             doc.add(new StoredField("folderName", folder.getName()));
-            doc.add(new TextField("name", fileInfo.getFilenameOnly(), Field.Store.YES));
-            doc.add(new TextField("extension", fileInfo.getExtension(), Field.Store.YES));
+            doc.add(new TextField("fileName", fileInfo.getFilenameOnly(), Field.Store.YES));
+            doc.add(new StoredField("extension", fileInfo.getExtension()));
+            doc.add(new StringField("extensionExact", fileInfo.getExtension().toLowerCase(Locale.ROOT), Field.Store.NO));
             doc.add(new TextField("relativeName", fileInfo.getRelativeName(), Field.Store.YES));
-            doc.add(new LongPoint("modified",
-                    fileInfo.getModifiedDate() != null
-                            ? fileInfo.getModifiedDate().getTime()
-                            : 0));
+            doc.add(new StringField("relativeNameExact", fileInfo.getRelativeName().toLowerCase(Locale.ROOT), Field.Store.NO));
+            long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
+            doc.add(new LongPoint("modifiedDate", modifiedDate));
+            doc.add(new StoredField("modifiedDate", modifiedDate));
             doc.add(new StoredField("size", fileInfo.getSize()));
+            doc.add(new StoredField("version", fileInfo.getVersion()));
+            if (StringUtils.isNotBlank(fileInfo.getOID())) {
+                doc.add(new StoredField("oid", fileInfo.getOID()));
+            }
+            if (StringUtils.isNotBlank(fileInfo.getHashes())) {
+                doc.add(new StoredField("hashes", fileInfo.getHashes()));
+            }
+            if (StringUtils.isNotBlank(fileInfo.getTags())) {
+                doc.add(new StoredField("tags", fileInfo.getTags()));
+            }
+
+            AccountInfo modAccount = fileInfo.getModifiedByAccount();
+            if (modAccount != null) {
+                doc.add(new StringField("modifiedByAccountId", modAccount.getOID(), Field.Store.YES));
+                doc.add(new TextField("modifiedByDisplayName", modAccount.getDisplayName(), Field.Store.YES));
+                doc.add(new TextField("modifiedByUsername", modAccount.getUsername(), Field.Store.YES));
+            }
+            MemberInfo modDevice = fileInfo.getModifiedBy();
+            if (modDevice != null) {
+                doc.add(new StringField("modifiedByDeviceId", modDevice.id, Field.Store.YES));
+                doc.add(new TextField("modifiedByDeviceName", modDevice.nick, Field.Store.YES));
+            }
 
             boolean deleted = fileInfo.isDeleted();
-            doc.add(new StringField("deleted",
-                    deleted ? "true" : "false", Field.Store.YES));
+            doc.add(new StringField("deleted", deleted ? "true" : "false", Field.Store.YES));
 
             if (extractContentEnabled && !deleted) {
                 String content = extractContent(fileInfo);
@@ -575,7 +602,8 @@ public class LuceneIndexManager extends Loggable {
      * @return matching FileInfo objects (non-deleted only)
      */
     public List<FileInfo> searchFiles(String queryText, int maxResults) {
-        return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE);
+        return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE,
+                null, null, null);
     }
 
     /**
@@ -584,15 +612,14 @@ public class LuceneIndexManager extends Loggable {
      *
      * @param queryText      the user's search query
      * @param maxResults     maximum number of results to return
-     * @param includeDeleted if true, deleted files are included in
-     *                       results
+     * @param includeDeleted if true, deleted files are included in results
      * @return matching FileInfo objects
      */
     public List<FileInfo> searchFiles(String queryText, int maxResults,
                                       boolean includeDeleted) {
         return doSearch(queryText, maxResults,
-                includeDeleted ? DeletedFilter.INCLUDE
-                        : DeletedFilter.EXCLUDE);
+                includeDeleted ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE,
+                null, null, null);
     }
 
     /**
@@ -600,43 +627,75 @@ public class LuceneIndexManager extends Loggable {
      */
     public List<FileInfo> searchDeletedFiles(String queryText,
                                              int maxResults) {
-        return doSearch(queryText, maxResults, DeletedFilter.ONLY);
+        return doSearch(queryText, maxResults, DeletedFilter.ONLY,
+                null, null, null);
+    }
+
+    /**
+     * Searches for files matching the given {@link FileInfoCriteria}.
+     * All filtering (keywords, deleted, directory path, extension,
+     * modifiedBy) is performed by Lucene in a single query.
+     *
+     * @param criteria the search criteria
+     * @return matching FileInfo objects
+     */
+    public List<FileInfo> searchFiles(FileInfoCriteria criteria) {
+        Reject.ifNull(criteria, "FileInfoCriteria");
+
+        int maxResults = criteria.getMaxResults() > 0 ? criteria.getMaxResults() : 10_000;
+        DeletedFilter deletedFilter = criteria.includeDeleted() ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE;
+        String queryText = String.join(" ", criteria.getKeyWords());
+
+        return doSearch(queryText, maxResults, deletedFilter,
+                criteria.getPath(), criteria.getExtension(), criteria.getModifiedBy());
     }
 
     /** Controls how the deleted flag is handled in searches. */
     private enum DeletedFilter { INCLUDE, EXCLUDE, ONLY }
 
     /**
-     * Core search implementation. Builds a query from the user input and
-     * applies the requested deleted-file filter.
-     * <p>
-     * <b>Search strategy:</b> splits the sanitized input into individual
-     * terms and, for each term, builds a per-field
-     * {@link BooleanQuery} combining:
+     * Core search implementation. Builds a combined Lucene query that
+     * handles all filtering in one pass:
      * <ul>
-     *   <li>An exact {@link TermQuery} (highest weight)</li>
-     *   <li>A {@link PrefixQuery} (matches terms starting with the
-     *       input)</li>
-     *   <li>A {@link WildcardQuery} {@code *term*} only for short
-     *       terms (≤12 chars) to keep the cost bounded</li>
+     *   <li><b>Keywords:</b> per-token exact / prefix / wildcard
+     *       queries across searchable fields</li>
+     *   <li><b>Deleted filter:</b> include, exclude, or only deleted</li>
+     *   <li><b>Directory:</b> {@link PrefixQuery} on path (non-analyzed)</li>
+     *   <li><b>Extension:</b> exact {@link TermQuery} on extensionExact (non-analyzed)</li>
+     *   <li><b>ModifiedBy:</b> {@link WildcardQuery} on the modifiedBy
+     *       field (display name, username, device nick)</li>
      * </ul>
+     * {@code TopDocs} returned by Lucene contains the final matching
+     * items, which are then converted to FileInfo instances.
+     *
+     * @param queryText     the user's search keywords
+     * @param maxResults    maximum number of results
+     * @param deletedFilter how to handle the deleted flag
+     * @param directory     restrict to files under this path (may be null)
+     * @param extension     restrict to this file extension (may be null)
+     * @param modifiedBy    restrict to files modified by this user (may be null)
+     * @return matching FileInfo objects
      */
     private List<FileInfo> doSearch(String queryText, int maxResults,
-                                    DeletedFilter deletedFilter) {
+                                    DeletedFilter deletedFilter,
+                                    String directory, String extension,
+                                    String modifiedBy) {
         List<FileInfo> results = new ArrayList<>();
-        if (queryText == null || queryText.isBlank()) return results;
+        boolean hasKeywords = StringUtils.isNotBlank(queryText);
 
         IndexSearcher searcher = null;
         try {
             searcherManager.maybeRefreshBlocking();
             searcher = searcherManager.acquire();
 
-            Query contentQuery = buildQuery(queryText);
-            if (contentQuery == null) return results;
-
-            // Apply deleted-file filter
             BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
-            bqBuilder.add(contentQuery, BooleanClause.Occur.MUST);
+
+            if (hasKeywords) {
+                Query contentQuery = buildQuery(queryText);
+                if (contentQuery != null) {
+                    bqBuilder.add(contentQuery, BooleanClause.Occur.MUST);
+                }
+            }
 
             switch (deletedFilter) {
                 case EXCLUDE:
@@ -654,18 +713,34 @@ public class LuceneIndexManager extends Loggable {
                     break;
             }
 
+            if (directory != null && !directory.isEmpty() && !"/".equals(directory)) {
+                String prefix = directory.endsWith("/") ? directory : directory + "/";
+                bqBuilder.add(
+                        new PrefixQuery(new Term("relativeNameExact", prefix.toLowerCase(Locale.ROOT))),
+                        BooleanClause.Occur.MUST);
+            }
+
+            if (StringUtils.isNotBlank(extension)) {
+                bqBuilder.add(
+                        new TermQuery(new Term("extensionExact", extension.toLowerCase(Locale.ROOT))),
+                        BooleanClause.Occur.MUST);
+            }
+
+            if (StringUtils.isNotBlank(modifiedBy)) {
+                String term = modifiedBy.toLowerCase(Locale.ROOT).trim();
+                String wildcard = "*" + term + "*";
+                BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
+                modQuery.add(new WildcardQuery(new Term("modifiedByDisplayName", wildcard)), BooleanClause.Occur.SHOULD);
+                modQuery.add(new WildcardQuery(new Term("modifiedByUsername", wildcard)), BooleanClause.Occur.SHOULD);
+                modQuery.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)), BooleanClause.Occur.SHOULD);
+                bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
+            }
+
             Query finalQuery = bqBuilder.build();
             TopDocs topDocs = searcher.search(finalQuery, maxResults);
 
-            String filterLabel;
-            switch (deletedFilter) {
-                case ONLY:    filterLabel = " (deleted only)"; break;
-                case INCLUDE: filterLabel = " (including deleted)"; break;
-                default:      filterLabel = ""; break;
-            }
             logInfo(folder + ": Found " + topDocs.totalHits
-                    + " hits for query '" + queryText + "'"
-                    + filterLabel);
+                    + " hits for query '" + queryText + "'");
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document doc =

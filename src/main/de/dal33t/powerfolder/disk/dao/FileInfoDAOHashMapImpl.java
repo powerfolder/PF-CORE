@@ -2,9 +2,11 @@ package de.dal33t.powerfolder.disk.dao;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
@@ -334,7 +336,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     break;
                 }
                 if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
-                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, criteria.getKeyWords())) {
+                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, criteria.getKeyWords()) && matchesExtension(directoryInfo, criteria.getExtension()) && matchesModifiedBy(directoryInfo, criteria.getModifiedBy())) {
                         fileInfos.add(directoryInfo);
                     }
                 }
@@ -345,7 +347,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                         break;
                     }
                     if ((!fileInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
-                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, criteria.getKeyWords())) {
+                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, criteria.getKeyWords()) && matchesExtension(fileInfo, criteria.getExtension()) && matchesModifiedBy(fileInfo, criteria.getModifiedBy())) {
                             fileInfos.add(fileInfo);
                         }
                     }
@@ -415,6 +417,29 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             }
         }
         return true;
+    }
+
+    private static boolean matchesExtension(FileInfo fileInfo, String extension) {
+        if (extension == null || extension.isEmpty()) {
+            return true;
+        }
+        return fileInfo.getExtension().equalsIgnoreCase(extension);
+    }
+
+    private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
+        if (modifiedBy == null || modifiedBy.isEmpty()) {
+            return true;
+        }
+        AccountInfo account = fileInfo.getModifiedByAccount();
+        if (account == null) {
+            return false;
+        }
+        String content = account.getDisplayName() + account.getUsername();
+        MemberInfo member = fileInfo.getModifiedBy();
+        if (member != null) {
+            content += member.nick;
+        }
+        return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
     }
 
     private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {
