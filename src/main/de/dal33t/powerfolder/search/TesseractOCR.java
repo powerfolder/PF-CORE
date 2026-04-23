@@ -185,7 +185,6 @@ public class TesseractOCR extends Loggable {
                 } else if (!Files.exists(targetFile)) {
                     String warningMsg = "No OCR training data found for supported language: "
                             + locale.getDisplayName() + " (" + tessCode + ")";
-                    System.out.println(warningMsg);
                     logWarning(warningMsg);
                 }
             } catch (IOException e) {
@@ -370,6 +369,8 @@ public class TesseractOCR extends Loggable {
             case "ms": return "msa";
             case "hi": return "hin";
             case "th": return "tha";
+            case "ga": return "gle";
+            case "mt": return "mlt";
             default: return lang.toLowerCase(Locale.ROOT);
         }
     }
