@@ -71,7 +71,7 @@ public class LuceneIndexManager extends Loggable {
 
     /** Searchable fields used by all query methods. */
     private static final String[] SEARCH_FIELDS =
-            {"name", "relativeName", "content"};
+            {"fileName", "relativeName", "content"};
 
     /** Pattern matching file extensions eligible for OCR fallback. */
     private static final Pattern OCR_ELIGIBLE_PATTERN =
@@ -486,12 +486,12 @@ public class LuceneIndexManager extends Loggable {
             doc.add(new StringField("docId", docId, Field.Store.YES));
             doc.add(new StringField("folderId", folder.getId(), Field.Store.YES));
             doc.add(new StoredField("folderName", folder.getName()));
-            doc.add(new TextField("name", fileInfo.getFilenameOnly(), Field.Store.YES));
+            doc.add(new TextField("fileName", fileInfo.getFilenameOnly(), Field.Store.YES));
             doc.add(new TextField("extension", fileInfo.getExtension(), Field.Store.YES));
             doc.add(new StringField("extensionLC", fileInfo.getExtension().toLowerCase(Locale.ROOT), Field.Store.NO));
             doc.add(new TextField("relativeName", fileInfo.getRelativeName(), Field.Store.YES));
             doc.add(new StringField("relativeNameLC", fileInfo.getRelativeName().toLowerCase(Locale.ROOT), Field.Store.NO));
-            doc.add(new LongPoint("modified",
+            doc.add(new LongPoint("modifiedDate",
                     fileInfo.getModifiedDate() != null
                             ? fileInfo.getModifiedDate().getTime()
                             : 0));
