@@ -476,7 +476,7 @@ public class LuceneIndexManager extends Loggable {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 3;
+    private static final int INDEX_FORMAT_VERSION = 4;
 
     private void doIndexFile(FileInfo fileInfo) {
         try {
@@ -491,25 +491,24 @@ public class LuceneIndexManager extends Loggable {
             doc.add(new StringField("extensionLC", fileInfo.getExtension().toLowerCase(Locale.ROOT), Field.Store.NO));
             doc.add(new TextField("relativeName", fileInfo.getRelativeName(), Field.Store.YES));
             doc.add(new StringField("relativeNameLC", fileInfo.getRelativeName().toLowerCase(Locale.ROOT), Field.Store.NO));
-            doc.add(new LongPoint("modifiedDate",
-                    fileInfo.getModifiedDate() != null
-                            ? fileInfo.getModifiedDate().getTime()
-                            : 0));
+            long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
+            doc.add(new LongPoint("modifiedDate", modifiedDate));
             doc.add(new StoredField("size", fileInfo.getSize()));
 
             AccountInfo modAccount = fileInfo.getModifiedByAccount();
             if (modAccount != null) {
-                String modifiedByValue = modAccount.getDisplayName() + " " + modAccount.getUsername();
-                MemberInfo modDevice = fileInfo.getModifiedBy();
-                if (modDevice != null && modDevice.nick != null) {
-                    modifiedByValue += " " + modDevice.nick;
-                }
-                doc.add(new TextField("modifiedBy", modifiedByValue.toLowerCase(Locale.ROOT), Field.Store.YES));
+                doc.add(new StringField("modifiedByAccountId", modAccount.getOID(), Field.Store.YES));
+                doc.add(new TextField("modifiedByDisplayName", modAccount.getDisplayName(), Field.Store.YES));
+                doc.add(new TextField("modifiedByUsername", modAccount.getUsername(), Field.Store.YES));
+            }
+            MemberInfo modDevice = fileInfo.getModifiedBy();
+            if (modDevice != null) {
+                doc.add(new StringField("modifiedByDeviceId", modDevice.id, Field.Store.YES));
+                doc.add(new TextField("modifiedByDeviceName", modDevice.nick, Field.Store.YES));
             }
 
             boolean deleted = fileInfo.isDeleted();
-            doc.add(new StringField("deleted",
-                    deleted ? "true" : "false", Field.Store.YES));
+            doc.add(new StringField("deleted", deleted ? "true" : "false", Field.Store.YES));
 
             if (extractContentEnabled && !deleted) {
                 String content = extractContent(fileInfo);
@@ -718,9 +717,12 @@ public class LuceneIndexManager extends Loggable {
 
             if (StringUtils.isNotBlank(modifiedBy)) {
                 String term = modifiedBy.toLowerCase(Locale.ROOT).trim();
-                bqBuilder.add(
-                        new WildcardQuery(new Term("modifiedBy", "*" + term + "*")),
-                        BooleanClause.Occur.MUST);
+                String wildcard = "*" + term + "*";
+                BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
+                modQuery.add(new WildcardQuery(new Term("modifiedByDisplayName", wildcard)), BooleanClause.Occur.SHOULD);
+                modQuery.add(new WildcardQuery(new Term("modifiedByUsername", wildcard)), BooleanClause.Occur.SHOULD);
+                modQuery.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)), BooleanClause.Occur.SHOULD);
+                bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
             }
 
             Query finalQuery = bqBuilder.build();
