@@ -102,45 +102,45 @@ public class Translation {
     public static synchronized List<Locale> getSupportedLocales() {
         if (supportedLocales == null) {
             supportedLocales = new ArrayList<>();
-            supportedLocales.add(Locale.ENGLISH);
-            supportedLocales.add(Locale.GERMAN);
-            supportedLocales.add(Locale.FRENCH);
-            supportedLocales.add(SPANISH);
-            supportedLocales.add(Locale.ITALIAN);
-            supportedLocales.add(DUTCH);
-            supportedLocales.add(POLISH);
-            supportedLocales.add(PORTUGUESE);
-            supportedLocales.add(TURKISH);
-            supportedLocales.add(BULGARIAN);
-            supportedLocales.add(CZECH);
-            supportedLocales.add(DANISH);
-            supportedLocales.add(FINNISH);
-            supportedLocales.add(GREEK);
-            supportedLocales.add(HUNGARIAN);
-            supportedLocales.add(NORWEGIAN);
-            supportedLocales.add(ROMANIAN);
-            supportedLocales.add(SLOVAK);
-            supportedLocales.add(SWEDISH);
-            supportedLocales.add(RUSSIAN);
-            supportedLocales.add(ARABIC);
-            supportedLocales.add(CROATIAN);
-            supportedLocales.add(SLOVENIAN);
-            supportedLocales.add(SERBIAN);
-            supportedLocales.add(LITHUANIAN);
-            supportedLocales.add(LATVIAN);
-            supportedLocales.add(ESTONIAN);
-            supportedLocales.add(JAPANESE);
-            supportedLocales.add(KOREAN);
-            supportedLocales.add(CHINESE_SIMPLIFIED);
-            supportedLocales.add(CHINESE_TRADITIONAL);
-            supportedLocales.add(UKRAINIAN);
-            supportedLocales.add(HINDI);
-            supportedLocales.add(VIETNAMESE);
-            supportedLocales.add(INDONESIAN);
-            supportedLocales.add(THAI);
-            supportedLocales.add(HEBREW);
-            supportedLocales.add(IRISH);
-            supportedLocales.add(MALTESE);
+            supportedLocales.add(ARABIC);           // العربية
+            supportedLocales.add(BULGARIAN);         // Български
+            supportedLocales.add(CHINESE_SIMPLIFIED); // 中文(简体)
+            supportedLocales.add(CHINESE_TRADITIONAL);// 中文(繁體)
+            supportedLocales.add(CROATIAN);          // Hrvatski
+            supportedLocales.add(CZECH);             // Čeština
+            supportedLocales.add(DANISH);            // Dansk
+            supportedLocales.add(DUTCH);             // Nederlands
+            supportedLocales.add(Locale.ENGLISH);    // English
+            supportedLocales.add(ESTONIAN);          // Eesti
+            supportedLocales.add(FINNISH);           // Suomi
+            supportedLocales.add(Locale.FRENCH);     // Français
+            supportedLocales.add(Locale.GERMAN);     // Deutsch
+            supportedLocales.add(GREEK);             // Ελληνικά
+            supportedLocales.add(HEBREW);            // עברית
+            supportedLocales.add(HINDI);             // हिन्दी
+            supportedLocales.add(HUNGARIAN);         // Magyar
+            supportedLocales.add(INDONESIAN);        // Bahasa Indonesia
+            supportedLocales.add(IRISH);             // Gaeilge
+            supportedLocales.add(Locale.ITALIAN);    // Italiano
+            supportedLocales.add(JAPANESE);          // 日本語
+            supportedLocales.add(KOREAN);            // 한국어
+            supportedLocales.add(LATVIAN);           // Latviešu
+            supportedLocales.add(LITHUANIAN);        // Lietuvių
+            supportedLocales.add(MALTESE);           // Malti
+            supportedLocales.add(NORWEGIAN);         // Norsk
+            supportedLocales.add(POLISH);            // Polski
+            supportedLocales.add(PORTUGUESE);        // Português
+            supportedLocales.add(ROMANIAN);          // Română
+            supportedLocales.add(RUSSIAN);           // Русский
+            supportedLocales.add(SERBIAN);           // Српски
+            supportedLocales.add(SLOVAK);            // Slovenčina
+            supportedLocales.add(SLOVENIAN);         // Slovenščina
+            supportedLocales.add(SPANISH);           // Español
+            supportedLocales.add(SWEDISH);           // Svenska
+            supportedLocales.add(THAI);              // ไทย
+            supportedLocales.add(TURKISH);           // Türkçe
+            supportedLocales.add(UKRAINIAN);         // Українська
+            supportedLocales.add(VIETNAMESE);        // Tiếng Việt
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
         return Collections.unmodifiableList(supportedLocales);
