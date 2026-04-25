@@ -222,9 +222,15 @@ public class Translation {
                 // Get language out of preferences
                 String confLangStr = Preferences.userNodeForPackage(
                         Translation.class).get("locale", null);
-                Locale confLang = confLangStr != null
-                        ? new Locale(confLangStr)
-                        : null;
+                Locale confLang = null;
+                if (confLangStr != null) {
+                    String[] parts = confLangStr.split("_");
+                    if (parts.length >= 2) {
+                        confLang = new Locale(parts[0], parts[1]);
+                    } else {
+                        confLang = new Locale(confLangStr);
+                    }
+                }
                 // Take default locale if config is empty
                 if (confLang == null) {
                     confLang = Locale.getDefault();
