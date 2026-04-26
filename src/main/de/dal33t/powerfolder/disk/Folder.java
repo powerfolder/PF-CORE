@@ -494,7 +494,8 @@ public class Folder extends PFComponent {
      */
     public List<FileInfo> searchFiles(FileInfoCriteria criteria) {
         List<FileInfo> files;
-        if (searchIndexManager != null && criteria.hasSearchCriteria()) {
+        if (searchIndexManager != null && criteria.hasSearchCriteria()
+                && !searchIndexManager.isRebuilding()) {
             files = searchIndexManager.searchFiles(criteria);
         } else {
             files = new ArrayList<>(getDAO().findFilesFast(criteria));

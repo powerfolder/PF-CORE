@@ -44,9 +44,11 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.Normalizer;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -79,6 +81,18 @@ public class LuceneIndexManager extends Loggable {
                     Pattern.CASE_INSENSITIVE);
 
     /**
+     * Detects UTF-8 mojibake: multi-byte UTF-8 sequences that were decoded
+     * as Latin-1/Windows-1252, producing telltale two-char sequences.
+     * E.g. ä (UTF-8: C3 A4) becomes "Ã¤",
+     *      ö becomes "Ã¶", ü becomes "Ã¼".
+     * Covers Latin-1 Supplement (U+0080-U+00FF) and Latin Extended-A/B.
+     */
+    private static final Pattern MOJIBAKE_PATTERN = Pattern.compile(
+            "[Â-Å][-¿]");
+
+    private static final char REPLACEMENT_CHAR = '�';
+
+    /**
      * Files indexed before an automatic commit+refresh.
      * Override with {@code powerfolder.index.commitInterval}.
      */
@@ -98,11 +112,15 @@ public class LuceneIndexManager extends Loggable {
     private final TesseractOCR ocrEngine;
 
     private final LinkedBlockingQueue<FileInfo> indexQueue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<FileInfo> contentQueue = new LinkedBlockingQueue<>();
     private final AtomicInteger uncommittedCount = new AtomicInteger(0);
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
     /** True while the worker is running on the IO thread pool. */
     private final AtomicBoolean workerRunning = new AtomicBoolean(false);
+
+    /** True while a full rebuild is in progress. */
+    private final AtomicBoolean rebuilding = new AtomicBoolean(false);
 
     private volatile boolean extractContentEnabled = true;
     private volatile boolean ocrEnabled = true;
@@ -346,6 +364,7 @@ public class LuceneIndexManager extends Loggable {
      */
     public void rebuildIndex(Collection<FileInfo> allFiles) {
         indexQueue.clear();
+        rebuilding.set(true);
 
         try {
             writer.deleteAll();
@@ -354,6 +373,7 @@ public class LuceneIndexManager extends Loggable {
         } catch (Exception e) {
             logWarning(folder + ": Failed to wipe index: "
                     + e.getMessage());
+            rebuilding.set(false);
             return;
         }
 
@@ -428,18 +448,15 @@ public class LuceneIndexManager extends Loggable {
         logFine(folder + ": Index worker started");
 
         try {
+            // Phase 1: index metadata (fast)
             while (!closed.get()) {
                 FileInfo fileInfo = indexQueue.poll(100, TimeUnit.MILLISECONDS);
-
                 if (fileInfo == null) {
-                    // Queue empty — commit remaining and exit.
-                    // Worker will be restarted when new work arrives.
                     if (uncommittedCount.get() > 0) {
                         commitAndRefresh();
                     }
                     break;
                 }
-
                 try {
                     doIndexFile(fileInfo);
                 } catch (Exception e) {
@@ -448,23 +465,48 @@ public class LuceneIndexManager extends Loggable {
                             + e.getMessage());
                 }
             }
+
+            rebuilding.set(false);
+
+            // Phase 2: extract and index content (slow, Tika/OCR)
+            while (!closed.get()) {
+                FileInfo fileInfo = contentQueue.poll(100, TimeUnit.MILLISECONDS);
+                if (fileInfo == null) {
+                    if (uncommittedCount.get() > 0) {
+                        commitAndRefresh();
+                    }
+                    break;
+                }
+                // New metadata items take priority
+                if (!indexQueue.isEmpty()) {
+                    contentQueue.add(fileInfo);
+                    break;
+                }
+                try {
+                    doIndexContent(fileInfo);
+                } catch (Exception e) {
+                    logWarning(folder + ": Content extraction failed for "
+                            + fileInfo.getFilenameOnly() + ": "
+                            + e.getMessage());
+                }
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
-            // Final commit for anything remaining
             if (uncommittedCount.get() > 0) {
                 commitAndRefresh();
             }
             workerRunning.set(false);
 
-            // Race guard: if items were added between the poll timeout
-            // and workerRunning.set(false), restart the worker.
-            if (!indexQueue.isEmpty() && !closed.get()) {
-                ensureWorkerRunning();
+            if (!indexQueue.isEmpty() || !contentQueue.isEmpty()) {
+                if (!closed.get()) {
+                    ensureWorkerRunning();
+                }
             }
 
-            logFine(folder + ": Index worker stopped (pending: "
-                    + indexQueue.size() + ")");
+            logFine(folder + ": Index worker stopped (metadata pending: "
+                    + indexQueue.size() + ", content pending: "
+                    + contentQueue.size() + ")");
         }
     }
 
@@ -476,65 +518,82 @@ public class LuceneIndexManager extends Loggable {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 5;
+    private static final int INDEX_FORMAT_VERSION = 8;
 
-    private void doIndexFile(FileInfo fileInfo) {
-        try {
-            String docId = buildDocId(fileInfo);
-            Document doc = new Document();
+    private Document buildDocument(FileInfo fileInfo) {
+        String docId = buildDocId(fileInfo);
+        Document doc = new Document();
 
-            doc.add(new StringField("docId", docId, Field.Store.YES));
-            doc.add(new StringField("folderId", folder.getId(), Field.Store.YES));
-            doc.add(new StoredField("folderName", folder.getName()));
-            doc.add(new TextField("fileName", fileInfo.getFilenameOnly(), Field.Store.YES));
-            doc.add(new StoredField("extension", fileInfo.getExtension()));
-            doc.add(new StringField("extensionExact", fileInfo.getExtension().toLowerCase(Locale.ROOT), Field.Store.NO));
-            doc.add(new TextField("relativeName", fileInfo.getRelativeName(), Field.Store.YES));
-            doc.add(new StringField("relativeNameExact", fileInfo.getRelativeName().toLowerCase(Locale.ROOT), Field.Store.NO));
-            long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
-            doc.add(new LongPoint("modifiedDate", modifiedDate));
-            doc.add(new StoredField("modifiedDate", modifiedDate));
-            doc.add(new StoredField("size", fileInfo.getSize()));
-            doc.add(new StoredField("version", fileInfo.getVersion()));
-            if (StringUtils.isNotBlank(fileInfo.getOID())) {
-                doc.add(new StoredField("oid", fileInfo.getOID()));
-            }
-            if (StringUtils.isNotBlank(fileInfo.getHashes())) {
-                doc.add(new StoredField("hashes", fileInfo.getHashes()));
-            }
-            if (StringUtils.isNotBlank(fileInfo.getTags())) {
-                doc.add(new StoredField("tags", fileInfo.getTags()));
-            }
+        String fileName = fileInfo.getFilenameOnly() != null
+                ? fileInfo.getFilenameOnly() : "";
+        String extension = fileInfo.getExtension() != null
+                ? fileInfo.getExtension() : "";
+        String relativeName = fileInfo.getRelativeName() != null
+                ? fileInfo.getRelativeName() : "";
 
-            AccountInfo modAccount = fileInfo.getModifiedByAccount();
-            if (modAccount != null) {
+        doc.add(new StringField("docId", docId, Field.Store.YES));
+        doc.add(new StringField("folderId", folder.getId(), Field.Store.YES));
+        doc.add(new StoredField("folderName", folder.getName()));
+        doc.add(new TextField("fileName", fileName, Field.Store.YES));
+        doc.add(new StoredField("extension", extension));
+        doc.add(new StringField("extensionExact", extension.toLowerCase(Locale.ROOT), Field.Store.NO));
+        doc.add(new TextField("relativeName", relativeName, Field.Store.YES));
+        doc.add(new StringField("relativeNameExact", relativeName.toLowerCase(Locale.ROOT), Field.Store.NO));
+        long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
+        doc.add(new LongPoint("modifiedDate", modifiedDate));
+        doc.add(new StoredField("modifiedDate", modifiedDate));
+        doc.add(new StoredField("size", fileInfo.getSize()));
+        doc.add(new StoredField("version", fileInfo.getVersion()));
+        if (StringUtils.isNotBlank(fileInfo.getOID())) {
+            doc.add(new StoredField("oid", fileInfo.getOID()));
+        }
+        if (StringUtils.isNotBlank(fileInfo.getHashes())) {
+            doc.add(new StoredField("hashes", fileInfo.getHashes()));
+        }
+        if (StringUtils.isNotBlank(fileInfo.getTags())) {
+            doc.add(new StoredField("tags", fileInfo.getTags()));
+        }
+
+        AccountInfo modAccount = fileInfo.getModifiedByAccount();
+        if (modAccount != null) {
+            if (StringUtils.isNotBlank(modAccount.getOID())) {
                 doc.add(new StringField("modifiedByAccountId", modAccount.getOID(), Field.Store.YES));
+            }
+            if (StringUtils.isNotBlank(modAccount.getDisplayName())) {
                 doc.add(new TextField("modifiedByDisplayName", modAccount.getDisplayName(), Field.Store.YES));
+            }
+            if (StringUtils.isNotBlank(modAccount.getUsername())) {
                 doc.add(new TextField("modifiedByUsername", modAccount.getUsername(), Field.Store.YES));
             }
-            MemberInfo modDevice = fileInfo.getModifiedBy();
-            if (modDevice != null) {
+        }
+        MemberInfo modDevice = fileInfo.getModifiedBy();
+        if (modDevice != null) {
+            if (StringUtils.isNotBlank(modDevice.id)) {
                 doc.add(new StringField("modifiedByDeviceId", modDevice.id, Field.Store.YES));
+            }
+            if (StringUtils.isNotBlank(modDevice.nick)) {
                 doc.add(new TextField("modifiedByDeviceName", modDevice.nick, Field.Store.YES));
             }
+        }
 
-            boolean deleted = fileInfo.isDeleted();
-            doc.add(new StringField("deleted", deleted ? "true" : "false", Field.Store.YES));
+        doc.add(new StringField("deleted",
+                fileInfo.isDeleted() ? "true" : "false", Field.Store.YES));
 
-            if (extractContentEnabled && !deleted) {
-                String content = extractContent(fileInfo);
-                if (content != null && !content.isBlank()) {
-                    doc.add(new TextField("content", content,
-                            Field.Store.NO));
-                }
-            }
+        return doc;
+    }
 
-            writer.updateDocument(new Term("docId", docId), doc);
+    /**
+     * Phase 1: indexes metadata only (fast). Queues the file for
+     * phase 2 content extraction if applicable.
+     */
+    private void doIndexFile(FileInfo fileInfo) {
+        try {
+            Document doc = buildDocument(fileInfo);
+            writer.updateDocument(
+                    new Term("docId", buildDocId(fileInfo)), doc);
 
-            if (isFiner()) {
-                logFiner(folder + ": Indexed: "
-                        + fileInfo.getFilenameOnly()
-                        + (deleted ? " [deleted]" : ""));
+            if (!fileInfo.isDeleted() && extractContentEnabled) {
+                contentQueue.add(fileInfo);
             }
 
             if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
@@ -547,29 +606,74 @@ public class LuceneIndexManager extends Loggable {
         }
     }
 
+    /**
+     * Phase 2: re-indexes with extracted content (Tika/OCR, slow).
+     */
+    private void doIndexContent(FileInfo fileInfo) {
+        try {
+            String content = extractContent(fileInfo);
+            if (content == null || content.isBlank()) return;
+
+            Document doc = buildDocument(fileInfo);
+            doc.add(new TextField("content", content, Field.Store.NO));
+            writer.updateDocument(
+                    new Term("docId", buildDocId(fileInfo)), doc);
+
+            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
+                commitAndRefresh();
+            }
+        } catch (Exception e) {
+            logWarning(folder + ": Content extraction error for "
+                    + fileInfo.getFilenameOnly() + ": "
+                    + e.getMessage());
+        }
+    }
+
     // ------------------------------------------------------------------------
-    // Content extraction (Tika + OCR)
+    // Content extraction (Tika + encoding repair + OCR)
     // ------------------------------------------------------------------------
 
     private String extractContent(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) return null;
 
-        // Tika
+        String tikaText = null;
+
+        // 1) Tika text extraction
         try (InputStream stream = Files.newInputStream(filePath)) {
             BodyContentHandler handler =
                     new BodyContentHandler(-1);
             new AutoDetectParser().parse(stream, handler,
                     new Metadata());
             String text = handler.toString();
-            if (text != null && !text.isBlank()) return text;
+            if (text != null && !text.isBlank()) {
+                tikaText = text;
+            }
         } catch (IOException | SAXException | TikaException e) {
             logFiner(folder + ": Tika failed for "
                     + fileInfo.getFilenameOnly() + ": "
                     + e.getMessage());
         }
 
-        // OCR fallback
+        // 2) Check quality and attempt encoding repair
+        if (tikaText != null) {
+            if (!hasEncodingIssues(tikaText)) {
+                return tikaText;
+            }
+
+            String repaired = repairEncoding(tikaText);
+            if (repaired != null && !hasEncodingIssues(repaired)) {
+                logFine(folder + ": Repaired encoding for "
+                        + fileInfo.getFilenameOnly());
+                return repaired;
+            }
+
+            logFine(folder + ": Encoding issues in "
+                    + fileInfo.getFilenameOnly()
+                    + ", trying OCR fallback");
+        }
+
+        // 3) OCR fallback for broken encoding or missing text
         if (ocrEnabled && OCR_ELIGIBLE_PATTERN.matcher(
                 filePath.toString()).matches()) {
             try {
@@ -586,7 +690,76 @@ public class LuceneIndexManager extends Loggable {
             }
         }
 
+        // 4) Last resort: strip encoding artifacts so partial matching works
+        if (tikaText != null) {
+            return stripEncodingArtifacts(tikaText);
+        }
+
         return null;
+    }
+
+    /**
+     * Detects common encoding issues in extracted text:
+     * <ul>
+     *   <li>U+FFFD replacement characters (source bytes were invalid
+     *       in the decoder's charset, e.g. Latin-1 bytes fed to a
+     *       UTF-8 decoder)</li>
+     *   <li>Mojibake sequences (UTF-8 multi-byte sequences misread as
+     *       Latin-1/Windows-1252, e.g. ä appearing as
+     *       "Ã¤")</li>
+     * </ul>
+     */
+    private static boolean hasEncodingIssues(String text) {
+        if (text.indexOf(REPLACEMENT_CHAR) >= 0) {
+            return true;
+        }
+        return MOJIBAKE_PATTERN.matcher(text).find();
+    }
+
+    /**
+     * Attempts to repair common encoding mismatches:
+     * <ol>
+     *   <li><b>UTF-8 as Latin-1:</b> Text was UTF-8 but decoded as
+     *       ISO-8859-1, producing mojibake like "Ã¤" for
+     *       ä. Fix: re-encode as Latin-1 bytes, decode as
+     *       UTF-8.</li>
+     *   <li><b>UTF-8 as Windows-1252:</b> Same principle but with
+     *       Windows-1252 (superset of Latin-1 in 0x80-0x9F range,
+     *       covers smart quotes, euro sign, etc.).</li>
+     * </ol>
+     * Returns null if no repair produces clean text.
+     */
+    private static String repairEncoding(String text) {
+        if (text.indexOf(REPLACEMENT_CHAR) >= 0) {
+            return null;
+        }
+
+        try {
+            byte[] bytes = text.getBytes(StandardCharsets.ISO_8859_1);
+            String repaired = new String(bytes, StandardCharsets.UTF_8);
+            if (repaired.indexOf(REPLACEMENT_CHAR) < 0
+                    && !MOJIBAKE_PATTERN.matcher(repaired).find()) {
+                return repaired;
+            }
+        } catch (Exception ignored) {}
+
+        return null;
+    }
+
+    /**
+     * Strips U+FFFD replacement characters from text so that the
+     * remaining content is still searchable. E.g. "Meldebeh�rde"
+     * becomes "Meldebehrde", which still matches prefix "meldebeh".
+     */
+    private static String stripEncodingArtifacts(String text) {
+        StringBuilder sb = new StringBuilder(text.length());
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c != REPLACEMENT_CHAR) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     // ------------------------------------------------------------------------
@@ -796,22 +969,11 @@ public class LuceneIndexManager extends Loggable {
             BooleanQuery.Builder fieldDisjunction =
                     new BooleanQuery.Builder();
 
-            for (String field : SEARCH_FIELDS) {
-                fieldDisjunction.add(
-                        new BoostQuery(new TermQuery(
-                                new Term(field, token)), 3.0f),
-                        BooleanClause.Occur.SHOULD);
+            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f);
 
-                fieldDisjunction.add(
-                        new BoostQuery(new PrefixQuery(
-                                new Term(field, token)), 2.0f),
-                        BooleanClause.Occur.SHOULD);
-
-                if (token.length() <= 12) {
-                    fieldDisjunction.add(
-                            new WildcardQuery(new Term(field, "*" + token + "*")),
-                            BooleanClause.Occur.SHOULD);
-                }
+            String folded = foldAccents(token);
+            if (!folded.equals(token) && !folded.isEmpty()) {
+                addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f);
             }
 
             fieldDisjunction.setMinimumNumberShouldMatch(1);
@@ -822,6 +984,40 @@ public class LuceneIndexManager extends Loggable {
         return allTokens.build();
     }
 
+    private void addTokenQueries(BooleanQuery.Builder builder,
+                                 String token,
+                                 float exactBoost, float prefixBoost,
+                                 float wildcardBoost) {
+        for (String field : SEARCH_FIELDS) {
+            builder.add(
+                    new BoostQuery(new TermQuery(
+                            new Term(field, token)), exactBoost),
+                    BooleanClause.Occur.SHOULD);
+
+            builder.add(
+                    new BoostQuery(new PrefixQuery(
+                            new Term(field, token)), prefixBoost),
+                    BooleanClause.Occur.SHOULD);
+
+            if (token.length() <= 12) {
+                builder.add(
+                        new BoostQuery(new WildcardQuery(
+                                new Term(field, "*" + token + "*")),
+                                wildcardBoost),
+                        BooleanClause.Occur.SHOULD);
+            }
+        }
+    }
+
+    /**
+     * Folds accented characters to their ASCII base letter.
+     * E.g. ö -> o, ä -> a, é -> e.
+     */
+    private static String foldAccents(String s) {
+        String decomposed = Normalizer.normalize(s, Normalizer.Form.NFD);
+        return decomposed.replaceAll("\\p{M}", "");
+    }
+
     // ------------------------------------------------------------------------
     // Commit helper
     // ------------------------------------------------------------------------
@@ -829,7 +1025,7 @@ public class LuceneIndexManager extends Loggable {
     private void commitAndRefresh() {
         try {
             writer.commit();
-            searcherManager.maybeRefresh();
+            searcherManager.maybeRefreshBlocking();
             uncommittedCount.set(0);
         } catch (Exception e) {
             logWarning(folder + ": Commit failed: "
@@ -856,6 +1052,15 @@ public class LuceneIndexManager extends Loggable {
         return indexQueue.size();
     }
 
+    /**
+     * Returns true while a full rebuild is in progress. Callers should
+     * fall back to DAO-based search while this returns true, since the
+     * index is incomplete.
+     */
+    public boolean isRebuilding() {
+        return rebuilding.get();
+    }
+
     // ------------------------------------------------------------------------
     // Shutdown
     // ------------------------------------------------------------------------
@@ -864,12 +1069,12 @@ public class LuceneIndexManager extends Loggable {
         if (!closed.compareAndSet(false, true)) return;
         logFine(folder + ": Shutting down...");
 
-        // Drain remaining queue items
         FileInfo f;
         while ((f = indexQueue.poll()) != null) {
             try { doIndexFile(f); }
             catch (Exception ignored) {}
         }
+        contentQueue.clear();
 
         commitAndRefresh();
         try { searcherManager.close(); }
