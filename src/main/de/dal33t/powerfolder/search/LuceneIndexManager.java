@@ -93,6 +93,14 @@ public class LuceneIndexManager extends Loggable {
     private static final char REPLACEMENT_CHAR = '�';
 
     /**
+     * Files smaller than this are content-extracted inline in phase 1
+     * (Tika only, no OCR). Default: 256 KB.
+     */
+    private static final long INLINE_EXTRACT_MAX_SIZE =
+            Long.getLong("powerfolder.index.inlineExtractMaxSize",
+                    256L * 1024);
+
+    /**
      * Files indexed before an automatic commit+refresh.
      * Override with {@code powerfolder.index.commitInterval}.
      */
@@ -585,18 +593,30 @@ public class LuceneIndexManager extends Loggable {
     }
 
     /**
-     * Phase 1: indexes metadata only (fast). Queues the file for
-     * phase 2 content extraction if applicable.
+     * Phase 1: indexes metadata. Small files get content extracted
+     * inline (Tika only, no OCR) for immediate searchability.
+     * Larger files are queued for phase 2 (full extraction with OCR).
      */
     private void doIndexFile(FileInfo fileInfo) {
         try {
             Document doc = buildDocument(fileInfo);
-            writer.updateDocument(
-                    new Term("docId", buildDocId(fileInfo)), doc);
 
             if (!fileInfo.isDeleted() && extractContentEnabled) {
-                contentQueue.add(fileInfo);
+                if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
+                    String content = extractContentTikaOnly(fileInfo);
+                    if (content != null && !content.isBlank()) {
+                        doc.add(new TextField("content", content,
+                                Field.Store.NO));
+                    } else {
+                        contentQueue.add(fileInfo);
+                    }
+                } else {
+                    contentQueue.add(fileInfo);
+                }
             }
+
+            writer.updateDocument(
+                    new Term("docId", buildDocId(fileInfo)), doc);
 
             if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
                 commitAndRefresh();
@@ -634,6 +654,30 @@ public class LuceneIndexManager extends Loggable {
     // ------------------------------------------------------------------------
     // Content extraction (Tika + encoding repair + OCR)
     // ------------------------------------------------------------------------
+
+    private String extractContentTikaOnly(FileInfo fileInfo) {
+        Path filePath = fileInfo.getDiskFile(folder);
+        if (filePath == null || !Files.exists(filePath)) return null;
+
+        try (InputStream stream = Files.newInputStream(filePath)) {
+            BodyContentHandler handler = new BodyContentHandler(-1);
+            new AutoDetectParser().parse(stream, handler, new Metadata());
+            String text = handler.toString();
+            if (text != null && !text.isBlank()) {
+                if (!hasEncodingIssues(text)) return text;
+                String repaired = repairEncoding(text);
+                if (repaired != null && !hasEncodingIssues(repaired)) {
+                    return repaired;
+                }
+                return stripEncodingArtifacts(text);
+            }
+        } catch (IOException | SAXException | TikaException e) {
+            logFiner(folder + ": Tika failed for "
+                    + fileInfo.getFilenameOnly() + ": "
+                    + e.getMessage());
+        }
+        return null;
+    }
 
     private String extractContent(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
