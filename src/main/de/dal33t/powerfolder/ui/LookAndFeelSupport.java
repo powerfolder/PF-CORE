@@ -19,13 +19,11 @@
  */
 package de.dal33t.powerfolder.ui;
 
-import java.util.logging.Logger;
-
-import javax.swing.LookAndFeel;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
+
+import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Logger;
 
 /**
  * Class which offers several helper methods for handling with LookAndFeels.
@@ -50,6 +48,34 @@ public class LookAndFeelSupport {
      * @throws UnsupportedLookAndFeelException
      */
     public static void setLookAndFeel(LookAndFeel laf)
+        throws UnsupportedLookAndFeelException
+    {
+        if (SwingUtilities.isEventDispatchThread()) {
+            setLookAndFeelImpl(laf);
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    try {
+                        setLookAndFeelImpl(laf);
+                    } catch (UnsupportedLookAndFeelException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.warning("Interrupted while setting LookAndFeel");
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException
+                    && cause.getCause() instanceof UnsupportedLookAndFeelException) {
+                    throw (UnsupportedLookAndFeelException) cause.getCause();
+                }
+                log.warning("Error setting LookAndFeel: " + cause);
+            }
+        }
+    }
+
+    private static void setLookAndFeelImpl(LookAndFeel laf)
         throws UnsupportedLookAndFeelException
     {
         setSyntheticaLicense();
