@@ -496,7 +496,12 @@ public class Folder extends PFComponent {
         List<FileInfo> files;
         if (searchIndexManager != null && criteria.hasSearchCriteria()
                 && !searchIndexManager.isRebuilding()) {
-            files = searchIndexManager.searchFiles(criteria);
+            // Lucene results first (ranked), then DAO results for any
+            // files the index missed (e.g. content not yet indexed)
+            LinkedHashSet<FileInfo> merged = new LinkedHashSet<>(
+                    searchIndexManager.searchFiles(criteria));
+            merged.addAll(getDAO().findFilesFast(criteria));
+            files = new ArrayList<>(merged);
         } else {
             files = new ArrayList<>(getDAO().findFilesFast(criteria));
         }

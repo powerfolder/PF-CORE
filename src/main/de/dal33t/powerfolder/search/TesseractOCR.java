@@ -92,9 +92,9 @@ public class TesseractOCR extends Loggable {
             Long.getLong("powerfolder.ocr.maxFileSizeBytes",
                     100L * 1024 * 1024);
 
-    /** Per-file OCR timeout in seconds. Default: 1 minutes. */
+    /** Per-file OCR timeout in seconds. Default: 15 seconds. */
     private static final long OCR_TIMEOUT_SECONDS =
-            Long.getLong("powerfolder.ocr.timeoutSeconds", 60);
+            Long.getLong("powerfolder.ocr.timeoutSeconds", 15);
 
     private final List<Locale> supportedLocales;
     private final String languageConfig;

@@ -383,7 +383,6 @@ public class LuceneIndexManager extends Loggable {
             count = allFiles.size();
         }
 
-        writeIndexMeta(count);
         ensureWorkerRunning();
         logInfo(folder + ": Rebuild queued — " + count + " files");
     }
@@ -475,6 +474,9 @@ public class LuceneIndexManager extends Loggable {
                     if (uncommittedCount.get() > 0) {
                         commitAndRefresh();
                     }
+                    // Both phases done — persist meta so rebuild isn't
+                    // re-triggered on next startup.
+                    writeIndexMeta(getIndexEntryCount());
                     break;
                 }
                 // New metadata items take priority
@@ -518,7 +520,7 @@ public class LuceneIndexManager extends Loggable {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 8;
+    private static final int INDEX_FORMAT_VERSION = 9;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -971,9 +973,18 @@ public class LuceneIndexManager extends Loggable {
 
             addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f);
 
+            // Accent-folded variant (ö -> o, ä -> a, etc.)
             String folded = foldAccents(token);
             if (!folded.equals(token) && !folded.isEmpty()) {
                 addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f);
+            }
+
+            // Accent-stripped variant (ö removed entirely) — handles
+            // documents where extraction lost characters completely
+            String stripped = stripAccents(token);
+            if (!stripped.equals(token) && !stripped.equals(folded)
+                    && !stripped.isEmpty()) {
+                addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f);
             }
 
             fieldDisjunction.setMinimumNumberShouldMatch(1);
@@ -1016,6 +1027,17 @@ public class LuceneIndexManager extends Loggable {
     private static String foldAccents(String s) {
         String decomposed = Normalizer.normalize(s, Normalizer.Form.NFD);
         return decomposed.replaceAll("\\p{M}", "");
+    }
+
+    private static String stripAccents(String s) {
+        StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c <= 0x7F) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     // ------------------------------------------------------------------------
