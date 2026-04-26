@@ -685,7 +685,6 @@ public class LuceneIndexManager extends Loggable {
 
         IndexSearcher searcher = null;
         try {
-            searcherManager.maybeRefreshBlocking();
             searcher = searcherManager.acquire();
 
             BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
@@ -784,7 +783,7 @@ public class LuceneIndexManager extends Loggable {
      */
     private Query buildQuery(String queryText) {
         String sanitized = queryText.trim().toLowerCase(Locale.ROOT)
-                .replaceAll("[^\\p{L}\\p{N}\\s]", " ")
+                .replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ")
                 .replaceAll("\\s+", " ")
                 .trim();
 
@@ -877,7 +876,6 @@ public class LuceneIndexManager extends Loggable {
         catch (Exception ignored) {}
         try { writer.close(); }
         catch (Exception ignored) {}
-        ocrEngine.shutdown();
 
         logFine(folder + ": Shutdown complete");
     }
