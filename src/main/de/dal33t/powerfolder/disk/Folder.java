@@ -467,8 +467,10 @@ public class Folder extends PFComponent {
         }
         try {
             searchIndexManager = new LuceneIndexManager(this, getController().getIOProvider());
-            searchIndexManager.setExtractContentEnabled(true);
-            searchIndexManager.setOcrEnabled(true);
+            searchIndexManager.setExtractContentEnabled(
+                    ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTRACTION_ENABLED.getValueBoolean(getController()));
+            searchIndexManager.setOcrEnabled(
+                    ConfigurationEntry.SEARCH_INDEX_OCR_ENABLED.getValueBoolean(getController()));
             boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
             if (rebuild) {
                 logInfo(this + ": Initialized and rebuilding Lucene search index");
@@ -495,8 +497,14 @@ public class Folder extends PFComponent {
      */
     public List<FileInfo> searchFiles(FileInfoCriteria criteria) {
         List<FileInfo> files;
-        if (searchIndexManager != null && criteria.hasSearchCriteria()) {
-            files = searchIndexManager.searchFiles(criteria);
+        if (searchIndexManager != null && criteria.hasSearchCriteria()
+                && !searchIndexManager.isRebuilding()) {
+            // Lucene results first (ranked), then DAO results for any
+            // files the index missed (e.g. content not yet indexed)
+            LinkedHashSet<FileInfo> merged = new LinkedHashSet<>(
+                    searchIndexManager.searchFiles(criteria));
+            merged.addAll(getDAO().findFilesFast(criteria));
+            files = new ArrayList<>(merged);
         } else {
             files = new ArrayList<>(getDAO().findFilesFast(criteria));
         }
