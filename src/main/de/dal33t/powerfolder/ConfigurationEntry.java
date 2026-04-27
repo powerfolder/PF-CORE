@@ -994,6 +994,16 @@ public enum ConfigurationEntry {
     SEARCH_INDEX_ENABLED("search.index.enabled", false),
 
     /**
+     * PFS-5487: Enable content extraction (Tika) for full-text search.
+     */
+    SEARCH_INDEX_CONTENT_EXTRACTION_ENABLED("search.index.content_extraction.enabled", true),
+
+    /**
+     * PFS-5487: Enable OCR (Tesseract) for images and scanned PDFs.
+     */
+    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", true),
+
+    /**
      * Whether to log verbose.
      */
     VERBOSE("verbose", false),

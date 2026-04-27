@@ -466,8 +466,10 @@ public class Folder extends PFComponent {
         }
         try {
             searchIndexManager = new LuceneIndexManager(this, getController().getIOProvider());
-            searchIndexManager.setExtractContentEnabled(true);
-            searchIndexManager.setOcrEnabled(true);
+            searchIndexManager.setExtractContentEnabled(
+                    ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTRACTION_ENABLED.getValueBoolean(getController()));
+            searchIndexManager.setOcrEnabled(
+                    ConfigurationEntry.SEARCH_INDEX_OCR_ENABLED.getValueBoolean(getController()));
             boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
             if (rebuild) {
                 logInfo(this + ": Initialized and rebuilding Lucene search index");
