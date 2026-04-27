@@ -136,7 +136,7 @@ public class MemberInfo implements Serializable, D2DObject {
             // System.err.println("Skipping set of connect addres");
             return;
         }
-        if (isSupernode && newConnectAddress == null && Feature.INTERNAL_USE.isEnabled()) {
+        if (isSupernode && newConnectAddress == null && Feature.LOG_MEMBERINFO_CONNECT_ADDRESS_NULL.isEnabled()) {
             Logger.getLogger(MemberInfo.class.getName()).log(Level.WARNING,
                     this + ": setConnectAddress to null" , new StackDump());
         }

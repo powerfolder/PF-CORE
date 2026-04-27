@@ -177,7 +177,7 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         this.deleted = deleted;
         this.folderInfo = folderInfo;
 
-        if (Feature.FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT.isEnabled()) {
+        if (Feature.LOG_FILEINFO_MISSING_MODIFIED_BY_ACCOUNT.isEnabled()) {
             if (modifiedByAccount == null
                     && log.isLoggable(Level.WARNING)
                     && !folderInfo.isMetaFolder()
