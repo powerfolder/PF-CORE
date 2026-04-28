@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.message.ConfigurationLoadRequest;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import org.apache.commons.cli.CommandLine;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +40,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -641,53 +643,94 @@ public class ConfigurationLoader {
         return preConfig;
     }
 
+    private static final int DEFAULTS_TIMEOUT_SECONDS = 10;
+
     /**
-     * Loads macOS .plist configurations from both user-specific and global locations.
-     *
-     * @param binaryName e.g. "PowerFolder"
-     * @return Combined Java Properties
-     * @throws Exception if loading fails
+     * Uses 'defaults export' to read the effective preference domain,
+     * which includes MDM / Managed Preferences via CFPreferences.
      */
     private static Properties loadMacOSPlist(String binaryName) throws Exception {
         Reject.ifBlank(binaryName, "Domain is blank");
         String domain = "de.dal33t.powerfolder." + binaryName;
-
-        Properties combinedProps = new Properties();
-
-        // User-specific plist
-        String userPlistPath = System.getProperty("user.home") + "/Library/Preferences/" + domain + ".plist";
-        Properties userProps = loadPlistFile(userPlistPath);
-        combinedProps.putAll(userProps);
-        LOG.info("Loaded " + userProps.size() + " entries from user plist: " + userPlistPath);
-
-        // Global (system-wide) plist
-        String systemPlistPath = "/Library/Preferences/" + domain + ".plist";
-        Properties systemProps = loadPlistFile(systemPlistPath);
-        combinedProps.putAll(systemProps);
-        LOG.info("Loaded " + systemProps.size() + " entries from system plist: " + systemPlistPath);
-
-        LOG.info("Total combined plist entries loaded: " + combinedProps.size());
-        return combinedProps;
+        Properties props = loadDefaultsDomain(domain);
+        LOG.info("Loaded " + props.size() + " entries from defaults domain: " + domain);
+        return props;
     }
 
     /**
-     * Internal helper to load a single plist file as Properties
+     * Executes 'defaults export domain -' and parses the XML plist output.
+     * Returns empty properties if the domain does not exist.
      */
-    private static Properties loadPlistFile(String plistPath) throws Exception {
-        java.io.File plistFile = new java.io.File(plistPath);
+    private static Properties loadDefaultsDomain(String domain) throws Exception {
         Properties props = new Properties();
+        ProcessBuilder pb = new ProcessBuilder("/usr/bin/defaults", "export", domain, "-");
+        pb.redirectErrorStream(false);
 
-        if (!plistFile.exists()) {
-            LOG.fine("Plist file not found: " + plistPath);
-            return props;
-        }
+        Process process = pb.start();
+        try {
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            ByteArrayOutputStream stderr = new ByteArrayOutputStream();
 
-        NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(plistFile);
+            Thread stdoutReader = new Thread(() -> {
+                try (InputStream is = process.getInputStream()) {
+                    byte[] buf = new byte[4096];
+                    int n;
+                    while ((n = is.read(buf)) != -1) {
+                        stdout.write(buf, 0, n);
+                    }
+                } catch (IOException e) {
+                    LOG.log(Level.FINE, "Error reading defaults stdout", e);
+                }
+            });
+            Thread stderrReader = new Thread(() -> {
+                try (InputStream is = process.getErrorStream()) {
+                    byte[] buf = new byte[4096];
+                    int n;
+                    while ((n = is.read(buf)) != -1) {
+                        stderr.write(buf, 0, n);
+                    }
+                } catch (IOException e) {
+                    LOG.log(Level.FINE, "Error reading defaults stderr", e);
+                }
+            });
 
-        for (String key : rootDict.allKeys()) {
-            String value = rootDict.objectForKey(key).toString();
-            props.setProperty(key, value);
-            LOG.finer("Plist key=" + key + ", value=" + value);
+            stdoutReader.start();
+            stderrReader.start();
+
+            boolean exited = process.waitFor(DEFAULTS_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            if (!exited) {
+                process.destroyForcibly();
+                throw new IOException("defaults command timed out for domain: " + domain);
+            }
+
+            stdoutReader.join(2000);
+            stderrReader.join(2000);
+
+            int exitCode = process.exitValue();
+            if (exitCode != 0) {
+                String errMsg = stderr.toString("UTF-8").trim();
+                if (errMsg.contains("does not exist")) {
+                    LOG.fine("Defaults domain not found: " + domain);
+                    return props;
+                }
+                throw new IOException("defaults export failed (exit " + exitCode + ") for domain "
+                    + domain + ": " + errMsg);
+            }
+
+            byte[] plistData = stdout.toByteArray();
+            if (plistData.length == 0) {
+                LOG.fine("Empty output from defaults for domain: " + domain);
+                return props;
+            }
+
+            NSDictionary rootDict = (NSDictionary) PropertyListParser.parse(plistData);
+            for (String key : rootDict.allKeys()) {
+                String value = rootDict.objectForKey(key).toString();
+                props.setProperty(key, value);
+                LOG.finer("Plist key=" + key + ", value=" + value);
+            }
+        } finally {
+            process.destroyForcibly();
         }
 
         return props;
