@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.light;
 
 import com.google.protobuf.AbstractMessage;
+import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -31,7 +32,6 @@ import de.dal33t.powerfolder.disk.Lock;
 import de.dal33t.powerfolder.protocol.FileInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.lang.ref.Reference;
@@ -177,12 +177,12 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         this.deleted = deleted;
         this.folderInfo = folderInfo;
 
-        if (Feature.FILEINFO_LOG_MISSING_MODIFIED_BY_ACCOUNT.isEnabled()) {
+        if (Feature.LOG_FILEINFO_MISSING_MODIFIED_BY_ACCOUNT.isEnabled()) {
             if (modifiedByAccount == null
                     && log.isLoggable(Level.WARNING)
                     && !folderInfo.isMetaFolder()
-                    && !folderInfo.getName().endsWith("server_maintenance")
-                    && !relativeName.endsWith(PathUtils.DESKTOP_INI_FILENAME)) {
+                    && !folderInfo.getName().endsWith(Constants.FOLDER_SERVER_MAINTENANCE)
+                    && !relativeName.equalsIgnoreCase(PathUtils.DESKTOP_INI_FILENAME)) {
 
                 log.log(Level.INFO, this.toDetailString() + ": Missing account information", new StackDump());
             }
@@ -722,6 +722,17 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (folder == null) {
             return null;
         }
+        return folder.getDiskFile(this);
+    }
+
+    /**
+     * Resolves a file from local disk by folder, File MAY NOT Exist!
+     *
+     * @param folder
+     * @return the file.
+     */
+    public Path getDiskFile(Folder folder) {
+        Reject.ifNull(folder, "folder is null");
         return folder.getDiskFile(this);
     }
 

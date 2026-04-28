@@ -34,6 +34,7 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.ui.PFUIComponent;
 import de.dal33t.powerfolder.ui.action.BaseAction;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
+import de.dal33t.powerfolder.ui.dialog.FactoryResetDialog;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.panel.ArchiveModeSelectorPanel;
 import de.dal33t.powerfolder.ui.util.Icons;
@@ -272,6 +273,9 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
                 row += 2; builder.appendRelatedComponentsGapRow(); builder.appendRow("pref");
                 builder.add(createUpdateCheckPanel(), cc.xyw(3, row, 2));
             }
+
+            row += 2; builder.appendUnrelatedComponentsGapRow(); builder.appendRow("pref");
+            builder.add(createFactoryResetPanel(), cc.xyw(3, row, 2));
 
             panel = builder.getPanel();
         }
@@ -622,9 +626,30 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
         getController().saveConfig();
     }
 
+    private JPanel createFactoryResetPanel() {
+        FormLayout layout = new FormLayout("80dlu", "pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        JButton resetButton = new JButton(
+            Translation.get("factory_reset.button.text"));
+        resetButton.setToolTipText(
+            Translation.get("factory_reset.button.tip"));
+        resetButton.setBackground(Color.WHITE);
+        resetButton.addActionListener(new FactoryResetAction());
+        builder.add(resetButton, cc.xy(1, 1));
+        return builder.getPanel();
+    }
+
     // ////////////////
     // Inner classes //
     // ////////////////
+
+    private class FactoryResetAction implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            FactoryResetDialog dialog = new FactoryResetDialog(getController());
+            dialog.open();
+        }
+    }
 
     private static class MyCleanupAction extends BaseAction {
 

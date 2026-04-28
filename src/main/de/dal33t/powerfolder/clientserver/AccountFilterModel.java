@@ -36,6 +36,7 @@ public class AccountFilterModel implements Serializable {
     private boolean proUsersOnly;
     private boolean activeTrial;
     private Boolean activatedOnly;
+    private Boolean expiredOnly;
     private String username;
     private String queryname;
     private String memberOfOrganizationOID = Organization.FILTER_MATCH_ALL;
@@ -93,6 +94,14 @@ public class AccountFilterModel implements Serializable {
         return activatedOnly;
     }
 
+    public Boolean getExpiredOnly() {
+        return expiredOnly;
+    }
+
+    public void setExpiredOnly(Boolean expiredOnly) {
+        this.expiredOnly = expiredOnly;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -107,10 +116,7 @@ public class AccountFilterModel implements Serializable {
     }
 
     public void setQueryname(String queryname) {
-        Object oldValue = getQueryname();
-        this.queryname = queryname != null
-            ? queryname.toLowerCase().trim()
-            : null;
+        this.queryname = queryname;
     }
 
     public void applyFromQuery(String query) {

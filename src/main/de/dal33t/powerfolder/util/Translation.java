@@ -47,6 +47,32 @@ public class Translation {
     public static final Locale PORTUGUESE = new Locale("pt");
     public static final Locale HUNGARIAN = new Locale("hu");
     public static final Locale TURKISH = new Locale("tr");
+    public static final Locale BULGARIAN = new Locale("bg");
+    public static final Locale CZECH = new Locale("cs");
+    public static final Locale DANISH = new Locale("da");
+    public static final Locale FINNISH = new Locale("fi");
+    public static final Locale GREEK = new Locale("el");
+    public static final Locale NORWEGIAN = new Locale("no");
+    public static final Locale ROMANIAN = new Locale("ro");
+    public static final Locale SLOVAK = new Locale("sk");
+    public static final Locale CROATIAN = new Locale("hr");
+    public static final Locale SLOVENIAN = new Locale("sl");
+    public static final Locale SERBIAN = new Locale("sr");
+    public static final Locale LITHUANIAN = new Locale("lt");
+    public static final Locale LATVIAN = new Locale("lv");
+    public static final Locale ESTONIAN = new Locale("et");
+    public static final Locale JAPANESE = new Locale("ja");
+    public static final Locale KOREAN = new Locale("ko");
+    public static final Locale CHINESE_SIMPLIFIED = new Locale("zh", "CN");
+    public static final Locale CHINESE_TRADITIONAL = new Locale("zh", "TW");
+    public static final Locale UKRAINIAN = new Locale("uk");
+    public static final Locale HINDI = new Locale("hi");
+    public static final Locale VIETNAMESE = new Locale("vi");
+    public static final Locale INDONESIAN = new Locale("id");
+    public static final Locale THAI = new Locale("th");
+    public static final Locale HEBREW = new Locale("he");
+    public static final Locale IRISH = new Locale("ga");
+    public static final Locale MALTESE = new Locale("mt");
 
     /**
      * List of all supported locales
@@ -76,21 +102,47 @@ public class Translation {
     public static synchronized List<Locale> getSupportedLocales() {
         if (supportedLocales == null) {
             supportedLocales = new ArrayList<>();
-            supportedLocales.add(Locale.ENGLISH);
-            supportedLocales.add(Locale.GERMAN);
-            supportedLocales.add(POLISH);
-            supportedLocales.add(PORTUGUESE);
-            supportedLocales.add(SPANISH);
-            supportedLocales.add(Locale.ITALIAN);
-            supportedLocales.add(DUTCH);
-            // supportedLocales.add(RUSSIAN);
-            // supportedLocales.add(Locale.FRENCH);
-            // supportedLocales.add(Locale.CHINESE);
-            // supportedLocales.add(Locale.JAPANESE);
-            // supportedLocales.add(SWEDISH);
-            // supportedLocales.add(ARABIC);
-            // supportedLocales.add(HUNGARIAN);
-            // supportedLocales.add(TURKISH);
+            supportedLocales.add(ARABIC);           // العربية
+            supportedLocales.add(BULGARIAN);         // Български
+            supportedLocales.add(CHINESE_SIMPLIFIED); // 中文(简体)
+            supportedLocales.add(CHINESE_TRADITIONAL);// 中文(繁體)
+            supportedLocales.add(CROATIAN);          // Hrvatski
+            supportedLocales.add(CZECH);             // Čeština
+            supportedLocales.add(DANISH);            // Dansk
+            supportedLocales.add(DUTCH);             // Nederlands
+            supportedLocales.add(Locale.ENGLISH);    // English
+            supportedLocales.add(ESTONIAN);          // Eesti
+            supportedLocales.add(FINNISH);           // Suomi
+            supportedLocales.add(Locale.FRENCH);     // Français
+            supportedLocales.add(Locale.GERMAN);     // Deutsch
+            supportedLocales.add(GREEK);             // Ελληνικά
+            supportedLocales.add(HEBREW);            // עברית
+            // UI framework not capable atm:
+            // supportedLocales.add(HINDI);           // हिन्दी
+            supportedLocales.add(HUNGARIAN);         // Magyar
+            supportedLocales.add(INDONESIAN);        // Bahasa Indonesia
+            supportedLocales.add(IRISH);             // Gaeilge
+            supportedLocales.add(Locale.ITALIAN);    // Italiano
+            supportedLocales.add(JAPANESE);          // 日本語
+            supportedLocales.add(KOREAN);            // 한국어
+            supportedLocales.add(LATVIAN);           // Latviešu
+            supportedLocales.add(LITHUANIAN);        // Lietuvių
+            supportedLocales.add(MALTESE);           // Malti
+            supportedLocales.add(NORWEGIAN);         // Norsk
+            supportedLocales.add(POLISH);            // Polski
+            supportedLocales.add(PORTUGUESE);        // Português
+            supportedLocales.add(ROMANIAN);          // Română
+            supportedLocales.add(RUSSIAN);           // Русский
+            supportedLocales.add(SERBIAN);           // Српски
+            supportedLocales.add(SLOVAK);            // Slovenčina
+            supportedLocales.add(SLOVENIAN);         // Slovenščina
+            supportedLocales.add(SPANISH);           // Español
+            supportedLocales.add(SWEDISH);           // Svenska
+            // UI framework not capable atm:
+            // supportedLocales.add(THAI);              // ไทย
+            supportedLocales.add(TURKISH);           // Türkçe
+            supportedLocales.add(UKRAINIAN);         // Українська
+            supportedLocales.add(VIETNAMESE);        // Tiếng Việt
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
         return Collections.unmodifiableList(supportedLocales);
@@ -170,9 +222,15 @@ public class Translation {
                 // Get language out of preferences
                 String confLangStr = Preferences.userNodeForPackage(
                         Translation.class).get("locale", null);
-                Locale confLang = confLangStr != null
-                        ? new Locale(confLangStr)
-                        : null;
+                Locale confLang = null;
+                if (confLangStr != null) {
+                    String[] parts = confLangStr.split("_");
+                    if (parts.length >= 2) {
+                        confLang = new Locale(parts[0], parts[1]);
+                    } else {
+                        confLang = new Locale(confLangStr);
+                    }
+                }
                 // Take default locale if config is empty
                 if (confLang == null) {
                     confLang = Locale.getDefault();

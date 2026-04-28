@@ -436,17 +436,16 @@ public abstract class AbstractDownloadManager extends PFComponent implements
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA Digest not found. Fatal error", e);
         } catch (FileNotFoundException e) {
-            throw new BrokenDownloadException(
-                TransferProblem.FILE_NOT_FOUND_EXCEPTION, e);
+            throw new BrokenDownloadException(TransferProblem.FILE_NOT_FOUND_EXCEPTION, e);
+        } catch (EOFException e) {
+            throw new BrokenDownloadException(TransferProblem.IO_EXCEPTION, e);
         } catch (IOException e) {
-            // ...
             logWarning(this + ": testDeltaFileChangedMultiple BrokenDownloadException: " + e, e);
             throw new BrokenDownloadException(TransferProblem.IO_EXCEPTION, e);
         } catch (InterruptedException e) {
             throw e;
         } catch (Exception e) {
-            throw new BrokenDownloadException(
-                TransferProblem.GENERAL_EXCEPTION, e);
+            throw new BrokenDownloadException(TransferProblem.GENERAL_EXCEPTION, e);
         }
     }
 

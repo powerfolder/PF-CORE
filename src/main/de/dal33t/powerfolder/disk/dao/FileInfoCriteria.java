@@ -42,6 +42,8 @@ public class FileInfoCriteria {
     private Set<String> keyWords = new HashSet<>();
     private int maxResults = -1;
     private boolean includeDeleted = false;
+    private String extension;
+    private String modifiedBy;
 
     /**
      * @return the domain(s) to search in.
@@ -206,6 +208,29 @@ public class FileInfoCriteria {
 
     public void setIncludeDeleted(boolean includeDeleted) {
         this.includeDeleted = includeDeleted;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
+    public String getModifiedBy() {
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(String modifiedBy) {
+        this.modifiedBy = modifiedBy;
+    }
+
+
+    public boolean hasSearchCriteria() {
+        return !keyWords.isEmpty()
+                || StringUtils.isNotBlank(extension)
+                || StringUtils.isNotBlank(modifiedBy);
     }
 
     @Override

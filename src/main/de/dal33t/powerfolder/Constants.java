@@ -429,6 +429,7 @@ public class Constants {
     public static final String FOLDER_PERSONAL_FILES = "$personal_files";
     public static final String FOLDER_PUBLIC_SHARED_FILES = "$public_shared_files";
     public static final String MAIL_ATTACHMENT_FOLDER = "$mail_attachments";
+    public static final String FOLDER_SERVER_MAINTENANCE = "server_maintenance";
 
     // Locking ****************************************************************
 

@@ -22,6 +22,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.distribution.Distribution;
+import de.dal33t.powerfolder.search.TesseractOCR;
 import de.dal33t.powerfolder.distribution.PowerFolderBasic;
 import de.dal33t.powerfolder.distribution.PowerFolderPro;
 import de.dal33t.powerfolder.event.*;
@@ -87,8 +88,8 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 26;
-    private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 104;
+    private static final int MINOR_VERSION = 2;
+    private static final int REVISION_VERSION = 100;
 
     /**
      * Program version.
@@ -2119,6 +2120,9 @@ public class Controller extends PFComponent {
             logFine("Shutting down folder repository");
             folderRepository.shutdown();
         }
+
+        logFine("Shutting down OCR engine");
+        TesseractOCR.getInstance().shutdown();
 
         if (reconnectManager != null) {
             logFine("Shutting down reconnect manager");

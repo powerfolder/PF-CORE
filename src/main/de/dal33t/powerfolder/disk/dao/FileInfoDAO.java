@@ -172,6 +172,7 @@ public interface FileInfoDAO {
      * @return the collection of matching directories.
      * @deprecated use {@link #findFiles(FileInfoCriteria)}
      */
+    @Deprecated
     Collection<FileInfo> findInDirectory(String domain, String path,
         boolean recursive);
 
@@ -188,6 +189,7 @@ public interface FileInfoDAO {
      * @return the collection of matching directories.
      * @deprecated use {@link #findFiles(FileInfoCriteria)}
      */
+    @Deprecated
     Collection<FileInfo> findInDirectory(String domain,
         DirectoryInfo directoryInfo, boolean recursive);
 

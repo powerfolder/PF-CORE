@@ -19,16 +19,11 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.util.*;
 
 /**
  * This class lists all the differences between the database of files in a
@@ -120,16 +115,6 @@ public class ScanResult {
 
     public Map<FileInfo, List<Problem>> getProblemFiles() {
         return Collections.unmodifiableMap(problemFiles);
-    }
-
-    /**
-     * @param problemFiles
-     * @deprecated for tests only
-     */
-    public void setProblemFiles(
-        Map<FileInfo, List<Problem>> problemFiles)
-    {
-        this.problemFiles = problemFiles;
     }
 
     public int getTotalFilesCount() {

@@ -310,6 +310,7 @@ public enum ConfigurationEntry {
      *
      * @deprecated for testing use {@link Feature#P2P_REQUIRES_LOGIN_AT_SERVER}
      */
+    @Deprecated
     SERVER_DISCONNECT_SYNC_ANYWAYS("server.disconnect.sync_anyways", false) {
         @Override
         public String getValue(Controller controller) {
@@ -917,7 +918,7 @@ public enum ConfigurationEntry {
     /**
      * Lets do this flexible.
      */
-    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", Constants.LEGACY_BACKUP_REMOVE),
+    FOLDER_BASEDIR_DELETED_DIR("folderbase.deleteddir", ""),
 
     /**
      * Contains a comma-separated list of all plugins to load.
@@ -986,6 +987,21 @@ public enum ConfigurationEntry {
     },
 
     LOOK_FOR_FOLDERS_TO_BE_REMOVED("look.for.folder.removes", false),
+
+    /**
+     * PF-1930: Full text search. Disabled for client. Server enable it
+     */
+    SEARCH_INDEX_ENABLED("search.index.enabled", false),
+
+    /**
+     * PFS-5487: Enable content extraction (Tika) for full-text search.
+     */
+    SEARCH_INDEX_CONTENT_EXTRACTION_ENABLED("search.index.content_extraction.enabled", true),
+
+    /**
+     * PFS-5487: Enable OCR (Tesseract) for images and scanned PDFs.
+     */
+    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", false),
 
     /**
      * Whether to log verbose.

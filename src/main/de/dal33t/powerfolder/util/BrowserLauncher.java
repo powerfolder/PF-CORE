@@ -19,16 +19,16 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.awt.Desktop;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.util.os.OSUtil;
+
+import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import de.dal33t.powerfolder.Controller;
-import de.dal33t.powerfolder.util.os.OSUtil;
 
 /**
  * Bare Bones Browser Launch
@@ -52,6 +52,15 @@ public class BrowserLauncher {
         .getName());
 
     private static final String errMsg = "Error attempting to launch web browser";
+
+    private static final String[] LINUX_OPENERS = {
+        "xdg-open", "gio", "kde-open6", "kde-open5", "kde-open"
+    };
+
+    private static final String[] FALLBACK_BROWSERS = {
+        "firefox", "chromium", "google-chrome", "opera",
+        "konqueror", "epiphany", "mozilla", "netscape"
+    };
 
     /**
      * Opens the browser in background thread. This method does not BLOCK. Can
@@ -115,9 +124,12 @@ public class BrowserLauncher {
             log.warning("Not opening blank url!");
             return;
         }
+
+        // Prefer Desktop if it works
         if (java6impl(url)) {
             return;
         }
+
         try {
             if (OSUtil.isMacOS()) {
                 Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
@@ -125,36 +137,64 @@ public class BrowserLauncher {
                     new Class[]{String.class});
                 openURL.invoke(null, url);
             } else if (OSUtil.isWindowsSystem()) {
-                Runtime.getRuntime().exec(
-                    "rundll32 url.dll,FileProtocolHandler " + url);
-            } else { // assume Unix or Linux
-                String[] browsers = {"firefox", "opera", "konqueror",
-                    "epiphany", "mozilla", "netscape"};
-                String browser = null;
-                for (int count = 0; count < browsers.length && browser == null; count++)
-                    if (Runtime.getRuntime()
-                        .exec(new String[]{"which", browsers[count]}).waitFor() == 0)
-                        browser = browsers[count];
-                if (browser == null) {
-                    throw new Exception("Could not find web browser");
-                }
-                Runtime.getRuntime().exec(new String[]{browser, url});
+                Runtime.getRuntime().exec(new String[]{"rundll32", "url.dll,FileProtocolHandler", url});
+            } else {
+                openURLOnLinux(url);
             }
         } catch (Exception e) {
             throw (IOException) new IOException(errMsg).initCause(e);
         }
     }
 
+    private static void openURLOnLinux(String url) throws Exception {
+        for (String opener : LINUX_OPENERS) {
+            if (isCommandAvailable(opener)) {
+                String[] cmd = "gio".equals(opener)
+                    ? new String[]{opener, "open", url}
+                    : new String[]{opener, url};
+                Process p = Runtime.getRuntime().exec(cmd);
+                if (p.waitFor() == 0) {
+                    return;
+                }
+                log.fine(opener + " exited with code " + p.exitValue()
+                    + ", trying next");
+            }
+        }
+
+        for (String browser : FALLBACK_BROWSERS) {
+            if (isCommandAvailable(browser)) {
+                Runtime.getRuntime().exec(new String[]{browser, url});
+                return;
+            }
+        }
+
+        throw new Exception("Could not find web browser"
+            + " (no URL opener and no known browser in PATH)");
+    }
+
+    private static boolean isCommandAvailable(String command)
+        throws IOException, InterruptedException
+    {
+        return Runtime.getRuntime()
+            .exec(new String[]{"which", command}).waitFor() == 0;
+    }
+
     private static boolean java6impl(String url) {
         log.fine("Launching " + url);
         try {
             if (Desktop.isDesktopSupported()) {
-                log.fine("Using Java6 Desktop.browse()");
-                Desktop.getDesktop().browse(new URI(url));
-                return true;
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                    log.fine("Using Desktop.browse()");
+                    desktop.browse(new URI(url));
+                    return true;
+                }
             }
         } catch (LinkageError err) {
             log.log(Level.FINER, "LinkageError", err);
+        } catch (RuntimeException re) {
+            // Covers HeadlessException and other runtime failures in some Linux/CI environments
+            log.fine("Cannot open URL using Desktop (runtime). Trying fallback. " + re.toString());
         } catch (URISyntaxException | IOException e) {
             log.fine("Cannot open URL using Desktop. Trying fallback. " + e.toString());
         }
