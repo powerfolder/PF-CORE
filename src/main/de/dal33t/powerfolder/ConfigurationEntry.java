@@ -1001,7 +1001,7 @@ public enum ConfigurationEntry {
     /**
      * PFS-5487: Enable OCR (Tesseract) for images and scanned PDFs.
      */
-    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", true),
+    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", false),
 
     /**
      * Whether to log verbose.

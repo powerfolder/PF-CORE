@@ -528,7 +528,7 @@ public class LuceneIndexManager extends Loggable {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 9;
+    private static final int INDEX_FORMAT_VERSION = 11;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -601,12 +601,11 @@ public class LuceneIndexManager extends Loggable {
         try {
             Document doc = buildDocument(fileInfo);
 
-            if (!fileInfo.isDeleted() && extractContentEnabled) {
+            if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && extractContentEnabled) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
                     String content = extractContentTikaOnly(fileInfo);
                     if (content != null && !content.isBlank()) {
-                        doc.add(new TextField("content", content,
-                                Field.Store.NO));
+                        doc.add(new TextField("content", content, Field.Store.NO));
                     } else {
                         contentQueue.add(fileInfo);
                     }
@@ -632,6 +631,7 @@ public class LuceneIndexManager extends Loggable {
      * Phase 2: re-indexes with extracted content (Tika/OCR, slow).
      */
     private void doIndexContent(FileInfo fileInfo) {
+        if (fileInfo.isDiretory()) return;
         try {
             String content = extractContent(fileInfo);
             if (content == null || content.isBlank()) return;
@@ -657,7 +657,12 @@ public class LuceneIndexManager extends Loggable {
 
     private String extractContentTikaOnly(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
-        if (filePath == null || !Files.exists(filePath)) return null;
+        if (filePath == null || !Files.exists(filePath)) {
+            logFine(folder + ": File not found on disk for content extraction: "
+                    + fileInfo.getRelativeName()
+                    + " (resolved path: " + filePath + ")");
+            return null;
+        }
 
         try (InputStream stream = Files.newInputStream(filePath)) {
             BodyContentHandler handler = new BodyContentHandler(-1);
@@ -672,11 +677,31 @@ public class LuceneIndexManager extends Loggable {
                 return stripEncodingArtifacts(text);
             }
         } catch (IOException | SAXException | TikaException e) {
-            logFiner(folder + ": Tika failed for "
+            logFine(folder + ": Tika extraction failed for "
                     + fileInfo.getFilenameOnly() + ": "
                     + e.getMessage());
+            return readPlainTextFallback(filePath);
         }
         return null;
+    }
+
+    private String readPlainTextFallback(Path filePath) {
+        String name = filePath.getFileName().toString().toLowerCase(Locale.ROOT);
+        if (!name.endsWith(".txt") && !name.endsWith(".md")
+                && !name.endsWith(".csv") && !name.endsWith(".log")) {
+            return null;
+        }
+        try {
+            long size = Files.size(filePath);
+            if (size > INLINE_EXTRACT_MAX_SIZE) return null;
+            return Files.readString(filePath, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            try {
+                return Files.readString(filePath, StandardCharsets.ISO_8859_1);
+            } catch (IOException ignored) {
+                return null;
+            }
+        }
     }
 
     private String extractContent(FileInfo fileInfo) {

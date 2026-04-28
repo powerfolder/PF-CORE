@@ -99,7 +99,7 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                         oldInstance.getParent());
             }
 
-            if (oldInstance != null && !foInfo.isMetaFolder() && Feature.INTERNAL_USE.isEnabled()) {
+            if (oldInstance != null && !foInfo.isMetaFolder() && Feature.LOG_FOLDERINFO_FORCED_INTERNALIZE.isEnabled()) {
                 LOG.log(Level.INFO, foInfo + ": rename (forced internalize). oldInstance: " + oldInstance);
             }
             INSTANCES.put(foInfo, foInfo);
