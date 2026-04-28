@@ -212,6 +212,7 @@ For creation of the installer:
 			<include name="search/tika-parser-pdf-module-3.2.3.jar"/>
 			<include name="search/tika-parser-html-module-3.2.3.jar"/>
 			<include name="search/tika-parser-text-module-3.2.3.jar"/>
+			<include name="search/tika-parser-xmp-commons-3.2.3.jar"/>
 
 			<!-- Tika parser module dependencies -->
 			<include name="search/jsoup-1.18.3.jar"/>
