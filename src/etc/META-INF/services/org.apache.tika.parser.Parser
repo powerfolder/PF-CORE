@@ -1,0 +1,4 @@
+org.apache.tika.parser.external.CompositeExternalParser
+org.apache.tika.parser.pdf.PDFParser
+org.apache.tika.parser.html.JSoupParser
+org.apache.tika.parser.csv.TextAndCSVParser
