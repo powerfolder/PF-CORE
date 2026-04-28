@@ -528,7 +528,7 @@ public class LuceneIndexManager extends Loggable {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 10;
+    private static final int INDEX_FORMAT_VERSION = 11;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
