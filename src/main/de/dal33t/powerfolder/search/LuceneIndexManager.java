@@ -601,12 +601,11 @@ public class LuceneIndexManager extends Loggable {
         try {
             Document doc = buildDocument(fileInfo);
 
-            if (!fileInfo.isDeleted() && extractContentEnabled) {
+            if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && extractContentEnabled) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
                     String content = extractContentTikaOnly(fileInfo);
                     if (content != null && !content.isBlank()) {
-                        doc.add(new TextField("content", content,
-                                Field.Store.NO));
+                        doc.add(new TextField("content", content, Field.Store.NO));
                     } else {
                         contentQueue.add(fileInfo);
                     }
@@ -632,6 +631,7 @@ public class LuceneIndexManager extends Loggable {
      * Phase 2: re-indexes with extracted content (Tika/OCR, slow).
      */
     private void doIndexContent(FileInfo fileInfo) {
+        if (fileInfo.isDiretory()) return;
         try {
             String content = extractContent(fileInfo);
             if (content == null || content.isBlank()) return;
@@ -657,7 +657,12 @@ public class LuceneIndexManager extends Loggable {
 
     private String extractContentTikaOnly(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
-        if (filePath == null || !Files.exists(filePath)) return null;
+        if (filePath == null || !Files.exists(filePath)) {
+            logFine(folder + ": File not found on disk for content extraction: "
+                    + fileInfo.getRelativeName()
+                    + " (resolved path: " + filePath + ")");
+            return null;
+        }
 
         try (InputStream stream = Files.newInputStream(filePath)) {
             BodyContentHandler handler = new BodyContentHandler(-1);
@@ -672,9 +677,9 @@ public class LuceneIndexManager extends Loggable {
                 return stripEncodingArtifacts(text);
             }
         } catch (IOException | SAXException | TikaException e) {
-            logFiner(folder + ": Tika failed for "
+            logWarning(folder + ": Tika extraction failed for "
                     + fileInfo.getFilenameOnly() + ": "
-                    + e.getMessage());
+                    + e);
         }
         return null;
     }
