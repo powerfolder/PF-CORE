@@ -677,11 +677,31 @@ public class LuceneIndexManager extends Loggable {
                 return stripEncodingArtifacts(text);
             }
         } catch (IOException | SAXException | TikaException e) {
-            logWarning(folder + ": Tika extraction failed for "
+            logFine(folder + ": Tika extraction failed for "
                     + fileInfo.getFilenameOnly() + ": "
-                    + e);
+                    + e.getMessage());
+            return readPlainTextFallback(filePath);
         }
         return null;
+    }
+
+    private String readPlainTextFallback(Path filePath) {
+        String name = filePath.getFileName().toString().toLowerCase(Locale.ROOT);
+        if (!name.endsWith(".txt") && !name.endsWith(".md")
+                && !name.endsWith(".csv") && !name.endsWith(".log")) {
+            return null;
+        }
+        try {
+            long size = Files.size(filePath);
+            if (size > INLINE_EXTRACT_MAX_SIZE) return null;
+            return Files.readString(filePath, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            try {
+                return Files.readString(filePath, StandardCharsets.ISO_8859_1);
+            } catch (IOException ignored) {
+                return null;
+            }
+        }
     }
 
     private String extractContent(FileInfo fileInfo) {
