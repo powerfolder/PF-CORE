@@ -209,6 +209,13 @@ For creation of the installer:
 			<!-- Apache Tika for fulltext extraction -->
 			<include name="search/tika-core-3.2.3.jar"/>
 			<include name="search/tika-parsers-standard-package-3.2.3.jar"/>
+			<include name="search/tika-parser-pdf-module-3.2.3.jar"/>
+			<include name="search/tika-parser-html-module-3.2.3.jar"/>
+			<include name="search/tika-parser-text-module-3.2.3.jar"/>
+
+			<!-- Tika parser module dependencies -->
+			<include name="search/jsoup-1.18.3.jar"/>
+			<include name="search/juniversalchardet-2.5.0.jar"/>
 
 			<!-- PDFBox for PDF text extraction (used by Tika internally) -->
 			<include name="search/pdfbox-3.0.6.jar"/>
