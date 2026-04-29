@@ -466,19 +466,10 @@ public class Folder extends PFComponent {
             return;
         }
         try {
-            searchIndexManager = new LuceneIndexManager(this, getController().getIOProvider());
-            searchIndexManager.setExtractContentEnabled(
-                    ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTRACTION_ENABLED.getValueBoolean(getController()));
-            searchIndexManager.setOcrEnabled(
-                    ConfigurationEntry.SEARCH_INDEX_OCR_ENABLED.getValueBoolean(getController()));
+            searchIndexManager = new LuceneIndexManager(getController(), this);
             boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
-            if (rebuild) {
-                logInfo(this + ": Initialized and rebuilding Lucene search index");
-            } else {
-                logInfo(this + ": Initialized Lucene search index with " + searchIndexManager.getIndexEntryCount() + " entries");
-            }
-            logInfo(this + ": Initialized " + (rebuild ? "and rebuilt" : "")
-                    + " Lucene search index (" + searchIndexManager.getIndexEntryCount() + " entries)");
+            logInfo(this + ": Lucene search index " + (rebuild ? "rebuilding" : "ready")
+                    + " (" + searchIndexManager.getIndexEntryCount() + " entries)");
         } catch (Throwable t) {
             logWarning(this + ": Unable to initialize Lucene index manager: " + t, t);
         }
