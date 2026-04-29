@@ -18,16 +18,17 @@
 
 package de.dal33t.powerfolder.search;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.net.IOProvider;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.logging.Loggable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -67,7 +68,7 @@ import java.util.regex.Pattern;
  * <p>
  * Searches are synchronous and run against the latest committed state.
  */
-public class LuceneIndexManager extends Loggable {
+public class LuceneIndexManager extends PFComponent {
 
     private static final String META_FILE_NAME = ".index_meta";
 
@@ -94,11 +95,46 @@ public class LuceneIndexManager extends Loggable {
 
     /**
      * Files smaller than this are content-extracted inline in phase 1
-     * (Tika only, no OCR). Default: 256 KB.
+     * (Tika only, no OCR). Default: 32 KB — covers ~65% of files
+     * in typical enterprise environments (log-normal distribution,
+     * median ~4 KB). Keeps phase 1 fast (~5-15 ms/file via Tika)
+     * so metadata search is available quickly.
+     * <p>
+     * Source: Douceur &amp; Bolosky, "A Large-Scale Study of
+     * File-System Contents", Microsoft Research 1999, 140M files.
      */
     private static final long INLINE_EXTRACT_MAX_SIZE =
             Long.getLong("powerfolder.index.inlineExtractMaxSize",
-                    256L * 1024);
+                    32L * 1024);
+
+    /**
+     * Maximum extracted text length (characters) Tika is allowed to
+     * produce. Prevents OOM on huge files (e.g. multi-GB CSVs).
+     * Default: 10 MB of text.
+     */
+    private static final int TIKA_WRITE_LIMIT =
+            Integer.getInteger("powerfolder.index.tikaWriteLimit",
+                    10 * 1024 * 1024);
+
+    /**
+     * Files larger than this are skipped for content extraction
+     * entirely. Default: 512 MB. Avoids feeding huge files into
+     * Tika where extraction time and memory usage are excessive.
+     * PFS-5487.
+     */
+    private static final long CONTENT_EXTRACT_MAX_SIZE =
+            Long.getLong("powerfolder.index.contentExtractMaxSize",
+                    512L * 1024 * 1024);
+
+    /**
+     * Throttle delay (ms) between phase 2 content extractions to
+     * prevent CPU/IO saturation during large index builds.
+     * Default: 5 ms. Set to 0 to disable throttling.
+     * PFS-5487: Munin stats showed 100% CPU saturation on all
+     * three production servers during initial index build.
+     */
+    private static final long CONTENT_EXTRACT_THROTTLE_MS =
+            Long.getLong("powerfolder.index.contentExtractThrottleMs", 5L);
 
     /**
      * Files indexed before an automatic commit+refresh.
@@ -112,7 +148,6 @@ public class LuceneIndexManager extends Loggable {
     // -----------------------------------------------------------------------
 
     private final Folder folder;
-    private final IOProvider ioProvider;
     private final Path indexPath;
     private final StandardAnalyzer analyzer;
     private final IndexWriter writer;
@@ -130,20 +165,15 @@ public class LuceneIndexManager extends Loggable {
     /** True while a full rebuild is in progress. */
     private final AtomicBoolean rebuilding = new AtomicBoolean(false);
 
-    private volatile boolean extractContentEnabled = true;
-    private volatile boolean ocrEnabled = true;
-
     // ------------------------------------------------------------------------
     // Construction
     // ------------------------------------------------------------------------
 
-    public LuceneIndexManager(Folder folder, IOProvider ioProvider)
+    public LuceneIndexManager(Controller controller, Folder folder)
             throws IOException {
-        super();
+        super(controller);
         Reject.ifNull(folder, "Folder");
-        Reject.ifNull(ioProvider, "IOProvider");
         this.folder = folder;
-        this.ioProvider = ioProvider;
         this.indexPath = folder.getSystemSubDir().resolve("index");
         Files.createDirectories(indexPath);
 
@@ -214,15 +244,17 @@ public class LuceneIndexManager extends Loggable {
     }
 
     // ------------------------------------------------------------------------
-    // Configuration toggles
+    // Configuration (live from ConfigurationEntry)
     // ------------------------------------------------------------------------
 
-    public void setExtractContentEnabled(boolean enabled) {
-        this.extractContentEnabled = enabled;
+    private boolean isExtractContentEnabled() {
+        return ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTRACTION_ENABLED
+                .getValueBoolean(getController());
     }
 
-    public void setOcrEnabled(boolean enabled) {
-        this.ocrEnabled = enabled;
+    private boolean isOcrEnabled() {
+        return ConfigurationEntry.SEARCH_INDEX_OCR_ENABLED
+                .getValueBoolean(getController());
     }
 
     // ------------------------------------------------------------------------
@@ -441,7 +473,7 @@ public class LuceneIndexManager extends Loggable {
     private void ensureWorkerRunning() {
         if (closed.get()) return;
         if (workerRunning.compareAndSet(false, true)) {
-            ioProvider.startIO(this::workerLoop);
+            getController().getIOProvider().startIO(this::workerLoop);
         }
     }
 
@@ -466,6 +498,11 @@ public class LuceneIndexManager extends Loggable {
                 }
                 try {
                     doIndexFile(fileInfo);
+                } catch (OutOfMemoryError oom) {
+                    logSevere(folder + ": OOM while indexing "
+                            + fileInfo.toDetailString() + ": "
+                            + oom.getMessage());
+                    throw oom;
                 } catch (Exception e) {
                     logWarning(folder + ": Failed to index "
                             + fileInfo.getFilenameOnly() + ": "
@@ -494,10 +531,18 @@ public class LuceneIndexManager extends Loggable {
                 }
                 try {
                     doIndexContent(fileInfo);
+                } catch (OutOfMemoryError oom) {
+                    logSevere(folder + ": OOM during content extraction of "
+                            + fileInfo.toDetailString() + ": "
+                            + oom.getMessage());
+                    throw oom;
                 } catch (Exception e) {
                     logWarning(folder + ": Content extraction failed for "
                             + fileInfo.getFilenameOnly() + ": "
                             + e.getMessage());
+                }
+                if (CONTENT_EXTRACT_THROTTLE_MS > 0) {
+                    Thread.sleep(CONTENT_EXTRACT_THROTTLE_MS);
                 }
             }
         } catch (InterruptedException e) {
@@ -601,7 +646,7 @@ public class LuceneIndexManager extends Loggable {
         try {
             Document doc = buildDocument(fileInfo);
 
-            if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && extractContentEnabled) {
+            if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled()) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
                     String content = extractContentTikaOnly(fileInfo);
                     if (content != null && !content.isBlank()) {
@@ -665,7 +710,7 @@ public class LuceneIndexManager extends Loggable {
         }
 
         try (InputStream stream = Files.newInputStream(filePath)) {
-            BodyContentHandler handler = new BodyContentHandler(-1);
+            BodyContentHandler handler = new BodyContentHandler(TIKA_WRITE_LIMIT);
             new AutoDetectParser().parse(stream, handler, new Metadata());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
@@ -708,12 +753,20 @@ public class LuceneIndexManager extends Loggable {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) return null;
 
+        try {
+            if (Files.size(filePath) > CONTENT_EXTRACT_MAX_SIZE) {
+                logFine(folder + ": Skipping content extraction for "
+                        + fileInfo.getFilenameOnly() + " (file too large)");
+                return null;
+            }
+        } catch (IOException ignored) {}
+
         String tikaText = null;
 
         // 1) Tika text extraction
         try (InputStream stream = Files.newInputStream(filePath)) {
             BodyContentHandler handler =
-                    new BodyContentHandler(-1);
+                    new BodyContentHandler(TIKA_WRITE_LIMIT);
             new AutoDetectParser().parse(stream, handler,
                     new Metadata());
             String text = handler.toString();
@@ -745,7 +798,7 @@ public class LuceneIndexManager extends Loggable {
         }
 
         // 3) OCR fallback for broken encoding or missing text
-        if (ocrEnabled && OCR_ELIGIBLE_PATTERN.matcher(
+        if (isOcrEnabled() && OCR_ELIGIBLE_PATTERN.matcher(
                 filePath.toString()).matches()) {
             try {
                 String ocrText = ocrEngine.performOCR(filePath);
