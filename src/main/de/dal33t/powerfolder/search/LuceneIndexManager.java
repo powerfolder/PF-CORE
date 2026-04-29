@@ -101,6 +101,23 @@ public class LuceneIndexManager extends Loggable {
                     256L * 1024);
 
     /**
+     * Maximum extracted text length (characters) Tika is allowed to
+     * produce. Prevents OOM on huge files (e.g. multi-GB CSVs).
+     * Default: 10 MB of text.
+     */
+    private static final int TIKA_WRITE_LIMIT =
+            Integer.getInteger("powerfolder.index.tikaWriteLimit",
+                    10 * 1024 * 1024);
+
+    /**
+     * Files larger than this are skipped for content extraction
+     * entirely. Default: 512 MB.
+     */
+    private static final long CONTENT_EXTRACT_MAX_SIZE =
+            Long.getLong("powerfolder.index.contentExtractMaxSize",
+                    512L * 1024 * 1024);
+
+    /**
      * Files indexed before an automatic commit+refresh.
      * Override with {@code powerfolder.index.commitInterval}.
      */
@@ -466,6 +483,11 @@ public class LuceneIndexManager extends Loggable {
                 }
                 try {
                     doIndexFile(fileInfo);
+                } catch (OutOfMemoryError oom) {
+                    logSevere(folder + ": OOM while indexing "
+                            + fileInfo.toDetailString() + ": "
+                            + oom.getMessage());
+                    throw oom;
                 } catch (Exception e) {
                     logWarning(folder + ": Failed to index "
                             + fileInfo.getFilenameOnly() + ": "
@@ -494,6 +516,11 @@ public class LuceneIndexManager extends Loggable {
                 }
                 try {
                     doIndexContent(fileInfo);
+                } catch (OutOfMemoryError oom) {
+                    logSevere(folder + ": OOM during content extraction of "
+                            + fileInfo.toDetailString() + ": "
+                            + oom.getMessage());
+                    throw oom;
                 } catch (Exception e) {
                     logWarning(folder + ": Content extraction failed for "
                             + fileInfo.getFilenameOnly() + ": "
@@ -665,7 +692,7 @@ public class LuceneIndexManager extends Loggable {
         }
 
         try (InputStream stream = Files.newInputStream(filePath)) {
-            BodyContentHandler handler = new BodyContentHandler(-1);
+            BodyContentHandler handler = new BodyContentHandler(TIKA_WRITE_LIMIT);
             new AutoDetectParser().parse(stream, handler, new Metadata());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
@@ -708,12 +735,20 @@ public class LuceneIndexManager extends Loggable {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) return null;
 
+        try {
+            if (Files.size(filePath) > CONTENT_EXTRACT_MAX_SIZE) {
+                logFine(folder + ": Skipping content extraction for "
+                        + fileInfo.getFilenameOnly() + " (file too large)");
+                return null;
+            }
+        } catch (IOException ignored) {}
+
         String tikaText = null;
 
         // 1) Tika text extraction
         try (InputStream stream = Files.newInputStream(filePath)) {
             BodyContentHandler handler =
-                    new BodyContentHandler(-1);
+                    new BodyContentHandler(TIKA_WRITE_LIMIT);
             new AutoDetectParser().parse(stream, handler,
                     new Metadata());
             String text = handler.toString();
