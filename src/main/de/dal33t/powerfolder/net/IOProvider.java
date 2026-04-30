@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.net;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Member;
@@ -30,10 +31,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +51,13 @@ public class IOProvider extends PFComponent {
      * The threadpool executing the basic I/O connections to the nodes.
      */
     private ExecutorService ioThreadPool;
+
+    /**
+     * PFS-5311: Dedicated bounded thread pool for search indexing work.
+     * Prevents indexing from saturating the general IO pool and limits
+     * concurrent Tika/OCR/Lucene operations across all folders.
+     */
+    private ThreadPoolExecutor indexingThreadPool;
 
     /**
      * The connection handler factory.
@@ -90,6 +95,20 @@ public class IOProvider extends PFComponent {
         // For basic IO
         ioThreadPool = new WrapperExecutorService(
             Executors.newCachedThreadPool(new NamedThreadFactory("IOThread-")));
+
+        // PFS-5311: Bounded pool for search indexing — prevents Tika/OCR
+        // from saturating CPU/IO during startup with hundreds of folders.
+        int maxIndexThreads = Math.max(2,
+            ConfigurationEntry.SEARCH_INDEX_MAX_THREADS
+                .getValueInt(getController()));
+        indexingThreadPool = new ThreadPoolExecutor(
+            2, maxIndexThreads,
+            60L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(1024),
+            new NamedThreadFactory("SearchIndexThread-"),
+            new ThreadPoolExecutor.CallerRunsPolicy());
+        logInfo("Search indexing thread pool started: maxThreads=" + maxIndexThreads);
+
         started = true;
         getController().scheduleAndRepeat(new KeepAliveChecker(),
             TIME_WITHOUT_KEEPALIVE_WEBSOCKET_UNTIL_PING);
@@ -98,6 +117,10 @@ public class IOProvider extends PFComponent {
 
     public void shutdown() {
         started = false;
+        if (indexingThreadPool != null) {
+            logFine("Shutting down search indexing threadpool");
+            indexingThreadPool.shutdownNow();
+        }
         if (ioThreadPool != null) {
             logFine("Shutting down connection I/O threadpool");
             ioThreadPool.shutdownNow();
@@ -169,6 +192,28 @@ public class IOProvider extends PFComponent {
 
             getController().exit(107);
             throw oom;
+        }
+    }
+
+    /**
+     * PFS-5311: Submits an indexing task to the dedicated bounded indexing
+     * thread pool. Unlike {@link #startIO(Runnable)}, this pool has a
+     * configurable maximum thread count to prevent CPU/IO saturation.
+     *
+     * @param worker the indexing worker to execute
+     * @return a Future representing the pending task, or null if rejected
+     */
+    public Future<?> startIndexing(final Runnable worker) {
+        Reject.ifNull(worker, "Indexing worker is null");
+        if (indexingThreadPool == null || indexingThreadPool.isShutdown()) {
+            logFine("Rejected indexing worker, pool not available: " + worker);
+            return null;
+        }
+        try {
+            return indexingThreadPool.submit(worker);
+        } catch (RejectedExecutionException e) {
+            logWarning("Indexing task rejected (pool full): " + e.getMessage());
+            return null;
         }
     }
 
