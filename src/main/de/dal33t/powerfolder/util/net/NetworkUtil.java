@@ -25,6 +25,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -414,6 +415,15 @@ public class NetworkUtil {
         }
         // Fallback
         return addr.getHostAddress();
+    }
+
+    public static boolean isPortAvailable(int port) {
+        try (ServerSocket ss = new ServerSocket(port)) {
+            ss.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /**
