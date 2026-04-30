@@ -1004,6 +1004,16 @@ public enum ConfigurationEntry {
     SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", false),
 
     /**
+     * PFS-5311: Maximum number of concurrent indexing worker threads.
+     * Controls how many folders can perform content extraction (Tika/OCR)
+     * simultaneously. Prevents CPU/IO saturation during startup and
+     * large index rebuilds. Default: half of available CPUs (min 2).
+     * Override only if auto-detection is unsuitable for the deployment.
+     */
+    SEARCH_INDEX_MAX_THREADS("search.indexing.maxThreads",
+            Math.max(2, Runtime.getRuntime().availableProcessors() / 2)),
+
+    /**
      * Whether to log verbose.
      */
     VERBOSE("verbose", false),
