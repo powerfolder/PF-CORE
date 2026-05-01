@@ -39,10 +39,9 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
-
-import org.apache.tika.parser.ParseContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,11 +61,10 @@ import java.util.regex.Pattern;
 /**
  * Per-folder Lucene index manager with asynchronous background indexing.
  * <p>
- * All indexing is non-blocking: callers add {@link FileInfo} objects to a
- * queue, and a single background worker processes them. Workers run on a
- * dedicated bounded thread pool ({@code IOProvider.startIndexing()}) so
- * that concurrent indexing across all folders is capped, preventing
- * CPU/IO saturation during startup. PFS-5311.
+ * All indexing is non-blocking: callers add {@link FileInfo} objects to a queue, and a single
+ * background worker processes them. Workers run on a dedicated bounded thread pool
+ * ({@code IOProvider.startIndexing()}) so that concurrent indexing across all folders is capped,
+ * preventing CPU/IO saturation during startup. PFS-5311.
  * <p>
  * Searches are synchronous and run against the latest committed state.
  */
@@ -80,8 +78,7 @@ public class LuceneIndexManager extends PFComponent {
 
     /** Pattern matching file extensions eligible for OCR fallback. */
     private static final Pattern OCR_ELIGIBLE_PATTERN =
-            Pattern.compile(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$",
-                    Pattern.CASE_INSENSITIVE);
+            Pattern.compile(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Detects UTF-8 mojibake: multi-byte UTF-8 sequences that were decoded
@@ -96,44 +93,37 @@ public class LuceneIndexManager extends PFComponent {
     private static final char REPLACEMENT_CHAR = '�';
 
     /**
-     * Files smaller than this are content-extracted inline in phase 1
-     * (Tika only, no OCR). Default: 32 KB — covers ~65% of files
-     * in typical enterprise environments (log-normal distribution,
-     * median ~4 KB). Keeps phase 1 fast (~5-15 ms/file via Tika)
-     * so metadata search is available quickly.
+     * Files smaller than this are content-extracted inline in phase 1 (Tika only, no OCR).
+     * Default: 32 KB — covers ~65% of files in typical enterprise environments (log-normal
+     * distribution, median ~4 KB). Keeps phase 1 fast (~5-15 ms/file via Tika) so metadata search
+     * is available quickly.
      * <p>
-     * Source: Douceur &amp; Bolosky, "A Large-Scale Study of
-     * File-System Contents", Microsoft Research 1999, 140M files.
+     * Source: Douceur &amp; Bolosky, "A Large-Scale Study of File-System Contents",
+     * Microsoft Research 1999, 140M files.
      */
     private static final long INLINE_EXTRACT_MAX_SIZE =
-            Long.getLong("powerfolder.index.inlineExtractMaxSize",
-                    32L * 1024);
+            Long.getLong("powerfolder.index.inlineExtractMaxSize", 32L * 1024);
 
     /**
-     * Maximum extracted text length (characters) Tika is allowed to
-     * produce. Prevents OOM on huge files (e.g. multi-GB CSVs).
-     * Default: 10 MB of text.
+     * Maximum extracted text length (characters) Tika is allowed to produce.
+     * Prevents OOM on huge files (e.g. multi-GB CSVs). Default: 10 MB of text.
      */
     private static final int TIKA_WRITE_LIMIT =
-            Integer.getInteger("powerfolder.index.tikaWriteLimit",
-                    10 * 1024 * 1024);
+            Integer.getInteger("powerfolder.index.tikaWriteLimit", 10 * 1024 * 1024);
 
     /**
-     * Files larger than this are skipped for content extraction
-     * entirely. Default: 512 MB. Avoids feeding huge files into
-     * Tika where extraction time and memory usage are excessive.
+     * Files larger than this are skipped for content extraction entirely. Default: 512 MB.
+     * Avoids feeding huge files into Tika where extraction time and memory usage are excessive.
      * PFS-5487.
      */
     private static final long CONTENT_EXTRACT_MAX_SIZE =
-            Long.getLong("powerfolder.index.contentExtractMaxSize",
-                    512L * 1024 * 1024);
+            Long.getLong("powerfolder.index.contentExtractMaxSize", 512L * 1024 * 1024);
 
     /**
-     * Throttle delay (ms) between phase 2 content extractions to
-     * prevent CPU/IO saturation during large index builds.
-     * Default: 5 ms. Set to 0 to disable throttling.
-     * PFS-5487: Munin stats showed 100% CPU saturation on all
-     * three production servers during initial index build.
+     * Throttle delay (ms) between phase 2 content extractions to prevent CPU/IO saturation during
+     * large index builds. Default: 5 ms. Set to 0 to disable throttling.
+     * PFS-5487: Munin stats showed 100% CPU saturation on all three production servers during
+     * initial index build.
      */
     private static final long CONTENT_EXTRACT_THROTTLE_MS =
             Long.getLong("powerfolder.index.contentExtractThrottleMs", 5L);
@@ -145,11 +135,9 @@ public class LuceneIndexManager extends PFComponent {
     private static final int COMMIT_INTERVAL =
             Integer.getInteger("powerfolder.index.commitInterval", 50);
 
-    // -----------------------------------------------------------------------
-    // Shared Tika parser — expensive to construct, safe to reuse.
-    // AutoDetectParser and the underlying CompositeParser are thread-safe
-    // (Tika creates per-call SAX handler state, not per-parser state).
-    // -----------------------------------------------------------------------
+    // Shared Tika parser — expensive to construct, safe to reuse. AutoDetectParser and the
+    // underlying CompositeParser are thread-safe (Tika creates per-call SAX handler state,
+    // not per-parser state).
     private static volatile AutoDetectParser SHARED_PARSER;
     private static final Object PARSER_LOCK = new Object();
 
@@ -284,16 +272,14 @@ public class LuceneIndexManager extends PFComponent {
     /**
      * Determines whether the index needs a full rebuild. Checks:
      * <ol>
-     *   <li>Index format version (detects Lucene/Tika/OCR library
-     *       upgrades)</li>
-     *   <li>File-count plausibility (stored count vs. actual file
-     *       count)</li>
+     *   <li>Index format version (detects Lucene/Tika/OCR library upgrades)</li>
+     *   <li>File-count plausibility (stored count vs. actual file count)</li>
      *   <li>Index corruption (cannot open a reader)</li>
      *   <li>Content extraction or OCR newly enabled — PFS-5311</li>
+     *   <li>Admin triggered "rebuild all indexes" — PFS-5311</li>
      * </ol>
      *
-     * @param currentFileCount the number of files currently known to
-     *                         the folder
+     * @param currentFileCount the number of files currently known to the folder
      * @return true if a rebuild is required
      */
     public boolean isRebuildRequired(int currentFileCount) {
@@ -313,32 +299,25 @@ public class LuceneIndexManager extends PFComponent {
                 meta.load(in);
             }
 
-            int storedVersion = Integer.parseInt(
-                    meta.getProperty("formatVersion", "0"));
-            int storedFileCount = Integer.parseInt(
-                    meta.getProperty("fileCount", "-1"));
+            int storedVersion = Integer.parseInt(meta.getProperty("formatVersion", "0"));
+            int storedFileCount = Integer.parseInt(meta.getProperty("fileCount", "-1"));
 
             // Version mismatch → library upgrade
             if (storedVersion != INDEX_FORMAT_VERSION) {
-                logFine(folder + ": Index format version mismatch (stored="
-                        + storedVersion + ", current=" + INDEX_FORMAT_VERSION
-                        + ") — rebuild required");
+                logFine(folder + ": Index format version mismatch (stored=" + storedVersion
+                        + ", current=" + INDEX_FORMAT_VERSION + ") — rebuild required");
                 return true;
             }
 
             // Gross file-count mismatch (>20% drift or negative stored)
             if (storedFileCount < 0
-                    || Math.abs(storedFileCount - currentFileCount)
-                    > Math.max(currentFileCount * 0.20, 50)) {
-                logFine(folder + ": File count drift (stored="
-                        + storedFileCount + ", actual="
-                        + currentFileCount
-                        + ") — rebuild required");
+                    || Math.abs(storedFileCount - currentFileCount) > Math.max(currentFileCount * 0.20, 50)) {
+                logFine(folder + ": File count drift (stored=" + storedFileCount
+                        + ", actual=" + currentFileCount + ") — rebuild required");
                 return true;
             }
         } catch (Exception e) {
-            logWarning(folder + ": Failed to read index meta: "
-                    + e.getMessage() + " — rebuild required");
+            logWarning(folder + ": Failed to read index meta: " + e.getMessage() + " — rebuild required");
             return true;
         }
 
@@ -353,18 +332,27 @@ public class LuceneIndexManager extends PFComponent {
         }
 
         // 4) PFS-5311: content extraction was off and is now on
-        boolean prevContentExtraction = Boolean.parseBoolean(
-                meta.getProperty("contentExtraction.enabled", "false"));
+        boolean prevContentExtraction =
+                Boolean.parseBoolean(meta.getProperty("contentExtraction.enabled", "false"));
         if (isExtractContentEnabled() && !prevContentExtraction) {
             logInfo(folder + ": Reindex required — content extraction enabled");
             return true;
         }
 
         // 5) PFS-5311: OCR was off and is now on
-        boolean prevOcr = Boolean.parseBoolean(
-                meta.getProperty("ocr.enabled", "false"));
+        boolean prevOcr = Boolean.parseBoolean(meta.getProperty("ocr.enabled", "false"));
         if (isOcrEnabled() && !prevOcr) {
             logInfo(folder + ": Reindex required — OCR enabled");
+            return true;
+        }
+
+        // 6) PFS-5311: admin triggered "rebuild all indexes"
+        long lastRebuilt = Long.parseLong(meta.getProperty("lastRebuilt", "0"));
+        String rebuildBeforeStr = ConfigurationEntry.SEARCH_INDEX_REBUILD_BEFORE.getValue(getController());
+        long rebuildBefore = Long.parseLong(rebuildBeforeStr != null ? rebuildBeforeStr : "0");
+        if (rebuildBefore > 0 && lastRebuilt < rebuildBefore) {
+            logInfo(folder + ": Reindex required — admin triggered rebuild (lastRebuilt="
+                    + new Date(lastRebuilt) + ", rebuildBefore=" + new Date(rebuildBefore) + ")");
             return true;
         }
 
@@ -373,25 +361,19 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
-     * Persists index metadata and capabilities after a successful rebuild
-     * or significant update.
+     * Persists index metadata and capabilities after a successful rebuild or significant update.
      */
     private void writeIndexMeta(int fileCount) {
         Path metaFile = indexPath.resolve(META_FILE_NAME);
         Properties props = new Properties();
-        props.setProperty("formatVersion",
-                String.valueOf(INDEX_FORMAT_VERSION));
+        props.setProperty("formatVersion", String.valueOf(INDEX_FORMAT_VERSION));
         props.setProperty("fileCount", String.valueOf(fileCount));
-        props.setProperty("lastRebuilt",
-                String.valueOf(System.currentTimeMillis()));
-        props.setProperty("contentExtraction.enabled",
-                String.valueOf(isExtractContentEnabled()));
-        props.setProperty("ocr.enabled",
-                String.valueOf(isOcrEnabled()));
+        props.setProperty("lastRebuilt", String.valueOf(System.currentTimeMillis()));
+        props.setProperty("contentExtraction.enabled", String.valueOf(isExtractContentEnabled()));
+        props.setProperty("ocr.enabled", String.valueOf(isOcrEnabled()));
 
         try (OutputStream out = Files.newOutputStream(metaFile)) {
-            props.store(out,
-                    "PowerFolder Lucene index metadata — do not edit");
+            props.store(out, "PowerFolder Lucene index metadata — do not edit");
         } catch (IOException e) {
             logWarning(folder + ": Failed to write index meta: " + e.getMessage());
         }
@@ -444,7 +426,11 @@ public class LuceneIndexManager extends PFComponent {
      * Wipes the index synchronously and queues all files for
      * re-indexing in the background.
      */
-    public void rebuildIndex(Collection<FileInfo> allFiles) {
+    /**
+     * Wipes the index synchronously and queues all known files/directories for re-indexing
+     * in the background.
+     */
+    public void rebuildIndex() {
         indexQueue.clear();
         rebuilding.set(true);
 
@@ -453,29 +439,24 @@ public class LuceneIndexManager extends PFComponent {
             commitAndRefresh();
             logFine(folder + ": Index wiped for rebuild");
         } catch (Exception e) {
-            logWarning(folder + ": Failed to wipe index: "
-                    + e.getMessage());
+            logWarning(folder + ": Failed to wipe index: " + e.getMessage());
             rebuilding.set(false);
             return;
         }
 
-        int count = 0;
-        if (allFiles != null) {
-            indexQueue.addAll(allFiles);
-            count = allFiles.size();
-        }
+        Collection<FileInfo> files = folder.getKnownFiles();
+        Collection<? extends FileInfo> dirs = folder.getKnownDirectories();
+        indexQueue.addAll(files);
+        indexQueue.addAll(dirs);
 
         ensureWorkerRunning();
-        logInfo(folder + ": Rebuild queued — " + count + " files");
+        logInfo(folder + ": Rebuild queued — " + (files.size() + dirs.size()) + " files");
     }
 
     public boolean rebuildIndexIfRequired() {
-        Collection<FileInfo> allItems = new ArrayList<>();
-        allItems.addAll(folder.getKnownFiles());
-        allItems.addAll(folder.getKnownDirectories());
-
-        if (isRebuildRequired(allItems.size())) {
-            rebuildIndex(allItems);
+        int currentFileCount = folder.getKnownFiles().size() + folder.getKnownDirectories().size();
+        if (isRebuildRequired(currentFileCount)) {
+            rebuildIndex();
             return true;
         }
         return false;
@@ -508,14 +489,12 @@ public class LuceneIndexManager extends PFComponent {
     // ------------------------------------------------------------------------
 
     /**
-     * Ensures exactly one worker is running on the dedicated indexing
-     * thread pool. If the worker has already finished (queue was empty)
-     * and new work arrives, it is restarted.
+     * Ensures exactly one worker is running on the dedicated indexing thread pool. If the worker
+     * has already finished (queue was empty) and new work arrives, it is restarted.
      * <p>
-     * PFS-5311: Uses {@code IOProvider.startIndexing()} which is
-     * bounded, preventing hundreds of concurrent workers across folders.
-     * Also respects the startup delay gate so indexing doesn't saturate
-     * the node during boot.
+     * PFS-5311: Uses {@code IOProvider.startIndexing()} which is bounded, preventing hundreds of
+     * concurrent workers across folders. Also respects the startup delay gate so indexing doesn't
+     * saturate the node during boot.
      */
     private void ensureWorkerRunning() {
         if (closed.get()) return;
@@ -525,8 +504,8 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
-     * PFS-5311: Waits until the server has been up for at least 60s
-     * so indexing doesn't saturate the node during startup.
+     * PFS-5311: Waits until the server has been up for at least 60s so indexing doesn't saturate
+     * the node during startup.
      *
      * @return true if the wait completed, false if interrupted
      */
@@ -534,8 +513,8 @@ public class LuceneIndexManager extends PFComponent {
         long uptime = getController().getUptime();
         if (uptime >= 0 && uptime < STARTUP_DELAY_MS) {
             long waitMs = STARTUP_DELAY_MS - uptime;
-            logFine(folder + ": Indexing delayed " + (waitMs / 1000)
-                    + "s (server uptime " + (uptime / 1000) + "s)");
+            logFine(folder + ": Indexing delayed " + (waitMs / 1000) + "s (server uptime "
+                    + (uptime / 1000) + "s)");
             try {
                 Thread.sleep(waitMs);
             } catch (InterruptedException e) {
@@ -548,10 +527,9 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
-     * Single worker loop: polls FileInfo objects from the queue and
-     * indexes them. Commits periodically. Exits when the queue is
-     * empty — will be restarted by {@link #ensureWorkerRunning()}
-     * when new work arrives.
+     * Single worker loop: polls FileInfo objects from the queue and indexes them. Commits
+     * periodically. Exits when the queue is empty — will be restarted by
+     * {@link #ensureWorkerRunning()} when new work arrives.
      */
     private void workerLoop() {
         if (!waitForStartup()) {
@@ -717,6 +695,7 @@ public class LuceneIndexManager extends PFComponent {
      * Larger files are queued for phase 2 (full extraction with OCR).
      */
     private void doIndexFile(FileInfo fileInfo) {
+        if (fileInfo.isLookupInstance()) return;
         try {
             Document doc = buildDocument(fileInfo);
 
