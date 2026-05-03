@@ -5719,6 +5719,27 @@ public class Folder extends PFComponent {
         return subFolder;
     }
 
+    /**
+     * Removes a subfolder share. The subfolder is deregistered and its
+     * files remain in the top-level folder's DAO.
+     *
+     * @param subDirInfo the directory that identifies the subfolder to unshare
+     */
+    public void unshare(DirectoryInfo subDirInfo) {
+        Reject.ifNull(subDirInfo, "Subdirectory");
+        Reject.ifTrue(isSubFolder(), "Unshare only allowed from top level folder");
+
+        Folder subFolder = getController().getFolderRepository().findSubFolder(subDirInfo);
+        if (subFolder == null) {
+            logWarning(this + ": Cannot unshare - no subfolder found for " + subDirInfo);
+            return;
+        }
+
+        logInfo(this + ": Unsharing subfolder " + subFolder);
+
+        getController().getFolderRepository().removeFolder(subFolder, false);
+    }
+
     // Inner classes **********************************************************
 
     /**

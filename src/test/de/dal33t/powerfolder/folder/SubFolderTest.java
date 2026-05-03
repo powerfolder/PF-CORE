@@ -536,4 +536,80 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertFalse(result.containsKey(implicit2));
         assertFalse(result.containsKey(implicitRoot));
     }
+
+    public void testUnshare() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+
+        String subDir = "shared";
+        Path root = topFolder.getPhysicalDir();
+        Path sharedPath = Files.createDirectories(root.resolve(subDir));
+        Path testFile = TestHelper.createRandomFile(sharedPath, "data.txt");
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo sharedDirInfo =
+                (DirectoryInfo) topFolder.getFileInfo(subDir);
+
+        // --- Share ---
+        Folder subFolder = topFolder.share(sharedDirInfo);
+        assertNotNull(subFolder);
+        assertTrue(subFolder.isSubFolder());
+        assertEquals(3, repository.getFoldersCount());
+
+        // File exists in top folder DAO
+        FileInfo fileInTop = topFolder.getFileInfo(testFile);
+        assertNotNull(fileInTop);
+
+        // --- Unshare ---
+        topFolder.unshare(sharedDirInfo);
+
+        // Subfolder is removed from repository
+        assertEquals(2, repository.getFoldersCount());
+        assertNull(repository.findSubFolder(sharedDirInfo));
+
+        // File still exists in top folder DAO
+        fileInTop = topFolder.getFileInfo(testFile);
+        assertNotNull(fileInTop);
+
+        // Physical file still on disk
+        assertTrue(Files.exists(testFile));
+    }
+
+    public void testUnshareNonExistentIsNoop() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+
+        Path root = topFolder.getPhysicalDir();
+        Files.createDirectories(root.resolve("notshared"));
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo notSharedDir =
+                (DirectoryInfo) topFolder.getFileInfo("notshared");
+
+        int folderCountBefore = repository.getFoldersCount();
+
+        // Unshare on a non-shared directory should be a no-op
+        topFolder.unshare(notSharedDir);
+
+        assertEquals(folderCountBefore, repository.getFoldersCount());
+    }
+
+    public void testUnshareOnlyAllowedFromTopFolder() throws IOException {
+        Folder topFolder = getFolderAtBart();
+
+        Path root = topFolder.getPhysicalDir();
+        Files.createDirectories(root.resolve("sub1"));
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo sub1Info =
+                (DirectoryInfo) topFolder.getFileInfo("sub1");
+        Folder subFolder = topFolder.share(sub1Info);
+
+        try {
+            subFolder.unshare(sub1Info);
+            fail("Unshare from subfolder should throw");
+        } catch (Exception expected) {
+            // correct
+        }
+    }
 }
