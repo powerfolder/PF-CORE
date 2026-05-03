@@ -8,7 +8,10 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.light.*;
+import de.dal33t.powerfolder.Member;
+import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
@@ -592,6 +596,124 @@ public class SubFolderTest extends TwoControllerTestCase {
         topFolder.unshare(notSharedDir);
 
         assertEquals(folderCountBefore, repository.getFoldersCount());
+    }
+
+    public void testUnshareTriggeredByFilesystemDeletion() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+
+        String subDir = "todelete";
+        Path root = topFolder.getPhysicalDir();
+        Path sharedPath = Files.createDirectories(root.resolve(subDir));
+        TestHelper.createRandomFile(sharedPath, "content.txt");
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo dirInfo =
+                (DirectoryInfo) topFolder.getFileInfo(subDir);
+        Folder subFolder = topFolder.share(dirInfo);
+        assertNotNull(subFolder);
+        assertEquals(2, repository.getFoldersCount());
+
+        // Delete the directory on the filesystem
+        PathUtils.recursiveDelete(sharedPath);
+        assertFalse(Files.exists(sharedPath));
+
+        // Scan should detect deletion and trigger unshare
+        TestHelper.scanFolder(topFolder);
+
+        assertNull(repository.findSubFolder(dirInfo));
+        assertEquals(1, repository.getFoldersCount());
+    }
+
+    public void testUnshareTriggeredByRemoteDeletion() throws IOException {
+        Folder topFolderBart = getFolderAtBart();
+        Folder topFolderLisa = getFolderAtLisa();
+        FolderRepository repositoryBart = getContollerBart().getFolderRepository();
+
+        topFolderBart.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+        topFolderLisa.setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
+
+        String subDir = "remotedel";
+
+        // Create directory and file on Bart
+        Path bartRoot = topFolderBart.getPhysicalDir();
+        Path bartSharedPath = Files.createDirectories(bartRoot.resolve(subDir));
+        TestHelper.createRandomFile(bartSharedPath, "remote.txt");
+        TestHelper.scanFolder(topFolderBart);
+
+        // Share the subfolder on Bart
+        DirectoryInfo dirInfo =
+                (DirectoryInfo) topFolderBart.getFileInfo(subDir);
+        Folder subFolder = topFolderBart.share(dirInfo);
+        assertNotNull(subFolder);
+        assertEquals(2, repositoryBart.getFoldersCount());
+
+        // Wait for Lisa to receive the files
+        final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
+                getContollerLisa().getMySelf().getInfo());
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return topFolderLisa.getKnownItemCount() >= 2;
+            }
+            @Override
+            public String message() {
+                return "Known items at Lisa: " + topFolderLisa.getKnownItemCount();
+            }
+        });
+
+        // Delete the directory on Lisa's filesystem
+        Path lisaSharedPath = topFolderLisa.getPhysicalDir().resolve(subDir);
+        assertTrue(Files.exists(lisaSharedPath));
+        PathUtils.recursiveDelete(lisaSharedPath);
+        assertFalse(Files.exists(lisaSharedPath));
+
+        TestHelper.scanFolder(topFolderLisa);
+
+        // Wait for Bart to sync the deletion
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return repositoryBart.findSubFolder(dirInfo) == null;
+            }
+            @Override
+            public String message() {
+                return "Subfolder still exists at Bart: " + repositoryBart.findSubFolder(dirInfo);
+            }
+        });
+
+        assertNull(repositoryBart.findSubFolder(dirInfo));
+        assertEquals(1, repositoryBart.getFoldersCount());
+    }
+
+    public void testUnshareTriggeredByScanChangedFile() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+
+        String subDir = "scanchange";
+        Path root = topFolder.getPhysicalDir();
+        Path sharedPath = Files.createDirectories(root.resolve(subDir));
+        TestHelper.createRandomFile(sharedPath, "file.txt");
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo dirInfo =
+                (DirectoryInfo) topFolder.getFileInfo(subDir);
+        Folder subFolder = topFolder.share(dirInfo);
+        assertNotNull(subFolder);
+        assertEquals(2, repository.getFoldersCount());
+
+        // Delete directory then trigger single-file scan
+        PathUtils.recursiveDelete(sharedPath);
+
+        FileInfo dirFileInfo = topFolder.getFile(
+                FileInfoFactory.lookupDirectory(topFolder.getInfo(), subDir));
+        assertNotNull(dirFileInfo);
+
+        topFolder.scanChangedFile(dirFileInfo);
+
+        assertNull(repository.findSubFolder(dirInfo));
+        assertEquals(1, repository.getFoldersCount());
     }
 
     public void testUnshareOnlyAllowedFromTopFolder() throws IOException {

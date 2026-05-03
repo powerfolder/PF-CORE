@@ -639,6 +639,10 @@ public class Folder extends PFComponent {
             }
         }
 
+        if (isTopFolder() && !scanResult.getDeletedFiles().isEmpty()) {
+            unshareDeletedSubFolders(scanResult.getDeletedFiles());
+        }
+
         boolean wasDAOpopulated = isDAOpopulated;
         isDAOpopulated = true;
 
@@ -1464,6 +1468,9 @@ public class Folder extends PFComponent {
         }
         FileInfo localFileInfo = scanChangedFile0(fileInfo);
         if (localFileInfo != null) {
+            if (isTopFolder() && localFileInfo.isDeleted() && localFileInfo.isDiretory()) {
+                unshareDeletedSubFolders(Collections.singletonList(localFileInfo));
+            }
             FileInfo existinfFInfo = findSameFile(localFileInfo);
             if (existinfFInfo != null) {
                 localFileInfo = existinfFInfo;
@@ -1543,6 +1550,10 @@ public class Folder extends PFComponent {
             }
         }
         if (!fileInfos.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(fileInfos);
+            }
+
             if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.indexFiles(fileInfos);
             }
@@ -2000,6 +2011,10 @@ public class Folder extends PFComponent {
         }
 
         if (!removedFiles.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(removedFiles);
+            }
+
              if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.markDeleted(removedFiles);
             }
@@ -3432,6 +3447,10 @@ public class Folder extends PFComponent {
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(removedFiles);
+            }
+
              if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.markDeleted(removedFiles);
             }
@@ -5738,6 +5757,27 @@ public class Folder extends PFComponent {
         logInfo(this + ": Unsharing subfolder " + subFolder);
 
         getController().getFolderRepository().removeFolder(subFolder, true);
+    }
+
+    private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
+        Map<DirectoryInfo, Folder> subFolders = getController().getFolderRepository().getSubFolders(this);
+
+        for (FileInfo deleted : deletedFiles) {
+            if (!deleted.isDiretory()) {
+                continue;
+            }
+            for (Map.Entry<DirectoryInfo, Folder> entry : subFolders.entrySet()) {
+                Folder sub = entry.getValue();
+                if (sub == this || !sub.isSubFolder()) {
+                    continue;
+                }
+                if (sub.getInfo().getLocation().equals(deleted)) {
+                    logInfo(this + ": Subfolder directory deleted on disk, unsharing: " + sub);
+                    unshare(entry.getKey());
+                    break;
+                }
+            }
+        }
     }
 
     // Inner classes **********************************************************
