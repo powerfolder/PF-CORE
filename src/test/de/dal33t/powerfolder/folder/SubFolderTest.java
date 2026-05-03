@@ -554,7 +554,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         Folder subFolder = topFolder.share(sharedDirInfo);
         assertNotNull(subFolder);
         assertTrue(subFolder.isSubFolder());
-        assertEquals(3, repository.getFoldersCount());
+        assertEquals(2, repository.getFoldersCount());
 
         // File exists in top folder DAO
         FileInfo fileInTop = topFolder.getFileInfo(testFile);
@@ -564,7 +564,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         topFolder.unshare(sharedDirInfo);
 
         // Subfolder is removed from repository
-        assertEquals(2, repository.getFoldersCount());
+        assertEquals(1, repository.getFoldersCount());
         assertNull(repository.findSubFolder(sharedDirInfo));
 
         // File still exists in top folder DAO
