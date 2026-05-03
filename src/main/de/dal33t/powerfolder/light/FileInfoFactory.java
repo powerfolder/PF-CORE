@@ -103,13 +103,14 @@ public final class FileInfoFactory {
 
         FolderInfo folderInfo = directoryInfo.getFolderInfo();
         if (folderInfo != null && folderInfo.isSubFolder()) {
-
-            String topRelativePath = folderInfo.getLocation().getRelativeName();
-            if (!directoryInfo.isBaseDirectory()) {
-                topRelativePath += '/' + directoryInfo.getRelativeName();
+            if (directoryInfo.isLookupInstance()) {
+                String topRelativePath = folderInfo.getLocation().getRelativeName();
+                if (!directoryInfo.isBaseDirectory()) {
+                    topRelativePath += '/' + directoryInfo.getRelativeName();
+                }
+                return lookupDirectory(folderInfo.getTopFolder(), topRelativePath);
             }
-
-            return lookupDirectory(folderInfo.getTopFolder(), topRelativePath);
+            return (DirectoryInfo) mapToTopFolder0(directoryInfo);
         }
 
         return directoryInfo;

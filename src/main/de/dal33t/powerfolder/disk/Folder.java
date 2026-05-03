@@ -5737,7 +5737,7 @@ public class Folder extends PFComponent {
 
         logInfo(this + ": Unsharing subfolder " + subFolder);
 
-        getController().getFolderRepository().removeFolder(subFolder, false);
+        getController().getFolderRepository().removeFolder(subFolder, true);
     }
 
     // Inner classes **********************************************************

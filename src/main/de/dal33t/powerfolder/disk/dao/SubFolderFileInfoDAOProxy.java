@@ -67,8 +67,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     @Override
     public void store(String domain, FileInfo... fInfos) {
         List<FileInfo> mapped = Arrays.stream(fInfos)
-                .map(this::toTop)
-                .filter(Objects::nonNull)
+                .map(this::validateAndMapToTop)
                 .collect(Collectors.toList());
         delegate.store(domain, mapped);
     }
@@ -77,9 +76,19 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     public void store(String domain, Collection<FileInfo> fInfos) {
         delegate.store(domain,
                 fInfos.stream()
-                        .map(this::toTop)
-                        .filter(Objects::nonNull)
+                        .map(this::validateAndMapToTop)
                         .collect(Collectors.toList()));
+    }
+
+    private FileInfo validateAndMapToTop(FileInfo f) {
+        Reject.ifNull(f, "FileInfo");
+        FolderInfo fi = f.getFolderInfo();
+        if (!subfolderInfo.equals(fi)) {
+            throw new IllegalArgumentException(
+                    "FileInfo does not belong to subfolder " + subfolderInfo.getName()
+                            + ": " + f.getRelativeName() + " (folder: " + fi.getName() + ")");
+        }
+        return toTop(f);
     }
 
     @Override
