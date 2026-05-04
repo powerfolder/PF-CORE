@@ -1,5 +1,6 @@
 package de.dal33t.powerfolder.folder;
 
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -8,7 +9,6 @@ import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.light.*;
-import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Level;
@@ -626,6 +625,7 @@ public class SubFolderTest extends TwoControllerTestCase {
     }
 
     public void testUnshareTriggeredByRemoteDeletion() throws IOException {
+        LoggingManager.setConsoleLogging(Level.FINE);
         Folder topFolderBart = getFolderAtBart();
         Folder topFolderLisa = getFolderAtLisa();
         FolderRepository repositoryBart = getContollerBart().getFolderRepository();
@@ -649,9 +649,6 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals(2, repositoryBart.getFoldersCount());
 
         // Wait for Lisa to receive the files
-        final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
-                getContollerLisa().getMySelf().getInfo());
-
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             @Override
             public boolean reached() {
@@ -669,19 +666,33 @@ public class SubFolderTest extends TwoControllerTestCase {
         PathUtils.recursiveDelete(lisaSharedPath);
         assertFalse(Files.exists(lisaSharedPath));
 
+        // Lisa scans and detects the deletion
         TestHelper.scanFolder(topFolderLisa);
 
-        // Wait for Bart to sync the deletion
+        // Wait for Lisa's deletion to be broadcast to Bart
+        final Member lisaAtBart = getContollerBart().getNodeManager().getNode(
+                getContollerLisa().getMySelf().getInfo());
         TestHelper.waitForCondition(10, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return repositoryBart.findSubFolder(dirInfo) == null;
+                Collection<DirectoryInfo> lisaDirs =
+                        topFolderBart.getDirectoriesAsCollection(lisaAtBart);
+                if (lisaDirs == null) return false;
+                for (DirectoryInfo d : lisaDirs) {
+                    if (d.getRelativeName().equals(subDir) && d.isDeleted()) {
+                        return true;
+                    }
+                }
+                return false;
             }
             @Override
             public String message() {
-                return "Subfolder still exists at Bart: " + repositoryBart.findSubFolder(dirInfo);
+                return "Lisa's deleted dir not yet visible at Bart";
             }
         });
+
+        // Explicitly trigger remote deletion sync on Bart
+        topFolderBart.syncRemoteDeletedFiles(true);
 
         assertNull(repositoryBart.findSubFolder(dirInfo));
         assertEquals(1, repositoryBart.getFoldersCount());

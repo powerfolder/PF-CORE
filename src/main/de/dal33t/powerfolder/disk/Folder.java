@@ -3571,6 +3571,9 @@ public class Folder extends PFComponent {
             if (Files.exists(localCopy)) {
                 synchronized (scanLock) {
                     if (localFile.isDiretory()) {
+                        if (isTopFolder()) {
+                            unshareIfSubFolder(localFile);
+                        }
                         if (isFine()) {
                             logFine("Deleting directory from remote: "
                                     + localFile.toDetailString());
@@ -5760,22 +5763,28 @@ public class Folder extends PFComponent {
     }
 
     private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
-        Map<DirectoryInfo, Folder> subFolders = getController().getFolderRepository().getSubFolders(this);
-
         for (FileInfo deleted : deletedFiles) {
-            if (!deleted.isDiretory()) {
+            if (!deleted.isDeleted() || !deleted.isDiretory()) {
                 continue;
             }
-            for (Map.Entry<DirectoryInfo, Folder> entry : subFolders.entrySet()) {
-                Folder sub = entry.getValue();
-                if (sub == this || !sub.isSubFolder()) {
-                    continue;
-                }
-                if (sub.getInfo().getLocation().equals(deleted)) {
-                    logInfo(this + ": Subfolder directory deleted on disk, unsharing: " + sub);
-                    unshare(entry.getKey());
-                    break;
-                }
+            unshareIfSubFolder(deleted);
+        }
+    }
+
+    private void unshareIfSubFolder(FileInfo dirInfo) {
+        Map<DirectoryInfo, Folder> subFolders =
+                getController().getFolderRepository().getSubFolders(this);
+
+        for (Map.Entry<DirectoryInfo, Folder> entry : subFolders.entrySet()) {
+            Folder sub = entry.getValue();
+            if (sub == this || !sub.isSubFolder()) {
+                continue;
+            }
+            if (sub.getInfo().getLocation().getRelativeName()
+                    .equals(dirInfo.getRelativeName())) {
+                logInfo(this + ": Subfolder directory deleted, unsharing: " + sub);
+                unshare(entry.getKey());
+                return;
             }
         }
     }
