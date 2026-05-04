@@ -444,6 +444,7 @@ public class LuceneIndexManager extends PFComponent {
      */
     public void purgeFiles(Collection<FileInfo> files) {
         if (files == null || files.isEmpty()) return;
+        if (!writer.isOpen()) return;
         try {
             for (FileInfo fileInfo : files) {
                 writer.deleteDocuments(
@@ -470,6 +471,7 @@ public class LuceneIndexManager extends PFComponent {
         indexQueue.clear();
         rebuilding.set(true);
 
+        if (!writer.isOpen()) return;
         try {
             writer.deleteAll();
             commitAndRefresh();
@@ -741,6 +743,7 @@ public class LuceneIndexManager extends PFComponent {
      */
     private void doIndexFile(FileInfo fileInfo) {
         if (fileInfo.isLookupInstance()) return;
+        if (!writer.isOpen()) return;
         try {
             Document doc = buildDocument(fileInfo);
 
@@ -757,8 +760,7 @@ public class LuceneIndexManager extends PFComponent {
                 }
             }
 
-            writer.updateDocument(
-                    new Term("docId", buildDocId(fileInfo)), doc);
+            writer.updateDocument(new Term("docId", buildDocId(fileInfo)), doc);
 
             if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
                 commitAndRefresh();
@@ -1272,6 +1274,7 @@ public class LuceneIndexManager extends PFComponent {
     // ------------------------------------------------------------------------
 
     private void commitAndRefresh() {
+        if (!writer.isOpen()) return;
         try {
             writer.commit();
             searcherManager.maybeRefreshBlocking();
