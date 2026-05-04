@@ -128,7 +128,7 @@ public class LuceneIndexManager extends PFComponent {
      * initial index build.
      */
     private static final long CONTENT_EXTRACT_THROTTLE_MS =
-            Long.getLong("powerfolder.index.contentExtractThrottleMs", 5L);
+            Long.getLong("powerfolder.index.contentExtractThrottleMs", 20L);
 
     /**
      * Files indexed before an automatic commit+refresh.
