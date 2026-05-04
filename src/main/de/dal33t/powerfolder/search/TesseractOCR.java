@@ -111,8 +111,17 @@ public class TesseractOCR extends Loggable {
     // Initialization
     // ------------------------------------------------------------------------
 
+    private static final String[] LINUX_NATIVE_LIB_PATHS = {
+            "/usr/lib/x86_64-linux-gnu",
+            "/usr/lib64",
+            "/usr/lib",
+            "/usr/local/lib"
+    };
+
     private TesseractOCR() {
         super();
+
+        configureNativeLibraryPath();
 
         this.supportedLocales = Translation.getSupportedLocales();
         this.languageConfig = supportedLocales.stream()
@@ -130,6 +139,13 @@ public class TesseractOCR extends Loggable {
             return t;
         };
         this.ocrExecutor = Executors.newFixedThreadPool(POOL_SIZE, daemonFactory);
+
+        if (!isNativeLibraryAvailable()) {
+            logWarning("Tesseract/Leptonica native libraries not available — disabling OCR."
+                    + " Install with: apt-get install tesseract-ocr libleptonica-dev");
+            this.ocrEnabled = false;
+            return;
+        }
 
         try {
             Path tessdataPath = prepareOrReuseTessdata();
@@ -275,6 +291,12 @@ public class TesseractOCR extends Loggable {
                 return null;
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause();
+                if (cause instanceof NoClassDefFoundError || cause instanceof UnsatisfiedLinkError
+                        || cause instanceof ExceptionInInitializerError) {
+                    logSevere("Native OCR library not available (" + cause.getMessage()
+                            + ") — disabling OCR permanently");
+                    ocrEnabled = false;
+                }
                 logWarning("OCR failed for " + file + ": " + cause.getMessage());
                 pool.offer(tess);
                 tess = null;
@@ -309,6 +331,45 @@ public class TesseractOCR extends Loggable {
             logFine("Replaced stuck Tesseract instance in pool");
         } catch (Exception e) {
             logWarning("Failed to create replacement Tesseract instance: " + e.getMessage());
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Native library path and detection
+    // ------------------------------------------------------------------------
+
+    private void configureNativeLibraryPath() {
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        if (os.contains("win")) {
+            return;
+        }
+        String existing = System.getProperty("jna.library.path", "");
+        StringBuilder sb = new StringBuilder(existing);
+        for (String candidate : LINUX_NATIVE_LIB_PATHS) {
+            Path dir = Paths.get(candidate);
+            if (Files.isDirectory(dir)) {
+                if (sb.length() > 0) {
+                    sb.append(java.io.File.pathSeparator);
+                }
+                sb.append(candidate);
+            }
+        }
+        if (sb.length() > 0) {
+            System.setProperty("jna.library.path", sb.toString());
+            logFine("Set jna.library.path=" + sb);
+        }
+    }
+
+    private boolean isNativeLibraryAvailable() {
+        try {
+            Class.forName("net.sourceforge.lept4j.Leptonica1");
+            return true;
+        } catch (NoClassDefFoundError | UnsatisfiedLinkError | ExceptionInInitializerError e) {
+            logWarning("Leptonica native library check failed: " + e.getMessage());
+            return false;
+        } catch (ClassNotFoundException e) {
+            logWarning("lept4j not on classpath: " + e.getMessage());
+            return false;
         }
     }
 
