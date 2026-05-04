@@ -1,0 +1,14 @@
+juniversalchardet 2.5.0 - Character encoding detection library
+https://github.com/albfernandez/juniversalchardet
+
+Copyright 2006-2025 The original authors and contributors
+
+Licensed under the Mozilla Public License, Version 1.1 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.mozilla.org/MPL/MPL-1.1.html
+
+Alternatively, this library may be used under the terms of the
+GNU Lesser General Public License, Version 2.1 or later, or the
+GNU General Public License, Version 2 or later.
