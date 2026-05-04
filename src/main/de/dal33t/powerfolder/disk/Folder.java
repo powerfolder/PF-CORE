@@ -5759,7 +5759,7 @@ public class Folder extends PFComponent {
 
         logInfo(this + ": Unsharing subfolder " + subFolder);
 
-        getController().getFolderRepository().removeFolder(subFolder, true);
+        getController().getFolderRepository().removeFolder(subFolder, false);
     }
 
     private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
