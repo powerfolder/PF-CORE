@@ -1018,11 +1018,14 @@ public enum ConfigurationEntry {
     /**
      * PFS-5311: Maximum number of concurrent indexing worker threads. Controls how many folders can
      * perform content extraction (Tika/OCR) simultaneously. Prevents CPU/IO saturation during
-     * startup and large index rebuilds. Default: half of available CPUs (min 2). Override only if
-     * auto-detection is unsuitable for the deployment.
+     * startup and large index rebuilds. Default: quarter of available CPUs (min 2).
+     * <p>
+     * Content extraction is IO-bound (Tika reads files from disk), so more threads mostly increase
+     * disk pressure rather than throughput. Each thread also has a 50 ms throttle delay between
+     * extractions (see {@code powerfolder.index.contentExtractThrottleMs}, default 20 ms).
      */
     SEARCH_INDEX_MAX_THREADS("search.indexing.maxThreads",
-            Math.max(2, Runtime.getRuntime().availableProcessors() / 2), true),
+            Math.max(2, Runtime.getRuntime().availableProcessors() / 4), true),
 
     /**
      * PFS-5311: Unix timestamp (millis) before which all search indexes must be rebuilt. Set via
