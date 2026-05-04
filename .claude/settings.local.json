@@ -194,7 +194,10 @@
       "PowerShell($r = Invoke-WebRequest -Uri \"https://github.com/tesseract-ocr/tessdata_fast/raw/main/fin.traineddata\" -Method Head -UseBasicParsing; $r.Headers['Content-Length'])",
       "Bash(curl -L -O \"https://github.com/tesseract-ocr/tessdata_fast/raw/main/bos.traineddata\")",
       "Bash(curl -L -O \"https://github.com/tesseract-ocr/tessdata_fast/raw/main/fas.traineddata\")",
-      "Bash(curl -L -O \"https://github.com/tesseract-ocr/tessdata_fast/raw/main/msa.traineddata\")"
+      "Bash(curl -L -O \"https://github.com/tesseract-ocr/tessdata_fast/raw/main/msa.traineddata\")",
+      "Bash(awk length > 120 {printf \"%d \\(%d chars\\): %s\\\\n\", NR, length, $0} *)",
+      "Bash(awk length > 120 {printf \"%d \\(%d chars\\)\\\\n\", NR, length} *)",
+      "Bash(awk length > 120 *)"
     ]
   }
 }
