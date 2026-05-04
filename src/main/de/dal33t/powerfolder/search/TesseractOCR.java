@@ -23,8 +23,6 @@ package de.dal33t.powerfolder.search;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
@@ -249,7 +247,6 @@ public class TesseractOCR extends Loggable {
             return null;
         }
 
-        // Borrow a Tesseract instance from the pool
         Tesseract tess = null;
         try {
             tess = pool.poll(30, TimeUnit.SECONDS);
@@ -260,27 +257,27 @@ public class TesseractOCR extends Loggable {
                 return null;
             }
 
-            // Run OCR with a timeout
             final Tesseract borrowed = tess;
             Future<String> future = ocrExecutor.submit(
                     () -> borrowed.doOCR(file.toFile()));
 
             try {
-                return future.get(OCR_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                String result = future.get(OCR_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                pool.offer(tess);
+                tess = null;
+                return result;
             } catch (TimeoutException e) {
                 future.cancel(true);
-                logWarning("OCR timed out after " + OCR_TIMEOUT_SECONDS
-                        + "s for " + file);
+                logWarning("OCR timed out after " + OCR_TIMEOUT_SECONDS + "s for " + file
+                        + " — discarding Tesseract instance and creating replacement");
+                replaceInstance(tess);
+                tess = null;
                 return null;
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause();
-                if (cause instanceof TesseractException) {
-                    logWarning("OCR failed for " + file + ": "
-                            + cause.getMessage());
-                } else {
-                    logWarning("OCR error for " + file + ": "
-                            + cause.getMessage());
-                }
+                logWarning("OCR failed for " + file + ": " + cause.getMessage());
+                pool.offer(tess);
+                tess = null;
                 return null;
             }
         } catch (InterruptedException e) {
@@ -288,10 +285,30 @@ public class TesseractOCR extends Loggable {
             logWarning("OCR interrupted for " + file.getFileName());
             return null;
         } finally {
-            // Always return the instance to the pool
             if (tess != null) {
                 pool.offer(tess);
             }
+        }
+    }
+
+    /**
+     * Discards a Tesseract instance that is stuck in a native call and
+     * creates a fresh replacement so the pool doesn't permanently shrink.
+     */
+    private void replaceInstance(Tesseract stuck) {
+        try {
+            Path tessdataPath = prepareOrReuseTessdata();
+            if (tessdataPath == null) {
+                logWarning("Cannot create replacement Tesseract instance — no tessdata");
+                return;
+            }
+            Tesseract replacement = new Tesseract();
+            replacement.setDatapath(tessdataPath.toString());
+            replacement.setLanguage(languageConfig);
+            pool.offer(replacement);
+            logFine("Replaced stuck Tesseract instance in pool");
+        } catch (Exception e) {
+            logWarning("Failed to create replacement Tesseract instance: " + e.getMessage());
         }
     }
 
