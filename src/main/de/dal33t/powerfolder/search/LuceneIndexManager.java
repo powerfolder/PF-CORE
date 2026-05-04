@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -1160,7 +1161,8 @@ public class LuceneIndexManager extends PFComponent {
                 String relativeName = doc.get("relativeName");
                 if (relativeName == null) continue;
 
-                FileInfo fileInfo = folder.getFileInfo(relativeName);
+                FileInfo lookup = FileInfoFactory.lookupInstance(folder.getInfo(), relativeName);
+                FileInfo fileInfo = folder.getFile(lookup);
                 if (fileInfo != null) {
                     results.add(fileInfo);
                 }
