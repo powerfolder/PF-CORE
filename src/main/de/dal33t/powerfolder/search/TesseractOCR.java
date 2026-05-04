@@ -436,14 +436,14 @@ public class TesseractOCR extends Loggable {
             case "et": return "est";
             case "ar": return "ara";
             case "fa": return "fas";
-            case "he": return "heb";
+            case "he": case "iw": return "heb";
             case "zh": return "chi_sim";
             case "zh_cn": return "chi_sim";
             case "zh_tw": return "chi_tra";
             case "ja": return "jpn";
             case "ko": return "kor";
             case "vi": return "vie";
-            case "id": return "ind";
+            case "id": case "in": return "ind";
             case "ms": return "msa";
             case "hi": return "hin";
             case "th": return "tha";
