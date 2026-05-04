@@ -5071,8 +5071,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @param fInfo
-     * @return the local fileinfo instance
+     * @param fInfo the file to look up in the local database
+     * @return the local FileInfo instance from the DAO, or the base directory info if fInfo is the base directory,
+     *         or {@code null} if not found
      */
     public FileInfo getFile(FileInfo fInfo) {
         Reject.ifNull(fInfo, "FileInfo is null");
@@ -5087,9 +5088,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @param fInfo
-     * @return the local file from a file info Never returns null, file MAY NOT
-     *         exist!! check before use
+     * @param fInfo the file info to resolve to a disk path
+     * @return the local {@link Path} for the given FileInfo. Never returns {@code null}.
+     *         The file may not exist on disk — caller must check before use.
      */
     public Path getDiskFile(FileInfo fInfo) {
         Reject.ifFalse(fInfo.getFolderInfo().equals(currentInfo), "FolderInfo mismatch");
@@ -5097,12 +5098,20 @@ public class Folder extends PFComponent {
             .getRelativeName()));
     }
 
+    /**
+     * @param diskFile the file on disk to look up
+     * @return the local FileInfo from the DAO if found, otherwise a lookup instance (never {@code null})
+     */
     public FileInfo getFileInfo(Path diskFile) {
         FileInfo lookupFileInfo = FileInfoFactory.lookupInstance(this, diskFile);
         FileInfo localFileInfo = getFile(lookupFileInfo);
         return localFileInfo != null ? localFileInfo : lookupFileInfo;
     }
 
+    /**
+     * @param relativePath the relative path within this folder
+     * @return the local FileInfo from the DAO if found, otherwise a lookup instance (never {@code null})
+     */
     public FileInfo getFileInfo(String relativePath) {
         FileInfo lookupFileInfo = FileInfoFactory.lookupInstance(currentInfo, relativePath);
         FileInfo localFileInfo = getFile(lookupFileInfo);
