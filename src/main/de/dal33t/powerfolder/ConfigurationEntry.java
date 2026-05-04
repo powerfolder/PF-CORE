@@ -991,7 +991,7 @@ public enum ConfigurationEntry {
     /**
      * PF-1930: Full text search. Disabled for client. Server enable it
      */
-    SEARCH_INDEX_ENABLED("search.index.enabled", false),
+    SEARCH_INDEX_ENABLED("search.index.enabled", false, true),
 
     /**
      * PFS-5487: Enable content extraction (Tika) for full-text search.
