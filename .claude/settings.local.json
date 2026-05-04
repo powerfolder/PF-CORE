@@ -178,7 +178,20 @@
       "Bash(powershell *)",
       "Bash(grep -v \"test\\\\|import\\\\|//\")",
       "Bash(findstr \"darwin\")",
-      "Bash(Get-ChildItem *)"
+      "Bash(Get-ChildItem *)",
+      "Bash(Get-Location)",
+      "PowerShell(Get-Item *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\spraj\\\\AppData\\\\Local\\\\Temp\\\\powerfolder_tesseract_ocr_trainingdata\\\\eng.traineddata\" | Select-Object @{N='SizeMB';E={[math]::Round\\($_.Length/1MB,1\\)}}; Get-ChildItem \"C:\\\\Users\\\\spraj\\\\AppData\\\\Local\\\\Temp\\\\powerfolder_tesseract_ocr_trainingdata\\\\deu.traineddata\" | Select-Object @{N='SizeMB';E={[math]::Round\\($_.Length/1MB,1\\)}})",
+      "PowerShell(\\(Get-Item \"C:\\\\Users\\\\spraj\\\\AppData\\\\Local\\\\Temp\\\\powerfolder_tesseract_ocr_trainingdata\\\\eng.traineddata\"\\).Length; \\(Get-Item \"C:\\\\Users\\\\spraj\\\\AppData\\\\Local\\\\Temp\\\\powerfolder_tesseract_ocr_trainingdata\\\\deu.traineddata\"\\).Length)",
+      "Bash(Select-Object FullName, Length)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(Get-Item \"C:\\\\Users\\\\spraj\\\\DEV\\\\PF-PRO\\\\src\\\\server-resources\\\\tesseract_ocr_trainingdata\" | Select-Object FullName, @{Name='Type';Expression={'Directory'}})",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\spraj\\\\DEV\\\\PF-CORE\" -Directory | Where-Object {$_.Name -match \"tesseract|tessdata|resources\"} | Select-Object FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\spraj\\\\DEV\\\\PF-PRO\" -Directory | Where-Object {$_.Name -match \"tesseract|tessdata|resources\"} | Select-Object FullName)",
+      "PowerShell(head *)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://github.com/tesseract-ocr/tessdata_fast/raw/main/deu.traineddata\" -OutFile \"C:\\\\Users\\\\spraj\\\\DEV\\\\PF-PRO\\\\src\\\\server-resources\\\\tesseract_ocr_trainingdata\\\\deu.traineddata\" -UseBasicParsing)",
+      "PowerShell($eng = \\(Get-Item \"C:\\\\Users\\\\spraj\\\\DEV\\\\PF-PRO\\\\src\\\\server-resources\\\\tesseract_ocr_trainingdata\\\\eng.traineddata\"\\).Length; $deu = \\(Get-Item \"C:\\\\Users\\\\spraj\\\\DEV\\\\PF-PRO\\\\src\\\\server-resources\\\\tesseract_ocr_trainingdata\\\\deu.traineddata\"\\).Length; \"eng: $\\([math]::Round\\($eng/1MB,1\\)\\) MB\"; \"deu: $\\([math]::Round\\($deu/1MB,1\\)\\) MB\")",
+      "PowerShell($r = Invoke-WebRequest -Uri \"https://github.com/tesseract-ocr/tessdata_fast/raw/main/fin.traineddata\" -Method Head -UseBasicParsing; $r.Headers['Content-Length'])"
     ]
   }
 }
