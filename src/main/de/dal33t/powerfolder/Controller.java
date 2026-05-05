@@ -2121,8 +2121,10 @@ public class Controller extends PFComponent {
             folderRepository.shutdown();
         }
 
-        logFine("Shutting down OCR engine");
-        TesseractOCR.getInstance().shutdown();
+        if (TesseractOCR.getInstance() != null) {
+            logFine("Shutting down OCR engine");
+            TesseractOCR.getInstance().shutdown();
+        }
 
         if (reconnectManager != null) {
             logFine("Shutting down reconnect manager");
