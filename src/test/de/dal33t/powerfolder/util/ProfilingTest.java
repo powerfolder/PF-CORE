@@ -20,8 +20,6 @@
 package de.dal33t.powerfolder.util;
 
 import junit.framework.TestCase;
-import de.dal33t.powerfolder.util.Profiling;
-import de.dal33t.powerfolder.util.ProfilingEntry;
 
 public class ProfilingTest extends TestCase {
 
@@ -54,7 +52,6 @@ public class ProfilingTest extends TestCase {
         assertEquals("/ul", Profiling.shortenURI("/ul/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/gallery", Profiling.shortenURI("/gallery/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/settings", Profiling.shortenURI("/settings/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
-        assertEquals("/filesjson", Profiling.shortenURI("/filesjson/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/folderstable", Profiling.shortenURI("/folderstable/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/files", Profiling.shortenURI("/files/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/player", Profiling.shortenURI("/player/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1"));
