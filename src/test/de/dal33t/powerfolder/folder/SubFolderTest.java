@@ -204,7 +204,7 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         assertEquals("N", subFileInfo.getRelativeName());
         assertEquals("N", subFileInfo.getFilenameOnly());
-        assertEquals(topBaseFileInfo.getModifiedDate(), subFileInfo.getModifiedDate());
+        assertEquals(topSingleCharFilename.getModifiedDate(), subFileInfo.getModifiedDate());
         assertEquals(subFolderInfo, subFileInfo.getFolderInfo());
     }
 
