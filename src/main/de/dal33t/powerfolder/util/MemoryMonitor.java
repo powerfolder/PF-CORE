@@ -21,12 +21,10 @@ package de.dal33t.powerfolder.util;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PreferencesEntry;
-import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.NoticeSeverity;
 import de.dal33t.powerfolder.ui.notices.RunnableNotice;
-import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 import java.io.BufferedReader;
@@ -88,9 +86,7 @@ public class MemoryMonitor implements Runnable {
                     int response = DialogFactory
                         .genericDialog(controller, Translation
                             .get("low_memory.title"), Translation
-                            .get("low_memory.text", Help
-                                .getWikiArticleURL(controller,
-                                    WikiLinks.MEMORY_CONFIGURATION)),
+                            .get("low_memory.text"),
                             new String[]{
                                 Translation
                                     .get("low_memory.increase"),
@@ -101,10 +97,9 @@ public class MemoryMonitor implements Runnable {
                         increaseAvailableMemory();
                     }
                 } else {
-                    // No ini - Can only warn user.
                     DialogFactory.genericDialog(controller, Translation
                         .get("low_memory.title"), Translation
-                        .get("low_memory.warn"),
+                        .get("low_memory.text"),
                         new String[]{Translation.get("general.ok")},
                         0, GenericDialogType.WARN);
                 }
@@ -137,53 +132,36 @@ public class MemoryMonitor implements Runnable {
     private boolean increaseAvailableMemoryWin() {
 
         // Read the current ini file.
+        boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 8000;
+        if (alreadyMax) {
+            DialogFactory.genericDialog(controller, Translation
+                .get("low_memory.title"), Translation
+                .get("low_memory.already_max"),
+                GenericDialogType.WARN);
+            return false;
+        }
+
         boolean wroteNewIni = false;
         PrintWriter pw = null;
         try {
-            // log.fine("Looking for ini...");
-            // br = new BufferedReader(new FileReader("PowerFolder.ini"));
-            // Loggable.logFineStatic(MemoryMonitor.class, "Found ini...");
-            // String line;
-            // boolean found = false;
-            // while ((line = br.readLine()) != null) {
-            // if (line.startsWith("-Xmx")) {
-            // // Found default ini.
-            // found = true;
-            // Loggable.logFineStatic(MemoryMonitor.class,
-            // "Found maximum memory line...");
-            // }
-            // }
-
-            boolean alreadyMax = Runtime.getRuntime().totalMemory() / 1024 / 1024 > 8000;
-            // Write a new one if found.
-            if (!alreadyMax) {
-                pw = new PrintWriter(new FileWriter(controller.getL4JININame()));
-                log.fine("Writing new ini...");
-                pw.println("-Xms256m");
-                pw.println("-Xmx8192m");
-                pw.println("-XX:NewRatio=8");
-                pw.println("-XX:MinHeapFreeRatio=10");
-                pw.println("-XX:MaxHeapFreeRatio=20");
-                pw.flush();
-                wroteNewIni = true;
-                log.fine("Wrote new ini...");
-            }
+            pw = new PrintWriter(new FileWriter(controller.getL4JININame()));
+            log.fine("Writing new ini...");
+            pw.println("-Xms256m");
+            pw.println("-Xmx8192m");
+            pw.println("-XX:NewRatio=8");
+            pw.println("-XX:MinHeapFreeRatio=10");
+            pw.println("-XX:MaxHeapFreeRatio=20");
+            pw.flush();
+            wroteNewIni = true;
+            log.fine("Wrote new ini...");
         } catch (IOException e) {
             log.log(Level.FINE, "Problem reconfiguring ini: " + e.getMessage());
         } finally {
-            // if (br != null) {
-            // try {
-            // br.close();
-            // } catch (IOException e) {
-            // // Ignore
-            // }
-            // }
             if (pw != null) {
                 pw.close();
             }
         }
 
-        // Show a response
         if (wroteNewIni) {
             DialogFactory.genericDialog(controller, Translation
                 .get("low_memory.title"), Translation
