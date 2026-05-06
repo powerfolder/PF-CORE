@@ -447,17 +447,8 @@ public class Account implements Serializable, D2DObject, Auditable {
         }
 
         for (Group g : groups) {
-            for (Permission p : g.getPermissions()) {
-                if (p == null) {
-                    continue;
-                }
-                if (p instanceof FolderPermission) {
-                    AccessMode mode = ((FolderPermission) p).getMode();
-                    if (mode.equals(AccessMode.ADMIN)
-                            || mode.equals(AccessMode.OWNER)) {
-                        return true;
-                    }
-                }
+            if (g != null && g.hasAnyFolderAdmin()) {
+                return true;
             }
         }
 
@@ -476,16 +467,7 @@ public class Account implements Serializable, D2DObject, Auditable {
      * @return A FolderPermission with the correct {@code AccessMode}.
      */
     public FolderPermission getPermissionFor(FolderInfo foInfo) {
-        for (Permission perm : permissions) {
-            if (perm instanceof FolderPermission) {
-                FolderPermission foPerm = (FolderPermission) perm;
-                if (foPerm.getFolder().equals(foInfo)) {
-                    return foPerm;
-                }
-            }
-        }
-
-        return FolderPermission.get(foInfo, AccessMode.NO_ACCESS);
+        return FolderPermission.get(foInfo, getAllowedAccess(foInfo));
     }
 
     /**
@@ -634,12 +616,12 @@ public class Account implements Serializable, D2DObject, Auditable {
             }
         }
         for (Group g : groups) {
-            for (Permission p : g.getPermissions()) {
-                if (p instanceof FolderPermission) {
-                    FolderPermission fp = (FolderPermission) p;
-                    if (fp.getFolder() != null && !folderInfos.contains(fp.getFolder())) {
-                        folderInfos.add(fp.getFolder());
-                    }
+            if (g == null) {
+                continue;
+            }
+            for (FolderInfo f : g.getAllFolders()) {
+                if (f != null && !folderInfos.contains(f)) {
+                    folderInfos.add(f);
                 }
             }
         }
