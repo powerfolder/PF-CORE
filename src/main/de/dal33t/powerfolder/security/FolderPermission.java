@@ -72,6 +72,7 @@ public abstract class FolderPermission
     public int hashCode() {
         final int PRIME = 31;
         int result = 1;
+        result = PRIME * result + getClass().hashCode();
         result = PRIME * result + ((folder == null) ? 0 : folder.hashCode());
         return result;
     }
@@ -82,7 +83,7 @@ public abstract class FolderPermission
             return true;
         if (obj == null)
             return false;
-        if (!(obj instanceof FolderPermission))
+        if (getClass() != obj.getClass())
             return false;
         final FolderPermission other = (FolderPermission) obj;
         if (folder == null) {
