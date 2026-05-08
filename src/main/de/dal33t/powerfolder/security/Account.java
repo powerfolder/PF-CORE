@@ -312,29 +312,21 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public synchronized void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
+
         for (Permission p : newPermissions) {
-            Reject.ifNull(p, "Permission is null");
-            if (hasPermission(p)) {
-                // Skip
+            if (isInvalidGrant(p)) {
                 continue;
             }
-            if (p instanceof FolderOwnerPermission) {
-                FolderInfo folder = ((FolderOwnerPermission) p).getFolder();
-                Reject.ifTrue(folder.isSubFolder(), "Cannot grant owner permission on subfolder");
+            if (isAlreadyGranted(p)) {
+                continue;
             }
             if (p instanceof FolderPermission) {
-                FolderInfo foInfo = ((FolderPermission) p).getFolder();
-                revokeAllFolderPermission(foInfo);
-                if (foInfo.isMetaFolder()) {
-                    LOG.severe(this + ": Not allowed to grant permissions "
-                            + foInfo);
-                    continue;
-                }
+                revokeAllFolderPermission(((FolderPermission) p).getFolder());
             }
             permissions.add(p);
         }
-        LOG.fine("Granted permission to " + this + ": "
-                + Arrays.asList(newPermissions));
+
+        LOG.fine("Granted permission to " + this + ": " + Arrays.asList(newPermissions));
     }
 
     public synchronized void revoke(Permission... revokePermissions) {
@@ -398,6 +390,42 @@ public class Account implements Serializable, D2DObject, Auditable {
         }
         for (Group g : groups) {
             if (g.hasPermission(permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isInvalidGrant(Permission p) {
+        Reject.ifNull(p, "Permission is null");
+        if (p instanceof FolderPermission) {
+            FolderInfo foInfo = ((FolderPermission) p).getFolder();
+            if (foInfo.isMetaFolder()) {
+                LOG.warning(this + ": Not allowed to grant permissions on meta " + foInfo);
+                return true;
+            }
+            if (p instanceof FolderOwnerPermission) {
+                Reject.ifTrue(foInfo.isSubFolder(), foInfo + ": Cannot grant owner permission on subfolder");
+            }
+        }
+        return false;
+    }
+
+    private boolean isAlreadyGranted(Permission permission) {
+        if (permission instanceof FolderPermission) {
+            FolderInfo folder = ((FolderPermission) permission).getFolder();
+            for (Permission p : permissions) {
+                if (p instanceof FolderPermission) {
+                    FolderPermission fp = (FolderPermission) p;
+                    if (fp.getFolder().equals(folder) && fp.implies(permission)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        for (Permission p : permissions) {
+            if (p.equals(permission)) {
                 return true;
             }
         }

@@ -119,17 +119,56 @@ public class Group implements Serializable, D2DObject, Auditable {
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
         for (Permission p : newPermissions) {
-            if (hasPermission(p)) {
-                // Skip
+            if (isInvalidGrant(p)) {
                 continue;
-            } else {
-                if (p instanceof FolderOwnerPermission) {
-                    FolderInfo folder = ((FolderOwnerPermission) p).getFolder();
-                    Reject.ifTrue(folder.isSubFolder(), "Cannot grant owner permission on subfolder");
-                }
-                permissions.add(p);
+            }
+            if (isAlreadyGranted(p)) {
+                continue;
+            }
+            if (p instanceof FolderPermission) {
+                revokeAllFolderPermissions(((FolderPermission) p).getFolder());
+            }
+            permissions.add(p);
+        }
+    }
+
+    private boolean isInvalidGrant(Permission p) {
+        Reject.ifNull(p, "Permission is null");
+        if (p instanceof FolderPermission) {
+            FolderInfo foInfo = ((FolderPermission) p).getFolder();
+            if (foInfo.isMetaFolder()) {
+                LOG.warning(this + ": Not allowed to grant permissions on meta " + foInfo);
+                return true;
+            }
+            if (p instanceof FolderOwnerPermission) {
+                Reject.ifTrue(foInfo.isSubFolder(), foInfo + ": Cannot grant owner permission on subfolder");
             }
         }
+        return false;
+    }
+
+    private boolean isAlreadyGranted(Permission permission) {
+        if (permissions == null) {
+            return false;
+        }
+        if (permission instanceof FolderPermission) {
+            FolderInfo folder = ((FolderPermission) permission).getFolder();
+            for (Permission p : permissions) {
+                if (p instanceof FolderPermission) {
+                    FolderPermission fp = (FolderPermission) p;
+                    if (fp.getFolder().equals(folder) && fp.implies(permission)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        for (Permission p : permissions) {
+            if (p != null && p.equals(permission)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void revoke(Permission... revokePermission) {

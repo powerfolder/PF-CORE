@@ -637,6 +637,312 @@ public class PermissionTest extends TestCase {
     }
 
 
+    /**
+     * PF-1218: OrgAdmin implies FolderAdmin via ORGANIZATION_PERMISSION_HELPER.
+     * This causes grant(FolderAdmin) to be a no-op when the account has OrgAdmin,
+     * because hasPermission returns true. Combined with revokeAllFolderPermission,
+     * explicit folder permissions are silently lost.
+     */
+    public void testOrgAdminImpliesFolderAdminBlocksDirectGrant() {
+        String orgOID = "ORG-1218";
+        OrganizationAdminPermission.ORGANIZATION_PERMISSION_HELPER =
+            (orgPerm, impliedPerm) -> {
+                if (impliedPerm instanceof FolderPermission) {
+                    return orgPerm.getOrganizationOID().equals(orgOID);
+                }
+                return false;
+            };
+
+        Account account = new Account();
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("Shared", "FOLDER-1218");
+        account.grant(new OrganizationAdminPermission(orgOID));
+        account.grant(new FolderAdminPermission(fi));
+
+        assertTrue("OrgAdmin implies FolderAdmin",
+            account.hasPermission(new FolderAdminPermission(fi)));
+
+        // Simulate saveFoldersToAccount: revoke + grant
+        account.revokeAllFolderPermission(fi);
+        account.grant(new FolderAdminPermission(fi));
+
+        // After revoking OrgAdmin, the explicit FolderAdmin should still exist
+        account.revoke(new OrganizationAdminPermission(orgOID));
+        assertTrue("BUG: FolderAdmin lost because grant was no-op due to OrgAdmin implies",
+            account.hasPermission(new FolderAdminPermission(fi)));
+    }
+
+    public void testAccountGrantAndRevokeMultipleFolders() {
+        Account account = new Account();
+        FolderInfo folderA = FolderInfoFactory.newTopFolderForTest("FolderA", "MF-A");
+        FolderInfo folderB = FolderInfoFactory.newTopFolderForTest("FolderB", "MF-B");
+        FolderInfo folderC = FolderInfoFactory.newTopFolderForTest("FolderC", "MF-C");
+
+        // Grant different permission levels on different folders
+        account.grant(new FolderOwnerPermission(folderA));
+        account.grant(new FolderAdminPermission(folderB));
+        account.grant(new FolderReadWritePermission(folderC));
+
+        assertTrue(account.hasPermission(new FolderOwnerPermission(folderA)));
+        assertTrue(account.hasPermission(new FolderAdminPermission(folderB)));
+        assertTrue(account.hasPermission(new FolderReadWritePermission(folderC)));
+
+        // Owner on A implies Admin, ReadWrite, Read on A
+        assertTrue(account.hasPermission(new FolderAdminPermission(folderA)));
+        assertTrue(account.hasPermission(new FolderReadPermission(folderA)));
+
+        // Permissions do not cross folders
+        assertFalse(account.hasPermission(new FolderOwnerPermission(folderB)));
+        assertFalse(account.hasPermission(new FolderAdminPermission(folderC)));
+
+        // Upgrade B from Admin to Owner
+        account.grant(new FolderOwnerPermission(folderB));
+        assertTrue(account.hasPermission(new FolderOwnerPermission(folderB)));
+        // A and C unchanged
+        assertTrue(account.hasPermission(new FolderOwnerPermission(folderA)));
+        assertTrue(account.hasPermission(new FolderReadWritePermission(folderC)));
+
+        // Downgrade C from ReadWrite to Read requires explicit revoke first
+        account.revokeAllFolderPermission(folderC);
+        account.grant(new FolderReadPermission(folderC));
+        assertTrue(account.hasPermission(new FolderReadPermission(folderC)));
+        assertFalse(account.hasPermission(new FolderReadWritePermission(folderC)));
+
+        // Revoke A entirely
+        account.revokeAllFolderPermission(folderA);
+        assertFalse(account.hasPermission(new FolderOwnerPermission(folderA)));
+        assertFalse(account.hasPermission(new FolderReadPermission(folderA)));
+        // B and C unchanged
+        assertTrue(account.hasPermission(new FolderOwnerPermission(folderB)));
+        assertTrue(account.hasPermission(new FolderReadPermission(folderC)));
+
+        // Revoke B and C
+        account.revokeAllFolderPermission(folderB);
+        account.revokeAllFolderPermission(folderC);
+        assertFalse(account.hasPermission(new FolderReadPermission(folderB)));
+        assertFalse(account.hasPermission(new FolderReadPermission(folderC)));
+    }
+
+    /**
+     * PF-1218: grant() must not downgrade an existing higher permission
+     * on the same folder.
+     */
+    public void testAccountGrantMustNotDowngrade() {
+        Account account = new Account();
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "NO-DOWN-1");
+
+        // Owner must not be downgraded to Admin
+        account.grant(new FolderOwnerPermission(fi));
+        account.grant(new FolderAdminPermission(fi));
+        assertTrue("Owner must not be downgraded to Admin",
+            account.hasPermission(new FolderOwnerPermission(fi)));
+
+        // Owner must not be downgraded to ReadWrite
+        account.grant(new FolderReadWritePermission(fi));
+        assertTrue("Owner must not be downgraded to ReadWrite",
+            account.hasPermission(new FolderOwnerPermission(fi)));
+
+        // Owner must not be downgraded to Read
+        account.grant(new FolderReadPermission(fi));
+        assertTrue("Owner must not be downgraded to Read",
+            account.hasPermission(new FolderOwnerPermission(fi)));
+
+        // Admin must not be downgraded to ReadWrite
+        Account account2 = new Account();
+        account2.grant(new FolderAdminPermission(fi));
+        account2.grant(new FolderReadWritePermission(fi));
+        assertTrue("Admin must not be downgraded to ReadWrite",
+            account2.hasPermission(new FolderAdminPermission(fi)));
+
+        // Admin must not be downgraded to Read
+        account2.grant(new FolderReadPermission(fi));
+        assertTrue("Admin must not be downgraded to Read",
+            account2.hasPermission(new FolderAdminPermission(fi)));
+
+        // ReadWrite must not be downgraded to Read
+        Account account3 = new Account();
+        account3.grant(new FolderReadWritePermission(fi));
+        account3.grant(new FolderReadPermission(fi));
+        assertTrue("ReadWrite must not be downgraded to Read",
+            account3.hasPermission(new FolderReadWritePermission(fi)));
+    }
+
+    /**
+     * PF-1218: grant() must allow upgrading to a higher permission.
+     */
+    public void testAccountGrantAllowsUpgrade() {
+        Account account = new Account();
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "UP-1");
+
+        // Read -> ReadWrite
+        account.grant(new FolderReadPermission(fi));
+        account.grant(new FolderReadWritePermission(fi));
+        assertTrue(account.hasPermission(new FolderReadWritePermission(fi)));
+        assertFalse("Read must be replaced by ReadWrite",
+            account.hasPermission(new FolderOwnerPermission(fi)));
+
+        // ReadWrite -> Admin
+        account.grant(new FolderAdminPermission(fi));
+        assertTrue(account.hasPermission(new FolderAdminPermission(fi)));
+
+        // Admin -> Owner
+        account.grant(new FolderOwnerPermission(fi));
+        assertTrue(account.hasPermission(new FolderOwnerPermission(fi)));
+    }
+
+    /**
+     * PF-1218: Group.grant() must not downgrade an existing higher permission.
+     */
+    public void testGroupGrantMustNotDowngrade() {
+        Group group = new Group("testGroup");
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "GRP-DOWN-1");
+
+        // Admin must not be downgraded to ReadWrite
+        group.grant(new FolderAdminPermission(fi));
+        group.grant(new FolderReadWritePermission(fi));
+        assertTrue("Group Admin must not be downgraded to ReadWrite",
+            group.hasPermission(new FolderAdminPermission(fi)));
+
+        // Admin must not be downgraded to Read
+        group.grant(new FolderReadPermission(fi));
+        assertTrue("Group Admin must not be downgraded to Read",
+            group.hasPermission(new FolderAdminPermission(fi)));
+    }
+
+    /**
+     * PF-1218: Group.grant() must allow upgrading to a higher permission.
+     */
+    public void testGroupGrantAllowsUpgrade() {
+        Group group = new Group("testGroup");
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "GRP-UP-1");
+
+        group.grant(new FolderReadPermission(fi));
+        group.grant(new FolderAdminPermission(fi));
+        assertTrue(group.hasPermission(new FolderAdminPermission(fi)));
+    }
+
+    /**
+     * PF-1218: FolderPermission.equals and hashCode must distinguish subclasses.
+     */
+    public void testFolderPermissionEqualsAndHashCodeAreClassAware() {
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "CLASS-AWARE-1");
+
+        Permission owner = new FolderOwnerPermission(fi);
+        Permission admin = new FolderAdminPermission(fi);
+        Permission readWrite = new FolderReadWritePermission(fi);
+        Permission read = new FolderReadPermission(fi);
+
+        Permission[] all = { owner, admin, readWrite, read };
+
+        for (int i = 0; i < all.length; i++) {
+            for (int j = 0; j < all.length; j++) {
+                if (i == j) {
+                    assertEquals(all[i].getClass().getSimpleName() + " must equal itself",
+                        all[i], all[j]);
+                    assertEquals(all[i].getClass().getSimpleName() + " hashCode must match",
+                        all[i].hashCode(), all[j].hashCode());
+                } else {
+                    assertFalse(all[i].getClass().getSimpleName() + " must not equal "
+                        + all[j].getClass().getSimpleName(),
+                        all[i].equals(all[j]));
+                }
+            }
+        }
+
+        // Same type, different folder => not equal
+        FolderInfo fi2 = FolderInfoFactory.newTopFolderForTest("other", "CLASS-AWARE-2");
+        assertFalse(new FolderAdminPermission(fi).equals(new FolderAdminPermission(fi2)));
+
+        // Same type, same folder, different instances => equal
+        assertEquals(new FolderAdminPermission(fi), new FolderAdminPermission(fi));
+    }
+
+    /**
+     * PF-1218: Group.grant() must revoke existing folder permission before adding new one.
+     */
+    public void testGroupGrantRevokesExistingBeforeAdding() {
+        Group group = new Group("testGroup");
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "GRP-REVOKE-1");
+
+        group.grant(new FolderReadPermission(fi));
+        assertTrue(group.hasPermission(new FolderReadPermission(fi)));
+
+        group.grant(new FolderAdminPermission(fi));
+        assertTrue("Admin must be granted", group.hasPermission(new FolderAdminPermission(fi)));
+
+        // Read must have been revoked — only one folder permission per folder
+        int folderPermCount = 0;
+        for (Permission p : group.getPermissions()) {
+            if (p instanceof FolderPermission
+                && ((FolderPermission) p).getFolder().equals(fi)) {
+                folderPermCount++;
+            }
+        }
+        assertEquals("Only one folder permission should remain after upgrade", 1, folderPermCount);
+    }
+
+    /**
+     * PF-1218: Granting the same permission twice must not create duplicates.
+     */
+    public void testGrantIdempotent() {
+        Account account = new Account();
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "IDEMP-1");
+
+        account.grant(new FolderAdminPermission(fi));
+        account.grant(new FolderAdminPermission(fi));
+
+        int count = 0;
+        for (Permission p : account.getPermissions()) {
+            if (p instanceof FolderAdminPermission
+                && ((FolderPermission) p).getFolder().equals(fi)) {
+                count++;
+            }
+        }
+        assertEquals("Duplicate grant must not create two entries", 1, count);
+
+        // Same for Group
+        Group group = new Group("testGroup");
+        group.grant(new FolderReadWritePermission(fi));
+        group.grant(new FolderReadWritePermission(fi));
+
+        count = 0;
+        for (Permission p : group.getPermissions()) {
+            if (p instanceof FolderReadWritePermission
+                && ((FolderPermission) p).getFolder().equals(fi)) {
+                count++;
+            }
+        }
+        assertEquals("Group: duplicate grant must not create two entries", 1, count);
+    }
+
+    /**
+     * PF-1218: The saveFoldersToAccount pattern (revoke + grant) must preserve
+     * explicit folder permissions even when OrgAdmin implies them.
+     */
+    public void testRevokeAllThenRegrantPreservesPermission() {
+        String orgOID = "ORG-REGRANT";
+        OrganizationAdminPermission.ORGANIZATION_PERMISSION_HELPER =
+            (orgPerm, impliedPerm) -> {
+                if (impliedPerm instanceof FolderPermission) {
+                    return orgPerm.getOrganizationOID().equals(orgOID);
+                }
+                return false;
+            };
+
+        Account account = new Account();
+        FolderInfo fi = FolderInfoFactory.newTopFolderForTest("Shared", "REGRANT-1");
+        account.grant(new OrganizationAdminPermission(orgOID));
+        account.grant(new FolderAdminPermission(fi));
+
+        // Simulate saveFoldersToAccount: revoke all folder perms, then re-grant
+        account.revokeAllFolderPermission(fi);
+        account.grant(new FolderAdminPermission(fi));
+
+        // Remove OrgAdmin — explicit FolderAdmin must survive
+        account.revoke(new OrganizationAdminPermission(orgOID));
+        assertTrue("Explicit FolderAdmin must survive revoke+grant cycle",
+            account.hasPermission(new FolderAdminPermission(fi)));
+    }
+
     private FolderInfo createTopFolder(String id) {
         return FolderInfoFactory.newTopFolderForTest("TopFolder", id);
     }
