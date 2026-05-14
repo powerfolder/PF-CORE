@@ -143,7 +143,8 @@ public class LuceneIndexManager extends PFComponent {
     private static volatile AutoDetectParser SHARED_PARSER;
     private static final Object PARSER_LOCK = new Object();
 
-    private static final long STARTUP_DELAY_MS = 60_000L;
+    private static final long STARTUP_DELAY_MS = Long.getLong("powerfolder.index.startupDelayMs", 60_000L);
+    private static final long MIN_COMMIT_INTERVAL_MS = Long.getLong("powerfolder.index.minCommitIntervalMs", 1000L);
 
     // -----------------------------------------------------------------------
     // Instance fields
@@ -160,6 +161,7 @@ public class LuceneIndexManager extends PFComponent {
     private final LinkedBlockingQueue<FileInfo> contentQueue = new LinkedBlockingQueue<>();
     private final AtomicInteger uncommittedCount = new AtomicInteger(0);
     private final AtomicBoolean closed = new AtomicBoolean(false);
+    private volatile long lastCommitTime;
 
     /** True while the worker is running on the IO thread pool. */
     private final AtomicBoolean workerRunning = new AtomicBoolean(false);
@@ -763,7 +765,7 @@ public class LuceneIndexManager extends PFComponent {
 
             writer.updateDocument(new Term("docId", buildDocId(fileInfo)), doc);
 
-            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
+            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL && isCommitIntervalReached()) {
                 commitAndRefresh();
             }
         } catch (Exception e) {
@@ -799,7 +801,7 @@ public class LuceneIndexManager extends PFComponent {
                 logFine(folder + ": Indexed content (" + content.length() + " chars) for " + fileInfo);
             }
 
-            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
+            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL && isCommitIntervalReached()) {
                 commitAndRefresh();
             }
         } catch (Exception e) {
@@ -1275,12 +1277,17 @@ public class LuceneIndexManager extends PFComponent {
     // Commit helper
     // ------------------------------------------------------------------------
 
+    private boolean isCommitIntervalReached() {
+        return System.currentTimeMillis() - lastCommitTime >= MIN_COMMIT_INTERVAL_MS;
+    }
+
     private void commitAndRefresh() {
         if (!writer.isOpen()) return;
         try {
             writer.commit();
             searcherManager.maybeRefreshBlocking();
             uncommittedCount.set(0);
+            lastCommitTime = System.currentTimeMillis();
         } catch (Exception e) {
             logWarning(folder + ": Commit failed: " + e.getMessage());
         }
