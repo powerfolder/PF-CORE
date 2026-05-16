@@ -1028,6 +1028,25 @@ public enum ConfigurationEntry {
             Math.max(2, Runtime.getRuntime().availableProcessors() / 4), true),
 
     /**
+     * Maximum extracted text length (characters) per file. Limits how much text Tika produces.
+     * 1 MB ≈ 500 pages — sufficient for search. Default: 1048576.
+     */
+    SEARCH_INDEX_MAX_TEXT_LENGTH("search.index.maxTextLength", 1024 * 1024),
+
+    /**
+     * Comma-separated list of file extensions eligible for content extraction (Tika).
+     * Files with other extensions are indexed by filename only.
+     */
+    SEARCH_INDEX_CONTENT_EXTENSIONS("search.index.contentExtensions",
+            "pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,odg,rtf,txt,csv,md,log,xml,html,htm,msg,eml"),
+
+    /**
+     * Throttle delay (ms) between phase-2 content extractions (Tika/OCR).
+     * Prevents disk I/O saturation during index builds. Default: 50 ms.
+     */
+    SEARCH_INDEX_CONTENT_EXTRACT_THROTTLE_MS("search.index.contentExtractThrottleMs", 50),
+
+    /**
      * PFS-5311: Unix timestamp (millis) before which all search indexes must be rebuilt. Set via
      * admin preferences "Rebuild all indexes" button. Folders that mount later
      * (DynamicFolderMounter) check this on initialization and rebuild if their lastRebuilt is older.
