@@ -99,8 +99,13 @@ public class IOProvider extends PFComponent {
         // startup with hundreds of folders.
         int maxIndexThreads = Math.max(2,
             ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(getController()));
+        NamedThreadFactory indexThreadFactory = new NamedThreadFactory("SearchIndexThread-");
         indexingThreadPool = new ThreadPoolExecutor(2, maxIndexThreads, 60L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(1024), new NamedThreadFactory("SearchIndexThread-"),
+            new LinkedBlockingQueue<>(1024), r -> {
+                Thread t = indexThreadFactory.newThread(r);
+                t.setPriority(Thread.MIN_PRIORITY);
+                return t;
+            },
             new ThreadPoolExecutor.CallerRunsPolicy());
         logInfo("Search indexing thread pool started: maxThreads=" + maxIndexThreads);
 
