@@ -627,11 +627,7 @@ public class LuceneIndexManager extends PFComponent {
                 } catch (Exception e) {
                     logWarning(folder + ": Content extraction failed for " + fileInfo + ": " + e.getMessage());
                 }
-                long throttleMs = ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTRACT_THROTTLE_MS
-                        .getValueInt(getController());
-                if (throttleMs > 0) {
-                    Thread.sleep(throttleMs);
-                }
+                throttleExtraction();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -740,6 +736,7 @@ public class LuceneIndexManager extends PFComponent {
             if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled() && isContentExtractable(fileInfo)) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
                     String content = extractContentTikaOnly(fileInfo);
+                    throttleExtraction();
                     if (content != null && !content.isBlank()) {
                         doc.add(new TextField("content", content, Field.Store.NO));
                     } else {
@@ -1273,6 +1270,13 @@ public class LuceneIndexManager extends PFComponent {
     // ------------------------------------------------------------------------
     // Commit helper
     // ------------------------------------------------------------------------
+
+    private void throttleExtraction() throws InterruptedException {
+        long throttleMs = ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTRACT_THROTTLE_MS.getValueInt(getController());
+        if (throttleMs > 0) {
+            Thread.sleep(throttleMs);
+        }
+    }
 
     private boolean isCommitIntervalReached() {
         return System.currentTimeMillis() - lastCommitTime >= MIN_COMMIT_INTERVAL_MS;
