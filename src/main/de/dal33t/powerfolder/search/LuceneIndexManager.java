@@ -459,19 +459,6 @@ public class LuceneIndexManager extends PFComponent {
         indexQueue.clear();
         rebuilding.set(true);
 
-        if (!writer.isOpen()) return;
-        try {
-            writer.deleteAll();
-            commitAndRefresh();
-            if (isFine()) {
-                logFine(folder + ": Index wiped for rebuild");
-            }
-        } catch (Exception e) {
-            logWarning(folder + ": Failed to wipe index: " + e.getMessage());
-            rebuilding.set(false);
-            return;
-        }
-
         Collection<FileInfo> files = folder.getKnownFiles();
         Collection<? extends FileInfo> dirs = folder.getKnownDirectories();
         indexQueue.addAll(files);
@@ -579,6 +566,22 @@ public class LuceneIndexManager extends PFComponent {
         }
 
         try {
+            if (rebuilding.get()) {
+                if (writer.isOpen()) {
+                    try {
+                        writer.deleteAll();
+                        commitAndRefresh();
+                        if (isFine()) {
+                            logFine(folder + ": Index wiped for rebuild");
+                        }
+                    } catch (Exception e) {
+                        logWarning(folder + ": Failed to wipe index: " + e.getMessage());
+                        rebuilding.set(false);
+                        return;
+                    }
+                }
+            }
+
             // Phase 1: index metadata (fast)
             while (!closed.get()) {
                 FileInfo fileInfo = indexQueue.poll(100, TimeUnit.MILLISECONDS);
