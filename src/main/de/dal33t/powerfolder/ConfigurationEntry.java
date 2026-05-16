@@ -1659,6 +1659,43 @@ public enum ConfigurationEntry {
     }
 
     /**
+     * Parses the configuration entry into a Long.
+     *
+     * @param controller the controller to read the config from
+     * @return The current value from the configuration for this entry or the
+     * default value if value not set/unparseable or {@code null} if no
+     * default value was set.
+     */
+    public Long getValueLong(Controller controller) {
+        return getValueLong(controller.getConfig());
+    }
+
+    /**
+     * Parses the configuration entry into a Long.
+     *
+     * @param config the config to read from
+     * @return The current value from the configuration for this entry or the
+     * default value if value not set/unparseable or {@code null} if no
+     * default value was set.
+     */
+    public Long getValueLong(Properties config) {
+        String value = getValue(config);
+        if (value == null || StringUtils.isBlank(value)) {
+            value = getDefaultValue();
+        }
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(value.trim());
+        } catch (NumberFormatException e) {
+            LOG.log(Level.WARNING, "Unable to parse configuration entry '"
+                    + configKey + "' into a long. Value: " + value, e);
+            return Long.valueOf(getDefaultValue());
+        }
+    }
+
+    /**
      * Parses the configuration entry into a Boolen.
      *
      * @param controller the controller to read the config from
