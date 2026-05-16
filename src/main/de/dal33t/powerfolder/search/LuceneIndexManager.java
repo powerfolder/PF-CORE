@@ -44,6 +44,7 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -107,28 +108,12 @@ public class LuceneIndexManager extends PFComponent {
             Long.getLong("powerfolder.index.inlineExtractMaxSize", 32L * 1024);
 
     /**
-     * Maximum extracted text length (characters) Tika is allowed to produce.
-     * Prevents OOM on huge files (e.g. multi-GB CSVs). Default: 10 MB of text.
-     */
-    private static final int TIKA_WRITE_LIMIT =
-            Integer.getInteger("powerfolder.index.tikaWriteLimit", 10 * 1024 * 1024);
-
-    /**
      * Files larger than this are skipped for content extraction entirely. Default: 512 MB.
      * Avoids feeding huge files into Tika where extraction time and memory usage are excessive.
      * PFS-5487.
      */
     private static final long CONTENT_EXTRACT_MAX_SIZE =
             Long.getLong("powerfolder.index.contentExtractMaxSize", 512L * 1024 * 1024);
-
-    /**
-     * Throttle delay (ms) between phase 2 content extractions to prevent CPU/IO saturation during
-     * large index builds. Default: 5 ms. Set to 0 to disable throttling.
-     * PFS-5487: Munin stats showed 100% CPU saturation on all three production servers during
-     * initial index build.
-     */
-    private static final long CONTENT_EXTRACT_THROTTLE_MS =
-            Long.getLong("powerfolder.index.contentExtractThrottleMs", 20L);
 
     /**
      * Files indexed before an automatic commit+refresh.
@@ -640,8 +625,10 @@ public class LuceneIndexManager extends PFComponent {
                 } catch (Exception e) {
                     logWarning(folder + ": Content extraction failed for " + fileInfo + ": " + e.getMessage());
                 }
-                if (CONTENT_EXTRACT_THROTTLE_MS > 0) {
-                    Thread.sleep(CONTENT_EXTRACT_THROTTLE_MS);
+                long throttleMs = ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTRACT_THROTTLE_MS
+                        .getValueInt(getController());
+                if (throttleMs > 0) {
+                    Thread.sleep(throttleMs);
                 }
             }
         } catch (InterruptedException e) {
@@ -748,7 +735,7 @@ public class LuceneIndexManager extends PFComponent {
         try {
             Document doc = buildDocument(fileInfo);
 
-            if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled()) {
+            if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled() && isContentExtractable(fileInfo)) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
                     String content = extractContentTikaOnly(fileInfo);
                     if (content != null && !content.isBlank()) {
@@ -776,6 +763,7 @@ public class LuceneIndexManager extends PFComponent {
      */
     private void doIndexContent(FileInfo fileInfo) {
         if (fileInfo.isDiretory()) return;
+        if (!isContentExtractable(fileInfo)) return;
         try {
             String content = extractContent(fileInfo);
             if (content == null || content.isBlank()) {
@@ -811,6 +799,15 @@ public class LuceneIndexManager extends PFComponent {
     // Content extraction (Tika + encoding repair + OCR)
     // ------------------------------------------------------------------------
 
+    private boolean isContentExtractable(FileInfo fileInfo) {
+        String ext = fileInfo.getExtension();
+        if (ext == null || ext.isEmpty()) {
+            return false;
+        }
+        String configured = ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTENSIONS.getValue(getController());
+        return configured != null && configured.toLowerCase(Locale.ROOT).contains(ext.toLowerCase(Locale.ROOT));
+    }
+
     private String extractContentTikaOnly(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
@@ -821,8 +818,8 @@ public class LuceneIndexManager extends PFComponent {
             return null;
         }
 
-        try (InputStream stream = Files.newInputStream(filePath)) {
-            BodyContentHandler handler = new BodyContentHandler(TIKA_WRITE_LIMIT);
+        try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath))) {
+            BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
             getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
@@ -879,8 +876,8 @@ public class LuceneIndexManager extends PFComponent {
         String tikaText = null;
 
         // 1) Tika text extraction (shared parser, no per-file init cost)
-        try (InputStream stream = Files.newInputStream(filePath)) {
-            BodyContentHandler handler = new BodyContentHandler(TIKA_WRITE_LIMIT);
+        try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath))) {
+            BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
             getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
@@ -1153,7 +1150,7 @@ public class LuceneIndexManager extends PFComponent {
             TopDocs topDocs = searcher.search(finalQuery, maxResults);
 
             if (isFine()) {
-                logFine(folder + ": Found " + topDocs.totalHits + " hits for query '" + queryText + "'");
+                logFine(folder + ": Found " + topDocs.totalHits + " for query '" + queryText + "'");
             }
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
