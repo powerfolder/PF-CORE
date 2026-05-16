@@ -1021,8 +1021,7 @@ public enum ConfigurationEntry {
      * startup and large index rebuilds. Default: quarter of available CPUs (min 2).
      * <p>
      * Content extraction is IO-bound (Tika reads files from disk), so more threads mostly increase
-     * disk pressure rather than throughput. Each thread also has a 50 ms throttle delay between
-     * extractions (see {@code powerfolder.index.contentExtractThrottleMs}, default 20 ms).
+     * disk pressure rather than throughput. Threads run at {@code MIN_PRIORITY}.
      */
     SEARCH_INDEX_MAX_THREADS("search.indexing.maxThreads",
             Math.max(2, Runtime.getRuntime().availableProcessors() / 4), true),
@@ -1041,7 +1040,7 @@ public enum ConfigurationEntry {
             "pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,odg,rtf,txt,csv,md,log,xml,html,htm,msg,eml"),
 
     /**
-     * Throttle delay (ms) between phase-2 content extractions (Tika/OCR).
+     * Throttle delay (ms) between content extractions (Tika/OCR) in phase 1 (inline) and phase 2.
      * Prevents disk I/O saturation during index builds. Default: 50 ms.
      */
     SEARCH_INDEX_CONTENT_EXTRACT_THROTTLE_MS("search.index.contentExtractThrottleMs", 50),
