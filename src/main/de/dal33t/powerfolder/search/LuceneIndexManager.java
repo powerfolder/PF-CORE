@@ -820,7 +820,7 @@ public class LuceneIndexManager extends PFComponent {
             return null;
         }
 
-        try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath))) {
+        try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
             BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
             getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
             String text = handler.toString();
@@ -878,7 +878,7 @@ public class LuceneIndexManager extends PFComponent {
         String tikaText = null;
 
         // 1) Tika text extraction (shared parser, no per-file init cost)
-        try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath))) {
+        try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
             BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
             getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
             String text = handler.toString();
