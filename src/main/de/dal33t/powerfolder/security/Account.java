@@ -725,7 +725,12 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.password = prefix + password;
     }
 
+    @Deprecated
     public void setPasswordSalted(String password) {
+        this.password = LoginUtil.hashAndSalt(password);
+    }
+
+    public void setPasswordSalted(char[] password) {
         this.password = LoginUtil.hashAndSalt(password);
     }
 

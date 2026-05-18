@@ -24,12 +24,16 @@ import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.security.Token;
 
+import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
+import org.bouncycastle.crypto.params.Argon2Parameters;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
@@ -48,6 +52,13 @@ public class LoginUtil {
     private static final int OBF_BYTE = 0xAA;
     public static final String MD5_HASH_DIGEST = "MD5";
     public static final String SHA256_HASH_DIGEST = "SHA-256";
+    public static final String ARGON2_DIGEST = "ARGON2ID";
+
+    private static final int ARGON2_ITERATIONS = 5;
+    private static final int ARGON2_MEMORY_KB = 65536; // 64 MB
+    private static final int ARGON2_PARALLELISM = 1;
+    private static final int ARGON2_HASH_LENGTH = 32;
+    private static final int ARGON2_SALT_LENGTH = 16;
     /**
      * PFS-862: OTP validity
      */
@@ -198,6 +209,9 @@ public class LoginUtil {
                 && Arrays.equals(pwCandidate, Util.toCharArray(hashedPW));
         }
         String digest = parts[0];
+        if (ARGON2_DIGEST.equals(digest)) {
+            return matchesArgon2(pwCandidate, parts[1], parts[2]);
+        }
         if (digest.equalsIgnoreCase(MD5_HASH_DIGEST)
             || digest.equalsIgnoreCase(SHA256_HASH_DIGEST))
         {
@@ -209,17 +223,84 @@ public class LoginUtil {
         return false;
     }
 
-    /**
-     * @param password
-     *            the password to process
-     * @return the hashed password and salt.
-     */
-    public static String hashAndSalt(String password) {
+    private static boolean matchesArgon2(char[] pwCandidate, String saltBase64, String expectedHashBase64) {
+        try {
+            byte[] salt = Base64.decode(saltBase64);
+            byte[] expectedHash = Base64.decode(expectedHashBase64);
 
+            Argon2Parameters params = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+                    .withSalt(salt)
+                    .withIterations(ARGON2_ITERATIONS)
+                    .withMemoryAsKB(ARGON2_MEMORY_KB)
+                    .withParallelism(ARGON2_PARALLELISM)
+                    .build();
+
+            Argon2BytesGenerator generator = new Argon2BytesGenerator();
+            generator.init(params);
+
+            byte[] actualHash = new byte[expectedHash.length];
+            generator.generateBytes(pwCandidate, actualHash);
+
+            return MessageDigest.isEqual(expectedHash, actualHash);
+        } catch (Exception e) {
+            Logger.getLogger(LoginUtil.class.getName()).log(Level.WARNING,
+                    "Argon2 verification failed: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * @return true if the stored hash uses a legacy algorithm and should be
+     *         re-hashed with Argon2id on next successful login.
+     */
+    public static boolean needsRehash(String hashedPW) {
+        return hashedPW != null && !hashedPW.startsWith(ARGON2_DIGEST + ":");
+    }
+
+    public static boolean isHashed(String password) {
+        if (password == null) {
+            return false;
+        }
+        return password.startsWith(MD5_HASH_DIGEST + ":")
+                || password.startsWith(SHA256_HASH_DIGEST + ":")
+                || password.startsWith(ARGON2_DIGEST + ":");
+    }
+
+    public static String hashAndSalt(String password) {
         if (StringUtils.isBlank(password)) {
             return null;
         }
+        return hashAndSalt(password.toCharArray());
+    }
 
+    public static String hashAndSalt(char[] password) {
+        if (password == null || password.length == 0) {
+            return null;
+        }
+        return hashArgon2(password);
+    }
+
+    private static String hashArgon2(char[] password) {
+        byte[] salt = new byte[ARGON2_SALT_LENGTH];
+        new SecureRandom().nextBytes(salt);
+
+        Argon2Parameters params = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+                .withSalt(salt)
+                .withIterations(ARGON2_ITERATIONS)
+                .withMemoryAsKB(ARGON2_MEMORY_KB)
+                .withParallelism(ARGON2_PARALLELISM)
+                .build();
+
+        Argon2BytesGenerator generator = new Argon2BytesGenerator();
+        generator.init(params);
+
+        byte[] hash = new byte[ARGON2_HASH_LENGTH];
+        generator.generateBytes(password, hash);
+
+        return ARGON2_DIGEST + ':' + Base64.encodeBytes(salt) + ':' + Base64.encodeBytes(hash);
+    }
+
+    private static String hashAndSaltLegacy(String password) {
         String salt = IdGenerator.makeId();
         String digest = getPreferredDigest().getAlgorithm();
         return digest + ':' + salt + ':' + hash(digest, password, salt);

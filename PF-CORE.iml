@@ -33,13 +33,11 @@
     <libelement value="jar://$MODULE_DIR$/lib/httpclient-cache-4.3.5.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/fluent-hc-4.3.5.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/httpmime-4.3.5.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/bcprov-jdk15on-151.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcpkix-jdk15on-151.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/liferay-nativity-1.0.5.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcmail-jdk15on-152.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcpg-jdk15on-152.jar!/" />
     <libelement value="jar://$MODULE_DIR$/lib/bcpkix-jdk15on-152.jar!/" />
-    <libelement value="jar://$MODULE_DIR$/lib/bcprov-ext-jdk15on-152.jar!/" />
     <src_description expected_position="0">
       <src_folder value="file://$MODULE_DIR$/src/etc" expected_position="0" />
       <src_folder value="file://$MODULE_DIR$/src/jnotify" expected_position="1" />
@@ -343,9 +341,9 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
-      <library name="bcprov-ext-jdk15on-152.jar">
+      <library name="bcprov-jdk18on-1.78.1.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/bcprov-ext-jdk15on-152.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/bcprov-jdk18on-1.78.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -158,7 +158,7 @@ For creation of the installer:
 			<include name="synthetica.jar" />
 			<include name="syntheticaAddons.jar" />
 
-			<include name="bcprov-ext-jdk15on-152.jar" />
+			<include name="bcprov-jdk18on-1.78.1.jar" />
 			<include name="bcpkix-jdk15on-152.jar" />
 			<include name="bcpg-jdk15on-152.jar" />
 			<include name="bcmail-jdk15on-152.jar" />

@@ -2061,7 +2061,7 @@ public class Controller extends PFComponent {
         startTime = null;
 
         PreferencesEntry.LAST_NODE_ID.setValue(this,
-            LoginUtil.hashAndSalt(getMySelf().getId()));
+            LoginUtil.hashAndSalt(getMySelf().getId().toCharArray()));
 
         if (taskManager != null) {
             logFine("Shutting down task manager");
