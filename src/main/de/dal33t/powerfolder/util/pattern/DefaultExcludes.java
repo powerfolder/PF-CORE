@@ -40,7 +40,15 @@ public enum DefaultExcludes {
     /**
      * Apples iPod thumb files. http://dotwhat.net/ithmb/9058/
      */
-    ITHUMB("*.ithmb");
+    ITHUMB("*.ithmb"),
+
+    /**
+     * AI tool local configurations
+     */
+    CLAUDE(".claude"),
+    CODEX(".codex"),
+    AIDER(".aider"),
+    CLINE(".cline");
 
     String pattern;
 
