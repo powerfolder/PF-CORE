@@ -673,7 +673,7 @@ public class GeneralSettingsTab extends PFUIComponent implements PreferenceTab {
 
             if (result == 0) {
                 SwingUtilities.invokeLater(() -> getController().getFolderRepository()
-                    .cleanupOldFiles(true));
+                    .nightlyMaintenance(true));
             }
         }
     }

@@ -3,6 +3,7 @@ package de.dal33t.powerfolder.folder;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -173,7 +174,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(Files.exists(ver[4]));
 
         fb.setArchiveVersions(1);
-        assertTrue(fb.getFileArchiver().maintain());
+        fb.getFileArchiver().maintainAndCleanup(null, fb.getDAO(), fb.getInfo(), getContollerBart().getMySelf().getAccountInfo());
         assertTrue(fb.getFileArchiver().getSize() > 0);
         assertFalse(Files.exists(ver[0]));
         assertFalse(Files.exists(ver[1]));
@@ -182,7 +183,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(Files.exists(ver[4]));
 
         fb.setArchiveVersions(0);
-        assertTrue(fb.getFileArchiver().maintain());
+        fb.getFileArchiver().maintainAndCleanup(null, fb.getDAO(), fb.getInfo(), getContollerBart().getMySelf().getAccountInfo());
         assertEquals(0, fb.getFileArchiver().getSize());
         assertFalse(Files.exists(ver[0]));
         assertFalse(Files.exists(ver[1]));
@@ -301,6 +302,166 @@ public class FileArchiverTest extends TwoControllerTestCase {
             }
         });
         assertEquals(0, getFolderAtBart().countProblems());
+    }
+
+    public void testMaintainAndCleanup() throws IOException {
+        final Folder fb = getFolderAtBart();
+        fb.setArchiveVersions(5);
+
+        Folder fl = getFolderAtLisa();
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        scanFolder(fl);
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return fb.getKnownFiles().size() > 0;
+            }
+        });
+        FileInfo fib = fb.getKnownFiles().iterator().next();
+
+        for (int i = 0; i < 4; i++) {
+            TestHelper.waitMilliSeconds(2100);
+            modLisaFile(tl, fib);
+        }
+
+        FileArchiver archiver = fb.getFileArchiver();
+        assertTrue(archiver.getSize() > 0);
+
+        // Combined maintain + cleanup with future date (no cleanup)
+        List<FileInfo> lost = archiver.maintainAndCleanup(null,
+            fb.getDAO(), fb.getInfo(), getContollerBart().getMySelf().getAccountInfo());
+        assertEquals(0, lost.size());
+
+        // Size should be recalculated after maintainAndCleanup
+        long sizeAfter = archiver.getSize();
+        assertTrue(sizeAfter > 0);
+
+        // Reduce versions, then run combined maintenance
+        fb.setArchiveVersions(1);
+        lost = archiver.maintainAndCleanup(null,
+            fb.getDAO(), fb.getInfo(), getContollerBart().getMySelf().getAccountInfo());
+        assertEquals(0, lost.size());
+        assertTrue(archiver.getSize() > 0);
+        assertEquals(1, archiver.getArchivedFilesInfos(fib).size());
+    }
+
+    public void testMaintainAndCleanupWithDate() throws IOException {
+        final Folder fb = getFolderAtBart();
+        fb.setArchiveVersions(-1);
+
+        Folder fl = getFolderAtLisa();
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        scanFolder(fl);
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return fb.getKnownFiles().size() > 0;
+            }
+        });
+        FileInfo fib = fb.getKnownFiles().iterator().next();
+
+        for (int i = 0; i < 3; i++) {
+            TestHelper.waitMilliSeconds(2100);
+            modLisaFile(tl, fib);
+        }
+
+        FileArchiver archiver = fb.getFileArchiver();
+        assertEquals(3, archiver.getArchivedFilesInfos(fib).size());
+
+        // Cleanup with future date should delete all
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, 1);
+        archiver.maintainAndCleanup(cal.getTime(),
+            fb.getDAO(), fb.getInfo(), getContollerBart().getMySelf().getAccountInfo());
+
+        assertEquals(0, archiver.getArchivedFilesInfos(fib).size());
+        assertEquals(0, archiver.getSize());
+    }
+
+    public void testRecoverLostFileInfos() throws IOException {
+        final Folder fb = getFolderAtBart();
+        fb.setArchiveVersions(-1);
+
+        Folder fl = getFolderAtLisa();
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        scanFolder(fl);
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return fb.getKnownFiles().size() > 0;
+            }
+        });
+        FileInfo fib = fb.getKnownFiles().iterator().next();
+
+        // Create some versions
+        for (int i = 0; i < 3; i++) {
+            TestHelper.waitMilliSeconds(2100);
+            modLisaFile(tl, fib);
+        }
+
+        FileArchiver archiver = fb.getFileArchiver();
+        assertTrue(archiver.hasArchivedFileInfo(fib));
+
+        // Delete the file and verify DAO has deleted entry
+        fb.removeFilesLocal(fib);
+        FileInfo deleted = fb.getFile(fib);
+        assertNotNull(deleted);
+        assertTrue(deleted.isDeleted());
+
+        // Simulate lost DAO entry by removing it
+        fb.removeDeletedFileInfo(deleted);
+        assertNull(fb.getFile(fib));
+
+        // Archive still exists
+        assertTrue(archiver.hasArchivedFileInfo(fib));
+
+        // Run nightly maintenance — should recover the lost entry
+        fb.nightlyArchiveMaintenance(null);
+
+        // Verify DAO entry was recovered
+        FileInfo recovered = fb.getFile(fib);
+        assertNotNull("FileInfo should have been recovered from archive", recovered);
+        assertTrue("Recovered FileInfo should be marked as deleted", recovered.isDeleted());
+    }
+
+    public void testNightlyArchiveMaintenanceSizeRecalculated() throws IOException {
+        final Folder fb = getFolderAtBart();
+        fb.setArchiveVersions(5);
+
+        Folder fl = getFolderAtLisa();
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        scanFolder(fl);
+
+        TestHelper.waitForCondition(10, new Condition() {
+            public boolean reached() {
+                return fb.getKnownFiles().size() > 0;
+            }
+        });
+        FileInfo fib = fb.getKnownFiles().iterator().next();
+
+        for (int i = 0; i < 4; i++) {
+            TestHelper.waitMilliSeconds(2100);
+            modLisaFile(tl, fib);
+        }
+
+        FileArchiver archiver = fb.getFileArchiver();
+        long sizeBefore = archiver.getSize();
+        assertTrue(sizeBefore > 0);
+
+        // Reduce to 1 version and run nightly maintenance
+        fb.setArchiveVersions(1);
+        fb.nightlyArchiveMaintenance(null);
+
+        // Size must be recalculated (not stale)
+        long sizeAfterMaintain = archiver.getSize();
+        assertTrue(sizeAfterMaintain > 0);
+        assertTrue(sizeAfterMaintain < sizeBefore);
+
+        // Cleanup all with future date
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, 1);
+        fb.nightlyArchiveMaintenance(cal.getTime());
+        assertEquals(0, archiver.getSize());
     }
 
     private FileInfo modLisaFile(Path file, final FileInfo fInfo) {

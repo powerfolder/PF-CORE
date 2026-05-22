@@ -2562,6 +2562,34 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Nightly combined archive maintenance: recovers lost FileInfo entries,
+     * enforces version limits, and deletes old archive files — all in a
+     * single walk of the archive directory tree.
+     *
+     * @param cleanupDate delete archive files older than this date,
+     *                    or null to skip age-based cleanup
+     */
+    public void nightlyArchiveMaintenance(Date cleanupDate) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not nightlyArchiveMaintenance");
+            return;
+        }
+        List<FileInfo> lostFileInfos = archiver.maintainAndCleanup(
+            cleanupDate, dao, currentInfo, getMySelf().getAccountInfo());
+
+        if (!lostFileInfos.isEmpty()) {
+            synchronized (dbAccessLock) {
+                dao.store(null, lostFileInfos);
+                setDBDirty();
+            }
+            for (FileInfo fi : lostFileInfos) {
+                logFileOperation("RECOVERED", null, fi);
+            }
+            logWarning("Recovered " + lostFileInfos.size() + " lost FileInfo entries from archive");
+        }
+    }
+
+    /**
      * #2311: Revert local changes.
      *
      * @return
@@ -5716,13 +5744,6 @@ public class Folder extends PFComponent {
             logFine("Saving ignore patterns to Meta folder: " + file);
         }
         metaFolder.scanChangedFile(fInfo);
-    }
-
-    /**
-     * Delete any file archives over a specified age.
-     */
-    public void cleanupOldArchiveFiles(Date cleanupDate) {
-        archiver.cleanupOldArchiveFiles(cleanupDate);
     }
 
     public Folder share(DirectoryInfo subDirInfo) {

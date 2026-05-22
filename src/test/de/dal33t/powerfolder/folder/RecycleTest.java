@@ -112,7 +112,7 @@ public class RecycleTest extends ControllerTestCase {
         getFolder().removeFilesLocal(testfile);
         assertFalse(Files.exists(file));
         archiver.setVersionsPerFile(0);
-        archiver.maintain();
+        archiver.maintainAndCleanup(null, getFolder().getDAO(), getFolder().getInfo(), getController().getMySelf().getAccountInfo());
         Path recycleBinDir = getFolder().getSystemSubDir().resolve("archive");
         assertTrue(Files.exists(recycleBinDir));
         // Only size file

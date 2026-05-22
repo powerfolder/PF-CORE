@@ -3248,41 +3248,35 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings.removeEntries(config, folderEntryId);
     }
 
-    /**
-     * Delete any file archives over a specified age, if history is not set to
-     * "forever". And
-     */
-    public void cleanupOldFiles() {
-        cleanupOldFiles(false);
+    public void nightlyMaintenance() {
+        nightlyMaintenance(false);
     }
 
     /**
      * @param force If {@code true} ignore the
      *              {@link ConfigurationEntry#DEFAULT_ARCHIVE_CLEANUP_DAYS} else
      *              take that setting into account.
-     * @see #cleanupOldFiles()
      */
-    public void cleanupOldFiles(boolean force) {
+    public void nightlyMaintenance(boolean force) {
         boolean cleanupArchive = true;
         int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.getValueInt(getController());
-        if (!force && (period == Integer.MAX_VALUE || period <= 0)) { // cleanup := never
+        if (!force && (period == Integer.MAX_VALUE || period <= 0)) {
             cleanupArchive = false;
         }
         try {
-            logFine("cleanupOldFiles starting");
             fireCleanupStarted();
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DATE, -period);
             Date cleanupDate = cal.getTime();
             Collection<Folder> folders = getFolders(true);
-            logInfo("cleanupOldFiles started for " + folders.size() + " folders");
+            logInfo("Nightly maintenance started for " + folders.size() + " folders");
+            long start = System.currentTimeMillis();
             for (Folder folder : folders) {
-                if (cleanupArchive) {
-                    folder.cleanupOldArchiveFiles(cleanupDate);
-                }
+                folder.nightlyArchiveMaintenance(cleanupArchive ? cleanupDate : null);
                 getController().getTransferManager().cleanIncompletedDownloadFiles(folder);
             }
-            logInfo("cleanupOldFiles done for " + getFoldersCount() + " folders");
+            long took = System.currentTimeMillis() - start;
+            logInfo("Nightly maintenance done for " + folders.size() + " folders in " + (took / 1000) + "s");
         } finally {
             fireCleanupFinished();
         }

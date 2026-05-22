@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.problem.FileProblemHelper;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.security.Account;
@@ -41,11 +42,12 @@ import java.util.regex.Pattern;
 
 /**
  * A file archiver that tries to move a file to an archive first, and falls back
- * to copying otherwise, or if forced to. <i>Note:</i> No support for removal of
- * old files (yet) - special care of directories might be required Archives are
- * stored in an archives directory, with suffix '_K_nnn', where 'nnn' is the
- * version number. So 'data/info.txt' archive version 6 would be
- * 'archive/data/info.txt_K_6'.
+ * to copying otherwise, or if forced to. Archives are stored in an archives
+ * directory, with suffix '_K_nnn', where 'nnn' is the version number.
+ * So 'data/info.txt' archive version 6 would be 'archive/data/info.txt_K_6'.
+ * <p>
+ * Nightly maintenance via {@link #maintainAndCleanup} enforces version limits,
+ * removes old archives, and recovers lost DAO entries in a single walk.
  *
  * @author dante
  */
@@ -235,83 +237,75 @@ public class FileArchiver {
     }
 
     /**
-     * Tries to ensure that only the allowed amount of versions per file is in
-     * the archive.
-     *
-     * @return true the maintenance worked successfully for all files, false if
-     * it failed for at least one file
+     * Visitor for {@link #walkArchive}. Called once per unique base file name
+     * in each directory with all its {@code _K_N} version paths.
      */
-    public synchronized boolean maintain() {
-        if (Files.notExists(archiveDirectory)) {
-            return true;
-        }
-        boolean check = checkRecursive(archiveDirectory, new HashSet<Path>());
-        size = null;
-        return check;
+    interface ArchiveVisitor {
+        /**
+         * @param baseName the original file base name (without {@code _K_N})
+         * @param dir      the directory containing the versions
+         * @param versions all version paths for this base name
+         * @return true if processing succeeded (used to track overall success)
+         */
+        boolean visit(String baseName, Path dir, Collection<Path> versions);
     }
 
-    private boolean checkRecursive(Path dir, Set<Path> checked) {
-        assert dir != null && Files.isDirectory(dir);
-        assert checked != null;
-
+    /**
+     * Recursively walks the archive directory, groups files by base name
+     * per directory, and calls the visitor for each group.
+     * Empty subdirectories are deleted after visiting if
+     * {@code deleteEmptyDirs} is true.
+     *
+     * @return true if all visitor calls and directory operations succeeded
+     */
+    private boolean walkArchive(Path dir, ArchiveVisitor visitor, boolean deleteEmptyDirs) {
         if (dir == null || Files.notExists(dir) || !Files.isDirectory(dir)) {
-            // Is empty or not existent.
             return true;
         }
 
-        boolean allSuccessful = true;
-
-        Set<Path> flist = new HashSet<>();
-        try (DirectoryStream<Path> file = Files.newDirectoryStream(dir)) {
-            for (Path p : file) {
-                flist.add(p);
+        List<Path> entries = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path p : stream) {
+                entries.add(p);
             }
         } catch (IOException ioe) {
             log.warning(ioe.toString());
             return false;
         }
 
-        Map<String, Collection<Path>> fileMap = new HashMap<>();
-        for (Path f : flist) {
-            if (f.getFileName().toString().equals(SIZE_INFO_FILE)) {
+        boolean allSuccessful = true;
+        Map<String, Collection<Path>> fileMap = new LinkedHashMap<>();
+
+        for (Path entry : entries) {
+            if (entry.getFileName().toString().equals(SIZE_INFO_FILE)) {
                 continue;
             }
-            if (Files.isDirectory(f)) {
-                boolean thisSuccessfuly = checkRecursive(f, checked);
-                if (thisSuccessfuly) {
+            if (Files.isDirectory(entry)) {
+                boolean subSuccess = walkArchive(entry, visitor, deleteEmptyDirs);
+                if (deleteEmptyDirs && subSuccess) {
                     try {
-                        Files.delete(f);
+                        Files.delete(entry);
                     } catch (IOException ioe) {
                         log.warning(ioe.toString());
                     }
                 }
-                allSuccessful &= thisSuccessfuly;
+                allSuccessful &= subSuccess;
             } else {
                 String baseName;
                 try {
-                    baseName = getBaseName(f);
+                    baseName = getBaseName(entry);
                 } catch (RuntimeException e) {
-                    log.log(Level.WARNING, f + ": Skipping: " + e.toString());
+                    log.log(Level.WARNING, entry + ": Skipping: " + e.toString());
                     continue;
                 }
-                Path vf = dir.resolve(baseName);
-                checked.add(vf);
-                Collection<Path> files = fileMap.get(baseName);
-                if (files == null) {
-                    files = new LinkedList<>();
-                    fileMap.put(baseName, files);
-                }
-                files.add(f);
+                fileMap.computeIfAbsent(baseName, k -> new LinkedList<>()).add(entry);
             }
         }
-        for (Collection<Path> files : fileMap.values()) {
-            try {
-                checkArchivedFile(files);
-            } catch (IOException e) {
-                allSuccessful = false;
-                log.log(Level.WARNING, "Failed to check " + files, e);
-            }
+
+        for (Map.Entry<String, Collection<Path>> e : fileMap.entrySet()) {
+            allSuccessful &= visitor.visit(e.getKey(), dir, e.getValue());
         }
+
         return allSuccessful;
     }
 
@@ -699,15 +693,16 @@ public class FileArchiver {
     public void purge(Folder folder, Account account) throws IOException {
         Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
 
+        long freedSpace = size != null ? size : 0L;
         purge0(archiveDirectory);
         size = 0L; saveSize();
 
         folder.fireArchivePurged();
 
-        String logMessage = "Successfully cleared versioning of folder " + folder.getName() +
-                " by " + account;
-        logMessage = size == 0 ? logMessage : logMessage + " (Removed "
-                + FileUtils.byteCountToDisplaySize(size) + ")";
+        String logMessage = "Successfully cleared versioning of folder " + folder.getName() + " by " + account;
+        if (freedSpace > 0) {
+            logMessage += " (Removed " + FileUtils.byteCountToDisplaySize(freedSpace) + ")";
+        }
         log.info(logMessage);
     }
 
@@ -756,57 +751,6 @@ public class FileArchiver {
         PathUtils.recursiveDelete(path);
     }
 
-    /**
-     * Delete archives older that a specified number of days.
-     *
-     * @param cleanupDate Age in days of archive files to delete.
-     */
-    public void cleanupOldArchiveFiles(Date cleanupDate) {
-
-        log.fine("Cleaning up " + archiveDirectory + " for files older than "
-                + cleanupDate);
-
-        if (Files.exists(archiveDirectory)) {
-            cleanupOldArchiveFiles(archiveDirectory, cleanupDate);
-        }
-    }
-
-    private static void cleanupOldArchiveFiles(Path file, Date cleanupDate) {
-        boolean tryToDeleteItem = true;
-        if (Files.isDirectory(file)) {
-            try (DirectoryStream<Path> files = Files.newDirectoryStream(file)) {
-                for (Path path : files) {
-                    tryToDeleteItem = false; // Contains files. Do not try to delete
-                    cleanupOldArchiveFiles(path, cleanupDate);
-                }
-            } catch (IOException ioe) {
-                log.warning(file + ": " + ioe);
-            }
-        }
-
-        if (tryToDeleteItem) {
-            try {
-                Date age = new Date(Files.getLastModifiedTime(file).toMillis());
-                if (age.before(cleanupDate)) {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.fine("Deleting old archive file " + file + " ("
-                                + age + ')');
-                    }
-                    try {
-                        Files.delete(file);
-                    } catch (SecurityException e) {
-                        log.severe("Could not delete archive file " + file + ". " + e);
-                    }
-                }
-            } catch (DirectoryNotEmptyException e) {
-                log.fine(file + ": Directory not empty, while cleaning up. " + e);
-            } catch (IOException ioe) {
-                log.warning("Could not read modification time of " + file + ". " + ioe);
-            }
-        }
-
-    }
-
     private void saveSize() {
         Path sizeFile = archiveDirectory.resolve(SIZE_INFO_FILE);
         if (size == null) {
@@ -825,5 +769,123 @@ public class FileArchiver {
         } catch (IOException e) {
             log.fine("Unable to store size of archive to " + sizeFile);
         }
+    }
+
+    /**
+     * Combined nightly maintenance: recover lost DAO entries, enforce version
+     * limits, and delete old archives — all in a single walk of the archive
+     * directory tree.
+     *
+     * @param cleanupDate delete archive files older than this date,
+     *                    or null to skip age-based cleanup
+     * @param dao         the FileInfo DAO to check for existing entries
+     * @param folderInfo  the folder these archives belong to
+     * @param myAccount   the account info of this device
+     * @return deleted FileInfo entries for archived files missing from the DAO,
+     *         ready to be stored
+     */
+    public synchronized List<FileInfo> maintainAndCleanup(
+        Date cleanupDate, FileInfoDAO dao, FolderInfo folderInfo, AccountInfo myAccount)
+    {
+        List<FileInfo> lostFileInfos = new ArrayList<>();
+        if (Files.notExists(archiveDirectory)) {
+            size = 0L;
+            saveSize();
+            return lostFileInfos;
+        }
+        
+        long[] calculatedSize = {0L};
+        walkArchive(archiveDirectory, (baseName, dir, versions) -> {
+            
+            recoverLostFileInfo(versions, dao, folderInfo, myAccount, lostFileInfos);
+            enforceVersionLimits(versions);
+            cleanupOldVersions(versions, cleanupDate);
+
+            // Sum up surviving files
+            for (Path version : versions) {
+                if (Files.exists(version)) {
+                    try {
+                        calculatedSize[0] += Files.size(version);
+                    } catch (IOException e) {
+                        log.warning("Could not read size of " + version + ": " + e);
+                    }
+                }
+            }
+            
+            return true;
+        }, true);
+        
+        size = calculatedSize[0];
+        saveSize();
+        
+        return lostFileInfos;
+    }
+
+    private void recoverLostFileInfo(Collection<Path> versions, FileInfoDAO dao,
+        FolderInfo folderInfo, AccountInfo myAccount, List<FileInfo> lostFileInfos)
+    {
+        try {
+            String relativeName = buildFileName(archiveDirectory, versions.iterator().next());
+            FileInfo lookup = FileInfoFactory.lookupInstance(folderInfo, relativeName);
+            if (dao.find(lookup, null) != null) {
+                return;
+            }
+            Path newestPath = findNewestVersionPath(versions);
+            if (newestPath == null) {
+                return;
+            }
+            int version = getVersionNumber(newestPath);
+            Date modDate = new Date(Files.getLastModifiedTime(newestPath).toMillis());
+            FileInfo entry = FileInfoFactory.archivedFile(folderInfo, relativeName, null,
+                Files.size(newestPath), mySelf, FileInfo.UNKNOWN_FROM_ARCHIVE, modDate, version, null, null);
+            lostFileInfos.add(FileInfoFactory.deletedFile(entry, mySelf, myAccount, modDate));
+        } catch (IllegalArgumentException | IOException e) {
+            log.warning("Skipping unrecognized archive file: " + e);
+        }
+    }
+
+    private void enforceVersionLimits(Collection<Path> versions) {
+        try {
+            checkArchivedFile(versions);
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Failed to check " + versions, e);
+        }
+    }
+
+    private static void cleanupOldVersions(Collection<Path> versions, Date cleanupDate) {
+        if (cleanupDate == null) {
+            return;
+        }
+        for (Path version : versions) {
+            if (Files.notExists(version)) {
+                continue;
+            }
+            try {
+                Date age = new Date(Files.getLastModifiedTime(version).toMillis());
+                if (age.before(cleanupDate)) {
+                    if (log.isLoggable(Level.FINE)) {
+                        log.fine("Deleting old archive file " + version + " (" + age + ')');
+                    }
+                    Files.delete(version);
+                }
+            } catch (SecurityException e) {
+                log.severe("Could not delete archive file " + version + ". " + e);
+            } catch (IOException e) {
+                log.warning("Could not read/delete " + version + ". " + e);
+            }
+        }
+    }
+
+    private static Path findNewestVersionPath(Collection<Path> versionPaths) {
+        Path newest = null;
+        int highestVersion = -1;
+        for (Path file : versionPaths) {
+            int version = getVersionNumber(file);
+            if (version > highestVersion) {
+                highestVersion = version;
+                newest = file;
+            }
+        }
+        return newest;
     }
 }
