@@ -73,6 +73,7 @@ public class Translation {
     public static final Locale HEBREW = new Locale("he");
     public static final Locale IRISH = new Locale("ga");
     public static final Locale MALTESE = new Locale("mt");
+    public static final Locale URDU = new Locale("ur");
 
     /**
      * List of all supported locales
@@ -142,6 +143,7 @@ public class Translation {
             // supportedLocales.add(THAI);              // ไทย
             supportedLocales.add(TURKISH);           // Türkçe
             supportedLocales.add(UKRAINIAN);         // Українська
+            supportedLocales.add(URDU);              // اردو
             supportedLocales.add(VIETNAMESE);        // Tiếng Việt
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);
