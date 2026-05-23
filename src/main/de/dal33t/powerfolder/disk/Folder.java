@@ -435,8 +435,7 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
-        archiver.setVersionsPerFile(folderSettings.getVersions());
+        initFileArchiver(folderSettings.getVersions());
 
         watcher = new FolderWatcher(this);
         
@@ -2089,6 +2088,23 @@ public class Folder extends PFComponent {
         }
     }
 
+    private void initFileArchiver(int versions) {
+        if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
+            archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
+        } else {
+            Folder topFolder = getTopFolder();
+            if (topFolder != null) {
+                archiver = new SubFolderFileArchiverProxy(
+                    topFolder.getFileArchiver(), currentInfo, getController().getMySelf().getInfo());
+                logInfo(this + ": Using archiver of topfolder " + topFolder);
+            } else {
+                logWarning(this + ": Using own fallback archiver for subfolder. Parent folder not here.");
+                archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
+            }
+        }
+        archiver.setVersionsPerFile(versions);
+    }
+
     /**
      * Loads the folder database from disk
      *
@@ -2677,8 +2693,7 @@ public class Folder extends PFComponent {
 
                 if (!currentInfo.isMetaFolder()) {
                     addProblem(new FolderReadOnlyProblem(this,
-                        archiver.getArchiveDir().resolve(
-                            fileInfo.getRelativeName())));
+                        archiver.getArchivedFile(fileInfo)));
                 }
 
                 dao.delete(null, fileInfo);

@@ -192,7 +192,7 @@ public class FileArchiver {
         }
     }
 
-    public final Path getArchiveDir() {
+    Path getArchiveDir() {
         return archiveDirectory;
     }
 
