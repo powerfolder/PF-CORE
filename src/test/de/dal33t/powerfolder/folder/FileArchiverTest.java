@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import de.dal33t.powerfolder.disk.FileArchiver;
+import de.dal33t.powerfolder.disk.FileArchiverImpl;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -39,7 +40,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
 
         Path archive = fb.getSystemSubDir().resolve("archive");
         Files.createDirectories(archive);
-        FileArchiver fa = new FileArchiver(archive,
+        FileArchiver fa = new FileArchiverImpl(archive,
             getContollerBart().getMySelf().getInfo());
         try {
             fa.archive(fib, tb, false);
@@ -462,6 +463,101 @@ public class FileArchiverTest extends TwoControllerTestCase {
         cal.add(Calendar.DATE, 1);
         fb.nightlyArchiveMaintenance(cal.getTime());
         assertEquals(0, archiver.getSize());
+    }
+
+    public void testRestoreWithCurrentFile() throws IOException {
+        final Folder fb = getFolderAtBart();
+        fb.setArchiveVersions(-1);
+
+        Folder fl = getFolderAtLisa();
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        scanFolder(fl);
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return fb.getKnownFiles().size() > 0;
+            }
+
+            public String message() {
+                return "Known files at bart: " + fb.getKnownFiles();
+            }
+        });
+
+        FileInfo fib = fb.getKnownFiles().iterator().next();
+
+        // Create version 1
+        TestHelper.waitMilliSeconds(2100);
+        modLisaFile(tl, fib);
+
+        FileArchiver archiver = fb.getFileArchiver();
+        List<FileInfo> archived = archiver.getArchivedFilesInfos(fib);
+        assertEquals(1, archived.size());
+        FileInfo archivedVersion = archived.get(0);
+
+        // Get current file info and path
+        FileInfo currentFile = fb.getFile(fib);
+        assertNotNull(currentFile);
+        assertFalse(currentFile.isDeleted());
+        Path target = currentFile.getDiskFile(
+            getContollerBart().getFolderRepository());
+        assertTrue(Files.exists(target));
+        long currentSize = Files.size(target);
+
+        // Restore archived version, passing currentFile
+        boolean restored = archiver.restore(
+            archivedVersion, currentFile, target);
+        assertTrue("Restore should succeed", restored);
+        assertTrue("Restored file should exist", Files.exists(target));
+
+        // The current file should now be archived as well
+        List<FileInfo> archivedAfter =
+            archiver.getArchivedFilesInfos(fib);
+        assertEquals("Current file should have been archived "
+            + "before restoring", 2, archivedAfter.size());
+    }
+
+    public void testRestoreWithCurrentFileNull() throws IOException {
+        final Folder fb = getFolderAtBart();
+        fb.setArchiveVersions(-1);
+
+        Folder fl = getFolderAtLisa();
+        Path tl = TestHelper.createRandomFile(fl.getLocalBase(), 1024);
+        scanFolder(fl);
+
+        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+            public boolean reached() {
+                return fb.getKnownFiles().size() > 0;
+            }
+
+            public String message() {
+                return "Known files at bart: " + fb.getKnownFiles();
+            }
+        });
+
+        FileInfo fib = fb.getKnownFiles().iterator().next();
+
+        // Create a version
+        TestHelper.waitMilliSeconds(2100);
+        modLisaFile(tl, fib);
+
+        FileArchiver archiver = fb.getFileArchiver();
+        List<FileInfo> archived = archiver.getArchivedFilesInfos(fib);
+        assertEquals(1, archived.size());
+        FileInfo archivedVersion = archived.get(0);
+
+        Path restoreTarget = fb.getLocalBase().resolve(
+            "restored_null_current.txt");
+
+        // Restore with null currentFile — should not archive anything
+        boolean restored = archiver.restore(
+            archivedVersion, null, restoreTarget);
+        assertTrue("Restore should succeed", restored);
+        assertTrue("Restored file should exist",
+            Files.exists(restoreTarget));
+
+        // No additional version should have been archived
+        assertEquals("No additional version should be archived",
+            1, archiver.getArchivedFilesInfos(fib).size());
     }
 
     private FileInfo modLisaFile(Path file, final FileInfo fInfo) {

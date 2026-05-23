@@ -857,6 +857,59 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertTrue("maintainAndCleanup on proxy should return empty list", result.isEmpty());
     }
 
+    public void testSubFolderArchiverPurgeFile() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        String subDir = "projects/docs/internal";
+
+        Path root = topFolder.getPhysicalDir();
+        Path sharedPath = Files.createDirectories(root.resolve(subDir));
+        Path testFile = TestHelper.createRandomFile(sharedPath, "report.txt");
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo dirInfo = (DirectoryInfo) topFolder.getFileInfo(subDir);
+        Folder subFolder = topFolder.share(dirInfo);
+
+        FileInfo fileInTop = topFolder.getFileInfo(testFile);
+        FileInfo fileInSub = FileInfoFactory.mapToSubFolder(
+            fileInTop, subFolder.getInfo());
+
+        // Archive via subfolder proxy
+        subFolder.getFileArchiver().archive(fileInSub, testFile, true);
+        assertTrue(subFolder.getFileArchiver().hasArchivedFileInfo(fileInSub));
+        assertTrue(topFolder.getFileArchiver().hasArchivedFileInfo(fileInTop));
+
+        // Purge via subfolder proxy
+        subFolder.getFileArchiver().purge(fileInSub, subFolder, null);
+
+        // Archived version should be gone from both views
+        assertFalse("Sub archiver should no longer have archived file",
+            subFolder.getFileArchiver().hasArchivedFileInfo(fileInSub));
+        assertFalse("Top archiver should no longer have archived file",
+            topFolder.getFileArchiver().hasArchivedFileInfo(fileInTop));
+    }
+
+    public void testSubFolderArchiverPurgeFolderMismatch() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        String subDir = "teams/backend/services";
+
+        Path root = topFolder.getPhysicalDir();
+        Path sharedPath = Files.createDirectories(root.resolve(subDir));
+        TestHelper.createRandomFile(sharedPath, "service.txt");
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo dirInfo = (DirectoryInfo) topFolder.getFileInfo(subDir);
+        Folder subFolder = topFolder.share(dirInfo);
+
+        // Passing the top folder to the subfolder's archiver should fail
+        try {
+            subFolder.getFileArchiver().purge(topFolder, null);
+            fail("Should have thrown IllegalArgumentException "
+                + "for folder archive mismatch");
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("mismatch"));
+        }
+    }
+
     public void testUnshareOnlyAllowedFromTopFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
 

@@ -35,16 +35,15 @@ import java.util.stream.Collectors;
  * mapping FileInfo paths between subfolder and top-folder views.
  * Mirrors the pattern of {@link de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy}.
  */
-public class SubFolderFileArchiverProxy extends FileArchiver {
+public class SubFolderFileArchiverProxy implements FileArchiver {
 
     private static final Logger log = Logger.getLogger(SubFolderFileArchiverProxy.class.getName());
 
-    private final FileArchiver delegate;
+    private final FileArchiverImpl delegate;
     private final FolderInfo subfolderInfo;
     private final String subfolderPath;
 
-    public SubFolderFileArchiverProxy(FileArchiver delegate, FolderInfo subfolderInfo, MemberInfo mySelf) {
-        super(delegate.getArchiveDir(), mySelf);
+    public SubFolderFileArchiverProxy(FileArchiverImpl delegate, FolderInfo subfolderInfo) {
         Reject.ifNull(delegate, "delegate");
         Reject.ifNull(subfolderInfo, "subfolderInfo");
         Reject.ifFalse(subfolderInfo.isSubFolder(), "Must be subfolder");
@@ -68,11 +67,6 @@ public class SubFolderFileArchiverProxy extends FileArchiver {
     @Override
     public void archive(FileInfo fileInfo, Path source, boolean forceKeepSource) throws IOException {
         delegate.archive(toTop(fileInfo), source, forceKeepSource);
-    }
-
-    @Override
-    Path getArchiveDir() {
-        return delegate.getArchiveDir();
     }
 
     @Override
@@ -108,12 +102,23 @@ public class SubFolderFileArchiverProxy extends FileArchiver {
     }
 
     @Override
-    public synchronized long getSize() {
+    public int getVersionsPerFile() {
+        return delegate.getVersionsPerFile();
+    }
+
+    @Override
+    public void setVersionsPerFile(int versionsPerFile) {
+        // Subfolder version setting is informational only; actual archiving uses the delegate's value
+    }
+
+    @Override
+    public long getSize() {
         return 0;
     }
 
     @Override
     public void purge(Folder folder, Account account) throws IOException {
+        Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
         Path subArchive = delegate.getArchiveDir().resolve(subfolderPath);
         if (Files.exists(subArchive)) {
             PathUtils.recursiveDelete(subArchive);
@@ -124,6 +129,7 @@ public class SubFolderFileArchiverProxy extends FileArchiver {
 
     @Override
     public void purge(FileInfo fileInfo, Folder folder, Account account) throws IOException {
+        Reject.ifFalse(folder.getFileArchiver() == this, "Folder archive mismatch");
         FileInfo topFileInfo = toTop(fileInfo);
         if (fileInfo.isDiretory()) {
             Path subArchive = delegate.getArchiveDir().resolve(topFileInfo.getRelativeName());
@@ -145,7 +151,7 @@ public class SubFolderFileArchiverProxy extends FileArchiver {
     }
 
     @Override
-    public synchronized List<FileInfo> maintainAndCleanup(
+    public List<FileInfo> maintainAndCleanup(
         Date cleanupDate, FileInfoDAO dao, FolderInfo folderInfo, AccountInfo myAccount)
     {
         return Collections.emptyList();

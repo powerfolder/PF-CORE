@@ -2095,7 +2095,7 @@ public class Folder extends PFComponent {
             Folder topFolder = getTopFolder();
             if (topFolder != null) {
                 archiver = new SubFolderFileArchiverProxy(
-                    topFolder.getFileArchiver(), currentInfo, getController().getMySelf().getInfo());
+                    (FileArchiverImpl) topFolder.getFileArchiver(), currentInfo);
                 logInfo(this + ": Using archiver of topfolder " + topFolder);
             } else {
                 logWarning(this + ": Using own fallback archiver for subfolder. Parent folder not here.");
