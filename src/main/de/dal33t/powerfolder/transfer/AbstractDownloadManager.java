@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: AbstractDownloadManager.java 18206 2012-02-29 02:52:40Z tot $
  */
 package de.dal33t.powerfolder.transfer;
 

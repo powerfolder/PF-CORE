@@ -1,5 +1,6 @@
 /*
-* Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+* Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+* Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
 *
 * This file is part of PowerFolder.
 *
@@ -15,7 +16,6 @@
 * You should have received a copy of the GNU General Public License
 * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
 *
-* $Id$
 */
 package de.dal33t.powerfolder.transfer;
 
@@ -26,7 +26,6 @@ import java.util.Date;
  * BandwidthLimiter starts out with 0 available and doesn't increase that. So it
  * needs some kind of "provider" which sets the amount of available bandwidth.
  * The BandwidthProvider class is an example of such. Instances start with no
- * limit. $Id$
  *
  * @author Dennis "Dante" Waldherr
  * @version $Revision: 1.3 $
