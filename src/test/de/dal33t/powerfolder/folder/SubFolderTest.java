@@ -928,6 +928,58 @@ public class SubFolderTest extends TwoControllerTestCase {
         }
     }
 
+    /**
+     * PF-1790: mapToSubFolder creates the subfolder's base directory as a
+     * lookup instance (size=null). This is by design — the base directory
+     * has an empty filename and cannot pass validate() with a real size.
+     * Callers like findSameFiles must guard against calling getSize() on it.
+     */
+    public void testMapToSubFolderBaseDirectoryIsLookupInstance() {
+        String subDir = "structure/deep/sharedsubdir.123";
+
+        FolderInfo topFolderInfo = FolderInfoFactory.newTopFolder("TOP", "TopFolder");
+        DirectoryInfo topBaseDir = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
+                topFolderInfo, subDir,
+                null, 0, null, null, new Date(), 1, null, true, null);
+
+        FolderInfo subFolderInfo = FolderInfoFactory.newFolder(topBaseDir);
+
+        FileInfo subBaseDir = FileInfoFactory.mapToSubFolder(topBaseDir, subFolderInfo);
+        assertEquals("", subBaseDir.getRelativeName());
+        assertTrue("Mapped base dir must be a lookup instance", subBaseDir.isLookupInstance());
+    }
+
+    /**
+     * Reproduces the production NPE: readExternal converts size=-1 to null,
+     * then getSize() auto-unboxes null → NPE.
+     * This is the v27-to-v27 server communication path: one node has a FileInfo
+     * with size=null (e.g. from DB or internal creation), writes it as -1 via
+     * writeExternal, the receiver reads -1 → null, then findSameFiles calls getSize().
+     */
+    public void testReadExternalSizeMinusOneGetSizeNPE() throws Exception {
+        FolderInfo topFolderInfo = FolderInfoFactory.newTopFolder("TOP", "TopFolder");
+        DirectoryInfo dirInfo = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
+                topFolderInfo, "somedir",
+                null, 0, null, null, new Date(), 1, null, true, null);
+
+        // Simulate writeExternal → readExternal roundtrip (v27 to v27)
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(baos);
+        dirInfo.writeExternal(oos);
+        oos.flush();
+
+        java.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(baos.toByteArray());
+        java.io.ObjectInputStream ois = new java.io.ObjectInputStream(bais);
+        FileInfo deserialized = FileInfoFactory.readExt(ois);
+
+        try {
+            long size = deserialized.getSize();
+            assertEquals(0L, size);
+        } catch (NullPointerException e) {
+            fail("getSize() must not throw NPE after readExternal deserializes size=-1 as null");
+        }
+    }
+
     public void testUnshareOnlyAllowedFromTopFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
 
