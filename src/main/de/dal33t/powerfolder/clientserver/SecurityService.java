@@ -173,20 +173,6 @@ public interface SecurityService {
 
     /**
      * @param foInfo
-     * @return the default permission for the given folder.
-     */
-    FolderPermission getDefaultPermission(FolderInfo foInfo);
-
-    /**
-     * Sets the default permission for the given folder.
-     *
-     * @param foInfo
-     * @param permission
-     */
-    void setDefaultPermission(FolderInfo foInfo, FolderPermission permission);
-
-    /**
-     * @param foInfo
      * @return the permissions on the folder.
      */
     Map<AccountInfo, FolderPermission> getFolderPermissions(FolderInfo foInfo);

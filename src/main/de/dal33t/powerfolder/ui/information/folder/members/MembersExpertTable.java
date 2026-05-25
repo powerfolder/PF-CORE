@@ -214,15 +214,8 @@ public class MembersExpertTable extends JTable {
                         .get("permissions.folder.read_write"));
                 } else {
                     String name;
-                    FolderPermission defPerm = model.getDefaultPermission();
                     if (folderMember.getPermission() != null) {
                         name = folderMember.getPermission().getName();
-                    } else if (defPerm != null) {
-                        name = defPerm.getName();
-                        name += " (";
-                        name += Translation
-                            .get("permissions.folder.default");
-                        name += ")";
                     } else {
                         name = Translation
                             .get("permissions.folder.no_access");
@@ -255,32 +248,8 @@ public class MembersExpertTable extends JTable {
                 if (value instanceof FolderPermission) {
                     setText(((FolderPermission) value).getName());
                 } else {
-                    int selectedRow = getSelectedRow();
-                    FolderMember selectedMember = selectedRow >= 0 ? model
-                        .getFolderMemberAt(selectedRow) : null;
-                    if (selectedMember != null
-                        && selectedMember.getMember() == null)
-                    {
-                        setText(Translation
-                            .get("permissions.folder.no_access"));
-                    } else {
-                        FolderPermission defPerm = model.getDefaultPermission();
-                        if (defPerm != null) {
-                            setText(defPerm.getName()
-                                + " ("
-                                + Translation
-                                    .get("permissions.folder.default")
-                                + ')');
-                        } else {
-                            setText(Translation
-                                .get("permissions.folder.no_access")
-                                + " ("
-                                + Translation
-                                    .get("permissions.folder.default")
-                                + ')');
-                        }
-                    }
-
+                    setText(Translation
+                        .get("permissions.folder.no_access"));
                 }
                 return comp;
             }
