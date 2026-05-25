@@ -4096,8 +4096,23 @@ public class Folder extends PFComponent {
         Boolean hasWrite = null;
         List<FileInfo> found = new LinkedList<>();
         for (FileInfo remoteFileInfo : remoteFileInfos) {
+            if (remoteFileInfo.isLookupInstance()) {
+                logWarning("findSameFiles: Skipping lookup instance from "
+                    + member.getNick() + " (" + member.getId() + "): "
+                    + remoteFileInfo.toDetailString());
+                continue;
+            }
+
             FileInfo localFileInfo = getFile(remoteFileInfo);
             if (localFileInfo == null) {
+                continue;
+            }
+
+            if (localFileInfo.isLookupInstance()) {
+                logWarning("findSameFiles: Local file has null size. remote from "
+                    + member.getNick() + " (" + member.getId() + "): "
+                    + remoteFileInfo.toDetailString() + ", local: "
+                    + localFileInfo.toDetailString());
                 continue;
             }
 
