@@ -382,6 +382,18 @@ public class Token implements Serializable {
      * @param tokenString
      * @return if the token string is (still) valid
      */
+    public static boolean looksLikeToken(char[] input) {
+        if (input == null || input.length < 10) {
+            return false;
+        }
+        for (char c : input) {
+            if (c == SEPARATOR) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean isExpired(String tokenString) {
         if (StringUtils.isBlank(tokenString)) {
             return true;

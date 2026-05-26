@@ -109,6 +109,22 @@ public class TokenTest extends TestCase {
         }
     }
 
+    public void testLooksLikeToken() {
+        Token token = Token.newAccessToken(150000L, testAccount());
+        String secret = token.generateSecret();
+
+        assertTrue(Token.looksLikeToken(secret.toCharArray()));
+
+        assertFalse(Token.looksLikeToken(null));
+        assertFalse(Token.looksLikeToken(new char[0]));
+        assertFalse(Token.looksLikeToken("short".toCharArray()));
+        assertFalse(Token.looksLikeToken("mypassword123".toCharArray()));
+        assertFalse(Token.looksLikeToken("P@ssw0rd!#$%".toCharArray()));
+
+        // Hyphen in password — false positive is acceptable, isExpired will filter it out
+        assertTrue(Token.looksLikeToken("my-password-123".toCharArray()));
+    }
+
     private static AccountInfo testAccount() {
         return new Account().createInfo();
     }
