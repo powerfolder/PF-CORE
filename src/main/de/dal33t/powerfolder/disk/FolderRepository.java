@@ -562,7 +562,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             try {
                 String folderId = config.getProperty(PREFIX_V4 + folderEntryId + ID);
                 if (StringUtils.isBlank(folderId)) {
-                    logWarning("Folder id blank. Removed illegal folder config entry: " + folderEntryId);
+                    logFine("Folder id blank. Removed illegal folder config entry: " + folderEntryId);
                     removeConfigEntries(folderEntryId);
                     continue;
                 }
