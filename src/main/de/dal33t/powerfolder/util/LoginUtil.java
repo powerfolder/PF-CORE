@@ -54,8 +54,23 @@ public class LoginUtil {
     public static final String SHA256_HASH_DIGEST = "SHA-256";
     public static final String ARGON2_DIGEST = "ARGON2ID";
 
+    /**
+     * PFS-5539: Argon2id password hashing (RFC 9106).
+     * Controlled by server config "security.password.argon2" (default: true).
+     * When disabled, falls back to SHA-256 for new passwords and skips migration.
+     */
+    private static volatile boolean useArgon2 = true;
+
+    public static void setUseArgon2(boolean enabled) {
+        useArgon2 = enabled;
+    }
+
+    public static boolean isArgon2Enabled() {
+        return useArgon2;
+    }
+
     private static final int ARGON2_ITERATIONS = 5;
-    private static final int ARGON2_MEMORY_KB = 65536; // 64 MB
+    private static final int ARGON2_MEMORY_KB = 65536;
     private static final int ARGON2_PARALLELISM = 1;
     private static final int ARGON2_HASH_LENGTH = 32;
     private static final int ARGON2_SALT_LENGTH = 16;
@@ -253,8 +268,12 @@ public class LoginUtil {
      * @return true if the stored hash uses a legacy algorithm and should be
      *         re-hashed with Argon2id on next successful login.
      */
+    /**
+     * @return true if the password should be migrated to Argon2id.
+     * Returns false when Argon2 is disabled or the password is already Argon2id.
+     */
     public static boolean needsRehash(String hashedPW) {
-        return hashedPW != null && !hashedPW.startsWith(ARGON2_DIGEST + ":");
+        return useArgon2 && hashedPW != null && !hashedPW.startsWith(ARGON2_DIGEST + ":");
     }
 
     public static boolean isHashed(String password) {
@@ -273,11 +292,18 @@ public class LoginUtil {
         return hashAndSalt(password.toCharArray());
     }
 
+    /**
+     * Hashes a password with Argon2id (if enabled) or SHA-256 (legacy fallback).
+     * Format: "ARGON2ID:base64(salt):base64(hash)" or "SHA-256:salt:base64(hash)"
+     */
     public static String hashAndSalt(char[] password) {
         if (password == null || password.length == 0) {
             return null;
         }
-        return hashArgon2(password);
+        if (useArgon2) {
+            return hashArgon2(password);
+        }
+        return hashAndSaltLegacy(new String(password));
     }
 
     private static String hashArgon2(char[] password) {
