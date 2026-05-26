@@ -524,8 +524,8 @@ public class Controller extends PFComponent {
         // #2179: Load from server. How to handle timeouts?
         // Command line option -c http://are.de
         ConfigurationLoader.loadAndMergeCLI(this);
-        // Config entry in file
-        ConfigurationLoader.loadAndMergeConfigURL(this);
+        // Config entry in file (config.url may not be set yet if it comes from the distribution)
+        boolean configURLLoaded = ConfigurationLoader.loadAndMergeConfigURL(this);
         // On Mac read plist files
         ConfigurationLoader.loadAndMergePList(this);
         // Read from installer temp file
@@ -565,6 +565,14 @@ public class Controller extends PFComponent {
 
         // Initialize branding/preconfiguration of the client
         initDistribution();
+
+        // PFS-5538: config.url may have been set by the distribution's classpath
+        // Default.config. Re-attempt loading the server config so that server-side
+        // settings (e.g. federation flags) are available before ServerClient is created.
+        if (!configURLLoaded) {
+            ConfigurationLoader.loadAndMergeConfigURL(this);
+        }
+
         logFine("Build time: " + getBuildTime());
         logInfo("Program version " + PROGRAM_VERSION);
 
