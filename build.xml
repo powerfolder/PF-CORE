@@ -159,9 +159,10 @@ For creation of the installer:
 			<include name="syntheticaAddons.jar" />
 
 			<include name="bcprov-jdk18on-1.78.1.jar" />
-			<include name="bcpkix-jdk15on-152.jar" />
-			<include name="bcpg-jdk15on-152.jar" />
-			<include name="bcmail-jdk15on-152.jar" />
+			<include name="bcpkix-jdk18on-1.78.1.jar" />
+			<include name="bcutil-jdk18on-1.78.1.jar" />
+			<include name="bcpg-jdk18on-1.78.1.jar" />
+			<include name="bcmail-jdk18on-1.78.1.jar" />
 
 			<!-- Shibboleth/ECP -->
             <include name="httpclient-4.5.3.jar"/>
