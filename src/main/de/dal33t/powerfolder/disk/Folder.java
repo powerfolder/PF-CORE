@@ -829,7 +829,7 @@ public class Folder extends PFComponent {
         Folder foundTopFolder = null;
         Path path = getLocalBase().getParent();
         while (path != null) {
-            Folder candidate = getController().getFolderRepository().findExistingFolder(path);
+            Folder candidate = getController().getFolderRepository().findExistingFolder(path, false);
             foundTopFolder = candidate != null ? candidate : foundTopFolder;
             path = path.getParent();
         }
