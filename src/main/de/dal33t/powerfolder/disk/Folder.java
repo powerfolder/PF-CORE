@@ -2659,7 +2659,18 @@ public class Folder extends PFComponent {
             }
             if (member.hasCompleteFileListFor(currentInfo)) {
                 if (getDAO().count(member.getId(), false, false) == 0 && getKnownItemCount() > 0) {
-                    logInfo(this + ": Empty filelist from " + member + ". Known local items " + getKnownItemCount());
+                    boolean otherServer = false;
+                    for (Member other : getConnectedMembers()) {
+                        if (other.isServer() && !other.equals(member)) {
+                            otherServer = true;
+                            break;
+                        }
+                    }
+                    if (otherServer) {
+                        logFine(this + ": Empty filelist from " + member + ". Known local items " + getKnownItemCount());
+                    } else {
+                        logInfo(this + ": Empty filelist from " + member + ". Known local items " + getKnownItemCount());
+                    }
                     continue;
                 }
                 remoteFilesFound = true;
