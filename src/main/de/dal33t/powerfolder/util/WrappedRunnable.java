@@ -19,12 +19,12 @@
  */
 package de.dal33t.powerfolder.util;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.security.SecurityException;
 import org.hibernate.HibernateException;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A Runnable that wraps an deligate and logs all exceptions and errors
@@ -74,7 +74,7 @@ public class WrappedRunnable implements Runnable {
             throw t;
         } catch (HibernateException he) {
             LOG.log(Level.SEVERE,
-                    "Database connection problem: " + he.getMessage());
+                    "Database connection problem: " + he.getMessage(), he);
         } catch (Waiter.WaiterInterruptedException e) {
             // Shutdown
             LOG.log(Level.INFO, "Interrupted " + deligate);
