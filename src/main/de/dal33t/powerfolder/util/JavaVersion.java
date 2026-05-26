@@ -356,11 +356,10 @@ public class JavaVersion implements Comparable<JavaVersion> {
                     }
                     number = Integer.parseInt(split[0]);
                     String buildStr = split[1]
-                            .replaceAll("-", "")
-                            .replaceAll("\\+", "")
-                            .replaceAll("b", "")
-                            .replaceAll("_", "_");
-                    additionalNumber = Integer.parseInt(buildStr);
+                            .replaceAll("[^0-9]", "");
+                    if (!buildStr.isEmpty()) {
+                        additionalNumber = Integer.parseInt(buildStr);
+                    }
                 }
             } catch (RuntimeException e) {
                 System.err.println("Failed to parse java version part: " + versionPart + " of Java Version " + versionFull + ". " + e);
