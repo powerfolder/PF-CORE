@@ -1012,8 +1012,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         fileName = in.readUTF();
         size = in.readLong();
         if (size == -1) {
-            // PF-1790 / Lookup instance of parent
-            size = null;
+            if (isFile()) {
+                // PF-1790 / Lookup instance of parent
+                size = null;
+            } else {
+                // PFC-3547 / DirectoryInfo with illegal size -1. Correct to 0.
+                size = 0L;
+            }
         }
         if (in.readBoolean()) {
             modifiedBy = MemberInfo.readExt(in);
