@@ -61,6 +61,22 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return a list of all groups that have permission to {@code folderInfo}.
      */
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
+
+    /**
+     * Nested Groups: direct subgroups of {@code parent}. Looks up rows in
+     * {@code AGroup_Parents} where {@code parent_oid = parent.oid}.
+     *
+     * @param parent the parent group
+     * @return the direct subgroups (empty if none)
+     */
+    Collection<Group> findChildrenOf(Group parent);
+
+    /**
+     * Nested Groups: count of direct subgroups of {@code parent}. Cheap
+     * alternative to {@link #findChildrenOf(Group)} when only the size is
+     * needed (e.g. the {@code nChildGroups} field on {@code getAll}).
+     */
+    int countChildrenOf(Group parent);
     
     /**
      * PFS-1949
