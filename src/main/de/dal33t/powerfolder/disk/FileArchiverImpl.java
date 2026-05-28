@@ -32,7 +32,10 @@ import org.apache.commons.io.FileUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -57,6 +60,8 @@ public class FileArchiverImpl implements FileArchiver {
     private static final VersionComparator VERSION_COMPARATOR = new VersionComparator();
     private static final Pattern BASE_NAME_PATTERN = Pattern.compile("(.*)_K_\\d+(.*)");
     private static final String SIZE_INFO_FILE = "Size";
+    private static final String META_SUFFIX = ".meta";
+    private static final String META_WRITING_SUFFIX = META_SUFFIX + ".writing";
 
     private final Path archiveDirectory;
     private volatile int versionsPerFile;
@@ -175,6 +180,8 @@ public class FileArchiverImpl implements FileArchiver {
                         + source + " to " + target);
             }
 
+            writeMeta(target, fileInfo);
+
             // Success, now check if we have to remove a file
             List<Path> list = getArchivedFiles(target.getParent(),
                     fileInfo.getFilenameOnly());
@@ -219,6 +226,7 @@ public class FileArchiverImpl implements FileArchiver {
             long len = Files.size(f);
             try {
                 Files.delete(f);
+                deleteMetaIfExists(f);
                 if (size != null) {
                     size -= len;
                 }
@@ -275,7 +283,8 @@ public class FileArchiverImpl implements FileArchiver {
         Map<String, Collection<Path>> fileMap = new LinkedHashMap<>();
 
         for (Path entry : entries) {
-            if (entry.getFileName().toString().equals(SIZE_INFO_FILE)) {
+            String name = entry.getFileName().toString();
+            if (name.equals(SIZE_INFO_FILE) || isMetaFileName(name)) {
                 continue;
             }
             if (Files.isDirectory(entry)) {
@@ -520,19 +529,17 @@ public class FileArchiverImpl implements FileArchiver {
         FolderInfo foInfo = fileInfo.getFolderInfo();
         for (Path file : archivedFiles) {
             try {
-                int version = getVersionNumber(file);
-                Date modDate = new Date(Files.getLastModifiedTime(file)
-                        .toMillis());
-                String name = getFileInfoName(file);
-                // PFC-2352: TODO: Support ID, hashes and tags
-                String oid = null;
-                String hashes = null;
-                String tags = null;
-                // PFC-2571: TODO: Add/Read modifier from meta-db
-                AccountInfo modAccount = FileInfo.UNKNOWN_FROM_ARCHIVE;
-                FileInfo archiveFile = FileInfoFactory.archivedFile(foInfo,
-                        name, oid, Files.size(file), mySelf, modAccount, modDate,
-                        version, hashes, tags);
+                FileInfo archiveFile = readMeta(file);
+                if (archiveFile == null) {
+                    int version = getVersionNumber(file);
+                    Date modDate = new Date(Files.getLastModifiedTime(file)
+                            .toMillis());
+                    String name = getFileInfoName(file);
+                    archiveFile = FileInfoFactory.archivedFile(foInfo,
+                            name, null, Files.size(file), mySelf,
+                            FileInfo.UNKNOWN_FROM_ARCHIVE, modDate, version,
+                            null, null);
+                }
                 list.add(archiveFile);
             } catch (IOException ioe) {
                 log.warning(ioe.toString());
@@ -674,20 +681,35 @@ public class FileArchiverImpl implements FileArchiver {
     public synchronized long getSize() {
         Long thisSize = size;
         if (thisSize == null) {
-            long s = PathUtils.calculateDirectorySizeAndCount(archiveDirectory)[0];
-            Path sizeFile = archiveDirectory.resolve(SIZE_INFO_FILE);
-            if (Files.exists(sizeFile)) {
-                try {
-                    s -= Files.size(sizeFile);
-                } catch (IOException ioe) {
-                    log.warning(ioe.toString());
-                }
-            }
+            long s = calculateUserPayloadSize(archiveDirectory);
             size = s;
             thisSize = s;
             saveSize();
         }
         return thisSize;
+    }
+
+    private static long calculateUserPayloadSize(Path dir) {
+        if (Files.notExists(dir)) {
+            return 0L;
+        }
+        long[] total = {0L};
+        try {
+            Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    String name = file.getFileName().toString();
+                    if (!name.equals(SIZE_INFO_FILE) && !isMetaFileName(name)) {
+                        total[0] += attrs.size();
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException ioe) {
+            log.warning("Unable to calculate archive size of "
+                    + dir + ": " + ioe);
+        }
+        return total[0];
     }
 
     /**
@@ -727,13 +749,15 @@ public class FileArchiverImpl implements FileArchiver {
         long freedSpace = 0;
         boolean purgedSubdirs = false;
         if (fileInfo.isDiretory()) {
-            purge0(archiveDirectory.resolve(fileInfo.getRelativeName()));
+            Path dir = archiveDirectory.resolve(fileInfo.getRelativeName());
+            purge0(dir);
             purgedSubdirs = true;
         } else {
             for (FileInfo archivedFileInfo : getArchivedFilesInfos(fileInfo)) {
                 Path archivedFile = getArchivedFile(archivedFileInfo);
                 freedSpace += Files.size(archivedFile);
                 purge0(archivedFile);
+                deleteMetaIfExists(archivedFile);
             }
         }
         if (!purgedSubdirs && size != null) {
@@ -757,6 +781,70 @@ public class FileArchiverImpl implements FileArchiver {
 
     private void purge0(Path path) throws IOException {
         PathUtils.recursiveDelete(path);
+    }
+
+    private static boolean isMetaFileName(String name) {
+        return name.endsWith(META_SUFFIX) || name.endsWith(META_WRITING_SUFFIX);
+    }
+
+    private static Path metaPathFor(Path archivedFile) {
+        Path parent = archivedFile.getParent();
+        String name = archivedFile.getFileName().toString();
+        return parent.resolve(name + META_SUFFIX);
+    }
+
+    private static Path metaWritingPathFor(Path archivedFile) {
+        Path parent = archivedFile.getParent();
+        String name = archivedFile.getFileName().toString();
+        return parent.resolve(name + META_WRITING_SUFFIX);
+    }
+
+    private void writeMeta(Path archivedFile, FileInfo fileInfo) {
+        Path metaFile = metaPathFor(archivedFile);
+        Path tempFile = metaWritingPathFor(archivedFile);
+        try {
+            try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(tempFile))) {
+                out.writeObject(fileInfo);
+            }
+            try {
+                Files.move(tempFile, metaFile,
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException ame) {
+                Files.move(tempFile, metaFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            log.warning("Unable to save archive metadata to " + metaFile + ": " + e);
+            try { Files.deleteIfExists(tempFile); } catch (IOException ignored) {}
+        }
+    }
+
+    private FileInfo readMeta(Path archivedFile) {
+        Path metaFile = metaPathFor(archivedFile);
+        if (!Files.exists(metaFile)) {
+            return null;
+        }
+        try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(metaFile))) {
+            Object value = in.readObject();
+            if (value instanceof FileInfo) {
+                return (FileInfo) value;
+            }
+            log.warning("Archive metadata at " + metaFile
+                    + " is not a FileInfo, ignoring: " + value);
+        } catch (IOException | ClassNotFoundException e) {
+            log.warning("Unable to read archive metadata at " + metaFile + ": " + e);
+        }
+        return null;
+    }
+
+    private void deleteMetaIfExists(Path archivedFile) {
+        try {
+            Files.deleteIfExists(metaPathFor(archivedFile));
+            Files.deleteIfExists(metaWritingPathFor(archivedFile));
+        } catch (IOException e) {
+            log.warning("Unable to delete archive metadata next to "
+                    + archivedFile + ": " + e);
+        }
     }
 
     private void saveSize() {
@@ -844,8 +932,13 @@ public class FileArchiverImpl implements FileArchiver {
             }
             int version = getVersionNumber(newestPath);
             Date modDate = new Date(Files.getLastModifiedTime(newestPath).toMillis());
-            FileInfo entry = FileInfoFactory.archivedFile(folderInfo, relativeName, null,
-                Files.size(newestPath), mySelf, FileInfo.UNKNOWN_FROM_ARCHIVE, modDate, version, null, null);
+            FileInfo entry = readMeta(newestPath);
+            if (entry == null) {
+                entry = FileInfoFactory.archivedFile(folderInfo, relativeName,
+                        null, Files.size(newestPath), mySelf,
+                        FileInfo.UNKNOWN_FROM_ARCHIVE, modDate, version,
+                        null, null);
+            }
             lostFileInfos.add(FileInfoFactory.deletedFile(entry, mySelf, myAccount, modDate));
         } catch (IllegalArgumentException | IOException e) {
             log.warning("Skipping unrecognized archive file: " + e);
@@ -860,7 +953,7 @@ public class FileArchiverImpl implements FileArchiver {
         }
     }
 
-    private static void cleanupOldVersions(Collection<Path> versions, Date cleanupDate) {
+    private void cleanupOldVersions(Collection<Path> versions, Date cleanupDate) {
         if (cleanupDate == null) {
             return;
         }
@@ -875,6 +968,7 @@ public class FileArchiverImpl implements FileArchiver {
                         log.fine("Deleting old archive file " + version + " (" + age + ')');
                     }
                     Files.delete(version);
+                    deleteMetaIfExists(version);
                 }
             } catch (SecurityException e) {
                 log.severe("Could not delete archive file " + version + ". " + e);
