@@ -2435,9 +2435,6 @@ public class Folder extends PFComponent {
     }
 
     private boolean maintainFolderDBrequired() {
-        if (getKnownItemCount() == 0) {
-            return false;
-        }
         if (lastDBMaintenance == null) {
             return true;
         }
@@ -2463,6 +2460,9 @@ public class Folder extends PFComponent {
         }
         Date removeBeforeDate = new Date(removeBefore);
         int nFilesBefore = getKnownItemCount();
+        if (nFilesBefore == 0) {
+            return;
+        }
         if (isFiner()) {
             logFiner("Maintaining folder db, known files: " + nFilesBefore
                 + ". Expiring deleted files older than " + removeBeforeDate);
