@@ -1608,6 +1608,20 @@ public class Member extends PFComponent implements Comparable<Member> {
                 expectedListMessages.put(remoteFileList.folder,
                     remoteFileList.nFollowingDeltas);
 
+                if (remoteFileList.files != null) {
+                    boolean isExt = remoteFileList instanceof FileListExt;
+                    for (FileInfo fInfo : remoteFileList.files) {
+                        if (fInfo.isLookupInstance()) {
+                            logWarning("DIAG Received corrupt FileList entry from "
+                                + getNick() + " (" + getId() + ")"
+                                + ", msgType=" + (isExt ? "FileListExt" : "FileList")
+                                + ", entryType=" + fInfo.getClass().getSimpleName()
+                                + ", isFile=" + fInfo.isFile()
+                                + ": " + fInfo.toDetailString());
+                        }
+                    }
+                }
+
                 if (targetFolder != null) {
                     // Inform folder
                     targetFolder.fileListChanged(Member.this, remoteFileList);
@@ -1647,6 +1661,20 @@ public class Member extends PFComponent implements Comparable<Member> {
                         logFine("Received folder change. Expecting " + msgs + " more deltas. " + message);
                     } else {
                         logFine("Received folder change. Received " + (-msgs) + " additional deltas. " + message);
+                    }
+                }
+
+                if (changes.getFiles() != null) {
+                    boolean isExt = changes instanceof FolderFilesChangedExt;
+                    for (FileInfo fInfo : changes.getFiles()) {
+                        if (fInfo.isLookupInstance()) {
+                            logWarning("DIAG Received corrupt delta entry from "
+                                + getNick() + " (" + getId() + ")"
+                                + ", msgType=" + (isExt ? "FolderFilesChangedExt" : "FolderFilesChanged")
+                                + ", entryType=" + fInfo.getClass().getSimpleName()
+                                + ", isFile=" + fInfo.isFile()
+                                + ": " + fInfo.toDetailString());
+                        }
                     }
                 }
 

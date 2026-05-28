@@ -147,8 +147,7 @@ public final class FileInfoFactory {
     public static FileInfo changedFolderInfo(FileInfo original, FolderInfo fi) {
         Reject.ifNull(original, "Original FileInfo is null");
         if (original.isLookupInstance()) {
-            // TODO Check if this causes problems with DirectoryInfo
-            return lookupInstance(fi, original.getRelativeName());
+            return lookupInstance(fi, original.getRelativeName(), original.isDiretory());
         } else {
             if (original.getFolderInfo().equals(fi)) {
                 return original;
