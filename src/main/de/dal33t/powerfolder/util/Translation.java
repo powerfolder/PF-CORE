@@ -73,6 +73,7 @@ public class Translation {
     public static final Locale HEBREW = new Locale("he");
     public static final Locale IRISH = new Locale("ga");
     public static final Locale MALTESE = new Locale("mt");
+    public static final Locale PERSIAN = new Locale("fa");
 
     /**
      * List of all supported locales
