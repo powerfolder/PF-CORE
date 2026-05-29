@@ -229,6 +229,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         fixPFS3334();
         processV4Format();
+        correctTopAndSubfolderRelations();
 
         // Maintain link
         if (getController().isFirstStart()) {
@@ -544,133 +545,190 @@ public class FolderRepository extends PFComponent implements Runnable {
         getController().saveConfig();
     }
 
-    /**
-     * Version 4 format is like f.<md5>.XXXX, where md5 is the MD5 of the folder
-     * id. This format allows folders with the same name to be stored.
-     */
     private void processV4Format() {
 
         final Properties config = getController().getConfig();
 
-        // Find all folder entries.
+        // ---------------------------------------------------------------------
+        // Phase 1: Discovery – FolderInfos & Settings laden und klassifizieren
+        // ---------------------------------------------------------------------
+
         Set<String> entryIds = FolderSettings.loadEntryIds(config);
 
-        // Load on many processors
-        int loaders = Runtime.getRuntime().availableProcessors() - 2;
-        if (loaders <= 0) {
-            loaders = 1;
-        }
+        Map<FolderInfo, FolderSettings> topLevelFolders = new LinkedHashMap<>();
+        Map<FolderInfo, FolderSettings> subFolders = new LinkedHashMap<>();
 
-        final Semaphore loadPermit = new Semaphore(loaders);
-        final AtomicInteger nCreated = new AtomicInteger();
-
-        // Scan config for all found folder MD5s.
-        for (final String folderEntryId : entryIds) {
-
+        for (String folderEntryId : entryIds) {
             try {
-                loadPermit.acquire();
-            } catch (InterruptedException e) {
-                logFiner(e);
-                return;
-            }
-
-            Runnable folderCreator = () -> {
-                try {
-                    String folderId = config
-                            .getProperty(PREFIX_V4
-                                    + folderEntryId + ID);
-                    if (StringUtils.isBlank(folderId)) {
-                        logWarning("Folder id blank. Removed illegal folder config entry: "
-                                + folderEntryId);
-                        removeConfigEntries(folderEntryId);
-                        return;
-                    }
-                    String folderName = FolderSettings.loadFolderName(
-                            getController().getConfig(), folderEntryId);
-                    if (StringUtils.isBlank(folderName)) {
-                        logWarning("Foldername not found."
-                                + "Removed illegal folder config entry: "
-                                + folderName + '/' + folderEntryId);
-                        removeConfigEntries(folderEntryId);
-                        return;
-                    }
-
-                    // #2203 Load later if folder id should be taken from
-                    // account.
-                    if (folderId
-                            .contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT)) {
-                        logFine("Folder load scheduled after first login: "
-                                + folderName + '/' + folderEntryId);
-                        onLoginFolderEntryIds.add(folderEntryId);
-                        return;
-                    }
-
-                    FolderSettings folderSettings = FolderSettings.load(
-                            getController(), folderEntryId);
-
-                    FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
-                    if (foInfo == null) {
-                        foInfo = lookupInstance(folderId, folderName);
-                    } else if (!foInfo.getId().equals(folderId)) {
-                        String folderIdFromFile = foInfo.getId();
-                        foInfo = unmarshallExistingFolder(folderId, folderName, foInfo.getVersion(), foInfo.getParent());
-                        logInfo(foInfo + ": Adjusted ID, found in 'FolderInfo' meta-data file: " + folderIdFromFile + ". Set from config to " + foInfo.getId());
-                    }
-
-                    if (folderSettings == null) {
-                        logWarning("Unable to load folder settings."
-                                + "Removed folder config entry: " + folderName
-                                + '/' + folderEntryId);
-                        removeConfigEntries(folderEntryId);
-                        return;
-                    }
-
-                    // Fix for PFS-2319: Repair broken encrypted folders
-                    if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
-
-                        // Construct temporary basePath
-                        folderName = folderName + Constants.FOLDER_ENCRYPTION_SUFFIX;
-                        Path folderDirectoryForRecoveredFolders = getFoldersBasedir().resolve("RECOVERED").resolve(folderName);
-                        Path temporaryBasePath = PathUtils.createEmptyDirectory(folderDirectoryForRecoveredFolders);
-
-                        folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
-                        logWarning("Repaired broken encrypted Folder " + folderName + "/" + foInfo.getId() +
-                                ". New storage path: " + temporaryBasePath);
-                    }
-
-                    // Do not add0 if already added
-                    if (!hasJoinedFolder(foInfo) && folderSettings != null) {
-                        if (ConfigurationEntry.FOLDER_CREATE_ON_STARTUP.getValueBoolean(getController()) && Files.notExists(folderSettings.getLocalBaseDir())) {
-                            Files.createDirectories(folderSettings.getLocalBaseDir());
-                        }
-                        createFolder(foInfo, folderSettings, false, true);
-                    }
-                } catch (Exception e) {
-                    logWarning("Problem loading/creating folder #" + folderEntryId + ". " + e, e);
-                } finally {
-                    loadPermit.release();
-                    synchronized (nCreated) {
-                        nCreated.incrementAndGet();
-                        nCreated.notify();
-                    }
+                String folderId = config.getProperty(PREFIX_V4 + folderEntryId + ID);
+                if (StringUtils.isBlank(folderId)) {
+                    logWarning("Folder id blank. Removed illegal folder config entry: " + folderEntryId);
+                    removeConfigEntries(folderEntryId);
+                    continue;
                 }
-            };
 
-            getController().getIOProvider().startIO(folderCreator);
+                String folderName = FolderSettings.loadFolderName(config, folderEntryId);
+                if (StringUtils.isBlank(folderName)) {
+                    logWarning("Foldername not found. Removed illegal folder config entry: "
+                            + folderName + '/' + folderEntryId);
+                    removeConfigEntries(folderEntryId);
+                    continue;
+                }
+
+                // Load later if folder id should be taken from account
+                if (folderId.contains(FolderSettings.FOLDER_ID_FROM_ACCOUNT)) {
+                    logFine("Folder load scheduled after first login: " + folderName + '/' + folderEntryId);
+                    onLoginFolderEntryIds.add(folderEntryId);
+                    continue;
+                }
+
+                FolderSettings folderSettings = FolderSettings.load(getController(), folderEntryId);
+                if (folderSettings == null) {
+                    logWarning("Unable to load folder settings. Removed folder config entry: "
+                            + folderName + '/' + folderEntryId);
+                    removeConfigEntries(folderEntryId);
+                    continue;
+                }
+
+                FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
+                if (foInfo == null) {
+                    // TODO: Analyze if local base dir is subfolder of top level as fallback
+                    foInfo = lookupInstance(folderId, folderName);
+                } else if (!foInfo.getId().equals(folderId)) {
+                    String folderIdFromFile = foInfo.getId();
+                    foInfo = unmarshallExistingFolder(
+                            folderId,
+                            folderName,
+                            foInfo.getVersion(),
+                            foInfo.getParent());
+                    logInfo(foInfo + ": Adjusted ID, found in 'FolderInfo' meta-data file: "
+                            + folderIdFromFile + ". Set from config to " + foInfo.getId());
+                }
+
+                // Fix for PFS-2319: Repair broken encrypted folders
+                if (folderSettings.getLocalBaseDirString().equals(Constants.FOLDER_ENCRYPTED_CONTAINER_ROOT_DIR)) {
+
+                    String recoveredName = folderName + Constants.FOLDER_ENCRYPTION_SUFFIX;
+                    Path recoveredBaseDir = getFoldersBasedir().resolve("RECOVERED").resolve(recoveredName);
+                    Path temporaryBasePath = PathUtils.createEmptyDirectory(recoveredBaseDir);
+                    folderSettings = folderSettings.changeBaseDir(temporaryBasePath);
+
+                    logWarning("Repaired broken encrypted Folder " + recoveredName + "/" + foInfo.getId()
+                            + ". New storage path: " + temporaryBasePath);
+                }
+
+                if (foInfo.isSubFolder()) {
+                    subFolders.put(foInfo, folderSettings);
+                } else {
+                    topLevelFolders.put(foInfo, folderSettings);
+                }
+
+            } catch (Exception e) {
+                logWarning("Problem loading folder config entry " + folderEntryId, e);
+            }
         }
 
-        // Wait for creators to complete
-        while (nCreated.get() < entryIds.size()) {
-            synchronized (nCreated) {
+        // ---------------------------------------------------------------------
+        // Phase 2: Execution – begrenzte Parallelität (2 × CPU)
+        // ---------------------------------------------------------------------
+
+        int threads = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
+
+        ExecutorService executor = Executors.newFixedThreadPool(
+                threads,
+                r -> {
+                    Thread t = new Thread(r, "Folder-loader");
+                    t.setDaemon(true);
+                    return t;
+                }
+        );
+
+        try {
+            // -------------------------------------------------------------
+            // Phase 2.1: Top-Level-Folder erstellen
+            // -------------------------------------------------------------
+
+            List<Future<?>> topLevelTasks = new ArrayList<>();
+
+            for (Map.Entry<FolderInfo, FolderSettings> e : topLevelFolders.entrySet()) {
+                FolderInfo foInfo = e.getKey();
+                FolderSettings folderSettings = e.getValue();
+
+                topLevelTasks.add(
+                        executor.submit(() -> {
+                            if (hasJoinedFolder(foInfo)) {
+                                return;
+                            }
+                            try {
+                                if (ConfigurationEntry.FOLDER_CREATE_ON_STARTUP.getValueBoolean(getController())
+                                        && Files.notExists(folderSettings.getLocalBaseDir())) {
+                                    Files.createDirectories(folderSettings.getLocalBaseDir());
+                                }
+
+                                createFolder(foInfo, folderSettings, false, true);
+                            } catch (Exception ex) {
+                                logWarning("Problem creating top-level folder " + foInfo, ex);
+                            }
+                        })
+                );
+            }
+
+            // Explizite Barriere: Alle Top-Level-Folder müssen abgeschlossen sein
+            for (Future<?> f : topLevelTasks) {
                 try {
-                    nCreated.wait(10);
-                } catch (InterruptedException e) {
-                    logFiner(e);
+                    f.get();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
                     return;
+                } catch (Exception e) {
+                    logWarning("Top-level folder creation failed", e);
                 }
             }
+
+            // -------------------------------------------------------------
+            // Phase 2.2: Subfolder erstellen
+            // -------------------------------------------------------------
+
+            List<Future<?>> subFolderTasks = new ArrayList<>();
+
+            for (Map.Entry<FolderInfo, FolderSettings> e : subFolders.entrySet()) {
+                FolderInfo foInfo = e.getKey();
+                FolderSettings folderSettings = e.getValue();
+
+                subFolderTasks.add(
+                        executor.submit(() -> {
+                            try {
+                                if (hasJoinedFolder(foInfo)) {
+                                    return;
+                                }
+                                Folder topFolder = foInfo.getTopFolder().getFolder(getController());
+                                if (topFolder == null) {
+                                    logWarning(foInfo + ": top folder missing, skipping subfolder creation.");
+                                    return;
+                                }
+
+                                createFolder(foInfo, folderSettings, false, true);
+                            } catch (Exception ex) {
+                                logWarning("Problem creating subfolder " + foInfo, ex);
+                            }
+                        })
+                );
+            }
+
+            for (Future<?> f : subFolderTasks) {
+                try {
+                    f.get();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception e) {
+                    logWarning("Subfolder creation failed", e);
+                }
+            }
+
+        } finally {
+            executor.shutdown();
         }
-        logInfo("Loaded " + getFoldersCount() + " folders");
     }
 
     /**
@@ -935,22 +993,6 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * PFC-3295: For subfolder sharing. Retrieves the {@link Folder} at the given location if available
-     * @param location the location of the subfolder in another folder
-     * @return the {@link Folder} or null if location is not shared as subfolder
-     */
-    public Folder getSubFolder(DirectoryInfo location) {
-        Reject.ifNull(location, "Location");
-        for (Folder folder : folders.values()) {
-            if (location.equals(folder.getInfo().getLocation())) {
-                return folder;
-            }
-        }
-        // None found
-        return null;
-    }
-
-    /**
      * All real-folders WITHOUT Meta-folders (#1548) and WITHOUT unmounted
      * {@link Folder Folders}. Returns the indirect reference to the internal
      * {@link ConcurrentMap}. Contents may change after get.
@@ -991,6 +1033,75 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public int getFoldersCount(boolean includeMetaFolders) {
         return folders.size() + (includeMetaFolders ? metaFolders.size() : 0);
+    }
+
+    /**
+     * Returns all subfolders belonging to the specified top-level folder.
+     *
+     * <p>
+     * A <em>top-level folder</em> represents a logical root, while <em>subfolders</em>
+     * are folders that are explicitly marked as subfolders and associated with the
+     * given top-level folder.
+     * </p>
+     *
+     * <h3>Folder Structure Example</h3>
+     *
+     * <pre>{@code
+     * /projects                    (top folder)
+     * ├── alpha                    (subfolder)
+     * ├── beta                     (subfolder)
+     * │   ├── docs                 (subfolder)
+     * │   └── tmp                  (directory, NOT a subfolder)
+     * └── internal                 (directory, NOT a subfolder)
+     * }</pre>
+     *
+     * <p>
+     * In this example:
+     * <ul>
+     *   <li>{@code alpha}, {@code beta}, and {@code beta/docs} are marked as subfolders</li>
+     *   <li>{@code beta/tmp} and {@code internal} exist in the directory tree but are
+     *       <strong>not</strong> marked as subfolders and are therefore ignored</li>
+     * </ul>
+     * </p>
+     *
+     * <h3>Resulting Map for {@code topFolder = /projects}</h3>
+     *
+     * <pre>{@code
+     * {
+     *   "alpha"      -> Folder(alpha),
+     *   "beta"       -> Folder(beta),
+     *   "beta/docs"  -> Folder(beta/docs)
+     * }
+     * }</pre>
+     *
+     * <p>
+     * The map is sorted by the relative folder name.
+     * Directories that are not explicitly marked as subfolders are excluded,
+     * even if they are located beneath the top-level folder in the hierarchy.
+     * </p>
+     *
+     * @param topFolder
+     *         the top-level folder whose subfolders should be returned;
+     *         must not be {@code null}
+     * @return
+     *         a sorted {@link Map} mapping {@link DirectoryInfo} instances
+     *         to their corresponding {@link Folder} objects;
+     *         empty if no matching subfolders exist
+     */
+    public Map<DirectoryInfo, Folder> getSubFolders(Folder topFolder) {
+        Reject.ifNull(topFolder, "TopFolder");
+        Reject.ifFalse(topFolder.isTopFolder(), "Is not TopFolder");
+
+        Map<DirectoryInfo, Folder> subFolders = new TreeMap<>(Comparator.comparing(FileInfo::getRelativeName));
+        subFolders.put(topFolder.getBaseDirectoryInfo(), topFolder);
+
+        for (Folder folder: folders.values()) {
+            if (!folder.isSubFolder() || !topFolder.equals(folder.getTopFolder())) {
+                continue;
+            }
+            subFolders.put(folder.getInfo().getLocation(), folder);
+        }
+        return subFolders;
     }
 
     public int getFolderProblemsCount() {
@@ -1082,6 +1193,22 @@ public class FolderRepository extends PFComponent implements Runnable {
                 return folder;
             }
         }
+        return null;
+    }
+
+    public Folder findSubFolder(DirectoryInfo directoryInfo) {
+
+        directoryInfo = FileInfoFactory.mapToTopFolder(directoryInfo);
+
+        for (Folder folder : getController().getFolderRepository().getFolders()) {
+            if (folder.isTopFolder()) {
+                continue;
+            }
+            if (folder.getInfo().getLocation().equals(directoryInfo)) {
+                return folder;
+            }
+        }
+
         return null;
     }
 
@@ -2374,6 +2501,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         return foInfo;
+    }
+
+    private void correctTopAndSubfolderRelations() {
+        for (Folder folder: getFolders()) {
+            folder.correctTopAndSubfolderRelation();
+        }
     }
 
     /**

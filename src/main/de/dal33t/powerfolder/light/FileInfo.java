@@ -42,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -182,7 +183,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
                     && log.isLoggable(Level.WARNING)
                     && !folderInfo.isMetaFolder()
                     && !folderInfo.getName().endsWith(Constants.FOLDER_SERVER_MAINTENANCE)
-                    && !relativeName.equalsIgnoreCase(PathUtils.DESKTOP_INI_FILENAME)) {
+                    && !relativeName.equalsIgnoreCase(PathUtils.DESKTOP_INI_FILENAME)
+                    && !folderInfo.isSubFolder()) {
 
                 log.log(Level.INFO, this.toDetailString() + ": Missing account information", new StackDump());
             }
@@ -812,6 +814,32 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         return hashes.contains(hash);
     }
 
+    public boolean isInSubFolder(FolderInfo subFolderInfo) {
+        Reject.ifNull(subFolderInfo, "SubFolderInfo");
+        Reject.ifFalse(subFolderInfo.isSubFolder(), "Must be subfolder");
+
+        if (folderInfo.equals(subFolderInfo)) {
+            return true;
+        }
+
+        String filePath = this.getRelativeName();
+        String subPath = "";
+        if (!subFolderInfo.getParent().getRelativeName().isEmpty()) {
+            subPath += subFolderInfo.getParent().getRelativeName() + '/';
+        }
+        subPath += subFolderInfo.getName();
+        return filePath != null && filePath.startsWith(subPath);
+    }
+
+    public boolean isInSubFolder(String subFolderPath) {
+        Reject.ifNull(subFolderPath, "subFolderPath");
+
+        if (subFolderPath == null || subFolderPath.isBlank()) {
+            return true;
+        }
+        return getRelativeName().startsWith(subFolderPath);
+    }
+
     @Override
     public int hashCode() {
         if (hash == 0) {
@@ -983,6 +1011,10 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
         fileName = in.readUTF();
         size = in.readLong();
+        if (size == -1) {
+            // PF-1790 / Lookup instance of parent
+            size = null;
+        }
         if (in.readBoolean()) {
             modifiedBy = MemberInfo.readExt(in);
             modifiedBy = modifiedBy != null ? modifiedBy.intern() : null;
@@ -1034,7 +1066,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         out.writeInt(isFile() ? 0 : 1);
         out.writeLong(extUID);
         out.writeUTF(fileName);
-        out.writeLong(size);
+        // PF-1790 / Lookup instance of parent
+        out.writeLong(Objects.requireNonNullElse(size, (long) -1));
         out.writeBoolean(modifiedBy != null);
         if (modifiedBy != null) {
             modifiedBy.writeExternal(out);

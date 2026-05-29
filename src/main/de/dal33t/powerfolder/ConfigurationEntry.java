@@ -991,7 +991,7 @@ public enum ConfigurationEntry {
     /**
      * PF-1930: Full text search. Disabled for client. Server enable it
      */
-    SEARCH_INDEX_ENABLED("search.index.enabled", false),
+    SEARCH_INDEX_ENABLED("search.index.enabled", false, true),
 
     /**
      * PFS-5487: Enable content extraction (Tika) for full-text search.
@@ -1001,7 +1001,38 @@ public enum ConfigurationEntry {
     /**
      * PFS-5487: Enable OCR (Tesseract) for images and scanned PDFs.
      */
-    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", false),
+    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", true),
+
+    /**
+     * OCR language preset or custom locale codes. Presets: "fast" (en+de),
+     * "europe" (10 languages), "all" (39 languages). Custom: comma-separated
+     * ISO 639-1 codes, e.g. "en,de,fr". More languages = slower OCR.
+     */
+    SEARCH_INDEX_OCR_LANGUAGES("search.index.ocr.languages", "fast", true),
+
+    /**
+     * Maximum file size in MB that will be submitted for OCR. Files larger than this are skipped. Default: 100 MB.
+     */
+    SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB("search.index.ocr.maxFileSizeMB", 100, true),
+
+    /**
+     * PFS-5311: Maximum number of concurrent indexing worker threads. Controls how many folders can
+     * perform content extraction (Tika/OCR) simultaneously. Prevents CPU/IO saturation during
+     * startup and large index rebuilds. Default: quarter of available CPUs (min 2).
+     * <p>
+     * Content extraction is IO-bound (Tika reads files from disk), so more threads mostly increase
+     * disk pressure rather than throughput. Each thread also has a 50 ms throttle delay between
+     * extractions (see {@code powerfolder.index.contentExtractThrottleMs}, default 20 ms).
+     */
+    SEARCH_INDEX_MAX_THREADS("search.indexing.maxThreads",
+            Math.max(2, Runtime.getRuntime().availableProcessors() / 4), true),
+
+    /**
+     * PFS-5311: Unix timestamp (millis) before which all search indexes must be rebuilt. Set via
+     * admin preferences "Rebuild all indexes" button. Folders that mount later
+     * (DynamicFolderMounter) check this on initialization and rebuild if their lastRebuilt is older.
+     */
+    SEARCH_INDEX_REBUILD_BEFORE("search.index.rebuildBefore", "0"),
 
     /**
      * PFS-5311: Maximum number of concurrent indexing worker threads. Controls how many folders can

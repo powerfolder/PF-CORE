@@ -19,15 +19,14 @@
  */
 package de.dal33t.powerfolder.security;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.Translation;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * Administration permission on one folder.
@@ -72,18 +71,12 @@ public class FolderAdminPermission extends FolderPermission {
     }
 
     @Override
-    public boolean implies(Permission impliedPermision) {
-        if (impliedPermision instanceof FolderReadPermission) {
-            FolderReadPermission rp = (FolderReadPermission) impliedPermision;
-            return rp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderReadWritePermission) {
-            FolderReadWritePermission rwp = (FolderReadWritePermission) impliedPermision;
-            return rwp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderDeletePermission) {
-            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
-            return p.getFolder().equals(getFolder());
-        }
-        return false;
+    protected Class<? extends FolderPermission>[] getImpliedFolderPermissionTypes() {
+        return new Class[] {
+                FolderReadWritePermission.class,
+                FolderReadPermission.class,
+                FolderDeletePermission.class
+        };
     }
 
     @Override

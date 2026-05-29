@@ -28,6 +28,8 @@ import de.dal33t.powerfolder.util.StringUtils;
 
 import java.util.*;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+
 /**
  * Object that holds criterias to select {@link FileInfo}s from a
  * {@link FileInfoDAO}
@@ -123,7 +125,7 @@ public class FileInfoCriteria {
      *            the keywords to add as filter.
      */
     public void addKeyWord(String keyWord) {
-        if (StringUtils.isBlank(keyWord)) {
+        if (isBlank(keyWord)) {
             return;
         }
         keyWords.add(keyWord.trim().toLowerCase());
@@ -173,6 +175,33 @@ public class FileInfoCriteria {
     public void setPath(DirectoryInfo dirInfo) {
         setPath(dirInfo != null ? dirInfo.getRelativeName() : null);
     }
+
+    /**
+     * Prepends the given subfolder path to this criteria's path.
+     * This modifies the current instance and returns it for chaining.
+     *
+     * Ensures there is exactly one "/" between both segments and
+     * the resulting path does NOT start with a "/".
+     *
+     * @param subfolderPath The subfolder path to prepend (e.g. "docs")
+     */
+    public void mapToSubFolderPath(String subfolderPath) {
+        Reject.ifNull(subfolderPath, "subfolderPath");
+        Reject.ifTrue(subfolderPath.startsWith("/"), "subfolderPath must not start with slash: " + subfolderPath);
+
+        if (isBlank(this.path)) {
+            this.path = subfolderPath;
+        } else {
+            String base = this.path.endsWith("/") ? this.path.substring(0, this.path.length() - 1) : this.path;
+            this.path = subfolderPath + "/" + base;
+        }
+
+        // Remove leading slash if one somehow remains (safety)
+        if (this.path.startsWith("/")) {
+            this.path = this.path.substring(1);
+        }
+    }
+
 
     public Type getType() {
         return type;

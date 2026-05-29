@@ -61,15 +61,6 @@ public class FolderReadPermission extends FolderPermission {
     }
 
     @Override
-    public boolean implies(Permission impliedPermision) {
-        if (impliedPermision instanceof FolderDeletePermission) {
-            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
-            return p.getFolder().equals(getFolder());
-        }
-        return false;
-    }
-
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

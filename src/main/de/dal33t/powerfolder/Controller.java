@@ -87,9 +87,9 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
-    private static final int MAJOR_VERSION = 26;
+    private static final int MAJOR_VERSION = 27;
     private static final int MINOR_VERSION = 3;
-    private static final int REVISION_VERSION = 3;
+    private static final int REVISION_VERSION = 8;
 
     /**
      * Program version.
@@ -2121,8 +2121,10 @@ public class Controller extends PFComponent {
             folderRepository.shutdown();
         }
 
-        logFine("Shutting down OCR engine");
-        TesseractOCR.getInstance().shutdown();
+        if (TesseractOCR.getInstance() != null) {
+            logFine("Shutting down OCR engine");
+            TesseractOCR.getInstance().shutdown();
+        }
 
         if (reconnectManager != null) {
             logFine("Shutting down reconnect manager");

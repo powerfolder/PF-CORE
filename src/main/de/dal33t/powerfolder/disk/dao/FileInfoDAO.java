@@ -68,15 +68,6 @@ public interface FileInfoDAO {
     void store(String domain, Collection<FileInfo> fInfos);
 
     /**
-     * Finds the newest version of this file in the given domains.
-     *
-     * @param fInfo
-     * @param domains
-     * @return the newest FileInfo
-     */
-    FileInfo findNewestVersion(FileInfo fInfo, String... domains);
-
-    /**
      * Finds the {@link FileInfo} in the given domain
      * 
      * @param fInfo
@@ -159,41 +150,6 @@ public interface FileInfoDAO {
     Collection<FileInfo> findFilesFast(FileInfoCriteria criteria);
 
     /**
-     * Finds all files in the given (sub) directory and domain only.
-     * <p>
-     * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
-     *
-     * @param domain
-     *            the domain to check.
-     * @param path
-     *            the path/relative name of the sub directory.
-     * @param recursive
-     *            true to recursively include all files from subdirectory too.
-     * @return the collection of matching directories.
-     * @deprecated use {@link #findFiles(FileInfoCriteria)}
-     */
-    @Deprecated
-    Collection<FileInfo> findInDirectory(String domain, String path,
-        boolean recursive);
-
-    /**
-     * Finds all files in the given (sub) directory and domain only.
-     * <p>
-     * Does NOT included FileInfos that are excluded by a {@link DiskItemFilter}
-     *
-     * @param domain
-     *            the domain to check.
-     * @param directoryInfo
-     * @param recursive
-     *            true to recursively include all files from subdirectory too.
-     * @return the collection of matching directories.
-     * @deprecated use {@link #findFiles(FileInfoCriteria)}
-     */
-    @Deprecated
-    Collection<FileInfo> findInDirectory(String domain,
-        DirectoryInfo directoryInfo, boolean recursive);
-
-    /**
      * @param fileInfo
      *            the <code>FileInfo</code> to retrieve the file history for.
      * @return the FileHistory for the given FileInfo.
@@ -212,28 +168,6 @@ public interface FileInfoDAO {
      * @return the number of FileInfos in this domain
      */
     int count(String domain, boolean includeDirs, boolean excludeIgnored);
-
-    /**
-     * Counts all {@link FileInfo} objects of the given domain that are in sync.
-     *
-     * @param domain
-     * @param includeDirs
-     *            if directories should be included in counting or not
-     * @param excludeIgnored
-     *            If files should be counted that are ignored by
-     *            {@link DiskItemFilter}
-     * @return the number of FileInfos in this domain that are in sync
-     */
-    int countInSync(String domain, boolean includeDirs, boolean excludeIgnored);
-
-    /**
-     * Counts the total size of all {@link FileInfo} objects of the given domain
-     * that are in sync. Ignored files won't be included in the result.
-     *
-     * @param domain
-     * @return the total number of bytes in this domain that are in sync
-     */
-    long bytesInSync(String domain);
 
     boolean hasDomainWithFiles(String domain);
 }

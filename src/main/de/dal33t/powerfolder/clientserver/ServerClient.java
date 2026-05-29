@@ -740,7 +740,7 @@ public class ServerClient extends PFComponent {
             return null;
         }
         return getWebURL(
-                Constants.OPEN_LINK_URI + '/'
+                Constants.OPEN_URI + '/'
                         + Base64.encode4URL(fInfo.getFolderInfo().getId()) + '/'
                         + Util.encodeForURL(fInfo.getRelativeName()), true);
     }

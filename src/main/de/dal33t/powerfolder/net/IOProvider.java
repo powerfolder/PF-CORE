@@ -53,9 +53,8 @@ public class IOProvider extends PFComponent {
     private ExecutorService ioThreadPool;
 
     /**
-     * PFS-5311: Dedicated bounded thread pool for search indexing work.
-     * Prevents indexing from saturating the general IO pool and limits
-     * concurrent Tika/OCR/Lucene operations across all folders.
+     * PFS-5311: Dedicated bounded thread pool for search indexing work. Prevents indexing from saturating
+     * the general IO pool and limits concurrent Tika/OCR/Lucene operations across all folders.
      */
     private ThreadPoolExecutor indexingThreadPool;
 
@@ -96,16 +95,12 @@ public class IOProvider extends PFComponent {
         ioThreadPool = new WrapperExecutorService(
             Executors.newCachedThreadPool(new NamedThreadFactory("IOThread-")));
 
-        // PFS-5311: Bounded pool for search indexing — prevents Tika/OCR
-        // from saturating CPU/IO during startup with hundreds of folders.
+        // PFS-5311: Bounded pool for search indexing — prevents Tika/OCR from saturating CPU/IO during
+        // startup with hundreds of folders.
         int maxIndexThreads = Math.max(2,
-            ConfigurationEntry.SEARCH_INDEX_MAX_THREADS
-                .getValueInt(getController()));
-        indexingThreadPool = new ThreadPoolExecutor(
-            2, maxIndexThreads,
-            60L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(1024),
-            new NamedThreadFactory("SearchIndexThread-"),
+            ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(getController()));
+        indexingThreadPool = new ThreadPoolExecutor(2, maxIndexThreads, 60L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(1024), new NamedThreadFactory("SearchIndexThread-"),
             new ThreadPoolExecutor.CallerRunsPolicy());
         logInfo("Search indexing thread pool started: maxThreads=" + maxIndexThreads);
 
@@ -196,9 +191,9 @@ public class IOProvider extends PFComponent {
     }
 
     /**
-     * PFS-5311: Submits an indexing task to the dedicated bounded indexing
-     * thread pool. Unlike {@link #startIO(Runnable)}, this pool has a
-     * configurable maximum thread count to prevent CPU/IO saturation.
+     * PFS-5311: Submits an indexing task to the dedicated bounded indexing thread pool.
+     * Unlike {@link #startIO(Runnable)}, this pool has a configurable maximum thread count
+     * to prevent CPU/IO saturation.
      *
      * @param worker the indexing worker to execute
      * @return a Future representing the pending task, or null if rejected

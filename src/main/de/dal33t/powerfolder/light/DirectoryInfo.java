@@ -25,6 +25,8 @@ import de.dal33t.powerfolder.util.Reject;
 import java.nio.file.Path;
 import java.util.Date;
 
+import static de.dal33t.powerfolder.util.StringUtils.isBlank;
+
 /**
  * A lightweight object representing an actual directory in the PowerFolder.
  * <p>
@@ -69,6 +71,19 @@ public class DirectoryInfo extends FileInfo {
 
     public boolean isFile() {
         return false;
+    }
+
+    public DirectoryInfo getParent() {
+        if (isBlank(getRelativeName())) {
+            return null;
+        }
+        int lastSlash = getRelativeName().lastIndexOf('/');
+        if (lastSlash <= 0) {
+            // No slash found or only one leading segment (e.g., "dir" or "/dir")
+            return FileInfoFactory.lookupDirectory(getFolderInfo(), "");
+        }
+        String parentPath = getRelativeName().substring(0, lastSlash);
+        return FileInfoFactory.lookupDirectory(getFolderInfo(), parentPath);
     }
 
     @Override

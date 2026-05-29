@@ -38,10 +38,6 @@ public class FolderDeletePermission extends FolderPermission {
     FolderDeletePermission(FolderInfo foInfo) {
         super(foInfo);
     }
-    @Override
-    public boolean implies(Permission impliedPermision) {
-        return false;
-    }
 
     @Override
     public String getName() {
@@ -52,5 +48,4 @@ public class FolderDeletePermission extends FolderPermission {
     public AccessMode getMode() {
         return null;
     }
-
 }

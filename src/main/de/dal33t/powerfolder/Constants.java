@@ -395,8 +395,7 @@ public class Constants {
     public static final String ACTIVATE_URI = "/activate";
     public static final String GET_LINK_URI = "/getlink";
     public static final String DL_LINK_URI = "/dl";
-    public static final String DL_LINK_ENTER_PW_URI = "/dlpw";
-    public static final String OPEN_LINK_URI = "/open";
+    public static final String OPEN_URI = "/open";
     public static final String LOGIN_SHIBBOLETH_URI = LOGIN_URI + "/shibboleth";
     public static final String LOGIN_SHIBBOLETH_CLIENT_URI = LOGIN_SHIBBOLETH_URI + "/client";
     @Deprecated
@@ -427,7 +426,6 @@ public class Constants {
     public static final String LINK_EXTENSION = ".lnk";
 
     public static final String FOLDER_PERSONAL_FILES = "$personal_files";
-    public static final String FOLDER_PUBLIC_SHARED_FILES = "$public_shared_files";
     public static final String MAIL_ATTACHMENT_FOLDER = "$mail_attachments";
     public static final String FOLDER_SERVER_MAINTENANCE = "server_maintenance";
 

@@ -20,8 +20,9 @@
 package de.dal33t.powerfolder.disk.dao;
 
 import de.dal33t.powerfolder.light.FolderInfo;
-import de.dal33t.powerfolder.security.FolderOwnerPermission;
 import de.dal33t.powerfolder.util.db.GenericDAO;
+
+import java.util.Collection;
 
 /**
  * Data Access Object for FolderInfo objects.
@@ -39,11 +40,48 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
     int countMembers(FolderInfo folder);
 
     /**
-     * PFS-1786
-     * 
-     * @param folder
-     * @return {@code True} if there is more then one account with an
-     *         {@link FolderOwnerPermission} associated with the {@link Folder}.
+     * Returns all subfolders belonging to the specified top-level folder.
+     *
+     * <p>
+     * A <em>top-level folder</em> represents a logical root, while <em>subfolders</em>
+     * are folders that are explicitly marked as subfolders and associated with the
+     * given top-level folder.
+     * </p>
+     *
+     * <h3>Folder Structure Example</h3>
+     *
+     * <pre>{@code
+     * /projects                    (top folder)
+     * ├── alpha                    (subfolder)
+     * ├── beta                     (subfolder)
+     * │   ├── docs                 (subfolder)
+     * │   └── tmp                  (directory, NOT a subfolder)
+     * └── internal                 (directory, NOT a subfolder)
+     * }</pre>
+     *
+     * <p>
+     * In this example:
+     * <ul>
+     *   <li>{@code alpha}, {@code beta}, and {@code beta/docs} are marked as subfolders</li>
+     *   <li>{@code beta/tmp} and {@code internal} exist in the directory tree but are
+     *       <strong>not</strong> marked as subfolders and are therefore ignored</li>
+     * </ul>
+     * </p>
+     *
+     * <h3>Resulting Collection for {@code topFolder = /projects}</h3>
+     *
+     * <pre>{@code
+     * {
+     *   FolderInfo(alpha), FolderInfo(beta), FolderInfo(beta/docs)
+     * }
+     * }</pre>
+     *
+     * @param topFolderInfo
+     *         the top-level folder info whose subfolders should be returned;
+     *         must not be {@code null}
+     * @return
+     *         a {@link Collection} of {@link FolderInfo} objects;
+     *         empty if no matching subfolders exist
      */
-    boolean hasMultipleOwner(FolderInfo folder);
+    Collection<FolderInfo> getSubFolders(FolderInfo topFolderInfo);
 }

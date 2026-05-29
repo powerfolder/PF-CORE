@@ -78,17 +78,6 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
 
         FileInfo remote2 = version(expected, 2);
         dao.store("REMOTE2", remote2);
-
-        assertNotNull(dao.findNewestVersion(expected, ""));
-        assertEquals(1, dao.findNewestVersion(expected, "").getVersion());
-        assertNotNull(dao.findNewestVersion(expected, "REMOTE1", "REMOTE2",
-            null));
-        assertEquals(2,
-            dao.findNewestVersion(expected, "REMOTE1", "REMOTE2", null)
-                .getVersion());
-        assertNotNull(dao.findNewestVersion(expected, "REMOTE1", "REMOTE2"));
-        assertEquals(2, dao.findNewestVersion(expected, "REMOTE1", "REMOTE2")
-            .getVersion());
     }
 
     protected void testIndexFileInfo(FileInfoDAO dao) {
@@ -133,16 +122,6 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         assertEquals(nItems, dao.count(null, true, false));
         assertEquals(nFiles, dao.count(null, false, false));
 
-        assertEquals(0, dao.findInDirectory(null, (DirectoryInfo) null, false)
-            .size());
-        assertEquals(nItems, dao.findInDirectory(null, (String) null, true)
-            .size());
-        assertEquals(nItems, dao
-            .findInDirectory(null, "subdir1/SUBDIR2/", true).size());
-        assertEquals(n * 2 + 2,
-            dao.findInDirectory(null, "subdir1/SUBDIR2/", false).size());
-        assertEquals(n,
-            dao.findInDirectory(null, (DirectoryInfo) dirInfo, false).size());
         //
         // Alexandria/
         // Alexandria/Alexandria

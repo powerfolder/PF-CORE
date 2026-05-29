@@ -61,15 +61,10 @@ public class FolderReadWritePermission extends FolderPermission {
     }
 
     @Override
-    public boolean implies(Permission impliedPermision) {
-        if (impliedPermision instanceof FolderReadPermission) {
-            FolderReadPermission rp = (FolderReadPermission) impliedPermision;
-            return rp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderDeletePermission) {
-            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
-            return p.getFolder().equals(getFolder());
-        }
-        return false;
+    protected Class<? extends FolderPermission>[] getImpliedFolderPermissionTypes() {
+        return new Class[] {
+                FolderReadPermission.class
+        };
     }
 
     @Override

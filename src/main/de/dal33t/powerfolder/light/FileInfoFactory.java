@@ -20,7 +20,10 @@
 package de.dal33t.powerfolder.light;
 
 import de.dal33t.powerfolder.disk.Folder;
-import de.dal33t.powerfolder.util.*;
+import de.dal33t.powerfolder.util.Base64;
+import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.os.OSUtil;
 
 import java.io.IOException;
@@ -28,7 +31,6 @@ import java.io.ObjectInput;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -93,6 +95,43 @@ public final class FileInfoFactory {
         String fn = buildFileName(folder.getLocalBase(), file);
         return lookupInstance(folder.getInfo(), fn, Files.isDirectory(file));
     }
+
+    public static DirectoryInfo mapToTopFolder(DirectoryInfo directoryInfo) {
+        if (directoryInfo == null) {
+            return null;
+        }
+
+        FolderInfo folderInfo = directoryInfo.getFolderInfo();
+        if (folderInfo != null && folderInfo.isSubFolder()) {
+            if (directoryInfo.isLookupInstance()) {
+                String topRelativePath = folderInfo.getLocation().getRelativeName();
+                if (!directoryInfo.isBaseDirectory()) {
+                    topRelativePath += '/' + directoryInfo.getRelativeName();
+                }
+                return lookupDirectory(folderInfo.getTopFolder(), topRelativePath);
+            }
+            return (DirectoryInfo) mapToTopFolder0(directoryInfo);
+        }
+
+        return directoryInfo;
+    }
+
+    public static FileInfo mapToTopFolder(FileInfo fileInfo) {
+        if (fileInfo == null) {
+            return null;
+        }
+        if (fileInfo instanceof DirectoryInfo) {
+            return mapToTopFolder((DirectoryInfo) fileInfo);
+        }
+
+        FolderInfo folderInfo = fileInfo.getFolderInfo();
+        if (folderInfo == null || !folderInfo.isSubFolder()) {
+            return fileInfo;
+        }
+
+        return mapToTopFolder0(fileInfo);
+    }
+
 
     public static FileInfo lookupInstanceForTest(FolderInfo folder, String name, Date modificationDate) {
         return new FileInfo(folder, name, modificationDate, null);
@@ -371,6 +410,135 @@ public final class FileInfoFactory {
 
     public static DirectoryInfo createBaseDirectoryInfo(FolderInfo foInfo) {
         return new DirectoryInfo(foInfo, "", null, null);
+    }
+
+    // PF-1790: Subfolder sharing
+
+    public static FileInfo mapToSubFolder(FileInfo topFileInfo, FolderInfo subFolderInfo) {
+        Reject.ifNull(topFileInfo, "FileInfo");
+        Reject.ifNull(subFolderInfo, "SubFolderInfo");
+        Reject.ifFalse(subFolderInfo.isSubFolder(), "Not a subfolder");
+
+        String topFileInfoRelativeName = topFileInfo.getRelativeName();
+        String locationName = subFolderInfo.getLocation().getRelativeName();
+
+        Reject.ifFalse(topFileInfoRelativeName.startsWith(locationName), "FileInfo not in subfolder");
+
+        int stripFrom = locationName.length();
+        if (locationName.length() < topFileInfoRelativeName.length()) {
+            stripFrom++;
+        }
+        String strippedRelative = topFileInfoRelativeName.substring(stripFrom);
+
+        if (topFileInfo.isLookupInstance()) {
+            if (topFileInfo instanceof DirectoryInfo) {
+                return new DirectoryInfo(
+                        subFolderInfo,
+                        strippedRelative,
+                        topFileInfo.getModifiedDate(),
+                        topFileInfo.getModifiedByAccount());
+            } else {
+                return new FileInfo(
+                        subFolderInfo,
+                        strippedRelative,
+                        topFileInfo.getModifiedDate(),
+                        topFileInfo.getModifiedByAccount());
+            }
+        }
+
+        if (topFileInfo instanceof DirectoryInfo) {
+            if (strippedRelative.isEmpty()) {
+                return new DirectoryInfo(
+                        subFolderInfo,
+                        "",
+                        topFileInfo.getModifiedDate(),
+                        topFileInfo.getModifiedByAccount());
+            }
+            return new DirectoryInfo(
+                    strippedRelative,
+                    topFileInfo.getOID(),
+                    topFileInfo.getModifiedBy(),
+                    topFileInfo.getModifiedByAccount(),
+                    topFileInfo.getModifiedDate(),
+                    topFileInfo.getVersion(),
+                    topFileInfo.getHashes(),
+                    topFileInfo.isDeleted(),
+                    topFileInfo.getTags(),
+                    subFolderInfo);
+        } else {
+            return new FileInfo(
+                    strippedRelative,
+                    topFileInfo.getOID(),
+                    topFileInfo.getSize(),
+                    topFileInfo.getModifiedBy(),
+                    topFileInfo.getModifiedByAccount(),
+                    topFileInfo.getModifiedDate(),
+                    topFileInfo.getVersion(),
+                    topFileInfo.getHashes(),
+                    topFileInfo.isDeleted(),
+                    topFileInfo.getTags(),
+                    subFolderInfo);
+        }
+    }
+
+    private static FileInfo mapToTopFolder0(FileInfo subFileInfo) {
+        Reject.ifNull(subFileInfo, "FileInfo");
+        Reject.ifNull(subFileInfo.getFolderInfo().getParent(), "FileInfo not from subfolder: " + subFileInfo.toDetailString());
+
+        FolderInfo parentFolderInfo = subFileInfo.getFolderInfo().getParent().getFolderInfo();
+
+        String subPath = subFileInfo.getFolderInfo().getParent().getRelativeName();
+        String relativeName = "";
+        if (!subPath.isEmpty()) {
+            relativeName += subPath + '/';
+        }
+        relativeName += subFileInfo.getFolderInfo().getName();
+        if (!subFileInfo.getRelativeName().isEmpty()) {
+            relativeName += '/' + subFileInfo.getRelativeName();
+        }
+
+        if (subFileInfo.isLookupInstance()) {
+            if (subFileInfo instanceof DirectoryInfo) {
+                return new DirectoryInfo(
+                        parentFolderInfo,
+                        relativeName,
+                        subFileInfo.getModifiedDate(),
+                        subFileInfo.getModifiedByAccount());
+            } else {
+                return new FileInfo(
+                        parentFolderInfo,
+                        relativeName,
+                        subFileInfo.getModifiedDate(),
+                        subFileInfo.getModifiedByAccount());
+            }
+        }
+
+        if (subFileInfo instanceof DirectoryInfo) {
+            return new DirectoryInfo(
+                    relativeName,
+                    subFileInfo.getOID(),
+                    subFileInfo.getModifiedBy(),
+                    subFileInfo.getModifiedByAccount(),
+                    subFileInfo.getModifiedDate(),
+                    subFileInfo.getVersion(),
+                    subFileInfo.getHashes(),
+                    subFileInfo.isDeleted(),
+                    subFileInfo.getTags(),
+                    parentFolderInfo);
+        } else {
+            return new FileInfo(
+                    relativeName,
+                    subFileInfo.getOID(),
+                    subFileInfo.getSize(),
+                    subFileInfo.getModifiedBy(),
+                    subFileInfo.getModifiedByAccount(),
+                    subFileInfo.getModifiedDate(),
+                    subFileInfo.getVersion(),
+                    subFileInfo.getHashes(),
+                    subFileInfo.isDeleted(),
+                    subFileInfo.getTags(),
+                    parentFolderInfo);
+        }
     }
 
     private static final String[] ILLEGAL_WINDOWS_CHARS = {"|", "?", "\"", "*",

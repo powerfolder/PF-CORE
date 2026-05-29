@@ -94,13 +94,16 @@ public class FileLink implements Serializable {
         super();
         Reject.ifNull(fInfo, "FileInfo");
         Reject.ifNull(fInfo.getFolderInfo(), "FolderInfo");
-        this.folderInfo = fInfo.getFolderInfo();
-        this.relativeName = fInfo.getRelativeName();
+        FolderInfo fi = fInfo.getFolderInfo();
+        FileInfo resolved = fi.isSubFolder() && fi.inheritsPermissions()
+            ? FileInfoFactory.mapToTopFolder(fInfo) : fInfo;
+        this.folderInfo = resolved.getFolderInfo();
+        this.relativeName = resolved.getRelativeName();
         this.maxDownloads = -1;
         if (generateRandomID) {
             this.id = IdGenerator.generateFileLinkRandomID();
         } else {
-            this.id = IdGenerator.generateFileLinkID(fInfo);
+            this.id = IdGenerator.generateFileLinkID(resolved);
         }
         this.creationDate = new Date();
     }
@@ -327,15 +330,10 @@ public class FileLink implements Serializable {
      * <p>
      * 1. If publicFolderPermission is read/write -> FileLink uploads are allowed.
      * 2. If publicFolderPermission is read only -> Default FileLink behaviour without uploads.
-     * 3. If publicFolderPermission is null -> This is the case if e.g. a FileLink requires
-     * a password (set by PasswordPolicy.REQUIRED).
      * <p>
-     * 4. publicAccessAllowed is for checking if ConfigurationServerEntry.WEB_PUBLIC_ACCESS_ALLOWED
-     * is set on this server. This is a bit ugly but necessary because we have no controller in this class.
      */
-    public void setPublicPermission(FolderPermission publicFolderPermission, boolean publicAccessAllowed){
-
-        if (!publicAccessAllowed || publicFolderPermission == null){
+    public void setPublicPermission(FolderPermission publicFolderPermission){
+        if (publicFolderPermission == null){
             this.publicPermission = null;
         } else {
             Reject.ifFalse(publicFolderPermission instanceof FolderReadPermission

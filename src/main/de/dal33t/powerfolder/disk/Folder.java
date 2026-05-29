@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
+import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.*;
 import de.dal33t.powerfolder.event.*;
@@ -155,7 +156,7 @@ public class Folder extends PFComponent {
      * Flag indicating that folder has a set of own know files will be true
      * after first scan ever
      */
-    private volatile boolean hasOwnDatabase;
+    private volatile boolean isDAOpopulated;
 
     /** Flag indicating */
     private volatile boolean shutdown;
@@ -249,7 +250,7 @@ public class Folder extends PFComponent {
             .createListenerSupport(ProblemListener.class);
 
         // Not until first scan or db load
-        hasOwnDatabase = false;
+        isDAOpopulated = false;
         dirty = false;
         problems = new CopyOnWriteArrayList<>();
 
@@ -366,14 +367,14 @@ public class Folder extends PFComponent {
             && PathUtils.isEmptyDir(localBase, allExceptSystemDirFilter))
         {
             // Empty folder... no scan required for database
-            hasOwnDatabase = true;
+            isDAOpopulated = true;
         }
 
         transferPriorities = new TransferPriorities();
 
         diskItemFilter = new DiskItemFilter();
 
-        // Initialize the DAO
+        correctTopAndSubfolderRelation();
         initFileInfoDAO();
         checkIfDeviceDisconnected();
 
@@ -414,15 +415,15 @@ public class Folder extends PFComponent {
         recommendScanOnNextMaintenance();
 
         if (isFine()) {
-            if (hasOwnDatabase) {
+            if (isDAOpopulated) {
                 logFiner("Has own database (" + getName() + ")? "
-                    + hasOwnDatabase);
+                    + isDAOpopulated);
             } else {
                 logFine("Has own database (" + getName() + ")? "
-                    + hasOwnDatabase);
+                    + isDAOpopulated);
             }
         }
-        if (hasOwnDatabase) {
+        if (isDAOpopulated) {
             // Write filelist
             writeFilelist(getMySelf());
         }
@@ -638,8 +639,12 @@ public class Folder extends PFComponent {
             }
         }
 
-        boolean hadOwnDatabase = hasOwnDatabase;
-        hasOwnDatabase = true;
+        if (isTopFolder() && !scanResult.getDeletedFiles().isEmpty()) {
+            unshareDeletedSubFolders(scanResult.getDeletedFiles());
+        }
+
+        boolean wasDAOpopulated = isDAOpopulated;
+        isDAOpopulated = true;
 
         if (isInfo() || isFine()) {
             String msg = this + ": Scanned " + scanResult.getTotalFilesCount() + " total, "
@@ -699,13 +704,13 @@ public class Folder extends PFComponent {
             logFiner("commitScanResult DONE");
         }
 
-        if (!hadOwnDatabase) {
+        if (!wasDAOpopulated) {
             getController().getFolderRepository().getFileRequestor().triggerFileRequesting(currentInfo);
         }
     }
 
     public boolean hasOwnDatabase() {
-        return hasOwnDatabase;
+        return isDAOpopulated;
     }
 
     public DiskItemFilter getDiskItemFilter() {
@@ -792,6 +797,107 @@ public class Folder extends PFComponent {
                 "foldercreate.error.it_is_base_dir",
                 localBase.toAbsolutePath().toString()));
         }
+    }
+
+    /**
+     * Ensures that this folder’s top-/subfolder relationship matches its actual
+     * filesystem location.
+     *
+     * <p>The method compares the folder’s local base path with all known folders
+     * and corrects the hierarchy if necessary:</p>
+     *
+     * <ul>
+     *   <li>If the folder is located inside another top folder, it is corrected
+     *       to be a subfolder of that top folder.</li>
+     *   <li>If the folder is no longer located inside any top folder but is marked
+     *       as a subfolder, it is promoted to a top folder.</li>
+     *   <li>The correct parent directory inside the top folder is derived from the
+     *       filesystem path.</li>
+     * </ul>
+     *
+     * <p>The method is safe to call repeatedly and is intended to be executed
+     * whenever folder paths may have changed (e.g. after configuration updates,
+     * startup, or consistency checks).</p>
+     *
+     * <p>Folders on disconnected devices are ignored. Inconsistent or unsafe
+     * situations are logged but not force-corrected.</p>
+     */
+    boolean correctTopAndSubfolderRelation() {
+        if (isDeviceDisconnected() || currentInfo.isMetaFolder()) {
+            return false;
+        }
+
+        Folder foundTopFolder = null;
+        Path path = getLocalBase().getParent();
+        while (path != null) {
+            Folder candidate = getController().getFolderRepository().findExistingFolder(path);
+            foundTopFolder = candidate != null ? candidate : foundTopFolder;
+            path = path.getParent();
+        }
+
+        if (foundTopFolder == null && isTopFolder()) {
+            // Regular case for top folders
+            return false;
+        }
+
+        if (foundTopFolder == null && isSubFolder()) {
+            logWarning(this + ": Promoting folder to topfolder based on filesystem location");
+            FolderInfo corrected = FolderInfoFactory.changeParent(getInfo(), null);
+            updateInfo(corrected);
+            return true;
+        }
+
+        if (foundTopFolder == null) {
+            return false;
+        }
+
+        if (foundTopFolder.isSubFolder()) {
+            logWarning(
+                    foundTopFolder + ": Invalid folder hierarchy detected. "
+                            + "Folder is marked as subfolder but no top folder exists in the filesystem path. "
+                            + "Path: " + foundTopFolder.getLocalBase()
+            );
+            return false;
+        }
+
+        if (getTopFolder().equals(foundTopFolder)) {
+            return false;
+        }
+
+        logWarning(this + ": Correcting to subfolder of top " + foundTopFolder);
+
+        FolderInfo folderInfo = getInfo();
+        Path folderBase = getLocalBase();
+        Path topFolderBase = foundTopFolder.getLocalBase();
+
+        // Safety: ensure folder is actually inside topfolder
+        if (!folderBase.normalize().startsWith(topFolderBase.normalize())) {
+            logWarning(this + ": Cannot correct parent. Folder path is not under topfolder base. "
+                    + "folder=" + folderBase + ", top=" + topFolderBase);
+            return false;
+        }
+
+        // Compute parent within topfolder:
+        Path folderParent = folderBase.getParent(); // parent on filesystem
+        Path relativeParent = (folderParent != null)
+                ? topFolderBase.relativize(folderParent)
+                : null;
+
+        // Convert to relative name string (use forward slashes for API consistency)
+        String relativeParentName = "";
+        if (relativeParent != null) {
+            relativeParentName = relativeParent.toString().replace('\\', '/');
+        }
+
+        // Resolve DirectoryInfo of the parent inside the topfolder structure
+        DirectoryInfo parentDir = FileInfoFactory.lookupDirectory(
+                foundTopFolder.getInfo(),
+                relativeParentName
+        );
+
+        FolderInfo corrected = FolderInfoFactory.changeParent(folderInfo, parentDir);
+        updateInfo(corrected);
+        return true;
     }
 
     /*
@@ -1113,6 +1219,15 @@ public class Folder extends PFComponent {
             logFine(getName() + ": Already shutdown: Not scanLocalFiles");
             return false;
         }
+        if (isSubFolder()) {
+            Folder topFolder = getTopFolder();
+            if (topFolder != null) {
+                if (isFiner()) {
+                    logFiner(this + ": Skipping scan of local filesystem. is handled by top folder " + topFolder);
+                }
+                return false;
+            }
+        }
         checkIfDeviceDisconnected();
         ScanResult result;
         FolderScanner scanner = getController().getFolderRepository()
@@ -1353,6 +1468,9 @@ public class Folder extends PFComponent {
         }
         FileInfo localFileInfo = scanChangedFile0(fileInfo);
         if (localFileInfo != null) {
+            if (isTopFolder() && localFileInfo.isDeleted() && localFileInfo.isDiretory()) {
+                unshareDeletedSubFolders(Collections.singletonList(localFileInfo));
+            }
             FileInfo existinfFInfo = findSameFile(localFileInfo);
             if (existinfFInfo != null) {
                 localFileInfo = existinfFInfo;
@@ -1432,6 +1550,10 @@ public class Folder extends PFComponent {
             }
         }
         if (!fileInfos.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(fileInfos);
+            }
+
             if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.indexFiles(fileInfos);
             }
@@ -1889,6 +2011,10 @@ public class Folder extends PFComponent {
         }
 
         if (!removedFiles.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(removedFiles);
+            }
+
              if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.markDeleted(removedFiles);
             }
@@ -1946,8 +2072,21 @@ public class Folder extends PFComponent {
             // Stop old DAO
             dao.stop();
         }
-        dao = new FileInfoDAOHashMapImpl(getMySelf().getId(),
-            diskItemFilter);
+        if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
+            dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
+        } else {
+            Folder topFolder = getTopFolder();
+            if (topFolder != null) {
+                FileInfoDAO parentDAO = topFolder.getDAO();
+                logInfo(this + ": Using DAO of topfolder " + topFolder + " at " + currentInfo.getLocation());
+                dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo);
+                // Well, it actually does not have an OWN, but
+                isDAOpopulated = true;
+            } else {
+                logWarning(this + ": Using own fallback FileInfo DAO for subfolder. Parent folder not here.");
+                dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
+            }
+        }
     }
 
     /**
@@ -1987,7 +2126,7 @@ public class Folder extends PFComponent {
                 }
 
                 // Ok has own database
-                hasOwnDatabase = true;
+                isDAOpopulated = true;
 
                 // read them always ..
                 MemberInfo[] members1 = (MemberInfo[]) in.readObject();
@@ -2096,6 +2235,10 @@ public class Folder extends PFComponent {
      * Loads the folder db from disk
      */
     private void loadFolderDB() {
+        if (getDAO() instanceof SubFolderFileInfoDAOProxy) {
+            return;
+        }
+
         if (loadFolderDB(getSystemSubDir0().resolve(Constants.DB_FILENAME))) {
             return;
         }
@@ -2874,7 +3017,7 @@ public class Folder extends PFComponent {
                 waitForScan();
 
                 Message[] filelistMsgs;
-                if (hasOwnDatabase) {
+                if (isDAOpopulated) {
                     filelistMsgs = FileList.create(this,
                         supportExternalizable(member));
                 } else {
@@ -3113,6 +3256,21 @@ public class Folder extends PFComponent {
         return !shutdown;
     }
 
+    public boolean isTopFolder() {
+        return currentInfo.isTopFolder();
+    }
+
+    public boolean isSubFolder() {
+        return currentInfo.isSubFolder();
+    }
+
+    public Folder getTopFolder() {
+        if (!isSubFolder()) {
+            return this;
+        }
+        return currentInfo.getTopFolder().getFolder(getController());
+    }
+
     /**
      * In sync = Folders is 100% synced and all syncing actions (
      * {@link #isTransferring()}) have stopped.
@@ -3289,6 +3447,10 @@ public class Folder extends PFComponent {
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(removedFiles);
+            }
+
              if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.markDeleted(removedFiles);
             }
@@ -3409,6 +3571,9 @@ public class Folder extends PFComponent {
             if (Files.exists(localCopy)) {
                 synchronized (scanLock) {
                     if (localFile.isDiretory()) {
+                        if (isTopFolder()) {
+                            unshareIfSubFolder(localFile);
+                        }
                         if (isFine()) {
                             logFine("Deleting directory from remote: "
                                     + localFile.toDetailString());
@@ -4114,7 +4279,7 @@ public class Folder extends PFComponent {
         }
         logFiner("Persisting settings");
 
-        if ((hasOwnDatabase || getKnownItemCount() > 0)
+        if ((isDAOpopulated || getKnownItemCount() > 0)
             && Files.notExists(getSystemSubDir0()))
         {
             logWarning("Not storing folder database. Local system directory does not exists: "
@@ -4906,8 +5071,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @param fInfo
-     * @return the local fileinfo instance
+     * @param fInfo the file to look up in the local database
+     * @return the local FileInfo instance from the DAO, or the base directory info if fInfo is the base directory,
+     *         or {@code null} if not found
      */
     public FileInfo getFile(FileInfo fInfo) {
         Reject.ifNull(fInfo, "FileInfo is null");
@@ -4922,14 +5088,34 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @param fInfo
-     * @return the local file from a file info Never returns null, file MAY NOT
-     *         exist!! check before use
+     * @param fInfo the file info to resolve to a disk path
+     * @return the local {@link Path} for the given FileInfo. Never returns {@code null}.
+     *         The file may not exist on disk — caller must check before use.
      */
     public Path getDiskFile(FileInfo fInfo) {
         Reject.ifFalse(fInfo.getFolderInfo().equals(currentInfo), "FolderInfo mismatch");
         return localBase.resolve(FileInfoFactory.encodeIllegalChars(fInfo
             .getRelativeName()));
+    }
+
+    /**
+     * @param diskFile the file on disk to look up
+     * @return the local FileInfo from the DAO if found, otherwise a lookup instance (never {@code null})
+     */
+    public FileInfo getFileInfo(Path diskFile) {
+        FileInfo lookupFileInfo = FileInfoFactory.lookupInstance(this, diskFile);
+        FileInfo localFileInfo = getFile(lookupFileInfo);
+        return localFileInfo != null ? localFileInfo : lookupFileInfo;
+    }
+
+    /**
+     * @param relativePath the relative path within this folder
+     * @return the local FileInfo from the DAO if found, otherwise a lookup instance (never {@code null})
+     */
+    public FileInfo getFileInfo(String relativePath) {
+        FileInfo lookupFileInfo = FileInfoFactory.lookupInstance(currentInfo, relativePath);
+        FileInfo localFileInfo = getFile(lookupFileInfo);
+        return localFileInfo != null ? localFileInfo : lookupFileInfo;
     }
 
     /**
@@ -5537,6 +5723,79 @@ public class Folder extends PFComponent {
      */
     public void cleanupOldArchiveFiles(Date cleanupDate) {
         archiver.cleanupOldArchiveFiles(cleanupDate);
+    }
+
+    public Folder share(DirectoryInfo subDirInfo) {
+        Reject.ifNull(subDirInfo, "Subdirectory");
+        Reject.ifFalse(subDirInfo.getFolderInfo().equals(currentInfo), "Folder mismatch");
+        Reject.ifTrue(isSubFolder(), "Folder is Subfolder. Sharing subfolder only allowed from top level folder");
+
+        Folder subFolder = getController().getFolderRepository().findSubFolder(subDirInfo);
+        if (subFolder != null) {
+            return subFolder;
+        }
+
+        Path subDirPath = subDirInfo.getDiskFile(getController().getFolderRepository());
+        FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
+        FolderSettings folderSettings = new FolderSettings(subDirPath, getSyncProfile(), getFileArchiver().getVersionsPerFile());
+        subFolder = getController().getFolderRepository().createFolder(subFolderInfo, folderSettings);
+        subFolder.addDefaultExcludes();
+
+        // From top folder:
+        // Excludes
+        // Archive
+
+        logInfo(this + ": Split/Shared subdirectory " + subDirInfo + ". New subfolder: " + subFolder);
+
+        return subFolder;
+    }
+
+    /**
+     * Removes a subfolder share. The subfolder is deregistered and its
+     * files remain in the top-level folder's DAO.
+     *
+     * @param subDirInfo the directory that identifies the subfolder to unshare
+     */
+    public void unshare(DirectoryInfo subDirInfo) {
+        Reject.ifNull(subDirInfo, "Subdirectory");
+        Reject.ifTrue(isSubFolder(), "Unshare only allowed from top level folder");
+
+        Folder subFolder = getController().getFolderRepository().findSubFolder(subDirInfo);
+        if (subFolder == null) {
+            logWarning(this + ": Cannot unshare - no subfolder found for " + subDirInfo);
+            return;
+        }
+
+        logInfo(this + ": Unsharing subfolder " + subFolder);
+
+        getController().getFolderRepository().removeFolder(subFolder, false);
+    }
+
+    private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
+        for (FileInfo deleted : deletedFiles) {
+            if (!deleted.isDeleted() || !deleted.isDiretory()) {
+                continue;
+            }
+            unshareIfSubFolder(deleted);
+        }
+    }
+
+    private void unshareIfSubFolder(FileInfo dirInfo) {
+        Map<DirectoryInfo, Folder> subFolders =
+                getController().getFolderRepository().getSubFolders(this);
+
+        for (Map.Entry<DirectoryInfo, Folder> entry : subFolders.entrySet()) {
+            Folder sub = entry.getValue();
+            if (sub == this || !sub.isSubFolder()) {
+                continue;
+            }
+            if (sub.getInfo().getLocation().getRelativeName()
+                    .equals(dirInfo.getRelativeName())) {
+                logInfo(this + ": Subfolder directory deleted, unsharing: " + sub);
+                unshare(entry.getKey());
+                return;
+            }
+        }
     }
 
     // Inner classes **********************************************************

@@ -20,7 +20,6 @@
 package de.dal33t.powerfolder.security;
 
 import com.google.protobuf.AbstractMessage;
-
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.Translation;
 
@@ -61,23 +60,14 @@ public class FolderOwnerPermission extends FolderPermission {
     }
 
     @Override
-    public boolean implies(Permission impliedPermision) {
-        if (impliedPermision instanceof FolderReadPermission) {
-            FolderReadPermission rp = (FolderReadPermission) impliedPermision;
-            return rp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderReadWritePermission) {
-            FolderReadWritePermission rwp = (FolderReadWritePermission) impliedPermision;
-            return rwp.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderAdminPermission) {
-            FolderAdminPermission p = (FolderAdminPermission) impliedPermision;
-            return p.getFolder().equals(getFolder());
-        } else if (impliedPermision instanceof FolderDeletePermission) {
-            FolderDeletePermission p = (FolderDeletePermission) impliedPermision;
-            return p.getFolder().equals(getFolder());
-        }
-        return false;
+    protected Class<? extends FolderPermission>[] getImpliedFolderPermissionTypes() {
+        return new Class[] {
+                FolderAdminPermission.class,
+                FolderReadWritePermission.class,
+                FolderReadPermission.class,
+                FolderDeletePermission.class
+        };
     }
-
 
     @Override
     public int hashCode() {

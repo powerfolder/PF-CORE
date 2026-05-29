@@ -187,20 +187,6 @@ public interface SecurityService {
 
     /**
      * @param foInfo
-     * @return the Anonyoumus permission for the given folder.
-     */
-    FolderPermission getWebPermission(FolderInfo foInfo);
-
-    /**
-     * Sets the Anonyoumus permission for the given folder.
-     *
-     * @param foInfo
-     * @param permission
-     */
-    void setWebPermission(FolderInfo foInfo, FolderPermission permission);
-
-    /**
-     * @param foInfo
      * @return the permissions on the folder.
      */
     Map<AccountInfo, FolderPermission> getFolderPermissions(FolderInfo foInfo);

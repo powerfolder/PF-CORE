@@ -247,22 +247,22 @@ public class StringUtils {
     }
     
     /**
-     * Cuts a string down to the last 2048 characters cutting only at line ends
-     * 
+     * Cuts a string down to the last 2047 characters cutting only at line ends
+     *
      * @param notes
      *              input string
      * @return cut string
      */
     public static String cutNotes(String notes) {
-        if (notes.length() <= 2048) {
+        if (notes.length() <= 2047) {
             return notes;
         }
-        String last2049Characters = notes.substring(notes.length() - 2049);
-        int positionOfLineBreak = last2049Characters.indexOf("\n");
-        if ( positionOfLineBreak <= -1 || positionOfLineBreak >= 2048) {
+        String last2048Characters = notes.substring(notes.length() - 2048);
+        int positionOfLineBreak = last2048Characters.indexOf("\n");
+        if (positionOfLineBreak <= -1 || positionOfLineBreak >= 2047) {
             positionOfLineBreak = 0;
         }
-        return last2049Characters.substring(positionOfLineBreak + 1, 2049);
+        return last2048Characters.substring(positionOfLineBreak + 1, 2048);
     }
 
     public static final String AEL_SPECIAL_ENCODING_UNICODE = new String(new byte[] {0x61, (byte) 0xCC, (byte) 0x88}, Convert.UTF8);
