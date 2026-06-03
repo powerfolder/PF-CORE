@@ -38,7 +38,11 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     private FileInfo toSub(FileInfo f) {
         Reject.ifNull(f, "FileInfo");
         if (f.isInSubFolder(subfolderPath)) {
-            return FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+            FileInfo mapped = FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+            if (mapped.isBaseDirectory()) {
+                return null;
+            }
+            return mapped;
         }
         return null;
     }
@@ -46,7 +50,11 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     private DirectoryInfo toSub(DirectoryInfo f) {
         Reject.ifNull(f, "FileInfo");
         if (f.isInSubFolder(subfolderPath)) {
-            return (DirectoryInfo) FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+            DirectoryInfo mapped = (DirectoryInfo) FileInfoFactory.mapToSubFolder(f, subfolderInfo);
+            if (mapped.isBaseDirectory()) {
+                return null;
+            }
+            return mapped;
         }
         return null;
     }
@@ -56,6 +64,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
         return files.stream()
                 .filter(f -> f.isInSubFolder(subfolderPath))
                 .map(this::toSub)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -141,6 +150,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
         return delegate.findAllFiles(domain).stream()
                 .filter(f -> f.isInSubFolder(subfolderPath))
                 .map(this::toSub)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -149,6 +159,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
         return delegate.findAllDirectories(domain).stream()
                 .filter(d -> d.getRelativeName().startsWith(subfolderPath))
                 .map(this::toSub)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -161,6 +172,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
             return delegate.findFiles(criteria).stream()
                     .filter(f -> f.isInSubFolder(subfolderPath))
                     .map(this::toSub)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         } finally {
             criteria.setPath(originalPath); // restore path afterward
@@ -176,6 +188,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
             Collection<FileInfo> result = delegate.findFilesFast(criteria).stream()
                     .filter(f -> f.isInSubFolder(subfolderPath))
                     .map(this::toSub)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             // Log output summary
