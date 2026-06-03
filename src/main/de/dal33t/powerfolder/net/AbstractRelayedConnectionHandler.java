@@ -429,10 +429,9 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     .bytesTransferred(data.length + 4);
             }
         } catch (RuntimeException e) {
-            logSevere("Runtime exception while serializing: " + message, e);
+            logSevere("While sending: " + e, e);
             // Ensure shutdown
             shutdownWithMember();
-            throw e;
         } catch (ConnectionException e) {
             // Ensure shutdown
             shutdownWithMember();
@@ -810,7 +809,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
 
             // do not break connection
         } catch (RuntimeException e) {
-            logSevere("RuntimeException", e);
+            logSevere("While receiving: " + e, e);
             shutdownWithMember();
 
             StringBuffer hexString = new StringBuffer();
@@ -819,10 +818,7 @@ public abstract class AbstractRelayedConnectionHandler extends PFComponent
                     .getPayload()[i]));
             }
             logWarning("On message: " + message + ": " + hexString);
-
-            throw e;
         }
-
     }
 
     /**

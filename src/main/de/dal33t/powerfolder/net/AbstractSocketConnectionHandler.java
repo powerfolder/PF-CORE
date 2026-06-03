@@ -521,10 +521,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
             shutdownWithMember();
             throw e;
         } catch (RuntimeException e) {
-            logSevere("Runtime exception while serializing: " + message, e);
+            logSevere("While sending: " + e, e);
             // Ensure shutdown
             shutdownWithMember();
-            throw e;
         }
     }
 
@@ -1086,9 +1085,9 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                         + AbstractSocketConnectionHandler.this);
                     // do not break connection
                 } catch (RuntimeException e) {
-                    logSevere("RuntimeException. " + e, e);
+                    logSevere("While receiving: " + e, e);
                     shutdownWithMember();
-                    throw e;
+                    break;
                 }
             }
 
