@@ -949,6 +949,48 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertTrue("Mapped base dir must be a lookup instance", subBaseDir.isLookupInstance());
     }
 
+    public void testSubFolderDAOExcludesBaseDirectory() {
+        String subDir = "shared/subdir";
+        FolderInfo topFolderInfo = FolderInfoFactory.newTopFolder("TOP", "TopFolder");
+
+        // The subfolder directory itself in the top folder DAO
+        DirectoryInfo subDirEntry = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
+                topFolderInfo, subDir,
+                null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirEntry);
+
+        // A real directory inside the subfolder
+        DirectoryInfo childDir = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
+                topFolderInfo, subDir + "/docs",
+                null, 0, null, null, new Date(), 2, null, true, null);
+
+        // A file inside the subfolder
+        FileInfo childFile = FileInfoFactory.unmarshallExistingFile(
+                topFolderInfo, subDir + "/readme.txt",
+                null, 42, null, null, new Date(), 1, null, false, null);
+
+        FileInfoDAOHashMapImpl topDAO = new FileInfoDAOHashMapImpl("ME", null);
+        topDAO.store(null, subDirEntry);
+        topDAO.store(null, childDir);
+        topDAO.store(null, childFile);
+
+        SubFolderFileInfoDAOProxy subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo);
+
+        // Base directory must NOT appear in findAllDirectories
+        Collection<DirectoryInfo> dirs = subDAO.findAllDirectories(null);
+        for (DirectoryInfo dir : dirs) {
+            assertFalse("Base directory must not be in findAllDirectories: " + dir,
+                    dir.isBaseDirectory());
+        }
+        assertEquals("Only the child directory should be returned", 1, dirs.size());
+        assertEquals("docs", dirs.iterator().next().getRelativeName());
+
+        // File should still be there
+        Collection<FileInfo> files = subDAO.findAllFiles(null);
+        assertEquals(1, files.size());
+        assertEquals("readme.txt", files.iterator().next().getRelativeName());
+    }
+
     /**
      * Reproduces the production NPE: readExternal converts size=-1 to null,
      * then getSize() auto-unboxes null → NPE.
