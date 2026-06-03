@@ -4112,6 +4112,19 @@ public class Folder extends PFComponent {
                 continue;
             }
 
+            if (remoteFileInfo.isLookupInstance()) {
+                logWarning("findSameFiles: Skipping remote lookup instance from "
+                    + member.getNick() + " (" + member.getId() + "): "
+                    + remoteFileInfo.toDetailString());
+                continue;
+            }
+            if (localFileInfo.isLookupInstance()) {
+                logWarning("findSameFiles: Skipping local lookup instance for "
+                    + remoteFileInfo.toDetailString() + ", local: "
+                    + localFileInfo.toDetailString());
+                continue;
+            }
+
             if (localFileInfo.isDeleted() != remoteFileInfo.isDeleted()) {
                 continue;
             }
