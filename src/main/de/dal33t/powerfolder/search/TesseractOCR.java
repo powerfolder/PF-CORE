@@ -83,6 +83,24 @@ public class TesseractOCR extends Loggable {
     private static final String CLASSPATH_TESSDATA_PATH = "/tesseract_ocr_trainingdata";
     private static final String TEMP_TESSDATA_DIRNAME = "powerfolder_tesseract_ocr_trainingdata";
 
+    /**
+     * Bundled OCR native libraries (under the platform lib dir, e.g.
+     * {@code /lin64libs/}) extracted at startup by {@link #extractBundledOcrLibs()}.
+     * Sourced from the JavaCPP-Presets builds and pinned to the lept4j/tess4j
+     * versions on the classpath:
+     * <ul>
+     *   <li>{@code libleptonica.so.6} — leptonica 1.85.0 (matches lept4j-1.21.1);
+     *       image codecs are statically linked in.</li>
+     *   <li>{@code libtesseract.so.5.5} — tesseract 5.5.0 (matches tess4j-5.16.0);
+     *       has RUNPATH=$ORIGIN and depends only on libleptonica.so.6.</li>
+     * </ul>
+     */
+    private static final String[] OCR_LIBS = {
+        "libleptonica.so.6",
+        "libtesseract.so.5.5"
+    };
+    private static final String TEMP_OCR_LIBS_DIRNAME = "powerfolder_ocr_libs";
+
     private final long maxOcrFileSizeBytes;
     private final String languageConfig;
     private boolean ocrEnabled = true;
@@ -282,22 +300,118 @@ public class TesseractOCR extends Loggable {
 
     private void configureNativeLibraryPath() {
         if (OSUtil.isWindowsSystem()) {
+            // tess4j/lept4j ship their Windows natives inside the jars.
             return;
         }
-        String existing = System.getProperty("jna.library.path", "");
-        StringBuilder sb = new StringBuilder(existing);
+        StringBuilder sb = new StringBuilder(
+            System.getProperty("jna.library.path", ""));
+
+        // Prefer the OCR native libraries we bundle ourselves. They are built
+        // against the Leptonica/Tesseract versions that match lept4j/tess4j on
+        // the classpath, so JNA binds them instead of an incompatible system
+        // libleptonica.so that may be missing symbols (e.g.
+        // pixBackgroundNormTo1MinMax on Leptonica < 1.83).
+        Path bundledDir = extractBundledOcrLibs();
+        if (bundledDir != null) {
+            prependPath(sb, bundledDir.toString());
+            logFine("Using bundled OCR native libraries from " + bundledDir);
+        }
+
+        // Fall back to the usual system locations — used when no bundled libs
+        // are present (e.g. tesseract-ocr installed via the package manager).
         for (String candidate : LINUX_NATIVE_LIB_PATHS) {
-            Path dir = Paths.get(candidate);
-            if (Files.isDirectory(dir)) {
-                if (sb.length() > 0) {
-                    sb.append(java.io.File.pathSeparator);
-                }
-                sb.append(candidate);
+            if (Files.isDirectory(Paths.get(candidate))) {
+                appendPath(sb, candidate);
             }
         }
+
         if (sb.length() > 0) {
             System.setProperty("jna.library.path", sb.toString());
             logFine("Set jna.library.path=" + sb);
+        }
+    }
+
+    private static void prependPath(StringBuilder sb, String dir) {
+        if (sb.length() > 0) {
+            sb.insert(0, dir + java.io.File.pathSeparator);
+        } else {
+            sb.append(dir);
+        }
+    }
+
+    private static void appendPath(StringBuilder sb, String dir) {
+        if (sb.length() > 0) {
+            sb.append(java.io.File.pathSeparator);
+        }
+        sb.append(dir);
+    }
+
+    /**
+     * Reduces a versioned Linux shared-object name to its plain name, e.g.
+     * {@code libleptonica.so.6} or {@code libtesseract.so.5.5} ->
+     * {@code libleptonica.so} / {@code libtesseract.so}. Returns {@code null}
+     * if the name does not contain a {@code .so} segment.
+     */
+    private static String toPlainSoName(String name) {
+        int idx = name.indexOf(".so");
+        if (idx < 0) {
+            return null;
+        }
+        return name.substring(0, idx + ".so".length());
+    }
+
+    /**
+     * Extracts the bundled OCR native libraries ({@link #OCR_LIBS}, under the
+     * platform lib dir) into a single temp directory, so JNA — and the dynamic
+     * linker resolving each library's $ORIGIN-relative dependencies — can find
+     * them together.
+     *
+     * @return the directory the libraries were extracted to, or {@code null}
+     *         if no bundled libraries are present or extraction failed.
+     */
+    private Path extractBundledOcrLibs() {
+        String libDir = OSUtil.is64BitPlatform() ? "lin64libs" : "lin32libs";
+
+        try {
+            Path targetDir = Paths.get(System.getProperty("java.io.tmpdir"))
+                .resolve(TEMP_OCR_LIBS_DIRNAME);
+            Files.createDirectories(targetDir);
+
+            int extracted = 0;
+            for (String name : OCR_LIBS) {
+                String res = "/" + libDir + "/" + name;
+                try (InputStream in = getClass().getResourceAsStream(res)) {
+                    if (in == null) {
+                        logWarning("Bundled OCR library listed in manifest but "
+                            + "missing from jar: " + res);
+                        continue;
+                    }
+                    Path target = targetDir.resolve(name);
+                    Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+                    extracted++;
+
+                    // Materialize a plain-name alias (libfoo.so.6.5 -> libfoo.so)
+                    // so JNA's library-name lookup resolves regardless of the
+                    // version suffix. The versioned file is kept too, so each
+                    // library's $ORIGIN-relative NEEDED entry still resolves.
+                    String plain = toPlainSoName(name);
+                    if (plain != null && !plain.equals(name)) {
+                        Files.copy(target, targetDir.resolve(plain),
+                            StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+
+            if (extracted == 0) {
+                return null;
+            }
+            logFine("Extracted " + extracted
+                + " bundled OCR native libraries to " + targetDir);
+            return targetDir;
+        } catch (IOException e) {
+            logWarning("Failed to extract bundled OCR native libraries: "
+                + e.getMessage());
+            return null;
         }
     }
 
