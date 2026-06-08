@@ -890,7 +890,9 @@ public class LuceneIndexManager extends PFComponent {
             logFiner(folder + ": Tika failed for " + fileInfo + ": " + e.getMessage());
         }
 
-        // 2) Check quality and attempt encoding repair
+        // 2) Tika extracted usable text — use it (with encoding repair if
+        //    needed). Text-bearing files (text PDFs, Office docs, …) never fall
+        //    through to OCR here: OCR only runs when Tika produced nothing.
         if (tikaText != null) {
             if (!hasEncodingIssues(tikaText)) {
                 return tikaText;
@@ -904,38 +906,34 @@ public class LuceneIndexManager extends PFComponent {
                 return repaired;
             }
 
-            if (isFine()) {
-                logFine(folder + ": Encoding issues in " + fileInfo + ", trying OCR fallback");
-            }
+            // Encoding still imperfect, but Tika did extract text — keep the
+            // strippable remainder searchable rather than discarding it for OCR.
+            return stripEncodingArtifacts(tikaText);
         }
 
-        // 3) OCR fallback for broken encoding or missing text
+        // 3) Tika produced no text (scanned PDF, image, …) — OCR fallback.
         if (!isOcrEnabled()) {
             if (isFine()) {
                 logFine(folder + ": OCR disabled (search.index.ocr.enabled=false) for " + fileInfo);
             }
-        } else if (!OCR_ELIGIBLE_PATTERN.matcher(filePath.toString()).matches()) {
+            return null;
+        }
+        if (!OCR_ELIGIBLE_PATTERN.matcher(filePath.toString()).matches()) {
             if (isFine()) {
                 logFine(folder + ": File type not OCR-eligible for " + fileInfo);
             }
+            return null;
         }
-        if (isOcrEnabled() && OCR_ELIGIBLE_PATTERN.matcher(filePath.toString()).matches()) {
-            try {
-                String ocrText = ocrEngine.performOCR(filePath);
-                if (ocrText != null && !ocrText.isBlank()) {
-                    if (isFine()) {
-                        logFine(folder + ": OCR extracted " + ocrText.length() + " chars from " + fileInfo);
-                    }
-                    return ocrText;
+        try {
+            String ocrText = ocrEngine.performOCR(filePath);
+            if (ocrText != null && !ocrText.isBlank()) {
+                if (isFine()) {
+                    logFine(folder + ": OCR extracted " + ocrText.length() + " chars from " + fileInfo);
                 }
-            } catch (NoClassDefFoundError e) {
-                logWarning(folder + ": OCR unavailable for " + fileInfo);
+                return ocrText;
             }
-        }
-
-        // 4) Last resort: strip encoding artifacts so partial matching works
-        if (tikaText != null) {
-            return stripEncodingArtifacts(tikaText);
+        } catch (NoClassDefFoundError e) {
+            logWarning(folder + ": OCR unavailable for " + fileInfo);
         }
 
         return null;
