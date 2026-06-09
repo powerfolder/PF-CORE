@@ -129,7 +129,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Index(name = "IDX_SHIB_PID")
     @Column(length = 2047)
     private String shibbolethPersistentID;
+    @Index(name = "IDX_ACC_REGISTER_DATE")
     private Date registerDate;
+    @Index(name = "IDX_ACC_LAST_LOGIN")
     private Date lastLoginDate;
     @ManyToOne
     @JoinColumn(name = "lastLoginFrom_id")
