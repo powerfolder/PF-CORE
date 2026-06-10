@@ -1038,7 +1038,7 @@ public enum ConfigurationEntry {
      * Files with other extensions are indexed by filename only.
      */
     SEARCH_INDEX_CONTENT_EXTENSIONS("search.index.contentExtensions",
-            "pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,odg,rtf,txt,csv,md,log,xml,html,htm,msg,eml"),
+            "pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,odg,rtf,txt,csv,md,log,xml,html,htm,msg,eml,png,jpg,jpeg,tif,tiff,bmp"),
 
     /**
      * Throttle delay (ms) between phase-2 content extractions (Tika/OCR).

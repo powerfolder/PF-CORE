@@ -865,7 +865,13 @@ public class LuceneIndexManager extends PFComponent {
 
     private String extractContent(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
-        if (filePath == null || !Files.exists(filePath)) return null;
+        if (filePath == null || !Files.exists(filePath)) {
+            if (isFine()) {
+                logFine(folder + ": File not found on disk for content extraction: "
+                        + fileInfo.getRelativeName() + " (resolved path: " + filePath + ")");
+            }
+            return null;
+        }
 
         try {
             if (Files.size(filePath) > CONTENT_EXTRACT_MAX_SIZE) {
@@ -879,15 +885,30 @@ public class LuceneIndexManager extends PFComponent {
         String tikaText = null;
 
         // 1) Tika text extraction (shared parser, no per-file init cost)
+        BodyContentHandler handler =
+                new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
-            BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
             getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 tikaText = text;
             }
         } catch (IOException | SAXException | TikaException e) {
-            logFiner(folder + ": Tika failed for " + fileInfo + ": " + e.getMessage());
+            // Tika aborted mid-parse: write limit reached (SAXException when the file
+            // exceeds maxTextLength), a malformed/corrupt document, or an I/O error.
+            // In every case BodyContentHandler retains the text emitted before the
+            // abort — keep that partial text instead of discarding it, so the file
+            // stays at least partially searchable.
+            String partial = handler.toString();
+            if (partial != null && !partial.isBlank()) {
+                tikaText = partial;
+                if (isFine()) {
+                    logFine(folder + ": Using partial content (" + partial.length()
+                            + " chars) after " + e.getClass().getSimpleName() + " for " + fileInfo);
+                }
+            } else {
+                logWarning(folder + ": Tika content extraction failed for " + fileInfo + ": " + e.getMessage());
+            }
         }
 
         // 2) Tika extracted usable text — use it (with encoding repair if
