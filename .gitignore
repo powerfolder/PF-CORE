@@ -14,3 +14,4 @@
 /tools/
 /reports/
 /.claude/settings.local.json
+/.codegraph/
