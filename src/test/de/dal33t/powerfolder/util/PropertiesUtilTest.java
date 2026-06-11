@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.StreamUtils;
@@ -34,8 +36,9 @@ import de.dal33t.powerfolder.util.StreamUtils;
 /**
  * @author sprajc
  */
-public class PropertiesUtilTest extends TestCase {
+public class PropertiesUtilTest {
 
+    @Test
     public void testWriteSpecialChars() throws IOException {
         Properties p = new Properties();
         p.put("wrapper.java.additional.2", "-XX:MaxPermSize=256m");
@@ -46,7 +49,7 @@ public class PropertiesUtilTest extends TestCase {
         StreamUtils.copyToStream(testFile, bOut);
         String s = new String(bOut.toByteArray(), Convert.UTF8);
         // Should not contain escaped chars
-        assertFalse(s, s.contains("\\"));
+        assertFalse( s.contains("\\"),s);
 
         Properties loaded = new Properties();
         InputStream in = Files.newInputStream(testFile);

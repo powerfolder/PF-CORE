@@ -121,10 +121,9 @@ public class SecurityManagerClient extends PFComponent implements
         }
         AccountInfo a = getAccountInfo(m);
         if (a == null) {
-            // Not logged in
-            return false;
+            return hasPermissionDisconnected(permission);
         }
-        return hasPermission(getAccountInfo(m), permission);
+        return hasPermission(a, permission);
     }
 
     public boolean hasPermission(Account account, Permission permission) {

@@ -18,18 +18,21 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.collection.CompositeMap;
 
-public class CompositeMapTest extends TestCase {
+public class CompositeMapTest {
 
     private static Semaphore LOCK = new Semaphore(3);
 
+    @Test
     public void testConcurrentAccess() {
         Map<String, String> map1 = new ConcurrentHashMap<String, String>();
         Map<String, String> map2 = new ConcurrentHashMap<String, String>();

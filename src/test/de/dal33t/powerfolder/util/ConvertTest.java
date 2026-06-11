@@ -24,15 +24,13 @@ import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.NodeManager;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConvertTest {
 
@@ -56,10 +54,12 @@ public class ConvertTest {
         assertEquals(-195622121, Convert.convert2Int(anotherArray));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void asMemberInfosArrayNullTest() {
-        Member[] members = null;
-        Convert.asMemberInfos(members);
+        assertThrows(NullPointerException.class, () -> {
+            Member[] members = null;
+            Convert.asMemberInfos(members);
+        });
     }
 
     @Test
@@ -85,10 +85,12 @@ public class ConvertTest {
 
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void asMemberInfosListNullTest(){
-        List members = null;
-        Convert.asMemberInfos(members);
+        assertThrows(NullPointerException.class, () -> {
+            List members = null;
+            Convert.asMemberInfos(members);
+        });
     }
 
     @Test

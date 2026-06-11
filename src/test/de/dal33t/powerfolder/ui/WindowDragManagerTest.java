@@ -18,10 +18,11 @@
  */
 package de.dal33t.powerfolder.ui;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
-
-import junit.framework.TestCase;
 
 /**
  * Test for {@link WindowDragManager}.
@@ -29,11 +30,12 @@ import junit.framework.TestCase;
  * @author <a href="mailto:radig@powerfolder.com">Matthias Radig</a>
  *
  */
-public class WindowDragManagerTest extends TestCase {
+public class WindowDragManagerTest {
 
 
     private TestComponent testComponent = new TestComponent();
 
+    @Test
     public void testConstructor() {
         try {
             new WindowDragManager(null, 30);
@@ -50,6 +52,7 @@ public class WindowDragManagerTest extends TestCase {
         }
     }
 
+    @Test
     public void testInvariance() {
         WindowDragManager m = new WindowDragManager(testComponent, Integer.MAX_VALUE);
 
@@ -90,6 +93,7 @@ public class WindowDragManagerTest extends TestCase {
         assertEquals(0, testComponent.sets);
     }
 
+    @Test
     public void testUpdate() {
         WindowDragManager m = new WindowDragManager(testComponent, Integer.MAX_VALUE);
 

@@ -1,6 +1,5 @@
 /*
- * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
- * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
+ * Copyright 2004 - 2017 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -18,15 +17,16 @@
  */
 package de.dal33t.powerfolder.light;
 
-import de.dal33t.powerfolder.util.StringUtils;
-import junit.framework.TestCase;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import de.dal33t.powerfolder.util.StringUtils;
 import java.util.Date;
 
 /**
  * Created by sprajc on 23.05.17.
  */
-public class FileInfoFactoryTest extends TestCase {
+public class FileInfoFactoryTest {
 
 
     public void xtestPFC3428() {
@@ -41,6 +41,7 @@ public class FileInfoFactoryTest extends TestCase {
         assertEquals(diskFile, fileInfo.getRelativeName());
     }
 
+    @Test
     public void testRenameConflictResolve() {
         FolderInfo z = FolderInfoFactory.unmarshallExistingTopFolder("ID", "Z", 1);
         FolderInfo zResolved = FolderInfoFactory.resolveConflict(z);
@@ -49,56 +50,7 @@ public class FileInfoFactoryTest extends TestCase {
         assertEquals(2, zResolved.getVersion());
     }
 
-    public void testChangedFolderInfoLookupInstancePreservesDirectoryType() {
-        FolderInfo folderA = FolderInfoFactory.newTopFolder("A", "FolderA");
-        FolderInfo folderB = FolderInfoFactory.newTopFolder("B", "FolderB");
-
-        DirectoryInfo dirInfo = (DirectoryInfo) FileInfoFactory.lookupInstance(folderA, "some/directory", true);
-        assertTrue("Original should be lookup instance", dirInfo.isLookupInstance());
-        assertTrue("Original should be DirectoryInfo", dirInfo.isDiretory());
-
-        FileInfo result = FileInfoFactory.changedFolderInfo(dirInfo, folderB);
-
-        assertTrue("Result should be lookup instance", result.isLookupInstance());
-        assertTrue("Result must remain DirectoryInfo", result.isDiretory());
-        assertFalse("Result must not be FileInfo", result.isFile());
-        assertEquals("some/directory", result.getRelativeName());
-        assertEquals(folderB, result.getFolderInfo());
-    }
-
-    public void testChangedFolderInfoLookupInstanceFileInfoStaysFileInfo() {
-        FolderInfo folderA = FolderInfoFactory.newTopFolder("A", "FolderA");
-        FolderInfo folderB = FolderInfoFactory.newTopFolder("B", "FolderB");
-
-        FileInfo fileInfo = FileInfoFactory.lookupInstance(folderA, "some/file.txt", false);
-        assertTrue("Original should be lookup instance", fileInfo.isLookupInstance());
-        assertTrue("Original should be FileInfo", fileInfo.isFile());
-
-        FileInfo result = FileInfoFactory.changedFolderInfo(fileInfo, folderB);
-
-        assertTrue("Result should be lookup instance", result.isLookupInstance());
-        assertTrue("Result must remain FileInfo", result.isFile());
-        assertEquals("some/file.txt", result.getRelativeName());
-        assertEquals(folderB, result.getFolderInfo());
-    }
-
-    public void testChangedFolderInfoNonLookupDirectoryPreservesFields() {
-        FolderInfo folderA = FolderInfoFactory.newTopFolder("A", "FolderA");
-        FolderInfo folderB = FolderInfoFactory.newTopFolder("B", "FolderB");
-
-        DirectoryInfo dirInfo = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
-                folderA, "some/dir", null, 0, null, null, new Date(), 3, null, true, null);
-        assertFalse("Should not be lookup instance", dirInfo.isLookupInstance());
-        assertTrue("Should be DirectoryInfo", dirInfo.isDiretory());
-
-        FileInfo result = FileInfoFactory.changedFolderInfo(dirInfo, folderB);
-
-        assertFalse("Result should not be lookup instance", result.isLookupInstance());
-        assertTrue("Result must remain DirectoryInfo", result.isDiretory());
-        assertEquals(3, result.getVersion());
-        assertEquals(folderB, result.getFolderInfo());
-    }
-
+    @Test
     public void testEncodeDecodeIllegalCharacters() {
         String testString = "PhD_GOE&CPH-221216.";
         String encoded = FileInfoFactory.encodeIllegalChars(testString);

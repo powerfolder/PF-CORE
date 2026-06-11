@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder.util.test;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -36,8 +41,6 @@ import de.dal33t.powerfolder.util.PropertiesUtil;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
-import junit.framework.TestCase;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -61,17 +64,16 @@ import java.util.logging.Level;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public abstract class MultipleControllerTestCase extends TestCase {
+public abstract class MultipleControllerTestCase {
     private final Map<String, Controller> controllers = new HashMap<String, Controller>();
     private FolderInfo mctFolder;
     private int port = 4000;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         System.setProperty("user.home",
             Paths.get("build/test/home").toAbsolutePath().toString());
         Loggable.setLogNickPrefix(true);
-        super.setUp();
 
         for (Controller controller : controllers.values()) {
             if (controller.isStarted()) {
@@ -96,11 +98,10 @@ public abstract class MultipleControllerTestCase extends TestCase {
         PathUtils.recursiveDelete(Controller.getMiscFilesLocation().resolve("build"));
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         LoggingManager.setConsoleLogging(Level.OFF);
         //System.out.println("-------------- tearDown -----------------");
-        super.tearDown();
         stopControllers();
         mctFolder = null;
     }
@@ -123,8 +124,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
         Controller controller = Controller.createController();
         controller.startConfig(config);
         waitForStart(controller);
-        assertNotNull("Connection listener for controller '" + id
-            + "' could not be opened", controller.getConnectionListener());
+        assertNotNull( controller.getConnectionListener(),"Connection listener for controller '" + id
+            + "' could not be opened");
         // triggerAndWaitForInitialMaitenenace(controller);
         // Clean up on completion.
         controllers.put(id, controller);
@@ -368,7 +369,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
             && (Files.notExists(diskFile) || lastModifiedMatch) && deleteStatusMatch
             && fileObjectEquals;
 
-        assertTrue(
+        assertTrue( matches,
             "FileInfo does not match physical file. \nFileInfo:\n "
                 + fInfo.toDetailString() + "\nFile:\n "
                 + diskFile.getFileName().toString() + ", size: "
@@ -378,7 +379,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: "
                 + sizeMatch + "\nlastModifiedMatch: " + lastModifiedMatch
                 + "\ndeleteStatus: " + deleteStatusMatch + "\ndirMatch: "
-                + dirMatch + "\nFileObjectEquals: " + fileObjectEquals, matches);
+                + dirMatch + "\nFileObjectEquals: " + fileObjectEquals);
     }
 
     /**
@@ -418,7 +419,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
         boolean matches = dirMatch && nameMatch && deleteStatusMatch
             && fileObjectEquals;
 
-        assertTrue(
+        assertTrue( matches,
             "DirectoryInfo does not match physical dir. \nFileInfo:\n "
                 + fInfo.toDetailString() + "\nFile:\n "
                 + diskFile.getFileName().toString() + ", size: "
@@ -427,7 +428,7 @@ public abstract class MultipleControllerTestCase extends TestCase {
                 + " (" + lastModified + ")"
                 + "\n\nWhat matches?:\nName: " + nameMatch + "\ndeleteStatus: "
                 + deleteStatusMatch + "\ndirMatch: " + dirMatch
-                + "\nFileObjectEquals: " + fileObjectEquals, matches);
+                + "\nFileObjectEquals: " + fileObjectEquals);
     }
 
     // Helpers ****************************************************************
@@ -463,8 +464,8 @@ public abstract class MultipleControllerTestCase extends TestCase {
         assertFalse(controller.isStarted());
         // Add a pause to make sure files can be cleaned before next test.
         TestHelper.waitMilliSeconds(500);
-        assertFalse("Shutdown of controller(" + controller.toString() + ") failed", controller.isShuttingDown());
-        assertFalse("Shutdown of controller(" + controller.toString() + ")  failed", controller.isStarted());
+        assertFalse( controller.isShuttingDown(),"Shutdown of controller(" + controller.toString() + ") failed");
+        assertFalse( controller.isStarted(),"Shutdown of controller(" + controller.toString() + ")  failed");
     }
 
     private void stopControllers() {
@@ -484,10 +485,10 @@ public abstract class MultipleControllerTestCase extends TestCase {
             // add a pause to make sure files can be cleaned before next
             // test.
             TestHelper.waitMilliSeconds(500);
-            assertFalse("Shutdown of controller(" + id + ") failed",
-                controller.isShuttingDown());
-            assertFalse("Shutdown of controller(" + id + ")  failed",
-                controller.isStarted());
+            assertFalse(
+                controller.isShuttingDown(),"Shutdown of controller(" + id + ") failed");
+            assertFalse(
+                controller.isStarted(),"Shutdown of controller(" + id + ")  failed");
         }
         controllers.clear();
     }

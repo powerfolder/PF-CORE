@@ -1,0 +1,99 @@
+Buildfile: /Users/mac/Desktop/PF-CORE/build.xml
+
+debug:
+
+loadproperties0:
+
+loadproperties:
+
+detect-version:
+     [echo] 
+     [echo] 			Auto detected version: 27.3.15
+     [echo] 		
+
+init:
+
+compile:
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/build
+    [javac] Compiling 843 source files to /Users/mac/Desktop/PF-CORE/build
+    [javac] warning: [options] system modules path not set in conjunction with -source 9
+    [javac] /Users/mac/Desktop/PF-CORE/src/main/de/dal33t/powerfolder/clientserver/ServerClient.java:1340: warning: [removal] <T>doAs(Subject,PrivilegedExceptionAction<T>) in Subject has been deprecated and marked for removal
+    [javac]             return Subject.doAs(clientSubject, new ServiceTicketGenerator());
+    [javac]                           ^
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in method <T>doAs(Subject,PrivilegedExceptionAction<T>)
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 2 warnings
+     [copy] Copying 107 files to /Users/mac/Desktop/PF-CORE/build
+     [copy] Copying 533 files to /Users/mac/Desktop/PF-CORE/build
+
+run-tests:
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/test-reports
+    [javac] /Users/mac/Desktop/PF-CORE/build.xml:577: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 120 source files to /Users/mac/Desktop/PF-CORE/build
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/message/SerializationCompareTest.java:124: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         f.size = new Long((long) (Math.random() * 1000000));
+    [javac]                  ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/message/SerializationCompareTest.java:137: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         f.size = new Long((long) (Math.random() * 1000000));
+    [javac]                  ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/FormatTest.java:67: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         Long longObject = new Long(1024);
+    [javac]                           ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/FormatTest.java:151: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         Long longObject = new Long(1024);
+    [javac]                           ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/FormatTest.java:236: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         Long millis = new Long(1000L * 60 * 2 + 1234);
+    [javac]                       ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/UtilTest.java:131: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+    [javac]         Double firstNumber = new Double(1234.231);
+    [javac]                              ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/UtilTest.java:132: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+    [javac]         Double secondNumber = new Double(1234.231);
+    [javac]                               ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/UtilTest.java:185: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+    [javac]         assertFalse(Util.equals(new Double(234), new Double(432)));
+    [javac]                                 ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/UtilTest.java:185: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+    [javac]         assertFalse(Util.equals(new Double(234), new Double(432)));
+    [javac]                                                  ^
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 9 warnings
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/test-reports/raw
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/test-reports/html
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/test-reports/htmlnoframes
+[junitlauncher] Running de.dal33t.powerfolder.ControllerTest
+[junitlauncher] Tests run: 6, Failures: 0, Aborted: 0, Skipped: 1, Time elapsed: 13,981 sec
+[junitlauncher] Running de.dal33t.powerfolder.D2DControllerTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,915 sec
+[junitlauncher] Running de.dal33t.powerfolder.FeatureTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,048 sec
+[junitlauncher] Running de.dal33t.powerfolder.PowerFolderInvitationTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 1,671 sec
+[junitlauncher] Running de.dal33t.powerfolder.RemoteCommandManagerTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,307 sec
+[junitlauncher] Running de.dal33t.powerfolder.d2d.D2DControllerTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 5,914 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.DiskItemFilterTest
+[junitlauncher] Tests run: 7, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,304 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.EncryptedFileSystemUtilsTest
+[junitlauncher] Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[junitlauncher] Tests run: 12, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,226 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.FileInfoDAOHashTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 3,883 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.JNotifyTest
+[junitlauncher] Tests run: 6, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,05 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.LockingTest
+[junitlauncher] Tests run: 7, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 13,873 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.problem.FileProblemTest
+[junitlauncher] Tests run: 7, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,206 sec
+[junitlauncher] Running de.dal33t.powerfolder.domain.FileLinkPathNormalizationTest
+[junitlauncher] Tests run: 40, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,076 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.AtomicCommitTest

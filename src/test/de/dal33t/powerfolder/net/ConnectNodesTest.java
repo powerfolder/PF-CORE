@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.net;
 
+
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.*;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.disk.Folder;
@@ -31,6 +33,7 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test the reconnection behaviour.
@@ -40,28 +43,29 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  */
 public class ConnectNodesTest extends FiveControllerTestCase {
 
+    @Test
     public void testConnectedNodes() {
         int nTries = 10;
         for (int i = 0; i < nTries; i++) {
             boolean connectOk = tryToConnectSimpsons();
 
-            assertEquals("Connected nodes @Homer: "
-                + getContollerHomer().getNodeManager().getConnectedNodes(), 4,
-                getContollerHomer().getNodeManager().getConnectedNodes().size());
-            assertEquals("Connected nodes @Bart: "
-                + getContollerBart().getNodeManager().getConnectedNodes(), 4,
-                getContollerBart().getNodeManager().getConnectedNodes().size());
-            assertEquals("Connected nodes @Marge: "
-                + getContollerMarge().getNodeManager().getConnectedNodes(), 4,
-                getContollerMarge().getNodeManager().getConnectedNodes().size());
-            assertEquals("Connected nodes @Lisa: "
-                + getContollerLisa().getNodeManager().getConnectedNodes(), 4,
-                getContollerLisa().getNodeManager().getConnectedNodes().size());
-            assertEquals("Connected nodes @Maggie: "
-                + getContollerMaggie().getNodeManager().getConnectedNodes(), 4,
+            assertEquals( 4,
+                getContollerHomer().getNodeManager().getConnectedNodes().size(),"Connected nodes @Homer: "
+                + getContollerHomer().getNodeManager().getConnectedNodes());
+            assertEquals( 4,
+                getContollerBart().getNodeManager().getConnectedNodes().size(),"Connected nodes @Bart: "
+                + getContollerBart().getNodeManager().getConnectedNodes());
+            assertEquals( 4,
+                getContollerMarge().getNodeManager().getConnectedNodes().size(),"Connected nodes @Marge: "
+                + getContollerMarge().getNodeManager().getConnectedNodes());
+            assertEquals( 4,
+                getContollerLisa().getNodeManager().getConnectedNodes().size(),"Connected nodes @Lisa: "
+                + getContollerLisa().getNodeManager().getConnectedNodes());
+            assertEquals( 4,
                 getContollerMaggie().getNodeManager().getConnectedNodes()
-                    .size());
-            assertTrue("Connection of Simpsons failed", connectOk);
+                    .size(),"Connected nodes @Maggie: "
+                + getContollerMaggie().getNodeManager().getConnectedNodes());
+            assertTrue( connectOk,"Connection of Simpsons failed");
 
             getContollerBart().getNodeManager().shutdown();
             getContollerLisa().getNodeManager().shutdown();
@@ -133,6 +137,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         }
     }
 
+    @Test
     public void testAutoReconnectAfterDisconnect() {
 
         connectSimpsons();
@@ -149,17 +154,17 @@ public class ConnectNodesTest extends FiveControllerTestCase {
             .getNode(getContollerLisa().getMySelf().getInfo());
         final Member homerAtLisa = getContollerLisa().getNodeManager().getNode(
             getContollerHomer().getMySelf().getInfo());
-        assertTrue("Lisa not completely connected at Homer", lisaAtHomer
-            .isCompletelyConnected());
+        assertTrue( lisaAtHomer
+            .isCompletelyConnected(),"Lisa not completely connected at Homer");
         lisaAtHomer.shutdown();
 
         // No RECONNECT should happen!
         // Both are not friends so no connect!
         TestHelper.waitMilliSeconds(5000);
-        assertFalse("Lisa still connected at Homer", lisaAtHomer
-            .isCompletelyConnected());
-        assertFalse("Homer still connected at Lisa", homerAtLisa
-            .isCompletelyConnected());
+        assertFalse( lisaAtHomer
+            .isCompletelyConnected(),"Lisa still connected at Homer");
+        assertFalse( homerAtLisa
+            .isCompletelyConnected(),"Homer still connected at Lisa");
 
         // Make friend
         lisaAtHomer.setFriend(true, "");
@@ -224,6 +229,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         }
     }
 
+    @Test
     public void testFolderConnectInternet() throws InvalidIdentityException {
         getContollerLisa().setNetworkingMode(NetworkingMode.PRIVATEMODE);
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
@@ -243,7 +249,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION, false);
 
         ConnectResult conRes = margeAtLisa.reconnect();
-        assertTrue(conRes.toString(), conRes.isSuccess());
+        assertTrue( conRes.isSuccess(),conRes.toString());
 
         TestHelper.waitForCondition(100, new ConditionWithMessage() {
             public String message() {
@@ -277,6 +283,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
         // });
     }
 
+    @Test
     public void testNonConnectWrongIdentity() {
         final Member bartAtHomer = getContollerBart().getMySelf().getInfo()
             .getNode(getContollerHomer(), true);
@@ -300,6 +307,7 @@ public class ConnectNodesTest extends FiveControllerTestCase {
     /**
      * PFS-3616
      */
+    @Test
     public void testLoopbackConnection() {
         // Prepare folder
         FolderInfo foInfo = joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION, false);

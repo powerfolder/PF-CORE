@@ -19,9 +19,8 @@
 */
 package de.dal33t.powerfolder.util;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,8 +29,9 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-public class DateUtilTest extends TestCase {
+public class DateUtilTest {
 
+    @Test
     public void testDefault() {
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(1000), new Date(3000)));
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(11111111), new Date(11111000)));
@@ -45,60 +45,66 @@ public class DateUtilTest extends TestCase {
         assertFalse(DateUtil.isNewerFileDateCrossPlattform(new Date(1000),new Date(3001)));
     }
 
+    @Test
     public void testSpecial() {
         assertTrue(DateUtil.equalsFileDateCrossPlattform(new Date(1146605870000L), new Date(1146605868805L)));
     }
 
+    @Test
     public void testDateDaysInFuture() {
         Calendar cal = new GregorianCalendar();
         // Today is not more than 15 days ahead.
-        assertFalse("Future date fault 0", DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15));
+        assertFalse( DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15),"Future date fault 0");
         cal.add(Calendar.DATE, 10);
         // Ten days in the future is not more than 15 days ahead.
-        assertFalse("Future date fault 10", DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15));
+        assertFalse( DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15),"Future date fault 10");
         cal.add(Calendar.DATE, 10);
         // Twenty days in the future is more than 15 days ahead.
-        assertTrue("Future date fault 20", DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15));
+        assertTrue( DateUtil.isDateMoreThanNDaysInFuture(cal.getTime(), 15),"Future date fault 20");
     }
 
+    @Test
     public void testDateHoursInFuture() {
         Calendar cal = new GregorianCalendar();
         // Today is not more than 15 hours ahead.
-        assertFalse("Future date fault 0", DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15));
+        assertFalse( DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15),"Future date fault 0");
         cal.add(Calendar.HOUR, 10);
         // Ten hours in the future is not more than 15 hours ahead.
-        assertFalse("Future date fault 10", DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15));
+        assertFalse( DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15),"Future date fault 10");
         cal.add(Calendar.HOUR, 10);
         // Twenty hours in the future is more than 15 hours ahead.
-        assertTrue("Future date fault 20", DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15));
+        assertTrue( DateUtil.isDateMoreThanNHoursInFuture(cal.getTime(), 15),"Future date fault 20");
     }
 
+    @Test
     public void testDateMinutesInFuture() {
         Calendar cal = new GregorianCalendar();
         // Today is not more than 15 minutes ahead.
-        assertFalse("Future date fault 0", DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15));
+        assertFalse( DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15),"Future date fault 0");
         cal.add(Calendar.MINUTE, 10);
         // Ten minutes in the future is not more than 15 minuts ahead.
-        assertFalse("Future date fault 10", DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15));
+        assertFalse( DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15),"Future date fault 10");
         cal.add(Calendar.MINUTE, 10);
         // Twenty minuts in the future is more than 15 minuts ahead.
-        assertTrue("Future date fault 20", DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15));
+        assertTrue( DateUtil.isDateMoreThanNMinutesInFuture(cal.getTime(), 15),"Future date fault 20");
     }
 
+    @Test
     public void testBeforeEndOfDate() {
         Calendar cal = new GregorianCalendar();
         cal.add(Calendar.DATE, -1);
-        assertTrue("Yesterday is before end of today", DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()));
+        assertTrue( DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()),"Yesterday is before end of today");
         cal.add(Calendar.DATE, 1);
-        assertTrue("Today is before end of today", DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()));
+        assertTrue( DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()),"Today is before end of today");
         cal.add(Calendar.DATE, 1);
-        assertFalse("Tomorrow is not before end of today", DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()));
+        assertFalse( DateUtil.isBeforeEndOfDate(cal.getTime(), new Date()),"Tomorrow is not before end of today");
     }
 
+    @Test
     public void testZeroTime() {
         Date date = new Date();
         Date result = DateUtil.zeroTime(date);
-        assertFalse("Dates are the same", date.equals(result));
+        assertFalse( date.equals(result),"Dates are the same");
 
         Calendar dateCal = Calendar.getInstance();
         dateCal.setTime(date);
@@ -106,19 +112,20 @@ public class DateUtilTest extends TestCase {
         Calendar resultCal = Calendar.getInstance();
         resultCal.setTime(result);
 
-        assertEquals("Days are different", dateCal.get(Calendar.DAY_OF_YEAR),
-                resultCal.get(Calendar.DAY_OF_YEAR));
-        assertFalse("The rest are same",
+        assertEquals( dateCal.get(Calendar.DAY_OF_YEAR),
+                resultCal.get(Calendar.DAY_OF_YEAR),"Days are different");
+        assertFalse(
                 dateCal.get(Calendar.HOUR_OF_DAY) == resultCal.get(Calendar.HOUR_OF_DAY) &&
                         dateCal.get(Calendar.MINUTE) == resultCal.get(Calendar.MINUTE) &&
                         dateCal.get(Calendar.SECOND) == resultCal.get(Calendar.SECOND) &&
-                        dateCal.get(Calendar.MILLISECOND) == resultCal.get(Calendar.MILLISECOND));
+                        dateCal.get(Calendar.MILLISECOND) == resultCal.get(Calendar.MILLISECOND),"The rest are same");
     }
 
+    @Test
     public void testTruncateToHour() {
         Date date = new Date();
         Date result = DateUtil.truncateToHour(date);
-        assertFalse("Dates are the same", date.equals(result));
+        assertFalse( date.equals(result),"Dates are the same");
 
         Calendar dateCal = Calendar.getInstance();
         dateCal.setTime(date);
@@ -126,16 +133,17 @@ public class DateUtilTest extends TestCase {
         Calendar resultCal = Calendar.getInstance();
         resultCal.setTime(result);
 
-        assertEquals("Days are different", dateCal.get(Calendar.DAY_OF_YEAR),
-                resultCal.get(Calendar.DAY_OF_YEAR));
-        assertEquals("Hours are different", dateCal.get(Calendar.HOUR_OF_DAY),
-                resultCal.get(Calendar.HOUR_OF_DAY));
-        assertFalse("The rest are same",
+        assertEquals( dateCal.get(Calendar.DAY_OF_YEAR),
+                resultCal.get(Calendar.DAY_OF_YEAR),"Days are different");
+        assertEquals( dateCal.get(Calendar.HOUR_OF_DAY),
+                resultCal.get(Calendar.HOUR_OF_DAY),"Hours are different");
+        assertFalse(
                 dateCal.get(Calendar.MINUTE) == resultCal.get(Calendar.MINUTE) &&
                         dateCal.get(Calendar.SECOND) == resultCal.get(Calendar.SECOND) &&
-                        dateCal.get(Calendar.MILLISECOND) == resultCal.get(Calendar.MILLISECOND));
+                        dateCal.get(Calendar.MILLISECOND) == resultCal.get(Calendar.MILLISECOND),"The rest are same");
     }
 
+    @Test
     public void testConvertLdapToUnix() {
         // 24. 6. 2007 5:57:54.2968750
         assertEquals(1182664674296l, DateUtil.convertLdapToUnix(128271382742968750l));
@@ -148,6 +156,7 @@ public class DateUtilTest extends TestCase {
      * @author krickl
      * @throws ParseException 
      */
+    @Test
     public void testIsMoreThanNDaysAfter() throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM yyyy");
         Date d1 = sdf.parse("01.01 2010");
@@ -178,17 +187,17 @@ public class DateUtilTest extends TestCase {
         assertNull(DateUtil.parseDate("0"));
 
         // Mon Jan 01 00:00:00 UTC 1601
-        assertEquals(1, 1, 1601, 0, 0, 0, DateUtil.parseDate("1"));
+        assertDateEquals(1, 1, 1601, 0, 0, 0, DateUtil.parseDate("1"));
 
         // 2015-09-22T13:32:32.084Z
-        assertEquals(22, 9, 2015, 13, 32, 32, DateUtil.parseDate("2015-09-22T13:32:32.084Z"));
+        assertDateEquals(22, 9, 2015, 13, 32, 32, DateUtil.parseDate("2015-09-22T13:32:32.084Z"));
 
         // 2013-04-03T17:04:39.9430000+03:00. +3 on UTC
-        assertEquals(3, 4, 2013, 14, 4, 39, DateUtil.parseDate("2013-04-03T17:04:39.9430000+03:00"));
+        assertDateEquals(3, 4, 2013, 14, 4, 39, DateUtil.parseDate("2013-04-03T17:04:39.9430000+03:00"));
 
         // Souce: https://en.wikipedia.org/wiki/ISO_8601
-        assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-04-23T12:50:40+00:00"));
-        assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-04-23T12:50:40Z"));
+        assertDateEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-04-23T12:50:40+00:00"));
+        assertDateEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-04-23T12:50:40Z"));
 
         // Unsupported variants at the moment:
         // assertEquals(23, 4, 2020, 0, 0, 0, DateUtil.parseDate("2020-04-23"));
@@ -199,7 +208,7 @@ public class DateUtilTest extends TestCase {
         // assertEquals(23, 4, 2020, 12, 50, 40, DateUtil.parseDate("2020-114"));
     }
 
-    private void assertEquals(int day, int month, int year, int hour, int minutes, int seconds, Date actual) {
+    private void assertDateEquals(int day, int month, int year, int hour, int minutes, int seconds, Date actual) {
         Calendar c = Calendar.getInstance();
         c.setTime(actual);
         c.setTimeZone(TimeZone.getTimeZone("UTC"));

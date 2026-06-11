@@ -19,20 +19,15 @@
  */
 package de.dal33t.powerfolder.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.util.Format;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AccountTest {
 

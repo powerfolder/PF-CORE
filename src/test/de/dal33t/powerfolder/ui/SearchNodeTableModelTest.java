@@ -19,6 +19,9 @@
 */
 package de.dal33t.powerfolder.ui;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +36,7 @@ import de.dal33t.powerfolder.ui.model.SearchNodeTableModel;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the node table model.
@@ -47,7 +51,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
     private Member moe;
     private Member homer;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception
     {
         super.setUp();
@@ -66,6 +70,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
      * Tests the direct mutation of the node table model via its own
      * modification methods.
      */
+    @Test
     public void testDirectChanges() {
         // Test = No users found
         assertEquals(1, model.getRowCount());
@@ -128,6 +133,7 @@ public class SearchNodeTableModelTest extends ControllerTestCase {
     /**
      * Tests the mutation of the node table model via its listmodel.
      */
+    @Test
     public void testListModelChanges() {
         ObservableList<Member> list = model.getListModel();
         // Test = No users found

@@ -274,6 +274,7 @@ public class Profiling {
                 || uri.startsWith("/gallery/")
                 || uri.startsWith("/settings/")
                 || uri.startsWith("/files/")
+                || uri.startsWith("/filesjson/")
                 || uri.startsWith("/folderstable/")
                 || uri.startsWith("/player/")
         ) {

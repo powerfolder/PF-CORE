@@ -19,11 +19,17 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import java.util.concurrent.Callable;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.Sequence;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
@@ -31,51 +37,35 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.transfer.TransferPriorities.TransferPriority;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PriorityTransferTest extends TwoControllerTestCase {
-    private interface Helper {
-        void downloadNewestVersion(FileInfo fInfo, boolean automatic);
-    };
+
+    private final List<String> downloadSequence = Collections.synchronizedList(new ArrayList<>());
+    private final Set<String> targetFiles = Collections.synchronizedSet(new HashSet<>());
+    private CountDownLatch allDownloaded;
 
     private class TestTransferManager extends TransferManager {
-        private final Helper helper;
-
-        public TestTransferManager(Controller controller, Helper helper) {
+        public TestTransferManager(Controller controller) {
             super(controller);
-            this.helper = helper;
         }
 
         @Override
         public DownloadManager downloadNewestVersion(FileInfo info,
             boolean automatic)
         {
-            helper.downloadNewestVersion(info, automatic);
+            String name = info.getRelativeName();
+            if (automatic && targetFiles.contains(name) && !downloadSequence.contains(name)) {
+                downloadSequence.add(name);
+                allDownloaded.countDown();
+            }
             return super.downloadNewestVersion(info, automatic);
         }
     }
 
-    private Mockery mockery;
-
-    private Helper helperLisa;
-    private Helper helperBart;
-
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
-        mockery = new Mockery();
-        helperLisa = mockery.mock(Helper.class, "Helper Lisa");
-        helperBart = mockery.mock(Helper.class, "Helper Bart");
         super.setUp();
-    }
-
-    @Override
-    protected Controller createControllerLisa() {
-        final Controller c = super.createControllerLisa();
-        c.setTransferManagerFactory(new Callable<TransferManager>() {
-            public TransferManager call() throws Exception {
-                return new TestTransferManager(c, helperLisa);
-            }
-        });
-        return c;
     }
 
     @Override
@@ -83,13 +73,14 @@ public class PriorityTransferTest extends TwoControllerTestCase {
         final Controller c = super.createControllerBart();
         c.setTransferManagerFactory(new Callable<TransferManager>() {
             public TransferManager call() throws Exception {
-                return new TestTransferManager(c, helperBart);
+                return new TestTransferManager(c);
             }
         });
         return c;
     }
 
-    public void testPriorityRequests() {
+    @Test
+    public void testPriorityRequests() throws Exception {
         connectBartAndLisa();
         joinTestFolder(SyncProfile.HOST_FILES);
         TestHelper.createRandomFile(getFolderAtLisa().getLocalBase());
@@ -106,24 +97,22 @@ public class PriorityTransferTest extends TwoControllerTestCase {
 
         assertTrue(prio.getComparator().compare(fInfos[0], fInfos[1]) > 0);
 
-        mockery.checking(new Expectations() {
-            {
-                Sequence dlSeq = mockery.sequence("Sequence of requests");
-                one(helperBart).downloadNewestVersion(fInfos[1], true);
-                inSequence(dlSeq);
-                one(helperBart).downloadNewestVersion(fInfos[2], true);
-                inSequence(dlSeq);
-                one(helperBart).downloadNewestVersion(fInfos[0], true);
-                inSequence(dlSeq);
-            }
-        });
+        targetFiles.add(fInfos[0].getRelativeName());
+        targetFiles.add(fInfos[1].getRelativeName());
+        targetFiles.add(fInfos[2].getRelativeName());
+        allDownloaded = new CountDownLatch(3);
+        downloadSequence.clear();
 
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_DOWNLOAD);
 
-        // Wait a fixed amount of time so if something fails
-        // above it'll be thrown by assertIsSatisfied below.
-        TestHelper.waitMilliSeconds(2500);
+        assertTrue(allDownloaded.await(30, TimeUnit.SECONDS),
+            "Not all files downloaded within 30s. Got: " + downloadSequence);
 
-        mockery.assertIsSatisfied();
+        assertEquals(fInfos[1].getRelativeName(), downloadSequence.get(0),
+            "HIGH priority file should be downloaded first");
+        assertEquals(fInfos[2].getRelativeName(), downloadSequence.get(1),
+            "NORMAL priority file should be downloaded second");
+        assertEquals(fInfos[0].getRelativeName(), downloadSequence.get(2),
+            "LOW priority file should be downloaded last");
     }
 }

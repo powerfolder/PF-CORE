@@ -19,17 +19,18 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.util.net.AddressRange;
 import de.dal33t.powerfolder.util.net.NetworkUtil;
-import junit.framework.TestCase;
-
 import java.net.*;
 import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class NetUtilTest extends TestCase {
+public class NetUtilTest {
 
     /**
      * #1403
@@ -37,6 +38,7 @@ public class NetUtilTest extends TestCase {
      * @throws UnknownHostException
      * @throws SocketException
      */
+    @Test
     public void testSubnet() throws SocketException, UnknownHostException {
         Set<InetAddress> lanAddresses = new HashSet<InetAddress>();
         lanAddresses.add(Inet4Address.getByName("127.0.0.1"));
@@ -96,8 +98,8 @@ public class NetUtilTest extends TestCase {
                 .hasNext();)
             {
                 InetAddress address = it.next();
-                assertTrue("Address should be on lan: " + address,
-                    NetworkUtil.isOnLanOrLoopback(address));
+                assertTrue(
+                    NetworkUtil.isOnLanOrLoopback(address),"Address should be on lan: " + address);
                 if (NetworkUtil.isOnInterfaceSubnet(ia, address)) {
                     it.remove();
                 }
@@ -107,15 +109,16 @@ public class NetUtilTest extends TestCase {
                     fail("Internet address " + address
                         + " should not be on LAN!" + ia);
                 }
-                assertFalse("Address should NOT be on lan: " + address,
-                    NetworkUtil.isOnLanOrLoopback(address));
+                assertFalse(
+                    NetworkUtil.isOnLanOrLoopback(address),"Address should NOT be on lan: " + address);
             }
         }
-        assertTrue("LAN address not found on local adapter subnet: "
-            + lanAddresses, lanAddresses.isEmpty());
+        assertTrue( lanAddresses.isEmpty(),"LAN address not found on local adapter subnet: "
+            + lanAddresses);
 
     }
 
+    @Test
     public void testAddressRanges() throws UnknownHostException {
         AddressRange ar = new AddressRange(
             (Inet4Address) InetAddress.getByName("0.0.0.110"),
@@ -134,6 +137,7 @@ public class NetUtilTest extends TestCase {
             .contains((Inet4Address) InetAddress.getByName("0.0.0.1")));
     }
 
+    @Test
     public void testExamples() throws ParseException, UnknownHostException {
         AddressRange r = AddressRange.parseRange("195.145.13.0-195.145.13.255");
         assertTrue(r.contains((Inet4Address) Inet4Address
@@ -151,6 +155,7 @@ public class NetUtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testPrivateAdrressRange() throws ParseException,
         UnknownHostException
     {
@@ -174,33 +179,33 @@ public class NetUtilTest extends TestCase {
         assertEquals("88.198.85.81",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
-        assertEquals("addr.getAddress().getHostName()", "os007.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals( addr.getAddress().getHostName(),"addr.getAddress().getHostName()", "os007.powerfolder.com");
         assertEquals("os007.powerfolder.com/88.198.85.81", addr.getAddress()
             .toString());
-        assertEquals("NetworkUtil.getHostAddressNoResolve", "os007.powerfolder.com",
-            NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
+        assertEquals(
+            NetworkUtil.getHostAddressNoResolve(addr.getAddress()),"NetworkUtil.getHostAddressNoResolve", "os007.powerfolder.com");
         assertFalse(addr.isUnresolved());
-        assertEquals("addr.getHostName()", "os007.powerfolder.com", addr.getHostName());
-        assertEquals("addr.getAddress().getHostName()", "os007.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals( addr.getHostName(),"addr.getHostName()", "os007.powerfolder.com");
+        assertEquals( addr.getAddress().getHostName(),"addr.getAddress().getHostName()", "os007.powerfolder.com");
         assertEquals("88.198.85.81", addr.getAddress().getHostAddress());
-        assertEquals("addr.getAddress() .getCanonicalHostName()", "os007.powerfolder.com", addr.getAddress()
-            .getCanonicalHostName());
+        assertEquals( addr.getAddress()
+            .getCanonicalHostName(),"addr.getAddress() .getCanonicalHostName()", "os007.powerfolder.com");
 
         addr = new InetSocketAddress("195.201.181.138", 1337);
         assertEquals("/195.201.181.138", addr.getAddress().toString());
         assertEquals("195.201.181.138",
                 NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
-        assertEquals("addr.getAddress().getHostName()", "my.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals( addr.getAddress().getHostName(),"addr.getAddress().getHostName()", "my.powerfolder.com");
         assertEquals("my.powerfolder.com/195.201.181.138", addr.getAddress()
                 .toString());
-        assertEquals("NetworkUtil.getHostAddressNoResolve", "my.powerfolder.com",
-                NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
+        assertEquals(
+                NetworkUtil.getHostAddressNoResolve(addr.getAddress()),"NetworkUtil.getHostAddressNoResolve", "my.powerfolder.com");
         assertFalse(addr.isUnresolved());
-        assertEquals("addr.getHostName()", "my.powerfolder.com", addr.getHostName());
-        assertEquals("addr.getAddress().getHostName()", "my.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals( addr.getHostName(),"addr.getHostName()", "my.powerfolder.com");
+        assertEquals( addr.getAddress().getHostName(),"addr.getAddress().getHostName()", "my.powerfolder.com");
         assertEquals("195.201.181.138", addr.getAddress().getHostAddress());
-        assertEquals("addr.getAddress() .getCanonicalHostName()", "my.powerfolder.com", addr.getAddress()
-                .getCanonicalHostName());
+        assertEquals( addr.getAddress()
+                .getCanonicalHostName(),"addr.getAddress() .getCanonicalHostName()", "my.powerfolder.com");
     }
 }

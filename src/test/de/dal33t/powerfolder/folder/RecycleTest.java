@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.disk.FileArchiver;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfo;
@@ -32,11 +35,13 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RecycleTest extends ControllerTestCase {
 
     private FileArchiver archiver;
 
+    @BeforeEach
     public void setUp() throws Exception {
         // Remove directories
 
@@ -69,6 +74,7 @@ public class RecycleTest extends ControllerTestCase {
         archiver = getFolder().getFileArchiver();
     }
 
+    @Test
     public void testRecycleBin() throws IOException {
         FileInfo fileInfo = getFolder().getKnownFiles().iterator().next();
         FileInfo origFile = fileInfo;
@@ -82,8 +88,8 @@ public class RecycleTest extends ControllerTestCase {
         assertFalse(Files.exists(file));
         assertEquals(fileInfo.getModifiedBy(), getController().getMySelf()
             .getInfo());
-        assertTrue(fileInfo.toDetailString(),
-            fileInfo.getModifiedDate().after(lastModified));
+        assertTrue(fileInfo.getModifiedDate().after(lastModified),
+            fileInfo.toDetailString());
 
         assertTrue(archiver.hasArchivedFileInfo(fileInfo));
         archiver.restore(origFile, file);
@@ -94,9 +100,9 @@ public class RecycleTest extends ControllerTestCase {
         assertTrue(Files.exists(file));
         assertFileMatch(file, getFolder().getKnownFiles().iterator().next());
         assertTrue(
-            fileInfo.toDetailString() + ": was modified " + lastModified,
-            lastModified.before(fileInfo.getModifiedDate()));
-        assertEquals(fileInfo.toDetailString(), 2, fileInfo.getVersion());
+            lastModified.before(fileInfo.getModifiedDate()),
+            fileInfo.toDetailString() + ": was modified " + lastModified);
+        assertEquals( 2, fileInfo.getVersion(),fileInfo.toDetailString());
         assertEquals(fileInfo.getModifiedDate(), getFolder().getKnownFiles()
             .iterator().next().getModifiedDate());
         getFolder().removeFilesLocal(fileInfo);
@@ -105,6 +111,7 @@ public class RecycleTest extends ControllerTestCase {
         assertFalse(Files.exists(file));
     }
 
+    @Test
     public void testEmptyRecycleBin() throws IOException {
         FileInfo testfile = getFolder().getKnownFiles().iterator().next();
         Path file = getFolder().getDiskFile(testfile);
@@ -131,6 +138,6 @@ public class RecycleTest extends ControllerTestCase {
         sb.append("]");
 
         // Only Sizes file should be left there
-        assertTrue(sb.toString(), count == 1);
+        assertTrue( count == 1,sb.toString());
     }
 }

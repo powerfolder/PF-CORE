@@ -18,25 +18,28 @@
  */
 package de.dal33t.powerfolder.light;
 
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.Constants;
 
-public class FolderInfoTest extends TestCase {
+public class FolderInfoTest {
 
+    @Test
     public void testGetMetaInfo() {
         FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Name of folder");
-        assertFalse(foInfo.toString(), foInfo.isMetaFolder());
-        assertFalse(foInfo.id,
-            foInfo.id.contains(Constants.METAFOLDER_ID_PREFIX));
-        assertFalse(foInfo.getName(),
-            foInfo.getName().contains(Constants.METAFOLDER_ID_PREFIX));
+        assertFalse( foInfo.isMetaFolder(),foInfo.toString());
+        assertFalse(
+            foInfo.id.contains(Constants.METAFOLDER_ID_PREFIX),foInfo.id);
+        assertFalse(
+            foInfo.getName().contains(Constants.METAFOLDER_ID_PREFIX),foInfo.getName());
 
         FolderInfo metaFolder = foInfo.getMetaFolderInfo();
-        assertTrue(metaFolder.toString(), metaFolder.isMetaFolder());
-        assertTrue(metaFolder.id,
-            metaFolder.id.contains(Constants.METAFOLDER_ID_PREFIX));
-        assertTrue(metaFolder.getName(),
-            metaFolder.getName().contains(Constants.METAFOLDER_ID_PREFIX));
+        assertTrue( metaFolder.isMetaFolder(),metaFolder.toString());
+        assertTrue(
+            metaFolder.id.contains(Constants.METAFOLDER_ID_PREFIX),metaFolder.id);
+        assertTrue(
+            metaFolder.getName().contains(Constants.METAFOLDER_ID_PREFIX),metaFolder.getName());
 
         assertEquals(foInfo, metaFolder.lookupContentFolderInfo());
         assertEquals(metaFolder, foInfo.getMetaFolderInfo());

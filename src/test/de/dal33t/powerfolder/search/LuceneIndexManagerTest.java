@@ -25,13 +25,17 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class LuceneIndexManagerTest extends ControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         System.setProperty("powerfolder.index.startupDelayMs", "0");
         System.setProperty("powerfolder.index.minCommitIntervalMs", "0");
@@ -62,6 +66,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Basic indexing + search
     // -----------------------------------------------------------------------
 
+    @Test
     public void testIndexAndSearchByFilename() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Report_2024.pdf");
@@ -75,6 +80,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("Report_2024.pdf", results.get(0).getFilenameOnly());
     }
 
+    @Test
     public void testPrefixSearch() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Bestaetigung_des_Wohnungsgebers.pdf");
@@ -82,14 +88,15 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         indexAndWait();
 
-        assertTrue("Search for 'woh' should find the file",
-                getIndexManager().searchFiles("woh", 10).size() > 0);
-        assertTrue("Search for 'bes' should find the file",
-                getIndexManager().searchFiles("bes", 10).size() > 0);
-        assertTrue("Search for 'wohn' should find the file",
-                getIndexManager().searchFiles("wohn", 10).size() > 0);
+        assertTrue(getIndexManager().searchFiles("woh", 10).size() > 0,
+                "Search for 'woh' should find the file");
+        assertTrue(getIndexManager().searchFiles("bes", 10).size() > 0,
+                "Search for 'bes' should find the file");
+        assertTrue(getIndexManager().searchFiles("wohn", 10).size() > 0,
+                "Search for 'wohn' should find the file");
     }
 
+    @Test
     public void testSearchMultipleFiles() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Vertrag_Miete.pdf");
@@ -107,6 +114,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(1, results.size());
     }
 
+    @Test
     public void testSearchNoResults() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "document.pdf");
@@ -122,6 +130,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Purge files
     // -----------------------------------------------------------------------
 
+    @Test
     public void testPurgeRemovesFromIndex() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "ToPurge.txt");
@@ -140,6 +149,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Subdirectory search
     // -----------------------------------------------------------------------
 
+    @Test
     public void testSearchInSubdirectory() throws Exception {
         Folder folder = getFolder();
         Path subDir = folder.getLocalBase().resolve("invoices");
@@ -150,13 +160,14 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         List<FileInfo> all = getIndexManager().searchFiles("invoice", 10);
-        assertTrue("Should find at least both invoice files", all.size() >= 2);
+        assertTrue(all.size() >= 2, "Should find at least both invoice files");
     }
 
     // -----------------------------------------------------------------------
     // Rebuild
     // -----------------------------------------------------------------------
 
+    @Test
     public void testRebuildIndex() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "BeforeRebuild.txt");
@@ -177,6 +188,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Index entry count
     // -----------------------------------------------------------------------
 
+    @Test
     public void testIndexEntryCount() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "File1.txt");
@@ -193,6 +205,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Empty query
     // -----------------------------------------------------------------------
 
+    @Test
     public void testEmptyQueryReturnsAllFiles() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "AnyFile.txt");
@@ -200,14 +213,15 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         indexAndWait();
 
-        assertTrue("Empty query should return all indexed files",
-                getIndexManager().searchFiles("", 10).size() >= 1);
+        assertTrue(getIndexManager().searchFiles("", 10).size() >= 1,
+                "Empty query should return all indexed files");
     }
 
     // -----------------------------------------------------------------------
     // Umlaut / accent handling
     // -----------------------------------------------------------------------
 
+    @Test
     public void testAccentFolding() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Uebergabe_Protokoll.pdf");
@@ -215,14 +229,15 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         indexAndWait();
 
-        assertTrue("Search for 'ueberg' should find umlauted file",
-                getIndexManager().searchFiles("ueberg", 10).size() > 0);
+        assertTrue(getIndexManager().searchFiles("ueberg", 10).size() > 0,
+                "Search for 'ueberg' should find umlauted file");
     }
 
     // -----------------------------------------------------------------------
     // Multiple index + search cycles
     // -----------------------------------------------------------------------
 
+    @Test
     public void testIncrementalIndexing() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "First.txt");

@@ -1,0 +1,243 @@
+Buildfile: /Users/mac/Desktop/PF-CORE/build.xml
+
+debug:
+
+loadproperties0:
+
+loadproperties:
+
+detect-version:
+     [echo] 
+     [echo] 			Auto detected version: 27.3.15
+     [echo] 		
+
+init:
+
+compile:
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/build
+    [javac] Compiling 843 source files to /Users/mac/Desktop/PF-CORE/build
+    [javac] warning: [options] system modules path not set in conjunction with -source 9
+    [javac] /Users/mac/Desktop/PF-CORE/src/main/de/dal33t/powerfolder/clientserver/ServerClient.java:1340: warning: [removal] <T>doAs(Subject,PrivilegedExceptionAction<T>) in Subject has been deprecated and marked for removal
+    [javac]             return Subject.doAs(clientSubject, new ServiceTicketGenerator());
+    [javac]                           ^
+    [javac]   where T is a type-variable:
+    [javac]     T extends Object declared in method <T>doAs(Subject,PrivilegedExceptionAction<T>)
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 2 warnings
+     [copy] Copying 107 files to /Users/mac/Desktop/PF-CORE/build
+     [copy] Copying 533 files to /Users/mac/Desktop/PF-CORE/build
+
+run-tests:
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/test-reports
+    [javac] /Users/mac/Desktop/PF-CORE/build.xml:577: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 120 source files to /Users/mac/Desktop/PF-CORE/build
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/message/SerializationCompareTest.java:124: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         f.size = new Long((long) (Math.random() * 1000000));
+    [javac]                  ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/message/SerializationCompareTest.java:137: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         f.size = new Long((long) (Math.random() * 1000000));
+    [javac]                  ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/FormatTest.java:57: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         Long longObject = new Long(1024);
+    [javac]                           ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/FormatTest.java:141: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         Long longObject = new Long(1024);
+    [javac]                           ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/FormatTest.java:226: warning: [removal] Long(long) in Long has been deprecated and marked for removal
+    [javac]         Long millis = new Long(1000L * 60 * 2 + 1234);
+    [javac]                       ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/UtilTest.java:131: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+    [javac]         Double firstNumber = new Double(1234.231);
+    [javac]                              ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/UtilTest.java:132: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+    [javac]         Double secondNumber = new Double(1234.231);
+    [javac]                               ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/UtilTest.java:185: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+    [javac]         assertFalse(Util.equals(new Double(234), new Double(432)));
+    [javac]                                 ^
+    [javac] /Users/mac/Desktop/PF-CORE/src/test/de/dal33t/powerfolder/util/UtilTest.java:185: warning: [removal] Double(double) in Double has been deprecated and marked for removal
+    [javac]         assertFalse(Util.equals(new Double(234), new Double(432)));
+    [javac]                                                  ^
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 9 warnings
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/test-reports/raw
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/test-reports/html
+    [mkdir] Created dir: /Users/mac/Desktop/PF-CORE/test-reports/htmlnoframes
+[junitlauncher] Running de.dal33t.powerfolder.ControllerTest
+[junitlauncher] Tests run: 6, Failures: 0, Aborted: 0, Skipped: 1, Time elapsed: 14,103 sec
+[junitlauncher] Running de.dal33t.powerfolder.D2DControllerTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,967 sec
+[junitlauncher] Running de.dal33t.powerfolder.FeatureTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,049 sec
+[junitlauncher] Running de.dal33t.powerfolder.PowerFolderInvitationTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 1,711 sec
+[junitlauncher] Running de.dal33t.powerfolder.RemoteCommandManagerTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,454 sec
+[junitlauncher] Running de.dal33t.powerfolder.d2d.D2DControllerTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 5,967 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.DiskItemFilterTest
+[junitlauncher] Tests run: 7, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,446 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.EncryptedFileSystemUtilsTest
+[junitlauncher] Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[junitlauncher] Tests run: 12, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,483 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.FileInfoDAOHashTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 3,933 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.JNotifyTest
+[junitlauncher] Tests run: 6, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,052 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.LockingTest
+[junitlauncher] Tests run: 7, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 13,484 sec
+[junitlauncher] Running de.dal33t.powerfolder.disk.problem.FileProblemTest
+[junitlauncher] Tests run: 7, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,172 sec
+[junitlauncher] Running de.dal33t.powerfolder.domain.FileLinkPathNormalizationTest
+[junitlauncher] Tests run: 40, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,075 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.AtomicCommitTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,214 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.BigFileListOrderTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 1,253 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.DeletionSyncTest
+[junitlauncher] Tests run: 9, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 22,486 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.DirectorySyncTest
+[junitlauncher] Tests run: 7, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 51,631 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FileArchiverTest
+[junitlauncher] Tests run: 7, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 58,954 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FileNameProblemLinuxTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,05 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FindSameFilesTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,227 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FolderExpireTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 30,648 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FolderJoinTest
+[junitlauncher] Tests run: 6, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 16,882 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FolderMoveTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 14,891 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FolderScannerTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,809 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FolderStatisticInfoTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,053 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.FolderStatisticTest
+[junitlauncher] Tests run: 8, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 94,054 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.MetaFolderMembersTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 5,189 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.MirrorFolderTest
+[junitlauncher] Tests run: 4, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 26,162 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.NoRecycleTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 1,514 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.OverwriteAndRestoreRecycleBinTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,076 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.ProjectWorkSyncTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 6,471 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.RecycleTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 3,7 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.RedownloadTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 1,622 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.ScanFolderTest
+[junitlauncher] Tests run: 17, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 56,862 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.SendFileListTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,378 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.SubFolderTest
+[junitlauncher] Tests run: 14, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 14,741 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.SyncProfileTest
+[junitlauncher] Tests run: 4, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,178 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.SyncedDiskItemFilterTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,074 sec
+[junitlauncher] Running de.dal33t.powerfolder.folder.UnsyncedFolderProblemTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 7,53 sec
+[junitlauncher] Running de.dal33t.powerfolder.light.FileInfoFactoryTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,048 sec
+[junitlauncher] Running de.dal33t.powerfolder.light.FileInfoTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,048 sec
+[junitlauncher] Running de.dal33t.powerfolder.light.FolderInfoFactoryTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,046 sec
+[junitlauncher] Running de.dal33t.powerfolder.light.FolderInfoStatisticTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,047 sec
+[junitlauncher] Running de.dal33t.powerfolder.light.FolderInfoTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,049 sec
+[junitlauncher] Running de.dal33t.powerfolder.message.FileListTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,052 sec
+[junitlauncher] Running de.dal33t.powerfolder.message.FolderListTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,066 sec
+[junitlauncher] Running de.dal33t.powerfolder.message.NodeSearcherTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 11,114 sec
+[junitlauncher] Running de.dal33t.powerfolder.message.RequestNodeListTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 6,418 sec
+[junitlauncher] Running de.dal33t.powerfolder.message.SerializationCompareTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,291 sec
+[junitlauncher] Running de.dal33t.powerfolder.net.BroadcastManagerTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,62 sec
+[junitlauncher] Running de.dal33t.powerfolder.net.ConnectNodesTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 36,147 sec
+[junitlauncher] Running de.dal33t.powerfolder.net.RelayedConnectionTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 5,818 sec
+[junitlauncher] Running de.dal33t.powerfolder.net.UDTConnectionTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,214 sec
+[junitlauncher] Running de.dal33t.powerfolder.net.UDTTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,048 sec
+[junitlauncher] Running de.dal33t.powerfolder.search.LuceneIndexManagerTest
+[junitlauncher] Tests run: 11, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 10,56 sec
+[junitlauncher] Running de.dal33t.powerfolder.security.AccountTest
+[junitlauncher] Tests run: 8, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,062 sec
+[junitlauncher] Running de.dal33t.powerfolder.security.GroupTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,047 sec
+[junitlauncher] Running de.dal33t.powerfolder.security.OnlineStorageSubscriptionTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,058 sec
+[junitlauncher] Running de.dal33t.powerfolder.security.OrganizationTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,047 sec
+[junitlauncher] Running de.dal33t.powerfolder.security.PermissionTest
+[junitlauncher] Tests run: 11, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,053 sec
+[junitlauncher] Running de.dal33t.powerfolder.security.TokenTest
+[junitlauncher] Tests run: 4, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 1,066 sec
+[junitlauncher] Running de.dal33t.powerfolder.skin.SkinTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,09 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.BandwidthStatRecorderTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 3,03 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.DownloadCleanupTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 9,117 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.DownloadPersistenceTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 4,262 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.FileTransferTest
+[junitlauncher] Tests run: 27, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 272,337 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.FileUpdateTest
+[junitlauncher] Tests run: 5, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 44,314 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.MetaFolderTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 6,168 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.PerformanceTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 3,956 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.PriorityTransferTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 3,731 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.ScriptExecuteTest
+[junitlauncher] Tests run: 4, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 29,891 sec
+[junitlauncher] Running de.dal33t.powerfolder.transfer.SwarmingTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,053 sec
+[junitlauncher] Running de.dal33t.powerfolder.ui.DelayedUpdaterTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 14,83 sec
+[junitlauncher] Running de.dal33t.powerfolder.ui.SearchNodeTableModelTest
+[junitlauncher] Tests run: 2, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 2,467 sec
+[junitlauncher] Running de.dal33t.powerfolder.ui.UploadsTableModelTest
+[junitlauncher] Tests run: 6, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 140,964 sec
+[junitlauncher] Running de.dal33t.powerfolder.ui.WindowDragManagerTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,082 sec
+[junitlauncher] Running de.dal33t.powerfolder.util.AntiSerializationVulnerabilityTest
+[junitlauncher] Tests run: 6, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,059 sec
+[junitlauncher] Running de.dal33t.powerfolder.util.CompositeMapTest
+[junitlauncher] Tests run: 1, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 88,986 sec
+[junitlauncher] Running de.dal33t.powerfolder.util.ConvertTest
+[junitlauncher] Tests run: 8, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,171 sec
+[junitlauncher] Running de.dal33t.powerfolder.util.DateUtilTest
+[junitlauncher] Tests run: 11, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,058 sec
+[junitlauncher] Running de.dal33t.powerfolder.util.DeltaTest
+[junitlauncher] Tests run: 8, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 6,792 sec
+[junitlauncher] Running de.dal33t.powerfolder.util.EstimatedTimeTest
+[junitlauncher] Tests run: 3, Failures: 0, Aborted: 0, Skipped: 0, Time elapsed: 0,059 sec
+[junitlauncher] Running de.dal33t.powerfolder.util.FormatTest
+[junitlauncher] Tests run: 56, Failures: 14, Aborted: 0, Skipped: 0, Time elapsed: 0,468 sec
+
+BUILD FAILED
+/Users/mac/Desktop/PF-CORE/build.xml:588: Some test(s) have failure(s)
+
+Total time: 20 minutes 21 seconds

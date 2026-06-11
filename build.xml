@@ -236,18 +236,11 @@ For creation of the installer:
 		</fileset>
 
 		<fileset id="testlibs" dir="lib" casesensitive="yes">
-            <include name="junit.jar"/>
-			<include name="jmock/cglib-nodep-2.1_3.jar" />
-			<include name="jmock/hamcrest-core-1.3.jar" />
-			<include name="jmock/hamcrest-library-1.3.jar" />
-			<include name="jmock/jmock-2.4.0.jar" />
-			<include name="jmock/jmock-junit3-2.4.0.jar" />
-			<include name="jmock/jmock-junit4-2.4.0.jar" />
-			<include name="jmock/jmock-legacy-2.4.0.jar" />
-			<include name="mockito/byte-buddy-1.10.13.jar"/>
-			<include name="mockito/byte-buddy-agent-1.10.13.jar"/>
-			<include name="mockito/mockito-core-3.4.6.jar"/>
-			<include name="mockito/objenesis-2.6.jar"/>
+			<include name="mockito/byte-buddy-1.15.4.jar"/>
+			<include name="mockito/byte-buddy-agent-1.15.4.jar"/>
+			<include name="mockito/mockito-core-5.14.2.jar"/>
+			<include name="mockito/objenesis-3.3.jar"/>
+			<include name="junit5/*.jar"/>
 		</fileset>
 
 		<!-- Output dirs -->
@@ -541,6 +534,43 @@ For creation of the installer:
 	
 	<!-- Setup for test ******************************************************-->
 
+	<target name="run-single-test" depends="debug, compile" description="Runs a single test class. Usage: ant run-single-test -Dtest=ClassName">
+		<fail unless="test" message="Specify the test class with -Dtest=ClassName (simple name, no package, no .java)" />
+		<mkdir dir="${build.reports.dir}" />
+		<javac destdir="${build.dir}" debug="true" debuglevel="lines,vars,source" deprecation="off" failonerror="true" encoding="UTF-8">
+			<src path="${test.src.dir}" />
+			<classpath>
+				<pathelement location="${build.dir}" />
+				<fileset refid="libs" />
+				<fileset refid="testlibs" />
+			</classpath>
+		</javac>
+		<mkdir dir="${build.reports.dir}/raw" />
+		<mkdir dir="${build.reports.dir}/html" />
+		<mkdir dir="${build.reports.dir}/htmlnoframes" />
+		<junitlauncher haltOnFailure="false" printSummary="true">
+			<classpath>
+				<pathelement location="${build.dir}" />
+				<fileset refid="libs" />
+				<fileset refid="testlibs" />
+			</classpath>
+			<testclasses outputDir="${build.reports.dir}/raw">
+				<fork dir="${basedir}">
+					<sysproperty key="file.encoding" value="UTF-8"/>
+					<jvmarg value="-Xmx4g"/>
+					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
+					<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
+				</fork>
+				<fileset dir="${build.dir}">
+					<include name="**/${test}.class"/>
+					<exclude name="**/*$*.class"/>
+				</fileset>
+				<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+			</testclasses>
+		</junitlauncher>
+	</target>
+
 	<target name="run-tests" depends="debug, compile" description="Runs all JUnit tests">
 		<mkdir dir="${build.reports.dir}" />
 
@@ -556,32 +586,28 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/raw" />
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
-		<!-- Batchrun all tests -->
-		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="2g" showoutput="yes">
-			<!-- Reason: https://code.google.com/p/opendedup/issues/detail?id=34 -->
-			<sysproperty key="file.encoding" value="UTF-8"/>
+		<junitlauncher haltOnFailure="true" printSummary="true">
 			<classpath>
 				<pathelement location="${build.dir}" />
 				<fileset refid="libs" />
 				<fileset refid="testlibs" />
 			</classpath>
-
-			<jvmarg value="--add-opens" />
-			<jvmarg value="java.base/java.lang=ALL-UNNAMED" />
-			<jvmarg value="--add-opens" />
-			<jvmarg value="java.base/java.util=ALL-UNNAMED" />
-			<!-- Fix IllegalAccessException for MacUtils / com.apple.eawt -->
-			<jvmarg value="--add-exports"/>
-			<jvmarg value="java.desktop/com.apple.eawt=ALL-UNNAMED"/>
-
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${build.reports.dir}/raw">
-				<fileset dir="${test.src.dir}">
-					<include name="**/*Test.java" />
-					<exclude name="**/BandwidthLimitTest.java" />
+			<testclasses outputDir="${build.reports.dir}/raw">
+				<fork dir="${basedir}">
+					<sysproperty key="file.encoding" value="UTF-8"/>
+					<jvmarg value="-Xmx4g"/>
+					<jvmarg value="--add-opens=java.base/java.lang=ALL-UNNAMED"/>
+					<jvmarg value="--add-opens=java.base/java.util=ALL-UNNAMED"/>
+					<jvmarg value="--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"/>
+				</fork>
+				<fileset dir="${build.dir}">
+					<include name="**/*Test.class"/>
+					<exclude name="**/*$*.class"/>
+					<exclude name="**/BandwidthLimitTest.class"/>
 				</fileset>
-			</batchtest>
-		</junit>
+				<listener type="legacy-xml" sendSysOut="true" sendSysErr="true"/>
+			</testclasses>
+		</junitlauncher>
 
 		<junitreport todir="${build.reports.dir}">
 			<fileset dir="${build.reports.dir}/raw/">

@@ -18,6 +18,9 @@
  */
 package de.dal33t.powerfolder.ui;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.ui.util.DelayedUpdater;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
@@ -27,12 +30,13 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DelayedUpdaterTest extends ControllerTestCase {
     private DelayedUpdater updater;
     private List<Date> updates;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         updater = new DelayedUpdater(getController());
@@ -40,6 +44,7 @@ public class DelayedUpdaterTest extends ControllerTestCase {
         updates = new CopyOnWriteArrayList<Date>();
     }
 
+    @Test
     public void testSingleEvent() {
         long start = System.currentTimeMillis();
         updater.schedule(new Update());
@@ -50,9 +55,10 @@ public class DelayedUpdaterTest extends ControllerTestCase {
         });
         assertEquals(1, updates.size());
         long took = System.currentTimeMillis() - start;
-        assertTrue("Update took " + took + "ms", took >= updater.getDelay());
+        assertTrue( took >= updater.getDelay(),"Update took " + took + "ms");
     }
 
+    @Test
     public void testTwoEvents() {
         long start = System.currentTimeMillis();
         updater.schedule(new Update());
@@ -68,13 +74,14 @@ public class DelayedUpdaterTest extends ControllerTestCase {
         long took = System.currentTimeMillis() - start;
         long sinceLastEvent = System.currentTimeMillis()
             - updates.get(0).getTime();
-        assertTrue("Updates took " + took + "ms", took >= updater.getDelay());
-        assertTrue("Updates took " + took
-                + "ms, should not really take longer than single", took <= 1500);
-        assertTrue("Should not have passed more that 200ms after last event",
-            sinceLastEvent < 200);
+        assertTrue( took >= updater.getDelay(),"Updates took " + took + "ms");
+        assertTrue( took <= 1500,"Updates took " + took
+                + "ms, should not really take longer than single");
+        assertTrue(
+            sinceLastEvent < 200,"Should not have passed more that 200ms after last event");
     }
 
+    @Test
     public void testMultipleEvents() {
         // About to discard about 90% of the events
         for (int i = 0; i < 100; i++) {
@@ -91,8 +98,8 @@ public class DelayedUpdaterTest extends ControllerTestCase {
                 return "Got only " + updates.size() + " updates";
             }
         });
-        assertTrue("Got wrong number of updates: " + updates.size() + ": " + updates,
-                updates.size() >= 10 && updates.size() <= 20);
+        assertTrue(
+                updates.size() >= 10 && updates.size() <= 20,"Got wrong number of updates: " + updates.size() + ": " + updates);
     }
 
     private class Update implements Runnable {

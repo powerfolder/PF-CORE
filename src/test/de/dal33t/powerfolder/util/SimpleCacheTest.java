@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
@@ -28,10 +31,9 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.SimpleCache;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import junit.framework.TestCase;
+public class SimpleCacheTest {
 
-public class SimpleCacheTest extends TestCase {
-
+    @Test
     public void testValidCache() {
         Collection<String> expected = new LinkedList<>();
         SimpleCache<String, String> cache = new SimpleCache<>(

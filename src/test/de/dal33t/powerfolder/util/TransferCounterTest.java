@@ -19,12 +19,15 @@
 */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.lang.reflect.Field;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.TransferCounter;
 
-public class TransferCounterTest extends TestCase {
+public class TransferCounterTest {
+    @Test
     public void testTransferCounter() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException {
         System.out.println("testTransferCounter test");
         TransferCounter tc = new TransferCounter();
@@ -41,7 +44,7 @@ public class TransferCounterTest extends TestCase {
         // Starts out with counter2 active
         for (int i = 0; i < period / 1000; i++) {
             tc.calculateCurrentCPS();
-            assertEquals("Counter2 run " + i, false, ac.getBoolean(tc));
+            assertEquals( false, ac.getBoolean(tc),"Counter2 run " + i);
             Thread.sleep(950);
         }
         // Now the switch should happen
@@ -50,7 +53,7 @@ public class TransferCounterTest extends TestCase {
         tc.calculateCurrentCPS();
         for (int i = 1; i < period / 1000; i++) {
             tc.calculateCurrentCPS();
-            assertEquals("Counter1 run " + i, true, ac.getBoolean(tc));
+            assertEquals( true, ac.getBoolean(tc),"Counter1 run " + i);
             Thread.sleep(950);
         }
         tc.stoppedTransfer();

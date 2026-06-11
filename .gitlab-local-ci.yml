@@ -1,0 +1,18 @@
+stages:
+  - test
+
+variables:
+  GIT_DEPTH: "1"
+  ANT_OPTS: "-Xmx4g --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED"
+
+test:
+  stage: test
+  image: pf-test:1
+  script:
+    - ant -lib lib/junit5 run-tests
+  artifacts:
+    reports:
+      junit: test-reports/raw/TEST-*.xml
+    paths:
+      - test-reports/
+    when: always

@@ -291,6 +291,12 @@ public class JavaVersion implements Comparable<JavaVersion> {
      * @return
      */
     public static JavaVersion parse(String version) {
+        if (version != null) {
+            int plusIndex = version.indexOf('+');
+            if (plusIndex >= 0) {
+                version = version.substring(0, plusIndex);
+            }
+        }
         String[] strings = version != null ? version.split("(\\.|_)") : new String[] {"0", "0"};
 
         int major = 0;

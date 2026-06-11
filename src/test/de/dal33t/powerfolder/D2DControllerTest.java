@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.net.ConnectionListener;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -26,10 +29,11 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 import java.util.logging.Level;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class D2DControllerTest extends TwoControllerTestCase
 {
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -65,10 +69,11 @@ public class D2DControllerTest extends TwoControllerTestCase
 
         TestHelper.addStartedController(controllerLisa);
         waitForStart(controllerLisa);
-        assertNotNull("Connection listener of lisa is null",
-            controllerLisa.getConnectionListener());
+        assertNotNull(
+            controllerLisa.getConnectionListener(),"Connection listener of lisa is null");
     }
 
+    @Test
     public void testD2DConnection() throws Exception {
 
         try {

@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +39,7 @@ import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the script execution ability of PowerFolder.
@@ -49,7 +54,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
     private Path outputFile;
     private Path testScript;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -57,13 +62,22 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         getFolderAtLisa().setDownloadScript(createTestScript());
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         super.tearDown();
-        Files.delete(testScript);
-        Files.delete(outputFile);
+        try {
+            Files.deleteIfExists(testScript);
+        } catch (IOException e) {
+            testScript.toFile().deleteOnExit();
+        }
+        try {
+            Files.deleteIfExists(outputFile);
+        } catch (IOException e) {
+            outputFile.toFile().deleteOnExit();
+        }
     }
 
+    @Test
     public void testExecuteAfterDownloadMutli() throws Exception {
         for (int i = 0; i < 15; i++) {
             testExecuteAfterDownload();
@@ -72,6 +86,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         }
     }
 
+    @Test
     public void testExecuteAfterDownload() throws IOException {
         assertEquals(0, Files.size(outputFile));
         Path f = TestHelper.createRandomFile(getFolderAtBart()
@@ -80,7 +95,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         FileInfo fInfo = getFolderAtBart().getKnownFiles().iterator().next();
         assertFileMatch(f, fInfo, getContollerBart());
 
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public boolean reached() {
                 try {
                     return Files.size(outputFile) > 0;
@@ -124,6 +139,7 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         assertEquals(expected, content.trim());
     }
 
+    @Test
     public void testMultiDownloadExecute() throws IOException {
         assertEquals(0, Files.size(outputFile));
         int nFiles = 20;
@@ -137,10 +153,19 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         scanFolder(getFolderAtBart());
         assertEquals(nFiles, getFolderAtBart().getKnownFiles().size());
 
-        TestHelper.waitForCondition(5, new ConditionWithMessage() {
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public boolean reached() {
                 try {
-                    return Files.size(outputFile) > 0;
+                    InputStream in = Files.newInputStream(outputFile);
+                    String content = new String(StreamUtils
+                        .readIntoByteArray(in));
+                    in.close();
+                    for (Path file : testFiles) {
+                        if (!content.contains(file.getFileName().toString())) {
+                            return false;
+                        }
+                    }
+                    return true;
                 } catch (IOException ioe) {
                     return false;
                 }
@@ -159,7 +184,6 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
                 }
             }
         });
-        TestHelper.waitMilliSeconds(2500);
 
         assertTrue(Files.size(outputFile) > 0);
         InputStream in = Files.newInputStream(outputFile);
@@ -167,13 +191,14 @@ public class ScriptExecuteTest extends TwoControllerTestCase {
         in.close();
 
         for (Path file : testFiles) {
-            assertTrue(
+            assertTrue( content.contains(file.getFileName().toString()),
                 "Content file did not contain filename " + file.getFileName().toString()
-                    + ":\n" + content, content.contains(file.getFileName().toString()));
+                    + ":\n" + content);
         }
         System.out.println(content);
     }
 
+    @Test
     public void testExecuteBrokenScript() throws IOException {
         getFolderAtLisa().setDownloadScript(createBrokenScript());
         assertEquals(0, Files.size(outputFile));

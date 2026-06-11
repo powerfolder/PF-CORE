@@ -19,12 +19,13 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import de.dal33t.powerfolder.util.os.Win32.ShellLink;
 import de.dal33t.powerfolder.util.os.Win32.WinUtils;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import junit.framework.TestCase;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,22 +33,24 @@ import java.nio.file.Path;
 /**
  * Note: You need desktoputils.dll in the test classpath for this to work.
  */
-public class WinUtilsTest extends TestCase {
+public class WinUtilsTest {
+    @Test
     public void testSystemFolders() {
         if (!OSUtil.isWindowsSystem()) {
             return;
         }
         WinUtils wu = WinUtils.getInstance();
-        assertNotNull("Could not get instance. Is desktoputils.dll in the classpath?", wu);
-        assertNotNull("AppDataAllUsers", WinUtils.getAppDataAllUsers());
-        assertNotNull("AppDataCurrentUser", WinUtils.getAppDataCurrentUser());
-        assertNotNull("ProgramInstallationPath", WinUtils.getProgramInstallationPath(null));
+        assertNotNull( wu,"Could not get instance. Is desktoputils.dll in the classpath?");
+        assertNotNull( WinUtils.getAppDataAllUsers(),"AppDataAllUsers");
+        assertNotNull( WinUtils.getAppDataCurrentUser(),"AppDataCurrentUser");
+        assertNotNull( WinUtils.getProgramInstallationPath(null),"ProgramInstallationPath");
         /* Does work in Windows Development Environment, but not on Windows Testrunner?
-        assertNotNull("CSIDL_PERSONAL", wu.getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false));
-        assertNotNull("CSIDL_STARTUP", wu.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false));
+        assertNotNull( wu.getSystemFolderPath(WinUtils.CSIDL_PERSONAL, false),"CSIDL_PERSONAL");
+        assertNotNull( wu.getSystemFolderPath(WinUtils.CSIDL_STARTUP, false),"CSIDL_STARTUP");
         */
     }
 
+    @Test
     public void testLinkCreation() throws IOException {
         if (!OSUtil.isWindowsSystem()) {
             return;
@@ -55,8 +58,8 @@ public class WinUtilsTest extends TestCase {
         ShellLink sl = new ShellLink("test1 test2", "Link creation test",
             "Dummy", null);
         WinUtils wu = WinUtils.getInstance();
-        assertNotNull(
-            "Could not get instance. Is desktoputils.dll in the classpath?", wu);
+        assertNotNull( wu,
+            "Could not get instance. Is desktoputils.dll in the classpath?");
         Path f = TestHelper.getTestDir().resolve("test.lnk");
         Files.createDirectories(f.getParent());
         wu.createLink(sl, f.toAbsolutePath().toString());
@@ -67,6 +70,7 @@ public class WinUtilsTest extends TestCase {
         Files.delete(f);
     }
 
+    @Test
     public void testGetAllUserAppData() {
         String appData = WinUtils.getAppDataAllUsers();
         if (OSUtil.isWindowsXPSystem() || OSUtil.isWindowsMEorOlder()) {

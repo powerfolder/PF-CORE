@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.net;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.net.InetSocketAddress;
 
 import de.dal33t.powerfolder.Member;
@@ -28,6 +31,7 @@ import de.dal33t.powerfolder.util.net.NetworkUtil;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test for UDT connections. Mostly copied from RelayConnectionTest. TRAC #591
@@ -40,7 +44,7 @@ public class UDTConnectionTest extends FiveControllerTestCase {
     // Logger.removeExcludeConsoleLogLevel(Logger.VERBOSE);
     // }
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -49,6 +53,7 @@ public class UDTConnectionTest extends FiveControllerTestCase {
         getContollerMarge().setNetworkingMode(NetworkingMode.PRIVATEMODE);
     }
 
+    @Test
     public void testUDTConnection() throws ConnectionException {
         if (!NetworkUtil.isUDTSupported()) {
             return;
