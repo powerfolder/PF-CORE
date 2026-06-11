@@ -46,9 +46,14 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -83,6 +88,15 @@ public class LuceneIndexManager extends PFComponent {
     /** Pattern matching file extensions eligible for OCR fallback. */
     private static final Pattern OCR_ELIGIBLE_PATTERN =
             Pattern.compile(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Pattern matching plain-text file extensions. When Tika cannot detect the
+     * character encoding of such a file, we fall back to decoding it as UTF-8
+     * rather than discarding it (PFS: "with TXT files just assume UTF-8").
+     */
+    private static final Pattern PLAIN_TEXT_PATTERN = Pattern.compile(
+            ".*\\.(txt|log|csv|tsv|md|json|xml|html|htm|ini|cfg|conf|properties|yml|yaml)$",
+            Pattern.CASE_INSENSITIVE);
 
     /**
      * Detects UTF-8 mojibake: multi-byte UTF-8 sequences that were decoded
@@ -906,6 +920,20 @@ public class LuceneIndexManager extends PFComponent {
                     logFine(folder + ": Using partial content (" + partial.length()
                             + " chars) after " + e.getClass().getSimpleName() + " for " + fileInfo);
                 }
+            } else if (PLAIN_TEXT_PATTERN.matcher(filePath.toString()).matches()) {
+                // Tika gave up (typically "Failed to detect the character
+                // encoding of a document") but the file is plain text — decode
+                // it as UTF-8 (malformed bytes replaced) so it stays searchable.
+                String plain = readAsUtf8(filePath);
+                if (plain != null && !plain.isBlank()) {
+                    tikaText = plain;
+                    if (isFine()) {
+                        logFine(folder + ": Decoded plain text as UTF-8 (" + plain.length()
+                                + " chars) after " + e.getClass().getSimpleName() + " for " + fileInfo);
+                    }
+                } else {
+                    logWarning(folder + ": Tika content extraction failed for " + fileInfo + ": " + e.getMessage());
+                }
             } else {
                 logWarning(folder + ": Tika content extraction failed for " + fileInfo + ": " + e.getMessage());
             }
@@ -958,6 +986,32 @@ public class LuceneIndexManager extends PFComponent {
         }
 
         return null;
+    }
+
+    /**
+     * Decodes a plain-text file as UTF-8, replacing malformed/unmappable bytes
+     * with U+FFFD instead of failing. Used as a fallback when Tika cannot detect
+     * the file's character encoding. Honours {@code SEARCH_INDEX_MAX_TEXT_LENGTH}
+     * so we never pull an unbounded amount of text into memory.
+     */
+    private String readAsUtf8(Path filePath) {
+        int maxLen = ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController());
+        CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPLACE)
+                .onUnmappableCharacter(CodingErrorAction.REPLACE);
+        StringBuilder sb = new StringBuilder();
+        try (Reader reader = new BufferedReader(
+                new InputStreamReader(Files.newInputStream(filePath), decoder))) {
+            char[] buf = new char[8 * 1024];
+            int read;
+            while (sb.length() < maxLen && (read = reader.read(buf)) != -1) {
+                sb.append(buf, 0, Math.min(read, maxLen - sb.length()));
+            }
+        } catch (IOException e) {
+            logWarning(folder + ": UTF-8 fallback read failed for " + filePath + ": " + e.getMessage());
+            return null;
+        }
+        return sb.toString();
     }
 
     /**
