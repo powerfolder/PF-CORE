@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.disk;
 
 import de.dal33t.powerfolder.*;
+import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
@@ -2611,9 +2612,27 @@ public class Folder extends PFComponent {
      * @return
      */
     private boolean isRevertLocalChanges() {
+        if (syncProfile.equals(SyncProfile.BACKUP_TARGET)) {
+            return true;
+        }
+        // PFC-3550 / PFS-4787: Reverting is destructive. While not connected
+        // and fully logged in the security manager answers with defaults,
+        // which must never cause a revert.
+        ServerClient client = getController().getOSClient();
+        if (!client.isConnected() || !client.isLoggedIn()) {
+            return false;
+        }
         boolean mySelfReadOnly = hasReadPermission(getMySelf())
             && !hasWritePermission(getMySelf());
-        return mySelfReadOnly || syncProfile.equals(SyncProfile.BACKUP_TARGET);
+        if (!mySelfReadOnly) {
+            return false;
+        }
+        // PFC-3550 / PFS-4787: Cached answers may predate login completion.
+        // Re-check with fresh permissions before allowing a revert.
+        clearNodeCache(getMySelf());
+        return hasReadPermission(getMySelf())
+            && !hasWritePermission(getMySelf())
+            && client.isConnected() && client.isLoggedIn();
     }
 
     private void checkRevertLocalChanges() {
