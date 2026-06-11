@@ -26,8 +26,8 @@ import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
-import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.*;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.event.api.DeletedFile;
 import de.dal33t.powerfolder.light.*;
@@ -57,7 +57,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
@@ -2629,7 +2628,7 @@ public class Folder extends PFComponent {
         }
         // PFC-3550 / PFS-4787: Cached answers may predate login completion.
         // Re-check with fresh permissions before allowing a revert.
-        clearNodeCache(getMySelf());
+        getController().getSecurityManager().clearPermissionCache(getMySelf());
         return hasReadPermission(getMySelf())
             && !hasWritePermission(getMySelf())
             && client.isConnected() && client.isLoggedIn();
@@ -5447,66 +5446,22 @@ public class Folder extends PFComponent {
 
     // Security methods *******************************************************
 
-    // PFS-638
-    private static final long HAS_PERMISSION_CACHE_TIMEOUT = 987L;
-    private final SimpleCache<Member, Boolean> hasReadCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-    private final SimpleCache<Member, Boolean> hasWriteCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-
-    public void clearNodeCache(Member node) {
-        hasReadCache.invalidate(node);
-        hasWriteCache.invalidate(node);
-    }
+    // PFS-638 / PFC-3550: Caching moved to AbstractSecurityManager.
 
     public boolean hasReadPermission(Member member) {
-        Boolean hasRead = hasReadCache.getValidEntry(member);
-        if (hasRead != null) {
-            if (hasReadCache.getCacheHits() % 100000 == 0 && isFine()) {
-                logFine("Permission read: " + hasReadCache);
-            }
-            return hasRead;
-        }
-        hasRead = hasFolderPermission(member,
-            FolderPermission.read(lookupContentFolderInfo()));
-        hasReadCache.put(member, hasRead);
-        return hasRead;
+        return getController().getSecurityManager().hasReadPermission(member, currentInfo);
     }
 
     public boolean hasWritePermission(Member member) {
-        Boolean hasWrite = hasWriteCache.getValidEntry(member);
-        if (hasWrite != null) {
-            if (hasWriteCache.getCacheHits() % 100000 == 0 && isFine()) {
-                logFine("Permission write: " + hasWriteCache);
-            }
-            return hasWrite;
-        }
-        hasWrite = hasFolderPermission(member,
-                FolderPermission.readWrite(lookupContentFolderInfo()));
-        hasWriteCache.put(member, hasWrite);
-        return hasWrite;
+        return getController().getSecurityManager().hasWritePermission(member, currentInfo);
     }
 
     public boolean hasAdminPermission(Member member) {
-        return hasFolderPermission(member,
-            FolderPermission.admin(lookupContentFolderInfo()));
+        return getController().getSecurityManager().hasAdminPermission(member, currentInfo);
     }
 
     public boolean hasOwnerPermission(Member member) {
-        return hasFolderPermission(member,
-            FolderPermission.owner(lookupContentFolderInfo()));
-    }
-
-    private boolean hasFolderPermission(Member member,
-        FolderPermission permission)
-    {
-        return getController().getSecurityManager()
-            .hasPermission(member.getInfo(), permission);
-    }
-
-    private FolderInfo lookupContentFolderInfo() {
-        if (!currentInfo.isMetaFolder()) {
-            return currentInfo;
-        }
-        return currentInfo.lookupContentFolderInfo();
+        return getController().getSecurityManager().hasOwnerPermission(member, currentInfo);
     }
 
     // General stuff **********************************************************
