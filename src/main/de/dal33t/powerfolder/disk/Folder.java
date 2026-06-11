@@ -5355,7 +5355,7 @@ public class Folder extends PFComponent {
     // Security methods *******************************************************
 
     // PFS-638
-    private static final long HAS_PERMISSION_CACHE_TIMEOUT = 60_000L;
+    private static final long HAS_PERMISSION_CACHE_TIMEOUT = 987L;
     private final SimpleCache<Member, Boolean> hasReadCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
     private final SimpleCache<Member, Boolean> hasWriteCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
 
