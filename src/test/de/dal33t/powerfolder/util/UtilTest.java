@@ -119,8 +119,8 @@ public class UtilTest extends TestCase {
 
         assertTrue(Util.equals(firstMemberInfo, secondMemberInfo));
 
-        Double firstNumber = new Double(1234.231);
-        Double secondNumber = new Double(1234.231);
+        Double firstNumber = Double.valueOf(1234.231);
+        Double secondNumber = Double.valueOf(1234.231);
         assertTrue(Util.equals(firstNumber, secondNumber));
 
         Date date = new Date();
@@ -172,7 +172,7 @@ public class UtilTest extends TestCase {
         assertFalse(Util.equals(firstList, secondList));
 
         //Objects
-        assertFalse(Util.equals(new Double(234), new Double(432)));
+        assertFalse(Util.equals(Double.valueOf(234), Double.valueOf(432)));
         assertFalse(Util.equals(new MemberInfo("1","4","3"), new MemberInfo("3", "2", "1")));
         assertFalse(Util.equals(new StringBuilder(), "File"));
         assertFalse(Util.equals(new Date(), new SimpleDateFormat("yyyy MM dd").parse("2019 08 31")));

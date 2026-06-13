@@ -114,7 +114,7 @@ public class SerializationCompareTest extends TestCase {
         f.folderInfo = UUID.randomUUID().toString();
         f.modifiedBy = UUID.randomUUID().toString();
         f.lastModifiedDate = new Date();
-        f.size = new Long((long) (Math.random() * 1000000));
+        f.size = Long.valueOf((long) (Math.random() * 1000000));
         f.version = (int) (Math.random() * 100);
         return f;
     }
@@ -127,7 +127,7 @@ public class SerializationCompareTest extends TestCase {
         f.folderInfo = UUID.randomUUID().toString();
         f.modifiedBy = UUID.randomUUID().toString();
         f.lastModifiedDate = new Date();
-        f.size = new Long((long) (Math.random() * 1000000));
+        f.size = Long.valueOf((long) (Math.random() * 1000000));
         f.version = (int) (Math.random() * 100);
         return f;
     }
