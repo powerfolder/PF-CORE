@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.transfer;
 
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.Folder;
@@ -29,6 +30,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
@@ -109,8 +111,18 @@ public class MetaFolderDataHandler extends PFComponent {
         }
 
         if (!lockMember.equals(remoteMember)) {
-            AccountInfo accountInfo = remoteMember.getNode(getController(), true).getAccountInfo();
-            String overrideBy = accountInfo != null ? accountInfo.getDisplayName() : remoteMember.nick;
+            Member remoteNode = remoteMember.getNode(getController(), true);
+            AccountInfo accountInfo = fileInfo.getModifiedByAccount();
+            String overrideBy = accountInfo != null ? accountInfo.getDisplayName() : null;
+            if (StringUtils.isBlank(overrideBy) && remoteNode != null && remoteNode.isServer()) {
+                overrideBy = Translation.get("general.server");
+            }
+            if (StringUtils.isBlank(overrideBy)) {
+                overrideBy = remoteMember.nick;
+            }
+            if (StringUtils.isBlank(overrideBy)) {
+                overrideBy = Translation.get("estimation.unknown");
+            }
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() {
