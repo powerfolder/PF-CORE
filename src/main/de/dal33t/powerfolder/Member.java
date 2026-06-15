@@ -524,7 +524,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             .getMemberInfo() : null;
 
         if (remoteMemberInfo != null && remoteMemberInfo.matches(getMySelf())) {
-            logFine("Loopback connection detected to " + newPeer + ", disconnecting");
+            logConnectionProblem("Loopback connection detected to " + newPeer + ", disconnecting");
             newPeer.shutdown();
             throw new InvalidIdentityException("Loopback connection detected to "
                     + newPeer + ", disconnecting", newPeer);
@@ -534,14 +534,12 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (remoteMemberInfo != null
             && !remoteMemberInfo.isOnSameNetwork(getController()))
         {
-            if (isFine()) {
-                logFine("Closing connection to node with different network ID. Our netID: "
-                    + getController().getNodeManager().getNetworkId()
-                    + ", remote netID: "
-                    + remoteMemberInfo.networkId
-                    + " on "
-                    + remoteMemberInfo);
-            }
+            logConnectionProblem("Closing connection to node with different network ID. Our netID: "
+                + getController().getNodeManager().getNetworkId()
+                + ", remote netID: "
+                + remoteMemberInfo.networkId
+                + " on "
+                + remoteMemberInfo);
             newPeer.shutdown();
             setConnectedToNetwork(false);
             lastProblem = new Problem("Network ID mismatch", true,
@@ -554,7 +552,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (!newPeer.isConnected()) {
-            logFine("Peer disconnected while initializing connection: " + newPeer);
+            logConnectionProblem("Peer disconnected while initializing connection: " + newPeer);
             return ConnectResult.failure("Peer disconnected while initializing connection");
         }
 
@@ -593,10 +591,8 @@ public class Member extends PFComponent implements Comparable<Member> {
             if (StringUtils.isNotBlank(remoteVersion) && Util.compareVersions(minimumVersion, remoteVersion)) {
                 lastProblem = new Problem("Version too old. Required minimum version: " + minimumVersion,
                         true, Problem.VERSION_TOO_OLD);
-                if (isFine()) {
-                    logFine(remoteMemberInfo + ": Closing connection. Version too old. Required version: "
-                            + minimumVersion + ", remote version: " + remoteVersion);
-                }
+                logConnectionProblem(remoteMemberInfo + ": Closing connection. Version too old. Required version: "
+                        + minimumVersion + ", remote version: " + remoteVersion);
                 try {
                     newPeer.sendMessage(lastProblem);
                 } catch (ConnectionException e) {
@@ -619,7 +615,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!accepted) {
             // Shutdown this member
             newPeer.shutdown();
-            logFiner("Remote side did not accept our identity: " + newPeer);
+            logConnectionProblem("Remote side did not accept our identity: " + newPeer);
             return ConnectResult
                 .failure("Remote side did not accept our identity");
         }
@@ -772,11 +768,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             }
             throw e;
         } catch (ConnectionException e) {
-            if (isServer()) {
-                logWarning(e.getMessage());
-            } else {
-                logFine(e.getMessage());
-            }
+            logConnectionProblem(e.getMessage());
             logFiner(e);
             // Shut down reconnect handler
             if (handler != null) {
@@ -802,6 +794,25 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         return connectResult;
+    }
+
+    /**
+     * Logs the reason why a connection / handshake to this node failed. For
+     * server nodes (inbound or outbound server-to-server connections, e.g.
+     * across service / federation boundaries) the reason is logged at WARNING
+     * level so failing connections become visible in the standard production
+     * logs. For regular client nodes the message stays at FINE to avoid log
+     * spam.
+     *
+     * @param reason
+     *            the human readable reason why the connection failed
+     */
+    private void logConnectionProblem(String reason) {
+        if (isServer()) {
+            logWarning(reason);
+        } else {
+            logFine(reason);
+        }
     }
 
     /**
@@ -835,7 +846,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         synchronized (peerInitializeLock) {
             if (!isConnected() || identity == null) {
-                logFine("Disconnected while completing handshake");
+                logConnectionProblem("Disconnected while completing handshake");
                 return ConnectResult.failure("Disconnected while completing handshake");
             }
             // Send node informations now
@@ -862,19 +873,19 @@ public class Member extends PFComponent implements Comparable<Member> {
         receivedFolderList = waitForFoldersJoin();
         synchronized (peerInitializeLock) {
             if (!isConnected()) {
-                logFine("Disconnected while completing handshake");
+                logConnectionProblem("Disconnected while completing handshake");
                 return ConnectResult.failure("Disconnected while completing handshake");
             }
             if (!receivedFolderList) {
                 if (isConnected()) {
-                    logFine("Did not receive a folder list after 60s, disconnecting");
+                    logConnectionProblem("Did not receive a folder list after 60s, disconnecting");
                     return ConnectResult.failure("Did not receive a folder list after 60s, disconnecting (1)");
                 }
                 shutdown();
                 return ConnectResult.failure("Did not receive a folder list after 60s, disconnecting (2)");
             }
             if (!isConnected()) {
-                logFine("Disconnected while waiting for folder list");
+                logConnectionProblem("Disconnected while waiting for folder list");
                 return ConnectResult.failure("Disconnected while waiting for folder list");
             }
         }
@@ -886,7 +897,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         boolean thisHandshakeCompleted = true;
         synchronized (peerInitializeLock) {
             if (!isConnected()) {
-                logFine("Disconnected while completing handshake");
+                logConnectionProblem("Disconnected while completing handshake");
                 return ConnectResult.failure("Disconnected while completing handshake");
             }
 
@@ -898,7 +909,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 peer.sendMessagesAsynchron(getController().getTransferManager()
                         .getStatus());
             } else {
-                logFine("Rejected, Node not interesting");
+                logConnectionProblem("Rejected, Node not interesting");
                 // Tell remote side
                 try {
                     peer.sendMessage(new Problem("You are boring", true,
@@ -920,9 +931,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             String message = "not handshaked: connected? " + isConnected()
                 + ", acceptByCH? " + acceptByConnectionHandler
                 + ", interesting? " + isInteresting() + ", peer " + peer;
-            if (isFiner()) {
-                logFiner(message);
-            }
+            logConnectionProblem(message);
             shutdown();
             return ConnectResult.failure(message);
         }
@@ -936,11 +945,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         if (!ok) {
             String reason = "Disconnecting. Did not receive the full filelists for "
                 + foldersJoined.size() + " folders: " + foldersJoined;
-            if (isServer()) {
-                logWarning(reason);
-            } else {
-                logFine(reason);
-            }
+            logConnectionProblem(reason);
             if (isFine()) {
                 for (Folder folder : foldersJoined) {
                     logFine("Got filelist for " + folder.getName() + " ? " + hasCompleteFileListFor(folder.getInfo()));
@@ -971,8 +976,8 @@ public class Member extends PFComponent implements Comparable<Member> {
                 }
             }
             shutdown();
-            if (message != null && isFine()) {
-                logFine(message);
+            if (message != null) {
+                logConnectionProblem(message);
             }
             return ConnectResult.failure(message);
         } else if (isFiner()) {
