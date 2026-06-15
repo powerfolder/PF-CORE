@@ -95,7 +95,7 @@ public class LuceneIndexManager extends PFComponent {
      * rather than discarding it (PFS: "with TXT files just assume UTF-8").
      */
     private static final Pattern PLAIN_TEXT_PATTERN = Pattern.compile(
-            ".*\\.(txt|log|csv|tsv|md|json|xml|html|htm|ini|cfg|conf|properties|yml|yaml)$",
+            ".*\\.(txt|log|csv|tsv|md|json|xml|html|htm|ini|cfg|conf|properties|yml|yaml|eml)$",
             Pattern.CASE_INSENSITIVE);
 
     /**
