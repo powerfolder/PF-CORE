@@ -1024,6 +1024,26 @@ public class NodeManager extends PFComponent {
     }
 
     /**
+     * Logs the reason why an inbound connection was rejected. Connections from
+     * server nodes (server-to-server, e.g. across service / federation
+     * boundaries) are logged at WARNING level so failing connections become
+     * visible in the standard production logs. Connections from regular clients
+     * stay at FINE to avoid log spam.
+     *
+     * @param remoteIsServer
+     *            whether the rejected connection originates from a server node
+     * @param reason
+     *            the human readable reason why the connection was rejected
+     */
+    private void logConnectionProblem(boolean remoteIsServer, String reason) {
+        if (remoteIsServer) {
+            logWarning(reason);
+        } else {
+            logFine(reason);
+        }
+    }
+
+    /**
      * Internal method for accepting nodes on a connection handler
      *
      * @param handler
@@ -1054,27 +1074,27 @@ public class NodeManager extends PFComponent {
                 + handler + ". disconnecting. " + remoteIdentity).with(handler);
         }
 
+        // Is the inbound connection coming from a server node (cluster /
+        // federation server)? Used to escalate reject reasons to WARNING so
+        // failing server-to-server connections are visible in the logs.
+        Member knownNode = getNode(remoteIdentity.getMemberInfo());
+        boolean remoteIsServer = (knownNode != null && knownNode.isServer())
+            || getController().getOSClient().isPrimaryServer(handler);
+
         if (getMySelf().getInfo().equals(remoteIdentity.getMemberInfo())) {
-            logFine("Loopback connection detected to " + handler
-                + ", disconnecting");
+            logConnectionProblem(remoteIsServer, "Loopback connection detected to "
+                + handler + ", disconnecting");
             handler.shutdown();
             throw new ConnectionException("Loopback connection detected to "
                 + handler + ", disconnecting").with(handler);
         }
         if (!remoteIdentity.getMemberInfo().isOnSameNetwork(getController())) {
-            if (getController().getOSClient().isPrimaryServer(handler)
-                && !mySelf.isServer())
-            {
-                logWarning("Server not on same network " + handler
-                    + ", disconnecting. remote network ID: "
-                    + remoteIdentity.getMemberInfo().networkId
-                    + ". Expected/Ours: " + getNetworkId());
-            } else {
-                logFine("Remote client not on same network " + handler
-                    + ", disconnecting. remote network ID: "
-                    + remoteIdentity.getMemberInfo().networkId
-                    + ". Expected/Ours: " + getNetworkId());
-            }
+            logConnectionProblem(remoteIsServer, (remoteIsServer
+                ? "Server not on same network "
+                : "Remote client not on same network ")
+                + handler + ", disconnecting. remote network ID: "
+                + remoteIdentity.getMemberInfo().networkId
+                + ". Expected/Ours: " + getNetworkId());
             handler.shutdown();
             throw new ConnectionException("Remote client not on same network "
                 + handler + ", disconnecting. remote network ID: "
@@ -1089,7 +1109,7 @@ public class NodeManager extends PFComponent {
             // Only actually connect to other clients if logged into server.
             if (!client.isLoggedIn() && !client.isPrimaryServer(handler)) {
                 handler.shutdown();
-                logFine("Not logged in at server ("
+                logConnectionProblem(remoteIsServer, "Not logged in at server ("
                     + client.getServer().getNick() + ") yet. Disconnecting: "
                     + handler.getIdentity());
                 throw new ConnectionException("Not logged in at server ("
@@ -1172,9 +1192,8 @@ public class NodeManager extends PFComponent {
                 }
             }
         } else {
-            if (isFine()) {
-                logFine(rejectCause + ", connected? " + handler.isConnected());
-            }
+            logConnectionProblem(remoteIsServer, rejectCause + ", connected? "
+                + handler.isConnected());
             // Tell remote side, fatal problem
             try {
                 handler.sendMessage(new Problem(rejectCause, true,
