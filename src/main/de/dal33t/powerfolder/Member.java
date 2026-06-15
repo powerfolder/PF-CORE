@@ -552,8 +552,8 @@ public class Member extends PFComponent implements Comparable<Member> {
         }
 
         if (!newPeer.isConnected()) {
-            logConnectionProblem("Peer disconnected while initializing connection: " + newPeer);
-            return ConnectResult.failure("Peer disconnected while initializing connection");
+            logConnectionProblem("Remote node disconnected while initializing connection: " + newPeer);
+            return ConnectResult.failure("Remote node disconnected while initializing connection");
         }
 
         // check if identity is valid and matches the this member
@@ -846,7 +846,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
         synchronized (peerInitializeLock) {
             if (!isConnected() || identity == null) {
-                logConnectionProblem("Disconnected while completing handshake");
+                logConnectionProblem("Remote node disconnected while completing handshake");
                 return ConnectResult.failure("Disconnected while completing handshake");
             }
             // Send node informations now
@@ -873,7 +873,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         receivedFolderList = waitForFoldersJoin();
         synchronized (peerInitializeLock) {
             if (!isConnected()) {
-                logConnectionProblem("Disconnected while completing handshake");
+                logConnectionProblem("Remote node disconnected while completing handshake");
                 return ConnectResult.failure("Disconnected while completing handshake");
             }
             if (!receivedFolderList) {
@@ -885,7 +885,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 return ConnectResult.failure("Did not receive a folder list after 60s, disconnecting (2)");
             }
             if (!isConnected()) {
-                logConnectionProblem("Disconnected while waiting for folder list");
+                logConnectionProblem("Remote node disconnected while waiting for folder list");
                 return ConnectResult.failure("Disconnected while waiting for folder list");
             }
         }
@@ -897,7 +897,7 @@ public class Member extends PFComponent implements Comparable<Member> {
         boolean thisHandshakeCompleted = true;
         synchronized (peerInitializeLock) {
             if (!isConnected()) {
-                logConnectionProblem("Disconnected while completing handshake");
+                logConnectionProblem("Remote node disconnected while completing handshake");
                 return ConnectResult.failure("Disconnected while completing handshake");
             }
 
