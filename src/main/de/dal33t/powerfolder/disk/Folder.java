@@ -467,8 +467,14 @@ public class Folder extends PFComponent {
         try {
             searchIndexManager = new LuceneIndexManager(getController(), this);
             boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
-            logInfo(this + ": Lucene search index " + (rebuild ? "rebuilding" : "ready")
-                    + " (" + searchIndexManager.getIndexEntryCount() + " entries)");
+            int entryCount = searchIndexManager.getIndexEntryCount();
+            String msg = this + ": Lucene search index " + (rebuild ? "rebuilding" : "ready")
+                    + " (" + entryCount + " entries)";
+            if (entryCount > 0) {
+                logInfo(msg);
+            } else if (isFine()) {
+                logFine(msg);
+            }
         } catch (Throwable t) {
             logWarning(this + ": Unable to initialize Lucene index manager: " + t, t);
         }
