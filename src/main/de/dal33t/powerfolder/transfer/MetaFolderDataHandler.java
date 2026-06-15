@@ -123,6 +123,7 @@ public class MetaFolderDataHandler extends PFComponent {
             if (StringUtils.isBlank(overrideBy)) {
                 overrideBy = Translation.get("estimation.unknown");
             }
+            final String overrideByFinal = overrideBy;
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() {
@@ -135,7 +136,7 @@ public class MetaFolderDataHandler extends PFComponent {
                                     getController(),
                                     Translation.get("dialog.lock.removed_by_other_member.title"),
                                     Translation.get("dialog.lock.removed_by_other_member.message",
-                                            fileInfo.getFilenameOnly(), overrideBy),
+                                            fileInfo.getFilenameOnly(), overrideByFinal),
                                     new String[]{"OK"},
                                     0, GenericDialogType.WARN);
 
