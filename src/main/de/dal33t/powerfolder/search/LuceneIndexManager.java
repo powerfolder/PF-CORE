@@ -465,7 +465,12 @@ public class LuceneIndexManager extends PFComponent {
         indexQueue.addAll(dirs);
 
         ensureWorkerRunning();
-        logInfo(folder + ": Rebuild queued — " + (files.size() + dirs.size()) + " files");
+        int queued = files.size() + dirs.size();
+        if (queued > 0) {
+            logInfo(folder + ": Rebuild queued — " + queued + " files");
+        } else if (isFine()) {
+            logFine(folder + ": Rebuild queued — 0 files");
+        }
     }
 
     public boolean rebuildIndexIfRequired() {
