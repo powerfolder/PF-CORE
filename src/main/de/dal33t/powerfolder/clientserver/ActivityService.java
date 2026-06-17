@@ -35,11 +35,25 @@ public interface ActivityService {
     final static long RESULTS_UNLIMITED = -1;
 
     /**
-     * @param forAccount for this target account (logged in account)
-     * @param filterAccountOID only show news of the given account, null for any
+     * Retrieve activity/news items from THIS cluster node only.
+     *
+     * @param forAccount the account to retrieve the activity for (the logged-in account)
      * @param maxResults the number of maximum results
      *
      * @return the log according to the current filter settings.
      */
-     Collection<NewsItem> getNews(AccountInfo forAccount, String filterAccountOID, long maxResults);
+     Collection<NewsItem> getNewsFromLocalServer(AccountInfo forAccount, long maxResults);
+
+    /**
+     * Central call: retrieve and summarize activity/news items across ALL
+     * nodes of the own cluster (federation is not included). Implementations
+     * fan out to each cluster node's {@link #getNewsFromLocalServer} and aggregate the
+     * results.
+     *
+     * @param forAccount the account to retrieve the activity for (the logged-in account)
+     * @param maxResults the number of maximum results per node
+     *
+     * @return the summarized log across the whole cluster.
+     */
+     Collection<NewsItem> getNewsFromAllClusterNodes(AccountInfo forAccount, long maxResults);
 }
