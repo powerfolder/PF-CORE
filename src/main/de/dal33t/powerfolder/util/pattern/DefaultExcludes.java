@@ -49,7 +49,9 @@ public enum DefaultExcludes {
     CLAUDE(".claude"),
     CODEX(".codex"),
     AIDER(".aider"),
-    CLINE(".cline");
+    CLINE(".cline"),
+
+    GIT(".git");
 
     String pattern;
 
