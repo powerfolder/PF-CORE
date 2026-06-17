@@ -43,6 +43,8 @@ import de.dal33t.powerfolder.util.Convert;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -88,7 +90,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
      */
     protected FolderInfo testFolder;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
 
         LoggingManager.setConsoleLogging(Level.WARNING);
@@ -106,6 +108,12 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
             setConfigEntriesForEncryption();
         }
 
+        ConfigurationEntry.SERVER_FEDERATION_ENABLED.setValue(getContollerHomer(), false);
+        ConfigurationEntry.SERVER_FEDERATION_ENABLED.setValue(getContollerBart(), false);
+        ConfigurationEntry.SERVER_FEDERATION_ENABLED.setValue(getContollerMarge(), false);
+        ConfigurationEntry.SERVER_FEDERATION_ENABLED.setValue(getContollerLisa(), false);
+        ConfigurationEntry.SERVER_FEDERATION_ENABLED.setValue(getContollerMaggie(), false);
+
         // PFS-1994: Activate encrypted storage for this test.
         prepareTestFolderBaseDirs();
 
@@ -113,7 +121,7 @@ public abstract class FiveControllerTestCase extends MultipleControllerTestCase
         LoggingManager.setConsoleLogging(Level.WARNING);
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         LoggingManager.setConsoleLogging(Level.OFF);
         super.tearDown();

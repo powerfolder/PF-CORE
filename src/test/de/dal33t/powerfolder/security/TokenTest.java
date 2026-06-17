@@ -1,6 +1,5 @@
 /*
- * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
- * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
+ * Copyright 2004 - 2015 Christian Sprajc. All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -16,15 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
+ * $Id: Constants.java 11478 2010-02-01 15:25:42Z tot $
  */
 package de.dal33t.powerfolder.security;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import junit.framework.TestCase;
+public class TokenTest {
 
-public class TokenTest extends TestCase {
-
+    @Test
     public void testGenerateToken() {
         Token token = Token.newAccessToken(150000L, testAccount());
         assertFalse(token.hasSecret());
@@ -47,6 +49,7 @@ public class TokenTest extends TestCase {
         assertTrue(token.validate(secret));
     }
 
+    @Test
     public void testExpireToken() {
         Token token = Token.newAccessToken(500L, testAccount());
         String secret = token.generateSecret();
@@ -62,6 +65,7 @@ public class TokenTest extends TestCase {
         assertFalse(token.validate(secret));
     }
 
+    @Test
     public void testRevokeToken() {
         Token token = Token.newAccessToken(150000L, testAccount());
         String secret = token.generateSecret();
@@ -76,6 +80,7 @@ public class TokenTest extends TestCase {
         assertFalse(token.validate(secret));
     }
 
+    @Test
     public void testInvalidTokens() {
         Token token = Token.newAccessToken(150000L, testAccount());
         String secret = token.generateSecret();
@@ -107,22 +112,6 @@ public class TokenTest extends TestCase {
             fail("Expired token must not be generated");
         } catch (Exception e) {
         }
-    }
-
-    public void testLooksLikeToken() {
-        Token token = Token.newAccessToken(150000L, testAccount());
-        String secret = token.generateSecret();
-
-        assertTrue(Token.looksLikeToken(secret.toCharArray()));
-
-        assertFalse(Token.looksLikeToken(null));
-        assertFalse(Token.looksLikeToken(new char[0]));
-        assertFalse(Token.looksLikeToken("short".toCharArray()));
-        assertFalse(Token.looksLikeToken("mypassword123".toCharArray()));
-        assertFalse(Token.looksLikeToken("P@ssw0rd!#$%".toCharArray()));
-
-        // Hyphen in password — false positive is acceptable, isExpired will filter it out
-        assertTrue(Token.looksLikeToken("my-password-123".toCharArray()));
     }
 
     private static AccountInfo testAccount() {

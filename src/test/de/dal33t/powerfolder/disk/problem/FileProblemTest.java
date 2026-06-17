@@ -19,6 +19,8 @@
  */
 package de.dal33t.powerfolder.disk.problem;
 
+
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.FileInfoFactory;
@@ -28,9 +30,11 @@ import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
 import java.lang.reflect.Method;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FileProblemTest extends ControllerTestCase {
 
+    @Test
     public void testForWindows() {
         assertFalse(FileProblemHelper
             .containsIllegalWindowsChars("a valid filename.txt"));
@@ -67,6 +71,7 @@ public class FileProblemTest extends ControllerTestCase {
 
     }
 
+    @Test
     public void testFilenameProblems() {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder");
@@ -85,9 +90,9 @@ public class FileProblemTest extends ControllerTestCase {
         // FilenameProblem.getProblems(FileInfoFactory.lookupInstance(folderInfo,
         // "ddd/d")).size());
         // windows/Mac
-        assertEquals(FileProblemHelper.getProblems(getController(),
-                FileInfoFactory.lookupInstance(folderInfo, "ddd:d")).toString(), 0, FileProblemHelper.getProblems(getController(),
-            FileInfoFactory.lookupInstance(folderInfo, "ddd:d")).size());
+        assertEquals( 0, FileProblemHelper.getProblems(getController(),
+            FileInfoFactory.lookupInstance(folderInfo, "ddd:d")).size(),FileProblemHelper.getProblems(getController(),
+                FileInfoFactory.lookupInstance(folderInfo, "ddd:d")).toString());
         // windows
         assertEquals(1, FileProblemHelper.getProblems(getController(),
             FileInfoFactory.lookupInstance(folderInfo, "AUX")).size());
@@ -111,6 +116,7 @@ public class FileProblemTest extends ControllerTestCase {
                 .size());
     }
 
+    @Test
     public void testFilenameProblemsNoCheck() {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), false);
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder");
@@ -122,6 +128,7 @@ public class FileProblemTest extends ControllerTestCase {
         PreferencesEntry.FILE_NAME_CHECK.setValue(getController(), true);
     }
 
+    @Test
     public void testStripExtension() {
         try {
             boolean foundMethod = false;
@@ -147,6 +154,7 @@ public class FileProblemTest extends ControllerTestCase {
     /**
      * Test the getShorterFilename() method in FilenameProblemHelper
      */
+    @Test
     public void testShorterFileName() {
         setupTestFolder(SyncProfile.BACKUP_SOURCE);
 
@@ -156,12 +164,12 @@ public class FileProblemTest extends ControllerTestCase {
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcdef");
         String s = FileProblemHelper.getShorterFilename(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "abcdef"));
-        assertEquals("Failed to shorten abcdef to abc", s, "abc");
+        assertEquals( s, "abc","Failed to shorten abcdef to abc");
 
         // Test that other does not get touched.
         s = FileProblemHelper.getShorterFilename(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "other"));
-        assertEquals("Other affected", s, "other");
+        assertEquals( s, "other","Other affected");
 
         // Test that R E A L L Y long names get shortened.
         s = FileProblemHelper
@@ -172,14 +180,15 @@ public class FileProblemTest extends ControllerTestCase {
                         getFolder().getInfo(),
                         "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"));
         assertEquals(
-            "Not shortened",
             "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnop",
-                s);
+                s,
+            "Not shortened");
     }
 
     /**
      * Test the makeUnique() method in FilenameProblemHelper
      */
+    @Test
     public void testUniqueFileName() {
         setupTestFolder(SyncProfile.BACKUP_SOURCE);
 
@@ -188,7 +197,7 @@ public class FileProblemTest extends ControllerTestCase {
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd-1");
         String s = FileProblemHelper.makeUnique(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "abcd"));
-        assertEquals("Failed to make unique abcd to abcd-2", s, "abcd-2");
+        assertEquals( s, "abcd-2","Failed to make unique abcd to abcd-2");
 
         // Test that abcd gets changed to abcd-2 because of other files.
         TestHelper.createRandomFile(getFolder().getLocalBase(), "subdir/abcd");
@@ -196,12 +205,13 @@ public class FileProblemTest extends ControllerTestCase {
             .createRandomFile(getFolder().getLocalBase(), "subdir/abcd-1");
         s = FileProblemHelper.makeUnique(getController(), FileInfoFactory
             .lookupInstance(getFolder().getInfo(), "abcd"));
-        assertEquals("Failed to make unique abcd to abcd-2", s, "abcd-2");
+        assertEquals( s, "abcd-2","Failed to make unique abcd to abcd-2");
     }
 
     /**
      * Test the makeUnique() method in FilenameProblemHelper with file extension
      */
+    @Test
     public void testUniqueFileNameExt() {
         setupTestFolder(SyncProfile.BACKUP_SOURCE);
 
@@ -210,8 +220,8 @@ public class FileProblemTest extends ControllerTestCase {
         TestHelper.createRandomFile(getFolder().getLocalBase(), "abcd-1.txt");
         String s = FileProblemHelper.makeUnique(getController(),
             FileInfoFactory.lookupInstance(getFolder().getInfo(), "abcd.txt"));
-        assertEquals("Failed to make unique abcd.txt to abcd-2.txt", s,
-            "abcd-2.txt");
+        assertEquals( s,
+            "abcd-2.txt","Failed to make unique abcd.txt to abcd-2.txt");
     }
 
     public void test8dot3NotationProblem() {

@@ -19,10 +19,12 @@
  */
 package de.dal33t.powerfolder.light;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.util.Date;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestDownloadExt;
 import de.dal33t.powerfolder.message.StartUpload;
@@ -32,23 +34,27 @@ import de.dal33t.powerfolder.message.StopUploadExt;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.IdGenerator;
 
-public class FileInfoTest extends TestCase {
+public class FileInfoTest {
 
+    @Test
     public void testRenameRelativeFileName() throws Exception {
 
         // Check root level file name change.
-        assertEquals("Simple", "myFile.txt",
-            FileInfo.renameRelativeFileName("oldFile.txt", "myFile.txt"));
+        assertEquals("myFile.txt",
+            FileInfo.renameRelativeFileName("oldFile.txt", "myFile.txt"),
+            "Simple");
 
         // Check single-depth change.
-        assertEquals("Directory", "directory/myFile.txt",
+        assertEquals("directory/myFile.txt",
             FileInfo.renameRelativeFileName("directory/oldFile.txt",
-                "myFile.txt"));
+                "myFile.txt"),
+            "Directory");
 
         // Check multiple directory depth change.
-        assertEquals("Subdirectory", "directory/subdirectory/myFile.txt",
+        assertEquals("directory/subdirectory/myFile.txt",
             FileInfo.renameRelativeFileName(
-                "directory/subdirectory/oldFile.txt", "myFile.txt"));
+                "directory/subdirectory/oldFile.txt", "myFile.txt"),
+            "Subdirectory");
 
         // Check illegal '/' character in new file name.
         try {
@@ -60,6 +66,7 @@ public class FileInfoTest extends TestCase {
         }
     }
 
+    @Test
     public void testSerialize() throws IOException, ClassNotFoundException {
         FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Random name of folder " + IdGenerator.makeFolderId());
         MemberInfo mInfo = new MemberInfo("Nickname", IdGenerator.makeId(),

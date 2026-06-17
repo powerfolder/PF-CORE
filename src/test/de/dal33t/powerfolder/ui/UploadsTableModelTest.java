@@ -28,6 +28,11 @@ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.logging.Level;
 import javax.swing.event.TableModelEvent;
@@ -47,18 +52,27 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     private MyUploadTableModelListener bartModelListener;
     private java.util.Timer stackDumpTimer;
 
-    @Override
+    // PFS-5561: JUnit 3's TestCase.getName() is gone under JUnit 5 - capture the
+    // running test name via TestInfo for the diagnostic stack dump below.
+    private String currentTestName = "UploadsTableModelTest";
+
+    @org.junit.jupiter.api.BeforeEach
+    void captureTestName(org.junit.jupiter.api.TestInfo testInfo) {
+        currentTestName = testInfo.getDisplayName();
+    }
+
+    @BeforeEach
     protected void setUp() throws Exception {
         // Diagnostics for sporadic hangs of this class on CI (PFC-3573): log which method runs and what happens.
         // If a test runs longer than 8 minutes, dump all thread stacks. To a FILE in test-reports (uploaded as CI
         // artifact) - NOT to System.out: the hang also freezes stdout (blocked PrintStream lock), and the ant fork
         // timeout kill discards buffered output.
-        System.out.println(">>> UploadsTableModelTest#" + getName());
+        System.out.println(">>> UploadsTableModelTest#" + currentTestName);
         stackDumpTimer = new java.util.Timer("StackDumpWatchdog", true);
         stackDumpTimer.schedule(new java.util.TimerTask() {
             @Override
             public void run() {
-                StringBuilder dump = new StringBuilder("=== STACK DUMP - " + getName() + " runs > 8 minutes ===\n");
+                StringBuilder dump = new StringBuilder("=== STACK DUMP - " + currentTestName + " runs > 8 minutes ===\n");
                 for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
                     dump.append("Thread: ").append(e.getKey().getName()).append(" state=")
                         .append(e.getKey().getState()).append('\n');
@@ -69,7 +83,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
                 try {
                     java.nio.file.Path dir = java.nio.file.Paths.get("test-reports");
                     java.nio.file.Files.createDirectories(dir);
-                    java.nio.file.Files.write(dir.resolve("threaddump-UploadsTableModelTest-" + getName() + ".txt"),
+                    java.nio.file.Files.write(dir.resolve("threaddump-UploadsTableModelTest-" + currentTestName + ".txt"),
                         dump.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 } catch (Exception e) {
                     // Ignore - diagnostics only
@@ -99,7 +113,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         // Cancel AFTER super.tearDown(): the PFC-3573 hang happened in controller shutdown during tearDown -
         // cancelling first would disarm the watchdog exactly for that case.
@@ -109,6 +123,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         }
     }
 
+    @Test
     public void testSingleFileUpload() {
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
@@ -122,8 +137,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertEquals(0, bartModel.getRowCount());
 
         // Check correct events from model
-        assertEquals(bartModelListener.events.toString(), 4,
-            bartModelListener.events.size());
+        assertEquals(4, bartModelListener.events.size(), bartModelListener.events.toString());
         assertTrue(bartModelListener.events.get(0)
             .getType() == TableModelEvent.INSERT); // Upload
         // Requested
@@ -143,6 +157,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
      * This tests UPLOADS_AUTO_CLEANUP ConfigurationEntry. By default this is
      * true. Setting to FALSE stops completed uploads being removed.
      */
+    @Test
     public void testSingleFileUploadNoAutoCleanup() {
         ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
             .setValue(getContollerBart(), Integer.MAX_VALUE);
@@ -158,8 +173,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         assertEquals(1, bartModel.getRowCount());
 
         // Check correct events from model
-        assertEquals(bartModelListener.events.toString(), 3,
-            bartModelListener.events.size());
+        assertEquals(3, bartModelListener.events.size(), bartModelListener.events.toString());
         assertTrue(bartModelListener.events.get(0)
             .getType() == TableModelEvent.INSERT); // Upload
         // Requested
@@ -171,6 +185,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // completed
     }
 
+    @Test
     public void testRunningUpload() {
         // Throttle so the upload stays observable as running; 20MB at 2MB/s = ~10 seconds
         getContollerBart().getTransferManager().setUploadCPSForLAN(2 * 1024 * 1024);
@@ -210,6 +225,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForEmptyEDT();
     }
 
+    @Test
     public void testAbortUpload() {
         // Throttle lisas download so the upload is still running when it gets aborted. Setting the
         // ConfigurationEntry directly (as before) never took effect - the TransferManager applies limits
@@ -254,7 +270,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // no active upload
         assertEquals(0, bartModel.getRowCount());
         // Check correct events from model
-        assertEquals(bartModelListener.events.toString(), 3, bartModelListener.events.size());
+        assertEquals(3, bartModelListener.events.size(), bartModelListener.events.toString());
         // Upload requested
         assertTrue(bartModelListener.events.get(0)
             .getType() == TableModelEvent.INSERT);
@@ -268,6 +284,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         TestHelper.waitForEmptyEDT();
     }
 
+    @Test
     public void testDisconnectWhileUploadMultiple() throws Exception {
         for (int i = 0; i < 10; i++) {
             testDisconnectWhileUpload();
@@ -276,6 +293,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         }
     }
 
+    @Test
     public void testDisconnectWhileUpload() {
         getContollerBart().getTransferManager().setUploadCPSForLAN(40000);
 
@@ -302,7 +320,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
         // Problem can occur: Transfer completes too quick. Uploads table model
         // is then empty!
-        assertEquals("Rowcount mismatch", 1, bartModel.getRowCount());
+        assertEquals(1, bartModel.getRowCount(), "Rowcount mismatch");
         // Requested and Started
         if (bartModelListener.events.size() >= 3) {
             if (bartModelListener.events.get(2)
@@ -319,8 +337,7 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         // Upload started
         assertEquals(TableModelEvent.UPDATE,
             bartModelListener.events.get(1).getType());
-        assertEquals("Event count mismatch", 2,
-            bartModelListener.events.size());
+        assertEquals(2, bartModelListener.events.size(), "Event count mismatch");
 
         disconnectBartAndLisa();
         TestHelper.waitForCondition(30, () -> getContollerBart().getTransferManager()
@@ -343,10 +360,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         });
 
         // no active upload
-        assertEquals("Rowcount mismatch", 0, bartModel.getRowCount());
+        assertEquals(0, bartModel.getRowCount(), "Rowcount mismatch");
         // Upload requested, started, aborted
-        assertEquals("Event count mismatch", 3,
-            bartModelListener.events.size());
+        assertEquals(3, bartModelListener.events.size(), "Event count mismatch");
         // Upload requested
         assertTrue(bartModelListener.events.get(0)
             .getType() == TableModelEvent.INSERT);

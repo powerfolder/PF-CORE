@@ -18,14 +18,16 @@
  */
 package de.dal33t.powerfolder.light;
 
-import junit.framework.TestCase;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Date;
 
 
-public class FolderInfoFactoryTest extends TestCase {
+public class FolderInfoFactoryTest {
 
 
+    @Test
     public void testParentFolder() {
         FolderInfo top = FolderInfoFactory.newTopFolder("top");
         DirectoryInfo subDir = FileInfoFactory.lookupDirectory(top, "subDirect");

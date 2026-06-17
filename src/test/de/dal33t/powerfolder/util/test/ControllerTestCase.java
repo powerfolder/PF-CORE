@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder.util.test;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,6 +32,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -39,8 +45,6 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
-import junit.framework.TestCase;
-
 /**
  * Provides basic testcase-setup with a controller.
  * <p>
@@ -52,7 +56,7 @@ import junit.framework.TestCase;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public abstract class ControllerTestCase extends TestCase {
+public abstract class ControllerTestCase {
     // For the optional test folder.
     private static final Path TESTFOLDER_BASEDIR = TestHelper.getTestDir()
         .resolve("ControllerBart/testFolder").toAbsolutePath();
@@ -65,12 +69,11 @@ public abstract class ControllerTestCase extends TestCase {
     // The optional test folders
     private Folder folder;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         System.setProperty("user.home", Paths.get("build/test/home")
             .toAbsolutePath().toString());
         LoggingManager.setConsoleLogging(Level.WARNING);
-        super.setUp();
 
         Feature.setupForTests();
 
@@ -93,6 +96,8 @@ public abstract class ControllerTestCase extends TestCase {
         controller.startConfig("ControllerBart");
         waitForStart(controller);
 
+        ConfigurationEntry.SERVER_FEDERATION_ENABLED.setValue(controller, false);
+
         //System.out.println("-------------- Controllers started -----------------");
         LoggingManager.setConsoleLogging(Level.WARNING);
         
@@ -100,10 +105,9 @@ public abstract class ControllerTestCase extends TestCase {
         TestHelper.waitMilliSeconds(250);
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         LoggingManager.setConsoleLogging(Level.OFF);
-        super.tearDown();
         controller.shutdown();
 
         int i = 0;
@@ -246,14 +250,14 @@ public abstract class ControllerTestCase extends TestCase {
             && (Files.notExists(diskFile) || lastModifiedMatch) && deleteStatusMatch
             && fileObjectEquals;
 
-        assertTrue("FileInfo does not match physical file. \nFileInfo:\n "
+        assertTrue(matches,
+            "FileInfo does not match physical file. \nFileInfo:\n "
             + fInfo.toDetailString() + "\nFile:\n "
             + (Files.exists(diskFile) ? "" : "(del) ") + diskFile.getFileName()
             + ", size: " + Format.formatBytes(size)
             + ", lastModified: " + new Date(lastModified) + " (" + lastModified + ")"
             + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: " + sizeMatch
             + "\nlastModifiedMatch: " + lastModifiedMatch + "\ndeleteStatus: "
-            + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals,
-            matches);
+            + deleteStatusMatch + "\nFileObjectEquals: " + fileObjectEquals);
     }
 }

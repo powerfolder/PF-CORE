@@ -19,18 +19,21 @@
 */
 package de.dal33t.powerfolder.message;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Date;
 import java.util.UUID;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.Format;
 
-public class SerializationCompareTest extends TestCase {
+public class SerializationCompareTest {
 
+    @Test
     public void testManySerializeable() throws IOException {
         FileInfoSerializable[] files = new FileInfoSerializable[10000];
         for (int i = 0; i < files.length; i++) {
@@ -48,6 +51,7 @@ public class SerializationCompareTest extends TestCase {
             + bOut.toByteArray().length + ", took " + took + "ms");
     }
 
+    @Test
     public void testSingleSerializeable() throws IOException {
         FileInfoSerializable fileInfo = createRandomFileInfo();
         long start = System.currentTimeMillis();
@@ -60,6 +64,7 @@ public class SerializationCompareTest extends TestCase {
             + bOut.toByteArray().length + ", took " + took + "ms");
     }
 
+    @Test
     public void testManyExternalizable() throws IOException {
         FileInfoExternalizable[] files = new FileInfoExternalizable[10000];
         for (int i = 0; i < files.length; i++) {
@@ -77,6 +82,7 @@ public class SerializationCompareTest extends TestCase {
             + ", size: " + bOut.toByteArray().length + ", took " + took + "ms");
     }
 
+    @Test
     public void testSingleExternalizable() throws IOException {
         FileInfoExternalizable fileInfo = createRandomFileInfo2();
         long start = System.currentTimeMillis();
@@ -89,6 +95,7 @@ public class SerializationCompareTest extends TestCase {
             + bOut.toByteArray().length + ", took " + took + "ms");
     }
 
+    @Test
     public void testZipNonZipComapreTest() throws IOException {
         FileInfoSerializable[] files = new FileInfoSerializable[10000];
         for (int i = 0; i < files.length; i++) {

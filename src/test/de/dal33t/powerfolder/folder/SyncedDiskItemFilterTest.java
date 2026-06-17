@@ -18,15 +18,19 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SyncedDiskItemFilterTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -34,12 +38,13 @@ public class SyncedDiskItemFilterTest extends TwoControllerTestCase {
         getFolderAtBart().addDefaultExcludes();
         getFolderAtLisa().addDefaultExcludes();
 
-        assertEquals(getFolderAtBart().getDiskItemFilter().getPatterns().toString(),
-                DefaultExcludes.values().length, getFolderAtBart().getDiskItemFilter().getPatterns().size());
-        assertEquals(getFolderAtLisa().getDiskItemFilter().getPatterns().toString(),
-                DefaultExcludes.values().length, getFolderAtLisa().getDiskItemFilter().getPatterns().size());
+        assertEquals(
+                DefaultExcludes.values().length, getFolderAtBart().getDiskItemFilter().getPatterns().size(),getFolderAtBart().getDiskItemFilter().getPatterns().toString());
+        assertEquals(
+                DefaultExcludes.values().length, getFolderAtLisa().getDiskItemFilter().getPatterns().size(),getFolderAtLisa().getDiskItemFilter().getPatterns().toString());
     }
 
+    @Test
     public void testSyncExcludes() {
         final String testPattern = "xxx";
         getFolderAtBart().addPattern(testPattern);

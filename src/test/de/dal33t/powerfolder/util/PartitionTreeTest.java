@@ -19,11 +19,14 @@
 */
 package de.dal33t.powerfolder.util;
 
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.util.Partitions;
 import de.dal33t.powerfolder.util.Range;
 
-public class PartitionTreeTest extends TestCase {
+public class PartitionTreeTest {
+	@Test
 	public void testTree() {
 		Partitions<Boolean> ds = new Partitions<Boolean>(Range.getRangeByNumbers(0, 9999), false);
 		// Tree test

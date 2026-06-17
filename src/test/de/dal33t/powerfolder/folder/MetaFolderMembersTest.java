@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 
@@ -33,6 +36,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test that members become known to nodes via the metafolder Members file
@@ -41,7 +45,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
  */
 public class MetaFolderMembersTest extends FiveControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
     }
@@ -51,6 +55,7 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
      * down. 3. Marge joins with Bart. Result: Marge should know about Bart and
      * Homer.
      */
+    @Test
     public void testMembersSync() throws IOException {
         // 1. Bart creates a folder and Homer joins.
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("testFolder", "testFolder" + IdGenerator.makeFolderId());
@@ -109,10 +114,10 @@ public class MetaFolderMembersTest extends FiveControllerTestCase {
             }
         });
 
-        assertEquals("Bart has the wrong number of members", 3,
-            folderBart.getMembersCount());
-        assertEquals("Marge has the wrong number of members", 3,
-            folderMarge.getMembersCount());
+        assertEquals( 3,
+            folderBart.getMembersCount(),"Bart has the wrong number of members");
+        assertEquals( 3,
+            folderMarge.getMembersCount(),"Marge has the wrong number of members");
 
     }
 }

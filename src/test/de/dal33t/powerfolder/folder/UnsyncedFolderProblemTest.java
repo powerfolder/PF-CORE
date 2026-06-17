@@ -18,15 +18,20 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.PreferencesEntry;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
 
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -37,6 +42,7 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         ConfigurationEntry.FOLDER_SYNC_USE.setValue(getContollerLisa(), true);
     }
 
+    @Test
     public void testSyncOK() {
         getFolderAtLisa().setSyncWarnSeconds(2);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
@@ -60,6 +66,7 @@ public class UnsyncedFolderProblemTest extends TwoControllerTestCase {
         assertNotNull(getFolderAtLisa().getLastSyncDate());
     }
 
+    @Test
     public void testSyncFAIL() {
         getFolderAtLisa().setSyncWarnSeconds(2);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase());

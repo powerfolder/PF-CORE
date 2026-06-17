@@ -19,14 +19,19 @@
  */
 package de.dal33t.powerfolder.d2d;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.net.ConnectionException;
 import de.dal33t.powerfolder.net.ConnectionListener;
+import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 import java.util.logging.Level;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class D2DControllerTest extends TwoControllerTestCase
 {
@@ -36,7 +41,7 @@ public class D2DControllerTest extends TwoControllerTestCase
      * @throws Exception
      **/
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -76,16 +81,18 @@ public class D2DControllerTest extends TwoControllerTestCase
         controllerLisa.initTranslation();
         controllerLisa.loadConfigFile("build/test/ControllerLisa/PowerFolder");
 
-        /* Override values in test config */
-        //ConfigurationEntry.NET_BROADCAST.setValue(controllerLisa, true);
         ConfigurationEntry.NET_PORT_D2D.setValue(controllerLisa, 7332);
+        String networkId = ConfigurationEntry.NETWORK_ID.getValue(controllerBart);
+        if (StringUtils.isNotBlank(networkId)) {
+            ConfigurationEntry.NETWORK_ID.setValue(controllerLisa, networkId);
+        }
 
         controllerLisa.start();
 
         TestHelper.addStartedController(controllerLisa);
         waitForStart(controllerLisa);
-        assertNotNull("Connection listener of lisa is null",
-            controllerLisa.getConnectionListener());
+        assertNotNull(
+            controllerLisa.getConnectionListener(),"Connection listener of lisa is null");
     }
 
     /** connect
@@ -107,6 +114,7 @@ public class D2DControllerTest extends TwoControllerTestCase
         }
     }
 
+    @Test
     public void testD2DConnection() throws Exception {
         connect();
 

@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.problem.FileConflictProblem;
 import de.dal33t.powerfolder.disk.problem.Problem;
@@ -35,7 +38,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the correct updating of files.
@@ -50,7 +54,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
     private static final byte[] LONG_FILE_CONTENTS = "Some test file with long contents"
         .getBytes();
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -64,6 +68,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
      * <p>
      * Ticket #345
      */
+    @Test
     public void testInitalSync() throws IOException {
         TestHelper.waitMilliSeconds(500);
         Path fileAtBart = TestHelper.createTestFile(getFolderAtBart()
@@ -144,6 +149,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
     /**
      * Tests the when the internal db is out of sync with the disk. Ticket #387
      */
+    @Test
     public void testFileChangedOnDisk() throws IOException {
         Path fileAtBart = TestHelper.createTestFile(getFolderAtBart()
             .getLocalBase(), TEST_FILENAME, LONG_FILE_CONTENTS);
@@ -174,8 +180,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
                     .countNumberOfDownloads(getFolderAtLisa()) == 0;
             }
         });
-        assertEquals("Lisa has a stuck download", 0, getContollerLisa()
-            .getTransferManager().countNumberOfDownloads(getFolderAtLisa()));
+        assertEquals( 0, getContollerLisa()
+            .getTransferManager().countNumberOfDownloads(getFolderAtLisa()),"Lisa has a stuck download");
 
         // Now trigger barts folders mainteance, detect new file.
         getContollerBart().getFolderRepository().triggerMaintenance();
@@ -185,10 +191,11 @@ public class FileUpdateTest extends TwoControllerTestCase {
         TestHelper.waitMilliSeconds(5000);
 
         // Download stays forever
-        assertEquals("Lisa has a stuck download", 0, getContollerLisa()
-            .getTransferManager().countNumberOfDownloads(getFolderAtLisa()));
+        assertEquals( 0, getContollerLisa()
+            .getTransferManager().countNumberOfDownloads(getFolderAtLisa()),"Lisa has a stuck download");
     }
 
+    @Test
     public void testFileConflict() {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
@@ -226,24 +233,24 @@ public class FileUpdateTest extends TwoControllerTestCase {
         FileInfo fInfoAtLisa = getFolderAtLisa().getKnownFiles().iterator()
             .next();
         assertEquals(
-            "Expected version at bart 1. Got: " + fInfoAtBart.toDetailString(),
-            1, fInfoAtBart.getVersion());
+            1, fInfoAtBart.getVersion(),
+            "Expected version at bart 1. Got: " + fInfoAtBart.toDetailString());
         assertEquals(
-            "Expected version at lisa 1. Got: " + fInfoAtLisa.toDetailString(),
-            1, fInfoAtLisa.getVersion());
-        assertFalse("Date of conflicting file same", fInfoAtBart
-            .getModifiedDate().equals(fInfoAtLisa.getModifiedDate()));
-        assertTrue("Date of conflicting file problem",
-            fInfoAtBart.getModifiedDate().getTime() < fInfoAtLisa
-                .getModifiedDate().getTime());
+            1, fInfoAtLisa.getVersion(),
+            "Expected version at lisa 1. Got: " + fInfoAtLisa.toDetailString());
+        assertFalse( fInfoAtBart
+            .getModifiedDate().equals(fInfoAtLisa.getModifiedDate()),"Date of conflicting file same");
         assertTrue(
+            fInfoAtBart.getModifiedDate().getTime() < fInfoAtLisa
+                .getModifiedDate().getTime(),"Date of conflicting file problem");
+        assertTrue(
+            fInfoAtLisa.isNewerThan(fInfoAtBart),
             "File @ lisa is not newer than on bart. Lisa: "
                 + fInfoAtLisa.toDetailString() + ". Bart: "
-                + fInfoAtBart.toDetailString(),
-            fInfoAtLisa.isNewerThan(fInfoAtBart));
-        assertFalse("File size mismatch. Lisa: " + fInfoAtLisa.toDetailString()
-            + ". Bart: " + fInfoAtBart.toDetailString(),
-            fInfoAtLisa.getSize() == fInfoAtBart.getSize());
+                + fInfoAtBart.toDetailString());
+        assertFalse(
+            fInfoAtLisa.getSize() == fInfoAtBart.getSize(),"File size mismatch. Lisa: " + fInfoAtLisa.toDetailString()
+            + ". Bart: " + fInfoAtBart.toDetailString());
 
         // Now we have a conflict: SAME file version, but different modification
         // dates and sizes. In this scenario LISAs file wins
@@ -272,16 +279,16 @@ public class FileUpdateTest extends TwoControllerTestCase {
         });
         // Bart should not longer raise problems
         assertEquals(
+            0, getFolderAtBart().getProblems().size(),
             "Expected problems at bart: 0. Got: "
-                + getFolderAtBart().getProblems(),
-            0, getFolderAtBart().getProblems().size());
+                + getFolderAtBart().getProblems());
         assertEquals(
+            0, getFolderAtLisa().getProblems().size(),
             "Expected problems at lisa: 0. Got: "
-                + getFolderAtLisa().getProblems(),
-            0, getFolderAtLisa().getProblems().size());
-        assertTrue("Old file not in archive @ bart: " + fInfoAtBart,
+                + getFolderAtLisa().getProblems());
+        assertTrue(
             getFolderAtBart().getFileArchiver()
-                .hasArchivedFileInfo(fInfoAtBart));
+                .hasArchivedFileInfo(fInfoAtBart),"Old file not in archive @ bart: " + fInfoAtBart);
         FileInfo fInfoArchivedAtBart = getFolderAtBart().getFileArchiver()
             .getArchivedFilesInfos(fInfoAtBart).get(0);
         assertEquals(fInfoAtBart, fInfoArchivedAtBart);
@@ -324,8 +331,8 @@ public class FileUpdateTest extends TwoControllerTestCase {
         fInfoAtBart = fInfoAtBart
             .getLocalFileInfo(getContollerBart().getFolderRepository());
         assertEquals(
-            "Expected version at bart 4. Got: " + fInfoAtBart.toDetailString(),
-            4, fInfoAtBart.getVersion());
+            4, fInfoAtBart.getVersion(),
+            "Expected version at bart 4. Got: " + fInfoAtBart.toDetailString());
 
         TestHelper.waitMilliSeconds(2100);
         TestHelper.changeFile(fileAtLisa);
@@ -333,16 +340,16 @@ public class FileUpdateTest extends TwoControllerTestCase {
         fInfoAtLisa = fInfoAtLisa
             .getLocalFileInfo(getContollerLisa().getFolderRepository());
         assertEquals(
-            "Expected version at lisa 2. Got: " + fInfoAtLisa.toDetailString(),
-            2, fInfoAtLisa.getVersion());
+            2, fInfoAtLisa.getVersion(),
+            "Expected version at lisa 2. Got: " + fInfoAtLisa.toDetailString());
 
         boolean conflict = fInfoAtLisa.getVersion() == fInfoAtBart.getVersion()
             && fInfoAtBart.isNewerThan(fInfoAtLisa);
         conflict |= fInfoAtLisa.getVersion() <= fInfoAtBart.getVersion()
             && DateUtil.isNewerFileDateCrossPlattform(
                 fInfoAtLisa.getModifiedDate(), fInfoAtBart.getModifiedDate());
-        assertTrue("Barts: " + fInfoAtBart.toDetailString() + " Lisas: "
-            + fInfoAtLisa.toDetailString(), conflict);
+        assertTrue( conflict,"Barts: " + fInfoAtBart.toDetailString() + " Lisas: "
+            + fInfoAtLisa.toDetailString());
 
         connectBartAndLisa();
         // The old copy should have been distributed.
@@ -370,12 +377,12 @@ public class FileUpdateTest extends TwoControllerTestCase {
             }
         });
         assertEquals(
+                0, getFolderAtLisa().getProblems().size(),
                 "Expected problems at lisa: 0. Got: "
-                        + getFolderAtLisa().getProblems(),
-                0, getFolderAtLisa().getProblems().size());
-        assertTrue("Old file not in archive @ lisa: " + fInfoAtLisa,
+                        + getFolderAtLisa().getProblems());
+        assertTrue(
             getFolderAtLisa().getFileArchiver()
-                .hasArchivedFileInfo(fInfoAtLisa));
+                .hasArchivedFileInfo(fInfoAtLisa),"Old file not in archive @ lisa: " + fInfoAtLisa);
         FileInfo fInfoArchivedAtLisa = getFolderAtLisa().getFileArchiver()
             .getArchivedFilesInfos(fInfoAtLisa).get(0);
         assertEquals(fInfoAtBart, fInfoArchivedAtLisa);
@@ -387,6 +394,7 @@ public class FileUpdateTest extends TwoControllerTestCase {
             fInfoArchivedAtLisa.getModifiedDate());
     }
 
+    @Test
     public void testManyUpdatesWhileTransfer() {
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
@@ -456,11 +464,12 @@ public class FileUpdateTest extends TwoControllerTestCase {
     }
 
     // PFC-2758
+    @Test
     public void testIdenticalDateAndSizeHandling() throws IOException {
         if (!FileInfo.IGNORE_CASE) {
             return;
         }
-        assumeTrue("Test only supported on systems which do ignore character case in filenames, e.g. Windows", FileInfo.IGNORE_CASE);
+        assumeTrue( FileInfo.IGNORE_CASE,"Test only supported on systems which do ignore character case in filenames, e.g. Windows");
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         disconnectBartAndLisa();
@@ -502,20 +511,20 @@ public class FileUpdateTest extends TwoControllerTestCase {
         connectBartAndLisa();
         TestHelper.waitMilliSeconds(1000);
 
-        assertEquals("Bart has too many files", 1,
-            getFolderAtBart().getKnownItemCount());
+        assertEquals( 1,
+            getFolderAtBart().getKnownItemCount(),"Bart has too many files");
         assertEquals(
+            2,
+            getFolderAtBart().getKnownFiles().iterator().next().getVersion(),
             "Version at bart wrong: " + getFolderAtBart().getKnownFiles()
-                .iterator().next().toDetailString(),
-            2,
-            getFolderAtBart().getKnownFiles().iterator().next().getVersion());
+                .iterator().next().toDetailString());
 
-        assertEquals("Lisa has too many files", 1,
-            getFolderAtLisa().getKnownItemCount());
+        assertEquals( 1,
+            getFolderAtLisa().getKnownItemCount(),"Lisa has too many files");
         assertEquals(
-            "Version at lisa wrong: " + getFolderAtLisa().getKnownFiles()
-                .iterator().next().toDetailString(),
             2,
-            getFolderAtLisa().getKnownFiles().iterator().next().getVersion());
+            getFolderAtLisa().getKnownFiles().iterator().next().getVersion(),
+            "Version at lisa wrong: " + getFolderAtLisa().getKnownFiles()
+                .iterator().next().toDetailString());
     }
 }

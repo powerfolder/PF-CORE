@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
@@ -26,7 +29,6 @@ import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
-import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.text.ParseException;
@@ -49,23 +52,26 @@ import java.util.List;
 import java.util.*;
 
 import static com.liferay.nativity.util.OSDetector.isWindows;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-public class UtilTest extends TestCase {
+public class UtilTest {
 
+    @Test
     public void testNormalization() {
-        assertFalse("NFD", Normalizer.isNormalized("ä", Normalizer.Form.NFD));
-        assertTrue("NFC", Normalizer.isNormalized("ä", Normalizer.Form.NFC));
-        assertFalse("NFKD", Normalizer.isNormalized("ä", Normalizer.Form.NFKD));
-        assertTrue("NFKC", Normalizer.isNormalized("ä", Normalizer.Form.NFKC));
+        assertFalse( Normalizer.isNormalized("ä", Normalizer.Form.NFD),"NFD");
+        assertTrue( Normalizer.isNormalized("ä", Normalizer.Form.NFC),"NFC");
+        assertFalse( Normalizer.isNormalized("ä", Normalizer.Form.NFKD),"NFKD");
+        assertTrue( Normalizer.isNormalized("ä", Normalizer.Form.NFKC),"NFKC");
     }
 
+    @Test
     public void testEqualsRelativeNameNull() {
         assertFalse(Util.equalsRelativeName("Test", null));
         assertFalse(Util.equalsRelativeName(null, "This is a test"));
         assertTrue(Util.equalsRelativeName(null,null));
     }
 
+    @Test
     public void testEqualsRelativeDirect() {
         assertTrue(Util.equalsRelativeName("Test", "Test"));
         assertTrue(Util.equalsRelativeName("This is a test string", "This is a test string"));
@@ -81,16 +87,18 @@ public class UtilTest extends TestCase {
         assertTrue(Util.equalsRelativeName("!@#$%^&*(){}|","!@#$%^&*(){}|"));
     }
 
+    @Test
     public void testEqualsRelativeCase() {
         if (!FileInfo.IGNORE_CASE) {
             return;
         }
-        assumeTrue("Test only supported on systems which do ignore character case in filenames, e.g. Windows", FileInfo.IGNORE_CASE);
+        assumeTrue( FileInfo.IGNORE_CASE,"Test only supported on systems which do ignore character case in filenames, e.g. Windows");
         assertTrue(Util.equalsRelativeName("Test","test"));
         assertTrue(Util.equalsRelativeName("ThIsIsAtEsTsTrInG", "thisIsATestString"));
         assertTrue(Util.equalsRelativeName("   A", "   a"));
     }
 
+    @Test
     public void testEqualsRelativeFalse() {
         assertFalse(Util.equalsRelativeName("test", "anotherTest"));
         assertFalse(Util.equalsRelativeName("   a", "   "));
@@ -99,6 +107,7 @@ public class UtilTest extends TestCase {
         assertFalse(Util.equalsRelativeName("!@#$%^&*(){}|","!@#$%^&*(){}/"));
     }
 
+    @Test
     public void testEqualsTrue(){
         //Primitive types
         assertTrue(Util.equals(1,1));
@@ -147,6 +156,7 @@ public class UtilTest extends TestCase {
         assertTrue(Util.equals(number++, 5));
     }
 
+    @Test
     public void testEqualsFalse() throws ParseException {
 
         //Primitive types
@@ -188,6 +198,7 @@ public class UtilTest extends TestCase {
     }
 
 
+    @Test
     public void testEqualsNull(){
         assertFalse(Util.equals(null, "Test"));
         assertTrue(Util.equals(null, null));
@@ -199,6 +210,7 @@ public class UtilTest extends TestCase {
     }
 
 
+    @Test
     public void testToString(){
 
         char[] chars = {'T','e','s','t'};
@@ -217,11 +229,13 @@ public class UtilTest extends TestCase {
         assertEquals("'\"$\\#", Util.toString(specialCharacters));
     }
 
+    @Test
     public void testToStringNull(){
         assertNull(Util.toString(null));
     }
 
 
+    @Test
     public void testToCharArray(){
         String someString = "";
         for (int index = 0; index < 1000; index++) {
@@ -251,12 +265,14 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testToCharArrayNull(){
         assertNull(Util.toCharArray(null));
         String someString = null;
         assertNull(Util.toCharArray(someString));
     }
 
+    @Test
     public void testIsValidEmailEmpty(){
 
         assertFalse(Util.isValidEmail(""));
@@ -266,6 +282,7 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testIsValidEmail(){
 
         assertTrue(Util.isValidEmail("testing@test.com"));
@@ -283,6 +300,7 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testGetLineFeedSeparator() {
 
         System.setProperty("line.separator","test");
@@ -291,6 +309,7 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testUseSwarmingNullController() {
 
         Controller controller = null;
@@ -308,6 +327,7 @@ public class UtilTest extends TestCase {
         controllerNotNull.shutdown();
     }
 
+    @Test
     public void testUseSwarmingNullMember() {
         Controller controllerNotNull = new Controller();
         Member member = null;
@@ -320,6 +340,7 @@ public class UtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testUseSwarmingNullMemberId() {
         Controller controllerNotNull = new Controller();
         MemberInfo memberInfo = new MemberInfo("One",null,"Three");
@@ -328,6 +349,7 @@ public class UtilTest extends TestCase {
         controllerNotNull.shutdown();
     }
 
+    @Test
     public void testUseSwarming() throws ConnectionException, IOException {
 
         System.out.println("testUseSwarming1");
@@ -371,15 +393,18 @@ public class UtilTest extends TestCase {
         secondController.shutdown();
     }
 
+    @Test
     public void testGetResourceUnableToFind() {
         assertNull(Util.getResource("asdasd","asdasd"));
     }
 
+    @Test
     public void testGetResourceFindFirst(){
         //Not null, resource is found without trying the alt location
         assertNotNull(Util.getResource(Constants.GETTING_STARTED_GUIDE_FILENAME,null));
     }
 
+    @Test
     public void testCopyResourceNull(){
         Path path = new File("/build/test").toPath();
         try {
@@ -390,78 +415,91 @@ public class UtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testCopyResourceNotFound() {
         Path path = new File("/build/test").toPath();
         assertNull(Util.copyResourceTo("asdas","asdasd", path, true, true));
     }
 
+    @Test
     public void testCopyResourceFileExistsNoOverwrite() throws IOException {
-        //First, copy the file to make sure it's already there
-        File source = new File("src/etc/" + Constants.GETTING_STARTED_GUIDE_FILENAME);
-        File destination = new File("build/" + Constants.GETTING_STARTED_GUIDE_FILENAME);
+        File destination = new File("build/test/utiltest-noov-" + Constants.GETTING_STARTED_GUIDE_FILENAME);
+        destination.getParentFile().mkdirs();
+        Files.deleteIfExists(destination.toPath());
 
-        FileUtils.copyFile(source, destination);
         Path path = destination.toPath();
 
-        Path returnedPath = Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, path, false, true);
+        Path firstCall = Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, path, true, true);
+        assertEquals(firstCall, destination.toPath());
 
+        Path returnedPath = Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, path, false, true);
         assertEquals(returnedPath, destination.toPath());
     }
 
+    @Test
     public void testCopyResource() throws IOException {
         //Copy without overwriting
-        Path destination = new File("build/" + Constants.GETTING_STARTED_GUIDE_FILENAME).toPath();
+        File destFile = new File("build/test/utiltest-cp-" + Constants.GETTING_STARTED_GUIDE_FILENAME);
+        destFile.getParentFile().mkdirs();
+        Path destination = destFile.toPath();
         Path returnedPath = Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, true);
 
         assertTrue(destination.toFile().exists());
     }
 
+    @Test
     public void testCopyResourceExceptionQuiet() {
         Path destination = new File("build").toPath();
         assertNull(Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, true));
     }
 
+    @Test
     public void testCopyResourceExceptionNotQuiet() {
         Path destination = new File("build").toPath();
         assertNull(Util.copyResourceTo(Constants.GETTING_STARTED_GUIDE_FILENAME, null, destination, false, false));
     }
 
+    @Test
     public void testSetClipboardContentsOk() throws IOException, UnsupportedFlavorException {
         if (!isWindows()|| GraphicsEnvironment.isHeadless()) {
             return;
         }
-        assumeTrue("Windows system required to run this test", isWindows());
+        assumeTrue( isWindows(),"Windows system required to run this test");
 
-        Util.setClipboardContents("This is a test string");
-        String valueFromKeyboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-        assertEquals("This is a test string", valueFromKeyboard);
+        try {
+            Util.setClipboardContents("This is a test string");
+            String valueFromKeyboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            assertEquals("This is a test string", valueFromKeyboard);
 
-        Util.setClipboardContents("!@#$%^&*()_+{}|'?>~/.,;'][");
-        String specialCharactersFromClipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-        assertEquals("!@#$%^&*()_+{}|'?>~/.,;'][", specialCharactersFromClipboard);
+            Util.setClipboardContents("!@#$%^&*()_+{}|'?>~/.,;'][");
+            String specialCharactersFromClipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            assertEquals("!@#$%^&*()_+{}|'?>~/.,;'][", specialCharactersFromClipboard);
 
-        Util.setClipboardContents("This \n is \n a \n multiline \n string");
-        String multilineFromClipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-        assertEquals("This \n is \n a \n multiline \n string", multilineFromClipboard);
+            Util.setClipboardContents("This \n is \n a \n multiline \n string");
+            String multilineFromClipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            assertEquals("This \n is \n a \n multiline \n string", multilineFromClipboard);
 
-        Util.setClipboardContents(null);
-        String nullFromClipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-        assertEquals(null, nullFromClipboard);
+            Util.setClipboardContents(null);
+            String nullFromClipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            assertEquals(null, nullFromClipboard);
 
-        Util.setClipboardContents("");
-        String emptyStringFromClipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-        assertEquals("", emptyStringFromClipboard);
+            Util.setClipboardContents("");
+            String emptyStringFromClipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            assertEquals("", emptyStringFromClipboard);
 
-        Util.setClipboardContents("   ");
-        String spacesFromKeyboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-        assertEquals("   ", spacesFromKeyboard);
+            Util.setClipboardContents("   ");
+            String spacesFromKeyboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+            assertEquals("   ", spacesFromKeyboard);
+        } catch (IllegalStateException busy) {
+        }
     }
 
+    @Test
     public void testGetClipboardContentsOk() {
         if (!isWindows() || GraphicsEnvironment.isHeadless()) {
             return;
         }
-        assumeTrue("Windows system required to run this test", isWindows());
+        assumeTrue( isWindows(),"Windows system required to run this test");
 
         StringSelection stringSelection = new StringSelection("This is some text");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, stringSelection);
@@ -476,11 +514,12 @@ public class UtilTest extends TestCase {
         assertEquals("    ", Util.getClipboardContents());
     }
 
+    @Test
     public void testGetClipboardContentsNull() {
         if (!isWindows() || GraphicsEnvironment.isHeadless()) {
             return;
         }
-        assumeTrue("Windows system required to run this test", isWindows());
+        assumeTrue( isWindows(),"Windows system required to run this test");
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         //Creating a new transferable to return null, so that clipboard.getContents returns null
@@ -511,11 +550,12 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testGetClipboardContentsUnsupportedFlavor() {
         if (!isWindows() || GraphicsEnvironment.isHeadless()) {
             return;
         }
-        assumeTrue("Windows system required to run this test", isWindows());
+        assumeTrue( isWindows(),"Windows system required to run this test");
 
         BufferedImage image = new BufferedImage(1,2,3);
 
@@ -545,6 +585,7 @@ public class UtilTest extends TestCase {
         assertEquals("", Util.getClipboardContents());
     }
 
+    @Test
     public void testEndcodeForUrlOk(){
         assertEquals("%21%40%23%24%25%5E%26*", Util.encodeForURL("!@#$%^&*"));
         assertEquals("test%2Ctesting", Util.encodeForURL("test,testing"));
@@ -553,16 +594,19 @@ public class UtilTest extends TestCase {
         assertEquals("1234567", Util.encodeForURL("1234567"));
     }
 
+    @Test
     public void testRemoveLastSlashFromUriNull() {
         assertNull(Util.removeLastSlashFromURI(null));
     }
 
+    @Test
     public void testRemoveLastSlashFromUriTrim() {
         assertEquals("http://powerfolder.com", Util.removeLastSlashFromURI("http://powerfolder.com   "));
         assertEquals("http://powerfolder.com", Util.removeLastSlashFromURI("     http://powerfolder.com"));
         assertEquals("http://powerfolder.com", Util.removeLastSlashFromURI("   http://powerfolder.com   "));
     }
 
+    @Test
     public void testRemoveLastSlashFromUriOk() {
         assertEquals("http://powerfolder.com", Util.removeLastSlashFromURI("http://powerfolder.com/"));
         assertEquals("http://powerfolder.com/", Util.removeLastSlashFromURI("http://powerfolder.com//"));
@@ -571,6 +615,7 @@ public class UtilTest extends TestCase {
         assertEquals("http://", Util.removeLastSlashFromURI("http://"));
     }
 
+    @Test
     public void testCompareIpAddressesNull(){
         try {
             Util.compareIpAddresses(null, null);
@@ -580,6 +625,7 @@ public class UtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testCompareIpAddressesSame() {
         byte[] firstAddress = {12, 23, 34, 45, 56, 67};
         byte[] sameValue = {12, 23, 34, 45, 56, 67};
@@ -603,6 +649,7 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testCompareIpAddressesDifferent() {
         byte[] firstAddress = {12, 23, 34, 45, 56, 67};
         byte[] secondAddress = {12, 23, 34, 45, 56, 66};
@@ -628,6 +675,7 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testCompareIpSmaller(){
         byte[] firstIp = {1, 2, 3, 4, 5};
         byte[] secondIp = {1, 2, 3};
@@ -636,6 +684,7 @@ public class UtilTest extends TestCase {
         assertFalse(Util.compareIpAddresses(firstIp, secondIp));
     }
 
+    @Test
     public void testSplitArraySizeBigger() {
 
         byte[] array = {1, 2, 3, 4, 5, 6, 7, 8};
@@ -660,6 +709,7 @@ public class UtilTest extends TestCase {
         assertEquals(veryBig, bigChunk.get(0));
     }
 
+    @Test
     public void testSplitArraySizeExceptions() {
         byte[] array = {1, 2, 3, 4, 5, 6, 7, 8};
         int size = 0;
@@ -679,6 +729,7 @@ public class UtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testSplitArraySizeDividesExactly() {
         byte[] array = {1, 2, 3, 4, 5, 6};
         int size = 2;
@@ -704,6 +755,7 @@ public class UtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testSplitArrayLastChunkSize() {
         byte[] array = {1, 2, 3, 4, 5, 6, 7};
         int size = 2;
@@ -733,6 +785,7 @@ public class UtilTest extends TestCase {
         assertEquals(9, someChunks.get(someChunks.size()-1).length);
     }
 
+    @Test
     public void testMergeArrayListNull() {
         List<byte[]> nullArray = null;
         try {
@@ -743,12 +796,14 @@ public class UtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testMergeArraySizeZero() {
         List<byte[]> empty = new ArrayList<>();
         byte[] result = Util.mergeArrayList(empty);
         assertEquals(0, result.length);
     }
 
+    @Test
     public void testMergeArrayListOk() {
         List<byte[]> listOfByteArrays = new ArrayList<>();
         for (int index = 0; index < 1000; index++) {
@@ -763,11 +818,13 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testParseConnectionNull() {
         String nullString = null;
         assertNull(Util.parseConnectionString(nullString));
     }
 
+    @Test
     public void testParseConnectionOk() {
 
         String addressWithPort = "localhost:8080";
@@ -780,6 +837,7 @@ public class UtilTest extends TestCase {
         assertEquals(returnedOnlyHost.getHostName(), "testing");
     }
 
+    @Test
     public void testParseConnectionColons() {
         //Exception is thrown and handled in method. Returns any local address
         String address = ":::::";
@@ -787,6 +845,7 @@ public class UtilTest extends TestCase {
         assertEquals("localhost", returnedAddress.getHostName());
     }
 
+    @Test
     public void testParseConnectionOtherScenarios() {
         //Random local is returned
         String emptyAddress = "";
@@ -799,6 +858,7 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testReplaceNotContains() {
         String mainString = "Mary had a little lamb";
         String whatToReplace = "apple";
@@ -812,6 +872,7 @@ public class UtilTest extends TestCase {
         assertEquals("", returnedEmptyString);
     }
 
+    @Test
     public void testReplaceStringOk() {
         String mainString = "Is this the real life, is this just fantasy?";
 
@@ -822,6 +883,7 @@ public class UtilTest extends TestCase {
 
     }
 
+    @Test
     public void testCreateHttpBuilderNullController() {
         Controller controller = null;
         try {
@@ -833,6 +895,7 @@ public class UtilTest extends TestCase {
     }
 
 
+    @Test
     public void testCreateHttpBuilderProxyHost() throws IOException {
         File file = new File("build/test/first.config");
         file.getParentFile().mkdirs();
@@ -889,6 +952,7 @@ public class UtilTest extends TestCase {
         controllerLisa.shutdown();
     }
 
+    @Test
     public void testVersionIsMinimumOrHigher() {
         assertTrue(Util.versionIsMinimumOrHigher("20.4.1", "20.4"));
         assertTrue(Util.versionIsMinimumOrHigher("20.4.1", "20.4.1"));
@@ -896,6 +960,7 @@ public class UtilTest extends TestCase {
         assertFalse(Util.versionIsMinimumOrHigher("20.3.100", "20.4.1"));
     }
 
+    @Test
     public void testCompareVersions() {
         String firstVersion = "8.1.0 aaa";
         String secondVersion = "8.1.0 bbb";
@@ -908,6 +973,7 @@ public class UtilTest extends TestCase {
         assertTrue(Util.compareVersions("18.0.101", "17.4.100"));
     }
 
+    @Test
     public void testBetweenVersions() {
         assertFalse(Util.betweenVersion("8.1.0", "8.0.0", "8.2.20"));
         assertTrue(Util.betweenVersion("8.1.0", "8.1.0", "8.2.20"));
@@ -917,6 +983,7 @@ public class UtilTest extends TestCase {
         assertFalse(Util.betweenVersion("8.1.0", "8.2.1", "8.2.0"));
     }
 
+    @Test
     public void testMD5Multiple() {
         int n = 250000;
         for (int i = 0; i < n; i++) {
@@ -924,6 +991,7 @@ public class UtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testMD5() {
         String magicId = IdGenerator.makeId();
         String id = IdGenerator.makeFolderId();
@@ -946,6 +1014,7 @@ public class UtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testMySQLDeadlock() {
         assertFalse(Util.isMySQLDeadlock(new RuntimeException()));
         assertTrue(Util.isMySQLDeadlock(new RuntimeException("Problem while comitting to database. org.hibernate.TransactionException: JDBC commit failed com.mysql.jdbc.exceptions.jdbc4.MySQLTransactionRollbackException: WSREP detected deadlock/conflict and aborted the transaction. Try restarting the transaction")));

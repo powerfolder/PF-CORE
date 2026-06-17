@@ -25,8 +25,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Assertions;
 
 import java.awt.*;
 import java.io.*;
@@ -41,6 +40,7 @@ import java.util.*;
 import java.util.List;
 
 import static de.dal33t.powerfolder.util.PathUtils.TRANSFERS_DIR_NAME;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Offers several helping methods for junit tests.
@@ -93,7 +93,7 @@ public class TestHelper {
             if (ids == null) {
                 return "NO DEADLOCKS!";
             }
-            Assert.assertTrue(ids.length > 0);
+            Assertions.assertTrue(ids.length > 0);
             ThreadInfo[] info = mx.getThreadInfo(ids, true, true);
             StringWriter lout = new StringWriter();
             PrintWriter out = new PrintWriter(lout);
@@ -137,17 +137,14 @@ public class TestHelper {
                     try {
                         Files.delete(file);
                     } catch (IOException ioe) {
-                        TestCase
-                            .fail("Incomplete file still open somewhere, couldn't delete: "
-                                + file);
+                        fail("Incomplete file still open somewhere, couldn't delete: " + file);
                     }
                 }
                 return;
             } catch (IOException ioe) {
 
             }
-            TestCase
-                .fail("(incomplete) files found, but all could be deleted!");
+            fail("(incomplete) files found, but all could be deleted!");
         }
     }
 

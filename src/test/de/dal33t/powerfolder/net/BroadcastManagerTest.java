@@ -25,15 +25,17 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.FiveControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.util.logging.Level;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFS-3276
  */
 public class BroadcastManagerTest extends FiveControllerTestCase {
 
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         Feature.P2P_REQUIRES_LOGIN_AT_SERVER.disable();

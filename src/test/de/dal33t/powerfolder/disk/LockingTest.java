@@ -28,6 +28,10 @@ package de.dal33t.powerfolder.disk;
  import de.dal33t.powerfolder.util.test.TestHelper;
  import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
+ import org.junit.jupiter.api.BeforeEach;
+ import org.junit.jupiter.api.Test;
+ import static org.junit.jupiter.api.Assertions.*;
+
  import java.io.IOException;
  import java.nio.file.Files;
  import java.nio.file.Path;
@@ -40,7 +44,7 @@ public class LockingTest extends TwoControllerTestCase {
     private Locking lockingLisa;
     private LoggingLockingListener lockingListenerLisa;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         deleteTestFolderContents();
@@ -54,6 +58,7 @@ public class LockingTest extends TwoControllerTestCase {
         lockingLisa.addListener(lockingListenerLisa);
     }
 
+    @Test
     public void testLockUnlockLocal() {
         Path testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1);
@@ -96,6 +101,7 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerBart.unlocked.size());
     }
 
+    @Test
     public void testLockUnlockRemote() {
         Path testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1);
@@ -177,6 +183,7 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerBart.locked.size());
     }
     
+    @Test
     public void testAutoLockMSOffice() throws IOException {
         lockingListenerLisa.locked.clear();
         lockingListenerLisa.unlocked.clear();
@@ -245,6 +252,7 @@ public class LockingTest extends TwoControllerTestCase {
         assertFalse(testFInfo.isLocked(getContollerBart()));
     }
 
+    @Test
     public void testAutoLockForbiddenMSOffice() {
         lockingListenerLisa.locked.clear();
         lockingListenerLisa.unlocked.clear();
@@ -309,6 +317,7 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerLisa.forbidden.size());
     }
 
+    @Test
     public void testAutoLockForbiddenOpenOffice() {
         lockingListenerLisa.locked.clear();
         lockingListenerLisa.unlocked.clear();
@@ -381,6 +390,7 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerLisa.forbidden.size());
     }
 
+    @Test
     public void testLockUnlockMultiple() {
         for (int i = 0; i < 25; i++) {
             lockingListenerBart.locked.clear();
@@ -403,6 +413,7 @@ public class LockingTest extends TwoControllerTestCase {
     /**
      * PFS-1922/FYK-543-88331
      */
+    @Test
     public void testBrokenLockfile() {
         Path testFile = TestHelper.createRandomFile(getFolderAtBart()
             .getLocalBase(), 1);
@@ -440,6 +451,7 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerBart.unlocked.size());
     }
     
+    @Test
     public void testLockUnlockSubFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "projects/team/shared";
@@ -481,8 +493,9 @@ public class LockingTest extends TwoControllerTestCase {
         // The physical lock file lives in the TOP folder's meta-folder.
         Path topLockFile = getLockFile(fileInTop);
         assertNotNull(topLockFile);
-        assertTrue("Lock file must be created in the top folder meta-folder: "
-            + topLockFile, Files.exists(topLockFile));
+        assertTrue(Files.exists(topLockFile),
+            "Lock file must be created in the top folder meta-folder: "
+            + topLockFile);
 
         // Unlock through the subfolder view removes the top-scoped lock
         assertTrue(lockingBart.unlock(fileInSub));
@@ -493,6 +506,7 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerBart.unlocked.size());
     }
 
+    @Test
     public void testSubFolderLockFileIsScopedToSubdirPath() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "data/reports/monthly";
@@ -521,8 +535,8 @@ public class LockingTest extends TwoControllerTestCase {
             Folder.METAFOLDER_LOCKS_DIR);
         Path expected = locksDir.resolve(FileInfoFactory.encodeIllegalChars(
             subDir + "/2024/q1/stmt.txt" + ".lck"));
-        assertTrue("Expected subdir-scoped lock file: " + expected,
-            Files.exists(expected));
+        assertTrue(Files.exists(expected),
+            "Expected subdir-scoped lock file: " + expected);
 
         assertTrue(lockingBart.unlock(fileInSub));
         assertFalse(Files.exists(expected));

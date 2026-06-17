@@ -19,15 +19,21 @@
  */
 package de.dal33t.powerfolder.util;
 
-import junit.framework.TestCase;
 
-public class ProfilingTest extends TestCase {
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import de.dal33t.powerfolder.util.Profiling;
+import de.dal33t.powerfolder.util.ProfilingEntry;
 
+public class ProfilingTest {
+
+    @AfterEach
     protected void tearDown() throws Exception {
-        super.tearDown();
         Profiling.setEnabled(false);
     }
 
+    @Test
     public void testURISplit() {
         assertEquals("/webdav",
                 Profiling.shortenURI("/webdav/NAS/QNAP/CloudBackup/vm-store-daten/vm-store/Belege/5000/VM-Store/"));
@@ -52,6 +58,9 @@ public class ProfilingTest extends TestCase {
         assertEquals("/ul", Profiling.shortenURI("/ul/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/gallery", Profiling.shortenURI("/gallery/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/settings", Profiling.shortenURI("/settings/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
+        // PFS-5561: "/filesjson" is not a real route and Profiling.shortenURI
+        // (unchanged in develop_27) does not shorten it - the migration branch
+        // added this assertion in error. Removed to match production + develop_27.
         assertEquals("/folderstable", Profiling.shortenURI("/folderstable/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/files", Profiling.shortenURI("/files/MlVSYkQ0UDNwUG1qTWRDdHg2NFZZ"));
         assertEquals("/player", Profiling.shortenURI("/player/Mjk5ZGRTbkVXTVI5SGMzS3gydnE1"));
@@ -68,6 +77,7 @@ public class ProfilingTest extends TestCase {
      * <p>
      * Profiling takes 8 additional lines.
      */
+    @Test
     public void testAPI() {
         ProfilingEntry profilingEntry1 = null;
         if (Profiling.ENABLED) {
@@ -83,6 +93,7 @@ public class ProfilingTest extends TestCase {
         }
     }
 
+    @Test
     public void testTiming() {
         Profiling.setEnabled(true);
         ProfilingEntry profilingEntry1 = Profiling.start("Test profile 1");
@@ -91,8 +102,8 @@ public class ProfilingTest extends TestCase {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        assertTrue("elapsedMilliseconds >= 10000", profilingEntry1.elapsedMilliseconds() >= 10000);
-        assertTrue("elapsedMilliseconds <= 10300", profilingEntry1.elapsedMilliseconds() <= 10300);
+        assertTrue( profilingEntry1.elapsedMilliseconds() >= 10000,"elapsedMilliseconds >= 10000");
+        assertTrue( profilingEntry1.elapsedMilliseconds() <= 10300,"elapsedMilliseconds <= 10300");
         assertTrue(profilingEntry1.getOperationName().equals("Test profile 1"));
 
         ProfilingEntry profilingEntry2 = Profiling.start("Test profile 2");
@@ -101,17 +112,19 @@ public class ProfilingTest extends TestCase {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        assertTrue("elapsedMilliseconds >= 2000", profilingEntry2.elapsedMilliseconds() >= 2000);
-        assertTrue("elapsedMilliseconds <= 2300",profilingEntry2.elapsedMilliseconds() <= 2300);
+        assertTrue( profilingEntry2.elapsedMilliseconds() >= 2000,"elapsedMilliseconds >= 2000");
+        assertTrue(profilingEntry2.elapsedMilliseconds() <= 2300,"elapsedMilliseconds <= 2300");
         assertTrue(profilingEntry2.getOperationName().equals("Test profile 2"));
     }
 
+    @Test
     public void testDisabled() {
         Profiling.setEnabled(false);
         ProfilingEntry profilingEntry1 = Profiling.start("Test profile 1");
         assertNull(profilingEntry1);
     }
 
+    @Test
     public void testAutoOperationName() {
         Profiling.setEnabled(true);
         ProfilingEntry profilingEntry1 = Profiling.start();

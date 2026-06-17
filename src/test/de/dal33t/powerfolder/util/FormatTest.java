@@ -18,32 +18,42 @@
  */
 package de.dal33t.powerfolder.util;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.lang.reflect.Field;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.prefs.Preferences;
 
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 public class FormatTest {
 
     Locale defaultLocale = Locale.getDefault();
 
-    @Before
-    public void setUp(){
+    @BeforeEach
+    public void setUp() throws Exception {
         Locale.setDefault(Locale.US);
+        resetCachedFormatters();
         Preferences.userNodeForPackage(Translation.class).put("locale", "en");
+        Translation.resetResourceBundle();
     }
 
-    @After
+    private void resetCachedFormatters() throws Exception {
+        for (String name : new String[]{"DOUBLE_NUMBER_FORMAT", "LONG_NUMBER_FORMAT", "PERCENT_NUMBER_FORMAT"}) {
+            Field field = Format.class.getDeclaredField(name);
+            field.setAccessible(true);
+            ((ThreadLocal<?>) field.get(null)).remove();
+        }
+    }
+
+    @AfterEach
     public void tearDown() {
         Preferences.userNodeForPackage(Translation.class).remove("locale");
         Locale.setDefault(defaultLocale);
+        Translation.resetResourceBundle();
     }
 
     @Test
@@ -59,11 +69,13 @@ public class FormatTest {
         assertEquals("1 kBytes", Format.formatBytes(longObject));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void formatBytesNullInputsTest() {
-        //Method does not handle null as a parameter
-        Long longObject = null;
-        Format.formatBytes(longObject);
+        assertThrows(NullPointerException.class, () -> {
+            //Method does not handle null as a parameter
+            Long longObject = null;
+            Format.formatBytes(longObject);
+        });
     }
 
     @Test
@@ -141,10 +153,12 @@ public class FormatTest {
         assertEquals("1 kB", Format.formatBytesShort(longObject));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void formatBytesShortNullInputsTest() {
-        Long longObject = null;
-        Format.formatBytesShort(longObject);
+        assertThrows(NullPointerException.class, () -> {
+            Long longObject = null;
+            Format.formatBytesShort(longObject);
+        });
     }
 
     @Test
@@ -210,10 +224,12 @@ public class FormatTest {
 
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void formatTimeFrameNullArgumentTest() {
-        Long millis = null;
-        Format.formatTimeframe(millis);
+        assertThrows(NullPointerException.class, () -> {
+            Long millis = null;
+            Format.formatTimeframe(millis);
+        });
     }
 
     @Test
@@ -399,11 +415,13 @@ public class FormatTest {
         }
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void parseDateCannonicalNullInputTest() throws ParseException {
-        //Method does not handle null as a parameter
-        String stringToParse = null;
-        Format.parseDateCanonical(stringToParse);
+        assertThrows(NullPointerException.class, () -> {
+            //Method does not handle null as a parameter
+            String stringToParse = null;
+            Format.parseDateCanonical(stringToParse);
+        });
     }
 
     @Test
@@ -512,11 +530,13 @@ public class FormatTest {
         assertEquals(numberFormat.format(-2230.009D), Format.formatDecimal(-2230.009D));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void formatDecimalNullInputTest() {
-        //Method does not handle null as a parameter
-        Double number = null;
-        Format.formatDecimal(number);
+        assertThrows(NullPointerException.class, () -> {
+            //Method does not handle null as a parameter
+            Double number = null;
+            Format.formatDecimal(number);
+        });
     }
 
     @Test
@@ -535,11 +555,13 @@ public class FormatTest {
         assertEquals("-∞", Format.formatDecimal(Double.NEGATIVE_INFINITY));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void formatLongNullInputTest(){
-        //Method does not handle null as a parameter
-        Long number = null;
-        Format.formatLong(number);
+        assertThrows(NullPointerException.class, () -> {
+            //Method does not handle null as a parameter
+            Long number = null;
+            Format.formatLong(number);
+        });
     }
 
     @Test
@@ -551,11 +573,13 @@ public class FormatTest {
 
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void formatPercentNullInputTest() {
-        //Method does not handle null as a parameter
-        Double number = null;
-        Format.formatPercent(number);
+        assertThrows(NullPointerException.class, () -> {
+            //Method does not handle null as a parameter
+            Double number = null;
+            Format.formatPercent(number);
+        });
     }
 
     @Test
@@ -587,11 +611,13 @@ public class FormatTest {
         assertEquals(Translation.get("general.no"), Format.formatBoolean(false));
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void formatBooleanNullAsInputTest() {
-        //Method does not handle null as a parameter
-        Boolean someBoolean = null;
-        Format.formatBoolean(someBoolean);
+        assertThrows(NullPointerException.class, () -> {
+            //Method does not handle null as a parameter
+            Boolean someBoolean = null;
+            Format.formatBoolean(someBoolean);
+        });
     }
 
     @Test
@@ -618,10 +644,12 @@ public class FormatTest {
 
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void formatDeltaTimeNullInputTest() {
-        Long someLong = null;
-        Format.formatDeltaTime(someLong);
+        assertThrows(NullPointerException.class, () -> {
+            Long someLong = null;
+            Format.formatDeltaTime(someLong);
+        });
     }
 
     @Test

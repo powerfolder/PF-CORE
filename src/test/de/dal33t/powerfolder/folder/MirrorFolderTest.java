@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
@@ -41,9 +44,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MirrorFolderTest extends FiveControllerTestCase {
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         assertTrue(tryToConnectSimpsons());
@@ -58,6 +62,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         }
     }
 
+    @Test
     public void testRandomSyncOperations() {
         getContollerBart().setPaused(true);
         performRandomOperations(100, 70, 0, getFolderAtBart().getLocalBase());
@@ -102,6 +107,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         assertIdenticalTestFolder();
     }
 
+    @Test
     public void testMixedCaseSubdirs2() {
         // Emulate Windows.
         // FileInfo.IGNORE_CASE = true;
@@ -154,6 +160,7 @@ public class MirrorFolderTest extends FiveControllerTestCase {
     /**
      * TRAC #1960
      */
+    @Test
     public void testNoDbAfterDirectorySync() {
         getContollerBart().getTransferManager().setUploadCPSForLAN(1000);
         final Folder foLisa = getFolderAtLisa();
@@ -216,10 +223,11 @@ public class MirrorFolderTest extends FiveControllerTestCase {
 
         // DB Must have been stored
         assertTrue(
-            "Database file was NOT saved at Lisa although directory have been synced",
-            Files.exists(foLisa.getSystemSubDir().resolve(Constants.DB_FILENAME)));
+            Files.exists(foLisa.getSystemSubDir().resolve(Constants.DB_FILENAME)),
+            "Database file was NOT saved at Lisa although directory have been synced");
     }
 
+    @Test
     public void testMixedCaseSubdirs() throws IOException {
         // Emulate Windows.
         // FileInfo.IGNORE_CASE = true;
@@ -254,8 +262,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         getContollerLisa().getFolderRepository().getFileRequestor().triggerFileRequesting();
         TestHelper.waitMilliSeconds(2000);
 
-        assertEquals(getFolderAtBart().getIncomingFiles().toString(),
-                0, getFolderAtBart().getIncomingFiles().size());
+        assertEquals(
+                0, getFolderAtBart().getIncomingFiles().size(),getFolderAtBart().getIncomingFiles().toString());
         assertEquals(0, getFolderAtLisa().getIncomingFiles().size());
         assertEquals(0, bartListener.uploadRequested);
         assertEquals(0, bartListener.uploadStarted);
@@ -331,8 +339,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
             }
 
             try {
-                assertEquals("File length mismatch: " + path1.toAbsolutePath(),
-                    Files.size(path1), Files.size(path2));
+                assertEquals(
+                    Files.size(path1), Files.size(path2),"File length mismatch: " + path1.toAbsolutePath());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -346,8 +354,8 @@ public class MirrorFolderTest extends FiveControllerTestCase {
         // for (File file : dir2.listFiles()) {
         // size2 += file.length();
         // }
-        // assertEquals(Arrays.asList(dir1.list()) + " <-> "
-        // + Arrays.asList(dir2.list()), size1, size2);
+        // assertEquals( size1, size2,Arrays.asList(dir1.list()) + " <-> "
+        // + Arrays.asList(dir2.list()));
     }
 
     private static void performRandomOperations(int nAdded, int nChanged,
