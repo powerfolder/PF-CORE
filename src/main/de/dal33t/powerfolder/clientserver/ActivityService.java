@@ -30,8 +30,8 @@ import java.util.Collection;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public interface NewsService {
-    final static long RESULTS_DEFAULT = 25;
+public interface ActivityService {
+    final static long RESULTS_DEFAULT = 100;
     final static long RESULTS_UNLIMITED = -1;
 
     /**
