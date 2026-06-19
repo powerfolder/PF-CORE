@@ -215,6 +215,7 @@ public class Locking extends PFComponent {
     }
 
     private Path getLockFile(FileInfo fInfo) {
+        fInfo = FileInfoFactory.mapToTopFolder(fInfo);
         Folder metaFolder = getController().getFolderRepository()
                 .getMetaFolder(fInfo.getFolderInfo());
         if (metaFolder == null) {
@@ -521,6 +522,7 @@ public class Locking extends PFComponent {
     }
 
     private void scanLockFile(FileInfo fileInfo, Path lockFile) {
+        fileInfo = FileInfoFactory.mapToTopFolder(fileInfo);
         Folder metaFolder = getController().getFolderRepository()
             .getMetaFolder(fileInfo.getFolderInfo());
         if (metaFolder == null) {
