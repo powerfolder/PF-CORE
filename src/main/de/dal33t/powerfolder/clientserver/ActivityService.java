@@ -33,6 +33,8 @@ import java.util.Collection;
 public interface ActivityService {
     final static long RESULTS_DEFAULT = 100;
     final static long RESULTS_UNLIMITED = -1;
+    /** Upper bound for the full, paged activity feed (endless scrolling). */
+    final static long RESULTS_FEED_MAX = 5000;
 
     /**
      * Retrieve activity/news items from THIS cluster node only.
