@@ -126,6 +126,9 @@ public class Identity extends Message implements D2DObject, D2DEvent
      * {@link FolderFilesChanged}
      * <p>
      * 111: PFC-2455: Include federation folders when returning Account to node.
+     * <p>
+     * 114: PFC-3547: FolderInfo with parent (subfolder) included in FolderListExt.
+     * Servers older than v27 must not receive parent data to avoid cluster disconnections.
      */
     public static final int PROTOCOL_VERSION_106 = 106;
     public static final int PROTOCOL_VERSION_107 = 107;
@@ -135,9 +138,11 @@ public class Identity extends Message implements D2DObject, D2DEvent
     public static final int PROTOCOL_VERSION_111 = 111;
     public static final int PROTOCOL_VERSION_112 = 112;
     public static final int PROTOCOL_VERSION_113 = 113;
+    // PFC-3547: FolderInfo parent/subfolder support requires explicit negotiation
+    public static final int PROTOCOL_VERSION_114 = 114;
 
     // Never make this static
-    private int protocolVersion = PROTOCOL_VERSION_113;
+    private int protocolVersion = PROTOCOL_VERSION_114;
 
     private boolean requestFullFolderlist;
 
