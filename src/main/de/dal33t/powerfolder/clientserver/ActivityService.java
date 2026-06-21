@@ -38,8 +38,10 @@ public interface ActivityService {
 
     /**
      * Retrieve activity/news items from THIS cluster node only.
+     * Called via cluster RPC: {@code forAccount} identifies the target user on
+     * the remote node (the RPC connection runs as the system account).
      *
-     * @param forAccount the account to retrieve the activity for (the logged-in account)
+     * @param forAccount the account to retrieve the activity for
      * @param maxResults the number of maximum results
      *
      * @return the log according to the current filter settings.
@@ -49,13 +51,13 @@ public interface ActivityService {
     /**
      * Central call: retrieve and summarize activity/news items across ALL
      * nodes of the own cluster (federation is not included). Implementations
-     * fan out to each cluster node's {@link #getNewsFromLocalServer} and aggregate the
-     * results.
+     * fan out to each cluster node's {@link #getNewsFromLocalServer} and
+     * aggregate the results. The account is taken from the caller's security
+     * context (WebSession / SecurityContextRunnable).
      *
-     * @param forAccount the account to retrieve the activity for (the logged-in account)
      * @param maxResults the number of maximum results per node
      *
      * @return the summarized log across the whole cluster.
      */
-     Collection<NewsItem> getNewsFromAllClusterNodes(AccountInfo forAccount, long maxResults);
+     Collection<NewsItem> getNewsFromAllClusterNodes(long maxResults);
 }
