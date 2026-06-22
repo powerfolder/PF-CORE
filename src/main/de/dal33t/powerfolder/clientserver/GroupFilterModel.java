@@ -34,6 +34,9 @@ public class GroupFilterModel implements Serializable {
     private boolean withoutMembers;
     private boolean hasSubgroups;
     private boolean withoutFolders;
+    private boolean topLevel;
+
+    private List<String> groupOIDs;
 
     private int maxResults;
 
@@ -126,6 +129,34 @@ public class GroupFilterModel implements Serializable {
         this.withoutFolders = withoutFolders;
     }
 
+    /**
+     * @return {@code true} to only match top-level groups, i.e. groups that
+     *         have no parent group (Nested Groups).
+     */
+    public boolean isTopLevel() {
+        return topLevel;
+    }
+
+    public void setTopLevel(boolean topLevel) {
+        this.topLevel = topLevel;
+    }
+
+    /**
+     * @return the OIDs to restrict the result to, or {@code null} for no
+     *         restriction. An empty list matches no groups.
+     */
+    public List<String> getGroupOIDs() {
+        return groupOIDs;
+    }
+
+    /**
+     * Restricts the result to the given group OIDs (e.g. the groups a group
+     * admin is a member of). {@code null} means no restriction.
+     */
+    public void setGroupOIDs(List<String> groupOIDs) {
+        this.groupOIDs = groupOIDs;
+    }
+
     // Logic
 
     public void reset() {
@@ -136,5 +167,7 @@ public class GroupFilterModel implements Serializable {
         withoutMembers = false;
         hasSubgroups = false;
         withoutFolders = false;
+        topLevel = false;
+        groupOIDs = null;
     }
 }
