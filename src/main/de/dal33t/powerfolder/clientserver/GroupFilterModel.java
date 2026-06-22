@@ -31,6 +31,10 @@ public class GroupFilterModel implements Serializable {
     private String organizationOID = Organization.FILTER_MATCH_ALL;
     private List<String> adminOfOrganizationOIDs;
 
+    private boolean withoutMembers;
+    private boolean hasSubgroups;
+    private boolean withoutFolders;
+
     private int maxResults;
 
     public static GroupFilterModel all(int maxResults) {
@@ -88,6 +92,40 @@ public class GroupFilterModel implements Serializable {
         adminOfOrganizationOIDs.add(orgOID);
     }
 
+    /**
+     * @return {@code true} to only match groups that have no member accounts.
+     */
+    public boolean isWithoutMembers() {
+        return withoutMembers;
+    }
+
+    public void setWithoutMembers(boolean withoutMembers) {
+        this.withoutMembers = withoutMembers;
+    }
+
+    /**
+     * @return {@code true} to only match groups that have at least one child
+     *         group (Nested Groups).
+     */
+    public boolean isHasSubgroups() {
+        return hasSubgroups;
+    }
+
+    public void setHasSubgroups(boolean hasSubgroups) {
+        this.hasSubgroups = hasSubgroups;
+    }
+
+    /**
+     * @return {@code true} to only match groups that have no folders.
+     */
+    public boolean isWithoutFolders() {
+        return withoutFolders;
+    }
+
+    public void setWithoutFolders(boolean withoutFolders) {
+        this.withoutFolders = withoutFolders;
+    }
+
     // Logic
 
     public void reset() {
@@ -95,5 +133,8 @@ public class GroupFilterModel implements Serializable {
         maxResults = 0;
         adminOfOrganizationOIDs = null;
         organizationOID = Organization.FILTER_MATCH_ALL;
+        withoutMembers = false;
+        hasSubgroups = false;
+        withoutFolders = false;
     }
 }
