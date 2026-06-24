@@ -117,8 +117,6 @@ public enum Feature {
 
     LOG_MEMBERINFO_CONNECT_ADDRESS_NULL(false),
 
-    LOG_FOLDERINFO_FORCED_INTERNALIZE(false),
-
     LOG_INVALIDATE_ALL_CACHES(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());

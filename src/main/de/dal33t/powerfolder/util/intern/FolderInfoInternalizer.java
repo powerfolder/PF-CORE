@@ -19,7 +19,6 @@
  */
 package de.dal33t.powerfolder.util.intern;
 
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.StackDump;
@@ -36,7 +35,6 @@ import java.util.logging.Logger;
  * @author sprajc
  */
 public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
-    private static final Logger LOG = Logger.getLogger(FolderInfoInternalizer.class.getName());
     private final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<>();
 
     public FolderInfo intern(FolderInfo folderInfo) {
@@ -99,9 +97,6 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                         oldInstance.getParent());
             }
 
-            if (oldInstance != null && !foInfo.isMetaFolder() && Feature.LOG_FOLDERINFO_FORCED_INTERNALIZE.isEnabled()) {
-                LOG.log(Level.INFO, foInfo + ": rename (forced internalize). oldInstance: " + oldInstance);
-            }
             INSTANCES.put(foInfo, foInfo);
         }
 
