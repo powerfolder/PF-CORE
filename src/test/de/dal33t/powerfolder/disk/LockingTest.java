@@ -18,21 +18,21 @@
  */
 package de.dal33t.powerfolder.disk;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
+ import de.dal33t.powerfolder.Constants;
+ import de.dal33t.powerfolder.event.LockingEvent;
+ import de.dal33t.powerfolder.event.LockingListener;
+ import de.dal33t.powerfolder.light.DirectoryInfo;
+ import de.dal33t.powerfolder.light.FileInfo;
+ import de.dal33t.powerfolder.light.FileInfoFactory;
+ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+ import de.dal33t.powerfolder.util.test.TestHelper;
+ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.event.LockingEvent;
-import de.dal33t.powerfolder.event.LockingListener;
-import de.dal33t.powerfolder.light.DirectoryInfo;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.test.ConditionWithMessage;
-import de.dal33t.powerfolder.util.test.TestHelper;
-import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+ import java.io.IOException;
+ import java.nio.file.Files;
+ import java.nio.file.Path;
+ import java.util.LinkedList;
+ import java.util.List;
 
 public class LockingTest extends TwoControllerTestCase {
     private Locking lockingBart;
@@ -507,9 +507,7 @@ public class LockingTest extends TwoControllerTestCase {
         Folder subFolder = topFolder.share(dirInfo);
         assertNotNull(subFolder);
 
-        FileInfo fileInTop = topFolder.getFileInfo(testFile);
-        FileInfo fileInSub = FileInfoFactory.mapToSubFolder(fileInTop,
-            subFolder.getInfo());
+        FileInfo fileInSub = subFolder.getFileInfo(testFile);
         assertEquals("2024/q1/stmt.txt", fileInSub.getRelativeName());
 
         assertTrue(lockingBart.lock(fileInSub));
