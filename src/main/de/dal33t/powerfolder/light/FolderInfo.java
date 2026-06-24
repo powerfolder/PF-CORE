@@ -62,8 +62,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     public static final String PROPERTYNAME_NAME = "name";
     public static final String PROPERTYNAME_VERSION = "version";
     public static final String PROPERTYNAME_TOP_FOLDER = "topFolder";
-    // PFS-4790 TODO: Rename this to topPath
-    public static final String PROPERTYNAME_PARENT_PATH = "parentPath";
+    public static final String PROPERTYNAME_TOP_PATH = "topPath";
 
     @Index(name="IDX_FOLDER_NAME")
     private String name;
@@ -75,11 +74,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     private int version;
 
-    // PFS-4790 TODO: Rename field to topFolderInfo_id
     @ManyToOne
-    @JoinColumn(name = "parentFolderInfo_id")
+    @JoinColumn(name = "topFolderInfo_id")
     private FolderInfo topFolder;
-    @Column(name="parentPath", length = 1024)
+    @Column(name = "topPath", length = 1024)
     private String topPath;
 
     /**
