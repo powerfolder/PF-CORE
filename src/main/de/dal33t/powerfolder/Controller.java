@@ -260,6 +260,13 @@ public class Controller extends PFComponent {
         Security.setProperty("networkaddress.cache.ttl", "0");
         Security.setProperty("networkaddress.cache.negative.ttl", "0");
         System.setProperty("sun.net.inetaddr.ttl", "0");
+        // Per-host HTTP keep-alive cache size. The JDK default (5) is far below
+        // the parallel CMIS migration downloads (cmis.migration.file_workers=32):
+        // connections would be constantly force-closed under the global
+        // KeepAliveCache lock, and that close blocks on the TLS close_notify —
+        // stalling every other download. Must be set before the first HTTP call
+        // (the JDK caches this value once), so it lives here in early startup.
+        System.setProperty("http.maxConnections", "32");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name",
             "PowerFolder");
         System.setProperty("illegal-access", "deny");
