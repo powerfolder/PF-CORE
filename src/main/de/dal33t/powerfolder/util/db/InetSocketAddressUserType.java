@@ -108,13 +108,17 @@ public class InetSocketAddressUserType extends Loggable implements UserType {
             st.setNull(index, Types.VARCHAR);
         } else {
             InetSocketAddress address = (InetSocketAddress) value;
-            if (address.getAddress() == null) {
+            // PFS: nullSafeGet always returns an unresolved address
+            // (createUnresolved), for which getAddress() == null. Treating that
+            // as SQL NULL made a load -> store round-trip silently wipe the
+            // connect address. Keep the hostname for unresolved addresses.
+            String host = address.getAddress() != null
+                ? NetworkUtil.getHostAddressNoResolve(address.getAddress())
+                : address.getHostString();
+            if (StringUtils.isBlank(host)) {
                 st.setNull(index, Types.VARCHAR);
             } else {
-                String stringRepresentation = NetworkUtil
-                    .getHostAddressNoResolve(address.getAddress())
-                    + ":" + address.getPort();
-                st.setString(index, stringRepresentation);
+                st.setString(index, host + ":" + address.getPort());
             }
         }
     }
