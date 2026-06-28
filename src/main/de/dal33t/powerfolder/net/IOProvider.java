@@ -96,17 +96,19 @@ public class IOProvider extends PFComponent {
             Executors.newCachedThreadPool(new NamedThreadFactory("IOThread-")));
 
         // PFS-5311: Bounded pool for search indexing — prevents Tika/OCR from saturating CPU/IO during
-        // startup with hundreds of folders.
-        int maxIndexThreads = Math.max(2,
-            ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(getController()));
-        NamedThreadFactory indexThreadFactory = new NamedThreadFactory("SearchIndexThread-");
-        indexingThreadPool = new ThreadPoolExecutor(maxIndexThreads, maxIndexThreads, 60L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(), r -> {
-                Thread t = indexThreadFactory.newThread(r);
-                t.setPriority(Thread.MIN_PRIORITY);
-                return t;
-            });
-        logInfo("Search indexing thread pool started: maxThreads=" + maxIndexThreads);
+        // startup with hundreds of folders. Only created when search indexing is actually enabled.
+        if (ConfigurationEntry.SEARCH_INDEX_ENABLED.getValueBoolean(getController())) {
+            int maxIndexThreads = Math.max(2,
+                ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(getController()));
+            NamedThreadFactory indexThreadFactory = new NamedThreadFactory("SearchIndexThread-");
+            indexingThreadPool = new ThreadPoolExecutor(maxIndexThreads, maxIndexThreads, 60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(), r -> {
+                    Thread t = indexThreadFactory.newThread(r);
+                    t.setPriority(Thread.MIN_PRIORITY);
+                    return t;
+                });
+            logInfo("Search indexing thread pool started: maxThreads=" + maxIndexThreads);
+        }
 
         started = true;
         getController().scheduleAndRepeat(new KeepAliveChecker(),

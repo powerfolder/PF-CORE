@@ -322,28 +322,33 @@ public class Util {
                 return null;
             }
             URLConnection resCon = resURL.openConnection();
-            long lastMod = resCon.getLastModified();
-            long length = resCon.getContentLength();
+            resCon.setUseCaches(false);
+            // getLastModified()/getContentLength() already open the
+            // underlying file handle for file: URLs, so make sure it is
+            // always closed - otherwise the resource stays locked on Windows.
+            try (InputStream in = resCon.getInputStream()) {
+                long lastMod = resCon.getLastModified();
+                long length = resCon.getContentLength();
 
-            // Step 2) Check if update/overwrite is required
-            if (!forceOverwrite && Files.exists(destinationFile)) {
-                boolean upToDate = length == Files.size(destinationFile)
-                    && DateUtil.equalsFileDateCrossPlattform(lastMod,
-                        Files.getLastModifiedTime(destinationFile).toMillis());
-                if (upToDate) {
-                    // No update required
-                    LOG.fine("Not required to update " + resURL + " to "
-                        + destinationFile);
-                    return destinationFile;
+                // Step 2) Check if update/overwrite is required
+                if (!forceOverwrite && Files.exists(destinationFile)) {
+                    boolean upToDate = length == Files.size(destinationFile)
+                        && DateUtil.equalsFileDateCrossPlattform(lastMod,
+                            Files.getLastModifiedTime(destinationFile).toMillis());
+                    if (upToDate) {
+                        // No update required
+                        LOG.fine("Not required to update " + resURL + " to "
+                            + destinationFile);
+                        return destinationFile;
+                    }
                 }
-            }
 
-            // Step 3) Actually copy
-            InputStream in = resCon.getInputStream();
-            Files.createDirectories(destinationFile);
-            PathUtils.copyFromStreamToFile(in, destinationFile);
-            // Preserver last mod for later caching.
-            Files.setLastModifiedTime(destinationFile, FileTime.fromMillis(resCon.getLastModified()));
+                // Step 3) Actually copy
+                Files.createDirectories(destinationFile);
+                PathUtils.copyFromStreamToFile(in, destinationFile);
+                // Preserver last mod for later caching.
+                Files.setLastModifiedTime(destinationFile, FileTime.fromMillis(resCon.getLastModified()));
+            }
         } catch (IOException ioe) {
             if (quiet) {
                 LOG.fine("Unable to create target for resource: "
