@@ -65,6 +65,7 @@ public class PowerFolder {
         options.addOption("m", "minimized", false,
             "Start PowerFolder minimized");
         options
+
             .addOption("s", "server", false,
                 "Starts in console mode. Graphical user interface will be disabled");
         options
