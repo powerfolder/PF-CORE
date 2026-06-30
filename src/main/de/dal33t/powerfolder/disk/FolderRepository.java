@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.*;
@@ -990,6 +991,26 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
         return null;
+    }
+
+    public List<FileInfo> searchFiles(Collection<Folder> folders,
+                                      FileInfoCriteria criteria) {
+        Reject.ifNull(folders, "Folders");
+        Reject.ifNull(criteria, "Criteria");
+
+        List<FileInfo> results = new ArrayList<>();
+        for (Folder folder : folders) {
+            if (folder == null) {
+                continue;
+            }
+            criteria.addMySelf(folder);
+            try {
+                results.addAll(folder.searchFiles(criteria));
+            } catch (RuntimeException e) {
+                logWarning("Unable to search folder " + folder + ": " + e);
+            }
+        }
+        return results;
     }
 
     /**
