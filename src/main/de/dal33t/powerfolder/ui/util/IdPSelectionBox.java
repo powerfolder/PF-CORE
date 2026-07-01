@@ -18,6 +18,9 @@
  */
 package de.dal33t.powerfolder.ui.util;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -38,7 +41,6 @@ import org.json.JSONObject;
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import javax.swing.SwingWorker;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -278,23 +280,20 @@ public class IdPSelectionBox extends StyledComboBox<String> {
             copyButton.setText(Translation.get("login.saml.browser_copy_link.copied_button"));
         });
 
-        JLabel message = new JLabel("<html><body style='width: 360px'>"
+        JLabel message = new JLabel("<html><body style='width: 300px'>"
                 + Translation.get("login.saml.browser_copy_link.message") + "</body></html>");
-        message.setAlignmentX(0f);
 
-        JPanel linkRow = new JPanel(new BorderLayout(5, 0));
-        linkRow.add(urlField, BorderLayout.CENTER);
-        linkRow.add(copyButton, BorderLayout.EAST);
-        linkRow.setAlignmentX(0f);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(message);
-        panel.add(Box.createVerticalStrut(10));
-        panel.add(linkRow);
+        // "180dlu" gives the URL field a fixed, sensible width instead of
+        // stretching across the whole dialog.
+        FormLayout layout = new FormLayout("180dlu, 3dlu, pref", "pref, 7dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(message, cc.xyw(1, 1, 3));
+        builder.add(urlField, cc.xy(1, 3));
+        builder.add(copyButton, cc.xy(3, 3));
 
         DialogFactory.genericDialog(controller,
-                Translation.get("login.saml.browser_copy_link.title"), panel,
+                Translation.get("login.saml.browser_copy_link.title"), builder.getPanel(),
                 new String[]{Translation.get("general.ok")}, 0, GenericDialogType.WARN);
     }
 
