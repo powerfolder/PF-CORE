@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import javax.swing.SwingWorker;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -30,6 +31,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class IdPSelectionBox extends StyledComboBox<String> {
@@ -223,12 +225,59 @@ public class IdPSelectionBox extends StyledComboBox<String> {
         try {
             BrowserLauncher.openURL(idpWebLoginURL);
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            // PFC-3494: On some systems (e.g. KDE-based Linux) no browser can be
+            // launched automatically. The login still completes as soon as the
+            // URL is opened in any browser (the token is posted back to the
+            // local client), so instead of failing we let the user copy the link
+            // and open it manually.
+            LOG.log(Level.WARNING, "Could not open browser for SAML login,"
+                    + " offering copy-link fallback", ex);
+            showBrowserFallbackDialog(idpWebLoginURL);
+            return;
         }
 
         DialogFactory.genericDialog(controller, Translation.get("login.saml.browser_login_ongoing.title"),
                 Translation.get("login.saml.browser_login_ongoing.message"), new String[]{Translation
                 .get("general.ok")}, 0, GenericDialogType.INFO);
+    }
+
+    /**
+     * Shows a dialog offering the SAML login URL in a selectable text field
+     * plus a copy-to-clipboard button, for the case where no system browser
+     * could be launched automatically. The login completes normally once the
+     * user opens the copied link in any browser. See PFC-3494.
+     */
+    private void showBrowserFallbackDialog(final String url) {
+        final JTextField urlField = new JTextField(url);
+        urlField.setEditable(false);
+        urlField.setCaretPosition(0);
+
+        final JButton copyButton = new JButton(
+                Translation.get("login.saml.browser_copy_link.copy_button"));
+        copyButton.addActionListener(e -> {
+            Util.setClipboardContents(url);
+            urlField.selectAll();
+            copyButton.setText(Translation.get("login.saml.browser_copy_link.copied_button"));
+        });
+
+        JLabel message = new JLabel("<html><body style='width: 360px'>"
+                + Translation.get("login.saml.browser_copy_link.message") + "</body></html>");
+        message.setAlignmentX(0f);
+
+        JPanel linkRow = new JPanel(new BorderLayout(5, 0));
+        linkRow.add(urlField, BorderLayout.CENTER);
+        linkRow.add(copyButton, BorderLayout.EAST);
+        linkRow.setAlignmentX(0f);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(message);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(linkRow);
+
+        DialogFactory.genericDialog(controller,
+                Translation.get("login.saml.browser_copy_link.title"), panel,
+                new String[]{Translation.get("general.ok")}, 0, GenericDialogType.WARN);
     }
 
     private void retrieveECP(String entityID) {
