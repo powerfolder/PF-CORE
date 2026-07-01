@@ -35,6 +35,7 @@ public class GroupFilterModel implements Serializable {
     private boolean hasSubgroups;
     private boolean withoutFolders;
     private boolean topLevel;
+    private boolean searchFolders = true;
 
     private List<String> groupOIDs;
 
@@ -142,6 +143,18 @@ public class GroupFilterModel implements Serializable {
     }
 
     /**
+     * @return {@code true} to also match groups by the name of their assigned
+     *         folders. Gated by the caller (e.g. minimum input length).
+     */
+    public boolean isSearchFolders() {
+        return searchFolders;
+    }
+
+    public void setSearchFolders(boolean searchFolders) {
+        this.searchFolders = searchFolders;
+    }
+
+    /**
      * @return the OIDs to restrict the result to, or {@code null} for no
      *         restriction. An empty list matches no groups.
      */
@@ -168,6 +181,7 @@ public class GroupFilterModel implements Serializable {
         hasSubgroups = false;
         withoutFolders = false;
         topLevel = false;
+        searchFolders = true;
         groupOIDs = null;
     }
 }
