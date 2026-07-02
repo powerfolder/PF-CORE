@@ -143,6 +143,9 @@ public class SubFolderFileArchiverProxy implements FileArchiver {
                 Path archivedFile = delegate.getArchivedFile(archivedInfo);
                 if (archivedFile != null && Files.exists(archivedFile)) {
                     Files.delete(archivedFile);
+                    // PFS-2573: remove the .meta sidecar written on archive,
+                    // otherwise hasArchivedFileInfo() still matches it.
+                    delegate.deleteMetaIfExists(archivedFile);
                 }
             }
         }

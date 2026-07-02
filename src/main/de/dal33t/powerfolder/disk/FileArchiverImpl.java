@@ -837,7 +837,7 @@ public class FileArchiverImpl implements FileArchiver {
         return null;
     }
 
-    private void deleteMetaIfExists(Path archivedFile) {
+    void deleteMetaIfExists(Path archivedFile) {
         try {
             Files.deleteIfExists(metaPathFor(archivedFile));
             Files.deleteIfExists(metaWritingPathFor(archivedFile));
