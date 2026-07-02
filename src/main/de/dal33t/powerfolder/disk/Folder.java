@@ -25,7 +25,6 @@ import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
-import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.disk.problem.*;
 import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.*;
