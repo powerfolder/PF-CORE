@@ -72,6 +72,17 @@ public interface GroupDAO extends GenericDAO<Group> {
     Collection<Group> findChildrenOf(Group parent);
 
     /**
+     * Nested Groups: direct subgroups of {@code parent}, limited to at most
+     * {@code maxResults} rows (or no limit for a negative value). Used to build
+     * a small subgroup preview without loading every child.
+     *
+     * @param parent the parent group
+     * @param maxResults the maximum number of subgroups to return
+     * @return up to {@code maxResults} direct subgroups (empty if none)
+     */
+    Collection<Group> findChildrenOf(Group parent, int maxResults);
+
+    /**
      * Nested Groups: count of direct subgroups of {@code parent}. Cheap
      * alternative to {@link #findChildrenOf(Group)} when only the size is
      * needed (e.g. the {@code nChildGroups} field on {@code getAll}).
