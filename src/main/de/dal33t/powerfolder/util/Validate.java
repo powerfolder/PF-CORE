@@ -36,7 +36,6 @@ import java.util.Map;
  * @author Gary Gregory
  * @author Norm Deane
  * @since 2.0
- * @version $Id: Validate.java 165657 2005-05-02 18:31:49Z ggregory $
  */
 public class Validate {
     // Validate has no dependencies on other classes in Commons Lang at present

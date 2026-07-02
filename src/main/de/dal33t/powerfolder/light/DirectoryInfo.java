@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: DirectoryInfo.java 12941 2010-07-12 16:38:01Z tot $
  */
 package de.dal33t.powerfolder.light;
 

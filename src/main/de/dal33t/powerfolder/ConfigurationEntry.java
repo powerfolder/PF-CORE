@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc, Dennis Waldherr. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: ConfigurationEntry.java 21134 2013-03-17 01:20:03Z sprajc $
  */
 package de.dal33t.powerfolder;
 
@@ -528,7 +528,7 @@ public enum ConfigurationEntry {
     /**
      * PF-1790 Subfolder sharing enabled
      */
-    FOLDER_SHARE_SUBFOLDER_ENABLED("folder.share.subfolder.enabled", false),
+    FOLDER_SHARE_SUBFOLDER_ENABLED("folder.share.subfolder.enabled", true),
 
     /**
      * PFS-798: If invitor can invite "external" non existing users (e.g. not in LDAP nor in DB).
@@ -1021,7 +1021,8 @@ public enum ConfigurationEntry {
      * startup and large index rebuilds. Default: quarter of available CPUs (min 2).
      * <p>
      * Content extraction is IO-bound (Tika reads files from disk), so more threads mostly increase
-     * disk pressure rather than throughput. Threads run at {@code MIN_PRIORITY}.
+     * disk pressure rather than throughput. Each thread also has a 50 ms throttle delay between
+     * extractions (see {@code powerfolder.index.contentExtractThrottleMs}, default 20 ms).
      */
     SEARCH_INDEX_MAX_THREADS("search.indexing.maxThreads",
             Math.max(2, Runtime.getRuntime().availableProcessors() / 4), true),
@@ -1037,10 +1038,10 @@ public enum ConfigurationEntry {
      * Files with other extensions are indexed by filename only.
      */
     SEARCH_INDEX_CONTENT_EXTENSIONS("search.index.contentExtensions",
-            "pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,odg,rtf,txt,csv,md,log,xml,html,htm,msg,eml"),
+            "pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,odg,rtf,txt,csv,md,log,xml,html,htm,msg,eml,png,jpg,jpeg,tif,tiff,bmp"),
 
     /**
-     * Throttle delay (ms) between content extractions (Tika/OCR) in phase 1 (inline) and phase 2.
+     * Throttle delay (ms) between phase-2 content extractions (Tika/OCR).
      * Prevents disk I/O saturation during index builds. Default: 50 ms.
      */
     SEARCH_INDEX_CONTENT_EXTRACT_THROTTLE_MS("search.index.contentExtractThrottleMs", 50),

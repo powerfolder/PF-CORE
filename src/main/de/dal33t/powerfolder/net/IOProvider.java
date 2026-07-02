@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
  */
 package de.dal33t.powerfolder.net;
 
@@ -95,26 +95,53 @@ public class IOProvider extends PFComponent {
         ioThreadPool = new WrapperExecutorService(
             Executors.newCachedThreadPool(new NamedThreadFactory("IOThread-")));
 
-        // PFS-5311: Bounded pool for search indexing — prevents Tika/OCR from saturating CPU/IO during
-        // startup with hundreds of folders.
-        int maxIndexThreads = Math.max(2,
-            ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(getController()));
-        NamedThreadFactory indexThreadFactory = new NamedThreadFactory("SearchIndexThread-");
-        indexingThreadPool = new ThreadPoolExecutor(maxIndexThreads, maxIndexThreads, 60L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(), r -> {
-                Thread t = indexThreadFactory.newThread(r);
-                t.setPriority(Thread.MIN_PRIORITY);
-                return t;
-            });
-        logInfo("Search indexing thread pool started: maxThreads=" + maxIndexThreads);
-
         started = true;
+
+        // PFS-5311: Bounded pool for search indexing — prevents Tika/OCR from saturating CPU/IO during
+        // startup with hundreds of folders. Warmed here when search indexing is already enabled; otherwise
+        // created lazily on first use (see getIndexingThreadPool) so enabling search.index.enabled at
+        // runtime — or after start() — still works without a restart.
+        getIndexingThreadPool();
+
         getController().scheduleAndRepeat(new KeepAliveChecker(),
             TIME_WITHOUT_KEEPALIVE_WEBSOCKET_UNTIL_PING);
         relayedConManager.start();
     }
 
-    public void shutdown() {
+    /**
+     * PFS-5311: Returns the dedicated search-indexing thread pool, lazily creating it on first use.
+     * <p>
+     * The pool is only ever created while the provider is started and {@code search.index.enabled} is
+     * true. Evaluating the config here (rather than only once in {@link #start()}) means indexing keeps
+     * working when the setting is toggled on at runtime or enabled after the provider has started — a
+     * previous version gated creation solely on the value at {@code start()} time, so a late-enabled
+     * index silently never ran.
+     *
+     * @return the indexing pool, or {@code null} if the provider is shut down or indexing is disabled
+     */
+    private synchronized ThreadPoolExecutor getIndexingThreadPool() {
+        if (!started) {
+            return null;
+        }
+        if (!ConfigurationEntry.SEARCH_INDEX_ENABLED.getValueBoolean(getController())) {
+            return null;
+        }
+        if (indexingThreadPool == null || indexingThreadPool.isShutdown()) {
+            int maxIndexThreads = Math.max(2,
+                ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(getController()));
+            NamedThreadFactory indexThreadFactory = new NamedThreadFactory("SearchIndexThread-");
+            indexingThreadPool = new ThreadPoolExecutor(maxIndexThreads, maxIndexThreads, 60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(), r -> {
+                    Thread t = indexThreadFactory.newThread(r);
+                    t.setPriority(Thread.MIN_PRIORITY);
+                    return t;
+                });
+            logInfo("Search indexing thread pool started: maxThreads=" + maxIndexThreads);
+        }
+        return indexingThreadPool;
+    }
+
+    public synchronized void shutdown() {
         started = false;
         if (indexingThreadPool != null) {
             logFine("Shutting down search indexing threadpool");
@@ -204,12 +231,13 @@ public class IOProvider extends PFComponent {
      */
     public Future<?> startIndexing(final Runnable worker) {
         Reject.ifNull(worker, "Indexing worker is null");
-        if (indexingThreadPool == null || indexingThreadPool.isShutdown()) {
+        ThreadPoolExecutor pool = getIndexingThreadPool();
+        if (pool == null || pool.isShutdown()) {
             logFine("Rejected indexing worker, pool not available: " + worker);
             return null;
         }
         try {
-            return indexingThreadPool.submit(worker);
+            return pool.submit(worker);
         } catch (RejectedExecutionException e) {
             logWarning("Indexing task rejected (pool full): " + e.getMessage());
             return null;

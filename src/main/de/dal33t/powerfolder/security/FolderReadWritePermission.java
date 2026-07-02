@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: FolderWritePermission.java 4282 2008-06-16 03:25:09Z tot $
  */
 package de.dal33t.powerfolder.security;
 
@@ -67,28 +67,4 @@ public class FolderReadWritePermission extends FolderPermission {
         };
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((folder == null) ? 0 : folder.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (!(obj instanceof FolderReadWritePermission))
-            return false;
-        final FolderReadWritePermission other = (FolderReadWritePermission) obj;
-        if (folder == null) {
-            if (other.folder != null)
-                return false;
-        } else if (!folder.equals(other.folder))
-            return false;
-        return true;
-    }
 }

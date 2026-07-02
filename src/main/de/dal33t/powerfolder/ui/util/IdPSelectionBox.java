@@ -1,5 +1,26 @@
+/*
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.dal33t.powerfolder.ui.util;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
@@ -30,6 +51,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class IdPSelectionBox extends StyledComboBox<String> {
@@ -223,12 +245,56 @@ public class IdPSelectionBox extends StyledComboBox<String> {
         try {
             BrowserLauncher.openURL(idpWebLoginURL);
         } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            // PFC-3494: On some systems (e.g. KDE-based Linux) no browser can be
+            // launched automatically. The login still completes as soon as the
+            // URL is opened in any browser (the token is posted back to the
+            // local client), so instead of failing we let the user copy the link
+            // and open it manually.
+            LOG.log(Level.WARNING, "Could not open browser for SAML login,"
+                    + " offering copy-link fallback", ex);
+            showBrowserFallbackDialog(idpWebLoginURL);
+            return;
         }
 
         DialogFactory.genericDialog(controller, Translation.get("login.saml.browser_login_ongoing.title"),
                 Translation.get("login.saml.browser_login_ongoing.message"), new String[]{Translation
                 .get("general.ok")}, 0, GenericDialogType.INFO);
+    }
+
+    /**
+     * Shows a dialog offering the SAML login URL in a selectable text field
+     * plus a copy-to-clipboard button, for the case where no system browser
+     * could be launched automatically. The login completes normally once the
+     * user opens the copied link in any browser. See PFC-3494.
+     */
+    private void showBrowserFallbackDialog(final String url) {
+        final JTextField urlField = new JTextField(url);
+        urlField.setEditable(false);
+        urlField.setCaretPosition(0);
+
+        final JButton copyButton = new JButton(
+                Translation.get("login.saml.browser_copy_link.copy_button"));
+        copyButton.addActionListener(e -> {
+            Util.setClipboardContents(url);
+            urlField.selectAll();
+            copyButton.setText(Translation.get("login.saml.browser_copy_link.copied_button"));
+        });
+
+        JLabel message = new JLabel("<html><body style='width: 300px'>"
+                + Translation.get("login.saml.browser_copy_link.message") + "</body></html>");
+
+        // "180dlu" gives the URL field a fixed, sensible width instead of
+        // stretching across the whole dialog.
+        FormLayout layout = new FormLayout("180dlu, 3dlu, pref", "pref, 7dlu, pref");
+        PanelBuilder builder = new PanelBuilder(layout);
+        CellConstraints cc = new CellConstraints();
+        builder.add(message, cc.xyw(1, 1, 3));
+        builder.add(urlField, cc.xy(1, 3));
+        builder.add(copyButton, cc.xy(3, 3));
+
+        DialogFactory.genericDialog(controller,
+                Translation.get("login.saml.browser_copy_link.title"), builder.getPanel(),
+                new String[]{Translation.get("general.ok")}, 0, GenericDialogType.WARN);
     }
 
     private void retrieveECP(String entityID) {

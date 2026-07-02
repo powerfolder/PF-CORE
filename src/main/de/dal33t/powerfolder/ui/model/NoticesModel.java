@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2010 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: NoticesModel.java 12401 2010-05-20 00:52:17Z harry $
  */
 package de.dal33t.powerfolder.ui.model;
 
@@ -28,12 +28,10 @@ import de.dal33t.powerfolder.disk.FileInBasePathWarning;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.message.Invitation;
 import de.dal33t.powerfolder.ui.PFUIComponent;
-import de.dal33t.powerfolder.ui.WikiLinks;
 import de.dal33t.powerfolder.ui.dialog.DialogFactory;
 import de.dal33t.powerfolder.ui.dialog.GenericDialogType;
 import de.dal33t.powerfolder.ui.notices.*;
 import de.dal33t.powerfolder.ui.notification.SystemNotificationHandler;
-import de.dal33t.powerfolder.ui.util.Help;
 import de.dal33t.powerfolder.ui.wizard.PFWizard;
 import de.dal33t.powerfolder.util.ConfigurationLoader;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -239,15 +237,10 @@ public class NoticesModel extends PFUIComponent {
     }
 
     private void handleOutOfMemoryNotice(OutOfMemoryNotice notice) {
-        // http\://www.powerfolder.com/wiki/Memory_configuration
-        String memoryConfigHelp = Help.getWikiArticleURL(getController(),
-            WikiLinks.MEMORY_CONFIGURATION);
-        String infoText = Translation.get(
-            "low_memory.error.text", memoryConfigHelp);
         int response = DialogFactory.genericDialog(
             getController(),
             Translation.get("low_memory.error.title"),
-            infoText,
+            Translation.get("low_memory.error.text"),
             new String[]{
                 Translation.get("general.ok"),
                 Translation

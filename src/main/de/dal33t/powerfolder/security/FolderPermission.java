@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: FolderAdminPermission.java 5581 2008-11-03 03:26:24Z tot $
  */
 package de.dal33t.powerfolder.security;
 
@@ -72,6 +72,7 @@ public abstract class FolderPermission
     public int hashCode() {
         final int PRIME = 31;
         int result = 1;
+        result = PRIME * result + getClass().hashCode();
         result = PRIME * result + ((folder == null) ? 0 : folder.hashCode());
         return result;
     }
@@ -82,7 +83,7 @@ public abstract class FolderPermission
             return true;
         if (obj == null)
             return false;
-        if (!(obj instanceof FolderPermission))
+        if (getClass() != obj.getClass())
             return false;
         final FolderPermission other = (FolderPermission) obj;
         if (folder == null) {

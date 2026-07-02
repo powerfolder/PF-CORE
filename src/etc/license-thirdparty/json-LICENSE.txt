@@ -1,0 +1,9 @@
+JSON in Java (org.json) 20250517
+https://github.com/stleary/JSON-java
+
+Copyright (c) 2002 JSON.org
+
+Public Domain.
+
+The json.org library is free for use by anyone for any purpose, and
+requires no license agreement, no attribution, and no fees.

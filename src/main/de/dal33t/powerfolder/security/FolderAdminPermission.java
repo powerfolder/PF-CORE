@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
  */
 package de.dal33t.powerfolder.security;
 
@@ -77,31 +77,6 @@ public class FolderAdminPermission extends FolderPermission {
                 FolderReadPermission.class,
                 FolderDeletePermission.class
         };
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((folder == null) ? 0 : folder.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (!(obj instanceof FolderAdminPermission))
-            return false;
-        FolderAdminPermission other = (FolderAdminPermission) obj;
-        if (folder == null) {
-            if (other.folder != null)
-                return false;
-        } else if (!folder.equals(other.folder))
-            return false;
-        return true;
     }
 
     // Serialization compatibility ********************************************

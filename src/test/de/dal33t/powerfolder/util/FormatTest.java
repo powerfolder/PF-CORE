@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2019 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -54,7 +55,7 @@ public class FormatTest {
 
     @Test
     public void formatBytesObjectParameterTest() {
-        Long longObject = new Long(1024);
+        Long longObject = Long.valueOf(1024);
         assertEquals("1 kBytes", Format.formatBytes(longObject));
     }
 
@@ -136,7 +137,7 @@ public class FormatTest {
 
     @Test
     public void formatBytesShortObjectParameterTest() {
-        Long longObject = new Long(1024);
+        Long longObject = Long.valueOf(1024);
         assertEquals("1 kB", Format.formatBytesShort(longObject));
     }
 
@@ -217,7 +218,7 @@ public class FormatTest {
 
     @Test
     public void formatTimeFrameOtherArguments() {
-        Long millis = new Long(1000L * 60 * 2 + 1234);
+        Long millis = Long.valueOf(1000L * 60 * 2 + 1234);
         assertEquals("2m", Format.formatTimeframe(millis));
         int value = (1000 * 60 * 60 * 2 + 134231);
         assertEquals("2h", Format.formatTimeframe(value));

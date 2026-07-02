@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2012 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -40,7 +41,17 @@ public enum DefaultExcludes {
     /**
      * Apples iPod thumb files. http://dotwhat.net/ithmb/9058/
      */
-    ITHUMB("*.ithmb");
+    ITHUMB("*.ithmb"),
+
+    /**
+     * AI tool local configurations
+     */
+    CLAUDE(".claude"),
+    CODEX(".codex"),
+    AIDER(".aider"),
+    CLINE(".cline"),
+
+    GIT(".git");
 
     String pattern;
 

@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: AddLicenseHeader.java 4282 2008-06-16 03:25:09Z tot $
  */
 package de.dal33t.powerfolder.folder;
 
@@ -112,7 +112,7 @@ public class RecycleTest extends ControllerTestCase {
         getFolder().removeFilesLocal(testfile);
         assertFalse(Files.exists(file));
         archiver.setVersionsPerFile(0);
-        archiver.maintain();
+        archiver.maintainAndCleanup(null, getFolder().getDAO(), getFolder().getInfo(), getController().getMySelf().getAccountInfo());
         Path recycleBinDir = getFolder().getSystemSubDir().resolve("archive");
         assertTrue(Files.exists(recycleBinDir));
         // Only size file

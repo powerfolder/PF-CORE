@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2022 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -88,8 +89,8 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 27;
-    private static final int MINOR_VERSION = 2;
-    private static final int REVISION_VERSION = 114;
+    private static final int MINOR_VERSION = 3;
+    private static final int REVISION_VERSION = 100;
 
     /**
      * Program version.
@@ -1342,7 +1343,7 @@ public class Controller extends PFComponent {
             logFine("Reconfigured logs for new day: " + now);
 
             backupConfigAssets();
-            folderRepository.cleanupOldFiles();
+            folderRepository.nightlyMaintenance();
         }
         
         // Prune stats.
@@ -2069,7 +2070,7 @@ public class Controller extends PFComponent {
         startTime = null;
 
         PreferencesEntry.LAST_NODE_ID.setValue(this,
-            LoginUtil.hashAndSalt(getMySelf().getId()));
+            LoginUtil.hashAndSalt(getMySelf().getId().toCharArray()));
 
         if (taskManager != null) {
             logFine("Shutting down task manager");
@@ -2129,9 +2130,10 @@ public class Controller extends PFComponent {
             folderRepository.shutdown();
         }
 
-        if (TesseractOCR.getInstance() != null) {
+        TesseractOCR ocr = TesseractOCR.getInstance();
+        if (ocr != null) {
             logFine("Shutting down OCR engine");
-            TesseractOCR.getInstance().shutdown();
+            ocr.shutdown();
         }
 
         if (reconnectManager != null) {

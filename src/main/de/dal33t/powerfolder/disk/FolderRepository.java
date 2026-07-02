@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: FolderRepository.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.disk;
 
@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.clientserver.FolderService;
 import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.d2d.D2DSocketConnectionHandler;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.problem.AccessDeniedProblem;
 import de.dal33t.powerfolder.disk.problem.ProblemListener;
 import de.dal33t.powerfolder.event.*;
@@ -562,7 +563,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             try {
                 String folderId = config.getProperty(PREFIX_V4 + folderEntryId + ID);
                 if (StringUtils.isBlank(folderId)) {
-                    logWarning("Folder id blank. Removed illegal folder config entry: " + folderEntryId);
+                    logFine("Folder id blank. Removed illegal folder config entry: " + folderEntryId);
                     removeConfigEntries(folderEntryId);
                     continue;
                 }
@@ -990,6 +991,26 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
         return null;
+    }
+
+    public List<FileInfo> searchFiles(Collection<Folder> folders,
+                                      FileInfoCriteria criteria) {
+        Reject.ifNull(folders, "Folders");
+        Reject.ifNull(criteria, "Criteria");
+
+        List<FileInfo> results = new ArrayList<>();
+        for (Folder folder : folders) {
+            if (folder == null) {
+                continue;
+            }
+            criteria.addMySelf(folder);
+            try {
+                results.addAll(folder.searchFiles(criteria));
+            } catch (RuntimeException e) {
+                logWarning("Unable to search folder " + folder + ": " + e);
+            }
+        }
+        return results;
     }
 
     /**
@@ -3248,41 +3269,35 @@ public class FolderRepository extends PFComponent implements Runnable {
         FolderSettings.removeEntries(config, folderEntryId);
     }
 
-    /**
-     * Delete any file archives over a specified age, if history is not set to
-     * "forever". And
-     */
-    public void cleanupOldFiles() {
-        cleanupOldFiles(false);
+    public void nightlyMaintenance() {
+        nightlyMaintenance(false);
     }
 
     /**
      * @param force If {@code true} ignore the
      *              {@link ConfigurationEntry#DEFAULT_ARCHIVE_CLEANUP_DAYS} else
      *              take that setting into account.
-     * @see #cleanupOldFiles()
      */
-    public void cleanupOldFiles(boolean force) {
+    public void nightlyMaintenance(boolean force) {
         boolean cleanupArchive = true;
         int period = ConfigurationEntry.DEFAULT_ARCHIVE_CLEANUP_DAYS.getValueInt(getController());
-        if (!force && (period == Integer.MAX_VALUE || period <= 0)) { // cleanup := never
+        if (!force && (period == Integer.MAX_VALUE || period <= 0)) {
             cleanupArchive = false;
         }
         try {
-            logFine("cleanupOldFiles starting");
             fireCleanupStarted();
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DATE, -period);
             Date cleanupDate = cal.getTime();
             Collection<Folder> folders = getFolders(true);
-            logInfo("cleanupOldFiles started for " + folders.size() + " folders");
+            logInfo("Nightly maintenance started for " + folders.size() + " folders");
+            long start = System.currentTimeMillis();
             for (Folder folder : folders) {
-                if (cleanupArchive) {
-                    folder.cleanupOldArchiveFiles(cleanupDate);
-                }
+                folder.nightlyArchiveMaintenance(cleanupArchive ? cleanupDate : null);
                 getController().getTransferManager().cleanIncompletedDownloadFiles(folder);
             }
-            logInfo("cleanupOldFiles done for " + getFoldersCount() + " folders");
+            long took = System.currentTimeMillis() - start;
+            logInfo("Nightly maintenance done for " + folders.size() + " folders in " + (took / 1000) + "s");
         } finally {
             fireCleanupFinished();
         }

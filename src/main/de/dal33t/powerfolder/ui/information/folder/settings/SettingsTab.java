@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: SettingsTab.java 5457 2008-10-17 14:25:41Z harry $
  */
 package de.dal33t.powerfolder.ui.information.folder.settings;
 
@@ -583,32 +583,6 @@ public class SettingsTab extends PFUIComponent {
     private void updateLocalArchiveMode(Object oldValue, final Object newValue) {
         Integer versions = (Integer) localVersionModel.getValue();
         folder.setArchiveVersions(versions);
-
-        // If the versions is reduced, offer to delete excess.
-        if (newValue != null && oldValue != null
-                && newValue instanceof Integer && oldValue instanceof Integer
-                && (Integer) newValue < (Integer) oldValue
-                && (Integer) newValue > -1) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    int i = DialogFactory.genericDialog(
-                            getController(),
-                            Translation
-                                    .get("exp.settings_tab.offer_maintenance.title"),
-                            Translation
-                                    .get("exp.settings_tab.offer_maintenance.text"),
-                            new String[]{
-                                    Translation
-                                            .get("exp.settings_tab.offer_maintenance.cleanup_button"),
-                                    Translation.get("general.cancel")},
-                            0, GenericDialogType.QUESTION);
-                    if (i == 0) {
-                        SwingWorker worker = new MyMaintainSwingWorker();
-                        worker.execute();
-                    }
-                }
-            });
-        }
     }
 
     private void purgeLocalArchive() {
@@ -936,20 +910,6 @@ public class SettingsTab extends PFUIComponent {
                     SwingWorker worker = new MyUpdaterSwingWorker();
                     worker.execute();
                 }
-            }
-        }
-    }
-
-    /**
-     * Maintain the folder archive.
-     */
-    private class MyMaintainSwingWorker extends SwingWorker {
-        public Object doInBackground() {
-            try {
-                return folder.getFileArchiver().maintain();
-            } catch (Exception e) {
-                logSevere(e);
-                return null;
             }
         }
     }

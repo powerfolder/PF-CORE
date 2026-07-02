@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2014 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: FolderScanner.java 18828 2012-05-10 01:24:49Z tot $
  */
 package de.dal33t.powerfolder.disk;
 
@@ -215,6 +215,7 @@ public class Locking extends PFComponent {
     }
 
     private Path getLockFile(FileInfo fInfo) {
+        fInfo = FileInfoFactory.mapToTopFolder(fInfo);
         Folder metaFolder = getController().getFolderRepository()
                 .getMetaFolder(fInfo.getFolderInfo());
         if (metaFolder == null) {
@@ -521,6 +522,7 @@ public class Locking extends PFComponent {
     }
 
     private void scanLockFile(FileInfo fileInfo, Path lockFile) {
+        fileInfo = FileInfoFactory.mapToTopFolder(fileInfo);
         Folder metaFolder = getController().getFolderRepository()
             .getMetaFolder(fileInfo.getFolderInfo());
         if (metaFolder == null) {

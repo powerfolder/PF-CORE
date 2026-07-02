@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2012 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: MembersTableModel.java 5457 2008-10-17 14:25:41Z harry $
  */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
@@ -103,9 +103,6 @@ public class MembersExpertTableModel extends PFUIComponent implements
     // TODO Move into model. FolderModel?
     private boolean permissionsRetrieved;
     private boolean editPermissionsAllowed;
-    private boolean updatingDefaultPermissionModel;
-    private ValueModel defaultPermissionModel;
-    private SelectionInList<FolderPermission> defaultPermissionsListModel;
 
     private Action refreshAction;
 
@@ -131,23 +128,6 @@ public class MembersExpertTableModel extends PFUIComponent implements
         permissionModel = new ValueHolder(null, true);
         permissionsListModel = new SelectionInList<FolderPermission>();
         permissionsListModel.setSelectionHolder(permissionModel);
-        defaultPermissionModel = new ValueHolder(null, true);
-        defaultPermissionsListModel = new SelectionInList<FolderPermission>();
-        defaultPermissionsListModel.setSelectionHolder(defaultPermissionModel);
-        defaultPermissionModel
-            .addValueChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (updatingDefaultPermissionModel) {
-                        // Ignore non-user change
-                        return;
-                    }
-                    FolderPermission newDefaultPermission = (FolderPermission) evt
-                        .getNewValue();
-                    refreshingModel.setValue(Boolean.TRUE);
-                    new DefaultPermissionSetter(folder.getInfo(),
-                        newDefaultPermission).execute();
-                }
-            });
 
         folderListener = new MyFolderListener();
         // Node changes
@@ -159,14 +139,6 @@ public class MembersExpertTableModel extends PFUIComponent implements
 
     SelectionInList<FolderPermission> getPermissionsListModel() {
         return permissionsListModel;
-    }
-
-    SelectionInList<FolderPermission> getDefaultPermissionsListModel() {
-        return defaultPermissionsListModel;
-    }
-
-    FolderPermission getDefaultPermission() {
-        return (FolderPermission) defaultPermissionModel.getValue();
     }
 
     boolean isPermissionsRetrieved() {
@@ -446,7 +418,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
             new ModelRefresher().execute();
         } else {
             permissionsRetrieved = false;
-            rebuild(new HashMap<Serializable, FolderPermission>(), null);
+            rebuild(new HashMap<Serializable, FolderPermission>());
             refreshingModel.setValue(Boolean.FALSE);
         }
     }
@@ -622,9 +594,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
         }
     }
 
-    private void rebuild(Map<Serializable, FolderPermission> permInfo,
-        FolderPermission defaultPermission)
-    {
+    private void rebuild(Map<Serializable, FolderPermission> permInfo) {
         // Step 1) All computers.
         members.clear();
         for (Member member : folder.getMembersAsCollection()) {
@@ -722,24 +692,6 @@ public class MembersExpertTableModel extends PFUIComponent implements
             }
         }
 
-        updatingDefaultPermissionModel = true;
-        defaultPermissionsListModel.clearSelection();
-        defaultPermissionsListModel.getList().clear();
-        if (permissionsRetrieved) {
-            // No access
-            defaultPermissionsListModel.getList().add(null);
-            defaultPermissionsListModel.getList().add(
-                FolderPermission.read(folder.getInfo()));
-            defaultPermissionsListModel.getList().add(
-                FolderPermission.readWrite(folder.getInfo()));
-            if (ConfigurationEntry.SECURITY_PERMISSIONS_SHOW_FOLDER_ADMIN.getValueBoolean(getController())) {
-                defaultPermissionsListModel.getList().add(
-                    FolderPermission.admin(folder.getInfo()));
-            }
-            defaultPermissionModel.setValue(defaultPermission);
-        }
-        updatingDefaultPermissionModel = false;
-
         // Fresh sort
         sortMe0(sortColumn);
 
@@ -812,41 +764,10 @@ public class MembersExpertTableModel extends PFUIComponent implements
         }
     }
 
-    private class DefaultPermissionSetter extends SwingWorker<Void, Void> {
-        private FolderInfo folderInfo;
-        private FolderPermission newPermission;
-
-        public DefaultPermissionSetter(FolderInfo foInfo,
-            FolderPermission newPermission)
-        {
-            super();
-            Reject.ifNull(foInfo, "Folder info is null");
-            this.folderInfo = foInfo;
-            this.newPermission = newPermission;
-        }
-
-        @Override
-        protected Void doInBackground() throws Exception {
-            logInfo("Setting new default permission: " + newPermission);
-            getController().getOSClient().getSecurityService()
-                .setDefaultPermission(folderInfo, newPermission);
-
-            getController().getFolderRepository()
-                .triggerSynchronizeAllFolderMemberships();
-            return null;
-        }
-
-        @Override
-        protected void done() {
-            refreshModel();
-        }
-    }
-
     private class ModelRefresher extends
         SwingWorker<Map<Serializable, FolderPermission>, Void>
     {
         private Folder refreshFor;
-        private FolderPermission defaultPermission;
 
         @Override
         protected Map<Serializable, FolderPermission> doInBackground()
@@ -879,10 +800,6 @@ public class MembersExpertTableModel extends PFUIComponent implements
             }
 
             try {
-                defaultPermission = getController().getOSClient()
-                    .getSecurityService()
-                    .getDefaultPermission(folder.getInfo());
-
                 return getController().getOSClient().getSecurityService()
                     .getAllFolderPermissions(refreshFor.getInfo());
             } catch (RemoteCallException rce) {
@@ -920,7 +837,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
                 }
 
                 permissionsRetrieved = true;
-                rebuild(res, defaultPermission);
+                rebuild(res);
             } catch (Exception e) {
                 if (e.getCause() instanceof SecurityException) {
                     logWarning("Security Exception: "
@@ -933,7 +850,7 @@ public class MembersExpertTableModel extends PFUIComponent implements
                     logWarning(e.toString(), e);
                 }
                 permissionsRetrieved = false;
-                rebuild(new HashMap<Serializable, FolderPermission>(), null);
+                rebuild(new HashMap<Serializable, FolderPermission>());
             } finally {
                 refreshingModel.setValue(Boolean.FALSE);
             }

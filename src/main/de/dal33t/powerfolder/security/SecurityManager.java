@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,12 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
  */
 package de.dal33t.powerfolder.security;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 
 /**
@@ -131,6 +132,83 @@ public interface SecurityManager {
      * @return true if the account has the permission. false if not
      */
     boolean hasPermission(Account account, Permission permission);
+
+    /**
+     * Central method to check read permission on a folder. Meta-folders are
+     * checked against their content folder. Implementations may cache
+     * authoritative answers.
+     *
+     * @param member
+     * @param foInfo
+     * @return true if the member has read permission on the folder.
+     */
+    default boolean hasReadPermission(Member member, FolderInfo foInfo) {
+        if (foInfo.isMetaFolder()) {
+            foInfo = foInfo.lookupContentFolderInfo();
+        }
+        return hasPermission(member.getInfo(), FolderPermission.read(foInfo));
+    }
+
+    /**
+     * Central method to check write permission on a folder. Meta-folders are
+     * checked against their content folder. Implementations may cache
+     * authoritative answers.
+     *
+     * @param member
+     * @param foInfo
+     * @return true if the member has write permission on the folder.
+     */
+    default boolean hasWritePermission(Member member, FolderInfo foInfo) {
+        if (foInfo.isMetaFolder()) {
+            foInfo = foInfo.lookupContentFolderInfo();
+        }
+        return hasPermission(member.getInfo(),
+            FolderPermission.readWrite(foInfo));
+    }
+
+    /**
+     * Central method to check admin permission on a folder. Meta-folders are
+     * checked against their content folder.
+     *
+     * @param member
+     * @param foInfo
+     * @return true if the member has admin permission on the folder.
+     */
+    default boolean hasAdminPermission(Member member, FolderInfo foInfo) {
+        if (foInfo.isMetaFolder()) {
+            foInfo = foInfo.lookupContentFolderInfo();
+        }
+        return hasPermission(member.getInfo(), FolderPermission.admin(foInfo));
+    }
+
+    /**
+     * Central method to check owner permission on a folder. Meta-folders are
+     * checked against their content folder.
+     *
+     * @param member
+     * @param foInfo
+     * @return true if the member has owner permission on the folder.
+     */
+    default boolean hasOwnerPermission(Member member, FolderInfo foInfo) {
+        if (foInfo.isMetaFolder()) {
+            foInfo = foInfo.lookupContentFolderInfo();
+        }
+        return hasPermission(member.getInfo(), FolderPermission.owner(foInfo));
+    }
+
+    /**
+     * Invalidates cached folder permission answers of the given node.
+     *
+     * @param node
+     */
+    default void clearPermissionCache(Member node) {
+    }
+
+    /**
+     * Invalidates all cached folder permission answers.
+     */
+    default void clearPermissionCache() {
+    }
 
     // Event handling *********************************************************
 

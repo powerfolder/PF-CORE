@@ -1,3 +1,21 @@
+/*
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.dal33t.powerfolder.security;
 
 import java.util.Collection;
@@ -43,6 +61,22 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return a list of all groups that have permission to {@code folderInfo}.
      */
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
+
+    /**
+     * Nested Groups: direct subgroups of {@code parent}. Looks up rows in
+     * {@code AGroup_Parents} where {@code parent_oid = parent.oid}.
+     *
+     * @param parent the parent group
+     * @return the direct subgroups (empty if none)
+     */
+    Collection<Group> findChildrenOf(Group parent);
+
+    /**
+     * Nested Groups: count of direct subgroups of {@code parent}. Cheap
+     * alternative to {@link #findChildrenOf(Group)} when only the size is
+     * needed (e.g. the {@code nChildGroups} field on {@code getAll}).
+     */
+    int countChildrenOf(Group parent);
     
     /**
      * PFS-1949

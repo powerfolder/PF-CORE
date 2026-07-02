@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: Folder.java 20999 2013-03-11 13:19:11Z glasgow $
  */
 package de.dal33t.powerfolder.disk;
 
@@ -26,8 +26,8 @@ import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
-import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.disk.problem.*;
+import de.dal33t.powerfolder.disk.problem.Problem;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.event.api.DeletedFile;
 import de.dal33t.powerfolder.light.*;
@@ -57,7 +57,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
@@ -436,8 +435,7 @@ public class Folder extends PFComponent {
             1000L * ConfigurationEntry.FOLDER_DB_PERSIST_TIME
                 .getValueInt(getController()));
 
-        archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
-        archiver.setVersionsPerFile(folderSettings.getVersions());
+        initFileArchiver(folderSettings.getVersions());
 
         watcher = new FolderWatcher(this);
         
@@ -644,6 +642,10 @@ public class Folder extends PFComponent {
                 // changed files
                 store(getMySelf(), scanResult.changedFiles);
             }
+        }
+
+        if (isTopFolder() && !scanResult.getDeletedFiles().isEmpty()) {
+            unshareDeletedSubFolders(scanResult.getDeletedFiles());
         }
 
         boolean wasDAOpopulated = isDAOpopulated;
@@ -1471,6 +1473,9 @@ public class Folder extends PFComponent {
         }
         FileInfo localFileInfo = scanChangedFile0(fileInfo);
         if (localFileInfo != null) {
+            if (isTopFolder() && localFileInfo.isDeleted() && localFileInfo.isDiretory()) {
+                unshareDeletedSubFolders(Collections.singletonList(localFileInfo));
+            }
             FileInfo existinfFInfo = findSameFile(localFileInfo);
             if (existinfFInfo != null) {
                 localFileInfo = existinfFInfo;
@@ -1550,6 +1555,10 @@ public class Folder extends PFComponent {
             }
         }
         if (!fileInfos.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(fileInfos);
+            }
+
             if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.indexFiles(fileInfos);
             }
@@ -2007,6 +2016,10 @@ public class Folder extends PFComponent {
         }
 
         if (!removedFiles.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(removedFiles);
+            }
+
              if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.markDeleted(removedFiles);
             }
@@ -2079,6 +2092,23 @@ public class Folder extends PFComponent {
                 dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
             }
         }
+    }
+
+    private void initFileArchiver(int versions) {
+        if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
+            archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
+        } else {
+            Folder topFolder = getTopFolder();
+            if (topFolder != null) {
+                archiver = new SubFolderFileArchiverProxy(
+                    (FileArchiverImpl) topFolder.getFileArchiver(), currentInfo);
+                logInfo(this + ": Using archiver of topfolder " + topFolder);
+            } else {
+                logWarning(this + ": Using own fallback archiver for subfolder. Parent folder not here.");
+                archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
+            }
+        }
+        archiver.setVersionsPerFile(versions);
     }
 
     /**
@@ -2411,9 +2441,6 @@ public class Folder extends PFComponent {
     }
 
     private boolean maintainFolderDBrequired() {
-        if (getKnownItemCount() == 0) {
-            return false;
-        }
         if (lastDBMaintenance == null) {
             return true;
         }
@@ -2439,6 +2466,9 @@ public class Folder extends PFComponent {
         }
         Date removeBeforeDate = new Date(removeBefore);
         int nFilesBefore = getKnownItemCount();
+        if (nFilesBefore == 0) {
+            return;
+        }
         if (isFiner()) {
             logFiner("Maintaining folder db, known files: " + nFilesBefore
                 + ". Expiring deleted files older than " + removeBeforeDate);
@@ -2554,6 +2584,34 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * Nightly combined archive maintenance: recovers lost FileInfo entries,
+     * enforces version limits, and deletes old archive files — all in a
+     * single walk of the archive directory tree.
+     *
+     * @param cleanupDate delete archive files older than this date,
+     *                    or null to skip age-based cleanup
+     */
+    public void nightlyArchiveMaintenance(Date cleanupDate) {
+        if (shutdown) {
+            logFine(getName() + ": Already shutdown: Not nightlyArchiveMaintenance");
+            return;
+        }
+        List<FileInfo> lostFileInfos = archiver.maintainAndCleanup(
+            cleanupDate, dao, currentInfo, getMySelf().getAccountInfo());
+
+        if (!lostFileInfos.isEmpty()) {
+            synchronized (dbAccessLock) {
+                dao.store(null, lostFileInfos);
+                setDBDirty();
+            }
+            for (FileInfo fi : lostFileInfos) {
+                logFileOperation("RECOVERED", null, fi);
+            }
+            logWarning("Recovered " + lostFileInfos.size() + " lost FileInfo entries from archive");
+        }
+    }
+
+    /**
      * #2311: Revert local changes.
      *
      * @return
@@ -2576,7 +2634,7 @@ public class Folder extends PFComponent {
         }
         // PFC-3550 / PFS-4787: Cached answers may predate login completion.
         // Re-check with fresh permissions before allowing a revert.
-        clearNodeCache(getMySelf());
+        getController().getSecurityManager().clearPermissionCache(getMySelf());
         return hasReadPermission(getMySelf())
             && !hasWritePermission(getMySelf())
             && client.isConnected() && client.isLoggedIn();
@@ -2659,8 +2717,7 @@ public class Folder extends PFComponent {
 
                 if (!currentInfo.isMetaFolder()) {
                     addProblem(new FolderReadOnlyProblem(this,
-                        archiver.getArchiveDir().resolve(
-                            fileInfo.getRelativeName())));
+                        archiver.getArchivedFile(fileInfo)));
                 }
 
                 dao.delete(null, fileInfo);
@@ -3468,6 +3525,10 @@ public class Folder extends PFComponent {
 
         // Broadcast folder change if changes happend
         if (!removedFiles.isEmpty()) {
+            if (isTopFolder()) {
+                unshareDeletedSubFolders(removedFiles);
+            }
+
              if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
                 searchIndexManager.markDeleted(removedFiles);
             }
@@ -3588,6 +3649,9 @@ public class Folder extends PFComponent {
             if (Files.exists(localCopy)) {
                 synchronized (scanLock) {
                     if (localFile.isDiretory()) {
+                        if (isTopFolder()) {
+                            unshareIfSubFolder(localFile);
+                        }
                         if (isFine()) {
                             logFine("Deleting directory from remote: "
                                     + localFile.toDetailString());
@@ -5098,8 +5162,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @param fInfo
-     * @return the local fileinfo instance
+     * @param fInfo the file to look up in the local database
+     * @return the local FileInfo instance from the DAO, or the base directory info if fInfo is the base directory,
+     *         or {@code null} if not found
      */
     public FileInfo getFile(FileInfo fInfo) {
         Reject.ifNull(fInfo, "FileInfo is null");
@@ -5114,9 +5179,9 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * @param fInfo
-     * @return the local file from a file info Never returns null, file MAY NOT
-     *         exist!! check before use
+     * @param fInfo the file info to resolve to a disk path
+     * @return the local {@link Path} for the given FileInfo. Never returns {@code null}.
+     *         The file may not exist on disk — caller must check before use.
      */
     public Path getDiskFile(FileInfo fInfo) {
         Reject.ifFalse(fInfo.getFolderInfo().equals(currentInfo), "FolderInfo mismatch");
@@ -5124,12 +5189,20 @@ public class Folder extends PFComponent {
             .getRelativeName()));
     }
 
+    /**
+     * @param diskFile the file on disk to look up
+     * @return the local FileInfo from the DAO if found, otherwise a lookup instance (never {@code null})
+     */
     public FileInfo getFileInfo(Path diskFile) {
         FileInfo lookupFileInfo = FileInfoFactory.lookupInstance(this, diskFile);
         FileInfo localFileInfo = getFile(lookupFileInfo);
         return localFileInfo != null ? localFileInfo : lookupFileInfo;
     }
 
+    /**
+     * @param relativePath the relative path within this folder
+     * @return the local FileInfo from the DAO if found, otherwise a lookup instance (never {@code null})
+     */
     public FileInfo getFileInfo(String relativePath) {
         FileInfo lookupFileInfo = FileInfoFactory.lookupInstance(currentInfo, relativePath);
         FileInfo localFileInfo = getFile(lookupFileInfo);
@@ -5379,66 +5452,22 @@ public class Folder extends PFComponent {
 
     // Security methods *******************************************************
 
-    // PFS-638
-    private static final long HAS_PERMISSION_CACHE_TIMEOUT = 987L;
-    private final SimpleCache<Member, Boolean> hasReadCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-    private final SimpleCache<Member, Boolean> hasWriteCache = new SimpleCache<>(HAS_PERMISSION_CACHE_TIMEOUT, TimeUnit.MILLISECONDS);
-
-    public void clearNodeCache(Member node) {
-        hasReadCache.invalidate(node);
-        hasWriteCache.invalidate(node);
-    }
+    // PFS-638 / PFC-3550: Caching moved to AbstractSecurityManager.
 
     public boolean hasReadPermission(Member member) {
-        Boolean hasRead = hasReadCache.getValidEntry(member);
-        if (hasRead != null) {
-            if (hasReadCache.getCacheHits() % 100000 == 0 && isFine()) {
-                logFine("Permission read: " + hasReadCache);
-            }
-            return hasRead;
-        }
-        hasRead = hasFolderPermission(member,
-            FolderPermission.read(lookupContentFolderInfo()));
-        hasReadCache.put(member, hasRead);
-        return hasRead;
+        return getController().getSecurityManager().hasReadPermission(member, currentInfo);
     }
 
     public boolean hasWritePermission(Member member) {
-        Boolean hasWrite = hasWriteCache.getValidEntry(member);
-        if (hasWrite != null) {
-            if (hasWriteCache.getCacheHits() % 100000 == 0 && isFine()) {
-                logFine("Permission write: " + hasWriteCache);
-            }
-            return hasWrite;
-        }
-        hasWrite = hasFolderPermission(member,
-                FolderPermission.readWrite(lookupContentFolderInfo()));
-        hasWriteCache.put(member, hasWrite);
-        return hasWrite;
+        return getController().getSecurityManager().hasWritePermission(member, currentInfo);
     }
 
     public boolean hasAdminPermission(Member member) {
-        return hasFolderPermission(member,
-            FolderPermission.admin(lookupContentFolderInfo()));
+        return getController().getSecurityManager().hasAdminPermission(member, currentInfo);
     }
 
     public boolean hasOwnerPermission(Member member) {
-        return hasFolderPermission(member,
-            FolderPermission.owner(lookupContentFolderInfo()));
-    }
-
-    private boolean hasFolderPermission(Member member,
-        FolderPermission permission)
-    {
-        return getController().getSecurityManager()
-            .hasPermission(member.getInfo(), permission);
-    }
-
-    private FolderInfo lookupContentFolderInfo() {
-        if (!currentInfo.isMetaFolder()) {
-            return currentInfo;
-        }
-        return currentInfo.lookupContentFolderInfo();
+        return getController().getSecurityManager().hasOwnerPermission(member, currentInfo);
     }
 
     // General stuff **********************************************************
@@ -5736,13 +5765,6 @@ public class Folder extends PFComponent {
         metaFolder.scanChangedFile(fInfo);
     }
 
-    /**
-     * Delete any file archives over a specified age.
-     */
-    public void cleanupOldArchiveFiles(Date cleanupDate) {
-        archiver.cleanupOldArchiveFiles(cleanupDate);
-    }
-
     public Folder share(DirectoryInfo subDirInfo) {
         Reject.ifNull(subDirInfo, "Subdirectory");
         Reject.ifFalse(subDirInfo.getFolderInfo().equals(currentInfo), "Folder mismatch");
@@ -5786,7 +5808,34 @@ public class Folder extends PFComponent {
 
         logInfo(this + ": Unsharing subfolder " + subFolder);
 
-        getController().getFolderRepository().removeFolder(subFolder, true);
+        getController().getFolderRepository().removeFolder(subFolder, false);
+    }
+
+    private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
+        for (FileInfo deleted : deletedFiles) {
+            if (!deleted.isDeleted() || !deleted.isDiretory()) {
+                continue;
+            }
+            unshareIfSubFolder(deleted);
+        }
+    }
+
+    private void unshareIfSubFolder(FileInfo dirInfo) {
+        Map<DirectoryInfo, Folder> subFolders =
+                getController().getFolderRepository().getSubFolders(this);
+
+        for (Map.Entry<DirectoryInfo, Folder> entry : subFolders.entrySet()) {
+            Folder sub = entry.getValue();
+            if (sub == this || !sub.isSubFolder()) {
+                continue;
+            }
+            if (sub.getInfo().getLocation().getRelativeName()
+                    .equals(dirInfo.getRelativeName())) {
+                logInfo(this + ": Subfolder directory deleted, unsharing: " + sub);
+                unshare(entry.getKey());
+                return;
+            }
+        }
     }
 
     // Inner classes **********************************************************

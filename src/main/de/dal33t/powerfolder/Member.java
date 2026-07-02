@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2009 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: Member.java 21238 2013-03-18 20:16:43Z sprajc $
  */
 package de.dal33t.powerfolder;
 
@@ -860,7 +860,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 folderList = new FolderListExt(folders2node, peer.getRemoteMagicId());
             } else {
-                boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
+                boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_114;
                 folderList = new FolderListExt(folders2node, includeVersionAndParent);
             }
             if (isFiner()) {
@@ -1949,7 +1949,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                     myFolderList = new FolderListExt(folders2node, remoteMagicId);
                 } else {
-                    boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
+                    boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_114;
                     myFolderList = new FolderListExt(folders2node, includeVersionAndParent);
                 }
                 if (isFine()) {
@@ -2097,7 +2097,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
             } else {
-                boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_113;
+                boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_114;
                 myFolderList = new FolderListExt(folders2node, includeVersionAndParent);
             }
             if (isFiner()) {
@@ -2838,7 +2838,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
 
         synchronized (peerInitializeLock) {
-            boolean includeVersionAndParent = true;
+            boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_114;
             peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false), includeVersionAndParent));
         }
         peer.sendMessagesAsynchron(new HandshakeCompleted());

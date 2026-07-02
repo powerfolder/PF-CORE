@@ -1,19 +1,38 @@
+ /*
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.dal33t.powerfolder.disk;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
+ import de.dal33t.powerfolder.Constants;
+ import de.dal33t.powerfolder.event.LockingEvent;
+ import de.dal33t.powerfolder.event.LockingListener;
+ import de.dal33t.powerfolder.light.DirectoryInfo;
+ import de.dal33t.powerfolder.light.FileInfo;
+ import de.dal33t.powerfolder.light.FileInfoFactory;
+ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
+ import de.dal33t.powerfolder.util.test.TestHelper;
+ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
-import de.dal33t.powerfolder.Constants;
-import de.dal33t.powerfolder.event.LockingEvent;
-import de.dal33t.powerfolder.event.LockingListener;
-import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.FileInfoFactory;
-import de.dal33t.powerfolder.util.test.ConditionWithMessage;
-import de.dal33t.powerfolder.util.test.TestHelper;
-import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+ import java.io.IOException;
+ import java.nio.file.Files;
+ import java.nio.file.Path;
+ import java.util.LinkedList;
+ import java.util.List;
 
 public class LockingTest extends TwoControllerTestCase {
     private Locking lockingBart;
@@ -421,6 +440,94 @@ public class LockingTest extends TwoControllerTestCase {
         assertEquals(1, lockingListenerBart.unlocked.size());
     }
     
+    public void testLockUnlockSubFolder() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        String subDir = "projects/team/shared";
+
+        Path root = topFolder.getPhysicalDir();
+        Path sharedPath = Files.createDirectories(root.resolve(subDir));
+        Path testFile = TestHelper.createRandomFile(sharedPath, "locked.txt");
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo dirInfo = (DirectoryInfo) topFolder.getFileInfo(subDir);
+        Folder subFolder = topFolder.share(dirInfo);
+        assertNotNull(subFolder);
+        assertTrue(subFolder.isSubFolder());
+
+        FileInfo fileInTop = topFolder.getFileInfo(testFile);
+        assertNotNull(fileInTop);
+        assertEquals(subDir + "/locked.txt", fileInTop.getRelativeName());
+
+        FileInfo fileInSub = FileInfoFactory.mapToSubFolder(fileInTop,
+            subFolder.getInfo());
+        assertNotNull(fileInSub);
+        assertEquals("locked.txt", fileInSub.getRelativeName());
+
+        // Not locked initially
+        assertFalse(lockingBart.isLocked(fileInSub));
+        assertNull(lockingBart.getLock(fileInSub));
+        assertTrue(lockingBart.unlock(fileInSub));
+
+        // Lock through the subfolder view
+        assertTrue(lockingBart.lock(fileInSub));
+
+        // The lock is stored at the top folder scoped to the subdir, so it is
+        // visible both through the subfolder view and the top-folder view.
+        assertTrue(lockingBart.isLocked(fileInSub));
+        assertTrue(lockingBart.isLocked(fileInTop));
+        assertNotNull(lockingBart.getLock(fileInSub));
+        assertEquals(1, lockingListenerBart.locked.size());
+
+        // The physical lock file lives in the TOP folder's meta-folder.
+        Path topLockFile = getLockFile(fileInTop);
+        assertNotNull(topLockFile);
+        assertTrue("Lock file must be created in the top folder meta-folder: "
+            + topLockFile, Files.exists(topLockFile));
+
+        // Unlock through the subfolder view removes the top-scoped lock
+        assertTrue(lockingBart.unlock(fileInSub));
+        assertFalse(lockingBart.isLocked(fileInSub));
+        assertFalse(lockingBart.isLocked(fileInTop));
+        assertNull(lockingBart.getLock(fileInSub));
+        assertFalse(Files.exists(topLockFile));
+        assertEquals(1, lockingListenerBart.unlocked.size());
+    }
+
+    public void testSubFolderLockFileIsScopedToSubdirPath() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        String subDir = "data/reports/monthly";
+
+        Path root = topFolder.getPhysicalDir();
+        Path sharedPath = Files.createDirectories(root.resolve(subDir));
+        Path nestedDir = Files.createDirectories(sharedPath.resolve("2024/q1"));
+        Path testFile = TestHelper.createRandomFile(nestedDir, "stmt.txt");
+        TestHelper.scanFolder(topFolder);
+
+        DirectoryInfo dirInfo = (DirectoryInfo) topFolder.getFileInfo(subDir);
+        Folder subFolder = topFolder.share(dirInfo);
+        assertNotNull(subFolder);
+
+        FileInfo fileInSub = subFolder.getFileInfo(testFile);
+        assertEquals("2024/q1/stmt.txt", fileInSub.getRelativeName());
+
+        assertTrue(lockingBart.lock(fileInSub));
+
+        // The lock file must be located under the top folder's meta-folder
+        // locks dir at the full subdir-scoped path.
+        Folder topMeta = getContollerBart().getFolderRepository()
+            .getMetaFolder(topFolder.getInfo());
+        assertNotNull(topMeta);
+        Path locksDir = topMeta.getLocalBase().resolve(
+            Folder.METAFOLDER_LOCKS_DIR);
+        Path expected = locksDir.resolve(FileInfoFactory.encodeIllegalChars(
+            subDir + "/2024/q1/stmt.txt" + ".lck"));
+        assertTrue("Expected subdir-scoped lock file: " + expected,
+            Files.exists(expected));
+
+        assertTrue(lockingBart.unlock(fileInSub));
+        assertFalse(Files.exists(expected));
+    }
+
     private Path getLockFile(FileInfo fInfo) {
         Folder metaFolder = getContollerBart().getFolderRepository()
             .getMetaFolder(fInfo.getFolderInfo());

@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: Updater.java 6236 2008-12-31 15:44:10Z tot $
  */
 package de.dal33t.powerfolder.util.update;
 
@@ -107,12 +107,19 @@ public class Updater extends Thread {
         if (!handler.shouldCheckForNewVersion()) {
             return;
         }
-        final String newerVersion = newerReleaseVersionAvailable();
-        if (newerVersion != null) {
-            handler.newReleaseAvailable(new UpdaterEvent(this, newerVersion,
-                getReleaseExeURL()));
-        } else {
+        final String latestVersion = latestReleaseVersionAvailable();
+        if (latestVersion == null) {
+            LOG.warning("Unable to retrieve latest version from " + settings.versionCheckURL);
             handler.noNewReleaseAvailable(new UpdaterEvent(this));
+            return;
+        }
+        if (Util.compareVersions(latestVersion, Controller.PROGRAM_VERSION)) {
+            LOG.info("Latest available version (" + latestVersion + ") is newer than this version (" +
+                    Controller.PROGRAM_VERSION + ")");
+            handler.newReleaseAvailable(new UpdaterEvent(this, latestVersion, getReleaseExeURL()));
+        } else {
+            LOG.fine("This version is up-to-date (" + Controller.PROGRAM_VERSION + ")");
+            handler.noNewReleaseAvailable(new UpdaterEvent(this, latestVersion, null));
         }
     }
 
@@ -255,25 +262,6 @@ public class Updater extends Thread {
     }
 
     /**
-     * @return the newer program version available on the net. Otherwise returns
-     *         null.
-     */
-    private String newerReleaseVersionAvailable() {
-        String latestVersion = latestReleaseVersionAvailable();
-        if (latestVersion == null) {
-            LOG.warning("Unable to retrieve latest version from "
-                + settings.versionCheckURL);
-            return null;
-        }
-        if (Util.compareVersions(latestVersion, Controller.PROGRAM_VERSION)) {
-            LOG.info("Latest available version (" + latestVersion + ") is newer than this version (" +
-                    Controller.PROGRAM_VERSION + ")");
-            return latestVersion;
-        }
-        LOG.fine("This version is up-to-date (" + Controller.PROGRAM_VERSION + ")");
-        return null;
-    }
-
     /**
      * @return the latest program version available on the net.
      * @private public because of test

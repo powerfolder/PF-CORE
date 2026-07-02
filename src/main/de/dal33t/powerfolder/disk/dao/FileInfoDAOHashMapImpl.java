@@ -1,3 +1,21 @@
+/*
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.dal33t.powerfolder.disk.dao;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
@@ -23,8 +41,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author sprajc
  */
 public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
-    private final ConcurrentMap<String, Domain> domains = Util
-        .createConcurrentHashMap(4);
+    private final ConcurrentMap<String, Domain> domains = Util.createConcurrentHashMap(4);
 
     private String selfDomain;
     private DiskItemFilter filter;
@@ -38,8 +55,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         }
     }
 
-    public int count(String domain, boolean includeDirs, boolean excludeIgnored)
-    {
+    public int count(String domain, boolean includeDirs, boolean excludeIgnored) {
         Domain d = getDomain(domain);
         if (excludeIgnored) {
             int c = 0;
@@ -81,8 +97,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         if (newInitialSize > 0) {
             domains.put(theDomain, new Domain(newInitialSize));
             if (isFiner()) {
-                logFiner("Created new domain (" + theDomain
-                    + ") with initial capacity " + newInitialSize);
+                logFiner("Created new domain (" + theDomain + ") with initial capacity " + newInitialSize);
             }
         }
     }
@@ -106,9 +121,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     continue;
                 }
                 if (candidateFile.getOID().equals(oid)) {
-                    if (newestVersion == null
-                        || candidateFile.isNewerThan(newestVersion))
-                    {
+                    if (newestVersion == null || candidateFile.isNewerThan(newestVersion)) {
                         newestVersion = candidateFile;
                     }
                 }
@@ -118,9 +131,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     continue;
                 }
                 if (candidateFile.getOID().equals(oid)) {
-                    if (newestVersion == null
-                        || candidateFile.isNewerThan(newestVersion))
-                    {
+                    if (newestVersion == null || candidateFile.isNewerThan(newestVersion)) {
                         newestVersion = candidateFile;
                     }
                 }
@@ -137,18 +148,14 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             Domain d = getDomain(domain);
             for (FileInfo candidateFile : d.files.values()) {
                 if (candidateFile.isMatchingHash(hash)) {
-                    if (newestVersion == null
-                        || candidateFile.isNewerThan(newestVersion))
-                    {
+                    if (newestVersion == null || candidateFile.isNewerThan(newestVersion)) {
                         newestVersion = candidateFile;
                     }
                 }
             }
             for (FileInfo candidateFile : d.directories.values()) {
                 if (candidateFile.isMatchingHash(hash)) {
-                    if (newestVersion == null
-                        || candidateFile.isNewerThan(newestVersion))
-                    {
+                    if (newestVersion == null || candidateFile.isNewerThan(newestVersion)) {
                         newestVersion = candidateFile;
                     }
                 }
@@ -158,13 +165,11 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public Collection<FileInfo> findAllFiles(String domain) {
-        return Collections.unmodifiableCollection(getDomain(domain).files
-            .values());
+        return Collections.unmodifiableCollection(getDomain(domain).files.values());
     }
 
     public Collection<DirectoryInfo> findAllDirectories(String domain) {
-        return Collections.unmodifiableCollection(getDomain(domain).directories
-            .values());
+        return Collections.unmodifiableCollection(getDomain(domain).directories.values());
     }
 
     private FileInfo findNewestVersion(FileInfo info,
@@ -212,10 +217,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         Domain d = getDomain(domain);
 
         for (FileInfo fileInfo : infos) {
-            if (StringUtils.containsDecomposedForm(fileInfo.getRelativeName())) {
-                //XXX
-            }
-
             if (fileInfo.isFile()) {
                 if (isFiner()) {
                     logFiner("Storing file: " + fileInfo.toDetailString());
@@ -227,8 +228,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 if (isFiner()) {
                     logFiner("Storing directory: " + fileInfo.toDetailString());
                 }
-                d.directories.put((DirectoryInfo) fileInfo,
-                    (DirectoryInfo) fileInfo);
+                d.directories.put((DirectoryInfo) fileInfo, (DirectoryInfo) fileInfo);
                 // Make sure not file is left with name name.
                 d.files.remove(fileInfo);
             }
@@ -236,8 +236,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     public Collection<FileInfo> findFiles(FileInfoCriteria criteria) {
-        Reject.ifTrue(criteria.getDomains().isEmpty(),
-            "No domains/members selected in criteria");
+        Reject.ifTrue(criteria.getDomains().isEmpty(), "No domains/members selected in criteria");
         String path = criteria.getPath();
         if (path == null) {
             path = "";
@@ -255,27 +254,14 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             if (domain == null) {
                 continue;
             }
-            if (criteria.getType() == Type.DIRECTORIES_ONLY
-                || criteria.getType() == Type.FILES_AND_DIRECTORIES)
-            {
+            if (criteria.getType() == Type.DIRECTORIES_ONLY || criteria.getType() == Type.FILES_AND_DIRECTORIES) {
                 for (DirectoryInfo dInfo : domain.directories.values()) {
-                    // if (filter.isExcluded(dInfo)) {
-                    // continue;
-                    // }
-
-                    if (criteria.getMaxResults() > 0
-                        && items.size() >= criteria.getMaxResults())
-                    {
+                    if (criteria.getMaxResults() > 0 && items.size() >= criteria.getMaxResults()) {
                         return items;
                     }
 
-                    if (isInSubDir(dInfo, path, recursive)
-                        && !Util.equalsRelativeName(dInfo.getRelativeName(),
-                            path))
-                    {
-                        if (!items.contains(dInfo)
-                            && matches(dInfo, criteria.getKeyWords()))
-                        {
+                    if (isInSubDir(dInfo, path, recursive) && !Util.equalsRelativeName(dInfo.getRelativeName(), path)) {
+                        if (!items.contains(dInfo) && matches(dInfo, criteria.getKeyWords())) {
                             if (!dInfo.isDeleted() || criteria.includeDeleted()) {
                                 items.add(dInfo);
                             }
@@ -284,24 +270,14 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 }
             }
 
-            if (criteria.getType() == Type.FILES_ONLY
-                || criteria.getType() == Type.FILES_AND_DIRECTORIES)
-            {
+            if (criteria.getType() == Type.FILES_ONLY || criteria.getType() == Type.FILES_AND_DIRECTORIES) {
                 for (FileInfo fInfo : domain.files.values()) {
-                    // if (filter.isExcluded(fInfo)) {
-                    // continue;
-                    // }
-
-                    if (criteria.getMaxResults() > 0
-                        && items.size() >= criteria.getMaxResults())
-                    {
+                    if (criteria.getMaxResults() > 0 && items.size() >= criteria.getMaxResults()) {
                         return items;
                     }
 
                     if (isInSubDir(fInfo, path, recursive)) {
-                        if (!items.contains(fInfo)
-                            && matches(fInfo, criteria.getKeyWords()))
-                        {
+                        if (!items.contains(fInfo) && matches(fInfo, criteria.getKeyWords())) {
                             if (!fInfo.isDeleted() || criteria.includeDeleted()) {
                                 items.add(fInfo);
                             }
@@ -458,8 +434,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     private static class Domain {
 
         private final ConcurrentMap<FileInfo, FileInfo> files;
-        private final ConcurrentMap<DirectoryInfo, DirectoryInfo> directories = Util
-            .createConcurrentHashMap(4);
+        private final ConcurrentMap<DirectoryInfo, DirectoryInfo> directories = Util.createConcurrentHashMap(4);
 
         public Domain(int suggestedSize) {
             super();
@@ -471,5 +446,4 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                 + " dirs";
         }
     }
-
 }

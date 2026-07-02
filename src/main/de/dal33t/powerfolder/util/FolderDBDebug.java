@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,23 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: FolderDBDebug.java 12618 2010-06-16 13:31:33Z tot $
  */
 package de.dal33t.powerfolder.util;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Reads a folder database file and writes it to a debug file (human readable).
@@ -64,30 +58,66 @@ public class FolderDBDebug {
         InputStream fIn = new BufferedInputStream(new FileInputStream(fn));
         ObjectInputStream in = new ObjectInputStream(fIn);
         FileInfo[] files = (FileInfo[]) in.readObject();
-        System.err.println(in.readObject());
-        System.err.println(in.readObject());
         in.close();
-
-        if (!checkForDupes(files)) {
-            System.out.println("OK: DB contain NO dupes.");
-        }
 
         FolderInfo folderInfo = files.length > 0
             ? files[0].getFolderInfo()
             : null;
         String fName = folderInfo != null ? folderInfo.getLocalizedName() : "-unknown-";
         String fId = folderInfo != null ? folderInfo.getId() : "-unknown-";
+
+        // --- Initial summary ---
         long totalSize = 0;
+        int activeCount = 0;
+        int deletedCount = 0;
+        // Group active files by top-level subdirectory (or "." for root-level files)
+        Map<String, long[]> dirStats = new LinkedHashMap<>(); // dir -> [count, bytes]
         for (FileInfo fileInfo : files) {
             if (fileInfo.isDeleted()) {
+                deletedCount++;
                 continue;
             }
+            activeCount++;
             totalSize += fileInfo.getSize();
+            String rel = fileInfo.getRelativeName();
+            int sep = rel.indexOf('/');
+            String dir = sep > 0 ? rel.substring(0, sep) : ".";
+            dirStats.computeIfAbsent(dir, k -> new long[2]);
+            dirStats.get(dir)[0]++;
+            dirStats.get(dir)[1] += fileInfo.getSize();
         }
+        if (folderInfo != null && folderInfo.isSubFolder()) {
+            FolderInfo top = folderInfo.getTopFolder();
+            String topName = top != null ? top.getLocalizedName() : "-unknown-";
+            String topId   = top != null ? top.getId()            : "-unknown-";
+            String location = folderInfo.getLocation() != null
+                ? folderInfo.getLocation().getRelativeName() : fName;
+            System.out.println("=== FolderDB (SUBFOLDER): " + location + " ===");
+            System.out.println("  Top folder    : " + topName + " [" + topId + "]");
+        } else {
+            System.out.println("=== FolderDB: " + fName + " [" + fId + "] ===");
+        }
+        System.out.println("  Total entries : " + files.length
+            + " (" + activeCount + " active, " + deletedCount + " deleted)");
+        System.out.println("  Active size   : " + Format.formatBytesShort(totalSize));
+        System.out.println("  Subdirectories: " + dirStats.size());
+        System.out.println();
+        // Sort by file count descending for quick overview
+        dirStats.entrySet().stream()
+            .sorted((a, b) -> Long.compare(b.getValue()[0], a.getValue()[0]))
+            .forEach(e -> System.out.printf("  %-60s  %6d files  %s%n",
+                e.getKey(), e.getValue()[0], Format.formatBytesShort(e.getValue()[1])));
+        System.out.println();
+        // --- End summary ---
+
+        if (!checkForDupes(files)) {
+            System.out.println("OK: DB contains NO dupes.");
+        }
+
         Path f = Paths.get(fn + ".csv");
         // Write filelist to disk
         Path outFile = Debug.writeFileListCSV(f, Arrays.asList(files),
-            "FileList of folder " + fName + "/" + fId);
+            "FileList of folder " + fName + "/" + fId + ". " + folderInfo);
 
         System.out.println("Read " + files.length + " files ("
             + Format.formatBytesShort(totalSize) + ") from " + fn

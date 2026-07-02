@@ -1,3 +1,21 @@
+/*
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
+ *
+ * This file is part of PowerFolder.
+ *
+ * PowerFolder is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * PowerFolder is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
+ */
 package de.dal33t.powerfolder.clientserver;
 
 import java.io.Serializable;
@@ -12,6 +30,14 @@ public class GroupFilterModel implements Serializable {
     private String queryname;
     private String organizationOID = Organization.FILTER_MATCH_ALL;
     private List<String> adminOfOrganizationOIDs;
+
+    private boolean withoutMembers;
+    private boolean hasSubgroups;
+    private boolean withoutFolders;
+    private boolean topLevel;
+    private boolean searchFolders = true;
+
+    private List<String> groupOIDs;
 
     private int maxResults;
 
@@ -70,6 +96,80 @@ public class GroupFilterModel implements Serializable {
         adminOfOrganizationOIDs.add(orgOID);
     }
 
+    /**
+     * @return {@code true} to only match groups that have no member accounts.
+     */
+    public boolean isWithoutMembers() {
+        return withoutMembers;
+    }
+
+    public void setWithoutMembers(boolean withoutMembers) {
+        this.withoutMembers = withoutMembers;
+    }
+
+    /**
+     * @return {@code true} to only match groups that have at least one child
+     *         group (Nested Groups).
+     */
+    public boolean isHasSubgroups() {
+        return hasSubgroups;
+    }
+
+    public void setHasSubgroups(boolean hasSubgroups) {
+        this.hasSubgroups = hasSubgroups;
+    }
+
+    /**
+     * @return {@code true} to only match groups that have no folders.
+     */
+    public boolean isWithoutFolders() {
+        return withoutFolders;
+    }
+
+    public void setWithoutFolders(boolean withoutFolders) {
+        this.withoutFolders = withoutFolders;
+    }
+
+    /**
+     * @return {@code true} to only match top-level groups, i.e. groups that
+     *         have no parent group (Nested Groups).
+     */
+    public boolean isTopLevel() {
+        return topLevel;
+    }
+
+    public void setTopLevel(boolean topLevel) {
+        this.topLevel = topLevel;
+    }
+
+    /**
+     * @return {@code true} to also match groups by the name of their assigned
+     *         folders. Gated by the caller (e.g. minimum input length).
+     */
+    public boolean isSearchFolders() {
+        return searchFolders;
+    }
+
+    public void setSearchFolders(boolean searchFolders) {
+        this.searchFolders = searchFolders;
+    }
+
+    /**
+     * @return the OIDs to restrict the result to, or {@code null} for no
+     *         restriction. An empty list matches no groups.
+     */
+    public List<String> getGroupOIDs() {
+        return groupOIDs;
+    }
+
+    /**
+     * Restricts the result to the given group OIDs (e.g. the groups a group
+     * admin is a member of). {@code null} means no restriction.
+     */
+    public void setGroupOIDs(List<String> groupOIDs) {
+        this.groupOIDs = groupOIDs;
+    }
+
     // Logic
 
     public void reset() {
@@ -77,5 +177,11 @@ public class GroupFilterModel implements Serializable {
         maxResults = 0;
         adminOfOrganizationOIDs = null;
         organizationOID = Organization.FILTER_MATCH_ALL;
+        withoutMembers = false;
+        hasSubgroups = false;
+        withoutFolders = false;
+        topLevel = false;
+        searchFolders = true;
+        groupOIDs = null;
     }
 }

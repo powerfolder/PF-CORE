@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2010 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,11 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: NodeManager.java 12576 2010-06-14 14:28:23Z tot $
  */
 package de.dal33t.powerfolder.util.intern;
 
-import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.StackDump;
@@ -36,7 +35,6 @@ import java.util.logging.Logger;
  * @author sprajc
  */
 public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
-    private static final Logger LOG = Logger.getLogger(FolderInfoInternalizer.class.getName());
     private final Map<FolderInfo, FolderInfo> INSTANCES = new WeakHashMap<>();
 
     public FolderInfo intern(FolderInfo folderInfo) {
@@ -99,9 +97,6 @@ public class FolderInfoInternalizer implements Internalizer<FolderInfo> {
                         oldInstance.getParent());
             }
 
-            if (oldInstance != null && !foInfo.isMetaFolder() && Feature.LOG_FOLDERINFO_FORCED_INTERNALIZE.isEnabled()) {
-                LOG.log(Level.INFO, foInfo + ": rename (forced internalize). oldInstance: " + oldInstance);
-            }
             INSTANCES.put(foInfo, foInfo);
         }
 

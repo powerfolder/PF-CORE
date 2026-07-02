@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
  */
 package de.dal33t.powerfolder.security;
 
@@ -312,29 +312,21 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public synchronized void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
+
         for (Permission p : newPermissions) {
-            Reject.ifNull(p, "Permission is null");
-            if (hasPermission(p)) {
-                // Skip
+            if (isInvalidGrant(p)) {
                 continue;
             }
-            if (p instanceof FolderOwnerPermission) {
-                FolderInfo folder = ((FolderOwnerPermission) p).getFolder();
-                Reject.ifTrue(folder.isSubFolder(), "Cannot grant owner permission on subfolder");
+            if (isAlreadyGranted(p)) {
+                continue;
             }
             if (p instanceof FolderPermission) {
-                FolderInfo foInfo = ((FolderPermission) p).getFolder();
-                revokeAllFolderPermission(foInfo);
-                if (foInfo.isMetaFolder()) {
-                    LOG.severe(this + ": Not allowed to grant permissions "
-                            + foInfo);
-                    continue;
-                }
+                revokeAllFolderPermission(((FolderPermission) p).getFolder());
             }
             permissions.add(p);
         }
-        LOG.fine("Granted permission to " + this + ": "
-                + Arrays.asList(newPermissions));
+
+        LOG.fine("Granted permission to " + this + ": " + Arrays.asList(newPermissions));
     }
 
     public synchronized void revoke(Permission... revokePermissions) {
@@ -404,6 +396,42 @@ public class Account implements Serializable, D2DObject, Auditable {
         return false;
     }
 
+    private boolean isInvalidGrant(Permission p) {
+        Reject.ifNull(p, "Permission is null");
+        if (p instanceof FolderPermission) {
+            FolderInfo foInfo = ((FolderPermission) p).getFolder();
+            if (foInfo.isMetaFolder()) {
+                LOG.warning(this + ": Not allowed to grant permissions on meta " + foInfo);
+                return true;
+            }
+            if (p instanceof FolderOwnerPermission) {
+                Reject.ifTrue(foInfo.isSubFolder(), foInfo + ": Cannot grant owner permission on subfolder");
+            }
+        }
+        return false;
+    }
+
+    private boolean isAlreadyGranted(Permission permission) {
+        if (permission instanceof FolderPermission) {
+            FolderInfo folder = ((FolderPermission) permission).getFolder();
+            for (Permission p : permissions) {
+                if (p instanceof FolderPermission) {
+                    FolderPermission fp = (FolderPermission) p;
+                    if (fp.getFolder().equals(folder) && fp.implies(permission)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        for (Permission p : permissions) {
+            if (p.equals(permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean hasAnyFolderAdmin() {
         for (Permission p : permissions) {
             if (p == null) {
@@ -419,17 +447,8 @@ public class Account implements Serializable, D2DObject, Auditable {
         }
 
         for (Group g : groups) {
-            for (Permission p : g.getPermissions()) {
-                if (p == null) {
-                    continue;
-                }
-                if (p instanceof FolderPermission) {
-                    AccessMode mode = ((FolderPermission) p).getMode();
-                    if (mode.equals(AccessMode.ADMIN)
-                            || mode.equals(AccessMode.OWNER)) {
-                        return true;
-                    }
-                }
+            if (g != null && g.hasAnyFolderAdmin()) {
+                return true;
             }
         }
 
@@ -448,16 +467,7 @@ public class Account implements Serializable, D2DObject, Auditable {
      * @return A FolderPermission with the correct {@code AccessMode}.
      */
     public FolderPermission getPermissionFor(FolderInfo foInfo) {
-        for (Permission perm : permissions) {
-            if (perm instanceof FolderPermission) {
-                FolderPermission foPerm = (FolderPermission) perm;
-                if (foPerm.getFolder().equals(foInfo)) {
-                    return foPerm;
-                }
-            }
-        }
-
-        return FolderPermission.get(foInfo, AccessMode.NO_ACCESS);
+        return FolderPermission.get(foInfo, getAllowedAccess(foInfo));
     }
 
     /**
@@ -606,12 +616,12 @@ public class Account implements Serializable, D2DObject, Auditable {
             }
         }
         for (Group g : groups) {
-            for (Permission p : g.getPermissions()) {
-                if (p instanceof FolderPermission) {
-                    FolderPermission fp = (FolderPermission) p;
-                    if (fp.getFolder() != null && !folderInfos.contains(fp.getFolder())) {
-                        folderInfos.add(fp.getFolder());
-                    }
+            if (g == null) {
+                continue;
+            }
+            for (FolderInfo f : g.getAllFolders()) {
+                if (f != null && !folderInfos.contains(f)) {
+                    folderInfos.add(f);
                 }
             }
         }
@@ -697,7 +707,12 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.password = prefix + password;
     }
 
+    @Deprecated
     public void setPasswordSalted(String password) {
+        this.password = LoginUtil.hashAndSalt(password);
+    }
+
+    public void setPasswordSalted(char[] password) {
         this.password = LoginUtil.hashAndSalt(password);
     }
 

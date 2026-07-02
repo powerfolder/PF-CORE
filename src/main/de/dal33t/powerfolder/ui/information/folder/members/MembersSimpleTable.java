@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2012 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: MemberTable.java 5457 2008-10-17 14:25:41Z harry $
  */
 package de.dal33t.powerfolder.ui.information.folder.members;
 
@@ -195,15 +195,8 @@ public class MembersSimpleTable extends JTable {
                         .get("permissions.folder.read_write"));
                 } else {
                     String name;
-                    FolderPermission defPerm = model.getDefaultPermission();
                     if (folderMember.getPermission() != null) {
                         name = folderMember.getPermission().getName();
-                    } else if (defPerm != null) {
-                        name = defPerm.getName();
-                        name += " (";
-                        name += Translation
-                            .get("permissions.folder.default");
-                        name += ")";
                     } else {
                         name = Translation
                             .get("permissions.folder.no_access");
@@ -236,32 +229,8 @@ public class MembersSimpleTable extends JTable {
                 if (value instanceof FolderPermission) {
                     setText(((FolderPermission) value).getName());
                 } else {
-                    int selectedRow = getSelectedRow();
-                    FolderMember selectedMember = selectedRow >= 0 ? model
-                        .getFolderMemberAt(selectedRow) : null;
-                    if (selectedMember != null
-                        && selectedMember.getMember() == null)
-                    {
-                        setText(Translation
-                            .get("permissions.folder.no_access"));
-                    } else {
-                        FolderPermission defPerm = model.getDefaultPermission();
-                        if (defPerm != null) {
-                            setText(defPerm.getName()
-                                + " ("
-                                + Translation
-                                    .get("permissions.folder.default")
-                                + ')');
-                        } else {
-                            setText(Translation
-                                .get("permissions.folder.no_access")
-                                + " ("
-                                + Translation
-                                    .get("permissions.folder.default")
-                                + ')');
-                        }
-                    }
-
+                    setText(Translation
+                        .get("permissions.folder.no_access"));
                 }
                 return comp;
             }

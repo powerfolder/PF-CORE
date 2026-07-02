@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id$
  */
 package de.dal33t.powerfolder.util;
 
@@ -73,6 +73,8 @@ public class Translation {
     public static final Locale HEBREW = new Locale("he");
     public static final Locale IRISH = new Locale("ga");
     public static final Locale MALTESE = new Locale("mt");
+    public static final Locale URDU = new Locale("ur");
+    public static final Locale PERSIAN = new Locale("fa");
 
     /**
      * List of all supported locales
@@ -142,6 +144,7 @@ public class Translation {
             // supportedLocales.add(THAI);              // ไทย
             supportedLocales.add(TURKISH);           // Türkçe
             supportedLocales.add(UKRAINIAN);         // Українська
+            supportedLocales.add(URDU);              // اردو
             supportedLocales.add(VIETNAMESE);        // Tiếng Việt
         }
         Collections.sort(supportedLocales, LocaleComparator.INSTANCE);

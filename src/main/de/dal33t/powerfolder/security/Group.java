@@ -1,5 +1,6 @@
 /*
- * Copyright 2004 - 2008 Christian Sprajc. All rights reserved.
+ * Copyright 2004 - 2024 Christian Sprajc. All rights reserved.
+ * Copyright 2024 - 2026 EINBERG UG (haftungsbeschränkt). All rights reserved.
  *
  * This file is part of PowerFolder.
  *
@@ -15,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with PowerFolder. If not, see <http://www.gnu.org/licenses/>.
  *
- * $Id: Account.java 18110 2012-02-13 02:41:13Z tot $
  */
 package de.dal33t.powerfolder.security;
 
@@ -35,12 +35,18 @@ import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
 
 /**
@@ -87,6 +93,12 @@ public class Group implements Serializable, D2DObject, Auditable {
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
+    @ManyToMany
+    @JoinTable(name = "AGroup_Parents", joinColumns = @JoinColumn(name = "child_oid"), inverseJoinColumns = @JoinColumn(name = "parent_oid"))
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private Collection<Group> parents;
+
     @Embedded
     @Fetch(FetchMode.JOIN)
     public AuditFields auditFields = new AuditFields();
@@ -105,7 +117,8 @@ public class Group implements Serializable, D2DObject, Auditable {
         Reject.ifBlank(oid, "OID");
         this.oid = oid;
         this.name = name;
-        this.permissions = new CopyOnWriteArrayList<Permission>();
+        this.permissions = new CopyOnWriteArrayList<>();
+        this.parents = new CopyOnWriteArraySet<>();
     }
 
     /**
@@ -119,17 +132,56 @@ public class Group implements Serializable, D2DObject, Auditable {
     public void grant(Permission... newPermissions) {
         Reject.ifNull(newPermissions, "Permission is null");
         for (Permission p : newPermissions) {
-            if (hasPermission(p)) {
-                // Skip
+            if (isInvalidGrant(p)) {
                 continue;
-            } else {
-                if (p instanceof FolderOwnerPermission) {
-                    FolderInfo folder = ((FolderOwnerPermission) p).getFolder();
-                    Reject.ifTrue(folder.isSubFolder(), "Cannot grant owner permission on subfolder");
-                }
-                permissions.add(p);
+            }
+            if (isAlreadyGranted(p)) {
+                continue;
+            }
+            if (p instanceof FolderPermission) {
+                revokeAllFolderPermissions(((FolderPermission) p).getFolder());
+            }
+            permissions.add(p);
+        }
+    }
+
+    private boolean isInvalidGrant(Permission p) {
+        Reject.ifNull(p, "Permission is null");
+        if (p instanceof FolderPermission) {
+            FolderInfo foInfo = ((FolderPermission) p).getFolder();
+            if (foInfo.isMetaFolder()) {
+                LOG.warning(this + ": Not allowed to grant permissions on meta " + foInfo);
+                return true;
+            }
+            if (p instanceof FolderOwnerPermission) {
+                Reject.ifTrue(foInfo.isSubFolder(), foInfo + ": Cannot grant owner permission on subfolder");
             }
         }
+        return false;
+    }
+
+    private boolean isAlreadyGranted(Permission permission) {
+        if (permissions == null) {
+            return false;
+        }
+        if (permission instanceof FolderPermission) {
+            FolderInfo folder = ((FolderPermission) permission).getFolder();
+            for (Permission p : permissions) {
+                if (p instanceof FolderPermission) {
+                    FolderPermission fp = (FolderPermission) p;
+                    if (fp.getFolder().equals(folder) && fp.implies(permission)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        for (Permission p : permissions) {
+            if (p != null && p.equals(permission)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void revoke(Permission... revokePermission) {
@@ -164,6 +216,13 @@ public class Group implements Serializable, D2DObject, Auditable {
 
     public boolean hasPermission(Permission permission) {
         Reject.ifNull(permission, "Permission is null");
+        return hasPermission(permission, new HashSet<>());
+    }
+
+    private boolean hasPermission(Permission permission, Set<String> visited) {
+        if (oid != null && !visited.add(oid)) {
+            return false;
+        }
         if (permissions == null) {
             LOG.severe("Illegal group " + name + ", permissions is null");
             return false;
@@ -180,12 +239,129 @@ public class Group implements Serializable, D2DObject, Auditable {
                 return true;
             }
         }
-
+        if (parents != null) {
+            for (Group parent : parents) {
+                if (parent != null && parent.hasPermission(permission, visited)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
     public Collection<Permission> getPermissions() {
         return Collections.unmodifiableCollection(permissions);
+    }
+
+    public Collection<Group> getParents() {
+        if (parents == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableCollection(parents);
+    }
+
+    public void addParent(Group parent) {
+        Reject.ifNull(parent, "Parent is null");
+        Reject.ifTrue(this.equals(parent), "A group cannot be its own parent");
+        if (parents == null) {
+            parents = new CopyOnWriteArraySet<>();
+        }
+        parents.add(parent);
+    }
+
+    public void removeParent(Group parent) {
+        Reject.ifNull(parent, "Parent is null");
+        if (parents != null) {
+            parents.remove(parent);
+        }
+    }
+
+    public boolean wouldCreateCycle(Group candidateChild) {
+        Reject.ifNull(candidateChild, "Candidate child is null");
+        if (this.equals(candidateChild)) {
+            return true;
+        }
+        return isReachableViaParents(this, candidateChild, new HashSet<>());
+    }
+
+    private static boolean isReachableViaParents(Group from, Group target,
+                                                 Set<String> visited) {
+        if (from == null) {
+            return false;
+        }
+        if (from.equals(target)) {
+            return true;
+        }
+        if (from.oid != null && !visited.add(from.oid)) {
+            return false;
+        }
+        if (from.parents == null || from.parents.isEmpty()) {
+            return false;
+        }
+        for (Group p : from.parents) {
+            if (isReachableViaParents(p, target, visited)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Collection<FolderInfo> getAllFolders() {
+        Set<FolderInfo> result = new HashSet<>();
+        collectAllFolders(result, new HashSet<>());
+        return result;
+    }
+
+    private void collectAllFolders(Set<FolderInfo> sink, Set<String> visited) {
+        if (oid != null && !visited.add(oid)) {
+            return;
+        }
+        if (permissions != null) {
+            for (Permission p : permissions) {
+                if (p instanceof FolderPermission) {
+                    FolderInfo f = ((FolderPermission) p).getFolder();
+                    if (f != null) {
+                        sink.add(f);
+                    }
+                }
+            }
+        }
+        if (parents != null) {
+            for (Group parent : parents) {
+                if (parent != null) {
+                    parent.collectAllFolders(sink, visited);
+                }
+            }
+        }
+    }
+
+    public boolean hasAnyFolderAdmin() {
+        return hasAnyFolderAdmin(new HashSet<>());
+    }
+
+    private boolean hasAnyFolderAdmin(Set<String> visited) {
+        if (oid != null && !visited.add(oid)) {
+            return false;
+        }
+        if (permissions != null) {
+            for (Permission p : permissions) {
+                if (p instanceof FolderPermission) {
+                    AccessMode mode = ((FolderPermission) p).getMode();
+                    if (AccessMode.ADMIN.equals(mode)
+                        || AccessMode.OWNER.equals(mode)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        if (parents != null) {
+            for (Group parent : parents) {
+                if (parent != null && parent.hasAnyFolderAdmin(visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -344,6 +520,9 @@ public class Group implements Serializable, D2DObject, Auditable {
             Collection<Permission> newPermissions = new CopyOnWriteArrayList<Permission>(
                 permissions);
             permissions = newPermissions;
+        }
+        if (!(parents instanceof CopyOnWriteArraySet<?>)) {
+            parents = new CopyOnWriteArraySet<>(parents);
         }
     }
 
