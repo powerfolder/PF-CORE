@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.TagUtil;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -83,7 +84,7 @@ public class LuceneIndexManager extends PFComponent {
 
     /** Searchable fields used by all query methods. */
     private static final String[] SEARCH_FIELDS =
-            {"fileName", "relativeName", "content"};
+            {"fileName", "relativeName", "content", "tags"};
 
     /** Pattern matching file extensions eligible for OCR fallback. */
     private static final Pattern OCR_ELIGIBLE_PATTERN =
@@ -681,7 +682,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 11;
+    private static final int INDEX_FORMAT_VERSION = 12;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -715,6 +716,13 @@ public class LuceneIndexManager extends PFComponent {
         }
         if (StringUtils.isNotBlank(fileInfo.getTags())) {
             doc.add(new StoredField("tags", fileInfo.getTags()));
+            List<String> tagList = TagUtil.parse(fileInfo.getTags());
+            if (!tagList.isEmpty()) {
+                doc.add(new TextField("tags", String.join(" ", tagList), Field.Store.NO));
+                for (String tag : tagList) {
+                    doc.add(new StringField("tagsExact", tag.toLowerCase(Locale.ROOT), Field.Store.NO));
+                }
+            }
         }
 
         AccountInfo modAccount = fileInfo.getModifiedByAccount();
@@ -1097,7 +1105,7 @@ public class LuceneIndexManager extends PFComponent {
      */
     public List<FileInfo> searchFiles(String queryText, int maxResults) {
         return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE,
-                null, null, null);
+                null, null, null, null);
     }
 
     /**
@@ -1113,7 +1121,7 @@ public class LuceneIndexManager extends PFComponent {
                                       boolean includeDeleted) {
         return doSearch(queryText, maxResults,
                 includeDeleted ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE,
-                null, null, null);
+                null, null, null, null);
     }
 
     /**
@@ -1122,7 +1130,7 @@ public class LuceneIndexManager extends PFComponent {
     public List<FileInfo> searchDeletedFiles(String queryText,
                                              int maxResults) {
         return doSearch(queryText, maxResults, DeletedFilter.ONLY,
-                null, null, null);
+                null, null, null, null);
     }
 
     /**
@@ -1141,7 +1149,8 @@ public class LuceneIndexManager extends PFComponent {
         String queryText = String.join(" ", criteria.getKeyWords());
 
         return doSearch(queryText, maxResults, deletedFilter,
-                criteria.getPath(), criteria.getExtension(), criteria.getModifiedBy());
+                criteria.getPath(), criteria.getExtension(), criteria.getModifiedBy(),
+                criteria.getTags());
     }
 
     /** Controls how the deleted flag is handled in searches. */
@@ -1173,7 +1182,7 @@ public class LuceneIndexManager extends PFComponent {
     private List<FileInfo> doSearch(String queryText, int maxResults,
                                     DeletedFilter deletedFilter,
                                     String directory, String extension,
-                                    String modifiedBy) {
+                                    String modifiedBy, Collection<String> tags) {
 
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
@@ -1225,6 +1234,16 @@ public class LuceneIndexManager extends PFComponent {
                 modQuery.add(new WildcardQuery(new Term("modifiedByUsername", wildcard)), BooleanClause.Occur.SHOULD);
                 modQuery.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)), BooleanClause.Occur.SHOULD);
                 bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
+            }
+
+            if (tags != null) {
+                for (String tag : tags) {
+                    if (StringUtils.isNotBlank(tag)) {
+                        bqBuilder.add(
+                                new TermQuery(new Term("tagsExact", tag.toLowerCase(Locale.ROOT).trim())),
+                                BooleanClause.Occur.MUST);
+                    }
+                }
             }
 
             Query finalQuery = bqBuilder.build();

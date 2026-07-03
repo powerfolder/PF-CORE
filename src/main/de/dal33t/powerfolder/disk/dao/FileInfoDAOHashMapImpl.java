@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.TagUtil;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
@@ -312,7 +313,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     break;
                 }
                 if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
-                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, criteria.getKeyWords()) && matchesExtension(directoryInfo, criteria.getExtension()) && matchesModifiedBy(directoryInfo, criteria.getModifiedBy())) {
+                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, criteria.getKeyWords()) && matchesExtension(directoryInfo, criteria.getExtension()) && matchesModifiedBy(directoryInfo, criteria.getModifiedBy()) && matchesTags(directoryInfo, criteria.getTags())) {
                         fileInfos.add(directoryInfo);
                     }
                 }
@@ -323,7 +324,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                         break;
                     }
                     if ((!fileInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
-                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, criteria.getKeyWords()) && matchesExtension(fileInfo, criteria.getExtension()) && matchesModifiedBy(fileInfo, criteria.getModifiedBy())) {
+                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, criteria.getKeyWords()) && matchesExtension(fileInfo, criteria.getExtension()) && matchesModifiedBy(fileInfo, criteria.getModifiedBy()) && matchesTags(fileInfo, criteria.getTags())) {
                             fileInfos.add(fileInfo);
                         }
                     }
@@ -400,6 +401,26 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             return true;
         }
         return fileInfo.getExtension().equalsIgnoreCase(extension);
+    }
+
+    private static boolean matchesTags(FileInfo fileInfo, Set<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return true;
+        }
+        List<String> fileTags = TagUtil.parse(fileInfo.getTags());
+        if (fileTags.isEmpty()) {
+            return false;
+        }
+        Set<String> lower = new HashSet<>();
+        for (String tag : fileTags) {
+            lower.add(tag.toLowerCase(Locale.ROOT));
+        }
+        for (String wanted : tags) {
+            if (!lower.contains(wanted.toLowerCase(Locale.ROOT))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {

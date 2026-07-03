@@ -99,6 +99,39 @@ public class FileInfoFactoryTest extends TestCase {
         assertEquals(folderB, result.getFolderInfo());
     }
 
+    public void testSetTagsFileIncrementsVersionKeepsHash() {
+        FolderInfo folder = FolderInfoFactory.newTopFolder("A", "FolderA");
+        Date date = new Date();
+        FileInfo original = FileInfoFactory.unmarshallExistingFile(
+                folder, "docs/report.txt", "oid1", 123L, null, null, date, 4, "HASH", false, null);
+        assertNull("Precondition: tags empty", original.getTags());
+
+        FileInfo tagged = FileInfoFactory.withTags(original, "[\"Contract\",\"2026\"]");
+
+        assertEquals("[\"Contract\",\"2026\"]", tagged.getTags());
+        assertEquals("Version must increment", 5, tagged.getVersion());
+        assertEquals("Content hash unchanged", "HASH", tagged.getHashes());
+        assertEquals(123L, tagged.getSize());
+        assertEquals(date, tagged.getModifiedDate());
+        assertEquals("docs/report.txt", tagged.getRelativeName());
+        assertTrue(tagged.isFile());
+        assertFalse(tagged.isLookupInstance());
+        assertNull("Original must stay immutable", original.getTags());
+        assertEquals(4, original.getVersion());
+    }
+
+    public void testSetTagsDirectoryStaysDirectory() {
+        FolderInfo folder = FolderInfoFactory.newTopFolder("B", "FolderB");
+        DirectoryInfo dir = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
+                folder, "some/dir", "oidD", 0L, null, null, new Date(), 3, "H", true, null);
+        FileInfo tagged = FileInfoFactory.withTags(dir, "[\"X\"]");
+        assertTrue("Must remain DirectoryInfo", tagged.isDiretory());
+        assertFalse(tagged.isFile());
+        assertEquals(4, tagged.getVersion());
+        assertEquals("[\"X\"]", tagged.getTags());
+        assertEquals("H", tagged.getHashes());
+    }
+
     public void testEncodeDecodeIllegalCharacters() {
         String testString = "PhD_GOE&CPH-221216.";
         String encoded = FileInfoFactory.encodeIllegalChars(testString);
