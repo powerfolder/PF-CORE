@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Waiter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
@@ -149,6 +150,16 @@ public class LuceneIndexManager extends PFComponent {
 
     private static final long STARTUP_DELAY_MS = Long.getLong("powerfolder.index.startupDelayMs", 60_000L);
     private static final long MIN_COMMIT_INTERVAL_MS = Long.getLong("powerfolder.index.minCommitIntervalMs", 1000L);
+
+    /**
+     * How long shutdown() waits for the background worker to finish its current file. The worker
+     * only checks {@code closed} between files — giving an in-flight Tika/OCR extraction a moment
+     * to complete avoids closing the IndexWriter under it and avoids callers (folder remove)
+     * deleting files it is still reading ("InputStream must have > 0 bytes"). Kept short so
+     * shutdown never blocks noticeably; a still-running extraction after this just logs its
+     * failure and is discarded.
+     */
+    private static final long SHUTDOWN_WORKER_WAIT_MS = 1000L;
 
     // -----------------------------------------------------------------------
     // Instance fields
@@ -566,10 +577,18 @@ public class LuceneIndexManager extends PFComponent {
                 logFine(folder + ": Indexing delayed " + (waitMs / 1000) + "s (server uptime "
                         + (uptime / 1000) + "s)");
             }
+            // Wait in slices and re-check closed, so a shutdown during the
+            // startup delay doesn't have to wait for the full delay to elapse.
+            Waiter waiter = new Waiter(waitMs);
             try {
-                Thread.sleep(waitMs);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                while (!closed.get() && !waiter.isTimeout()) {
+                    waiter.waitABit();
+                }
+            } catch (Waiter.WaiterInterruptedException e) {
+                workerRunning.set(false);
+                return false;
+            }
+            if (closed.get()) {
                 workerRunning.set(false);
                 return false;
             }
@@ -1426,11 +1445,38 @@ public class LuceneIndexManager extends PFComponent {
         contentQueue.clear();
     }
 
+    /**
+     * Waits up to {@link #SHUTDOWN_WORKER_WAIT_MS} for the background worker to notice
+     * {@code closed} and exit. Called by {@link #shutdown()} after setting the flag.
+     */
+    private void awaitWorkerTermination() {
+        Waiter waiter = new Waiter(SHUTDOWN_WORKER_WAIT_MS);
+        try {
+            while (workerRunning.get() && !waiter.isTimeout()) {
+                waiter.waitABit();
+            }
+        } catch (Waiter.WaiterInterruptedException e) {
+            // Interrupt flag is re-set by waitABit — just continue shutdown.
+            return;
+        }
+        if (workerRunning.get() && isFine()) {
+            logFine(folder + ": Index worker still busy after " + SHUTDOWN_WORKER_WAIT_MS
+                    + " ms — continuing shutdown");
+        }
+    }
+
     public void shutdown() {
         if (!closed.compareAndSet(false, true)) return;
         if (isFine()) {
             logFine(folder + ": Shutting down...");
         }
+
+        // Let the background worker finish the file it is currently extracting.
+        // It only checks closed between files — proceeding immediately would
+        // close the IndexWriter under it, and callers removing the folder would
+        // start deleting files it is still reading (Tika: "InputStream must
+        // have > 0 bytes").
+        awaitWorkerTermination();
 
         // A large backlog is indexed synchronously here (Tika content
         // extraction per file), so shutdown may block for a while — warn so the
