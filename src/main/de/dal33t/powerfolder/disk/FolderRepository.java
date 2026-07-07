@@ -1589,15 +1589,6 @@ public class FolderRepository extends PFComponent implements Runnable {
             getController().getTransferManager().breakTransfers(
                     folder.getInfo());
 
-            // When the .PowerFolder system dir (which holds the search index) is
-            // deleted below, the index is discarded anyway — empty the pending
-            // index queue so shutdown() does not drain it through Tika content
-            // extraction per file and block for a long time (e.g. when removing
-            // a freshly migrated folder). If the system dir is kept, shutdown()
-            // drains normally to keep the index consistent.
-            if (deleteSystemSubDir) {
-                folder.emptySearchIndexQueue();
-            }
             folder.shutdown();
 
             // synchronize memberships

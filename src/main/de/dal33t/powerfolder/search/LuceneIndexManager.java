@@ -38,6 +38,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -137,10 +138,6 @@ public class LuceneIndexManager extends PFComponent {
      */
     private static final int COMMIT_INTERVAL =
             Integer.getInteger("powerfolder.index.commitInterval", 50);
-
-    // Above this many files still queued at shutdown, log an info line: draining
-    // them (Tika content extraction per file) can make shutdown take a while.
-    private static final int SHUTDOWN_DRAIN_INFO_THRESHOLD = 1000;
 
     // Shared Tika parser — expensive to construct, safe to reuse. AutoDetectParser and the
     // underlying CompositeParser are thread-safe (Tika creates per-call SAX handler state,
@@ -657,8 +654,12 @@ public class LuceneIndexManager extends PFComponent {
                         commitAndRefresh();
                     }
                     // Both phases done — persist meta so rebuild isn't
-                    // re-triggered on next startup.
-                    writeIndexMeta(getIndexEntryCount());
+                    // re-triggered on next startup. Never during shutdown:
+                    // shutdown() empties the queues and deletes the meta file
+                    // to force a rebuild — writing it here would cancel that.
+                    if (!closed.get()) {
+                        writeIndexMeta(getIndexEntryCount());
+                    }
                     break;
                 }
                 // New metadata items take priority
@@ -680,7 +681,9 @@ public class LuceneIndexManager extends PFComponent {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
-            if (uncommittedCount.get() > 0) {
+            // On shutdown the writer may already be closed — shutdown()
+            // commits itself, so skip the final commit here.
+            if (!closed.get() && uncommittedCount.get() > 0) {
                 commitAndRefresh();
             }
             workerRunning.set(false);
@@ -1396,8 +1399,14 @@ public class LuceneIndexManager extends PFComponent {
             searcherManager.maybeRefreshBlocking();
             uncommittedCount.set(0);
             lastCommitTime = System.currentTimeMillis();
+        } catch (AlreadyClosedException e) {
+            // Expected when shutdown() closes the writer while the worker is
+            // finishing its last file.
+            if (isFine()) {
+                logFine(folder + ": Commit skipped — index already closed");
+            }
         } catch (Exception e) {
-            logWarning(folder + ": Commit failed: " + e.getMessage());
+            logWarning(folder + ": Commit failed: " + e);
         }
     }
 
@@ -1434,18 +1443,6 @@ public class LuceneIndexManager extends PFComponent {
     // ------------------------------------------------------------------------
 
     /**
-     * Discards the pending index queue WITHOUT indexing its files. Call before
-     * {@link #shutdown()} when the folder is being removed: shutdown() would
-     * otherwise drain the queue through Tika content extraction per file —
-     * pure waste (the index is discarded anyway) that blocks for a long time on
-     * a large backlog.
-     */
-    public void emptyIndexQueue() {
-        indexQueue.clear();
-        contentQueue.clear();
-    }
-
-    /**
      * Waits up to {@link #SHUTDOWN_WORKER_WAIT_MS} for the background worker to notice
      * {@code closed} and exit. Called by {@link #shutdown()} after setting the flag.
      */
@@ -1478,22 +1475,22 @@ public class LuceneIndexManager extends PFComponent {
         // have > 0 bytes").
         awaitWorkerTermination();
 
-        // A large backlog is indexed synchronously here (Tika content
-        // extraction per file), so shutdown may block for a while — warn so the
-        // delay is explained rather than looking like a hang. (A folder being
-        // removed has its queue emptied beforehand, so this stays quiet.)
-        int pending = indexQueue.size();
-        if (pending > SHUTDOWN_DRAIN_INFO_THRESHOLD) {
-            logInfo(folder + ": Indexing " + pending
-                    + " queued file(s) before shutdown — this may take a while");
-        }
-
-        FileInfo f;
-        while ((f = indexQueue.poll()) != null) {
-            try { doIndexFile(f); }
-            catch (Exception ignored) {}
-        }
+        // Do NOT drain the backlog through Tika here — that can block shutdown
+        // for minutes. Discard the queues; if anything was still pending,
+        // delete the meta file so isRebuildRequired() schedules a full
+        // background rebuild on next start.
+        int pending = indexQueue.size() + contentQueue.size();
+        indexQueue.clear();
         contentQueue.clear();
+        if (pending > 0) {
+            try {
+                Files.deleteIfExists(indexPath.resolve(META_FILE_NAME));
+            } catch (IOException e) {
+                logWarning(folder + ": Failed to delete index meta: " + e);
+            }
+            logInfo(folder + ": " + pending + " file(s) still queued at shutdown"
+                    + " — full index rebuild scheduled for next start");
+        }
 
         commitAndRefresh();
         try { searcherManager.close(); }
