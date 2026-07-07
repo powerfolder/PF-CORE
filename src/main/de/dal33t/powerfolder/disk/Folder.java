@@ -2277,6 +2277,18 @@ public class Folder extends PFComponent {
     /**
      * Shuts down the folder
      */
+    /**
+     * Discards the pending search-index queue without indexing it. Call before
+     * {@link #shutdown()} when the folder is being removed, so shutdown() does
+     * not spend a long time indexing (Tika per file) a backlog whose index is
+     * about to be discarded.
+     */
+    public void emptySearchIndexQueue() {
+        if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
+            searchIndexManager.emptyIndexQueue();
+        }
+    }
+
     public void shutdown() {
         if (isFine()) {
             logFine("Shutting down " + this);

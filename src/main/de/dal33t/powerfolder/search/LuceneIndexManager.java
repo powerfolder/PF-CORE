@@ -137,6 +137,10 @@ public class LuceneIndexManager extends PFComponent {
     private static final int COMMIT_INTERVAL =
             Integer.getInteger("powerfolder.index.commitInterval", 50);
 
+    // Above this many files still queued at shutdown, log an info line: draining
+    // them (Tika content extraction per file) can make shutdown take a while.
+    private static final int SHUTDOWN_DRAIN_INFO_THRESHOLD = 1000;
+
     // Shared Tika parser — expensive to construct, safe to reuse. AutoDetectParser and the
     // underlying CompositeParser are thread-safe (Tika creates per-call SAX handler state,
     // not per-parser state).
@@ -1410,10 +1414,32 @@ public class LuceneIndexManager extends PFComponent {
     // Shutdown
     // ------------------------------------------------------------------------
 
+    /**
+     * Discards the pending index queue WITHOUT indexing its files. Call before
+     * {@link #shutdown()} when the folder is being removed: shutdown() would
+     * otherwise drain the queue through Tika content extraction per file —
+     * pure waste (the index is discarded anyway) that blocks for a long time on
+     * a large backlog.
+     */
+    public void emptyIndexQueue() {
+        indexQueue.clear();
+        contentQueue.clear();
+    }
+
     public void shutdown() {
         if (!closed.compareAndSet(false, true)) return;
         if (isFine()) {
             logFine(folder + ": Shutting down...");
+        }
+
+        // A large backlog is indexed synchronously here (Tika content
+        // extraction per file), so shutdown may block for a while — warn so the
+        // delay is explained rather than looking like a hang. (A folder being
+        // removed has its queue emptied beforehand, so this stays quiet.)
+        int pending = indexQueue.size();
+        if (pending > SHUTDOWN_DRAIN_INFO_THRESHOLD) {
+            logInfo(folder + ": Indexing " + pending
+                    + " queued file(s) before shutdown — this may take a while");
         }
 
         FileInfo f;
