@@ -19,26 +19,15 @@
 */
 package de.dal33t.powerfolder.transfer;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.util.DateUtil;
 import de.dal33t.powerfolder.util.Reject;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Class to allow the transfer manager to record bandwidth stats.
@@ -163,8 +152,7 @@ public class BandwidthStatsRecorder extends PFComponent implements BandwidthStat
             boolean interrupted = Thread.interrupted();
             try (ObjectOutputStream outputStream = new ObjectOutputStream(
                 new BufferedOutputStream(Files.newOutputStream(file)))) {
-                logInfo("There are " + coalescedStats.size()
-                    + " stats to persist.");
+                logFine("There are " + coalescedStats.size() + " stats to persist.");
                 outputStream.writeUnshared(coalescedStats);
             } catch (FileNotFoundException e) {
                 logSevere("FileNotFoundException", e);
