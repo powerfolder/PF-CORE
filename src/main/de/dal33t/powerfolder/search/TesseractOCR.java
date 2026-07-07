@@ -49,9 +49,8 @@ import java.util.stream.Stream;
  * in the JAR into a shared system temp directory. If no training data is
  * found, OCR is automatically disabled.
  * <p>
- * Configurable safety limits: maximum file size for OCR input and a
- * per-file timeout prevent unbounded resource consumption on large or
- * problematic files.
+ * Configurable safety limit: a maximum file size for OCR input prevents
+ * unbounded resource consumption on large files.
  */
 public class TesseractOCR extends Loggable {
 
@@ -258,7 +257,11 @@ public class TesseractOCR extends Loggable {
 
         Tesseract tess = null;
         try {
-            tess = pool.poll(5, TimeUnit.SECONDS);
+            // Indexing is a background batch job — waiting is better than
+            // permanently dropping the file's searchable content. With the pool
+            // sized 1:1 to the indexing threads this only triggers if an OCR run
+            // hangs for a full minute.
+            tess = pool.poll(60, TimeUnit.SECONDS);
             if (tess == null) {
                 logWarning("OCR pool exhausted — could not acquire Tesseract instance for " + file.getFileName());
                 return null;

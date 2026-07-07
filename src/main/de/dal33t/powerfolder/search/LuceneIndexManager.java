@@ -219,7 +219,9 @@ public class LuceneIndexManager extends PFComponent {
 
         String ocrLanguages = ConfigurationEntry.SEARCH_INDEX_OCR_LANGUAGES.getValue(controller);
         int maxIndexThreads = ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(controller);
-        int ocrPoolSize = Math.max(1, maxIndexThreads / 2);
+        // 1:1 with the indexing threads — they are the only callers of performOCR,
+        // so this guarantees an instance is always available (no pool exhaustion).
+        int ocrPoolSize = Math.max(1, maxIndexThreads);
         int ocrMaxFileSizeMB = ConfigurationEntry.SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB.getValueInt(controller);
         TesseractOCR.initInstance(ocrLanguages, ocrPoolSize, ocrMaxFileSizeMB);
         this.ocrEngine = TesseractOCR.getInstance();
