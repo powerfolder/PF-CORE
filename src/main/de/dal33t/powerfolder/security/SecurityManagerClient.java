@@ -24,7 +24,6 @@ import de.dal33t.powerfolder.clientserver.RemoteCallException;
 import de.dal33t.powerfolder.clientserver.ServerClient;
 import de.dal33t.powerfolder.clientserver.ServerClientEvent;
 import de.dal33t.powerfolder.clientserver.ServerClientListener;
-import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.event.ListenerSupportFactory;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -44,9 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class SecurityManagerClient extends PFComponent implements
-    SecurityManager
-{
+public class SecurityManagerClient extends AbstractSecurityManager {
 
     private static final boolean CACHE_ENABLED = true;
     private static final int MAX_REQUEST_ACCOUNT_INFOS = 21;
@@ -101,6 +98,13 @@ public class SecurityManagerClient extends PFComponent implements
 
     public void logout() {
         client.logout();
+    }
+
+    @Override
+    public boolean isAuthoritative() {
+        // PFC-3550 / PFS-4787: While not connected and logged in,
+        // hasPermission answers with defaults, not with server decisions.
+        return client.isConnected() && client.isLoggedIn();
     }
 
     private final Object requestPermissionLock = new Object();
@@ -509,9 +513,7 @@ public class SecurityManagerClient extends PFComponent implements
         permissionsCacheAccounts.remove(nullSafeGet(s != null ? s
             .getAccountInfo() : null));
 
-        for (Folder folder : getController().getFolderRepository().getFolders(true)) {
-            folder.clearNodeCache(node);
-        }
+        clearPermissionCache(node);
     }
 
     /**
@@ -630,12 +632,14 @@ public class SecurityManagerClient extends PFComponent implements
         public void login(ServerClientEvent event) {
             if (event.isLoginSuccess()) {
                 permissionsCacheAccounts.clear();
+                clearPermissionCache();
             }
         }
 
         public void accountUpdated(ServerClientEvent event) {
             if (event.isLoginSuccess()) {
                 permissionsCacheAccounts.clear();
+                clearPermissionCache();
             }
         }
 
@@ -653,6 +657,7 @@ public class SecurityManagerClient extends PFComponent implements
             event.getClient().addListener(this);
             permissionsCacheAccounts.clear();
             sessions.clear();
+            clearPermissionCache();
         }
     }
 

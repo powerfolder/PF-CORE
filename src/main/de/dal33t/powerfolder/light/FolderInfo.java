@@ -341,8 +341,12 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         }
         version = in.readInt();
         if (in.readBoolean()) {
-            DirectoryInfo parent = (DirectoryInfo) FileInfoFactory.readExt(in);
-            setParent(parent);
+            // PFC-3547: v26 does not support subfolders. A newer client that
+            // negotiated protocol version 113 must not be able to turn a folder
+            // into a subfolder on this node. Still read the parent to keep the
+            // stream aligned, but discard it so it is never adopted.
+            FileInfoFactory.readExt(in);
+            setParent(null);
         } else {
             setParent(null);
         }

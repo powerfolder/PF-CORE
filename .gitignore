@@ -13,3 +13,5 @@
 # Security scanning tools and reports
 /tools/
 /reports/
+/.claude/settings.local.json
+/.codegraph/

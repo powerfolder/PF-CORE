@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.disk.ScanResult;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
@@ -43,6 +44,7 @@ import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,6 +54,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -105,28 +108,12 @@ public class LuceneIndexManager extends PFComponent {
             Long.getLong("powerfolder.index.inlineExtractMaxSize", 32L * 1024);
 
     /**
-     * Maximum extracted text length (characters) Tika is allowed to produce.
-     * Prevents OOM on huge files (e.g. multi-GB CSVs). Default: 10 MB of text.
-     */
-    private static final int TIKA_WRITE_LIMIT =
-            Integer.getInteger("powerfolder.index.tikaWriteLimit", 10 * 1024 * 1024);
-
-    /**
      * Files larger than this are skipped for content extraction entirely. Default: 512 MB.
      * Avoids feeding huge files into Tika where extraction time and memory usage are excessive.
      * PFS-5487.
      */
     private static final long CONTENT_EXTRACT_MAX_SIZE =
             Long.getLong("powerfolder.index.contentExtractMaxSize", 512L * 1024 * 1024);
-
-    /**
-     * Throttle delay (ms) between phase 2 content extractions to prevent CPU/IO saturation during
-     * large index builds. Default: 5 ms. Set to 0 to disable throttling.
-     * PFS-5487: Munin stats showed 100% CPU saturation on all three production servers during
-     * initial index build.
-     */
-    private static final long CONTENT_EXTRACT_THROTTLE_MS =
-            Long.getLong("powerfolder.index.contentExtractThrottleMs", 5L);
 
     /**
      * Files indexed before an automatic commit+refresh.
@@ -141,7 +128,8 @@ public class LuceneIndexManager extends PFComponent {
     private static volatile AutoDetectParser SHARED_PARSER;
     private static final Object PARSER_LOCK = new Object();
 
-    private static final long STARTUP_DELAY_MS = 60_000L;
+    private static final long STARTUP_DELAY_MS = Long.getLong("powerfolder.index.startupDelayMs", 60_000L);
+    private static final long MIN_COMMIT_INTERVAL_MS = Long.getLong("powerfolder.index.minCommitIntervalMs", 1000L);
 
     // -----------------------------------------------------------------------
     // Instance fields
@@ -158,6 +146,7 @@ public class LuceneIndexManager extends PFComponent {
     private final LinkedBlockingQueue<FileInfo> contentQueue = new LinkedBlockingQueue<>();
     private final AtomicInteger uncommittedCount = new AtomicInteger(0);
     private final AtomicBoolean closed = new AtomicBoolean(false);
+    private volatile long lastCommitTime;
 
     /** True while the worker is running on the IO thread pool. */
     private final AtomicBoolean workerRunning = new AtomicBoolean(false);
@@ -187,9 +176,7 @@ public class LuceneIndexManager extends PFComponent {
         } catch (Exception e) {
             // Index incompatible (e.g. created by a newer/older Lucene
             // version) or corrupt. Wipe and start fresh.
-            logWarning(folder
-                    + ": Incompatible or corrupt index, rebuilding: "
-                    + e.getMessage());
+            logWarning(folder + ": Incompatible or corrupt index, rebuilding: " + e.getMessage());
             if (w != null) {
                 try { w.close(); } catch (Exception ignored) {}
                 w = null;
@@ -215,9 +202,16 @@ public class LuceneIndexManager extends PFComponent {
             throw e;
         }
 
+        String ocrLanguages = ConfigurationEntry.SEARCH_INDEX_OCR_LANGUAGES.getValue(controller);
+        int maxIndexThreads = ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(controller);
+        int ocrPoolSize = Math.max(1, maxIndexThreads / 2);
+        int ocrMaxFileSizeMB = ConfigurationEntry.SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB.getValueInt(controller);
+        TesseractOCR.initInstance(ocrLanguages, ocrPoolSize, ocrMaxFileSizeMB);
         this.ocrEngine = TesseractOCR.getInstance();
 
-        logFine(folder + ": Lucene index initialized at " + indexPath.toAbsolutePath());
+        if (isFine()) {
+            logFine(folder + ": Lucene index initialized at " + indexPath.toAbsolutePath());
+        }
     }
 
     /**
@@ -236,7 +230,9 @@ public class LuceneIndexManager extends PFComponent {
                     }
                 }
             }
-            logFine(folder + ": Index files deleted");
+            if (isFine()) {
+                logFine(folder + ": Index files deleted");
+            }
         } catch (IOException e) {
             logWarning(folder + ": Failed to delete index files: " + e.getMessage());
         }
@@ -287,7 +283,9 @@ public class LuceneIndexManager extends PFComponent {
 
         // 1) No meta file → first run or wiped index
         if (!Files.exists(metaFile)) {
-            logFine(folder + ": No index meta file found — rebuild required");
+            if (isFine()) {
+                logFine(folder + ": No index meta file found — rebuild required");
+            }
             return true;
         }
 
@@ -304,16 +302,20 @@ public class LuceneIndexManager extends PFComponent {
 
             // Version mismatch → library upgrade
             if (storedVersion != INDEX_FORMAT_VERSION) {
-                logFine(folder + ": Index format version mismatch (stored=" + storedVersion
-                        + ", current=" + INDEX_FORMAT_VERSION + ") — rebuild required");
+                if (isFine()) {
+                    logFine(folder + ": Index format version mismatch (stored=" + storedVersion
+                            + ", current=" + INDEX_FORMAT_VERSION + ") — rebuild required");
+                }
                 return true;
             }
 
             // Gross file-count mismatch (>20% drift or negative stored)
             if (storedFileCount < 0
                     || Math.abs(storedFileCount - currentFileCount) > Math.max(currentFileCount * 0.20, 50)) {
-                logFine(folder + ": File count drift (stored=" + storedFileCount
-                        + ", actual=" + currentFileCount + ") — rebuild required");
+                if (isFine()) {
+                    logFine(folder + ": File count drift (stored=" + storedFileCount
+                            + ", actual=" + currentFileCount + ") — rebuild required");
+                }
                 return true;
             }
         } catch (Exception e) {
@@ -346,7 +348,20 @@ public class LuceneIndexManager extends PFComponent {
             return true;
         }
 
-        // 6) PFS-5311: admin triggered "rebuild all indexes"
+        // 6) OCR languages expanded — new languages added require re-OCR
+        String prevOcrLangs = meta.getProperty("ocr.languages", "");
+        String currentOcrLangs = ocrEngine != null ? ocrEngine.getLanguageConfig() : "";
+        if (isOcrEnabled() && !currentOcrLangs.isEmpty() && !prevOcrLangs.isEmpty()) {
+            Set<String> prevSet = new HashSet<>(Arrays.asList(prevOcrLangs.split("\\+")));
+            Set<String> currentSet = new HashSet<>(Arrays.asList(currentOcrLangs.split("\\+")));
+            if (!prevSet.containsAll(currentSet)) {
+                logInfo(folder + ": Reindex required — OCR languages expanded (was: "
+                        + prevOcrLangs + ", now: " + currentOcrLangs + ")");
+                return true;
+            }
+        }
+
+        // 7) PFS-5311: admin triggered "rebuild all indexes"
         long lastRebuilt = Long.parseLong(meta.getProperty("lastRebuilt", "0"));
         String rebuildBeforeStr = ConfigurationEntry.SEARCH_INDEX_REBUILD_BEFORE.getValue(getController());
         long rebuildBefore = Long.parseLong(rebuildBeforeStr != null ? rebuildBeforeStr : "0");
@@ -356,7 +371,9 @@ public class LuceneIndexManager extends PFComponent {
             return true;
         }
 
-        logFine(folder + ": Index is up-to-date");
+        if (isFine()) {
+            logFine(folder + ": Index is up-to-date");
+        }
         return false;
     }
 
@@ -371,6 +388,9 @@ public class LuceneIndexManager extends PFComponent {
         props.setProperty("lastRebuilt", String.valueOf(System.currentTimeMillis()));
         props.setProperty("contentExtraction.enabled", String.valueOf(isExtractContentEnabled()));
         props.setProperty("ocr.enabled", String.valueOf(isOcrEnabled()));
+        if (ocrEngine != null) {
+            props.setProperty("ocr.languages", ocrEngine.getLanguageConfig());
+        }
 
         try (OutputStream out = Files.newOutputStream(metaFile)) {
             props.store(out, "PowerFolder Lucene index metadata — do not edit");
@@ -390,7 +410,9 @@ public class LuceneIndexManager extends PFComponent {
         if (files == null || files.isEmpty()) return;
         indexQueue.addAll(files);
         ensureWorkerRunning();
-        logFine(folder + ": Queued " + files.size() + " files");
+        if (isFine()) {
+            logFine(folder + ": Queued " + files.size() + " files");
+        }
     }
 
     /**
@@ -410,13 +432,16 @@ public class LuceneIndexManager extends PFComponent {
      */
     public void purgeFiles(Collection<FileInfo> files) {
         if (files == null || files.isEmpty()) return;
+        if (!writer.isOpen()) return;
         try {
             for (FileInfo fileInfo : files) {
                 writer.deleteDocuments(
                         new Term("docId", buildDocId(fileInfo)));
             }
             commitAndRefresh();
-            logFine(folder + ": Purged " + files.size() + " files from index");
+            if (isFine()) {
+                logFine(folder + ": Purged " + files.size() + " files from index");
+            }
         } catch (Exception e) {
             logWarning(folder + ": Purge failed: " + e.getMessage());
         }
@@ -433,16 +458,6 @@ public class LuceneIndexManager extends PFComponent {
     public void rebuildIndex() {
         indexQueue.clear();
         rebuilding.set(true);
-
-        try {
-            writer.deleteAll();
-            commitAndRefresh();
-            logFine(folder + ": Index wiped for rebuild");
-        } catch (Exception e) {
-            logWarning(folder + ": Failed to wipe index: " + e.getMessage());
-            rebuilding.set(false);
-            return;
-        }
 
         Collection<FileInfo> files = folder.getKnownFiles();
         Collection<? extends FileInfo> dirs = folder.getKnownDirectories();
@@ -481,7 +496,9 @@ public class LuceneIndexManager extends PFComponent {
         }
 
         ensureWorkerRunning();
-        logFine(folder + ": Queued " + count + " index updates");
+        if (isFine()) {
+            logFine(folder + ": Queued " + count + " index updates");
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -499,7 +516,13 @@ public class LuceneIndexManager extends PFComponent {
     private void ensureWorkerRunning() {
         if (closed.get()) return;
         if (workerRunning.compareAndSet(false, true)) {
-            getController().getIOProvider().startIndexing(this::workerLoop);
+            Future<?> future = getController().getIOProvider().startIndexing(this::workerLoop);
+            if (future == null) {
+                workerRunning.set(false);
+                if (isFine()) {
+                    logFine(folder + ": Indexing worker rejected — pool full, will retry on next change");
+                }
+            }
         }
     }
 
@@ -513,8 +536,10 @@ public class LuceneIndexManager extends PFComponent {
         long uptime = getController().getUptime();
         if (uptime >= 0 && uptime < STARTUP_DELAY_MS) {
             long waitMs = STARTUP_DELAY_MS - uptime;
-            logFine(folder + ": Indexing delayed " + (waitMs / 1000) + "s (server uptime "
-                    + (uptime / 1000) + "s)");
+            if (isFine()) {
+                logFine(folder + ": Indexing delayed " + (waitMs / 1000) + "s (server uptime "
+                        + (uptime / 1000) + "s)");
+            }
             try {
                 Thread.sleep(waitMs);
             } catch (InterruptedException e) {
@@ -536,9 +561,27 @@ public class LuceneIndexManager extends PFComponent {
             return;
         }
 
-        logFine(folder + ": Index worker started");
+        if (isFine()) {
+            logFine(folder + ": Index worker started");
+        }
 
         try {
+            if (rebuilding.get()) {
+                if (writer.isOpen()) {
+                    try {
+                        writer.deleteAll();
+                        commitAndRefresh();
+                        if (isFine()) {
+                            logFine(folder + ": Index wiped for rebuild");
+                        }
+                    } catch (Exception e) {
+                        logWarning(folder + ": Failed to wipe index: " + e.getMessage());
+                        rebuilding.set(false);
+                        return;
+                    }
+                }
+            }
+
             // Phase 1: index metadata (fast)
             while (!closed.get()) {
                 FileInfo fileInfo = indexQueue.poll(100, TimeUnit.MILLISECONDS);
@@ -551,14 +594,11 @@ public class LuceneIndexManager extends PFComponent {
                 try {
                     doIndexFile(fileInfo);
                 } catch (OutOfMemoryError oom) {
-                    logSevere(folder + ": OOM while indexing "
-                            + fileInfo.toDetailString() + ": "
-                            + oom.getMessage());
+                    logSevere(folder + ": OOM while indexing " + fileInfo.toDetailString()
+                            + ": " + oom.getMessage());
                     throw oom;
                 } catch (Exception e) {
-                    logWarning(folder + ": Failed to index "
-                            + fileInfo.getFilenameOnly() + ": "
-                            + e.getMessage());
+                    logWarning(folder + ": Failed to index " + fileInfo + ": " + e.getMessage());
                 }
             }
 
@@ -584,18 +624,13 @@ public class LuceneIndexManager extends PFComponent {
                 try {
                     doIndexContent(fileInfo);
                 } catch (OutOfMemoryError oom) {
-                    logSevere(folder + ": OOM during content extraction of "
-                            + fileInfo.toDetailString() + ": "
-                            + oom.getMessage());
+                    logSevere(folder + ": OOM during content extraction of " + fileInfo.toDetailString()
+                            + ": " + oom.getMessage());
                     throw oom;
                 } catch (Exception e) {
-                    logWarning(folder + ": Content extraction failed for "
-                            + fileInfo.getFilenameOnly() + ": "
-                            + e.getMessage());
+                    logWarning(folder + ": Content extraction failed for " + fileInfo + ": " + e.getMessage());
                 }
-                if (CONTENT_EXTRACT_THROTTLE_MS > 0) {
-                    Thread.sleep(CONTENT_EXTRACT_THROTTLE_MS);
-                }
+                throttleExtraction();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -611,9 +646,10 @@ public class LuceneIndexManager extends PFComponent {
                 }
             }
 
-            logFine(folder + ": Index worker stopped (metadata pending: "
-                    + indexQueue.size() + ", content pending: "
-                    + contentQueue.size() + ")");
+            if (isFine()) {
+                logFine(folder + ": Index worker stopped (metadata pending: " + indexQueue.size()
+                        + ", content pending: " + contentQueue.size() + ")");
+            }
         }
     }
 
@@ -631,7 +667,7 @@ public class LuceneIndexManager extends PFComponent {
         String docId = buildDocId(fileInfo);
         Document doc = new Document();
 
-        String fileName = fileInfo.getFilenameOnly() != null
+        String fileName = fileInfo != null
                 ? fileInfo.getFilenameOnly() : "";
         String extension = fileInfo.getExtension() != null
                 ? fileInfo.getExtension() : "";
@@ -696,12 +732,14 @@ public class LuceneIndexManager extends PFComponent {
      */
     private void doIndexFile(FileInfo fileInfo) {
         if (fileInfo.isLookupInstance()) return;
+        if (!writer.isOpen()) return;
         try {
             Document doc = buildDocument(fileInfo);
 
-            if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled()) {
+            if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled() && isContentExtractable(fileInfo)) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
                     String content = extractContentTikaOnly(fileInfo);
+                    throttleExtraction();
                     if (content != null && !content.isBlank()) {
                         doc.add(new TextField("content", content, Field.Store.NO));
                     } else {
@@ -712,16 +750,13 @@ public class LuceneIndexManager extends PFComponent {
                 }
             }
 
-            writer.updateDocument(
-                    new Term("docId", buildDocId(fileInfo)), doc);
+            writer.updateDocument(new Term("docId", buildDocId(fileInfo)), doc);
 
-            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
+            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL && isCommitIntervalReached()) {
                 commitAndRefresh();
             }
         } catch (Exception e) {
-            logWarning(folder + ": Index error for "
-                    + fileInfo.getFilenameOnly() + ": "
-                    + e.getMessage());
+            logWarning(folder + ": Index error for " + fileInfo + ": " + e.getMessage());
         }
     }
 
@@ -730,22 +765,35 @@ public class LuceneIndexManager extends PFComponent {
      */
     private void doIndexContent(FileInfo fileInfo) {
         if (fileInfo.isDiretory()) return;
+        if (!isContentExtractable(fileInfo)) return;
         try {
             String content = extractContent(fileInfo);
-            if (content == null || content.isBlank()) return;
+            if (content == null || content.isBlank()) {
+                if (isFine()) {
+                    logFine(folder + ": No content extracted for " + fileInfo);
+                }
+                return;
+            }
 
+            if (!writer.isOpen()) {
+                if (isFine()) {
+                    logFine(folder + ": IndexWriter closed, skipping " + fileInfo);
+                }
+                return;
+            }
             Document doc = buildDocument(fileInfo);
             doc.add(new TextField("content", content, Field.Store.NO));
             writer.updateDocument(
                     new Term("docId", buildDocId(fileInfo)), doc);
+            if (isFine()) {
+                logFine(folder + ": Indexed content (" + content.length() + " chars) for " + fileInfo);
+            }
 
-            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL) {
+            if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL && isCommitIntervalReached()) {
                 commitAndRefresh();
             }
         } catch (Exception e) {
-            logWarning(folder + ": Content extraction error for "
-                    + fileInfo.getFilenameOnly() + ": "
-                    + e.getMessage());
+            logWarning(folder + ": Content extraction error for " + fileInfo + ": " + e.getMessage());
         }
     }
 
@@ -753,17 +801,27 @@ public class LuceneIndexManager extends PFComponent {
     // Content extraction (Tika + encoding repair + OCR)
     // ------------------------------------------------------------------------
 
+    private boolean isContentExtractable(FileInfo fileInfo) {
+        String ext = fileInfo.getExtension();
+        if (ext == null || ext.isEmpty()) {
+            return false;
+        }
+        String configured = ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTENSIONS.getValue(getController());
+        return configured != null && configured.toLowerCase(Locale.ROOT).contains(ext.toLowerCase(Locale.ROOT));
+    }
+
     private String extractContentTikaOnly(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
-            logFine(folder + ": File not found on disk for content extraction: "
-                    + fileInfo.getRelativeName()
-                    + " (resolved path: " + filePath + ")");
+            if (isFine()) {
+                logFine(folder + ": File not found on disk for content extraction: " + fileInfo.getRelativeName()
+                        + " (resolved path: " + filePath + ")");
+            }
             return null;
         }
 
-        try (InputStream stream = Files.newInputStream(filePath)) {
-            BodyContentHandler handler = new BodyContentHandler(TIKA_WRITE_LIMIT);
+        try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
+            BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
             getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
@@ -775,18 +833,20 @@ public class LuceneIndexManager extends PFComponent {
                 return stripEncodingArtifacts(text);
             }
         } catch (IOException | SAXException | TikaException e) {
-            logFine(folder + ": Tika extraction failed for "
-                    + fileInfo.getFilenameOnly() + ": "
-                    + e.getMessage());
-            return readPlainTextFallback(filePath);
+            String fallback = readPlainTextFallback(filePath);
+            if (fallback == null) {
+                if (isFine()) {
+                    logFine(folder + ": Tika extraction failed for " + fileInfo + ": " + e.getMessage());
+                }
+            }
+            return fallback;
         }
         return null;
     }
 
     private String readPlainTextFallback(Path filePath) {
         String name = filePath.getFileName().toString().toLowerCase(Locale.ROOT);
-        if (!name.endsWith(".txt") && !name.endsWith(".md")
-                && !name.endsWith(".csv") && !name.endsWith(".log")) {
+        if (!name.endsWith(".txt") && !name.endsWith(".md") && !name.endsWith(".csv") && !name.endsWith(".log")) {
             return null;
         }
         try {
@@ -808,8 +868,9 @@ public class LuceneIndexManager extends PFComponent {
 
         try {
             if (Files.size(filePath) > CONTENT_EXTRACT_MAX_SIZE) {
-                logFine(folder + ": Skipping content extraction for "
-                        + fileInfo.getFilenameOnly() + " (file too large)");
+                if (isFine()) {
+                    logFine(folder + ": Skipping content extraction for " + fileInfo + " (file too large)");
+                }
                 return null;
             }
         } catch (IOException ignored) {}
@@ -817,19 +878,15 @@ public class LuceneIndexManager extends PFComponent {
         String tikaText = null;
 
         // 1) Tika text extraction (shared parser, no per-file init cost)
-        try (InputStream stream = Files.newInputStream(filePath)) {
-            BodyContentHandler handler =
-                    new BodyContentHandler(TIKA_WRITE_LIMIT);
-            getSharedParser().parse(stream, handler,
-                    new Metadata(), new ParseContext());
+        try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
+            BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
+            getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 tikaText = text;
             }
         } catch (IOException | SAXException | TikaException e) {
-            logFiner(folder + ": Tika failed for "
-                    + fileInfo.getFilenameOnly() + ": "
-                    + e.getMessage());
+            logFiner(folder + ": Tika failed for " + fileInfo + ": " + e.getMessage());
         }
 
         // 2) Check quality and attempt encoding repair
@@ -840,30 +897,38 @@ public class LuceneIndexManager extends PFComponent {
 
             String repaired = repairEncoding(tikaText);
             if (repaired != null && !hasEncodingIssues(repaired)) {
-                logFine(folder + ": Repaired encoding for "
-                        + fileInfo.getFilenameOnly());
+                if (isFine()) {
+                    logFine(folder + ": Repaired encoding for " + fileInfo);
+                }
                 return repaired;
             }
 
-            logFine(folder + ": Encoding issues in "
-                    + fileInfo.getFilenameOnly()
-                    + ", trying OCR fallback");
+            if (isFine()) {
+                logFine(folder + ": Encoding issues in " + fileInfo + ", trying OCR fallback");
+            }
         }
 
         // 3) OCR fallback for broken encoding or missing text
-        if (isOcrEnabled() && OCR_ELIGIBLE_PATTERN.matcher(
-                filePath.toString()).matches()) {
+        if (!isOcrEnabled()) {
+            if (isFine()) {
+                logFine(folder + ": OCR disabled (search.index.ocr.enabled=false) for " + fileInfo);
+            }
+        } else if (!OCR_ELIGIBLE_PATTERN.matcher(filePath.toString()).matches()) {
+            if (isFine()) {
+                logFine(folder + ": File type not OCR-eligible for " + fileInfo);
+            }
+        }
+        if (isOcrEnabled() && OCR_ELIGIBLE_PATTERN.matcher(filePath.toString()).matches()) {
             try {
                 String ocrText = ocrEngine.performOCR(filePath);
                 if (ocrText != null && !ocrText.isBlank()) {
-                    logFine(folder + ": OCR extracted "
-                            + ocrText.length() + " chars from "
-                            + fileInfo.getFilenameOnly());
+                    if (isFine()) {
+                        logFine(folder + ": OCR extracted " + ocrText.length() + " chars from " + fileInfo);
+                    }
                     return ocrText;
                 }
             } catch (NoClassDefFoundError e) {
-                logWarning(folder + ": OCR unavailable for "
-                        + fileInfo.getFilenameOnly());
+                logWarning(folder + ": OCR unavailable for " + fileInfo);
             }
         }
 
@@ -1030,6 +1095,7 @@ public class LuceneIndexManager extends PFComponent {
                                     DeletedFilter deletedFilter,
                                     String directory, String extension,
                                     String modifiedBy) {
+
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
 
@@ -1048,14 +1114,10 @@ public class LuceneIndexManager extends PFComponent {
 
             switch (deletedFilter) {
                 case EXCLUDE:
-                    bqBuilder.add(
-                            new TermQuery(new Term("deleted", "false")),
-                            BooleanClause.Occur.MUST);
+                    bqBuilder.add(new TermQuery(new Term("deleted", "false")), BooleanClause.Occur.MUST);
                     break;
                 case ONLY:
-                    bqBuilder.add(
-                            new TermQuery(new Term("deleted", "true")),
-                            BooleanClause.Occur.MUST);
+                    bqBuilder.add(new TermQuery(new Term("deleted", "true")), BooleanClause.Occur.MUST);
                     break;
                 case INCLUDE:
                 default:
@@ -1079,7 +1141,8 @@ public class LuceneIndexManager extends PFComponent {
                 String term = modifiedBy.toLowerCase(Locale.ROOT).trim();
                 String wildcard = "*" + term + "*";
                 BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
-                modQuery.add(new WildcardQuery(new Term("modifiedByDisplayName", wildcard)), BooleanClause.Occur.SHOULD);
+                modQuery.add(new WildcardQuery(new Term("modifiedByDisplayName", wildcard)),
+                        BooleanClause.Occur.SHOULD);
                 modQuery.add(new WildcardQuery(new Term("modifiedByUsername", wildcard)), BooleanClause.Occur.SHOULD);
                 modQuery.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)), BooleanClause.Occur.SHOULD);
                 bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
@@ -1088,34 +1151,29 @@ public class LuceneIndexManager extends PFComponent {
             Query finalQuery = bqBuilder.build();
             TopDocs topDocs = searcher.search(finalQuery, maxResults);
 
-            logInfo(folder + ": Found " + topDocs.totalHits
-                    + " hits for query '" + queryText + "'");
+            if (isFine()) {
+                logFine(folder + ": Found " + topDocs.totalHits + " for query '" + queryText + "'");
+            }
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-                Document doc =
-                        searcher.storedFields().document(scoreDoc.doc);
-                String relPath = doc.get("relativeName");
-                if (relPath == null) continue;
+                Document doc = searcher.storedFields().document(scoreDoc.doc);
+                String relativeName = doc.get("relativeName");
+                if (relativeName == null) continue;
 
-                FileInfo lookup =
-                        de.dal33t.powerfolder.light.FileInfoFactory
-                                .lookupInstance(folder.getInfo(), relPath);
+                FileInfo lookup = FileInfoFactory.lookupInstance(folder.getInfo(), relativeName);
                 FileInfo fileInfo = folder.getFile(lookup);
                 if (fileInfo != null) {
                     results.add(fileInfo);
                 }
             }
         } catch (Exception e) {
-            logWarning(folder + ": Lucene search failed for '"
-                    + queryText + "': " + e.getMessage());
+            logWarning(folder + ": Lucene search failed for '" + queryText + "': " + e.getMessage());
         } finally {
             if (searcher != null) {
                 try {
                     searcherManager.release(searcher);
                 } catch (IOException e) {
-                    logWarning(folder
-                            + ": Failed to release searcher: "
-                            + e.getMessage());
+                    logWarning(folder + ": Failed to release searcher: " + e.getMessage());
                 }
             }
         }
@@ -1143,8 +1201,7 @@ public class LuceneIndexManager extends PFComponent {
         BooleanQuery.Builder allTokens = new BooleanQuery.Builder();
 
         for (String token : tokens) {
-            BooleanQuery.Builder fieldDisjunction =
-                    new BooleanQuery.Builder();
+            BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
 
             addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f);
 
@@ -1157,14 +1214,12 @@ public class LuceneIndexManager extends PFComponent {
             // Accent-stripped variant (ö removed entirely) — handles
             // documents where extraction lost characters completely
             String stripped = stripAccents(token);
-            if (!stripped.equals(token) && !stripped.equals(folded)
-                    && !stripped.isEmpty()) {
+            if (!stripped.equals(token) && !stripped.equals(folded) && !stripped.isEmpty()) {
                 addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f);
             }
 
             fieldDisjunction.setMinimumNumberShouldMatch(1);
-            allTokens.add(fieldDisjunction.build(),
-                    BooleanClause.Occur.MUST);
+            allTokens.add(fieldDisjunction.build(), BooleanClause.Occur.MUST);
         }
 
         return allTokens.build();
@@ -1219,14 +1274,26 @@ public class LuceneIndexManager extends PFComponent {
     // Commit helper
     // ------------------------------------------------------------------------
 
+    private void throttleExtraction() throws InterruptedException {
+        long throttleMs = ConfigurationEntry.SEARCH_INDEX_CONTENT_EXTRACT_THROTTLE_MS.getValueInt(getController());
+        if (throttleMs > 0) {
+            Thread.sleep(throttleMs);
+        }
+    }
+
+    private boolean isCommitIntervalReached() {
+        return System.currentTimeMillis() - lastCommitTime >= MIN_COMMIT_INTERVAL_MS;
+    }
+
     private void commitAndRefresh() {
+        if (!writer.isOpen()) return;
         try {
             writer.commit();
             searcherManager.maybeRefreshBlocking();
             uncommittedCount.set(0);
+            lastCommitTime = System.currentTimeMillis();
         } catch (Exception e) {
-            logWarning(folder + ": Commit failed: "
-                    + e.getMessage());
+            logWarning(folder + ": Commit failed: " + e.getMessage());
         }
     }
 
@@ -1264,7 +1331,9 @@ public class LuceneIndexManager extends PFComponent {
 
     public void shutdown() {
         if (!closed.compareAndSet(false, true)) return;
-        logFine(folder + ": Shutting down...");
+        if (isFine()) {
+            logFine(folder + ": Shutting down...");
+        }
 
         FileInfo f;
         while ((f = indexQueue.poll()) != null) {
@@ -1279,7 +1348,9 @@ public class LuceneIndexManager extends PFComponent {
         try { writer.close(); }
         catch (Exception ignored) {}
 
-        logFine(folder + ": Shutdown complete");
+        if (isFine()) {
+            logFine(folder + ": Shutdown complete");
+        }
     }
 
     // ------------------------------------------------------------------------

@@ -20,18 +20,20 @@
 
 package de.dal33t.powerfolder.search;
 
-import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.logging.Loggable;
+import de.dal33t.powerfolder.util.os.OSUtil;
 import net.sourceforge.tess4j.Tesseract;
-import net.sourceforge.tess4j.TesseractException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 /**
@@ -60,14 +62,17 @@ public class TesseractOCR extends Loggable {
     private static volatile TesseractOCR INSTANCE;
     private static final Object LOCK = new Object();
 
-    public static TesseractOCR getInstance() {
+    public static void initInstance(String localeCodes, int poolSize, long maxFileSizeMB) {
         if (INSTANCE == null) {
             synchronized (LOCK) {
                 if (INSTANCE == null) {
-                    INSTANCE = new TesseractOCR();
+                    INSTANCE = new TesseractOCR(localeCodes, poolSize, maxFileSizeMB);
                 }
             }
         }
+    }
+
+    public static TesseractOCR getInstance() {
         return INSTANCE;
     }
 
@@ -78,60 +83,40 @@ public class TesseractOCR extends Loggable {
     private static final String CLASSPATH_TESSDATA_PATH = "/tesseract_ocr_trainingdata";
     private static final String TEMP_TESSDATA_DIRNAME = "powerfolder_tesseract_ocr_trainingdata";
 
-    /**
-     * Number of pooled Tesseract instances. Each instance consumes memory
-     * for loaded language models, so this is kept modest. Increase if OCR
-     * throughput across many folders is a bottleneck.
-     */
-    private static final int POOL_SIZE =
-            Math.max(1, Math.min(Runtime.getRuntime().availableProcessors() / 2, 4));
-
-    /** Maximum file size (in bytes) that will be submitted for OCR.
-     *  Files larger than this are skipped. Default: 100 MB. */
-    private static final long MAX_OCR_FILE_SIZE_BYTES =
-            Long.getLong("powerfolder.ocr.maxFileSizeBytes",
-                    100L * 1024 * 1024);
-
-    /** Per-file OCR timeout in seconds. Default: 15 seconds. */
-    private static final long OCR_TIMEOUT_SECONDS =
-            Long.getLong("powerfolder.ocr.timeoutSeconds", 15);
-
-    private final List<Locale> supportedLocales;
+    private final long maxOcrFileSizeBytes;
     private final String languageConfig;
     private boolean ocrEnabled = true;
 
     /** Pool of Tesseract instances for concurrent access. */
     private final BlockingQueue<Tesseract> pool;
 
-    /**
-     * Executor for running OCR with a timeout. Uses daemon threads so it
-     * won't prevent JVM shutdown.
-     */
-    private final ExecutorService ocrExecutor;
-
     // ------------------------------------------------------------------------
     // Initialization
     // ------------------------------------------------------------------------
 
-    private TesseractOCR() {
+    private static final String[] LINUX_NATIVE_LIB_PATHS = {
+            "/usr/lib/x86_64-linux-gnu",
+            "/usr/lib64",
+            "/usr/lib",
+            "/usr/local/lib"
+    };
+
+    private TesseractOCR(String localeCodes, int poolSize, long maxFileSizeMB) {
         super();
 
-        this.supportedLocales = Translation.getSupportedLocales();
-        this.languageConfig = supportedLocales.stream()
-                .map(Locale::getLanguage)
-                .map(TesseractOCR::mapToTesseractLangCode)
-                .distinct()
-                .collect(Collectors.joining("+"));
+        configureNativeLibraryPath();
 
-        this.pool = new LinkedBlockingQueue<>(POOL_SIZE);
+        this.maxOcrFileSizeBytes = maxFileSizeMB * 1024 * 1024;
+        this.languageConfig = resolveLanguageConfig(localeCodes);
 
-        // Daemon-thread executor for timeout-wrapped OCR calls
-        ThreadFactory daemonFactory = r -> {
-            Thread t = new Thread(r, "pf-ocr-worker");
-            t.setDaemon(true);
-            return t;
-        };
-        this.ocrExecutor = Executors.newFixedThreadPool(POOL_SIZE, daemonFactory);
+        this.pool = new LinkedBlockingQueue<>(poolSize);
+
+        if (!isNativeLibraryAvailable()) {
+            logWarning("Tesseract/Leptonica native libraries not available — disabling OCR. "
+                    + "Install with: apt-get install tesseract-ocr libleptonica-dev");
+            this.ocrEnabled = false;
+            return;
+        }
 
         try {
             Path tessdataPath = prepareOrReuseTessdata();
@@ -143,17 +128,18 @@ public class TesseractOCR extends Loggable {
             }
 
             // Create pooled Tesseract instances
-            for (int i = 0; i < POOL_SIZE; i++) {
+            for (int i = 0; i < poolSize; i++) {
                 Tesseract tess = new Tesseract();
                 tess.setDatapath(tessdataPath.toString());
                 tess.setLanguage(languageConfig);
+                tess.setOcrEngineMode(1);
+                tess.setVariable("user_defined_dpi", "150");
+                tess.setVariable("debug_file", OSUtil.isWindowsSystem() ? "NUL" : "/dev/null");
                 pool.add(tess);
             }
 
-            logFine("Tesseract OCR initialized with " + POOL_SIZE
-                    + " pooled instances, languages: " + languageConfig
-                    + ", maxFileSize: " + (MAX_OCR_FILE_SIZE_BYTES / (1024 * 1024)) + " MB"
-                    + ", timeout: " + OCR_TIMEOUT_SECONDS + "s");
+            logInfo("Tesseract OCR initialized with " + poolSize + " pooled instances, languages: "
+                    + languageConfig + ", maxFileSize: " + (maxOcrFileSizeBytes / (1024 * 1024)) + " MB");
         } catch (IOException e) {
             logSevere("OCR initialization failed: " + e.getMessage());
             this.ocrEnabled = false;
@@ -170,10 +156,20 @@ public class TesseractOCR extends Loggable {
 
         Files.createDirectories(tessDir);
 
+        // Remove old traineddata files not in the current language config
+        Set<String> configured = new HashSet<>(Arrays.asList(languageConfig.split("\\+")));
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(tessDir, "*.traineddata")) {
+            for (Path existing : ds) {
+                String name = existing.getFileName().toString().replace(".traineddata", "");
+                if (!configured.contains(name)) {
+                    Files.deleteIfExists(existing);
+                    logFine("Removed unused tessdata: " + name);
+                }
+            }
+        }
+
         int extracted = 0;
-        for (Locale locale : supportedLocales) {
-            String lang = locale.getLanguage();
-            String tessCode = mapToTesseractLangCode(lang);
+        for (String tessCode : languageConfig.split("\\+")) {
             String resourceName = CLASSPATH_TESSDATA_PATH + "/" + tessCode + ".traineddata";
             Path targetFile = tessDir.resolve(tessCode + ".traineddata");
 
@@ -183,12 +179,10 @@ public class TesseractOCR extends Loggable {
                     extracted++;
                     logFiner("Prepared tessdata " + resourceName);
                 } else if (!Files.exists(targetFile)) {
-                    String warningMsg = "No OCR training data found for supported language: "
-                            + locale.getDisplayName() + " (" + tessCode + ")";
-                    logWarning(warningMsg);
+                    logWarning("No OCR training data found for language: " + tessCode);
                 }
             } catch (IOException e) {
-                logWarning("Failed to prepare tessdata for " + lang + ": " + e.getMessage());
+                logWarning("Failed to prepare tessdata for " + tessCode + ": " + e.getMessage());
             }
         }
 
@@ -220,8 +214,7 @@ public class TesseractOCR extends Loggable {
      * the file exceeds the size limit, or the operation times out.
      * <p>
      * Borrows a Tesseract instance from the pool, performs OCR, and returns
-     * the instance. Multiple callers can OCR concurrently up to
-     * {@link #POOL_SIZE}.
+     * the instance. Runs inline on the calling thread (the indexing thread pool).
      *
      * @param file path to the image or PDF
      * @return recognized text content, or null if OCR is disabled, skipped,
@@ -233,15 +226,11 @@ public class TesseractOCR extends Loggable {
             return null;
         }
 
-        // Check file size limit
         try {
             long fileSize = Files.size(file);
-            if (fileSize > MAX_OCR_FILE_SIZE_BYTES) {
-                logInfo("Skipping OCR for " + file
-                        + " — file size " + (fileSize / (1024 * 1024))
-                        + " MB exceeds limit of "
-                        + (MAX_OCR_FILE_SIZE_BYTES / (1024 * 1024))
-                        + " MB");
+            if (fileSize > maxOcrFileSizeBytes) {
+                logInfo("Skipping OCR for " + file + " — file size " + (fileSize / (1024 * 1024))
+                        + " MB exceeds limit of " + (maxOcrFileSizeBytes / (1024 * 1024)) + " MB");
                 return null;
             }
         } catch (IOException e) {
@@ -249,49 +238,79 @@ public class TesseractOCR extends Loggable {
             return null;
         }
 
-        // Borrow a Tesseract instance from the pool
         Tesseract tess = null;
         try {
-            tess = pool.poll(30, TimeUnit.SECONDS);
+            tess = pool.poll(5, TimeUnit.SECONDS);
             if (tess == null) {
-                logWarning("OCR pool exhausted — could not acquire "
-                        + "Tesseract instance within 30s for "
-                        + file.getFileName());
+                logWarning("OCR pool exhausted — could not acquire Tesseract instance for " + file.getFileName());
                 return null;
             }
 
-            // Run OCR with a timeout
-            final Tesseract borrowed = tess;
-            Future<String> future = ocrExecutor.submit(
-                    () -> borrowed.doOCR(file.toFile()));
-
-            try {
-                return future.get(OCR_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                future.cancel(true);
-                logWarning("OCR timed out after " + OCR_TIMEOUT_SECONDS
-                        + "s for " + file);
-                return null;
-            } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof TesseractException) {
-                    logWarning("OCR failed for " + file + ": "
-                            + cause.getMessage());
-                } else {
-                    logWarning("OCR error for " + file + ": "
-                            + cause.getMessage());
+            long start = System.currentTimeMillis();
+            String result = tess.doOCR(file.toFile());
+            long elapsed = System.currentTimeMillis() - start;
+            pool.offer(tess);
+            tess = null;
+            if (result != null && !result.isBlank()) {
+                if (isFine()) {
+                    logFine("OCR completed for " + file.getFileName() + " (" + result.length()
+                            + " chars, " + elapsed + " ms)");
                 }
-                return null;
             }
+            return result;
+        } catch (NoClassDefFoundError | UnsatisfiedLinkError | ExceptionInInitializerError e) {
+            logSevere("Native OCR library not available (" + e.getMessage() + ") — disabling OCR permanently");
+            ocrEnabled = false;
+            return null;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logWarning("OCR interrupted for " + file.getFileName());
             return null;
+        } catch (Exception e) {
+            logFine("OCR failed for " + file.getFileName() + ": " + e.getMessage());
+            return null;
         } finally {
-            // Always return the instance to the pool
             if (tess != null) {
                 pool.offer(tess);
             }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // Native library path and detection
+    // ------------------------------------------------------------------------
+
+    private void configureNativeLibraryPath() {
+        if (OSUtil.isWindowsSystem()) {
+            return;
+        }
+        String existing = System.getProperty("jna.library.path", "");
+        StringBuilder sb = new StringBuilder(existing);
+        for (String candidate : LINUX_NATIVE_LIB_PATHS) {
+            Path dir = Paths.get(candidate);
+            if (Files.isDirectory(dir)) {
+                if (sb.length() > 0) {
+                    sb.append(java.io.File.pathSeparator);
+                }
+                sb.append(candidate);
+            }
+        }
+        if (sb.length() > 0) {
+            System.setProperty("jna.library.path", sb.toString());
+            logFine("Set jna.library.path=" + sb);
+        }
+    }
+
+    private boolean isNativeLibraryAvailable() {
+        try {
+            Class.forName("net.sourceforge.lept4j.Leptonica1");
+            return true;
+        } catch (NoClassDefFoundError | UnsatisfiedLinkError | ExceptionInInitializerError e) {
+            logWarning("Leptonica native library check failed: " + e.getMessage());
+            return false;
+        } catch (ClassNotFoundException e) {
+            logWarning("lept4j not on classpath: " + e.getMessage());
+            return false;
         }
     }
 
@@ -303,16 +322,19 @@ public class TesseractOCR extends Loggable {
         return ocrEnabled;
     }
 
+    public String getLanguageConfig() {
+        return languageConfig;
+    }
+
     // ------------------------------------------------------------------------
     // Shutdown
     // ------------------------------------------------------------------------
 
-    /**
-     * Shuts down the OCR executor. Call on application exit.
-     */
     public void shutdown() {
-        ocrExecutor.shutdownNow();
         pool.clear();
+        synchronized (LOCK) {
+            INSTANCE = null;
+        }
         logFine("TesseractOCR shut down.");
     }
 
@@ -320,14 +342,30 @@ public class TesseractOCR extends Loggable {
     // Language mapping
     // ------------------------------------------------------------------------
 
-    /**
-     * Maps standard ISO 639-1 language codes to Tesseract ISO 639-2 codes
-     * (as used in tessdata_best). Supports all official Tesseract languages.
-     */
-    private static String mapToTesseractLangCode(String lang) {
-        if (lang == null) return "eng";
+    private static final String PRESET_FAST = "en,de";
+    private static final String PRESET_EUROPE = "en,de,fr,es,it,pt,tr,ar,zh,ru";
+    private static final String PRESET_ALL =
+            "en,de,fr,es,it,pt,nl,pl,ru,tr,sv,no,da,fi,hu,cs,sk,sl,ro,bg,"
+                    + "el,uk,sr,hr,bs,lt,lv,et,ar,fa,he,zh,ja,ko,vi,id,ms,hi,th,ga,mt";
 
-        switch (lang.toLowerCase(Locale.ROOT)) {
+    private static String resolveLanguageConfig(String input) {
+        String resolved;
+        switch (input.trim().toLowerCase(Locale.ROOT)) {
+            case "fast": resolved = PRESET_FAST; break;
+            case "europe": resolved = PRESET_EUROPE; break;
+            case "all": resolved = PRESET_ALL; break;
+            default: resolved = input;
+        }
+        return Arrays.stream(resolved.split("[,;+\\s]+"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(s -> mapToTesseractLangCode(s.toLowerCase(Locale.ROOT)))
+                .distinct()
+                .collect(java.util.stream.Collectors.joining("+"));
+    }
+
+    private static String mapToTesseractLangCode(String lang) {
+        switch (lang) {
             case "en": return "eng";
             case "de": return "deu";
             case "fr": return "fra";
@@ -358,20 +396,18 @@ public class TesseractOCR extends Loggable {
             case "et": return "est";
             case "ar": return "ara";
             case "fa": return "fas";
-            case "he": return "heb";
+            case "he": case "iw": return "heb";
             case "zh": return "chi_sim";
-            case "zh_cn": return "chi_sim";
-            case "zh_tw": return "chi_tra";
             case "ja": return "jpn";
             case "ko": return "kor";
             case "vi": return "vie";
-            case "id": return "ind";
+            case "id": case "in": return "ind";
             case "ms": return "msa";
             case "hi": return "hin";
             case "th": return "tha";
             case "ga": return "gle";
             case "mt": return "mlt";
-            default: return lang.toLowerCase(Locale.ROOT);
+            default: return lang;
         }
     }
 }

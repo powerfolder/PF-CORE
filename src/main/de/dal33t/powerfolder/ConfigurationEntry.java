@@ -991,7 +991,7 @@ public enum ConfigurationEntry {
     /**
      * PF-1930: Full text search. Disabled for client. Server enable it
      */
-    SEARCH_INDEX_ENABLED("search.index.enabled", false),
+    SEARCH_INDEX_ENABLED("search.index.enabled", false, true),
 
     /**
      * PFS-5487: Enable content extraction (Tika) for full-text search.
@@ -1001,7 +1001,56 @@ public enum ConfigurationEntry {
     /**
      * PFS-5487: Enable OCR (Tesseract) for images and scanned PDFs.
      */
-    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", false),
+    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", true),
+
+    /**
+     * OCR language preset or custom locale codes. Presets: "fast" (en+de),
+     * "europe" (10 languages), "all" (39 languages). Custom: comma-separated
+     * ISO 639-1 codes, e.g. "en,de,fr". More languages = slower OCR.
+     */
+    SEARCH_INDEX_OCR_LANGUAGES("search.index.ocr.languages", "fast", true),
+
+    /**
+     * Maximum file size in MB that will be submitted for OCR. Files larger than this are skipped. Default: 100 MB.
+     */
+    SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB("search.index.ocr.maxFileSizeMB", 100, true),
+
+    /**
+     * PFS-5311: Maximum number of concurrent indexing worker threads. Controls how many folders can
+     * perform content extraction (Tika/OCR) simultaneously. Prevents CPU/IO saturation during
+     * startup and large index rebuilds. Default: quarter of available CPUs (min 2).
+     * <p>
+     * Content extraction is IO-bound (Tika reads files from disk), so more threads mostly increase
+     * disk pressure rather than throughput. Threads run at {@code MIN_PRIORITY}.
+     */
+    SEARCH_INDEX_MAX_THREADS("search.indexing.maxThreads",
+            Math.max(2, Runtime.getRuntime().availableProcessors() / 4), true),
+
+    /**
+     * Maximum extracted text length (characters) per file. Limits how much text Tika produces.
+     * 1 MB ≈ 500 pages — sufficient for search. Default: 1048576.
+     */
+    SEARCH_INDEX_MAX_TEXT_LENGTH("search.index.maxTextLength", 1024 * 1024),
+
+    /**
+     * Comma-separated list of file extensions eligible for content extraction (Tika).
+     * Files with other extensions are indexed by filename only.
+     */
+    SEARCH_INDEX_CONTENT_EXTENSIONS("search.index.contentExtensions",
+            "pdf,doc,docx,xls,xlsx,ppt,pptx,odt,ods,odp,odg,rtf,txt,csv,md,log,xml,html,htm,msg,eml"),
+
+    /**
+     * Throttle delay (ms) between content extractions (Tika/OCR) in phase 1 (inline) and phase 2.
+     * Prevents disk I/O saturation during index builds. Default: 50 ms.
+     */
+    SEARCH_INDEX_CONTENT_EXTRACT_THROTTLE_MS("search.index.contentExtractThrottleMs", 50),
+
+    /**
+     * PFS-5311: Unix timestamp (millis) before which all search indexes must be rebuilt. Set via
+     * admin preferences "Rebuild all indexes" button. Folders that mount later
+     * (DynamicFolderMounter) check this on initialization and rebuild if their lastRebuilt is older.
+     */
+    SEARCH_INDEX_REBUILD_BEFORE("search.index.rebuildBefore", "0"),
 
     /**
      * PFS-5311: Maximum number of concurrent indexing worker threads. Controls how many folders can
@@ -1621,6 +1670,43 @@ public enum ConfigurationEntry {
             LOG.log(Level.WARNING, "Unable to parse configuration entry '"
                     + configKey + "' into a int. Value: " + value, e);
             return Integer.valueOf(getDefaultValue());
+        }
+    }
+
+    /**
+     * Parses the configuration entry into a Long.
+     *
+     * @param controller the controller to read the config from
+     * @return The current value from the configuration for this entry or the
+     * default value if value not set/unparseable or {@code null} if no
+     * default value was set.
+     */
+    public Long getValueLong(Controller controller) {
+        return getValueLong(controller.getConfig());
+    }
+
+    /**
+     * Parses the configuration entry into a Long.
+     *
+     * @param config the config to read from
+     * @return The current value from the configuration for this entry or the
+     * default value if value not set/unparseable or {@code null} if no
+     * default value was set.
+     */
+    public Long getValueLong(Properties config) {
+        String value = getValue(config);
+        if (value == null || StringUtils.isBlank(value)) {
+            value = getDefaultValue();
+        }
+        if (value == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(value.trim());
+        } catch (NumberFormatException e) {
+            LOG.log(Level.WARNING, "Unable to parse configuration entry '"
+                    + configKey + "' into a long. Value: " + value, e);
+            return Long.valueOf(getDefaultValue());
         }
     }
 
