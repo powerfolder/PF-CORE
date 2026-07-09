@@ -48,10 +48,9 @@ import de.dal33t.powerfolder.util.logging.handlers.*;
 /**
  * Class to manage logging handler. This maintains up to three handlers;
  * document, file and console. The file handler is only constructed when
- * required. root logging is adjusted to the minimum required by the handlers.
- * This allows Logger.isLoggable() to optimize based on root logging level. Root
- * logging level is never set above SEVERE, so that runtime exceptions get
- * handled.
+ * required. The logging level of our own logger namespace (APP_LOGGER) is adjusted to the minimum required
+ * by the handlers, which allows Logger.isLoggable() to optimize. The root logger is fixed at SEVERE, so third
+ * party debug logging is disabled entirely while runtime exceptions still get handled.
  */
 public class LoggingManager {
 
@@ -82,6 +81,21 @@ public class LoggingManager {
 
     /** Lock object when creating file handler */
     private static final Object fileHandlerLock = new Object();
+
+    /**
+     * The logger namespace of our own classes, receives the configured logging level. All other (third party)
+     * loggers inherit SEVERE from the root logger, so their debug logging is disabled before any message gets
+     * built. The strong reference is required to prevent the JUL LogManager from garbage collecting the logger.
+     */
+    private static final Logger APP_LOGGER = Logger.getLogger("de.dal33t");
+
+    /**
+     * Third party loggers fixed at WARNING: warnings and errors from Hibernate/c3p0 stay visible (the
+     * DEFAULT_FILTER decides what passes), but their debug logging never gets built. Strong references are
+     * required to prevent the JUL LogManager from garbage collecting these loggers.
+     */
+    private static final Logger[] THIRD_PARTY_LOGGERS = {Logger.getLogger("org.hibernate"),
+        Logger.getLogger("com.mchange")};
 
     /** The document logging level */
     private static Level documentLoggingLevel;
@@ -174,9 +188,7 @@ public class LoggingManager {
                 }
                 return true;
             }
-            return loggerName.startsWith("de.dal33t")
-                || loggerName.startsWith("net.sf.webdav")
-                || loggerName.startsWith("edu.kit");
+            return loggerName.startsWith("de.dal33t");
         }
     };
 
@@ -206,6 +218,10 @@ public class LoggingManager {
         bufferedHandler.setFilter(DEFAULT_FILTER);
         countingHandler.setFilter(DEFAULT_FILTER);
         syslogHandler.setFilter(DEFAULT_FILTER);
+
+        for (Logger thirdPartyLogger : THIRD_PARTY_LOGGERS) {
+            thirdPartyLogger.setLevel(Level.WARNING);
+        }
 
         countingHandler.setLevel(Level.WARNING);
         rootLogger.addHandler(countingHandler);
@@ -468,8 +484,10 @@ public class LoggingManager {
     }
 
     /**
-     * Set the root logging level to the highest possible, so that
-     * Logger.isLoggable() has the desired effect in the code.
+     * Set the logging level of our own logger namespaces to the minimum required by the handlers, so that
+     * Logger.isLoggable() has the desired effect in the code. The root logger always stays at SEVERE: third
+     * party loggers (Apache HttpClient wire, Hibernate, ...) inherit that level and never build debug
+     * messages, while runtime exceptions still get handled.
      */
     private static void setMinimumBaseLoggingLevel() {
         Level level = Level.SEVERE;
@@ -495,7 +513,13 @@ public class LoggingManager {
         {
             level = bufferedLoggingLevel;
         }
-        getRootLogger().setLevel(level);
+        if (syslogLoggingLevel != null
+            && syslogLoggingLevel.intValue() < level.intValue())
+        {
+            level = syslogLoggingLevel;
+        }
+        APP_LOGGER.setLevel(level);
+        getRootLogger().setLevel(Level.SEVERE);
     }
 
     public static Level levelForName(String levelName) {
