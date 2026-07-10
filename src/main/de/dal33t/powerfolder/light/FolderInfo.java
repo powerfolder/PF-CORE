@@ -246,13 +246,24 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     /**
+     * The stored inheritance flag, ignoring the feature gate and top-folder rule.
+     * Package-private accessor for {@link FolderInfoFactory} (no-op detection).
+     */
+    boolean storedInheritsPermissions() {
+        return inheritsPermissions;
+    }
+
+    /**
      * Sets whether this subfolder inherits permissions from its top folder.
-     * Setting this to {@code false} interrupts the permission inheritance so
-     * that only explicit permissions set on this folder apply.
+     * <p>
+     * Package-private on purpose: this mutates in place and does NOT bump the
+     * folder version. To <em>change</em> the flag (which must produce a new,
+     * version-bumped {@link FolderInfo}, like a rename), use
+     * {@link FolderInfoFactory#changeInheritsPermissions(FolderInfo, boolean)}.
      *
      * @param inheritsPermissions {@code false} to interrupt inheritance
      */
-    public void setInheritsPermissions(boolean inheritsPermissions) {
+    void setInheritsPermissions(boolean inheritsPermissions) {
         this.inheritsPermissions = inheritsPermissions;
     }
 

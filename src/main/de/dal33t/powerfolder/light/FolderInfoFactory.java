@@ -156,6 +156,43 @@ public class FolderInfoFactory {
         ).intern(true);
     }
 
+    /**
+     * PFC-3543: Changes the "inherits permissions" flag of a (sub)folder. Like a
+     * rename this does not mutate the given instance but produces a new, version-
+     * bumped {@link FolderInfo} so the change propagates through the network
+     * (folder version is part of the sync protocol). This is the only supported
+     * way to change the flag.
+     *
+     * @param originalFolderInfo  the folder to change
+     * @param inheritsPermissions {@code false} to interrupt inheritance
+     * @return the original instance if the flag is unchanged, otherwise a new
+     *         version-bumped instance with the flag applied
+     */
+    public static FolderInfo changeInheritsPermissions(FolderInfo originalFolderInfo,
+        boolean inheritsPermissions)
+    {
+        if (originalFolderInfo.storedInheritsPermissions() == inheritsPermissions) {
+            return originalFolderInfo;
+        }
+        int version;
+        if (originalFolderInfo.isLookupInstance()) {
+            version = 0;
+            LOG.log(Level.WARNING, originalFolderInfo
+                + ": Changing inheritsPermissions from lookup instance is discouraged, but used.",
+                new StackDump());
+        } else {
+            version = originalFolderInfo.getVersion() + 1;
+        }
+        FolderInfo result = new FolderInfo(
+                originalFolderInfo.getName(),
+                originalFolderInfo.getId(),
+                version,
+                originalFolderInfo.getParent()
+        );
+        result.setInheritsPermissions(inheritsPermissions);
+        return result.intern(true);
+    }
+
     // Persistence ------------------------------------------------------------
 
     public static FolderInfo readFrom(Path folderBasePath) {

@@ -98,6 +98,32 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
             topFolder.inheritsPermissions());
     }
 
+    // --- Factory: changing the flag bumps the folder version ------------------
+
+    public void testFactoryChangeBumpsVersionAndAppliesFlag() {
+        Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
+        int versionBefore = subFolder.getVersion();
+
+        FolderInfo interrupted =
+            FolderInfoFactory.changeInheritsPermissions(subFolder, false);
+
+        assertEquals("Version must be bumped when the flag changes",
+            versionBefore + 1, interrupted.getVersion());
+        assertFalse("Flag must be applied on the new instance",
+            interrupted.inheritsPermissions());
+        assertEquals("Folder identity (id) must be preserved",
+            subFolder.getId(), interrupted.getId());
+    }
+
+    public void testFactoryChangeIsNoOpWhenFlagUnchanged() {
+        Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
+        // subFolder inherits by default -> asking for the same must be a no-op.
+        FolderInfo same = FolderInfoFactory.changeInheritsPermissions(subFolder, true);
+        assertSame("Unchanged flag must return the same instance", subFolder, same);
+        assertEquals("Version must not change on a no-op",
+            subFolder.getVersion(), same.getVersion());
+    }
+
     // --- Wire protocol negotiation & backward compatibility ------------------
 
     public void testFeatureOffKeepsOldProtocol() throws Exception {
