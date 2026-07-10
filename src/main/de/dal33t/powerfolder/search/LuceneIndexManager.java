@@ -42,11 +42,15 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.rtf.RTFEditorKit;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -99,6 +103,14 @@ public class LuceneIndexManager extends PFComponent {
     private static final Pattern PLAIN_TEXT_PATTERN = Pattern.compile(
             ".*\\.(txt|log|csv|tsv|md|json|xml|html|htm|ini|cfg|conf|properties|yml|yaml|eml)$",
             Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Matches RTF files. Tika occasionally misroutes RTF to the plain-text
+     * parser and then fails with "Failed to detect the character encoding";
+     * these files fall back to the JDK {@link RTFEditorKit} reader. PF-1930.
+     */
+    private static final Pattern RTF_PATTERN =
+            Pattern.compile(".*\\.rtf$", Pattern.CASE_INSENSITIVE);
 
     /**
      * Detects UTF-8 mojibake: multi-byte UTF-8 sequences that were decoded
@@ -870,7 +882,7 @@ public class LuceneIndexManager extends PFComponent {
 
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
             BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
-            getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
+            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 if (!hasEncodingIssues(text)) return text;
@@ -910,6 +922,44 @@ public class LuceneIndexManager extends PFComponent {
         }
     }
 
+    /**
+     * Builds Tika {@link Metadata} carrying the file name as a resource-name
+     * hint. Tika's {@code AutoDetectParser} uses the file extension to pick a
+     * parser; without the hint an RTF (and other extension-typed formats) can
+     * be misdetected as text/plain and then fail charset detection. PF-1930.
+     */
+    private static Metadata filenameHint(Path filePath) {
+        Metadata metadata = new Metadata();
+        Path name = filePath.getFileName();
+        if (name != null) {
+            metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name.toString());
+        }
+        return metadata;
+    }
+
+    /**
+     * Fallback RTF-to-text extraction using the JDK's built-in
+     * {@link RTFEditorKit}. Used when Tika cannot detect the character encoding
+     * of an RTF document. Strips the RTF control words, leaving the readable
+     * text so the file stays searchable. PF-1930.
+     *
+     * @return the extracted text, or null if the file could not be read as RTF
+     */
+    private String readRtf(Path filePath) {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(filePath), 64 * 1024)) {
+            RTFEditorKit kit = new RTFEditorKit();
+            DefaultStyledDocument doc = new DefaultStyledDocument();
+            kit.read(in, doc, 0);
+            String text = doc.getText(0, doc.getLength());
+            return text != null && !text.isBlank() ? text : null;
+        } catch (IOException | BadLocationException e) {
+            if (isFine()) {
+                logFine(folder + ": RTF fallback extraction failed for " + filePath + ": " + e.getMessage());
+            }
+            return null;
+        }
+    }
+
     private String extractContent(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
@@ -935,7 +985,7 @@ public class LuceneIndexManager extends PFComponent {
         BodyContentHandler handler =
                 new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
-            getSharedParser().parse(stream, handler, new Metadata(), new ParseContext());
+            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 tikaText = text;
@@ -953,6 +1003,21 @@ public class LuceneIndexManager extends PFComponent {
                     logFine(folder + ": Using partial content (" + partial.length()
                             + " chars) after " + e.getClass().getSimpleName() + " for " + fileInfo);
                 }
+            } else if (RTF_PATTERN.matcher(filePath.toString()).matches()) {
+                // Tika misroutes RTF to the plain-text parser when it cannot
+                // detect the charset ("Failed to detect the character encoding
+                // of a document"). Fall back to the JDK RTF reader, which strips
+                // the control words and leaves the readable text searchable.
+                String rtf = readRtf(filePath);
+                if (rtf != null && !rtf.isBlank()) {
+                    tikaText = rtf;
+                    if (isFine()) {
+                        logFine(folder + ": Decoded RTF via fallback (" + rtf.length()
+                                + " chars) after " + e.getClass().getSimpleName() + " for " + fileInfo);
+                    }
+                } else if (isFine()) {
+                    logFine(folder + ": Tika content extraction failed for " + fileInfo + ": " + e.getMessage());
+                }
             } else if (PLAIN_TEXT_PATTERN.matcher(filePath.toString()).matches()) {
                 // Tika gave up (typically "Failed to detect the character
                 // encoding of a document") but the file is plain text — decode
@@ -964,11 +1029,11 @@ public class LuceneIndexManager extends PFComponent {
                         logFine(folder + ": Decoded plain text as UTF-8 (" + plain.length()
                                 + " chars) after " + e.getClass().getSimpleName() + " for " + fileInfo);
                     }
-                } else {
-                    logWarning(folder + ": Tika content extraction failed for " + fileInfo + ": " + e.getMessage());
+                } else if (isFine()) {
+                    logFine(folder + ": Tika content extraction failed for " + fileInfo + ": " + e.getMessage());
                 }
-            } else {
-                logWarning(folder + ": Tika content extraction failed for " + fileInfo + ": " + e.getMessage());
+            } else if (isFine()) {
+                logFine(folder + ": Tika content extraction failed for " + fileInfo + ": " + e.getMessage());
             }
         }
 
