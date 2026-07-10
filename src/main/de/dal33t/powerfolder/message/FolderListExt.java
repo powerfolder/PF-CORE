@@ -33,8 +33,19 @@ import java.util.Collection;
  */
 public class FolderListExt extends FolderList implements Externalizable {
     private static final long serialVersionUID = -3861676003458215175L;
-    private static final long extVersionUID = 102L;
+    // PFC-3543: 103 adds the FolderInfo inheritsPermissions flag on top of 102 (parent).
+    private static final long extVersionUID = 103L;
 
+    /**
+     * The wire version written for this message. It alone expresses which
+     * FolderInfo fields follow, so there is a single source of truth:
+     * <ul>
+     *   <li>100: no folder list</li>
+     *   <li>101: folder list, legacy FolderInfo protocol</li>
+     *   <li>102: + parent/subfolder information</li>
+     *   <li>103: + inheritsPermissions (interruption of permission inheritance)</li>
+     * </ul>
+     */
     private final long writeExtVersionUID;
 
     public FolderListExt() {
@@ -48,20 +59,33 @@ public class FolderListExt extends FolderList implements Externalizable {
         writeExtVersionUID = 100L;
     }
 
-    public FolderListExt(Collection<FolderInfo> allFolders, boolean includeVersionAndParent)
+    /**
+     * @param remoteProtocolVersion the protocol version the remote peer negotiated
+     *                              (see {@link Identity}). Determines which FolderInfo
+     *                              fields are written: &gt;= 115 includes
+     *                              inheritsPermissions (PFC-3543), &gt;= 114 includes
+     *                              parent/subfolder information, otherwise neither.
+     */
+    public FolderListExt(Collection<FolderInfo> allFolders, int remoteProtocolVersion)
     {
         super(allFolders);
-        writeExtVersionUID = includeVersionAndParent ? extVersionUID : 101L;
+        if (remoteProtocolVersion >= Identity.PROTOCOL_VERSION_115) {
+            writeExtVersionUID = 103L;
+        } else if (remoteProtocolVersion >= Identity.PROTOCOL_VERSION_114) {
+            writeExtVersionUID = 102L;
+        } else {
+            writeExtVersionUID = 101L;
+        }
     }
 
     public void readExternal(ObjectInput in) throws IOException,
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != extVersionUID && extUID != 101 && extUID != 100) {
+        if (extUID < 100L || extUID > extVersionUID) {
             throw new InvalidClassException(this.getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
-                    + ", supported: " + extVersionUID + " and 100");
+                    + ", supported: 100.." + extVersionUID);
         }
         joinedMetaFolders = in.readBoolean();
         if (in.readBoolean()) {
@@ -103,7 +127,7 @@ public class FolderListExt extends FolderList implements Externalizable {
         if (folders != null) {
             out.writeInt(folders.length);
             for (FolderInfo foInfo : folders) {
-                foInfo.writeExternal(out, writeExtVersionUID == extVersionUID);
+                foInfo.writeExternal(out, writeExtVersionUID >= 102L, writeExtVersionUID >= 103L);
             }
         }
     }

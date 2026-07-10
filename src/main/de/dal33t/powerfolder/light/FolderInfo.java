@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.light;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
@@ -63,6 +64,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     public static final String PROPERTYNAME_VERSION = "version";
     public static final String PROPERTYNAME_TOP_FOLDER = "topFolder";
     public static final String PROPERTYNAME_TOP_PATH = "topPath";
+    public static final String PROPERTYNAME_INHERITS_PERMISSIONS = "inheritsPermissions";
 
     @Index(name="IDX_FOLDER_NAME")
     private String name;
@@ -79,6 +81,16 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private FolderInfo topFolder;
     @Column(name = "topPath", length = 1024)
     private String topPath;
+
+    /**
+     * PFC-3543: Whether this (sub)folder inherits permissions from its top folder.
+     * {@code true} (the default) means normal inheritance; {@code false} interrupts
+     * it so that only explicit permissions set on this folder apply. Top folders
+     * always inherit. Only honored when the interruption feature is enabled (see
+     * {@link de.dal33t.powerfolder.Feature#FOLDER_PERMISSION_INHERITANCE_INTERRUPTION}).
+     */
+    @Column(name = "inheritsPermissions", nullable = false)
+    private boolean inheritsPermissions = true;
 
     /**
      * The cached hash info.
@@ -225,8 +237,23 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     public boolean inheritsPermissions() {
-        // Default
-        return true;
+        // Top folders are always the root of inheritance. When the feature is
+        // disabled the interruption is never honored, so the folder inherits.
+        if (isTopFolder() || Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.isDisabled()) {
+            return true;
+        }
+        return inheritsPermissions;
+    }
+
+    /**
+     * Sets whether this subfolder inherits permissions from its top folder.
+     * Setting this to {@code false} interrupts the permission inheritance so
+     * that only explicit permissions set on this folder apply.
+     *
+     * @param inheritsPermissions {@code false} to interrupt inheritance
+     */
+    public void setInheritsPermissions(boolean inheritsPermissions) {
+        this.inheritsPermissions = inheritsPermissions;
     }
 
     /**
@@ -332,7 +359,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     // Serialization optimization *********************************************
 
-    private static final long extVersionUID = 101L;
+    // PFC-3543: bumped 101 -> 102 to carry the inheritsPermissions flag.
+    // Protocol 100 = id+name, 101 = +version+parent, 102 = +inheritsPermissions.
+    private static final long extVersionUID = 102L;
 
     public static FolderInfo readExt(ObjectInput in) throws IOException,
         ClassNotFoundException
@@ -346,7 +375,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != 100L && extUID != extVersionUID) {
+        if (extUID != 100L && extUID != 101L && extUID != extVersionUID) {
             throw new InvalidClassException(this.getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
                     + ", expected: " + extVersionUID);
@@ -363,6 +392,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         } else {
             setParent(null);
         }
+        // PFC-3543: protocol 102+ carries the inheritsPermissions flag; older
+        // streams (100/101) default to inheriting.
+        if (extUID >= 102L) {
+            inheritsPermissions = in.readBoolean();
+        }
         // LOG.log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
     }
 
@@ -371,25 +405,44 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     public void writeExternal(ObjectOutput out, boolean includeVersionAndParent) throws IOException {
-        boolean requiresNewProtocol = version > 0 || topFolder != null;
-        if (includeVersionAndParent) {
-            includeVersionAndParent = requiresNewProtocol;
-        } else if (requiresNewProtocol && !isMetaFolder()) {
-            //LOG.log(Level.WARNING,
-             //       this + ": writeExternal would require new protocol, using backward compatibility.", new StackDump());
+        // PFC-3543: standalone callers that do not negotiate the inheritsPermissions
+        // protocol must not emit it (safe default: the peer treats the folder as
+        // inheriting). Only FolderListExt talking to a >= 115 peer passes true.
+        writeExternal(out, includeVersionAndParent, false);
+    }
+
+    public void writeExternal(ObjectOutput out, boolean includeVersionAndParent,
+        boolean includeInheritsPermissions) throws IOException {
+
+        // Pick the highest FolderInfo protocol version we may write. We escalate
+        // only as far as (a) this folder actually needs and (b) the peer negotiated,
+        // so older peers keep receiving a format they understand:
+        //   100 = id + name
+        //   101 = + version + parent folder (subfolder support)
+        //   102 = + inheritsPermissions flag (PFC-3543)
+        boolean writeVersionAndParent = includeVersionAndParent
+            && (version > 0 || topFolder != null);
+        boolean writeInheritsPermissions = writeVersionAndParent
+            && includeInheritsPermissions
+            && Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.isEnabled()
+            && !inheritsPermissions;
+
+        long protocolVersion = 100L;
+        if (writeInheritsPermissions) {
+            protocolVersion = extVersionUID; // 102
+        } else if (writeVersionAndParent) {
+            protocolVersion = 101L;
         }
-        if (includeVersionAndParent) {
-            out.writeLong(extVersionUID);
-        } else {
-            // Use old protocol
-            out.writeLong(100L);
-        }
+
+        // Version 100: id + name (always written)
+        out.writeLong(protocolVersion);
         out.writeUTF(id);
         out.writeUTF(name);
-        if (!includeVersionAndParent) {
+        if (protocolVersion == 100L) {
             return;
         }
-        // LOG.log(Level.INFO, this + ": writeExternal ? " + includeVersionAndParent, new StackDump());
+
+        // Version 101: version + parent folder
         out.writeInt(version);
         if (topPath != null) {
             out.writeBoolean(true);
@@ -397,6 +450,28 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         } else {
             out.writeBoolean(false);
         }
+
+        // Version 102: inheritsPermissions flag
+        if (writeInheritsPermissions) {
+            out.writeBoolean(inheritsPermissions);
+        }
+    }
+
+    /**
+     * PFC-3543: Custom deserialization so that instances written before the
+     * "inheritsPermissions" field existed default to inheriting ({@code true})
+     * instead of the boolean default ({@code false}). Keep in sync with the
+     * serialized instance fields if new fields are added.
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        ObjectInputStream.GetField serialFields = in.readFields();
+        name = (String) serialFields.get(PROPERTYNAME_NAME, null);
+        id = (String) serialFields.get(PROPERTYNAME_ID, null);
+        version = serialFields.get(PROPERTYNAME_VERSION, 0);
+        topFolder = (FolderInfo) serialFields.get(PROPERTYNAME_TOP_FOLDER, null);
+        topPath = (String) serialFields.get(PROPERTYNAME_TOP_PATH, null);
+        inheritsPermissions = serialFields.get(PROPERTYNAME_INHERITS_PERMISSIONS, true);
+        hash = hashCode0();
     }
 
     public String getLocalizedName() {
@@ -431,6 +506,11 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
           this.name = finfo.getName();
           this.id   = finfo.getId();
           this.hash = hashCode0();
+          // TODO PFC-3543: once powerfolder-protobuf-*.jar is regenerated from the
+          // updated FolderInfoProto.proto (field 4), read the flag here. The proto
+          // field is the inverted "interruptInheritance" (proto3 bool defaults to
+          // false = inherits), so bridge it back:
+          // this.inheritsPermissions = !finfo.getInterruptInheritance();
         }
     }
 
@@ -449,6 +529,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
       builder.setClazzName(this.getClass().getSimpleName());
       builder.setName(this.name);
       builder.setId(this.id);
+      // TODO PFC-3543: once powerfolder-protobuf-*.jar is regenerated from the
+      // updated FolderInfoProto.proto (field 4), write the flag here (inverted,
+      // so proto3 default false = inherits):
+      // builder.setInterruptInheritance(!this.inheritsPermissions);
 
       return builder.build();
     }

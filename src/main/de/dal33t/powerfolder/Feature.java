@@ -102,6 +102,13 @@ public enum Feature {
     UI_ENABLED(),
 
     /**
+     * PFC-3543: Interruption of permission inheritance on individual subfolders.
+     * Disabled by default; mirrored from the server ConfigurationEntry
+     * FOLDER_PERMISSION_INHERITANCE_INTERRUPTION_ENABLED at startup.
+     */
+    FOLDER_PERMISSION_INHERITANCE_INTERRUPTION(false),
+
+    /**
      * Don't active accounts on AccountService#register
      */
     REGISTER_DONT_ACTIVATE_ACCOUNTS(),

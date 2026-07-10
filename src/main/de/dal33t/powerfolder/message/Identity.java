@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.message;
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
+import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.d2d.D2DEvent;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.d2d.NodeEvent;
@@ -129,6 +130,10 @@ public class Identity extends Message implements D2DObject, D2DEvent
      * <p>
      * 114: PFC-3547: FolderInfo with parent (subfolder) included in FolderListExt.
      * Servers older than v27 must not receive parent data to avoid cluster disconnections.
+     * <p>
+     * 115: PFC-3543: FolderInfo carries the inheritsPermissions flag (interruption
+     * of permission inheritance). Only advertised when the feature is enabled, so
+     * peers negotiating &lt; 115 keep receiving the old FolderInfo protocol.
      */
     public static final int PROTOCOL_VERSION_106 = 106;
     public static final int PROTOCOL_VERSION_107 = 107;
@@ -140,8 +145,13 @@ public class Identity extends Message implements D2DObject, D2DEvent
     public static final int PROTOCOL_VERSION_113 = 113;
     // PFC-3547: FolderInfo parent/subfolder support requires explicit negotiation
     public static final int PROTOCOL_VERSION_114 = 114;
+    // PFC-3543: FolderInfo inheritsPermissions support requires explicit negotiation
+    public static final int PROTOCOL_VERSION_115 = 115;
 
-    // Never make this static
+    // Never make this static.
+    // PFC-3543: only advertise 115 when the interruption feature is enabled;
+    // otherwise stay at 114 for compatibility with old servers/clients. Set in
+    // the sending constructor below.
     private int protocolVersion = PROTOCOL_VERSION_114;
 
     private boolean requestFullFolderlist;
@@ -185,6 +195,13 @@ public class Identity extends Message implements D2DObject, D2DEvent
         this.requestFullFolderlist = controller.getMySelf().isServer();
 
         this.configurationURL = ConfigurationEntry.CONFIG_URL.getValue(controller);
+
+        // PFC-3543: advertise the higher protocol only when the interruption of
+        // permission inheritance feature is active, so we stay compatible with old
+        // servers/clients (protocol 114) while the feature is disabled.
+        this.protocolVersion = Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.isEnabled()
+            ? PROTOCOL_VERSION_115
+            : PROTOCOL_VERSION_114;
     }
 
     /**

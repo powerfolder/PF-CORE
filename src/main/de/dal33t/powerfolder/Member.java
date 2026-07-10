@@ -860,8 +860,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 folderList = new FolderListExt(folders2node, peer.getRemoteMagicId());
             } else {
-                boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_114;
-                folderList = new FolderListExt(folders2node, includeVersionAndParent);
+                folderList = new FolderListExt(folders2node, getProtocolVersion());
             }
             if (isFiner()) {
                 logFiner("Sending CH " + folderList);
@@ -1949,8 +1948,7 @@ public class Member extends PFComponent implements Comparable<Member> {
                 } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                     myFolderList = new FolderListExt(folders2node, remoteMagicId);
                 } else {
-                    boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_114;
-                    myFolderList = new FolderListExt(folders2node, includeVersionAndParent);
+                    myFolderList = new FolderListExt(folders2node, getProtocolVersion());
                 }
                 if (isFine()) {
                     logFine("Sending HM " + myFolderList);
@@ -2097,8 +2095,7 @@ public class Member extends PFComponent implements Comparable<Member> {
             } else if (getProtocolVersion() < Identity.PROTOCOL_VERSION_112) {
                 myFolderList = new FolderListExt(folders2node, remoteMagicId);
             } else {
-                boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_114;
-                myFolderList = new FolderListExt(folders2node, includeVersionAndParent);
+                myFolderList = new FolderListExt(folders2node, getProtocolVersion());
             }
             if (isFiner()) {
                 logFiner("Sending SFM " + myFolderList);
@@ -2838,8 +2835,7 @@ public class Member extends PFComponent implements Comparable<Member> {
 
 
         synchronized (peerInitializeLock) {
-            boolean includeVersionAndParent = getProtocolVersion() >= Identity.PROTOCOL_VERSION_114;
-            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false), includeVersionAndParent));
+            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false), getProtocolVersion()));
         }
         peer.sendMessagesAsynchron(new HandshakeCompleted());
     }

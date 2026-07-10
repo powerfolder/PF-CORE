@@ -531,6 +531,14 @@ public class Controller extends PFComponent {
         // Read from installer temp file
         ConfigurationLoader.loadAndMergeFromInstaller(this);
 
+        // PFC-3543: mirror the "interruption of permission inheritance" config into
+        // the core feature flag so FolderInfo can honor it without a controller.
+        if (ConfigurationEntry.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION_ENABLED.getValueBoolean(this)) {
+            Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
+        } else {
+            Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
+        }
+
         if (verbose != ConfigurationEntry.VERBOSE.getValueBoolean(this)) {
             verbose = ConfigurationEntry.VERBOSE.getValueBoolean(this);
             initLogger();

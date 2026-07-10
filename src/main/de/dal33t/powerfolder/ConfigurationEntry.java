@@ -531,6 +531,17 @@ public enum ConfigurationEntry {
     FOLDER_SHARE_SUBFOLDER_ENABLED("folder.share.subfolder.enabled", true),
 
     /**
+     * PFC-3543: Enable the "interruption of permission inheritance" feature,
+     * which allows breaking the permission inheritance on individual subfolders
+     * so they get their own explicit permissions. Disabled by default; can be
+     * switched on/off centrally. Mirrored into the core feature flag
+     * {@link de.dal33t.powerfolder.Feature#FOLDER_PERMISSION_INHERITANCE_INTERRUPTION}
+     * on startup so the core can honor it without a controller.
+     */
+    FOLDER_PERMISSION_INHERITANCE_INTERRUPTION_ENABLED(
+        "folder.permission.inheritance_interruption.enabled", false),
+
+    /**
      * PFS-798: If invitor can invite "external" non existing users (e.g. not in LDAP nor in DB).
      * Will create a new user account with server default settings for invitee.
      */
