@@ -539,7 +539,7 @@ public enum ConfigurationEntry {
      * on startup so the core can honor it without a controller.
      */
     FOLDER_PERMISSION_INHERITANCE_INTERRUPTION_ENABLED(
-        "folder.permission.inheritance_interruption.enabled", false),
+        "folder.permission.inheritance_interruption.enabled", false, true),
 
     /**
      * PFS-798: If invitor can invite "external" non existing users (e.g. not in LDAP nor in DB).
