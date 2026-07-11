@@ -147,9 +147,12 @@ public class PermissionUserType extends Loggable implements UserType {
                 p = FolderPermission.readWrite(fdInfo);
             }
         } else if (permissionID.contains(GroupAdminPermission.ID_SEPARATOR)) {
-            String[] idAndName = permissionID.split(GroupAdminPermission.ID_SEPARATOR);
-            String groupID = idAndName[0];
-            String clazzName = idAndName[1];
+            // Split at the LAST separator: group OIDs may themselves end with "_GP"
+            // (e.g. group "LRA_GP" -> "..._LRA_GP_GP_GroupAdminPermission"), which made
+            // split() cut at the wrong place and drop the valid permission as unknown.
+            int idx = permissionID.lastIndexOf(GroupAdminPermission.ID_SEPARATOR);
+            String groupID = permissionID.substring(0, idx);
+            String clazzName = permissionID.substring(idx + GroupAdminPermission.ID_SEPARATOR.length());
 
             if (clazzName.equals(GroupAdminPermission.class.getSimpleName())) {
                 p = new GroupAdminPermission(groupID);
