@@ -2835,7 +2835,8 @@ public class Member extends PFComponent implements Comparable<Member> {
 
 
         synchronized (peerInitializeLock) {
-            peer.sendMessagesAsynchron(new FolderListExt(getFilteredFolderList(getLastFolderList(), false), getProtocolVersion()));
+            peer.sendMessagesAsynchron(new FolderListExt(
+                getFilteredFolderList(getLastFolderList(), false), getProtocolVersion()));
         }
         peer.sendMessagesAsynchron(new HandshakeCompleted());
     }
