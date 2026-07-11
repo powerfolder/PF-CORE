@@ -353,6 +353,38 @@ public class PathUtils {
     }
 
     /**
+     * Returns a path that does not exist yet: if the desired path already exists it appends
+     * (2), (3), and so on. Does NOT create anything — use this when the caller needs a free
+     * target for an atomic {@link Files#move}, which requires a non-existing target.
+     *
+     * @param desired the desired path
+     * @return the desired path or the first free "(n)"-suffixed sibling
+     */
+    public static Path findNonExistingPath(Path desired) {
+        Reject.ifNull(desired, "Path is null");
+
+        Path candidate = desired;
+        int suffix = 2;
+
+        String baseName = desired.getFileName().toString();
+        String ext = "";
+        int i = baseName.lastIndexOf('.');
+        if (i >= 0) {
+            ext = baseName.substring(i);
+            baseName = baseName.substring(0, i);
+        }
+
+        while (Files.exists(candidate)) {
+            candidate = desired.getParent().resolve(baseName + " (" + suffix + ")" + ext);
+            suffix++;
+            if (suffix > 999999999) {
+                throw new IllegalStateException("Unable to find non-existing path. Tried " + candidate);
+            }
+        }
+        return candidate;
+    }
+
+    /**
      * Searches and takes care that this directory is new and not yet existing.
      * If dir already exists it appends (1), (2), and so on until it finds an
      * non-existing sub directory. DOES NOT try to remove ILLEGAL characters
@@ -363,27 +395,7 @@ public class PathUtils {
      * @return the directory that is guranteed to be NEW and EMPTY.
      */
     public static Path createEmptyDirectory(Path baseDir) {
-        Reject.ifNull(baseDir, "Base dir is null");
-
-        Path candidate = baseDir;
-        int suffix = 2;
-
-        String baseDirName = baseDir.getFileName().toString();
-        String baseDirExt = "";
-        int i = baseDirName.lastIndexOf('.');
-        if (i >= 0) {
-            baseDirExt = baseDirName.substring(i);
-            baseDirName = baseDirName.substring(0, i);
-        }
-
-        while (Files.exists(candidate)) {
-            candidate = baseDir.getParent().resolve(baseDirName + " (" + suffix + ")" + baseDirExt);
-            suffix++;
-            if (suffix > 999999999) {
-                throw new IllegalStateException(
-                        "Unable to find empty directory Tried " + candidate);
-            }
-        }
+        Path candidate = findNonExistingPath(baseDir);
 
         try {
             Files.createDirectories(candidate);
