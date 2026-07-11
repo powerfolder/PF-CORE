@@ -81,6 +81,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     private static final String DIRNAME_SNAPSHOT = ".snapshot";
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
+
+    // PFC-3543: index of the currently interrupted subfolders. This repository is
+    // the authority for structural changes and refreshes it on folder add/remove/
+    // rename (and, later PFC-3565, on interruption toggle).
+    private final InterruptedSubFolderIndex interruptedSubFolders = new InterruptedSubFolderIndex();
     private Thread myThread;
     private final FileRequestor fileRequestor;
     private Folder currentlyMaintainingFolder;
@@ -1042,6 +1047,17 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFC-3543: The index of the currently interrupted subfolders. Used by
+     * {@link Folder} on the scan/watcher/DAO hot path to keep the subtree of an
+     * interrupted subfolder out of this folder's database.
+     *
+     * @return the interrupted subfolder index (never {@code null})
+     */
+    InterruptedSubFolderIndex getInterruptedSubFolders() {
+        return interruptedSubFolders;
+    }
+
+    /**
      * @return the number of folders. Does NOT include the meta-folders (#1548).
      */
     public int getFoldersCount() {
@@ -1460,6 +1476,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning(folderInfo + " already in folders list");
         }
         folders.put(folder.getInfo(), folder);
+        // PFC-3543: a newly mounted folder may be an interrupted subfolder.
+        interruptedSubFolders.refresh(folders.values());
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
         if (!metaFolder.hasOwnDatabase()) {
@@ -1583,6 +1601,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Remove internal
             folders.remove(folder.getInfo());
+            // PFC-3543: keep the interrupted-subfolder index in sync.
+            interruptedSubFolders.refresh(folders.values());
             folder.removeProblemListener(valveProblemListenerSupport);
 
             // Break transfers
@@ -2394,6 +2414,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.updateInfo(newFolderInfo);
         folders.remove(newFolderInfo);
         folders.put(newFolderInfo, folder);
+        // PFC-3543: local base / interruption state may have changed on rename.
+        interruptedSubFolders.refresh(folders.values());
         Folder metaFolder = getMetaFolder(newFolderInfo);
         if (metaFolder != null) {
             metaFolder.updateInfo(newFolderInfo.getMetaFolderInfo());

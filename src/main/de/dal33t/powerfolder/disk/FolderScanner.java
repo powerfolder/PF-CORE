@@ -402,7 +402,11 @@ public class FolderScanner extends PFComponent {
                     }
                 } else if (Files.isDirectory(path)) {
                     if (!PathUtils.isScannable(path, currentScanningFolder)
-                        || currentScanningFolder.isSystemSubDir(path))
+                        || currentScanningFolder.isSystemSubDir(path)
+                        // PFC-3543: do not scan into interrupted subfolders - they
+                        // own their database; scanning them would leak their files
+                        // into this folder's database.
+                        || currentScanningFolder.isInInterruptedSubFolder(path))
                     {
                         continue;
                     }
@@ -742,7 +746,9 @@ public class FolderScanner extends PFComponent {
                             failure = true;
                             return false;
                         }
-                    } else if (Files.isDirectory(path) && !PathUtils.isReplicatedSubdir(path)) {
+                    } else if (Files.isDirectory(path) && !PathUtils.isReplicatedSubdir(path)
+                        // PFC-3543: do not descend into interrupted subfolders (own database).
+                        && !currentScanningFolder.isInInterruptedSubFolder(path)) {
                         if (PathUtils.isScannable(path, currentScanningFolder)
                             && !scanDir(path)) {
                             failure = true;

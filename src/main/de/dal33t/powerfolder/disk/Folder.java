@@ -1593,6 +1593,15 @@ public class Folder extends PFComponent {
         }
         Path file = getDiskFile(fInfo);
 
+        // PFC-3543: never scan files that live inside an interrupted subfolder.
+        // That subtree is owned by its own folder/DAO. The scanner and watcher
+        // already exclude it upstream, so reaching this backstop is unexpected;
+        // warn (not fine) so it can be identified in the logs.
+        if (isInInterruptedSubFolder(file)) {
+            logWarning(fInfo + ": Skipped scan - inside interrupted subfolder at " + file);
+            return null;
+        }
+
         // ignore our database file
         if (file.getFileName().toString().equals(Constants.DB_FILENAME)
             || file.getFileName().toString().equals(Constants.DB_BACKUP_FILENAME))
@@ -1771,6 +1780,15 @@ public class Folder extends PFComponent {
 
         if (dir.equals(getSystemSubDir0())) {
             logFine("Ignoring system subdirectory: " + dir);
+            return;
+        }
+
+        // PFC-3543: never scan directories inside an interrupted subfolder - that
+        // subtree is owned by its own folder/DAO. The scanner excludes it upstream,
+        // so reaching this backstop is unexpected; warn (not fine) so it can be
+        // identified in the logs.
+        if (isInInterruptedSubFolder(dir)) {
+            logWarning(dirInfo + ": Skipped scan - inside interrupted subfolder at " + dir);
             return;
         }
 
@@ -2092,6 +2110,68 @@ public class Folder extends PFComponent {
                 dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
             }
         }
+    }
+
+    /**
+     * PFC-3543: Whether the given path belongs to an interrupted subfolder (its base
+     * or anywhere below it). Used by the scanner and watcher to keep an interrupted
+     * subfolder's subtree out of this folder's database. Delegates to the cached
+     * {@link InterruptedSubFolderIndex}; this folder's own base is excluded.
+     *
+     * @param path an absolute path (a scanned directory or a watched file)
+     * @return {@code true} if {@code path} belongs to an interrupted subfolder
+     *         other than this folder itself
+     */
+    public boolean isInInterruptedSubFolder(Path path) {
+        return getController().getFolderRepository().getInterruptedSubFolders().contains(path, getLocalBase());
+    }
+
+    /**
+     * PFC-3543: FileInfo variant of {@link #isInInterruptedSubFolder(Path)} for the
+     * DAO store path. Allocation-free (relative-name comparison, no {@link Path} per
+     * file). Delegates to the cached {@link InterruptedSubFolderIndex}.
+     *
+     * @param fInfo a file of this folder
+     * @return {@code true} if {@code fInfo} belongs to an interrupted subfolder
+     */
+    public boolean isInInterruptedSubFolder(FileInfo fInfo) {
+        return getController().getFolderRepository().getInterruptedSubFolders().contains(fInfo, getInfo());
+    }
+
+    /**
+     * PFC-3543: Removes FileInfos that live inside an interrupted subfolder from
+     * the given collection. Such files are owned by that subfolder's own DAO and
+     * must never enter this folder's DAO - not even via a remote file list from an
+     * old / feature-off peer that still reports the subtree as part of this folder.
+     * Returns the input unchanged in the common case (no interrupted subfolders),
+     * allocating only when files actually have to be dropped.
+     */
+    private Collection<FileInfo> filterInterruptedSubFolderFiles(Collection<FileInfo> fileInfos) {
+        if (fileInfos == null || fileInfos.isEmpty()) {
+            return fileInfos;
+        }
+        if (getController().getFolderRepository().getInterruptedSubFolders().isEmpty()) {
+            return fileInfos;
+        }
+        List<FileInfo> kept = null;
+        for (FileInfo fInfo : fileInfos) {
+            if (isInInterruptedSubFolder(fInfo)) {
+                if (kept == null) {
+                    // First drop: keep everything seen so far, drop this one.
+                    kept = new ArrayList<>(fileInfos.size());
+                    for (FileInfo seen : fileInfos) {
+                        if (seen == fInfo) {
+                            break;
+                        }
+                        kept.add(seen);
+                    }
+                }
+                logWarning(fInfo + ": Skipped store - inside interrupted subfolder");
+            } else if (kept != null) {
+                kept.add(fInfo);
+            }
+        }
+        return kept != null ? kept : fileInfos;
     }
 
     private void initFileArchiver(int versions) {
@@ -4158,6 +4238,9 @@ public class Folder extends PFComponent {
     private void store(Member member, int newDomainSize,
         Collection<FileInfo> fileInfos)
     {
+        // PFC-3543: keep interrupted-subfolder files out of this folder's DAO,
+        // regardless of which (local or remote) domain they would be stored under.
+        fileInfos = filterInterruptedSubFolderFiles(fileInfos);
         synchronized (dbAccessLock) {
             String domainID = member.isMySelf() ? null : member.getId();
             if (newDomainSize > 0) {
@@ -4687,6 +4770,11 @@ public class Folder extends PFComponent {
             }
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(file, path -> Files.isRegularFile(path))) {
                 for (Path path : stream) {
+                    // PFC-3543: never touch files of an interrupted subfolder - that
+                    // subtree is owned by its own folder/DAO.
+                    if (isInInterruptedSubFolder(path)) {
+                        continue;
+                    }
                     FileInfo lookupInstance = FileInfoFactory.lookupInstance(this, path);
                     FileInfo storedInfo = getFile(lookupInstance);
                     if (storedInfo == null) {
