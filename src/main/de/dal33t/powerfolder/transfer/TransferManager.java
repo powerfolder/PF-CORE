@@ -52,6 +52,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -69,6 +70,10 @@ public class TransferManager extends PFComponent {
     public static final long ONE_DAY = 24L * 3600 * 1000; // One day in ms
     public static final long ONE_MINUTE = 60L * 1000; // 1 minute
     private static final int INCOMPLETE_TRANSFERS_FILE_DELETE_DAYS_THRESHOLD = 30;
+    /** Delay before a broken automatic download is re-requested via the file requestor. */
+    private static final long BROKEN_DOWNLOAD_RETRY_DELAY_MS = 5000;
+    /** Max fast retries per file. Afterwards rely on the periodic file requestor run (default: every 5 minutes). */
+    private static final int BROKEN_DOWNLOAD_MAX_FAST_RETRIES = 10;
 
     private static final DecimalFormat CPS_FORMAT = new DecimalFormat("#,###,###,###.##");
 
@@ -92,6 +97,8 @@ public class TransferManager extends PFComponent {
     private final List<Download> pendingDownloads;
     /** The list of completed download */
     private final ConcurrentMap<FileInfoKey, DownloadManager> completedDownloads;
+    /** Fast retries of broken automatic downloads per file. Reset when the download completes. */
+    private final ConcurrentMap<FileInfo, AtomicInteger> brokenDownloadFastRetries;
 
     /** The trigger, where transfermanager waits on */
     private final Object waitTrigger = new Object();
@@ -152,6 +159,7 @@ public class TransferManager extends PFComponent {
         dlManagers = Util.createConcurrentHashMap();
         pendingDownloads = new CopyOnWriteArrayList<>();
         completedDownloads = Util.createConcurrentHashMap();
+        brokenDownloadFastRetries = Util.createConcurrentHashMap();
         downloadsCount = Util.createConcurrentHashMap();
         uploadCounter = new TransferCounter();
         downloadCounter = new TransferCounter();
@@ -908,6 +916,7 @@ public class TransferManager extends PFComponent {
             fireDownloadCompleted(new TransferManagerEvent(this,
                 (Download) transfer));
 
+            brokenDownloadFastRetries.remove(fileInfo);
             downloadsCount.remove(transfer.getPartner());
             int nDlFromNode = countActiveAndQueuedDownloads(transfer
                 .getPartner());
@@ -2038,6 +2047,24 @@ public class TransferManager extends PFComponent {
                 manager.isRequestedAutomatic());
             if (enquePendingDownload(download)) {
                 firePendingDownloadEnqueud(new TransferManagerEvent(this, download));
+            }
+        } else if (!getController().isShuttingDown()) {
+            // PFC-3572: A broken automatic download is otherwise only re-requested by the periodic file requestor
+            // run (default: every 5 minutes). Trigger it after a short delay to retry promptly. Delayed and limited
+            // per file to avoid request storms on permanently failing downloads.
+            final FileInfo fInfo = manager.getFileInfo();
+            int fastRetries = brokenDownloadFastRetries
+                .computeIfAbsent(fInfo, k -> new AtomicInteger()).incrementAndGet();
+            if (fastRetries <= BROKEN_DOWNLOAD_MAX_FAST_RETRIES) {
+                getController().schedule(() -> {
+                    if (!getController().isShuttingDown()) {
+                        getController().getFolderRepository().getFileRequestor()
+                            .triggerFileRequesting(fInfo.getFolderInfo());
+                    }
+                }, BROKEN_DOWNLOAD_RETRY_DELAY_MS);
+            } else if (fastRetries == BROKEN_DOWNLOAD_MAX_FAST_RETRIES + 1 && isFine()) {
+                logFine(fInfo + ": Giving up fast retry of broken automatic download after "
+                    + BROKEN_DOWNLOAD_MAX_FAST_RETRIES + " attempts. Leaving retry to periodic file requestor run");
             }
         }
     }
