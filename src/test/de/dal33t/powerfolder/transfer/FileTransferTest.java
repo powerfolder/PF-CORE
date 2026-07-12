@@ -2170,10 +2170,13 @@ public class FileTransferTest extends TwoControllerTestCase {
                 .getDownloadCounter().getBytesTransferred();
         long addBytesDLatLisa = bytesDLatLisa - oldByteCount;
         long halfFileSizeAtBart = Files.size(fbart) / 2;
+        // The delta-efficiency check only holds for an undisturbed transfer. If the download broke once (slow CI)
+        // and was re-requested (PFC-3572), the recovery may legitimately transfer the full file again.
         assertTrue(
             "Expected. Downloaded bytes at Lisa: "
                 + bytesDLatLisa + " - Already transferred bytes: " + oldByteCount + " = additionally downloaded at lisa: " + addBytesDLatLisa + " < Half the size of barts file: "
-                + halfFileSizeAtBart, addBytesDLatLisa < halfFileSizeAtBart);
+                + halfFileSizeAtBart + ", broken downloads: " + lisaListener.downloadBroken,
+            lisaListener.downloadBroken > 0 || addBytesDLatLisa < halfFileSizeAtBart);
 
         TestHelper.assertIncompleteFilesGone(this);
     }

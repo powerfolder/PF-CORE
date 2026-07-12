@@ -45,11 +45,26 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     private UploadsTableModel bartModel;
     private MyUploadTableModelListener bartModelListener;
+    private java.util.Timer stackDumpTimer;
 
     @Override
     protected void setUp() throws Exception {
-        // Diagnostics for sporadic hangs of this class on CI (PFC-3573): log which method runs and what happens
+        // Diagnostics for sporadic hangs of this class on CI (PFC-3573): log which method runs and what happens.
+        // If a test runs longer than 8 minutes, dump all thread stacks to stdout so the CI trace shows WHERE it hangs.
         System.out.println(">>> UploadsTableModelTest#" + getName());
+        stackDumpTimer = new java.util.Timer("StackDumpWatchdog", true);
+        stackDumpTimer.schedule(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("=== STACK DUMP - " + getName() + " runs > 8 minutes, all threads: ===");
+                for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+                    System.out.println("Thread: " + e.getKey().getName() + " state=" + e.getKey().getState());
+                    for (StackTraceElement ste : e.getValue()) {
+                        System.out.println("    at " + ste);
+                    }
+                }
+            }
+        }, 8 * 60 * 1000, 8 * 60 * 1000);
         super.setUp();
         LoggingManager.setConsoleLogging(Level.INFO);
         connectBartAndLisa();
@@ -71,6 +86,14 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
             .setValue(getContollerBart(), "0");
 
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (stackDumpTimer != null) {
+            stackDumpTimer.cancel();
+        }
+        super.tearDown();
     }
 
     public void testSingleFileUpload() {
