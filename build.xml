@@ -556,8 +556,9 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/raw" />
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
-		<!-- Batchrun all tests -->
-		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="2g" showoutput="yes">
+		<!-- Batchrun all tests. timeout: kill a hanging test class fork after 30 minutes instead of blocking
+		     the runner until the 2h job timeout -->
+		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="2g" showoutput="yes" timeout="1800000">
 			<!-- Reason: https://code.google.com/p/opendedup/issues/detail?id=34 -->
 			<sysproperty key="file.encoding" value="UTF-8"/>
 			<classpath>

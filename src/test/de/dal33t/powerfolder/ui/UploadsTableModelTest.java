@@ -27,7 +27,9 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 
+import java.util.logging.Level;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.util.ArrayList;
@@ -46,7 +48,10 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        // Diagnostics for sporadic hangs of this class on CI (PFC-3573): log which method runs and what happens
+        System.out.println(">>> UploadsTableModelTest#" + getName());
         super.setUp();
+        LoggingManager.setConsoleLogging(Level.INFO);
         connectBartAndLisa();
 
         // Join on testfolder
