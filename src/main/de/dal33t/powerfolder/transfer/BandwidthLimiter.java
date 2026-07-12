@@ -34,15 +34,6 @@ public class BandwidthLimiter {
 
     public static final long UNLIMITED = -1;
 
-    public static final BandwidthLimiter WAN_OUTPUT_BANDWIDTH_LIMITER =
-            new BandwidthLimiter(BandwidthLimiterInfo.WAN_OUTPUT);
-    public static final BandwidthLimiter WAN_INPUT_BANDWIDTH_LIMITER =
-            new BandwidthLimiter(BandwidthLimiterInfo.WAN_INPUT);
-    public static final BandwidthLimiter LAN_OUTPUT_BANDWIDTH_LIMITER =
-            new BandwidthLimiter(BandwidthLimiterInfo.LAN_OUTPUT);
-    public static final BandwidthLimiter LAN_INPUT_BANDWIDTH_LIMITER =
-            new BandwidthLimiter(BandwidthLimiterInfo.LAN_INPUT);
-
     /**
      * The amount of bandwidth initially set by setAvailable().
      * This is used to create stats and is NOT modified by bandwidth requests.
@@ -120,6 +111,24 @@ public class BandwidthLimiter {
 		}
 
         return bandwidthStat;
+    }
+
+    /**
+     * Caps the remaining "bandwidth" if it currently exceeds the given amount. Used to make a new, more restrictive
+     * limit effective immediately instead of at the next provider period (up to 1 second later).
+     *
+     * @param amount
+     *            the maximum amount to leave available. Negative values (= no limit) are ignored.
+     */
+    public void capAvailable(long amount) {
+        if (amount < 0) {
+            return;
+        }
+        synchronized (monitor) {
+            if (available < 0 || available > amount) {
+                available = amount;
+            }
+        }
     }
 
     /**

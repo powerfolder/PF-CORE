@@ -1259,8 +1259,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #1904
      */
     public void testRecoverFromMD5Error() throws IOException {
-        getContollerBart().getTransferManager().setUploadCPSForLAN(400000);
-        getContollerBart().getTransferManager().setUploadCPSForWAN(400000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(2 * 1024 * 1024);
+        getContollerBart().getTransferManager().setUploadCPSForWAN(2 * 1024 * 1024);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerBart(), true);
         ConfigurationEntry.USE_DELTA_ON_LAN.setValue(getContollerLisa(), true);
         // testfile
@@ -1282,7 +1282,7 @@ public class FileTransferTest extends TwoControllerTestCase {
             }
         });
 
-        TestHelper.changeFile(testFile, 100 * 1024 * 1024);
+        TestHelper.changeFile(testFile, 10 * 1024 * 1024);
         // Let him scan the new content
         scanFolder(getFolderAtBart());
 
@@ -1620,8 +1620,8 @@ public class FileTransferTest extends TwoControllerTestCase {
      * TRAC #415
      */
     public void testResumeTransfer() throws IOException {
-        getContollerBart().getTransferManager().setUploadCPSForLAN(100000);
-        getContollerBart().getTransferManager().setUploadCPSForWAN(100000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(2 * 1024 * 1024);
+        getContollerBart().getTransferManager().setUploadCPSForWAN(2 * 1024 * 1024);
         getContollerBart().getReconnectManager().shutdown();
         getContollerLisa().getReconnectManager().shutdown();
         assertFalse(getContollerBart().getReconnectManager().isStarted());
@@ -1634,7 +1634,7 @@ public class FileTransferTest extends TwoControllerTestCase {
 
         // testfile
         Path fileBart = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 100 * 1024 * 1024);
+            .getLocalBase(), 20 * 1024 * 1024);
         Files.setLastModifiedTime(fileBart,
             FileTime.fromMillis(System.currentTimeMillis() - 1000L * 60 * 60));
 
@@ -1860,16 +1860,17 @@ public class FileTransferTest extends TwoControllerTestCase {
     }
 
     public void testBrokenTransferFileChanged() {
-        getContollerBart().getTransferManager().setUploadCPSForLAN(5 * 1024);
+        // Slow enough that the 10MB transfer is still running when the file gets changed, fast enough that chunks
+        // (128KB) are read every ~0.25s - the file change is detected on the next chunk read.
+        getContollerBart().getTransferManager().setUploadCPSForLAN(512 * 1024);
         // Register listeners
         final MyTransferManagerListener bartListener = new MyTransferManagerListener();
         getContollerBart().getTransferManager().addListener(bartListener);
         final MyTransferManagerListener lisaListener = new MyTransferManagerListener();
         getContollerLisa().getTransferManager().addListener(lisaListener);
 
-        // 100 Meg testfile
         Path testFile = TestHelper.createRandomFile(getFolderAtBart()
-            .getLocalBase(), 100 * 1024 * 1024);
+            .getLocalBase(), 10 * 1024 * 1024);
 
         // Let him scan the new content
         scanFolder(getFolderAtBart());
@@ -2282,13 +2283,13 @@ public class FileTransferTest extends TwoControllerTestCase {
      */
     public void testSwitchSyncProfile() {
 
-        getContollerBart().getTransferManager().setUploadCPSForLAN(100000);
-        getContollerLisa().getTransferManager().setUploadCPSForLAN(100000);
+        getContollerBart().getTransferManager().setUploadCPSForLAN(400000);
+        getContollerLisa().getTransferManager().setUploadCPSForLAN(400000);
 
         // Prepare
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         TestHelper.createRandomFile(getFolderAtBart().getLocalBase(),
-            10 * 1024 * 1024);
+            4 * 1024 * 1024);
         scanFolder(getFolderAtBart());
 
         TestHelper.waitForCondition(LONG_WAIT_TIME_SECONDS, new ConditionWithMessage() {

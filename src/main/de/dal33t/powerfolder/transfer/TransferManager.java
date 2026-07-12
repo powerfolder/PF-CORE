@@ -175,10 +175,12 @@ public class TransferManager extends PFComponent {
         statsRecorder = new BandwidthStatsRecorder(getController());
         bandwidthProvider.addBandwidthStatListener(statsRecorder);
 
-        sharedWANOutputHandler = BandwidthLimiter.WAN_OUTPUT_BANDWIDTH_LIMITER;
-        sharedWANInputHandler = BandwidthLimiter.WAN_INPUT_BANDWIDTH_LIMITER;
-        sharedLANOutputHandler = BandwidthLimiter.LAN_OUTPUT_BANDWIDTH_LIMITER;
-        sharedLANInputHandler = BandwidthLimiter.LAN_INPUT_BANDWIDTH_LIMITER;
+        // PFC-3573: One limiter set per controller. JVM-wide singletons would make controllers in the same JVM
+        // (tests!) overwrite each other's limits via their own BandwidthProviders.
+        sharedWANOutputHandler = new BandwidthLimiter(BandwidthLimiterInfo.WAN_OUTPUT);
+        sharedWANInputHandler = new BandwidthLimiter(BandwidthLimiterInfo.WAN_INPUT);
+        sharedLANOutputHandler = new BandwidthLimiter(BandwidthLimiterInfo.LAN_OUTPUT);
+        sharedLANInputHandler = new BandwidthLimiter(BandwidthLimiterInfo.LAN_INPUT);
 
         checkConfigCPS(ConfigurationEntry.UPLOAD_LIMIT_WAN, 0);
         checkConfigCPS(ConfigurationEntry.DOWNLOAD_LIMIT_WAN, 0);
@@ -1013,7 +1015,7 @@ public class TransferManager extends PFComponent {
     public void setUploadCPSForWAN(long allowedCPS) {
 
         ConfigurationEntry.UPLOAD_LIMIT_WAN.setValue(getController(),
-            String.valueOf(allowedCPS / 1024));
+            String.valueOf((allowedCPS + 1023) / 1024)); // Round up: small values must throttle, not mean unlimited
 
         updateSpeedLimits();
 
@@ -1039,7 +1041,7 @@ public class TransferManager extends PFComponent {
     public void setDownloadCPSForWAN(long allowedCPS) {
 
         ConfigurationEntry.DOWNLOAD_LIMIT_WAN.setValue(getController(),
-            String.valueOf(allowedCPS / 1024));
+            String.valueOf((allowedCPS + 1023) / 1024)); // Round up: small values must throttle, not mean unlimited
 
         updateSpeedLimits();
 
@@ -1065,7 +1067,7 @@ public class TransferManager extends PFComponent {
     public void setUploadCPSForLAN(long allowedCPS) {
 
         ConfigurationEntry.UPLOAD_LIMIT_LAN.setValue(getController(),
-            String.valueOf(allowedCPS / 1024));
+            String.valueOf((allowedCPS + 1023) / 1024)); // Round up: small values must throttle, not mean unlimited
 
         updateSpeedLimits();
 
@@ -1088,7 +1090,7 @@ public class TransferManager extends PFComponent {
     public void setDownloadCPSForLAN(long allowedCPS) {
 
         ConfigurationEntry.DOWNLOAD_LIMIT_LAN.setValue(getController(),
-            String.valueOf(allowedCPS / 1024));
+            String.valueOf((allowedCPS + 1023) / 1024)); // Round up: small values must throttle, not mean unlimited
 
         updateSpeedLimits();
 

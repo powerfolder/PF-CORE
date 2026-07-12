@@ -131,8 +131,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testRunningUpload() {
-        // Create a 100 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 100000000);
+        // Throttle so the upload stays observable as running; 20MB at 2MB/s = ~10 seconds
+        getContollerBart().getTransferManager().setUploadCPSForLAN(2 * 1024 * 1024);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20 * 1024 * 1024);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -169,12 +170,14 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testAbortUpload() {
-        ConfigurationEntry.DOWNLOAD_LIMIT_LAN.setValue(getContollerLisa(),
-            "1000");
+        // Throttle lisas download so the upload is still running when it gets aborted. Setting the
+        // ConfigurationEntry directly (as before) never took effect - the TransferManager applies limits
+        // via updateSpeedLimits() only.
+        getContollerLisa().getTransferManager().setDownloadCPSForLAN(1024 * 1024);
 
         assertEquals(0, bartModelListener.events.size());
-        // Create a 200 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 200000000);
+        // Create a 20 megs file. At 1MB/s the transfer runs ~20 seconds - the abort happens mid-transfer.
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20 * 1024 * 1024);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -234,10 +237,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testDisconnectWhileUpload() {
         getContollerBart().getTransferManager().setUploadCPSForLAN(40000);
-        getContollerLisa().getTransferManager().setUploadCPSForWAN(40000);
 
-        // Create a 30 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 300000000);
+        // Create a 10 megs file. At ~40KB/s the upload is guaranteed to be still running when disconnecting.
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10 * 1024 * 1024);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());

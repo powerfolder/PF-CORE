@@ -96,6 +96,11 @@ public class BandwidthProvider extends Loggable {
             synchronized (limits) {
                 limits.put(limiter, bps);
             }
+            if (bps > 0) {
+                // PFC-3573: Make the new limit effective immediately. Otherwise transfers run with the previous
+                // budget (possibly unlimited) until the next period.
+                limiter.capAvailable(PERIOD * bps / 1000);
+            }
             logFiner("Bandwidth limiter " + limiter + " initalized, max CPS: " + bps);
         }
     }
