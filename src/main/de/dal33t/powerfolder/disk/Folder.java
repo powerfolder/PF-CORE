@@ -2226,6 +2226,13 @@ public class Folder extends PFComponent {
             initFileInfoDAO();
             initFileArchiver(getFileArchiver().getVersionsPerFile());
 
+            int dirCount = 0;
+            for (FileInfo row : toMigrate) {
+                if (row.isDiretory()) {
+                    dirCount++;
+                }
+            }
+            int fileCount = toMigrate.size() - dirCount;
             if (inherits) {
                 // Restore: move rows from the subfolder's own database back into the top folder.
                 List<FileInfo> topInfos = new ArrayList<>(toMigrate.size());
@@ -2234,8 +2241,8 @@ public class Folder extends PFComponent {
                 }
                 topFolder.getDAO().store(null, topInfos);
                 topFolder.setDBDirty();
-                logInfo(this + ": Restored permission inheritance, migrated " + topInfos.size()
-                    + " files back into top folder " + topFolder);
+                logInfo(this + ": Restored permission inheritance, merged its own database back into top folder "
+                    + topFolder + " - migrated " + fileCount + " files and " + dirCount + " directories");
             } else {
                 // Interrupt: move rows from the top database into the subfolder's own database,
                 // then raw-remove them from the top (no deletion is propagated to peers).
@@ -2249,8 +2256,8 @@ public class Folder extends PFComponent {
                 }
                 topFolder.setDBDirty();
                 setDBDirty();
-                logInfo(this + ": Interrupted permission inheritance, migrated " + subInfos.size()
-                    + " files out of top folder " + topFolder);
+                logInfo(this + ": Interrupted permission inheritance, split off from top folder " + topFolder
+                    + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
             }
         }
     }
