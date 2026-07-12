@@ -2174,6 +2174,112 @@ public class Folder extends PFComponent {
         return kept != null ? kept : fileInfos;
     }
 
+    /**
+     * PFC-3543 / PFC-3565: Interrupts or restores the permission inheritance of this
+     * subfolder and migrates its FileInfo database accordingly. Must be called on the
+     * subfolder itself. The repository is the authority for the index; this method asks it
+     * to refresh so the scan/watcher/store guards match the new state before any file moves.
+     * <p>
+     * On interruption ({@code inherits == false}) the subfolder switches from the shared top
+     * DAO to its own {@link FileInfoDAOHashMapImpl}. The subtree's FileInfos are copied from
+     * the top folder's database into the subfolder's own database (mapped to the subfolder)
+     * and then raw-removed from the top - a removal that does NOT mark them deleted and does
+     * NOT propagate a deletion to peers. This keeps the interrupted subtree out of the top
+     * folder's data (isolation / security) while preserving every FileInfo version.
+     * <p>
+     * On restore ({@code inherits == true}) the reverse happens: the subfolder's own FileInfos
+     * are mapped back to the top folder, stored in the top database, and the subfolder switches
+     * back to the shared top DAO. Only the local (own) domain is migrated here; remote peers
+     * re-synchronize their per-member state through the regular folder-list exchange after the
+     * protocol renegotiates.
+     *
+     * @param inherits {@code true} to restore inheritance, {@code false} to interrupt it
+     */
+    public void setInheritsPermissions(boolean inherits) {
+        Reject.ifFalse(isSubFolder(), this + ": inheritsPermissions can only be changed on a subfolder");
+        FolderInfo newInfo = FolderInfoFactory.changeInheritsPermissions(currentInfo, inherits);
+        if (newInfo == currentInfo) {
+            // No change - nothing to migrate.
+            return;
+        }
+        synchronized (scanLock) {
+            Folder topFolder = getTopFolder();
+            if (topFolder == null) {
+                // No top folder present here: the subfolder already uses its own fallback DAO,
+                // there is nothing to migrate. Just flip the flag and refresh the index.
+                logWarning(this + ": Changing inheritsPermissions to " + inherits
+                    + " without top folder present - no database migration");
+                updateInfo(newInfo);
+                getController().getFolderRepository().refreshInterruptedSubFolders();
+                return;
+            }
+
+            // Snapshot the rows to migrate from the CURRENT database, before switching DAOs.
+            // Interrupt reads the subtree from the top DAO (rows are prefixed with the subfolder
+            // location); restore reads this subfolder's own DAO (all local rows are the subtree).
+            Collection<FileInfo> toMigrate = inherits
+                ? collectLocalRows(getDAO(), false)
+                : collectLocalRows(topFolder.getDAO(), true);
+
+            updateInfo(newInfo);
+            getController().getFolderRepository().refreshInterruptedSubFolders();
+            initFileInfoDAO();
+            initFileArchiver(getFileArchiver().getVersionsPerFile());
+
+            if (inherits) {
+                // Restore: move rows from the subfolder's own database back into the top folder.
+                List<FileInfo> topInfos = new ArrayList<>(toMigrate.size());
+                for (FileInfo subInfo : toMigrate) {
+                    topInfos.add(FileInfoFactory.mapToTopFolder(subInfo));
+                }
+                topFolder.getDAO().store(null, topInfos);
+                topFolder.setDBDirty();
+                logInfo(this + ": Restored permission inheritance, migrated " + topInfos.size()
+                    + " files back into top folder " + topFolder);
+            } else {
+                // Interrupt: move rows from the top database into the subfolder's own database,
+                // then raw-remove them from the top (no deletion is propagated to peers).
+                List<FileInfo> subInfos = new ArrayList<>(toMigrate.size());
+                for (FileInfo topInfo : toMigrate) {
+                    subInfos.add(FileInfoFactory.mapToSubFolder(topInfo, currentInfo));
+                }
+                getDAO().store(null, subInfos);
+                for (FileInfo topInfo : toMigrate) {
+                    topFolder.getDAO().delete(null, topInfo);
+                }
+                topFolder.setDBDirty();
+                setDBDirty();
+                logInfo(this + ": Interrupted permission inheritance, migrated " + subInfos.size()
+                    + " files out of top folder " + topFolder);
+            }
+        }
+    }
+
+    /**
+     * PFC-3543: Collects the local-domain files and directories to migrate on an
+     * interrupt / restore of this subfolder.
+     *
+     * @param source      the database to read from (the top folder's DAO on interrupt, this
+     *                    subfolder's own DAO on restore)
+     * @param onlySubtree {@code true} to keep only rows below this subfolder's location (top
+     *                    DAO case); {@code false} to keep all local rows (own DAO case)
+     * @return the FileInfos and DirectoryInfos to migrate
+     */
+    private Collection<FileInfo> collectLocalRows(FileInfoDAO source, boolean onlySubtree) {
+        List<FileInfo> rows = new ArrayList<>();
+        for (FileInfo fInfo : source.findAllFiles(null)) {
+            if (!onlySubtree || fInfo.isInSubFolder(currentInfo)) {
+                rows.add(fInfo);
+            }
+        }
+        for (DirectoryInfo dInfo : source.findAllDirectories(null)) {
+            if (!onlySubtree || dInfo.isInSubFolder(currentInfo)) {
+                rows.add(dInfo);
+            }
+        }
+        return rows;
+    }
+
     private void initFileArchiver(int versions) {
         if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
             archiver = ArchiveMode.FULL_BACKUP.getInstance(this);

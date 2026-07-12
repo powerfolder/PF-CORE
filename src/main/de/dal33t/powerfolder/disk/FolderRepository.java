@@ -1058,6 +1058,16 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFC-3543: Recomputes the interrupted-subfolder index from the current folders.
+     * The repository is the authority for structural changes; it is called on the rare
+     * events that can change the set - a folder is mounted, removed or renamed, or a
+     * subfolder's inheritance interruption is toggled ({@link Folder#setInheritsPermissions}).
+     */
+    void refreshInterruptedSubFolders() {
+        interruptedSubFolders.refresh(folders.values());
+    }
+
+    /**
      * @return the number of folders. Does NOT include the meta-folders (#1548).
      */
     public int getFoldersCount() {
@@ -1477,7 +1487,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
         folders.put(folder.getInfo(), folder);
         // PFC-3543: a newly mounted folder may be an interrupted subfolder.
-        interruptedSubFolders.refresh(folders.values());
+        refreshInterruptedSubFolders();
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
         if (!metaFolder.hasOwnDatabase()) {
@@ -1602,7 +1612,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Remove internal
             folders.remove(folder.getInfo());
             // PFC-3543: keep the interrupted-subfolder index in sync.
-            interruptedSubFolders.refresh(folders.values());
+            refreshInterruptedSubFolders();
             folder.removeProblemListener(valveProblemListenerSupport);
 
             // Break transfers
@@ -2415,7 +2425,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folders.remove(newFolderInfo);
         folders.put(newFolderInfo, folder);
         // PFC-3543: local base / interruption state may have changed on rename.
-        interruptedSubFolders.refresh(folders.values());
+        refreshInterruptedSubFolders();
         Folder metaFolder = getMetaFolder(newFolderInfo);
         if (metaFolder != null) {
             metaFolder.updateInfo(newFolderInfo.getMetaFolderInfo());
