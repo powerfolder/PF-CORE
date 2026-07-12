@@ -207,6 +207,50 @@ public interface SecurityService {
         FolderPermission newPermission);
 
     /**
+     * PFC-3543: How to seed the explicit permissions of a subfolder when its permission
+     * inheritance is interrupted.
+     */
+    enum InheritanceInterruptMode {
+        /**
+         * Copy the currently inherited effective permissions as explicit permissions onto
+         * the subfolder (default) - no user loses access immediately.
+         */
+        ADOPT_SNAPSHOT,
+        /**
+         * Start the subfolder without permissions, except the folder owner and the acting
+         * admin (self-lockout protection).
+         */
+        DISCARD
+    }
+
+    /**
+     * PFC-3543: Interrupts the permission inheritance of a subfolder. From now on only the
+     * permissions set explicitly on the subfolder apply; changes on the parent no longer
+     * affect it. The acting admin always keeps at least admin access (no self-lockout), and
+     * the subfolder gets the same owner as its top folder. Applies the flag (version bump)
+     * and switches the folder to its own database at runtime.
+     * <p>
+     * Must be invoked on the node hosting the folder - route via
+     * {@code ServiceRegistry.getSecurityService(controller, subFolderInfo)}.
+     *
+     * @param subFolderInfo the subfolder whose inheritance to interrupt
+     * @param mode          how to seed the subfolder's explicit permissions
+     */
+    void interruptInheritance(FolderInfo subFolderInfo, InheritanceInterruptMode mode);
+
+    /**
+     * PFC-3543: Restores the permission inheritance of a subfolder. The current explicit
+     * permissions are archived, then removed, and the subfolder inherits from its parent
+     * again (its database is merged back into the top folder).
+     * <p>
+     * Must be invoked on the node hosting the folder - route via
+     * {@code ServiceRegistry.getSecurityService(controller, subFolderInfo)}.
+     *
+     * @param subFolderInfo the subfolder whose inheritance to restore
+     */
+    void restoreInheritance(FolderInfo subFolderInfo);
+
+    /**
      * Returns all invitations for the logged in user
      *
      * @return the invitations

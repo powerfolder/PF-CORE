@@ -405,7 +405,11 @@ public class Account implements Serializable, D2DObject, Auditable {
                 return true;
             }
             if (p instanceof FolderOwnerPermission) {
-                Reject.ifTrue(foInfo.isSubFolder(), foInfo + ": Cannot grant owner permission on subfolder");
+                // PFC-3543: an interrupted subfolder (inheritance broken) is treated as an
+                // independent folder and gets its own owner (= the top folder's owner) for
+                // ownership/quota. Only a still-inheriting subfolder may not have an owner.
+                Reject.ifTrue(foInfo.isSubFolder() && foInfo.inheritsPermissions(),
+                    foInfo + ": Cannot grant owner permission on inheriting subfolder");
             }
         }
         return false;
