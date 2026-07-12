@@ -50,18 +50,29 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     @Override
     protected void setUp() throws Exception {
         // Diagnostics for sporadic hangs of this class on CI (PFC-3573): log which method runs and what happens.
-        // If a test runs longer than 8 minutes, dump all thread stacks to stdout so the CI trace shows WHERE it hangs.
+        // If a test runs longer than 8 minutes, dump all thread stacks. To a FILE in test-reports (uploaded as CI
+        // artifact) - NOT to System.out: the hang also freezes stdout (blocked PrintStream lock), and the ant fork
+        // timeout kill discards buffered output.
         System.out.println(">>> UploadsTableModelTest#" + getName());
         stackDumpTimer = new java.util.Timer("StackDumpWatchdog", true);
         stackDumpTimer.schedule(new java.util.TimerTask() {
             @Override
             public void run() {
-                System.out.println("=== STACK DUMP - " + getName() + " runs > 8 minutes, all threads: ===");
+                StringBuilder dump = new StringBuilder("=== STACK DUMP - " + getName() + " runs > 8 minutes ===\n");
                 for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
-                    System.out.println("Thread: " + e.getKey().getName() + " state=" + e.getKey().getState());
+                    dump.append("Thread: ").append(e.getKey().getName()).append(" state=")
+                        .append(e.getKey().getState()).append('\n');
                     for (StackTraceElement ste : e.getValue()) {
-                        System.out.println("    at " + ste);
+                        dump.append("    at ").append(ste).append('\n');
                     }
+                }
+                try {
+                    java.nio.file.Path dir = java.nio.file.Paths.get("test-reports");
+                    java.nio.file.Files.createDirectories(dir);
+                    java.nio.file.Files.write(dir.resolve("threaddump-UploadsTableModelTest-" + getName() + ".txt"),
+                        dump.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    // Ignore - diagnostics only
                 }
             }
         }, 8 * 60 * 1000, 8 * 60 * 1000);
