@@ -168,20 +168,20 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(subdirPath, "synced.txt");
         TestHelper.scanFolder(topFolderBart);
 
-        // Wait for Lisa to receive the directory and the file.
-        TestHelper.waitForCondition(20, new ConditionWithMessage() {
+        // Wait until Lisa has actually downloaded the physical file (not just its metadata).
+        final Path lisaFile = topFolderLisa.getPhysicalDir().resolve(subDir + "/synced.txt");
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
             @Override
             public boolean reached() {
-                return topFolderLisa.getKnownItemCount() >= 2;
+                return Files.exists(lisaFile);
             }
 
             @Override
             public String message() {
-                return "Known items at Lisa: " + topFolderLisa.getKnownItemCount();
+                return "Lisa did not download the synced file: " + lisaFile
+                    + " (known items: " + topFolderLisa.getKnownItemCount() + ")";
             }
         });
-        final Path lisaFile = topFolderLisa.getPhysicalDir().resolve(subDir + "/synced.txt");
-        assertTrue("Lisa must have the synced file before the interrupt", Files.exists(lisaFile));
 
         // Interrupt on Bart. This raw-removes the subtree from Bart's top DAO; it must NOT
         // propagate any deletion to Lisa.
