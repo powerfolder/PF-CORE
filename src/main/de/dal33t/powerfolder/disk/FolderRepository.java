@@ -1003,16 +1003,51 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folders, "Folders");
         Reject.ifNull(criteria, "Criteria");
 
+        // Cap the number of folder searches running at once so a single search never floods the shared
+        // IO pool. Each task holds a permit until it finished; searches are a mix of Lucene/DAO reads,
+        // so a bit above the core count is fine.
+        int maxConcurrent = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
+        Semaphore limiter = new Semaphore(maxConcurrent);
+
         List<FileInfo> results = new ArrayList<>();
+        List<Future<List<FileInfo>>> futures = new ArrayList<>(folders.size());
         for (Folder folder : folders) {
             if (folder == null) {
                 continue;
             }
             criteria.addMySelf(folder);
             try {
-                results.addAll(folder.searchFiles(criteria));
-            } catch (RuntimeException e) {
-                logWarning("Unable to search folder " + folder + ": " + e);
+                limiter.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            FutureTask<List<FileInfo>> task = new FutureTask<>(() -> {
+                try {
+                    return folder.searchFiles(criteria);
+                } catch (RuntimeException e) {
+                    logWarning("Unable to search folder " + folder + ": " + e, e);
+                    return Collections.<FileInfo>emptyList();
+                } finally {
+                    limiter.release();
+                }
+            });
+            if (getController().getIOProvider().startIO(task) != null) {
+                futures.add(task);
+            } else {
+                // Not submitted (e.g. during shutdown) -> the task never runs, so release the permit here.
+                limiter.release();
+            }
+        }
+
+        for (Future<List<FileInfo>> future : futures) {
+            try {
+                results.addAll(future.get());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            } catch (ExecutionException e) {
+                logWarning("Unable to search folder: " + e.getCause(), e);
             }
         }
         return results;
