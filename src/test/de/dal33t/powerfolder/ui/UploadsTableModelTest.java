@@ -101,10 +101,12 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     @Override
     protected void tearDown() throws Exception {
+        // Cancel AFTER super.tearDown(): the PFC-3573 hang happened in controller shutdown during tearDown -
+        // cancelling first would disarm the watchdog exactly for that case.
+        super.tearDown();
         if (stackDumpTimer != null) {
             stackDumpTimer.cancel();
         }
-        super.tearDown();
     }
 
     public void testSingleFileUpload() {

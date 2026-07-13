@@ -79,6 +79,16 @@ public class BandwidthProvider extends Loggable {
         if (task != null) {
             task.cancel(true);
         }
+        // PFC-3573: Unblock all threads still waiting for bandwidth. After shutdown no period ever refills the
+        // limiters again - a thread blocked in requestBandwidth() (e.g. the connection drain read during controller
+        // shutdown) would wait forever and deadlock the whole shutdown.
+        synchronized (limits) {
+            for (BandwidthLimiter limiter : limits.keySet()) {
+                if (limiter != null) {
+                    limiter.setAvailable(BandwidthLimiter.UNLIMITED);
+                }
+            }
+        }
     }
 
     /**
