@@ -80,7 +80,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     // PFS-1657
     private static final String DIRNAME_SNAPSHOT = ".snapshot";
     // PFS-5652: log searches that exceed this duration, so slow queries can be diagnosed.
-    private static final long SLOW_SEARCH_THRESHOLD_MS = 30_000L;
+    private static final long SLOW_SEARCH_THRESHOLD_MS = 10_000L;
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
 
