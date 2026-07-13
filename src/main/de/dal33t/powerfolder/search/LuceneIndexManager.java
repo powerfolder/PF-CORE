@@ -95,6 +95,15 @@ public class LuceneIndexManager extends PFComponent {
             {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
              "modifiedByDeviceName", "extensionExact"};
 
+    /**
+     * PFS-5652: fields that get the infix wildcard ("*token*"). Restricted to the name/path fields where
+     * mid-token matching actually helps. Building a WildcardQuery compiles an automaton per field
+     * (CompiledAutomaton, not reusable via the public API), so every extra wildcard field adds real query-
+     * build cost; the other fields rely on exact + prefix, which is plenty for them.
+     */
+    private static final Set<String> INFIX_WILDCARD_FIELDS = new HashSet<>(
+            Arrays.asList("fileName", "relativeName"));
+
     /** Pattern matching file extensions eligible for OCR fallback. */
     private static final Pattern OCR_ELIGIBLE_PATTERN =
             Pattern.compile(".*\\.(png|jpg|jpeg|tif|tiff|bmp|pdf)$", Pattern.CASE_INSENSITIVE);
@@ -1233,7 +1242,7 @@ public class LuceneIndexManager extends PFComponent {
     public List<FileInfo> searchFiles(FileInfoCriteria criteria) {
         Reject.ifNull(criteria, "FileInfoCriteria");
 
-        int maxResults = criteria.getMaxResults() > 0 ? criteria.getMaxResults() : 10_000;
+        int maxResults = criteria.getMaxResults() > 0 ? criteria.getMaxResults() : 1_000;
         DeletedFilter deletedFilter = criteria.includeDeleted() ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE;
         String queryText = String.join(" ", criteria.getKeyWords());
 
@@ -1416,9 +1425,10 @@ public class LuceneIndexManager extends PFComponent {
                             new Term(field, token)), prefixBoost),
                     BooleanClause.Occur.SHOULD);
 
-            // PFS-5652: infix wildcard on every field except the full-text "content" field, where a
-            // leading wildcard forces a full term-dictionary scan and dominates search time.
-            if (token.length() <= 12 && !CONTENT_FIELD.equals(field)) {
+            // PFS-5652: infix wildcard only on the name/path fields (see INFIX_WILDCARD_FIELDS). On the
+            // full-text content field it would scan the whole term dictionary; on the other fields it just
+            // adds automaton-compile cost for little benefit.
+            if (token.length() <= 12 && INFIX_WILDCARD_FIELDS.contains(field)) {
                 builder.add(
                         new BoostQuery(new WildcardQuery(
                                 new Term(field, "*" + token + "*")),

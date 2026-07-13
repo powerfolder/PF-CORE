@@ -495,12 +495,18 @@ public class Folder extends PFComponent {
         List<FileInfo> files;
         if (searchIndexManager != null && criteria.hasSearchCriteria()
                 && !searchIndexManager.isRebuilding()) {
-            // Lucene results first (ranked), then DAO results for any
-            // files the index missed (e.g. content not yet indexed)
-            LinkedHashSet<FileInfo> merged = new LinkedHashSet<>(
-                    searchIndexManager.searchFiles(criteria));
-            merged.addAll(getDAO().findFilesFast(criteria));
-            files = new ArrayList<>(merged);
+            List<FileInfo> indexed = searchIndexManager.searchFiles(criteria);
+            // PFS-5652: the DAO fallback is an O(files) linear scan. Only run it to catch files the index
+            // has not processed yet; when nothing is pending the Lucene result is complete for name/metadata
+            // search and the scan can be skipped.
+            if (searchIndexManager.getPendingCount() == 0) {
+                files = new ArrayList<>(indexed);
+            } else {
+                // Lucene results first (ranked), then DAO results for any files the index missed.
+                LinkedHashSet<FileInfo> merged = new LinkedHashSet<>(indexed);
+                merged.addAll(getDAO().findFilesFast(criteria));
+                files = new ArrayList<>(merged);
+            }
         } else {
             files = new ArrayList<>(getDAO().findFilesFast(criteria));
         }
