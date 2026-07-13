@@ -96,14 +96,14 @@ public class LuceneIndexManager extends PFComponent {
              "modifiedByDeviceName", "extensionExact"};
 
     /**
-     * PFS-5652: fields that get the infix wildcard ("*token*"). Restricted to the name/path and editor-name
-     * fields where mid-token matching actually helps (e.g. finding "Müller" inside an editor display name).
-     * Building a WildcardQuery compiles an automaton per field (CompiledAutomaton, not reusable via the
-     * public API), so every extra wildcard field adds real query-build cost; the remaining fields
-     * (username, device, extension) rely on exact + prefix, which is plenty for them.
+     * PFS-5652: fields that get the infix wildcard ("*token*"). Restricted to the name/path and editor
+     * fields where mid-token matching actually helps (e.g. finding "Müller" inside an editor display name
+     * or username). Building a WildcardQuery compiles an automaton per field (CompiledAutomaton, not
+     * reusable via the public API), so every extra wildcard field adds real query-build cost; the
+     * remaining fields (device, extension) rely on exact + prefix, which is plenty for them.
      */
     private static final Set<String> INFIX_WILDCARD_FIELDS = new HashSet<>(
-            Arrays.asList("fileName", "relativeName", "modifiedByDisplayName"));
+            Arrays.asList("fileName", "relativeName", "modifiedByDisplayName", "modifiedByUsername"));
 
     /** Pattern matching file extensions eligible for OCR fallback. */
     private static final Pattern OCR_ELIGIBLE_PATTERN =
