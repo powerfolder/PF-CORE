@@ -79,6 +79,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getName());
     // PFS-1657
     private static final String DIRNAME_SNAPSHOT = ".snapshot";
+    // PFS-5652: log searches that exceed this duration, so slow queries can be diagnosed.
+    private static final long SLOW_SEARCH_THRESHOLD_MS = 30_000L;
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
 
@@ -1009,6 +1011,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         int maxConcurrent = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
         Semaphore limiter = new Semaphore(maxConcurrent);
 
+        long started = System.currentTimeMillis();
+
         List<FileInfo> results = new ArrayList<>();
         List<Future<List<FileInfo>>> futures = new ArrayList<>(folders.size());
         for (Folder folder : folders) {
@@ -1049,6 +1053,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             } catch (ExecutionException e) {
                 logWarning("Unable to search folder: " + e.getCause(), e);
             }
+        }
+
+        long took = System.currentTimeMillis() - started;
+        if (took > SLOW_SEARCH_THRESHOLD_MS) {
+            logWarning("Slow file search: took " + took + "ms, keywords=" + criteria.getKeyWords()
+                + ", folders=" + folders.size() + ", hits=" + results.size() + ", path=" + criteria.getPath()
+                + ", type=" + criteria.getType() + ", recursive=" + criteria.isRecursive());
         }
         return results;
     }

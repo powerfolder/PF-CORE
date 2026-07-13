@@ -87,9 +87,13 @@ public class LuceneIndexManager extends PFComponent {
 
     private static final String META_FILE_NAME = ".index_meta";
 
+    /** The full-text content field. */
+    private static final String CONTENT_FIELD = "content";
+
     /** Searchable fields used by all query methods. */
     private static final String[] SEARCH_FIELDS =
-            {"fileName", "relativeName", "content"};
+            {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
+             "modifiedByDeviceName", "extensionExact"};
 
     /** Pattern matching file extensions eligible for OCR fallback. */
     private static final Pattern OCR_ELIGIBLE_PATTERN =
@@ -1412,7 +1416,9 @@ public class LuceneIndexManager extends PFComponent {
                             new Term(field, token)), prefixBoost),
                     BooleanClause.Occur.SHOULD);
 
-            if (token.length() <= 12) {
+            // PFS-5652: infix wildcard on every field except the full-text "content" field, where a
+            // leading wildcard forces a full term-dictionary scan and dominates search time.
+            if (token.length() <= 12 && !CONTENT_FIELD.equals(field)) {
                 builder.add(
                         new BoostQuery(new WildcardQuery(
                                 new Term(field, "*" + token + "*")),
