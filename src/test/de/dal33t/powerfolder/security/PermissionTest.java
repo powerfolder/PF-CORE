@@ -288,6 +288,54 @@ public class PermissionTest extends TestCase {
         assertFalse(acc.hasOwnerPermission(fi));
     }
 
+    /**
+     * Customer report (blocker): a direct reader of the top folder who is also a member of a
+     * group that has WRITE on a subfolder must effectively get WRITE on that subfolder. The
+     * direct top-folder READ only inherits READ on the subfolder and must not suppress the
+     * group's WRITE. Pure model check - no server/controller involved.
+     */
+    public void testGroupWriteOnSubfolderWinsOverDirectTopFolderRead() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "GRP-SUB-WRITE-1");
+        FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "sub"));
+
+        Account acc = new Account();
+        acc.grant(new FolderReadPermission(top));           // direct reader of the top folder
+
+        Group writeGroup = new Group("Testschreibgruppe");  // group with WRITE on the subfolder
+        writeGroup.grant(new FolderReadWritePermission(sub));
+        acc.addGroup(writeGroup);
+
+        assertTrue("Direct top-folder READ must inherit READ on the subfolder",
+                acc.hasReadPermissions(sub));
+        assertTrue("Group WRITE on the subfolder must grant write despite the direct top READ",
+                acc.hasReadWritePermissions(sub));
+        assertEquals("Effective subfolder access must be READ_WRITE",
+                AccessMode.READ_WRITE, acc.getAllowedAccess(sub));
+    }
+
+    /**
+     * Customer report (nested groups): a folder permission granted to a parent group must
+     * propagate to members of its child group (child -> parent resolution). The account is only
+     * a member of the child group; the WRITE sits on the parent group.
+     */
+    public void testChildGroupMemberInheritsParentGroupSubfolderWrite() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "GRP-NESTED-1");
+        FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "sub"));
+
+        Group parent = new Group("Testschreibgruppe");
+        parent.grant(new FolderReadWritePermission(sub));
+        Group child = new Group("Unterschreibgruppe");
+        child.addParent(parent);                            // child inherits from parent
+
+        Account acc = new Account();
+        acc.addGroup(child);                                // only a member of the child group
+
+        assertTrue("A member of the child group must inherit the parent group's subfolder WRITE",
+                acc.hasReadWritePermissions(sub));
+        assertEquals("Effective subfolder access via nested group must be READ_WRITE",
+                AccessMode.READ_WRITE, acc.getAllowedAccess(sub));
+    }
+
     public void testTopFolderPermissionImpliesSamePermissionOnSubfolder() {
         // --- given: top folder ---
         FolderInfo topFolder =
