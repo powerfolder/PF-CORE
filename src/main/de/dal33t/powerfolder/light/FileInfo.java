@@ -831,6 +831,29 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         return filePath != null && filePath.startsWith(subPath);
     }
 
+    /**
+     * PFC-3543: Like {@link #isInSubFolder(FolderInfo)} but excludes the directory node that IS the
+     * subfolder root (whose relative name equals the subfolder location) - i.e. matches only the
+     * content INSIDE the subfolder. Used by the interrupt data isolation so that root directory node
+     * stays in the top folder and remains listed/navigable, while only the subfolder's contents are
+     * isolated into its own database.
+     * <p>
+     * PFC-3575: keeping the root node in the top folder is the pragmatic first step; how the node's
+     * visibility is modelled (who may see/enter an interrupted subfolder) is a follow-up there.
+     */
+    public boolean isInsideSubFolder(FolderInfo subFolderInfo) {
+        Reject.ifNull(subFolderInfo, "SubFolderInfo");
+        Reject.ifFalse(subFolderInfo.isSubFolder(), "Must be subfolder");
+
+        String subPath = "";
+        if (!subFolderInfo.getParent().getRelativeName().isEmpty()) {
+            subPath += subFolderInfo.getParent().getRelativeName() + '/';
+        }
+        subPath += subFolderInfo.getName();
+        String filePath = this.getRelativeName();
+        return filePath != null && filePath.startsWith(subPath) && !filePath.equals(subPath);
+    }
+
     public boolean isInSubFolder(String subFolderPath) {
         Reject.ifNull(subFolderPath, "subFolderPath");
 
