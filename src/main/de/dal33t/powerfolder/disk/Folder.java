@@ -2279,14 +2279,18 @@ public class Folder extends PFComponent {
      * @return the FileInfos and DirectoryInfos to migrate
      */
     private Collection<FileInfo> collectLocalRows(FileInfoDAO source, boolean onlySubtree) {
+        // PFC-3543: the directory node that IS the subfolder root stays in the top folder so the
+        // subfolder remains listed/navigable there; only its CONTENTS are isolated. isInsideSubFolder()
+        // excludes that exact root node (isInSubFolder would match it via startsWith).
+        // PFC-3575: how that kept node is surfaced/filtered by access is a follow-up.
         List<FileInfo> rows = new ArrayList<>();
         for (FileInfo fInfo : source.findAllFiles(null)) {
-            if (!onlySubtree || fInfo.isInSubFolder(currentInfo)) {
+            if (!onlySubtree || fInfo.isInsideSubFolder(currentInfo)) {
                 rows.add(fInfo);
             }
         }
         for (DirectoryInfo dInfo : source.findAllDirectories(null)) {
-            if (!onlySubtree || dInfo.isInSubFolder(currentInfo)) {
+            if (!onlySubtree || dInfo.isInsideSubFolder(currentInfo)) {
                 rows.add(dInfo);
             }
         }
