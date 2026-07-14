@@ -381,7 +381,7 @@ public final class FileInfoFactory {
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
-            "Cannot delete lookup FileInfo!");
+            "Cannot mark lookup FileInfo as deleted. Has to be an actual FileInfo.");
         // PFC-2352: TODO Think about hashes!
         if (original.isFile()) {
             return new FileInfo(original.getRelativeName(), original.getOID(),
