@@ -5726,24 +5726,30 @@ public class Folder extends PFComponent {
     private void filesChanged(final List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo is null");
 
-        for (int i = 0; i < fileInfos.size(); i++) {
-            FileInfo fileInfo = fileInfos.get(i);
-            final FileInfo localInfo = getFile(fileInfo);
-            fileInfos.set(i, localInfo);
+        // Resolve to the local database instances. A file that is not in this folder's database -
+        // e.g. one inside an interrupted subfolder, which is managed by that subfolder's own
+        // database (PFC-3543) - resolves to null here; skip it so it is never handed to the search
+        // index (a null element NPEs in LuceneIndexManager) or broadcast. The owning subfolder
+        // indexes and broadcasts it itself.
+        List<FileInfo> localInfos = new ArrayList<>(fileInfos.size());
+        for (FileInfo fileInfo : fileInfos) {
+            FileInfo localInfo = getFile(fileInfo);
+            if (localInfo != null) {
+                localInfos.add(localInfo);
+            }
+        }
+        if (localInfos.isEmpty()) {
+            return;
         }
 
-         if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
-            searchIndexManager.indexFiles(fileInfos);
+        if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
+            searchIndexManager.indexFiles(localInfos);
         }
-        fireFilesChanged(fileInfos);
+        fireFilesChanged(localInfos);
         setDBDirty();
 
-        if (fileInfos.size() >= 1
-            || diskItemFilter.isRetained(fileInfos.get(0)))
-        {
-            broadcastMessages(useExt -> FolderFilesChanged.create(getInfo(), fileInfos,
-                    diskItemFilter, useExt));
-        }
+        broadcastMessages(useExt -> FolderFilesChanged.create(getInfo(), localInfos,
+                diskItemFilter, useExt));
     }
 
     private void fireFilesChanged(List<FileInfo> fileInfos) {
