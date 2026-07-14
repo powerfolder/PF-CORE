@@ -99,11 +99,14 @@ class InterruptedSubFolderIndex {
      * deep inside the subtree directly - a single {@code startsWith} covers both.
      * <p>
      * Allocation-free. {@code ownBase} is excluded so an interrupted subfolder
-     * still scans and stores its own content.
+     * still scans and stores its own content. The subfolder's root directory itself
+     * ({@code path.equals(base)}) is NOT foreign either: it stays in the top folder so
+     * the subfolder remains listed/navigable - only paths strictly below it are foreign.
+     * PFC-3575: the visibility model for that kept root node is a follow-up.
      *
      * @param path    an absolute path (a scanned directory or a watched file)
      * @param ownBase the local base of the querying folder (excluded from the match)
-     * @return {@code true} if {@code path} is at or below an interrupted subfolder
+     * @return {@code true} if {@code path} is strictly below an interrupted subfolder
      *         other than the querying folder itself
      */
     boolean contains(Path path, Path ownBase) {
@@ -117,7 +120,7 @@ class InterruptedSubFolderIndex {
                 // Never treat the querying folder's own subtree as foreign.
                 continue;
             }
-            if (path.startsWith(base)) {
+            if (path.startsWith(base) && !path.equals(base)) {
                 return true;
             }
         }
@@ -146,7 +149,7 @@ class InterruptedSubFolderIndex {
             if (subTop == null || !subTop.equals(ownInfo)) {
                 continue;
             }
-            if (fInfo.isInSubFolder(sub)) {
+            if (fInfo.isInsideSubFolder(sub)) {
                 return true;
             }
         }

@@ -218,8 +218,11 @@ public abstract class FolderPermission
         FolderInfo thisFolder = getFolder();
         FolderInfo otherFolder = otherPermission.getFolder();
 
-        // Respect explicit opt-out on target subfolders
-        if (otherFolder.isSubFolder() && !otherFolder.inheritsPermissions()) {
+        // Respect explicit opt-out on target subfolders: a non-inheriting subfolder must not receive
+        // permissions by INHERITANCE from an ancestor. This must NOT block a permission granted
+        // DIRECTLY on that subfolder (thisFolder == otherFolder) - such an explicit permission still
+        // implies its lower modes (e.g. owner/admin implies read on the same interrupted subfolder).
+        if (!thisFolder.equals(otherFolder) && otherFolder.isSubFolder() && !otherFolder.inheritsPermissions()) {
             return false;
         }
 
