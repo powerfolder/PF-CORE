@@ -4,36 +4,44 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public final class TagUtil {
+
+    private static final Pattern CONTROL_CHARS = Pattern.compile("\\p{Cntrl}");
+    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     private TagUtil() {
     }
 
     public static List<String> parse(String tagsJson) {
-        List<String> tags = new ArrayList<>();
         if (StringUtils.isBlank(tagsJson)) {
-            return tags;
+            return Collections.emptyList();
         }
+        List<String> tags = null;
         try {
             JSONArray arr = new JSONArray(tagsJson);
             for (int i = 0; i < arr.length(); i++) {
                 String tag = clean(arr.optString(i, ""));
                 if (!tag.isEmpty()) {
+                    if (tags == null) {
+                        tags = new ArrayList<>(arr.length());
+                    }
                     tags.add(tag);
                 }
             }
         } catch (JSONException e) {
             String single = clean(tagsJson);
             if (!single.isEmpty()) {
-                tags.add(single);
+                return Collections.singletonList(single);
             }
         }
-        return tags;
+        return tags != null ? tags : Collections.emptyList();
     }
 
     public static List<String> normalize(Iterable<String> rawTags) {
@@ -69,6 +77,6 @@ public final class TagUtil {
         if (tag == null) {
             return "";
         }
-        return tag.replaceAll("\\p{Cntrl}", " ").replaceAll("\\s+", " ").trim();
+        return WHITESPACE.matcher(CONTROL_CHARS.matcher(tag).replaceAll(" ")).replaceAll(" ").trim();
     }
 }

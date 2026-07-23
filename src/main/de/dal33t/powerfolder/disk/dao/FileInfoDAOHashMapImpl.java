@@ -249,6 +249,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             path += "/";
         }
         boolean recursive = criteria.isRecursive();
+        // getKeyWords() allocates an unmodifiable wrapper per call - fetch it once for the whole scan.
+        Set<String> keyWords = criteria.getKeyWords();
         Collection<FileInfo> items = new HashSet<FileInfo>();
         for (String domainStr : criteria.getDomains()) {
             Domain domain = getDomain(domainStr);
@@ -262,7 +264,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     }
 
                     if (isInSubDir(dInfo, path, recursive) && !Util.equalsRelativeName(dInfo.getRelativeName(), path)) {
-                        if (!items.contains(dInfo) && matches(dInfo, criteria.getKeyWords())) {
+                        if (!items.contains(dInfo) && matches(dInfo, keyWords)) {
                             if (!dInfo.isDeleted() || criteria.includeDeleted()) {
                                 items.add(dInfo);
                             }
@@ -278,7 +280,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     }
 
                     if (isInSubDir(fInfo, path, recursive)) {
-                        if (!items.contains(fInfo) && matches(fInfo, criteria.getKeyWords())) {
+                        if (!items.contains(fInfo) && matches(fInfo, keyWords)) {
                             if (!fInfo.isDeleted() || criteria.includeDeleted()) {
                                 items.add(fInfo);
                             }
@@ -299,6 +301,12 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         if (relativePath.length() > 0 && !relativePath.endsWith("/")) {
             relativePath += "/";
         }
+        // Hoist criteria accessors out of the per-file loops: getKeyWords()/getTags() allocate an
+        // unmodifiable wrapper per call, and the wanted tags are lowercased once for the whole scan.
+        Set<String> keyWords = criteria.getKeyWords();
+        String extension = criteria.getExtension();
+        String modifiedBy = criteria.getModifiedBy();
+        Set<String> wantedTagsLower = toLowerCase(criteria.getTags());
         Collection<FileInfo> fileInfos = new HashSet<>();
         for (String domainString : criteria.getDomains()) {
             Domain domain = getDomain(domainString);
@@ -313,7 +321,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     break;
                 }
                 if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
-                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, criteria.getKeyWords()) && matchesExtension(directoryInfo, criteria.getExtension()) && matchesModifiedBy(directoryInfo, criteria.getModifiedBy()) && matchesTags(directoryInfo, criteria.getTags())) {
+                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, keyWords) && matchesExtension(directoryInfo, extension) && matchesModifiedBy(directoryInfo, modifiedBy) && matchesTags(directoryInfo, wantedTagsLower)) {
                         fileInfos.add(directoryInfo);
                     }
                 }
@@ -324,7 +332,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                         break;
                     }
                     if ((!fileInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
-                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, criteria.getKeyWords()) && matchesExtension(fileInfo, criteria.getExtension()) && matchesModifiedBy(fileInfo, criteria.getModifiedBy()) && matchesTags(fileInfo, criteria.getTags())) {
+                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, keyWords) && matchesExtension(fileInfo, extension) && matchesModifiedBy(fileInfo, modifiedBy) && matchesTags(fileInfo, wantedTagsLower)) {
                             fileInfos.add(fileInfo);
                         }
                     }
@@ -403,24 +411,42 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         return fileInfo.getExtension().equalsIgnoreCase(extension);
     }
 
-    private static boolean matchesTags(FileInfo fileInfo, Set<String> tags) {
-        if (tags == null || tags.isEmpty()) {
+    /**
+     * @param tagsLower the wanted tags, already lowercased once per scan via {@link #toLowerCase(Set)}. Matching
+     *                  compares case-insensitively against the (few) file tags without any per-file allocation.
+     */
+    private static boolean matchesTags(FileInfo fileInfo, Set<String> tagsLower) {
+        if (tagsLower == null || tagsLower.isEmpty()) {
             return true;
         }
         List<String> fileTags = TagUtil.parse(fileInfo.getTags());
-        if (fileTags.isEmpty()) {
+        if (fileTags.size() < tagsLower.size()) {
             return false;
         }
-        Set<String> lower = new HashSet<>();
-        for (String tag : fileTags) {
-            lower.add(tag.toLowerCase(Locale.ROOT));
-        }
-        for (String wanted : tags) {
-            if (!lower.contains(wanted.toLowerCase(Locale.ROOT))) {
+        for (String wanted : tagsLower) {
+            boolean found = false;
+            for (String tag : fileTags) {
+                if (tag.equalsIgnoreCase(wanted)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
                 return false;
             }
         }
         return true;
+    }
+
+    private static Set<String> toLowerCase(Set<String> tags) {
+        if (tags.isEmpty()) {
+            return Collections.emptySet();
+        }
+        Set<String> lower = new HashSet<>(tags.size());
+        for (String tag : tags) {
+            lower.add(tag.toLowerCase(Locale.ROOT));
+        }
+        return lower;
     }
 
     private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
