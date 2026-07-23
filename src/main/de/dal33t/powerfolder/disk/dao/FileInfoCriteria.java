@@ -46,6 +46,7 @@ public class FileInfoCriteria {
     private boolean includeDeleted = false;
     private String extension;
     private String modifiedBy;
+    private final Set<String> tags = new LinkedHashSet<>();
 
     /**
      * @return the domain(s) to search in.
@@ -255,11 +256,23 @@ public class FileInfoCriteria {
         this.modifiedBy = modifiedBy;
     }
 
+    public Set<String> getTags() {
+        return Collections.unmodifiableSet(tags);
+    }
+
+    public void addTag(String tag) {
+        if (StringUtils.isBlank(tag)) {
+            return;
+        }
+        tags.add(tag.trim());
+    }
+
 
     public boolean hasSearchCriteria() {
         return !keyWords.isEmpty()
                 || StringUtils.isNotBlank(extension)
-                || StringUtils.isNotBlank(modifiedBy);
+                || StringUtils.isNotBlank(modifiedBy)
+                || !tags.isEmpty();
     }
 
     @Override

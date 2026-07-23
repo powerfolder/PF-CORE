@@ -1847,6 +1847,24 @@ public class Folder extends PFComponent {
         broadcastMessages(useExt -> new Message[] {FolderFilesChanged.create(finalDirInfo, useExt)});
     }
 
+    public FileInfo updateTags(FileInfo fileInfo, String tags) {
+        Reject.ifNull(fileInfo, "FileInfo");
+        FileInfo existing = getFile(fileInfo);
+        if (existing == null) {
+            return null;
+        }
+        FileInfo updated = correctFolderInfo(FileInfoFactory.withTags(existing, tags));
+        synchronized (scanLock) {
+            store(getMySelf(), updated);
+            setDBDirty();
+        }
+        if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
+            searchIndexManager.indexFiles(Collections.singletonList(updated));
+        }
+        broadcastMessages(useExt -> new Message[] {FolderFilesChanged.create(updated, useExt)});
+        return updated;
+    }
+
     /**
      * Checks a single file if there are problems with it
      *

@@ -399,6 +399,28 @@ public final class FileInfoFactory {
         }
     }
 
+    public static FileInfo withTags(FileInfo original, String tags) {
+        Reject.ifNull(original, "Original FileInfo is null");
+        Reject.ifTrue(original.isLookupInstance(),
+            "Cannot set tags on lookup FileInfo!");
+        if (original.isFile()) {
+            return new FileInfo(original.getRelativeName(), original.getOID(),
+                original.getSize(), original.getModifiedBy(),
+                original.getModifiedByAccount(), original.getModifiedDate(),
+                original.getVersion() + 1, original.getHashes(),
+                original.isDeleted(), tags, original.getFolderInfo());
+        } else if (original.isDiretory()) {
+            return new DirectoryInfo(original.getRelativeName(),
+                original.getOID(), original.getModifiedBy(),
+                original.getModifiedByAccount(), original.getModifiedDate(),
+                original.getVersion() + 1, original.getHashes(),
+                original.isDeleted(), tags, original.getFolderInfo());
+        } else {
+            throw new IllegalArgumentException("Illegal original FileInfo: "
+                + original.getClass() + ": " + original.toDetailString());
+        }
+    }
+
     public static FileInfo archivedFile(FolderInfo foInfo, String name,
         String oid, long size, MemberInfo modby, AccountInfo modByAccount,
         Date modDate, int version, String hashes, String tags)
