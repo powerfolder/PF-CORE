@@ -124,7 +124,14 @@ public enum Feature {
 
     LOG_MEMBERINFO_CONNECT_ADDRESS_NULL(false),
 
-    LOG_INVALIDATE_ALL_CACHES(false);
+    LOG_INVALIDATE_ALL_CACHES(false),
+
+    /**
+     * INT-1725: Log (once per method) service methods that have no "&lt;method&gt;Allowed" authorization companion
+     * while the dispatcher runs in audit-only mode. Disabled by default; enable server-internally to enumerate the
+     * reachable surface that still needs a companion.
+     */
+    LOG_MISSING_AUTHORIZATION_COMPANION(false);
 
     private static final Logger log = Logger.getLogger(Feature.class.getName());
 
