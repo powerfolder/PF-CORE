@@ -41,6 +41,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -439,6 +440,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     public String getTags() {
         return tags;
+    }
+
+    /**
+     * @return the tags parsed into single values (never null, empty when untagged). PFS-5306
+     */
+    public List<String> getTagsList() {
+        return TagUtil.parse(tags);
     }
 
     /**

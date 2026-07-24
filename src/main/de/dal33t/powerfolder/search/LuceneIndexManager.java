@@ -31,7 +31,6 @@ import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.TagUtil;
 import de.dal33t.powerfolder.util.Waiter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
@@ -770,7 +769,7 @@ public class LuceneIndexManager extends PFComponent {
         }
         if (StringUtils.isNotBlank(fileInfo.getTags())) {
             doc.add(new StoredField("tags", fileInfo.getTags()));
-            List<String> tagList = TagUtil.parse(fileInfo.getTags());
+            List<String> tagList = fileInfo.getTagsList();
             if (!tagList.isEmpty()) {
                 doc.add(new TextField("tags", String.join(" ", tagList), Field.Store.NO));
                 for (String tag : tagList) {

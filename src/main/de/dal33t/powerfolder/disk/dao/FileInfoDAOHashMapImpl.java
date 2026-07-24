@@ -27,7 +27,6 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
-import de.dal33t.powerfolder.util.TagUtil;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
 
@@ -419,7 +418,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         if (tagsLower == null || tagsLower.isEmpty()) {
             return true;
         }
-        List<String> fileTags = TagUtil.parse(fileInfo.getTags());
+        List<String> fileTags = fileInfo.getTagsList();
         if (fileTags.size() < tagsLower.size()) {
             return false;
         }
