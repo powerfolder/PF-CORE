@@ -542,6 +542,22 @@ public enum ConfigurationEntry {
         "folder.permission.inheritance_interruption.enabled", false, true),
 
     /**
+     * PFC-3576 (spec 3.7): view variant for a shared / interrupted subfolder a user has access to
+     * WITHOUT access to its parent (top) folder.
+     * <ul>
+     *   <li><b>false (default) — "show at top level":</b> the shared subfolder appears directly as a
+     *       top-level entry in the user's folder list; the parent is not shown.</li>
+     *   <li><b>true — "navigate through the structure":</b> the user sees the parent (top) folder and
+     *       navigates through an otherwise empty structure (only the path down to the shared subfolder
+     *       is visible) until reaching the subfolder, where the full content is shown.</li>
+     * </ul>
+     * Applies identically to plain subfolder sharing (inheritance intact) and interrupted subfolders.
+     * Only meaningful while {@link #FOLDER_SHARE_SUBFOLDER_ENABLED} is on. Evaluated per request on the
+     * server, so no core {@code Feature} mirror is required.
+     */
+    FOLDER_SUBFOLDER_NAVIGATION_VIEW_ENABLED("folder.subfolder.navigation_view.enabled", false),
+
+    /**
      * PFS-798: If invitor can invite "external" non existing users (e.g. not in LDAP nor in DB).
      * Will create a new user account with server default settings for invitee.
      */
