@@ -224,6 +224,20 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return FileInfoFactory.lookupDirectory(topFolder, path);
     }
 
+    /**
+     * PFC-3576: human-readable location for admin lists. For a subfolder this is the top folder's
+     * localized name plus the relative location ("TopFolder/sub/path/leaf"), so admins can tell which
+     * workspace a subfolder belongs to; for a top folder it is just the localized (leaf) name.
+     */
+    public String getDisplayPath() {
+        if (!isSubFolder() || topFolder == null) {
+            return getLocalizedName();
+        }
+        DirectoryInfo location = getLocation();
+        String relative = location != null ? location.getRelativeName() : name;
+        return topFolder.getLocalizedName() + "/" + relative;
+    }
+
     public FolderInfo getTopFolder() {
         return topFolder;
     }
