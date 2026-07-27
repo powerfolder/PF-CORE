@@ -3099,12 +3099,17 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         if (!currentInfo.isMetaFolder()) {
-            String syncProfKey = PREFIX_V4 + configEntryId
-                + FolderSettings.SYNC_PROFILE;
-            getController().getConfig().put(syncProfKey,
-                syncProfile.getFieldList());
-            if (saveConfig) {
-                getController().saveConfig();
+            // Only persist if the folder is still registered in the config. Otherwise a concurrent
+            // remove/unmount (e.g. dynamic folder mounting in HA clusters) already dropped all
+            // f.<entryId>.* keys and writing here would leave an orphaned syncprofile-only entry.
+            if (getController().getConfig().containsKey(PREFIX_V4 + configEntryId + FolderSettings.ID)) {
+                String syncProfKey = PREFIX_V4 + configEntryId + FolderSettings.SYNC_PROFILE;
+                getController().getConfig().put(syncProfKey, syncProfile.getFieldList());
+                if (saveConfig) {
+                    getController().saveConfig();
+                }
+            } else {
+                logFine(this + ": Not persisting sync profile, folder no longer in config");
             }
         }
 
