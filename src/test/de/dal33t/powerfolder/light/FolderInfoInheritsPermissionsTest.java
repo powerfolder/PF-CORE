@@ -67,7 +67,7 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
     public void testFeatureDisabledAlwaysInherits() {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
         // Stored as interrupted, but the disabled feature must ignore it.
-        subFolder.setInheritsPermissions(false);
+        subFolder = withInheritsPermissions(subFolder, false);
         assertTrue("Feature off: subfolder must still inherit",
             subFolder.inheritsPermissions());
 
@@ -81,7 +81,7 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         assertTrue("Default is inheriting", subFolder.inheritsPermissions());
 
-        subFolder.setInheritsPermissions(false);
+        subFolder = withInheritsPermissions(subFolder, false);
         assertFalse("Feature on: interruption must be honored",
             subFolder.inheritsPermissions());
 
@@ -93,7 +93,7 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
 
     public void testTopFolderAlwaysInherits() {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
-        topFolder.setInheritsPermissions(false);
+        topFolder = withInheritsPermissions(topFolder, false);
         assertTrue("Top folders are the root of inheritance and never interrupted",
             topFolder.inheritsPermissions());
     }
@@ -128,21 +128,21 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
 
     public void testFeatureOffKeepsOldProtocol() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
-        subFolder.setInheritsPermissions(false);
+        subFolder = withInheritsPermissions(subFolder, false);
         // Even towards a >= 115 peer: feature off must never emit protocol 102.
         assertEquals(101L, writtenProtocolVersion(subFolder, true, true));
     }
 
     public void testOldPeerNeverReceivesNewProtocol() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
-        subFolder.setInheritsPermissions(false);
+        subFolder = withInheritsPermissions(subFolder, false);
         // Peer negotiated < 115 (e.g. an old 114 subfolder peer): stays at 101.
         assertEquals(101L, writtenProtocolVersion(subFolder, true, false));
     }
 
     public void testNewPeerReceivesInterruptionFlag() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
-        subFolder.setInheritsPermissions(false);
+        subFolder = withInheritsPermissions(subFolder, false);
         // Peer negotiated >= 115 and the folder is interrupted: escalate to 102.
         assertEquals(102L, writtenProtocolVersion(subFolder, true, true));
     }
@@ -155,7 +155,7 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
 
     public void testInterruptionRoundTripsToNewPeer() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
-        subFolder.setInheritsPermissions(false);
+        subFolder = withInheritsPermissions(subFolder, false);
         FolderInfo read = roundTrip(subFolder, true, true);
         assertFalse("Interruption must survive the wire to a new peer",
             read.inheritsPermissions());
@@ -163,7 +163,7 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
 
     public void testOldPeerReadsInterruptedFolderAsInheriting() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
-        subFolder.setInheritsPermissions(false);
+        subFolder = withInheritsPermissions(subFolder, false);
         // Written for an old peer (no flag) and read back: must default to
         // inheriting, i.e. the safe default - no silent wrong interruption.
         FolderInfo read = roundTrip(subFolder, true, false);
@@ -172,6 +172,15 @@ public class FolderInfoInheritsPermissionsTest extends TestCase {
     }
 
     // --- helpers -------------------------------------------------------------
+
+    /**
+     * Test replacement for the removed in-place setter: same-version copy with the
+     * flag applied (FolderInfo is immutable, package-private constructor).
+     */
+    private static FolderInfo withInheritsPermissions(FolderInfo fi, boolean inherits) {
+        return new FolderInfo(fi.getName(), fi.getId(), fi.getVersion(), fi.getParent(),
+            fi.storedTags(), inherits);
+    }
 
     private byte[] serialize(FolderInfo fi, boolean inclVersionAndParent,
         boolean inclInheritsPermissions) throws IOException
