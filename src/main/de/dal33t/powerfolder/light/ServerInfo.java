@@ -51,6 +51,13 @@ import static de.dal33t.powerfolder.util.StringUtils.isBlank;
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ServerInfo implements Serializable, D2DObject {
+    /*
+     * WARNING: Changing this value causes SIGNIFICANT problems and is virtually never the right
+     * move: every serialized instance becomes unreadable (InvalidClassException) - stored folder
+     * databases as well as wire messages from nodes still running the old value. Adding fields
+     * is a serialization-COMPATIBLE change under the SAME UID; see the detailed note on
+     * FolderInfo#serialVersionUID.
+     */
     private static final long serialVersionUID = 100L;
     public static final String PROPERTYNAME_ID = "id";
     public static final String PROPERTYNAME_NODE = "node";

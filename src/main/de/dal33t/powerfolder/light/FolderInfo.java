@@ -27,6 +27,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.TagUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
@@ -39,6 +40,7 @@ import javax.persistence.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +58,17 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private static final Logger LOG = Logger.getLogger(FolderInfo.class.getName());
+    /*
+     * WARNING: Changing this value causes SIGNIFICANT problems and is virtually never the right
+     * move: every serialized FolderInfo becomes unreadable (InvalidClassException) - all stored
+     * folder databases (.PowerFolder/db, FileInfos embed their FolderInfo), the on-disk FolderInfo
+     * files and any wire message from nodes still running the old value. The result is a full
+     * rescan and loss of all file metadata (versions, modifiers, tags) on every folder.
+     *
+     * Adding a field is a serialization-COMPATIBLE change under the same UID: readObject defaults
+     * it via GetField, older nodes simply ignore it (PFS-5306 kept 102 for the tags field for
+     * exactly this reason). Wire-format evolution is versioned separately via extVersionUID.
+     */
     private static final long serialVersionUID = 102L;
     private static final Internalizer<FolderInfo> INTERNALIZER = new FolderInfoInternalizer();
 
@@ -65,6 +78,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     public static final String PROPERTYNAME_TOP_FOLDER = "topFolder";
     public static final String PROPERTYNAME_TOP_PATH = "topPath";
     public static final String PROPERTYNAME_INHERITS_PERMISSIONS = "inheritsPermissions";
+    public static final String PROPERTYNAME_TAGS = "tags";
 
     @Index(name="IDX_FOLDER_NAME")
     private String name;
@@ -93,6 +107,13 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private boolean inheritsPermissions = true;
 
     /**
+     * PFS-5306: Workspace tags of this folder as JSON array string (e.g. ["Projekt","2026"]),
+     * same encoding as {@code FileInfo#tags}. {@code null} when untagged.
+     */
+    @Column(name = "tags", length = 2047)
+    private String tags;
+
+    /**
      * The cached hash info.
      */
     private transient int hash;
@@ -102,9 +123,26 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     FolderInfo(String name, String id, int version, DirectoryInfo parent) {
+        this(name, id, version, parent, null, true);
+    }
+
+    /**
+     * PFS-5306: FolderInfo is immutable - tags and the inheritance flag are set at construction
+     * time only. Changing them requires a new, version-bumped instance via
+     * {@link FolderInfoFactory#changeTags(FolderInfo, String)} respectively
+     * {@link FolderInfoFactory#changeInheritsPermissions(FolderInfo, boolean)}.
+     *
+     * @param tags                the tags as JSON array string, {@code null} when untagged
+     * @param inheritsPermissions {@code false} to interrupt permission inheritance (PFC-3543)
+     */
+    FolderInfo(String name, String id, int version, DirectoryInfo parent, String tags,
+        boolean inheritsPermissions)
+    {
         this.name = name;
         this.id = id;
         this.version = version;
+        this.tags = tags;
+        this.inheritsPermissions = inheritsPermissions;
         setParent(parent);
         hash = hashCode0();
     }
@@ -268,17 +306,25 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     /**
-     * Sets whether this subfolder inherits permissions from its top folder.
-     * <p>
-     * Package-private on purpose: this mutates in place and does NOT bump the
-     * folder version. To <em>change</em> the flag (which must produce a new,
-     * version-bumped {@link FolderInfo}, like a rename), use
-     * {@link FolderInfoFactory#changeInheritsPermissions(FolderInfo, boolean)}.
-     *
-     * @param inheritsPermissions {@code false} to interrupt inheritance
+     * PFS-5306: the workspace tags as raw JSON array string, {@code null} when untagged.
      */
-    void setInheritsPermissions(boolean inheritsPermissions) {
-        this.inheritsPermissions = inheritsPermissions;
+    public String getTags() {
+        return tags;
+    }
+
+    /**
+     * PFS-5306: the parsed workspace tags. Never {@code null}, empty when untagged.
+     */
+    public List<String> getTagsList() {
+        return TagUtil.parse(tags);
+    }
+
+    /**
+     * The stored raw tags value, {@code null} when untagged.
+     * Package-private accessor for {@link FolderInfoFactory} (no-op detection).
+     */
+    String storedTags() {
+        return tags;
     }
 
     /**
@@ -385,8 +431,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     // Serialization optimization *********************************************
 
     // PFC-3543: bumped 101 -> 102 to carry the inheritsPermissions flag.
-    // Protocol 100 = id+name, 101 = +version+parent, 102 = +inheritsPermissions.
-    private static final long extVersionUID = 102L;
+    // PFS-5306: bumped 102 -> 103 to carry the workspace tags.
+    // Protocol 100 = id+name, 101 = +version+parent, 102 = +inheritsPermissions, 103 = +tags.
+    private static final long extVersionUID = 103L;
 
     public static FolderInfo readExt(ObjectInput in) throws IOException,
         ClassNotFoundException
@@ -400,7 +447,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         ClassNotFoundException
     {
         long extUID = in.readLong();
-        if (extUID != 100L && extUID != 101L && extUID != extVersionUID) {
+        if (extUID != 100L && extUID != 101L && extUID != 102L && extUID != extVersionUID) {
             throw new InvalidClassException(this.getClass().getName(),
                 "Unable to read. extVersionUID(steam): " + extUID
                     + ", expected: " + extVersionUID);
@@ -422,6 +469,12 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (extUID >= 102L) {
             inheritsPermissions = in.readBoolean();
         }
+        // PFS-5306: protocol 103+ carries the workspace tags; older streams have none.
+        if (extUID >= 103L) {
+            if (in.readBoolean()) {
+                tags = in.readUTF();
+            }
+        }
         // LOG.log(Level.INFO,this + ": readExternal " + extUID, new StackDump());
     }
 
@@ -438,6 +491,14 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     public void writeExternal(ObjectOutput out, boolean includeVersionAndParent,
         boolean includeInheritsPermissions) throws IOException {
+        // PFS-5306: standalone callers that do not negotiate the tags protocol must
+        // not emit them (safe default: the peer sees the folder as untagged). Only
+        // FolderListExt talking to a >= 116 peer passes true.
+        writeExternal(out, includeVersionAndParent, includeInheritsPermissions, false);
+    }
+
+    public void writeExternal(ObjectOutput out, boolean includeVersionAndParent,
+        boolean includeInheritsPermissions, boolean includeTags) throws IOException {
 
         // Pick the highest FolderInfo protocol version we may write. We escalate
         // only as far as (a) this folder actually needs and (b) the peer negotiated,
@@ -445,16 +506,20 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         //   100 = id + name
         //   101 = + version + parent folder (subfolder support)
         //   102 = + inheritsPermissions flag (PFC-3543)
+        //   103 = + workspace tags (PFS-5306)
         boolean writeVersionAndParent = includeVersionAndParent
             && (version > 0 || topFolder != null);
         boolean writeInheritsPermissions = writeVersionAndParent
             && includeInheritsPermissions
             && Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.isEnabled()
             && !inheritsPermissions;
+        boolean writeTags = writeVersionAndParent && includeTags && tags != null;
 
         long protocolVersion = 100L;
-        if (writeInheritsPermissions) {
-            protocolVersion = extVersionUID; // 102
+        if (writeTags) {
+            protocolVersion = extVersionUID; // 103
+        } else if (writeInheritsPermissions) {
+            protocolVersion = 102L;
         } else if (writeVersionAndParent) {
             protocolVersion = 101L;
         }
@@ -476,9 +541,18 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             out.writeBoolean(false);
         }
 
-        // Version 102: inheritsPermissions flag
-        if (writeInheritsPermissions) {
+        // Version 102: inheritsPermissions flag. Must be written whenever the
+        // stream announces >= 102, even if only the tags forced the escalation.
+        if (protocolVersion >= 102L) {
             out.writeBoolean(inheritsPermissions);
+        }
+
+        // Version 103: workspace tags (PFS-5306), boolean-prefixed.
+        if (protocolVersion >= 103L) {
+            out.writeBoolean(tags != null);
+            if (tags != null) {
+                out.writeUTF(tags);
+            }
         }
     }
 
@@ -496,6 +570,8 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         topFolder = (FolderInfo) serialFields.get(PROPERTYNAME_TOP_FOLDER, null);
         topPath = (String) serialFields.get(PROPERTYNAME_TOP_PATH, null);
         inheritsPermissions = serialFields.get(PROPERTYNAME_INHERITS_PERMISSIONS, true);
+        // PFS-5306: absent in old streams -> untagged.
+        tags = (String) serialFields.get(PROPERTYNAME_TAGS, null);
         hash = hashCode0();
     }
 
@@ -536,6 +612,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
           // field is the inverted "interruptInheritance" (proto3 bool defaults to
           // false = inherits), so bridge it back:
           // this.inheritsPermissions = !finfo.getInterruptInheritance();
+          // TODO PFS-5306: once powerfolder-protobuf-*.jar is regenerated from the
+          // updated FolderInfoProto.proto (field 5), read the tags here. proto3
+          // string defaults to "" (= untagged), so bridge it back to null:
+          // this.tags = finfo.getTags().isEmpty() ? null : finfo.getTags();
         }
     }
 
@@ -558,6 +638,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
       // updated FolderInfoProto.proto (field 4), write the flag here (inverted,
       // so proto3 default false = inherits):
       // builder.setInterruptInheritance(!this.inheritsPermissions);
+      // TODO PFS-5306: once powerfolder-protobuf-*.jar is regenerated from the
+      // updated FolderInfoProto.proto (field 5), write the tags here (proto3
+      // string default "" = untagged):
+      // if (this.tags != null) { builder.setTags(this.tags); }
 
       return builder.build();
     }

@@ -56,10 +56,10 @@ public class InheritPermissionsProtocolNegotiationTest extends TwoControllerTest
     }
 
     public void testFeatureEnabledNegotiatesInheritanceProtocol() {
-        // Enable BEFORE connecting so the exchanged Identity advertises 115.
+        // Enable BEFORE connecting so the exchanged Identity advertises the newest version (PFS-5306: 116).
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         connectBartAndLisa();
-        assertNegotiatedProtocolVersion(Identity.PROTOCOL_VERSION_115);
+        assertNegotiatedProtocolVersion(Identity.PROTOCOL_VERSION_116);
     }
 
     private void assertNegotiatedProtocolVersion(int expected) {

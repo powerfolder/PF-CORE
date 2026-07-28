@@ -78,6 +78,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     public static final String PROPERTYNAME_DELETED = "deleted";
     public static final String PROPERTYNAME_FOLDER_INFO = "folderInfo";
 
+    /*
+     * WARNING: Changing this value causes SIGNIFICANT problems and is virtually never the right
+     * move: every serialized instance becomes unreadable (InvalidClassException) - stored folder
+     * databases as well as wire messages from nodes still running the old value. Adding fields
+     * is a serialization-COMPATIBLE change under the SAME UID; see the detailed note on
+     * FolderInfo#serialVersionUID.
+     */
     private static final long serialVersionUID = 100L;
 
     /**

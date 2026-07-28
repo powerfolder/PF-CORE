@@ -40,6 +40,13 @@ public class FileHistory implements Serializable {
 
     private static final Logger log = Logger.getLogger(FileHistory.class
         .getName());
+    /*
+     * WARNING: Changing this value causes SIGNIFICANT problems and is virtually never the right
+     * move: every serialized instance becomes unreadable (InvalidClassException) - stored folder
+     * databases as well as wire messages from nodes still running the old value. Adding fields
+     * is a serialization-COMPATIBLE change under the SAME UID; see the detailed note on
+     * FolderInfo#serialVersionUID.
+     */
     private static final long serialVersionUID = 100L;
 
     private final ImmutableList<Record> history;

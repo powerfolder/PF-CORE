@@ -34,7 +34,8 @@ import java.util.Collection;
 public class FolderListExt extends FolderList implements Externalizable {
     private static final long serialVersionUID = -3861676003458215175L;
     // PFC-3543: 103 adds the FolderInfo inheritsPermissions flag on top of 102 (parent).
-    private static final long extVersionUID = 103L;
+    // PFS-5306: 104 adds the FolderInfo workspace tags on top of 103.
+    private static final long extVersionUID = 104L;
 
     /**
      * The wire version written for this message. It alone expresses which
@@ -44,6 +45,7 @@ public class FolderListExt extends FolderList implements Externalizable {
      *   <li>101: folder list, legacy FolderInfo protocol</li>
      *   <li>102: + parent/subfolder information</li>
      *   <li>103: + inheritsPermissions (interruption of permission inheritance)</li>
+     *   <li>104: + workspace tags (PFS-5306)</li>
      * </ul>
      */
     private final long writeExtVersionUID;
@@ -62,14 +64,17 @@ public class FolderListExt extends FolderList implements Externalizable {
     /**
      * @param remoteProtocolVersion the protocol version the remote peer negotiated
      *                              (see {@link Identity}). Determines which FolderInfo
-     *                              fields are written: &gt;= 115 includes
+     *                              fields are written: &gt;= 116 includes workspace
+     *                              tags (PFS-5306), &gt;= 115 includes
      *                              inheritsPermissions (PFC-3543), &gt;= 114 includes
-     *                              parent/subfolder information, otherwise neither.
+     *                              parent/subfolder information, otherwise none.
      */
     public FolderListExt(Collection<FolderInfo> allFolders, int remoteProtocolVersion)
     {
         super(allFolders);
-        if (remoteProtocolVersion >= Identity.PROTOCOL_VERSION_115) {
+        if (remoteProtocolVersion >= Identity.PROTOCOL_VERSION_116) {
+            writeExtVersionUID = 104L;
+        } else if (remoteProtocolVersion >= Identity.PROTOCOL_VERSION_115) {
             writeExtVersionUID = 103L;
         } else if (remoteProtocolVersion >= Identity.PROTOCOL_VERSION_114) {
             writeExtVersionUID = 102L;
@@ -127,7 +132,8 @@ public class FolderListExt extends FolderList implements Externalizable {
         if (folders != null) {
             out.writeInt(folders.length);
             for (FolderInfo foInfo : folders) {
-                foInfo.writeExternal(out, writeExtVersionUID >= 102L, writeExtVersionUID >= 103L);
+                foInfo.writeExternal(out, writeExtVersionUID >= 102L, writeExtVersionUID >= 103L,
+                    writeExtVersionUID >= 104L);
             }
         }
     }

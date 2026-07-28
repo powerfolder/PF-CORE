@@ -110,12 +110,17 @@ public class FolderInfoFactory {
         } else {
             version = originalFolderInfo.getVersion() + 1;
         }
-        return new FolderInfo(
+        // Tags and inheritance flag travel via the constructor (immutable FolderInfo), otherwise
+        // the conflict bump would silently drop them. PFS-5306
+        FolderInfo result = new FolderInfo(
                 originalFolderInfo.getName(),
                 originalFolderInfo.getId(),
                 version,
-                originalFolderInfo.getParent()
-        ).intern(true);
+                originalFolderInfo.getParent(),
+                originalFolderInfo.storedTags(),
+                originalFolderInfo.storedInheritsPermissions()
+        );
+        return result.intern(true);
     }
 
     public static FolderInfo rename(FolderInfo originalFolderInfo, String newName) {
@@ -129,12 +134,17 @@ public class FolderInfoFactory {
         } else {
             version = originalFolderInfo.getVersion() + 1;
         }
-        return new FolderInfo(
+        // Tags and inheritance flag travel via the constructor (immutable FolderInfo), otherwise
+        // a rename would silently drop them. PFS-5306
+        FolderInfo result = new FolderInfo(
                 newName,
                 originalFolderInfo.getId(),
                 version,
-                originalFolderInfo.getParent()
-        ).intern(true);
+                originalFolderInfo.getParent(),
+                originalFolderInfo.storedTags(),
+                originalFolderInfo.storedInheritsPermissions()
+        );
+        return result.intern(true);
     }
 
     public static FolderInfo changeParent(FolderInfo originalFolderInfo, DirectoryInfo newParent) {
@@ -148,12 +158,17 @@ public class FolderInfoFactory {
         } else {
             version = originalFolderInfo.getVersion() + 1;
         }
-        return new FolderInfo(
+        // Tags and inheritance flag travel via the constructor (immutable FolderInfo), otherwise
+        // a move would silently drop them. PFS-5306
+        FolderInfo result = new FolderInfo(
                 originalFolderInfo.getName(),
                 originalFolderInfo.getId(),
                 version,
-                newParent
-        ).intern(true);
+                newParent,
+                originalFolderInfo.storedTags(),
+                originalFolderInfo.storedInheritsPermissions()
+        );
+        return result.intern(true);
     }
 
     /**
@@ -183,13 +198,51 @@ public class FolderInfoFactory {
         } else {
             version = originalFolderInfo.getVersion() + 1;
         }
+        // Tags travel via the constructor as well (immutable FolderInfo). PFS-5306
         FolderInfo result = new FolderInfo(
                 originalFolderInfo.getName(),
                 originalFolderInfo.getId(),
                 version,
-                originalFolderInfo.getParent()
+                originalFolderInfo.getParent(),
+                originalFolderInfo.storedTags(),
+                inheritsPermissions
         );
-        result.setInheritsPermissions(inheritsPermissions);
+        return result.intern(true);
+    }
+
+    /**
+     * PFS-5306: Changes the workspace tags of a folder. Like a rename this does
+     * not mutate the given instance but produces a new, version-bumped
+     * {@link FolderInfo} so the change propagates through the network (folder
+     * version is part of the sync protocol). This is the only supported way to
+     * change the tags.
+     *
+     * @param foInfo   the folder to change
+     * @param tagsJson the tags as JSON array string, {@code null} to untag
+     * @return the original instance if the tags are unchanged, otherwise a new
+     *         version-bumped instance with the tags applied
+     */
+    public static FolderInfo changeTags(FolderInfo foInfo, String tagsJson) {
+        if (Objects.equals(foInfo.storedTags(), tagsJson)) {
+            return foInfo;
+        }
+        int version;
+        if (foInfo.isLookupInstance()) {
+            version = 0;
+            LOG.log(Level.WARNING, foInfo + ": Changing tags from lookup instance is discouraged, but used.",
+                new StackDump());
+        } else {
+            version = foInfo.getVersion() + 1;
+        }
+        // Inheritance flag travels via the constructor as well (immutable FolderInfo). PFC-3543
+        FolderInfo result = new FolderInfo(
+                foInfo.getName(),
+                foInfo.getId(),
+                version,
+                foInfo.getParent(),
+                tagsJson,
+                foInfo.storedInheritsPermissions()
+        );
         return result.intern(true);
     }
 
