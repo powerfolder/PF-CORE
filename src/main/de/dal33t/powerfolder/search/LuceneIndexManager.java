@@ -1405,6 +1405,17 @@ public class LuceneIndexManager extends PFComponent {
         BooleanQuery.Builder allTokens = new BooleanQuery.Builder();
 
         for (String token : tokens) {
+            // PFS-5306: The StandardTokenizer used for indexing never emits a token ending in a dot
+            // (a dot only survives between alphanumerics). A trailing dot typed by the user - e.g. the
+            // tag "Stoffliste 29.7." - would therefore match nothing and, as a MUST clause, kill the
+            // whole query. Dots inside a token (29.7, report.v2) stay untouched.
+            while (token.endsWith(".")) {
+                token = token.substring(0, token.length() - 1);
+            }
+            if (token.isEmpty()) {
+                continue;
+            }
+
             BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
 
             addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f);
