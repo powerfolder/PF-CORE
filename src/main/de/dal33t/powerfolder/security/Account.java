@@ -675,7 +675,30 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     public void setUsername(String username) {
+        String oldUsername = this.username;
         this.username = username;
+        adaptBasePathToUsername(oldUsername);
+    }
+
+    /**
+     * PFS-5684: On a rename, move the account's base path along with the username, but only if the base path's last
+     * element still is the old username - a base path set to something else is an admin's explicit choice and stays.
+     *
+     * @param oldUsername the username before the rename
+     */
+    private void adaptBasePathToUsername(String oldUsername) {
+        if (isBlank(basePath) || isBlank(oldUsername) || isBlank(username) || username.equals(oldUsername)) {
+            return;
+        }
+        int i = Math.max(basePath.lastIndexOf('/'), basePath.lastIndexOf('\\'));
+        String parent = i >= 0 ? basePath.substring(0, i + 1) : "";
+        String lastElement = basePath.substring(i + 1);
+        if (!lastElement.equalsIgnoreCase(PathUtils.removeInvalidFilenameChars(oldUsername))) {
+            return;
+        }
+        basePath = parent + PathUtils.removeInvalidFilenameChars(username);
+        // FINE, not INFO: the username is personal data (PII).
+        LOG.fine("Account renamed. New base path: " + basePath);
     }
 
     public String getDisplayName() {
