@@ -289,4 +289,46 @@ public interface SecurityService {
      * @return The ServerInfo the account is hosted on.
      */
     ServerInfo getHostingService(String username);
+
+    /**
+     * PFS-5630: Files a join request ("reverse invitation") of the logged in
+     * user to a moderated folder. Stores the pending request and notifies the
+     * folder managers by e-mail (deep-link to process the request).
+     *
+     * @param invitation
+     *            the join request. Must have {@link Invitation#isJoinRequest()}
+     *            set and the requester as recipient.
+     */
+    void requestJoin(Invitation invitation);
+
+    /**
+     * PFS-5630: Approves a pending join request to a moderated folder. Caller
+     * must hold {@code FolderPermission.admin} on the folder. Grants the
+     * permission carried by the invitation to the requester (if any - group
+     * assignments are handled separately), deletes the request and notifies
+     * the requester by e-mail including the manager comment.
+     *
+     * @param invitation
+     *            the pending join request.
+     * @param managerComment
+     *            optional comment of the processing manager, may be null.
+     * @param grantDirectPermission
+     *            whether to grant the direct {@link FolderPermission} carried
+     *            by the invitation to the requester.
+     */
+    void approveJoinRequest(Invitation invitation, String managerComment,
+        boolean grantDirectPermission);
+
+    /**
+     * PFS-5630: Declines a pending join request to a moderated folder. Caller
+     * must hold {@code FolderPermission.admin} on the folder. Deletes the
+     * request (no grant) and notifies the requester by e-mail including the
+     * manager comment.
+     *
+     * @param invitation
+     *            the pending join request.
+     * @param managerComment
+     *            optional comment of the processing manager, may be null.
+     */
+    void declineJoinRequest(Invitation invitation, String managerComment);
 }
