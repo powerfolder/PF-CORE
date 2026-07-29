@@ -107,7 +107,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private boolean inheritsPermissions = true;
 
     /**
-     * PFS-5306: Workspace tags of this folder as JSON array string (e.g. ["Projekt","2026"]),
+     * PFS-5306: Tags of this folder as JSON array string (e.g. ["Projekt","2026"]),
      * same encoding as {@code FileInfo#tags}. {@code null} when untagged.
      */
     @Column(name = "tags", length = 2047)
@@ -265,7 +265,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     /**
      * PFC-3576: human-readable location for admin lists. For a subfolder this is the top folder's
      * localized name plus the relative location ("TopFolder/sub/path/leaf"), so admins can tell which
-     * workspace a subfolder belongs to; for a top folder it is just the localized (leaf) name.
+     * top folder a subfolder belongs to; for a top folder it is just the localized (leaf) name.
      */
     public String getDisplayPath() {
         if (!isSubFolder() || topFolder == null) {
@@ -306,14 +306,14 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     /**
-     * PFS-5306: the workspace tags as raw JSON array string, {@code null} when untagged.
+     * PFS-5306: the tags as raw JSON array string, {@code null} when untagged.
      */
     public String getTags() {
         return tags;
     }
 
     /**
-     * PFS-5306: the parsed workspace tags. Never {@code null}, empty when untagged.
+     * PFS-5306: the parsed tags. Never {@code null}, empty when untagged.
      */
     public List<String> getTagsList() {
         return TagUtil.parse(tags);
@@ -431,7 +431,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     // Serialization optimization *********************************************
 
     // PFC-3543: bumped 101 -> 102 to carry the inheritsPermissions flag.
-    // PFS-5306: bumped 102 -> 103 to carry the workspace tags.
+    // PFS-5306: bumped 102 -> 103 to carry the tags.
     // Protocol 100 = id+name, 101 = +version+parent, 102 = +inheritsPermissions, 103 = +tags.
     private static final long extVersionUID = 103L;
 
@@ -469,7 +469,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (extUID >= 102L) {
             inheritsPermissions = in.readBoolean();
         }
-        // PFS-5306: protocol 103+ carries the workspace tags; older streams have none.
+        // PFS-5306: protocol 103+ carries the tags; older streams have none.
         if (extUID >= 103L) {
             if (in.readBoolean()) {
                 tags = in.readUTF();
@@ -506,7 +506,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         //   100 = id + name
         //   101 = + version + parent folder (subfolder support)
         //   102 = + inheritsPermissions flag (PFC-3543)
-        //   103 = + workspace tags (PFS-5306)
+        //   103 = + tags (PFS-5306)
         boolean writeVersionAndParent = includeVersionAndParent
             && (version > 0 || topFolder != null);
         boolean writeInheritsPermissions = writeVersionAndParent
@@ -547,7 +547,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             out.writeBoolean(inheritsPermissions);
         }
 
-        // Version 103: workspace tags (PFS-5306), boolean-prefixed.
+        // Version 103: tags (PFS-5306), boolean-prefixed.
         if (protocolVersion >= 103L) {
             out.writeBoolean(tags != null);
             if (tags != null) {

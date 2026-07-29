@@ -29,7 +29,7 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
 /**
- * PFS-5306: Deterministic tests for workspace tags on {@link FolderInfo}: the
+ * PFS-5306: Deterministic tests for folder tags on {@link FolderInfo}: the
  * factory mutation (version bump, no-op detection), carry-over through the other
  * factory mutators, JSON parsing and the wire-protocol escalation / backward
  * compatibility (tags only serialize at FolderInfo protocol 103, older peers

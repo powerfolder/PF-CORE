@@ -211,7 +211,7 @@ public class FolderInfoFactory {
     }
 
     /**
-     * PFS-5306: Changes the workspace tags of a folder. Like a rename this does
+     * PFS-5306: Changes the tags of a folder. Like a rename this does
      * not mutate the given instance but produces a new, version-bumped
      * {@link FolderInfo} so the change propagates through the network (folder
      * version is part of the sync protocol). This is the only supported way to

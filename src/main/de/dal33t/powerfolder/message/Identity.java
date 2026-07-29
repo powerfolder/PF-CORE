@@ -135,7 +135,7 @@ public class Identity extends Message implements D2DObject, D2DEvent
      * of permission inheritance). Only advertised when the feature is enabled, so
      * peers negotiating &lt; 115 keep receiving the old FolderInfo protocol.
      * <p>
-     * 116: PFS-5306: FolderInfo carries the workspace tags. Advertised under the
+     * 116: PFS-5306: FolderInfo carries the tags. Advertised under the
      * same gate as 115, so peers negotiating &lt; 116 keep receiving the old
      * FolderInfo protocol.
      */
@@ -151,7 +151,7 @@ public class Identity extends Message implements D2DObject, D2DEvent
     public static final int PROTOCOL_VERSION_114 = 114;
     // PFC-3543: FolderInfo inheritsPermissions support requires explicit negotiation
     public static final int PROTOCOL_VERSION_115 = 115;
-    // PFS-5306: FolderInfo workspace tags support requires explicit negotiation
+    // PFS-5306: FolderInfo tags support requires explicit negotiation
     public static final int PROTOCOL_VERSION_116 = 116;
 
     // Never make this static.

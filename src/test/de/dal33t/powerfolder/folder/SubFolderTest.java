@@ -813,7 +813,7 @@ public class SubFolderTest extends TwoControllerTestCase {
 
     public void testSubFolderArchiverRestore() throws IOException {
         Folder topFolder = getFolderAtBart();
-        String subDir = "workspace/modules/core";
+        String subDir = "topfolder/modules/core";
 
         Path root = topFolder.getPhysicalDir();
         Path sharedPath = Files.createDirectories(root.resolve(subDir));
