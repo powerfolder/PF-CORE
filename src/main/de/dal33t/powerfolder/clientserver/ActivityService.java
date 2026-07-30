@@ -53,7 +53,7 @@ public interface ActivityService {
      * nodes of the own cluster (federation is not included). Implementations
      * fan out to each cluster node's {@link #getNewsFromLocalServer} and
      * aggregate the results. The account is taken from the caller's security
-     * context (WebSession / SecurityContextRunnable).
+     * context (WebSession / SessionContext).
      *
      * @param maxResults the number of maximum results per node
      *
