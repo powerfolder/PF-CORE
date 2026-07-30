@@ -549,6 +549,16 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * PFS-5687: Notifies the problem listeners without storing the problem in the folder's problem list,
+     * so it does not show up as visible folder problem.
+     *
+     * @param problem the problem to notify the listeners about
+     */
+    public void notifyProblemListenersSilently(Problem problem) {
+        problemListenerSupport.problemAdded(problem);
+    }
+
+    /**
      * Remove a problem from the list of known problems.
      *
      * @param problem
@@ -1042,15 +1052,20 @@ public class Folder extends PFComponent {
                     try {
                         FileInfo oldLocalFileInfo = fInfo.getLocalFileInfo(getController().getFolderRepository());
                         if (oldLocalFileInfo != null) {
+                            boolean conflict = false;
                             if (ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController())
                                 && !currentInfo.isMetaFolder()) {
                                 try {
-                                    doSimpleConflictDetection(fInfo, oldLocalFileInfo, targetFile);
+                                    conflict = doSimpleConflictDetection(fInfo, oldLocalFileInfo, targetFile);
                                 } catch (Exception e) {
                                     logSevere("Problem withe conflict detection. " + e);
                                 }
                             }
                             arch.archive(oldLocalFileInfo, targetFile, false);
+                            if (conflict) {
+                                // PFS-5687: after archiving, so the mail can link the overwritten version
+                                notifyProblemListenersSilently(new FileConflictProblem(fInfo));
+                            }
                         }
                         logFileOperation("UPDATED", oldLocalFileInfo, fInfo);
                     } catch (IOException e) {
@@ -1170,7 +1185,11 @@ public class Folder extends PFComponent {
         return true;
     }
 
-    private FileInfo doSimpleConflictDetection(FileInfo fInfo,
+    /**
+     * @return true if a conflict was detected. The caller notifies the problem listeners after archiving
+     *         the overwritten version (PFS-5687).
+     */
+    private boolean doSimpleConflictDetection(FileInfo fInfo,
         FileInfo oldLocalFileInfo, Path oldFilePath)
     {
         boolean conflict = oldLocalFileInfo.getVersion() == fInfo.getVersion()
@@ -1182,13 +1201,13 @@ public class Folder extends PFComponent {
 
         // PFS-1329
         if (oldLocalFileInfo.getSize() == 0) {
-            return null;
+            return false;
         }
 
         if (conflict) {
             // PFC-2666: Workaround
             if ("eml".equalsIgnoreCase(fInfo.getExtension())) {
-                return null;
+                return false;
             }
             logWarning("Conflict detected on file " + fInfo.toDetailString()
                     + ". old: " + oldLocalFileInfo.toDetailString());
@@ -1212,10 +1231,9 @@ public class Folder extends PFComponent {
                 scanChangedFile(conflictCopyInfo);
             } catch (IOException e) {
                 logWarning("Unable to create copy of conflicting file to " + conflictCopyPath + ". " + e);
-                addProblem(new FileConflictProblem(fInfo));
             }
         }
-        return null;
+        return conflict;
     }
 
     /**
