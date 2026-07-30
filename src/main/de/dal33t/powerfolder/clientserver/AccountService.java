@@ -171,9 +171,9 @@ public interface AccountService {
     String getClientSkinName(AccountInfo account);
 
     /**
-     * Merge one or more accounts into {@code account}.
+     * Merge {@code mergeAccount} into {@code account}.
      * {@code account} will be stored on success.
-     * {@code mergeAccounts} are being deleted.
+     * {@code mergeAccount} is being deleted.
      * <p>
      * HINT: Server Administrators are always allowed to merge accounts!
      * <p>
@@ -191,14 +191,12 @@ public interface AccountService {
      * LDAP | F  | T    | F
      * Shib | F  | F    | F
      *
-     * @param account       Surviving account.
-     * @param mergeAccounts Accounts that are merged into {@code account} and deleted afterwards.
-     * @return An empty list, if all accounts were merged correctly, otherwise the
-     * list of Account IDs of the accounts which are not allowed to be merged.
-     * If any one account of {@code mergeAccounts} cannot be merged, no account
-     * will be merged.
+     * @param account      Surviving account.
+     * @param mergeAccount Account that is merged into {@code account} and deleted afterwards.
+     * @return {@code true} if {@code mergeAccount} was merged into {@code account}; {@code false} if the merge is
+     * not allowed (e.g. the account-type combination is not permitted) or the input is invalid.
      */
-    List<String> mergeAccounts(Account account, Account... mergeAccounts);
+    boolean mergeAccounts(Account account, Account mergeAccount);
 
     /**
      * Update the {@code account's} Email addresses to {@code emails}.
