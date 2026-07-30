@@ -690,13 +690,22 @@ public class Account implements Serializable, D2DObject, Auditable {
         if (isBlank(basePath) || isBlank(oldUsername) || isBlank(username) || username.equals(oldUsername)) {
             return;
         }
-        int i = Math.max(basePath.lastIndexOf('/'), basePath.lastIndexOf('\\'));
-        String parent = i >= 0 ? basePath.substring(0, i + 1) : "";
-        String lastElement = basePath.substring(i + 1);
-        if (!lastElement.equalsIgnoreCase(PathUtils.removeInvalidFilenameChars(oldUsername))) {
+        // Keep trailing separators as they are, they are not part of the last path element
+        int end = basePath.length();
+        while (end > 0 && (basePath.charAt(end - 1) == '/' || basePath.charAt(end - 1) == '\\')) {
+            end--;
+        }
+        String trailing = basePath.substring(end);
+        String path = basePath.substring(0, end);
+        int i = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        String lastElement = path.substring(i + 1);
+        // The directory may hold the plain username or the one stripped of invalid filename chars
+        if (!lastElement.equalsIgnoreCase(oldUsername)
+            && !lastElement.equalsIgnoreCase(PathUtils.removeInvalidFilenameChars(oldUsername)))
+        {
             return;
         }
-        basePath = parent + PathUtils.removeInvalidFilenameChars(username);
+        basePath = path.substring(0, i + 1) + PathUtils.removeInvalidFilenameChars(username) + trailing;
         // FINE, not INFO: the username is personal data (PII).
         LOG.fine("Account renamed. New base path: " + basePath);
     }

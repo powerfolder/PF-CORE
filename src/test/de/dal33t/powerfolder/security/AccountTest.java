@@ -19,20 +19,16 @@
  */
 package de.dal33t.powerfolder.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import de.dal33t.powerfolder.util.Format;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.Test;
-
-import de.dal33t.powerfolder.util.Format;
+import static org.junit.Assert.*;
 
 public class AccountTest {
 
@@ -275,5 +271,118 @@ public class AccountTest {
         assertEquals(email2, emails.get(1));
         assertEquals(email3, emails.get(2));
     }
-    
+
+    /**
+     * PFS-5684: The base path follows the username on a rename.
+     */
+    @Test
+    public void testBasePathFollowsUsernameRename() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("/data/powerfolder/usera");
+
+        account.setUsername("userb");
+
+        assertEquals("/data/powerfolder/userb", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameOnWindowsPath() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("D:\\PowerFolder\\storage\\usera");
+
+        account.setUsername("userb");
+
+        assertEquals("D:\\PowerFolder\\storage\\userb", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameWithMail() {
+        Account account = new Account();
+        account.setUsername("user.a@company.com");
+        account.setBasePath("/data/powerfolder/user.a@company.com");
+
+        account.setUsername("user.b@company.com");
+
+        assertEquals("/data/powerfolder/user.b@company.com", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameWithInvalidFilenameChars() {
+        Account account = new Account();
+        account.setUsername("user/a");
+        account.setBasePath("/data/powerfolder/user_a");
+
+        account.setUsername("user:b");
+
+        assertEquals("/data/powerfolder/user_b", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameWithTrailingSeparator() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("/data/powerfolder/usera/");
+
+        account.setUsername("userb");
+
+        assertEquals("/data/powerfolder/userb/", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameCaseInsensitive() {
+        Account account = new Account();
+        account.setUsername("UserA");
+        account.setBasePath("/data/powerfolder/usera");
+
+        account.setUsername("userb");
+
+        assertEquals("/data/powerfolder/userb", account.getBasePath());
+    }
+
+    @Test
+    public void testCustomBasePathIsKeptOnUsernameRename() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("/mnt/volume7/customdir");
+
+        account.setUsername("userb");
+
+        assertEquals("/mnt/volume7/customdir", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathUntouchedWithoutRename() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("/data/powerfolder/usera");
+
+        // Same username again, e.g. on a store without changes
+        account.setUsername("usera");
+
+        assertEquals("/data/powerfolder/usera", account.getBasePath());
+    }
+
+    @Test
+    public void testBlankBasePathStaysBlankOnUsernameRename() {
+        Account account = new Account();
+        account.setUsername("usera");
+
+        account.setUsername("userb");
+
+        assertEquals(null, account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathIsNotAdaptedOnAccountCreation() {
+        Account account = new Account();
+        account.setBasePath("/data/powerfolder/usera");
+
+        // No old username: this is the initial assignment, not a rename
+        account.setUsername("userb");
+
+        assertEquals("/data/powerfolder/usera", account.getBasePath());
+    }
+
 }
