@@ -735,7 +735,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 12;
+    private static final int INDEX_FORMAT_VERSION = 13;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -802,6 +802,9 @@ public class LuceneIndexManager extends PFComponent {
 
         doc.add(new StringField("deleted",
                 fileInfo.isDeleted() ? "true" : "false", Field.Store.YES));
+
+        doc.add(new StringField("isDir",
+                fileInfo.isDiretory() ? "true" : "false", Field.Store.YES));
 
         return doc;
     }
@@ -1211,7 +1214,7 @@ public class LuceneIndexManager extends PFComponent {
      */
     public List<FileInfo> searchFiles(String queryText, int maxResults) {
         return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE,
-                null, null, null, null);
+                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
     }
 
     /**
@@ -1227,7 +1230,7 @@ public class LuceneIndexManager extends PFComponent {
                                       boolean includeDeleted) {
         return doSearch(queryText, maxResults,
                 includeDeleted ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE,
-                null, null, null, null);
+                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
     }
 
     /**
@@ -1236,7 +1239,7 @@ public class LuceneIndexManager extends PFComponent {
     public List<FileInfo> searchDeletedFiles(String queryText,
                                              int maxResults) {
         return doSearch(queryText, maxResults, DeletedFilter.ONLY,
-                null, null, null, null);
+                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
     }
 
     /**
@@ -1256,7 +1259,7 @@ public class LuceneIndexManager extends PFComponent {
 
         return doSearch(queryText, maxResults, deletedFilter,
                 criteria.getPath(), criteria.getExtension(), criteria.getModifiedBy(),
-                criteria.getTags());
+                criteria.getTags(), criteria.getType());
     }
 
     /** Controls how the deleted flag is handled in searches. */
@@ -1288,7 +1291,8 @@ public class LuceneIndexManager extends PFComponent {
     private List<FileInfo> doSearch(String queryText, int maxResults,
                                     DeletedFilter deletedFilter,
                                     String directory, String extension,
-                                    String modifiedBy, Collection<String> tags) {
+                                    String modifiedBy, Collection<String> tags,
+                                    FileInfoCriteria.Type type) {
 
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
@@ -1316,6 +1320,12 @@ public class LuceneIndexManager extends PFComponent {
                 case INCLUDE:
                 default:
                     break;
+            }
+
+            if (type == FileInfoCriteria.Type.FILES_ONLY) {
+                bqBuilder.add(new TermQuery(new Term("isDir", "false")), BooleanClause.Occur.MUST);
+            } else if (type == FileInfoCriteria.Type.DIRECTORIES_ONLY) {
+                bqBuilder.add(new TermQuery(new Term("isDir", "true")), BooleanClause.Occur.MUST);
             }
 
             if (directory != null && !directory.isEmpty() && !"/".equals(directory)) {

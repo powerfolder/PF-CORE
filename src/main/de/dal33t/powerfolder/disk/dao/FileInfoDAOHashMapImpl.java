@@ -315,13 +315,15 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                 break;
             }
-            for (DirectoryInfo directoryInfo : domain.directories.values()) {
-                if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
-                    break;
-                }
-                if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
-                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, keyWords) && matchesExtension(directoryInfo, extension) && matchesModifiedBy(directoryInfo, modifiedBy) && matchesTags(directoryInfo, wantedTagsLower)) {
-                        fileInfos.add(directoryInfo);
+            if (criteria.getType() == Type.DIRECTORIES_ONLY || criteria.getType() == Type.FILES_AND_DIRECTORIES) {
+                for (DirectoryInfo directoryInfo : domain.directories.values()) {
+                    if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
+                        break;
+                    }
+                    if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
+                        if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, keyWords) && matchesExtension(directoryInfo, extension) && matchesModifiedBy(directoryInfo, modifiedBy) && matchesTags(directoryInfo, wantedTagsLower)) {
+                            fileInfos.add(directoryInfo);
+                        }
                     }
                 }
             }
