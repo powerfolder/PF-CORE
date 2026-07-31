@@ -1306,6 +1306,32 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFS-5510: The nearest mounted shared subfolder at or above the addressed location within
+     * {@code topFolder}. Walks the directory chain up from {@code relativeName} and returns the first
+     * mounted subfolder found - so a directory/file deeper inside a shared subfolder resolves to that
+     * subfolder, not just an exact subfolder root. Returns {@code null} if no shared subfolder encloses
+     * the location.
+     *
+     * @param topFolder    the top folder the relative path is resolved against
+     * @param relativeName the addressed directory/file path relative to the top folder
+     * @return the enclosing mounted subfolder, or {@code null}
+     */
+    public Folder findEnclosingSubFolder(FolderInfo topFolder, String relativeName) {
+        if (topFolder == null || relativeName == null) {
+            return null;
+        }
+        DirectoryInfo dirInfo = FileInfoFactory.lookupDirectory(topFolder, relativeName);
+        while (dirInfo != null) {
+            Folder subFolder = findSubFolder(dirInfo);
+            if (subFolder != null) {
+                return subFolder;
+            }
+            dirInfo = dirInfo.getParent();
+        }
+        return null;
+    }
+
+    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
