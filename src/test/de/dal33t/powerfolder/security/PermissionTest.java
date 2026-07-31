@@ -283,7 +283,7 @@ public class PermissionTest extends TestCase {
         acc.grant(new FolderReadWritePermission(fi));
 
         assertTrue(acc.hasReadPermissions(fi));
-        assertTrue(acc.hasReadWritePermissions(fi));
+        assertTrue(acc.hasWritePermissions(fi));
         assertFalse(acc.hasAdminPermission(fi));
         assertFalse(acc.hasOwnerPermission(fi));
     }
@@ -308,7 +308,7 @@ public class PermissionTest extends TestCase {
         assertTrue("Direct top-folder READ must inherit READ on the subfolder",
                 acc.hasReadPermissions(sub));
         assertTrue("Group WRITE on the subfolder must grant write despite the direct top READ",
-                acc.hasReadWritePermissions(sub));
+                acc.hasWritePermissions(sub));
         assertEquals("Effective subfolder access must be READ_WRITE",
                 AccessMode.READ_WRITE, acc.getAllowedAccess(sub));
     }
@@ -331,7 +331,7 @@ public class PermissionTest extends TestCase {
         acc.addGroup(child);                                // only a member of the child group
 
         assertTrue("A member of the child group must inherit the parent group's subfolder WRITE",
-                acc.hasReadWritePermissions(sub));
+                acc.hasWritePermissions(sub));
         assertEquals("Effective subfolder access via nested group must be READ_WRITE",
                 AccessMode.READ_WRITE, acc.getAllowedAccess(sub));
     }

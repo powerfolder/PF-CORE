@@ -412,6 +412,51 @@ public class Group implements Serializable, D2DObject, Auditable {
         }
         return AccessMode.NO_ACCESS;
     }
+
+    /**
+     * PFS-5510: The EFFECTIVE access of this group (including permissions inherited from parent
+     * groups) on the addressed location: resolves the innermost subfolder the group holds a
+     * permission on that encloses ({@code folder} + {@code relativeName}) and evaluates the access
+     * there. Purely structure-based (the permission lists carry the subfolder FolderInfos incl. their
+     * location), so it works without a mounted folder. For an INHERITING subfolder the result is
+     * never lower than the plain {@link #getAllowedAccess(FolderInfo)}, since top-folder permissions
+     * inherit downward; an interrupted subfolder (PFC-3543) is decoupled and evaluates independently.
+     * Accepts a top folder or a subfolder as {@code folder}.
+     *
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the effective access mode, {@link AccessMode#NO_ACCESS} for none
+     */
+    public AccessMode getAllowedAccess(FolderInfo folder, String relativeName) {
+        FolderInfo governing = FolderInfo.findEnclosingSubFolder(getAllFolders(), folder, relativeName);
+        return getAllowedAccess(governing != null ? governing : folder);
+    }
+
+    /**
+     * PFS-5510: Answers if the group is allowed to write at the addressed location - the EFFECTIVE
+     * access resolves the enclosing shared subfolder (incl. permissions inherited from parent
+     * groups), see {@link #getAllowedAccess(FolderInfo, String)}.
+     *
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the group is allowed to write at the addressed location.
+     */
+    public boolean hasWritePermissions(FolderInfo foInfo, String subDirPath) {
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ_WRITE) >= 0;
+    }
+
+    /**
+     * PFS-5510: Answers if the group is allowed to read at the addressed location - the EFFECTIVE
+     * access resolves the enclosing shared subfolder (incl. permissions inherited from parent
+     * groups), see {@link #getAllowedAccess(FolderInfo, String)}.
+     *
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the group is allowed to read at the addressed location.
+     */
+    public boolean hasReadPermissions(FolderInfo foInfo, String subDirPath) {
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ) >= 0;
+    }
     
     /**
      * @return An unmodifiable collection of all

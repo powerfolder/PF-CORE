@@ -509,6 +509,30 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
+     * PFS-5510: The EFFECTIVE access on the addressed location: resolves the innermost subfolder the
+     * account holds a permission on - directly or through (nested) groups - that encloses
+     * ({@code folder} + {@code relativeName}) and evaluates the access there. Purely structure-based
+     * (permission lists carry the subfolder FolderInfos incl. their location), so it works without a
+     * mounted folder. For an INHERITING subfolder the result is never lower than the plain
+     * {@link #getAllowedAccess(FolderInfo)}, since top-folder permissions inherit downward. Accepts a
+     * top folder or a subfolder as {@code folder}.
+     * <p>
+     * Interrupted permission inheritance (PFC-3543) is honored during evaluation - top permissions do
+     * not imply an interrupted subfolder. Limitation: an interrupted subfolder the account holds NO
+     * own/group permission on is invisible in the permission structures, so locations inside it fall
+     * back to the top-folder access here; the authorization gates resolve against the mounted folders
+     * and stay strict.
+     *
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the effective access mode, {@link AccessMode#NO_ACCESS} for none
+     */
+    public AccessMode getAllowedAccess(FolderInfo folder, String relativeName) {
+        FolderInfo governing = FolderInfo.findEnclosingSubFolder(getFolders(), folder, relativeName);
+        return getAllowedAccess(governing != null ? governing : folder);
+    }
+
+    /**
      * @return {@code True} if user is member of an {@link Organization} and has
      * {@link OrganizationAdminPermission} for this organization, {@code false} otherwise.
      */
@@ -1698,19 +1722,35 @@ public class Account implements Serializable, D2DObject, Auditable {
      * @param foInfo the folder to check
      * @return true if the user is allowed to write into the folder.
      */
-    public boolean hasReadWritePermissions(FolderInfo foInfo) {
+    public boolean hasWritePermissions(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(FolderPermission.readWrite(foInfo));
     }
 
     /**
-     * Answers if the user is allowed to write into the folder.
+     * PFS-5510: Answers if the user is allowed to write at the addressed location - the EFFECTIVE
+     * access resolves the enclosing shared subfolder (granted directly or through (nested) groups),
+     * see {@link #getAllowedAccess(FolderInfo, String)}.
      *
-     * @param foInfo the folder to check
-     * @return true if the user is allowed to write into the folder.
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the user is allowed to write at the addressed location.
      */
-    public boolean hasWritePermissions(FolderInfo foInfo) {
-        return hasReadWritePermissions(foInfo);
+    public boolean hasWritePermissions(FolderInfo foInfo, String subDirPath) {
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ_WRITE) >= 0;
+    }
+
+    /**
+     * PFS-5510: Answers if the user is allowed to read at the addressed location - the EFFECTIVE
+     * access resolves the enclosing shared subfolder (granted directly or through (nested) groups),
+     * see {@link #getAllowedAccess(FolderInfo, String)}.
+     *
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the user is allowed to read at the addressed location.
+     */
+    public boolean hasReadPermissions(FolderInfo foInfo, String subDirPath) {
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ) >= 0;
     }
 
     /**

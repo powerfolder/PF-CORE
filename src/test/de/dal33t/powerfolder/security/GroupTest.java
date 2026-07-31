@@ -27,11 +27,41 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 
 public class GroupTest {
+
+    /**
+     * PFS-5510: {@link Group#getAllowedAccess(FolderInfo, String)} computes the group's EFFECTIVE
+     * access on the addressed location, including permissions inherited from parent groups.
+     */
+    @Test
+    public void testEffectiveAllowedAccessOnSubFolder() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+            "team/shared", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo teamShared = FolderInfoFactory.newFolder(location);
+
+        Group writers = new Group("Writers");
+        writers.grant(FolderPermission.readWrite(teamShared));
+
+        assertEquals(AccessMode.NO_ACCESS, writers.getAllowedAccess(top));
+        assertEquals(AccessMode.READ_WRITE, writers.getAllowedAccess(top, "team/shared"));
+        assertEquals(AccessMode.READ_WRITE, writers.getAllowedAccess(top, "team/shared/deep/file.txt"));
+        assertEquals(AccessMode.NO_ACCESS, writers.getAllowedAccess(top, "team/other"));
+        // the subfolder itself as the addressed folder
+        assertEquals(AccessMode.READ_WRITE, writers.getAllowedAccess(teamShared, "deep"));
+
+        // inherited from the parent group (nested groups)
+        Group child = new Group("Child");
+        child.addParent(writers);
+        assertEquals(AccessMode.READ_WRITE, child.getAllowedAccess(top, "team/shared/file.txt"));
+        assertEquals(AccessMode.NO_ACCESS, child.getAllowedAccess(top, "team/other"));
+    }
 
     private static final FolderInfo FOLDER_A =
         FolderInfoFactory.newTopFolderForTest("FolderA", "fA");

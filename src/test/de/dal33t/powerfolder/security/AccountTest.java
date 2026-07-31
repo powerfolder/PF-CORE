@@ -19,6 +19,11 @@
  */
 package de.dal33t.powerfolder.security;
 
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,6 +36,133 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class AccountTest {
+
+    /**
+     * PFS-5510: {@link Account#getAllowedAccess(FolderInfo, String)} computes the EFFECTIVE access
+     * on the addressed location - permissions granted on an enclosing shared subfolder (directly or
+     * through (nested) groups) raise it above the plain top-folder access, and it is never lower.
+     */
+    @Test
+    public void testEffectiveAllowedAccessOnSubFolder() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+            "structure/deep/shared", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo structureDeepShared = FolderInfoFactory.newFolder(location);
+
+        // hans: direct READ on the top folder, READ_WRITE through a group on the subfolder
+        Group writers = new Group("Writers");
+        writers.grant(FolderPermission.readWrite(structureDeepShared));
+
+        Account hans = new Account();
+        hans.grant(FolderPermission.read(top));
+        hans.addGroup(writers);
+
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(top));
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(top, "elsewhere/file.txt"));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(top, "structure/deep/shared"));
+        assertEquals(AccessMode.READ_WRITE,
+            hans.getAllowedAccess(top, "structure/deep/shared/deeper/file.txt"));
+        // the subfolder itself as the addressed folder
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(structureDeepShared, ""));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(structureDeepShared, "deeper/file.txt"));
+
+        // nested groups: member of the child group only, the parent holds the subfolder permission
+        Group parent = new Group("Parent");
+        parent.grant(FolderPermission.readWrite(structureDeepShared));
+        Group child = new Group("Child");
+        child.addParent(parent);
+
+        Account nested = new Account();
+        nested.addGroup(child);
+
+        assertEquals(AccessMode.NO_ACCESS, nested.getAllowedAccess(top));
+        assertEquals(AccessMode.READ_WRITE,
+            nested.getAllowedAccess(top, "structure/deep/shared/deep/file.txt"));
+        assertEquals(AccessMode.NO_ACCESS, nested.getAllowedAccess(top, "unrelated"));
+
+        // a weaker subfolder grant never lowers a stronger top-folder access (union, highest wins)
+        Group readers = new Group("Readers");
+        readers.grant(FolderPermission.read(structureDeepShared));
+
+        Account boss = new Account();
+        boss.grant(FolderPermission.readWrite(top));
+        boss.addGroup(readers);
+
+        assertEquals(AccessMode.READ_WRITE,
+            boss.getAllowedAccess(top, "structure/deep/shared/file.txt"));
+    }
+
+    /**
+     * PFS-5510: mirrors the manually verified end-to-end scenario (localhost + narvi QA):
+     * hans@powerfolder.com holds direct READ on the top folder "!Test!", the group "Schreibgruppe"
+     * holds READ_WRITE on the shared subfolder "!Test!/Schreibrechte", and hans is a member of that
+     * group. hans must be able to write inside "Schreibrechte" (root and deeper) while the rest of
+     * "!Test!" stays read-only - the direct READ must not override the group write access.
+     */
+    @Test
+    public void testHansWritesInSchreibrechteViaSchreibgruppe() {
+        FolderInfo test = FolderInfoFactory.newTopFolderForTest("!Test!", "test");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(test,
+            "Schreibrechte", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo schreibrechte = FolderInfoFactory.newFolder(location);
+
+        Group schreibgruppe = new Group("Schreibgruppe");
+        schreibgruppe.grant(FolderPermission.readWrite(schreibrechte));
+
+        Account hans = new Account();
+        hans.setUsername("hans@powerfolder.com");
+        hans.grant(FolderPermission.read(test));
+        hans.addGroup(schreibgruppe);
+
+        // hans sees the top folder read-only ...
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(test));
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(test, "elsewhere/report.txt"));
+        // ... but has effective write access inside the shared subfolder - root and deeper
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(test, "Schreibrechte"));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(test, "Schreibrechte/deep"));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(test, "Schreibrechte/deep/upload.txt"));
+        // the subfolder addressed by its own folder id behaves the same
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(schreibrechte, ""));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(schreibrechte, "deep"));
+
+        // without the group membership only the direct READ remains
+        hans.removeGroup(schreibgruppe);
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(test, "Schreibrechte/deep"));
+    }
+
+    /**
+     * PFS-5510 / PFC-3543: an INTERRUPTED subfolder is decoupled from its top folder - the top-folder
+     * permission does not reach it, only permissions granted on the subfolder itself (directly or
+     * through groups) count there. The effective access may therefore be LOWER than the top-folder
+     * access inside an interrupted subfolder.
+     */
+    @Test
+    public void testEffectiveAllowedAccessHonorsInterruptedInheritance() {
+        Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
+        try {
+            FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top-inh");
+            DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+                "isolated", null, 0, null, null, new Date(), 1, null, true, null);
+            FolderInfo isolated = FolderInfoFactory.changeInheritsPermissions(
+                FolderInfoFactory.newFolder(location), false);
+
+            Group readers = new Group("Readers");
+            readers.grant(FolderPermission.read(isolated));
+
+            Account account = new Account();
+            account.grant(FolderPermission.readWrite(top));
+            account.addGroup(readers);
+
+            // Outside the interrupted subfolder the top-folder READ_WRITE applies...
+            assertEquals(AccessMode.READ_WRITE, account.getAllowedAccess(top, "elsewhere"));
+            // ...inside it the top permission does NOT inherit - only the subfolder grant counts.
+            assertEquals(AccessMode.READ, account.getAllowedAccess(top, "isolated"));
+            assertEquals(AccessMode.READ, account.getAllowedAccess(top, "isolated/deep/file.txt"));
+        } finally {
+            // The feature flag is process-wide - never leak it into other tests.
+            Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
+        }
+    }
 
     @Test
     public void testLEU() {
