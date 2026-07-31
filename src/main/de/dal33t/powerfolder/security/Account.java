@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -1751,6 +1752,28 @@ public class Account implements Serializable, D2DObject, Auditable {
      */
     public boolean hasReadPermissions(FolderInfo foInfo, String subDirPath) {
         return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ) >= 0;
+    }
+
+    /**
+     * PFS-5510: Like {@link #hasWritePermissions(FolderInfo, String)}, addressed by the file itself.
+     *
+     * @param fileInfo the addressed file/directory
+     * @return true if the user is allowed to write at the file's location.
+     */
+    public boolean hasWritePermissions(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        return hasWritePermissions(fileInfo.getFolderInfo(), fileInfo.getRelativeName());
+    }
+
+    /**
+     * PFS-5510: Like {@link #hasReadPermissions(FolderInfo, String)}, addressed by the file itself.
+     *
+     * @param fileInfo the addressed file/directory
+     * @return true if the user is allowed to read at the file's location.
+     */
+    public boolean hasReadPermissions(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        return hasReadPermissions(fileInfo.getFolderInfo(), fileInfo.getRelativeName());
     }
 
     /**
