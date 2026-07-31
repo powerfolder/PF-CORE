@@ -57,6 +57,7 @@ import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1306,29 +1307,27 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * PFS-5510: The nearest mounted shared subfolder at or above the addressed location within
-     * {@code topFolder}. Walks the directory chain up from {@code relativeName} and returns the first
-     * mounted subfolder found - so a directory/file deeper inside a shared subfolder resolves to that
-     * subfolder, not just an exact subfolder root. Returns {@code null} if no shared subfolder encloses
+     * PFS-5510: The nearest MOUNTED shared subfolder that encloses the addressed location
+     * ({@code folder} + {@code relativeName}) - so a directory/file deeper inside a shared subfolder
+     * resolves to that subfolder, not just an exact subfolder root. Accepts a top folder or a
+     * subfolder as input. Thin adapter over
+     * {@link FolderInfo#findEnclosingSubFolder(java.util.Collection, FolderInfo, String)} with the
+     * mounted subfolders as candidates. Returns {@code null} if no mounted shared subfolder encloses
      * the location.
      *
-     * @param topFolder    the top folder the relative path is resolved against
-     * @param relativeName the addressed directory/file path relative to the top folder
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed directory/file path relative to {@code folder}, may be blank
      * @return the enclosing mounted subfolder, or {@code null}
      */
-    public Folder findEnclosingSubFolder(FolderInfo topFolder, String relativeName) {
-        if (topFolder == null || relativeName == null) {
+    public Folder findEnclosingSubFolder(FolderInfo folder, String relativeName) {
+        if (folder == null || relativeName == null) {
             return null;
         }
-        DirectoryInfo dirInfo = FileInfoFactory.lookupDirectory(topFolder, relativeName);
-        while (dirInfo != null) {
-            Folder subFolder = findSubFolder(dirInfo);
-            if (subFolder != null) {
-                return subFolder;
-            }
-            dirInfo = dirInfo.getParent();
-        }
-        return null;
+        // Ground truth is the mounted Folder's CURRENT info (the map keys may be stale versions -
+        // FolderInfo.equals compares only the id), so collect the candidates via Folder.getInfo().
+        FolderInfo enclosing = FolderInfo.findEnclosingSubFolder(
+                getFolders().stream().map(Folder::getInfo).collect(Collectors.toList()), folder, relativeName);
+        return enclosing != null ? getFolder(enclosing) : null;
     }
 
     /**

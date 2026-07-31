@@ -464,13 +464,13 @@ public class SubFolderTest extends TwoControllerTestCase {
                 (DirectoryInfo) topFolder.getFileInfo("sharedB");
 
         LoggingManager.setConsoleLogging(Level.INFO);
-        Folder subA = topFolder.share(sharedAInfo);
-        Folder subB = topFolder.share(sharedBInfo);
+        Folder sharedA = topFolder.share(sharedAInfo);
+        Folder sharedB = topFolder.share(sharedBInfo);
 
         assertEquals(3, getContollerBart().getFolderRepository().getFoldersCount());
 
-        assertNotNull(subA);
-        assertNotNull(subB);
+        assertNotNull(sharedA);
+        assertNotNull(sharedB);
 
         // --- Call API under test ---
         Map<DirectoryInfo, Folder> result =
@@ -521,18 +521,18 @@ public class SubFolderTest extends TwoControllerTestCase {
         // --- Share subfolder ---
         DirectoryInfo sharedAInfo =
                 (DirectoryInfo) topFolder.getFileInfo("sharedA");
-        Folder subA = topFolder.share(sharedAInfo);
-        assertNotNull(subA);
+        Folder sharedA = topFolder.share(sharedAInfo);
+        assertNotNull(sharedA);
 
         // --- Share nested folder (still same top folder) ---
         DirectoryInfo sharedA1Info =
                 (DirectoryInfo) topFolder.getFileInfo("sharedA/sharedA1");
-        Folder subA1 = topFolder.share(sharedA1Info);
-        assertNotNull(subA1);
+        Folder sharedA1 = topFolder.share(sharedA1Info);
+        assertNotNull(sharedA1);
 
         // --- Sanity: both must point to the same top folder ---
-        assertEquals(topFolder, subA.getTopFolder());
-        assertEquals(topFolder, subA1.getTopFolder());
+        assertEquals(topFolder, sharedA.getTopFolder());
+        assertEquals(topFolder, sharedA1.getTopFolder());
 
         // --- Call API under test ---
         Map<DirectoryInfo, Folder> result =
@@ -584,27 +584,32 @@ public class SubFolderTest extends TwoControllerTestCase {
         Files.createDirectories(root.resolve("implicitRoot"));
         TestHelper.scanFolder(topFolder);
 
-        Folder subA = topFolder.share((DirectoryInfo) topFolder.getFileInfo("sharedA"));
-        Folder subA1 = topFolder.share((DirectoryInfo) topFolder.getFileInfo("sharedA/sharedA1"));
-        assertNotNull(subA);
-        assertNotNull(subA1);
+        Folder sharedA = topFolder.share((DirectoryInfo) topFolder.getFileInfo("sharedA"));
+        Folder sharedA1 = topFolder.share((DirectoryInfo) topFolder.getFileInfo("sharedA/sharedA1"));
+        assertNotNull(sharedA);
+        assertNotNull(sharedA1);
 
         // Exact subfolder roots resolve to themselves
-        assertSame(subA, repository.findEnclosingSubFolder(topInfo, "sharedA"));
-        assertSame(subA1, repository.findEnclosingSubFolder(topInfo, "sharedA/sharedA1"));
+        assertSame(sharedA, repository.findEnclosingSubFolder(topInfo, "sharedA"));
+        assertSame(sharedA1, repository.findEnclosingSubFolder(topInfo, "sharedA/sharedA1"));
 
         // A directory deeper inside a shared subfolder walks up to that subfolder
-        assertSame(subA, repository.findEnclosingSubFolder(topInfo, "sharedA/implicit1"));
+        assertSame(sharedA, repository.findEnclosingSubFolder(topInfo, "sharedA/implicit1"));
 
         // Multi-level / not-yet-existing deep path still resolves to the enclosing subfolder
-        assertSame(subA, repository.findEnclosingSubFolder(topInfo, "sharedA/implicit1/some/deep/file.txt"));
+        assertSame(sharedA, repository.findEnclosingSubFolder(topInfo, "sharedA/implicit1/some/deep/file.txt"));
 
         // The innermost (nested) shared subfolder wins for paths inside it
-        assertSame(subA1, repository.findEnclosingSubFolder(topInfo, "sharedA/sharedA1/implicit2"));
+        assertSame(sharedA1, repository.findEnclosingSubFolder(topInfo, "sharedA/sharedA1/implicit2"));
 
         // No shared subfolder on the path -> null (top root and unrelated directories)
         assertNull(repository.findEnclosingSubFolder(topInfo, ""));
         assertNull(repository.findEnclosingSubFolder(topInfo, "implicitRoot"));
+
+        // A subfolder as input: its path is translated to top-folder coordinates first
+        assertSame(sharedA, repository.findEnclosingSubFolder(sharedA.getInfo(), ""));
+        assertSame(sharedA, repository.findEnclosingSubFolder(sharedA.getInfo(), "implicit1"));
+        assertSame(sharedA1, repository.findEnclosingSubFolder(sharedA.getInfo(), "sharedA1/implicit2"));
 
         // Null-safety
         assertNull(repository.findEnclosingSubFolder(topInfo, null));
@@ -623,53 +628,55 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         /*
          * /top
-         * ├── a                       (shared A)
-         * │   └── b                   (dir, NOT shared)
-         * │       └── c               (shared C, nested inside A)
-         * │           └── d           (dir, NOT shared)
-         * │               └── e       (dir, NOT shared)
-         * ├── p
-         * │   └── q
-         * │       └── r               (shared R, 3 levels deep, NO shared ancestor)
-         * ├── z                       (shared Z, sibling)
-         * └── lone                    (dir, NOT shared)
-         *     └── deeper              (dir, NOT shared)
+         * ├── projects                      (shared: projects)
+         * │   └── team                      (dir, NOT shared)
+         * │       └── reports               (shared: projectsTeamReports, nested inside projects)
+         * │           └── q1                (dir, NOT shared)
+         * │               └── final         (dir, NOT shared)
+         * ├── department
+         * │   └── hr
+         * │       └── contracts             (shared: departmentHrContracts, deep, NO shared ancestor)
+         * ├── archive                       (shared: archive, sibling)
+         * └── lone                          (dir, NOT shared)
+         *     └── deeper                    (dir, NOT shared)
          */
         Path root = topFolder.getPhysicalDir();
-        Files.createDirectories(root.resolve("a/b/c/d/e"));
-        Files.createDirectories(root.resolve("p/q/r"));
-        Files.createDirectories(root.resolve("z/sub"));
+        Files.createDirectories(root.resolve("projects/team/reports/q1/final"));
+        Files.createDirectories(root.resolve("department/hr/contracts"));
+        Files.createDirectories(root.resolve("archive/2026"));
         Files.createDirectories(root.resolve("lone/deeper"));
         TestHelper.scanFolder(topFolder);
 
-        Folder subA = topFolder.share((DirectoryInfo) topFolder.getFileInfo("a"));
-        Folder subC = topFolder.share((DirectoryInfo) topFolder.getFileInfo("a/b/c"));
-        Folder subR = topFolder.share((DirectoryInfo) topFolder.getFileInfo("p/q/r"));
-        Folder subZ = topFolder.share((DirectoryInfo) topFolder.getFileInfo("z"));
-        assertNotNull(subA);
-        assertNotNull(subC);
-        assertNotNull(subR);
-        assertNotNull(subZ);
+        Folder projects = topFolder.share((DirectoryInfo) topFolder.getFileInfo("projects"));
+        Folder projectsTeamReports = topFolder.share((DirectoryInfo) topFolder.getFileInfo("projects/team/reports"));
+        Folder departmentHrContracts = topFolder.share((DirectoryInfo) topFolder.getFileInfo("department/hr/contracts"));
+        Folder archive = topFolder.share((DirectoryInfo) topFolder.getFileInfo("archive"));
+        assertNotNull(projects);
+        assertNotNull(projectsTeamReports);
+        assertNotNull(departmentHrContracts);
+        assertNotNull(archive);
 
-        // Outer share A: itself and non-shared descendants below it (but above the nested share)
-        assertSame(subA, repository.findEnclosingSubFolder(topInfo, "a"));
-        assertSame(subA, repository.findEnclosingSubFolder(topInfo, "a/b"));
+        // Outer share: itself and non-shared descendants below it (but above the nested share)
+        assertSame(projects, repository.findEnclosingSubFolder(topInfo, "projects"));
+        assertSame(projects, repository.findEnclosingSubFolder(topInfo, "projects/team"));
 
-        // Nested share C wins for its root and everything below it - even several levels deep
-        assertSame(subC, repository.findEnclosingSubFolder(topInfo, "a/b/c"));
-        assertSame(subC, repository.findEnclosingSubFolder(topInfo, "a/b/c/d"));
-        assertSame(subC, repository.findEnclosingSubFolder(topInfo, "a/b/c/d/e"));
-        assertSame(subC, repository.findEnclosingSubFolder(topInfo, "a/b/c/d/e/x/y/z/deep.bin"));
+        // The nested share wins for its root and everything below it - even several levels deep
+        assertSame(projectsTeamReports, repository.findEnclosingSubFolder(topInfo, "projects/team/reports"));
+        assertSame(projectsTeamReports, repository.findEnclosingSubFolder(topInfo, "projects/team/reports/q1"));
+        assertSame(projectsTeamReports, repository.findEnclosingSubFolder(topInfo, "projects/team/reports/q1/final"));
+        assertSame(projectsTeamReports,
+            repository.findEnclosingSubFolder(topInfo, "projects/team/reports/q1/final/x/y/deep.bin"));
 
-        // Deep share R with no shared ancestor: paths above it resolve to nothing, at/below to R
-        assertNull(repository.findEnclosingSubFolder(topInfo, "p"));
-        assertNull(repository.findEnclosingSubFolder(topInfo, "p/q"));
-        assertSame(subR, repository.findEnclosingSubFolder(topInfo, "p/q/r"));
-        assertSame(subR, repository.findEnclosingSubFolder(topInfo, "p/q/r/deep/nested/file.txt"));
+        // Deep share without shared ancestor: paths above it resolve to nothing, at/below to it
+        assertNull(repository.findEnclosingSubFolder(topInfo, "department"));
+        assertNull(repository.findEnclosingSubFolder(topInfo, "department/hr"));
+        assertSame(departmentHrContracts, repository.findEnclosingSubFolder(topInfo, "department/hr/contracts"));
+        assertSame(departmentHrContracts,
+            repository.findEnclosingSubFolder(topInfo, "department/hr/contracts/2026/contract.pdf"));
 
-        // Sibling share Z
-        assertSame(subZ, repository.findEnclosingSubFolder(topInfo, "z"));
-        assertSame(subZ, repository.findEnclosingSubFolder(topInfo, "z/sub/whatever/file"));
+        // Sibling share
+        assertSame(archive, repository.findEnclosingSubFolder(topInfo, "archive"));
+        assertSame(archive, repository.findEnclosingSubFolder(topInfo, "archive/2026/whatever/file"));
 
         // Unrelated deep paths never match
         assertNull(repository.findEnclosingSubFolder(topInfo, "lone"));
@@ -1061,9 +1068,9 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         FolderInfo subFolderInfo = FolderInfoFactory.newFolder(topBaseDir);
 
-        FileInfo subBaseDir = FileInfoFactory.mapToSubFolder(topBaseDir, subFolderInfo);
-        assertEquals("", subBaseDir.getRelativeName());
-        assertTrue("Mapped base dir must be a lookup instance", subBaseDir.isLookupInstance());
+        FileInfo sharedBaseDir = FileInfoFactory.mapToSubFolder(topBaseDir, subFolderInfo);
+        assertEquals("", sharedBaseDir.getRelativeName());
+        assertTrue("Mapped base dir must be a lookup instance", sharedBaseDir.isLookupInstance());
     }
 
     public void testSubFolderDAOExcludesBaseDirectory() {

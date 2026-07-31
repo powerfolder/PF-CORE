@@ -40,6 +40,7 @@ import javax.persistence.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -295,6 +296,54 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             return true;
         }
         return inheritsPermissions;
+    }
+
+    /**
+     * PFS-5510: From the given candidates, the innermost subfolder that encloses the addressed
+     * location ({@code folder} + {@code relativeName}), or {@code null} if none does. Works purely on
+     * the {@link FolderInfo} structures (no mounting required): a candidate encloses the location if
+     * it is a subfolder of the same top folder and its location path is a prefix of (or equal to) the
+     * addressed path. Accepts a top folder or a subfolder as {@code folder} - a subfolder's path is
+     * translated to top-folder coordinates first.
+     *
+     * @param candidates   subfolders to consider (e.g. an account's or group's permitted folders)
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the innermost enclosing subfolder from {@code candidates}, or {@code null}
+     */
+    public static FolderInfo findEnclosingSubFolder(Collection<FolderInfo> candidates, FolderInfo folder,
+                                                    String relativeName) {
+        if (candidates == null || folder == null) {
+            return null;
+        }
+        FolderInfo top = folder.isSubFolder() ? folder.getTopFolder() : folder;
+        String path = relativeName != null ? relativeName : "";
+        if (folder.isSubFolder()) {
+            DirectoryInfo location = folder.getLocation();
+            if (location == null) {
+                return null;
+            }
+            String base = location.getRelativeName();
+            path = path.isEmpty() ? base : base + "/" + path;
+        }
+        FolderInfo innermost = null;
+        int innermostLength = -1;
+        for (FolderInfo candidate : candidates) {
+            if (candidate == null || !candidate.isSubFolder() || !top.equals(candidate.getTopFolder())) {
+                continue;
+            }
+            DirectoryInfo location = candidate.getLocation();
+            if (location == null) {
+                continue;
+            }
+            String candidatePath = location.getRelativeName();
+            if ((path.equals(candidatePath) || path.startsWith(candidatePath + "/"))
+                    && candidatePath.length() > innermostLength) {
+                innermost = candidate;
+                innermostLength = candidatePath.length();
+            }
+        }
+        return innermost;
     }
 
     /**
