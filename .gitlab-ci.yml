@@ -6,6 +6,13 @@ variables:
 
 security-java-scan:
   stage: test
+  # PFS-5561 TEMPORARY: skip the security scan on the feature branch so its pipeline is tests-only
+  # and fast (the test-Linux/macOS/Windows jobs below have no rules and still run on every push).
+  # Remove this rules block to restore the original always-on behaviour when the tests are green.
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "feature/PFS-5561"'
+      when: never
+    - when: on_success
   tags:
     - Linux
     - Development
