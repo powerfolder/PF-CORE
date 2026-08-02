@@ -165,4 +165,18 @@ public interface GroupDAO extends GenericDAO<Group> {
      */
 
     Collection<Group> findByName(String name);
+
+    /**
+     * Deletes every group whose OID starts with {@code oidPrefix} with a few set-based statements
+     * instead of one transaction per group: memberships, group-admin permissions on accounts,
+     * parent/child links, the groups' own permissions and the groups themselves.
+     * <p>
+     * Intended for mass cleanups of generated groups that share a prefix (e.g. the CMIS migration
+     * deletes its ~49k {@code M_} groups); deleting them one by one takes hours. Every group with
+     * that prefix goes, so only use it when that is exactly what is wanted.
+     *
+     * @param oidPrefix OID prefix of the groups to delete
+     * @return number of deleted groups
+     */
+    int deleteByOidPrefix(String oidPrefix);
 }
