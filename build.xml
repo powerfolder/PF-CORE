@@ -316,7 +316,10 @@ For creation of the installer:
 	<target name="jar-unsigned" depends="compile, dist-misc">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true" duplicate="preserve">
+		<!-- Intermediate jar, only consumed by the PF-PRO server build (jar-free): fast deflate for own
+		     classes, library entries are copied as-is instead of being re-compressed. -->
+		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true"
+			duplicate="preserve" level="1" keepcompression="true">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
