@@ -138,6 +138,86 @@ public class FolderInfoTest extends TestCase {
         assertNull(FolderInfo.findEnclosingSubFolder(Collections.<FolderInfo>emptyList(), top, "projects"));
     }
 
+    /**
+     * PFC-3543: the barrier overload
+     * {@link FolderInfo#findEnclosingSubFolder(java.util.Collection, FolderInfo[], FolderInfo, String)}.
+     * Barriers are the subfolders with interrupted permission inheritance; they are handed in
+     * separately because an account holds no permission on them and therefore does not carry them in
+     * its own candidates. Purely structural here - the inheritance flag itself is not consulted, the
+     * caller decides what is a barrier.
+     */
+    public void testFindEnclosingSubFolderWithBarriers() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder");
+        FolderInfo otherTop = FolderInfoFactory.newTopFolderForTest("OtherTop");
+
+        /*
+         * /TopFolder
+         * ├── projects                      (projects - permitted)
+         * │   ├── secret                    (projectsSecret - BARRIER)
+         * │   │   └── shared                (projectsSecretShared - permitted BELOW the barrier)
+         * │   └── team                      (not shared at all)
+         * └── archive                       (archive - BARRIER, nothing permitted above it)
+         *
+         * /OtherTop
+         * └── archive                       (archiveInOtherTop - BARRIER of another top folder)
+         */
+        FolderInfo projects = newSubFolder(top, "projects");
+        FolderInfo projectsSecret = newSubFolder(top, "projects/secret");
+        FolderInfo projectsSecretShared = newSubFolder(top, "projects/secret/shared");
+        FolderInfo archive = newSubFolder(top, "archive");
+        FolderInfo archiveInOtherTop = newSubFolder(otherTop, "archive");
+
+        List<FolderInfo> permitted = Arrays.asList(projects, projectsSecretShared);
+        // Top folders and null entries must be ignored gracefully here as well
+        FolderInfo[] barriers = {projectsSecret, archive, archiveInOtherTop, top, null};
+        FolderInfo[] noBarriers = new FolderInfo[0];
+
+        // --- A barrier below a permitted subfolder wins: evaluation happens AT the barrier ---
+        assertEquals(projectsSecret,
+            FolderInfo.findEnclosingSubFolder(permitted, barriers, top, "projects/secret"));
+        assertEquals(projectsSecret,
+            FolderInfo.findEnclosingSubFolder(permitted, barriers, top, "projects/secret/2026/plan.txt"));
+
+        // --- A permitted subfolder BELOW the barrier wins again: access was granted past it ---
+        assertEquals(projectsSecretShared,
+            FolderInfo.findEnclosingSubFolder(permitted, barriers, top, "projects/secret/shared"));
+        assertEquals(projectsSecretShared,
+            FolderInfo.findEnclosingSubFolder(permitted, barriers, top, "projects/secret/shared/deep/x.txt"));
+
+        // --- Paths next to the barrier are unaffected ---
+        assertEquals(projects, FolderInfo.findEnclosingSubFolder(permitted, barriers, top, "projects"));
+        assertEquals(projects, FolderInfo.findEnclosingSubFolder(permitted, barriers, top, "projects/team/x.txt"));
+        // "secretly" must not be swallowed by the "secret" barrier (segment-exact matching)
+        assertEquals(projects,
+            FolderInfo.findEnclosingSubFolder(permitted, barriers, top, "projects/secretly/x.txt"));
+
+        // --- A barrier without anything permitted above it is still found ---
+        assertEquals(archive, FolderInfo.findEnclosingSubFolder(permitted, barriers, top, "archive/x.txt"));
+        assertEquals(archive, FolderInfo.findEnclosingSubFolder(Collections.<FolderInfo>emptyList(), barriers,
+            top, "archive"));
+
+        // --- Barriers are scoped to the addressed top folder, just like candidates ---
+        assertEquals(archiveInOtherTop,
+            FolderInfo.findEnclosingSubFolder(permitted, barriers, otherTop, "archive/x.txt"));
+        assertNull(FolderInfo.findEnclosingSubFolder(permitted, barriers, otherTop, "projects/secret"));
+
+        // --- A subfolder as the addressed folder: barriers match in top coordinates as well ---
+        assertEquals(projectsSecret,
+            FolderInfo.findEnclosingSubFolder(permitted, barriers, projects, "secret/x.txt"));
+        assertEquals(projectsSecretShared,
+            FolderInfo.findEnclosingSubFolder(permitted, barriers, projects, "secret/shared/x.txt"));
+
+        // --- No barriers behaves exactly like the candidates-only resolution ---
+        assertEquals(projects, FolderInfo.findEnclosingSubFolder(permitted, null, top, "projects/secret"));
+        assertEquals(projects, FolderInfo.findEnclosingSubFolder(permitted, noBarriers, top, "projects/secret"));
+
+        // --- Null / empty handling ---
+        assertNull(FolderInfo.findEnclosingSubFolder(null, null, top, "projects"));
+        assertNull(FolderInfo.findEnclosingSubFolder(null, barriers, null, "archive"));
+        // Barriers alone are enough, no candidates needed
+        assertEquals(archive, FolderInfo.findEnclosingSubFolder(null, barriers, top, "archive"));
+    }
+
     private static FolderInfo newSubFolder(FolderInfo top, String path) {
         DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top, path,
             null, 0, null, null, new Date(), 1, null, true, null);
