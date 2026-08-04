@@ -30,6 +30,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -515,6 +516,37 @@ public class AccountTest {
         account.setUsername("userb");
 
         assertEquals("/data/powerfolder/usera", account.getBasePath());
+    }
+
+    /**
+     * The charged folders are the ones the account OWNS, taken from its own permissions only: a group
+     * never owns a folder, so nothing a group carries may show up here. Every folder appears once, also
+     * when several permissions point at it.
+     */
+    @Test
+    public void testFoldersChargedAreTheOwnedOnesOnly() {
+        FolderInfo owned = FolderInfoFactory.newTopFolderForTest("Owned", "charged-owned");
+        FolderInfo viaGroup = FolderInfoFactory.newTopFolderForTest("ViaGroup", "charged-group");
+        FolderInfo justAdmin = FolderInfoFactory.newTopFolderForTest("JustAdmin", "charged-admin");
+
+        // A group cannot even hold the owner permission - the account must not get charged through it
+        Group owners = new Group("Owners");
+        owners.grant(FolderPermission.owner(viaGroup));
+
+        Account account = new Account();
+        account.grant(FolderPermission.owner(owned));
+        account.grant(FolderPermission.admin(justAdmin));
+        account.addGroup(owners);
+
+        Collection<FolderInfo> charged = account.getFoldersCharged();
+        assertEquals("Only the owned folder is charged: " + charged, 1, charged.size());
+        assertTrue(charged.contains(owned));
+        assertFalse(charged.contains(viaGroup));
+        assertFalse(charged.contains(justAdmin));
+
+        // Re-granting owner does not duplicate the entry
+        account.grant(FolderPermission.owner(owned));
+        assertEquals(1, account.getFoldersCharged().size());
     }
 
 }

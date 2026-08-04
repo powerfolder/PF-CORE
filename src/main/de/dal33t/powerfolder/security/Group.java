@@ -155,7 +155,14 @@ public class Group implements Serializable, D2DObject, Auditable {
                 return true;
             }
             if (p instanceof FolderOwnerPermission) {
-                Reject.ifTrue(foInfo.isSubFolder(), foInfo + ": Cannot grant owner permission on subfolder");
+                // A group never OWNS a folder: ownership carries the quota and the charging, and both
+                // belong to an account. Every ownership path on the server grants to an Account only
+                // (ServerSecurityService), and Account.getFoldersCharged() consequently looks at the
+                // account's own permissions. Rejected for top folders as well as for subfolders,
+                // inheriting or interrupted (PFC-3543).
+                LOG.warning(this + ": Not allowed to grant owner permission on " + foInfo
+                    + " - a group never owns a folder");
+                return true;
             }
         }
         return false;
@@ -194,9 +201,19 @@ public class Group implements Serializable, D2DObject, Auditable {
         }
     }
 
+    /**
+     * Revokes every folder permission of this group on the given folder.
+     * <p>
+     * Owner is included although a group must never hold it (see {@code isInvalidGrant}): a legacy row
+     * or an import from before that guard would otherwise stay, and since {@link #grant} calls this to
+     * replace the previous mode - and {@link #getAllowedAccess(FolderInfo)} checks owner first - any
+     * downgrade would silently have no effect. This way a grant cleans such a leftover up.
+     *
+     * @param foInfo the folder to revoke all permissions on
+     */
     public void revokeAllFolderPermissions(FolderInfo foInfo) {
-        revoke(FolderPermission.read(foInfo),
-            FolderPermission.readWrite(foInfo), FolderPermission.admin(foInfo));
+        revoke(FolderPermission.read(foInfo), FolderPermission.readWrite(foInfo),
+            FolderPermission.admin(foInfo), FolderPermission.owner(foInfo));
     }
 
     public void revokeAllGroupAdminPermissions() {
@@ -635,7 +652,12 @@ public class Group implements Serializable, D2DObject, Auditable {
                         this.permissions.add(new FolderCreatePermission(permissionInfoProto));
                         break;
                     case FOLDER_OWNER :
-                        this.permissions.add(new FolderOwnerPermission(permissionInfoProto));
+                        // A group never owns a folder (see isInvalidGrant). This import path writes to
+                        // the permission list directly, so the invariant has to be enforced here too -
+                        // otherwise a peer or client could push an ownership in through the back door.
+                        LOG.warning(this + ": Dropping owner permission from D2D import on "
+                            + new FolderOwnerPermission(permissionInfoProto).getFolder()
+                            + " - a group never owns a folder");
                         break;
                     case FOLDER_READ :
                         this.permissions.add(new FolderReadPermission(permissionInfoProto));

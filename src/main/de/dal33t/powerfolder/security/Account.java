@@ -595,26 +595,25 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * @return the list of folders this account gets charged for.
+     * The folders this account gets charged for - the ones it OWNS. Only its own permissions are
+     * examined: a group never owns a folder (see {@code Group.isInvalidGrant}), ownership carries the
+     * quota and the charging and therefore belongs to an account. Every ownership path on the server
+     * grants to an Account only.
+     * <p>
+     * PFC-3543: An interrupted subfolder counts as a folder of its own here, since it is decoupled and
+     * gets its own owner. A still-inheriting subfolder can never have one.
+     *
+     * @return the folders this account gets charged for, each one once
      */
     public Collection<FolderInfo> getFoldersCharged() {
         if (permissions.isEmpty()) {
             return Collections.emptyList();
         }
-        Collection<FolderInfo> folders = new ArrayList<FolderInfo>(
-                permissions.size());
+        Collection<FolderInfo> folders = new LinkedHashSet<>();
         for (Permission p : permissions) {
             if (p instanceof FolderOwnerPermission) {
                 FolderPermission fp = (FolderPermission) p;
                 folders.add(fp.getFolder());
-            }
-        }
-        for (Group g : groups) {
-            for (Permission p : g.getPermissions()) {
-                if (p instanceof FolderOwnerPermission) {
-                    FolderPermission fp = (FolderPermission) p;
-                    folders.add(fp.getFolder());
-                }
             }
         }
         return folders;
