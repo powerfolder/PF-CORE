@@ -549,4 +549,31 @@ public class AccountTest {
         assertEquals(1, account.getFoldersCharged().size());
     }
 
+    /**
+     * PFS-5510: the DIRECT permission is a different question from the effective one. On a subfolder they
+     * differ, which is what an ACL view has to be able to tell apart.
+     */
+    @Test
+    public void testDirectPermissionIgnoresGroupsAndInheritance() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top-direct-acc");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+            "team/shared", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo teamShared = FolderInfoFactory.newFolder(location);
+
+        Group admins = new Group("Admins");
+        admins.grant(FolderPermission.admin(top));
+
+        Account account = new Account();
+        account.grant(FolderPermission.read(teamShared));
+        account.addGroup(admins);
+
+        // Granted directly on the subfolder
+        assertEquals(AccessMode.READ, account.getDirectPermissionFor(teamShared).getMode());
+        // Nothing granted on the top folder itself - it comes from the group
+        assertNull(account.getDirectPermissionFor(top));
+        // ...while the effective permission reports the group's ADMIN, on both
+        assertEquals(AccessMode.ADMIN, account.getPermissionFor(top).getMode());
+        assertEquals(AccessMode.ADMIN, account.getPermissionFor(teamShared).getMode());
+    }
+
 }

@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
@@ -230,6 +231,33 @@ public class GroupTest {
         team.grant(FolderPermission.admin(top));
         assertEquals(1, team.getPermissions().size());
         assertEquals(AccessMode.ADMIN, team.getAllowedAccess(top));
+    }
+
+    /**
+     * PFS-5510: the DIRECT permission is a different question from the effective access, and on a
+     * subfolder the two differ. {@code getPermissionFor} answers the direct one on a group (its callers
+     * select the direct holders), while {@link #getAllowedAccess} follows parents and inheritance.
+     */
+    @Test
+    public void testDirectPermissionIgnoresParentsAndInheritance() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top-direct");
+        FolderInfo teamShared = newSubFolder(top, "team/shared");
+
+        Group parent = new Group("Parent");
+        parent.grant(FolderPermission.admin(top));
+        Group child = new Group("Child");
+        child.grant(FolderPermission.read(teamShared));
+        child.addParent(parent);
+
+        // Granted here
+        assertEquals(AccessMode.READ, child.getDirectPermissionFor(teamShared).getMode());
+        assertEquals(AccessMode.READ, child.getPermissionFor(teamShared).getMode());
+        // Only inherited, never granted on the child itself
+        assertNull(child.getDirectPermissionFor(top));
+        assertNull(child.getPermissionFor(top));
+        // ...while the effective access sees the parent group and the top folder
+        assertEquals(AccessMode.ADMIN, child.getAllowedAccess(top));
+        assertEquals(AccessMode.ADMIN, child.getAllowedAccess(teamShared));
     }
 
     private static FolderInfo newSubFolder(FolderInfo top, String path) {

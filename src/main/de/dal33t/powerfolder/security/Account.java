@@ -465,14 +465,38 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * Returns the {@link FolderPermission} this {@link Account} has for a
-     * certain {@code Folder}.
+     * The EFFECTIVE {@link FolderPermission} of this {@link Account} on a folder: its own permissions,
+     * the ones from its (nested) groups, and the ones inherited from the top folder all count. On a
+     * subfolder the result can therefore be higher than what is granted on that subfolder itself - use
+     * {@link #getDirectPermissionFor(FolderInfo)} when the question is what was granted HERE.
      *
-     * @param foInfo
-     * @return A FolderPermission with the correct {@code AccessMode}.
+     * @param foInfo the folder to get the permission on
+     * @return a FolderPermission with the effective {@code AccessMode}, {@code null} for no access
      */
     public FolderPermission getPermissionFor(FolderInfo foInfo) {
         return FolderPermission.get(foInfo, getAllowedAccess(foInfo));
+    }
+
+    /**
+     * PFS-5510: The {@link FolderPermission} granted DIRECTLY on the given folder - own permissions
+     * only, matched on exactly that folder. Groups do not count, and nothing is inherited from the top
+     * folder, so an ACL view can tell an explicit grant apart from an inherited one. The counterpart is
+     * {@link #getPermissionFor(FolderInfo)}, which answers the effective access.
+     *
+     * @param foInfo the folder to get the direct permission on
+     * @return the granted FolderPermission, or {@code null} if none is granted on that folder itself
+     */
+    public FolderPermission getDirectPermissionFor(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder info is null");
+        for (Permission p : permissions) {
+            if (p instanceof FolderPermission) {
+                FolderPermission fp = (FolderPermission) p;
+                if (foInfo.equals(fp.getFolder())) {
+                    return fp;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -1776,7 +1800,14 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * @param foInfo
+     * Answers if the user is admin of the folder. Inheritance from the top folder and its interruption
+     * (PFC-3543) are honored, but only for the folder that is passed in - there is no path-aware
+     * overload like {@link #hasWritePermissions(FolderInfo, String)}. A caller that holds a top folder
+     * plus a path must resolve the addressed subfolder first (see
+     * {@code RequestAnalyzer.getFolder(true)}), otherwise it asks about the top folder and allows too
+     * much.
+     *
+     * @param foInfo the folder to check
      * @return true if the user is admin of the folder.
      */
     public boolean hasAdminPermission(FolderInfo foInfo) {
@@ -1814,7 +1845,10 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * @param foInfo
+     * Answers if the user is owner of the folder. Like {@link #hasAdminPermission(FolderInfo)} this has
+     * no path-aware overload - the addressed subfolder has to be resolved by the caller.
+     *
+     * @param foInfo the folder to check
      * @return true if the user is owner of the folder.
      */
     public boolean hasOwnerPermission(FolderInfo foInfo) {

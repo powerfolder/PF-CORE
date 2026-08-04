@@ -383,21 +383,52 @@ public class Group implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * @see {@link Account#getPermissionFor(FolderInfo)}
-     **/
+     * The {@link FolderPermission} granted directly on the given folder.
+     * <p>
+     * CAUTION - this does NOT mirror {@link Account#getPermissionFor(FolderInfo)}, which answers the
+     * EFFECTIVE permission (own plus groups plus inherited from the top folder). This one has always
+     * answered the DIRECT permission, and it keeps doing so, because its callers select their candidates
+     * via {@code findWithFolderPermission(folderInfo)} and want exactly that. On a top folder the
+     * difference is invisible, on a subfolder it is not - so the two meanings now have their own names
+     * ({@link #getDirectPermissionFor(FolderInfo)} / {@link #getAllowedAccess(FolderInfo)}) and the
+     * callers get moved over separately, as that changes what an ACL view displays.
+     *
+     * @param foInfo the folder to get the direct permission on
+     * @return the granted FolderPermission, or {@code null} if none is granted on that folder itself
+     */
     public FolderPermission getPermissionFor(FolderInfo foInfo) {
+        return getDirectPermissionFor(foInfo);
+    }
+
+    /**
+     * PFS-5510: The {@link FolderPermission} granted DIRECTLY on the given folder - this group's own
+     * permissions only, matched on exactly that folder. Parent groups do not count and nothing is
+     * inherited from the top folder, so an ACL view can tell an explicit grant apart from an inherited
+     * one. Mirrors {@link Account#getDirectPermissionFor(FolderInfo)}.
+     *
+     * @param foInfo the folder to get the direct permission on
+     * @return the granted FolderPermission, or {@code null} if none is granted on that folder itself
+     */
+    public FolderPermission getDirectPermissionFor(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder info is null");
         for (Permission perm : permissions) {
             if (perm instanceof FolderPermission) {
                 FolderPermission foPerm = (FolderPermission) perm;
-                if (foPerm.getFolder().equals(foInfo)) {
+                if (foInfo.equals(foPerm.getFolder())) {
                     return foPerm;
                 }
             }
         }
-
-        return FolderPermission.get(foInfo, AccessMode.NO_ACCESS);
+        return null;
     }
 
+    /**
+     * The folders this group holds a permission on ITSELF. Parent groups are not followed - use
+     * {@link #getAllFolders()} for that. Callers that show or edit the group's own folder assignment
+     * want this one; callers that resolve access want {@link #getAllFolders()}.
+     *
+     * @return the folders of this group's own permissions
+     */
     public Collection<FolderInfo> getFolders() {
         Collection<FolderInfo> folder = new ArrayList<FolderInfo>(
             permissions.size());
