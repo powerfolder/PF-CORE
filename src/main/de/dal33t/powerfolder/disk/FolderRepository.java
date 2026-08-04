@@ -899,6 +899,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         // make sure that on restart of folder the folders are freshly read
         folders.clear();
         metaFolders.clear();
+        // PFC-3543: no folders left, so no interrupted subfolders left either.
+        interruptedSubFolders.unregister();
 
         locking.shutdown();
 
