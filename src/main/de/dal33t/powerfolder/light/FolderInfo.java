@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.InterruptedSubFolderIndex;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.TagUtil;
@@ -306,6 +307,13 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * addressed path. Accepts a top folder or a subfolder as {@code folder} - a subfolder's path is
      * translated to top-folder coordinates first.
      *
+     * PFC-3543: A subfolder whose permission inheritance is interrupted is a barrier the resolution does
+     * not look past - it is considered even when it is not among {@code candidates}, which is the normal
+     * case for an account that holds no permission on it. Those barriers come from
+     * {@link InterruptedSubFolderIndex#barriers()}, so every caller honors the interruption without
+     * having to know about it. With the feature disabled that lookup is a single volatile read of an
+     * empty array and this method allocates nothing at all.
+     *
      * @param candidates   subfolders to consider (e.g. an account's or group's permitted folders)
      * @param folder       the addressed folder (top folder or shared subfolder)
      * @param relativeName the addressed path relative to {@code folder}, may be blank
@@ -313,37 +321,133 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     public static FolderInfo findEnclosingSubFolder(Collection<FolderInfo> candidates, FolderInfo folder,
                                                     String relativeName) {
-        if (candidates == null || folder == null) {
+        return findEnclosingSubFolder(candidates, InterruptedSubFolderIndex.barriers(), folder, relativeName);
+    }
+
+    /**
+     * PFC-3543: Like {@link #findEnclosingSubFolder(Collection, FolderInfo, String)}, but with an
+     * explicitly supplied set of barriers instead of the currently interrupted subfolders. Only for
+     * tests that need a deterministic barrier set - production code uses the three-argument variant,
+     * which looks the barriers up itself.
+     * <p>
+     * The innermost enclosing subfolder of BOTH sets wins, so no further arbitration is needed: a
+     * barrier beats a permitted subfolder further up (access is decoupled there), and a permitted
+     * subfolder below a barrier beats the barrier (access was granted past it). A tie - the same
+     * subfolder in both sets - goes to {@code candidates}, so the instance carried by the permission is
+     * returned.
+     *
+     * @param candidates   subfolders to consider (e.g. an account's or group's permitted folders)
+     * @param barriers     the subfolders acting as barriers, may be {@code null} or empty. NOT modified
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the innermost enclosing subfolder of either set, or {@code null}
+     */
+    static FolderInfo findEnclosingSubFolder(Collection<FolderInfo> candidates, FolderInfo[] barriers,
+                                             FolderInfo folder, String relativeName) {
+        if (folder == null) {
+            return null;
+        }
+        boolean hasBarriers = barriers != null && barriers.length > 0;
+        if (candidates == null && !hasBarriers) {
+            return null;
+        }
+        String path = addressedPath(folder, relativeName);
+        if (path == null) {
             return null;
         }
         FolderInfo top = folder.isSubFolder() ? folder.getTopFolder() : folder;
+        FolderInfo innermost = findInnermostEnclosing(candidates, top, path, null);
+        // Barriers only win on a strictly deeper match, so a tie goes to the candidates.
+        return hasBarriers ? findInnermostEnclosing(barriers, top, path, innermost) : innermost;
+    }
+
+    /**
+     * The addressed path in TOP FOLDER coordinates: a subfolder's own location is prepended, so all
+     * comparisons happen in one coordinate system.
+     *
+     * @return the path, or {@code null} if a subfolder does not know its location
+     */
+    private static String addressedPath(FolderInfo folder, String relativeName) {
         String path = relativeName != null ? relativeName : "";
-        if (folder.isSubFolder()) {
-            DirectoryInfo location = folder.getLocation();
-            if (location == null) {
-                return null;
-            }
-            String base = location.getRelativeName();
-            path = path.isEmpty() ? base : base + "/" + path;
+        if (!folder.isSubFolder()) {
+            return path;
         }
-        FolderInfo innermost = null;
-        int innermostLength = -1;
+        DirectoryInfo location = folder.getLocation();
+        if (location == null) {
+            return null;
+        }
+        String base = location.getRelativeName();
+        return path.isEmpty() ? base : base + "/" + path;
+    }
+
+    /**
+     * The innermost subfolder of {@code candidates} that encloses {@code path}, or {@code current} if
+     * none is deeper than it.
+     *
+     * @param candidates the subfolders to consider, may be {@code null} or empty
+     * @param top        the top folder the path is relative to
+     * @param path       the addressed path in top-folder coordinates
+     * @param current    the best match so far, may be {@code null}
+     */
+    private static FolderInfo findInnermostEnclosing(Collection<FolderInfo> candidates, FolderInfo top, String path,
+                                                     FolderInfo current) {
+        if (candidates == null || candidates.isEmpty()) {
+            return current;
+        }
+        FolderInfo innermost = current;
+        int innermostLength = enclosingPathLength(current, top, path);
         for (FolderInfo candidate : candidates) {
-            if (candidate == null || !candidate.isSubFolder() || !top.equals(candidate.getTopFolder())) {
-                continue;
-            }
-            DirectoryInfo location = candidate.getLocation();
-            if (location == null) {
-                continue;
-            }
-            String candidatePath = location.getRelativeName();
-            if ((path.equals(candidatePath) || path.startsWith(candidatePath + "/"))
-                    && candidatePath.length() > innermostLength) {
+            int length = enclosingPathLength(candidate, top, path);
+            if (length > innermostLength) {
                 innermost = candidate;
-                innermostLength = candidatePath.length();
+                innermostLength = length;
             }
         }
         return innermost;
+    }
+
+    /**
+     * Array variant of {@link #findInnermostEnclosing(Collection, FolderInfo, String, FolderInfo)} for
+     * the barrier snapshot: an indexed loop, so the resolution allocates nothing - not even an iterator -
+     * on the web hot path.
+     */
+    private static FolderInfo findInnermostEnclosing(FolderInfo[] candidates, FolderInfo top, String path,
+                                                     FolderInfo current) {
+        FolderInfo innermost = current;
+        int innermostLength = enclosingPathLength(current, top, path);
+        for (int i = 0; i < candidates.length; i++) {
+            int length = enclosingPathLength(candidates[i], top, path);
+            if (length > innermostLength) {
+                innermost = candidates[i];
+                innermostLength = length;
+            }
+        }
+        return innermost;
+    }
+
+    /**
+     * How deep the given subfolder sits if it encloses {@code path}, measured as the length of its
+     * location path so a deeper match always compares greater. Matching is segment-exact, so a sibling
+     * whose name is a string prefix (e.g. "documents" vs "doc") never matches.
+     *
+     * @param candidate the subfolder to check, may be {@code null} or a top folder
+     * @param top       the top folder the path is relative to
+     * @param path      the addressed path in top-folder coordinates
+     * @return the location path length, or {@code -1} if the candidate does not enclose the path
+     */
+    private static int enclosingPathLength(FolderInfo candidate, FolderInfo top, String path) {
+        if (candidate == null || !candidate.isSubFolder() || !top.equals(candidate.getTopFolder())) {
+            return -1;
+        }
+        DirectoryInfo location = candidate.getLocation();
+        if (location == null) {
+            return -1;
+        }
+        String candidatePath = location.getRelativeName();
+        if (path.equals(candidatePath) || path.startsWith(candidatePath + "/")) {
+            return candidatePath.length();
+        }
+        return -1;
     }
 
     /**

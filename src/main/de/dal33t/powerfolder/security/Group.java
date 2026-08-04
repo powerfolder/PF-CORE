@@ -421,8 +421,11 @@ public class Group implements Serializable, D2DObject, Auditable {
      * there. Purely structure-based (the permission lists carry the subfolder FolderInfos incl. their
      * location), so it works without a mounted folder. For an INHERITING subfolder the result is
      * never lower than the plain {@link #getAllowedAccess(FolderInfo)}, since top-folder permissions
-     * inherit downward; an interrupted subfolder (PFC-3543) is decoupled and evaluates independently.
-     * Accepts a top folder or a subfolder as {@code folder}.
+     * inherit downward. Accepts a top folder or a subfolder as {@code folder}.
+     * <p>
+     * Interrupted permission inheritance (PFC-3543) is honored by the resolution itself: an interrupted
+     * subfolder is a barrier it does not look past, also when the group holds no permission on it. See
+     * {@link Account#getAllowedAccess(FolderInfo, String)}.
      *
      * @param folder       the addressed folder (top folder or shared subfolder)
      * @param relativeName the addressed path relative to {@code folder}, may be blank

@@ -518,11 +518,11 @@ public class Account implements Serializable, D2DObject, Auditable {
      * {@link #getAllowedAccess(FolderInfo)}, since top-folder permissions inherit downward. Accepts a
      * top folder or a subfolder as {@code folder}.
      * <p>
-     * Interrupted permission inheritance (PFC-3543) is honored during evaluation - top permissions do
-     * not imply an interrupted subfolder. Limitation: an interrupted subfolder the account holds NO
-     * own/group permission on is invisible in the permission structures, so locations inside it fall
-     * back to the top-folder access here; the authorization gates resolve against the mounted folders
-     * and stay strict.
+     * Interrupted permission inheritance (PFC-3543) is honored by the resolution itself: an interrupted
+     * subfolder is a barrier it does not look past, also when the account holds no permission on it and
+     * therefore does not carry it in its own permission structures. Evaluating at the barrier then
+     * yields {@link AccessMode#NO_ACCESS}, since a top permission does not imply a decoupled subfolder,
+     * while a permission granted directly on it (or on a subfolder below it) still counts.
      *
      * @param folder       the addressed folder (top folder or shared subfolder)
      * @param relativeName the addressed path relative to {@code folder}, may be blank
