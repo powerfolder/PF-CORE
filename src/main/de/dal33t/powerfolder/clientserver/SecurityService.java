@@ -289,4 +289,12 @@ public interface SecurityService {
      * @return The ServerInfo the account is hosted on.
      */
     ServerInfo getHostingService(String username);
+
+    void requestJoin(Invitation invitation);
+
+    boolean approveJoinRequest(Invitation invitation,
+        Collection<String> groupOidsToAssign, String managerComment,
+        boolean grantDirectPermission);
+
+    boolean declineJoinRequest(Invitation invitation, String managerComment);
 }

@@ -68,6 +68,7 @@ public class Invitation extends FolderRelatedMessage implements Auditable
     public static final String PROPERTY_SERVER = "server";
     public static final String PROPERTY_SENDER = "sender";
     public static final String PROPERTY_RECIPIENT = "recipient";
+    public static final String PROPERTY_JOIN_REQUEST = "joinRequest";
 
     // Since 9.1
     @Id
@@ -136,6 +137,8 @@ public class Invitation extends FolderRelatedMessage implements Auditable
     @Transient
     private String inviteeUsername;
 
+    private boolean joinRequest;
+
     @Embedded
     @Fetch(FetchMode.JOIN)
     public AuditFields auditFields = new AuditFields();
@@ -180,6 +183,7 @@ public class Invitation extends FolderRelatedMessage implements Auditable
         this.server = invitation.server;
         this.suggestedLocalBasePath = invitation.suggestedLocalBasePath;
         this.suggestedSyncProfileConfig = invitation.suggestedSyncProfileConfig;
+        this.joinRequest = invitation.joinRequest;
     }
 
     private Invitation() {
@@ -334,6 +338,13 @@ public class Invitation extends FolderRelatedMessage implements Auditable
 
     public FolderPermission getPermission() {
         return permission;
+    }
+
+    public boolean isJoinRequest() {
+        return joinRequest;
+    }
+    public void setJoinRequest(boolean joinRequest) {
+        this.joinRequest = joinRequest;
     }
 
     /**
