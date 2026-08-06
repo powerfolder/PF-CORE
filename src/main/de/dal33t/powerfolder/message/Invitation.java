@@ -68,6 +68,7 @@ public class Invitation extends FolderRelatedMessage implements Auditable
     public static final String PROPERTY_SERVER = "server";
     public static final String PROPERTY_SENDER = "sender";
     public static final String PROPERTY_RECIPIENT = "recipient";
+    public static final String PROPERTY_JOIN_REQUEST = "joinRequest";
 
     // Since 9.1
     @Id
@@ -136,6 +137,15 @@ public class Invitation extends FolderRelatedMessage implements Auditable
     @Transient
     private String inviteeUsername;
 
+    /**
+     * PFS-5630: Marks a "reverse invitation": the recipient requested to join
+     * a moderated folder himself/herself and a folder manager has to process
+     * (approve/decline) the request. The requester's comment is carried in
+     * {@link #invitationText}.
+     * @since 27.1
+     */
+    private boolean joinRequest;
+
     @Embedded
     @Fetch(FetchMode.JOIN)
     public AuditFields auditFields = new AuditFields();
@@ -180,6 +190,7 @@ public class Invitation extends FolderRelatedMessage implements Auditable
         this.server = invitation.server;
         this.suggestedLocalBasePath = invitation.suggestedLocalBasePath;
         this.suggestedSyncProfileConfig = invitation.suggestedSyncProfileConfig;
+        this.joinRequest = invitation.joinRequest;
     }
 
     private Invitation() {
@@ -334,6 +345,25 @@ public class Invitation extends FolderRelatedMessage implements Auditable
 
     public FolderPermission getPermission() {
         return permission;
+    }
+
+    /**
+     * PFS-5630
+     * @return {@code true} if this invitation is a join request to a moderated
+     *         folder ("reverse invitation"), {@code false} for a regular
+     *         invitation.
+     */
+    public boolean isJoinRequest() {
+        return joinRequest;
+    }
+
+    /**
+     * PFS-5630
+     * @param joinRequest {@code true} to mark this invitation as a join
+     *                    request to a moderated folder.
+     */
+    public void setJoinRequest(boolean joinRequest) {
+        this.joinRequest = joinRequest;
     }
 
     /**

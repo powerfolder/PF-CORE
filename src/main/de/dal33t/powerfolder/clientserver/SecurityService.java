@@ -289,4 +289,59 @@ public interface SecurityService {
      * @return The ServerInfo the account is hosted on.
      */
     ServerInfo getHostingService(String username);
+
+    /**
+     * PFS-5630: Files a join request ("reverse invitation") of the logged in
+     * user to a moderated folder. Stores the pending request and notifies the
+     * folder managers by e-mail (deep-link to process the request). The
+     * permission carried by the invitation is ignored and forced to READ - the
+     * effective access is decided by the manager on approval.
+     *
+     * @param invitation
+     *            the join request. Must have {@link Invitation#isJoinRequest()}
+     *            set and the requester as recipient.
+     */
+    void requestJoin(Invitation invitation);
+
+    /**
+     * PFS-5630: Approves a pending join request to a moderated folder. Caller
+     * must hold {@code FolderPermission.admin} on the folder. Assigns the
+     * requester to the given existing folder groups (primary) and/or grants an
+     * optional direct permission (clamped to READ/READ_WRITE), deletes the
+     * request and notifies the requester by e-mail including the manager
+     * comment. Group assignment, permission grant and deletion happen
+     * atomically after a single existence + authorization re-check.
+     *
+     * @param invitation
+     *            the pending join request.
+     * @param groupOidsToAssign
+     *            OIDs of existing groups (each must already hold a permission
+     *            on the folder) to add the requester to; may be null/empty.
+     * @param managerComment
+     *            optional comment of the processing manager, may be null.
+     * @param grantDirectPermission
+     *            whether to grant the direct {@link FolderPermission} carried
+     *            by the invitation (clamped to READ/READ_WRITE) to the
+     *            requester.
+     * @return {@code true} if the request was processed, {@code false} if it
+     *         no longer existed (already processed or withdrawn).
+     */
+    boolean approveJoinRequest(Invitation invitation,
+        Collection<String> groupOidsToAssign, String managerComment,
+        boolean grantDirectPermission);
+
+    /**
+     * PFS-5630: Declines a pending join request to a moderated folder. Caller
+     * must hold {@code FolderPermission.admin} on the folder. Deletes the
+     * request (no grant) and notifies the requester by e-mail including the
+     * manager comment.
+     *
+     * @param invitation
+     *            the pending join request.
+     * @param managerComment
+     *            optional comment of the processing manager, may be null.
+     * @return {@code true} if the request was processed, {@code false} if it
+     *         no longer existed (already processed or withdrawn).
+     */
+    boolean declineJoinRequest(Invitation invitation, String managerComment);
 }
