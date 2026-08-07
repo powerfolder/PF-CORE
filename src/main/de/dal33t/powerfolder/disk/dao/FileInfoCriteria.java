@@ -46,6 +46,17 @@ public class FileInfoCriteria {
     private boolean includeDeleted = false;
     private String extension;
     private String modifiedBy;
+    private String modifiedByAccountId;
+    private String modifiedByDeviceId;
+    private Long modifiedAfter;
+    private Long modifiedBefore;
+    private Long minSize;
+    private Long maxSize;
+    private String category;
+    private String title;
+    private String author;
+    private String sortField;
+    private boolean sortDescending;
     private final Set<String> tags = new LinkedHashSet<>();
 
     /**
@@ -256,6 +267,94 @@ public class FileInfoCriteria {
         this.modifiedBy = modifiedBy;
     }
 
+    public String getModifiedByAccountId() {
+        return modifiedByAccountId;
+    }
+
+    public void setModifiedByAccountId(String modifiedByAccountId) {
+        this.modifiedByAccountId = modifiedByAccountId;
+    }
+
+    public String getModifiedByDeviceId() {
+        return modifiedByDeviceId;
+    }
+
+    public void setModifiedByDeviceId(String modifiedByDeviceId) {
+        this.modifiedByDeviceId = modifiedByDeviceId;
+    }
+
+    public Long getModifiedAfter() {
+        return modifiedAfter;
+    }
+
+    public void setModifiedAfter(Long modifiedAfter) {
+        this.modifiedAfter = modifiedAfter;
+    }
+
+    public Long getModifiedBefore() {
+        return modifiedBefore;
+    }
+
+    public void setModifiedBefore(Long modifiedBefore) {
+        this.modifiedBefore = modifiedBefore;
+    }
+
+    public Long getMinSize() {
+        return minSize;
+    }
+
+    public void setMinSize(Long minSize) {
+        this.minSize = minSize;
+    }
+
+    public Long getMaxSize() {
+        return maxSize;
+    }
+
+    public void setMaxSize(Long maxSize) {
+        this.maxSize = maxSize;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getSortField() {
+        return sortField;
+    }
+
+    public void setSortField(String sortField) {
+        this.sortField = sortField;
+    }
+
+    public boolean isSortDescending() {
+        return sortDescending;
+    }
+
+    public void setSortDescending(boolean sortDescending) {
+        this.sortDescending = sortDescending;
+    }
+
     public Set<String> getTags() {
         return Collections.unmodifiableSet(tags);
     }
@@ -272,6 +371,15 @@ public class FileInfoCriteria {
         return !keyWords.isEmpty()
                 || StringUtils.isNotBlank(extension)
                 || StringUtils.isNotBlank(modifiedBy)
+                || StringUtils.isNotBlank(modifiedByAccountId)
+                || StringUtils.isNotBlank(modifiedByDeviceId)
+                || modifiedAfter != null
+                || modifiedBefore != null
+                || minSize != null
+                || maxSize != null
+                || StringUtils.isNotBlank(category)
+                || StringUtils.isNotBlank(title)
+                || StringUtils.isNotBlank(author)
                 || !tags.isEmpty();
     }
 
@@ -279,7 +387,12 @@ public class FileInfoCriteria {
     public String toString() {
         return "FileInfoCriteria [domains=" + domains + ", type=" + type
             + ", path=" + path + ", keyWords=" + keyWords + ", recursive="
-            + recursive + ", maxResults=" + maxResults + "]";
+            + recursive + ", maxResults=" + maxResults + ", modifiedAfter="
+            + modifiedAfter + ", modifiedBefore=" + modifiedBefore + ", minSize="
+            + minSize + ", maxSize=" + maxSize + ", modifiedByAccountId="
+            + modifiedByAccountId + ", modifiedByDeviceId=" + modifiedByDeviceId
+            + ", category=" + category + ", title=" + title + ", author="
+            + author + "]";
     }
 
     public enum Type {

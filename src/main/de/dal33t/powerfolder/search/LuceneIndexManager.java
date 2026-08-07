@@ -34,12 +34,17 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Waiter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -71,6 +76,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -93,7 +99,12 @@ public class LuceneIndexManager extends PFComponent {
     /** Searchable fields used by all query methods. */
     private static final String[] SEARCH_FIELDS =
             {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
-             "modifiedByDeviceName", "extensionExact", "tags"};
+             "modifiedByDeviceName", "extensionExact", "tags", "docTitle", "docAuthor"};
+
+    private static final String[] PHRASE_FIELDS =
+            {"fileName", "relativeName", CONTENT_FIELD};
+
+    private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
 
     /**
      * PFS-5652: fields that get the infix wildcard ("*token*"). Restricted to the name/path and editor
@@ -735,7 +746,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 13;
+    private static final int INDEX_FORMAT_VERSION = 14;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -759,7 +770,12 @@ public class LuceneIndexManager extends PFComponent {
         long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
         doc.add(new LongPoint("modifiedDate", modifiedDate));
         doc.add(new StoredField("modifiedDate", modifiedDate));
+        doc.add(new NumericDocValuesField("modifiedDate", modifiedDate));
+        doc.add(new LongPoint("size", fileInfo.getSize()));
         doc.add(new StoredField("size", fileInfo.getSize()));
+        doc.add(new NumericDocValuesField("size", fileInfo.getSize()));
+        doc.add(new SortedDocValuesField("nameSort",
+                new BytesRef(fileName.toLowerCase(Locale.ROOT))));
         doc.add(new StoredField("version", fileInfo.getVersion()));
         if (StringUtils.isNotBlank(fileInfo.getOID())) {
             doc.add(new StoredField("oid", fileInfo.getOID()));
@@ -806,6 +822,10 @@ public class LuceneIndexManager extends PFComponent {
         doc.add(new StringField("isDir",
                 fileInfo.isDiretory() ? "true" : "false", Field.Store.YES));
 
+        String category = fileInfo.isDiretory()
+                ? FileCategoryMapper.FOLDER : FileCategoryMapper.categoryOf(extension);
+        doc.add(new StringField("category", category, Field.Store.YES));
+
         return doc;
     }
 
@@ -822,10 +842,12 @@ public class LuceneIndexManager extends PFComponent {
 
             if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled() && isContentExtractable(fileInfo)) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
-                    String content = extractContentTikaOnly(fileInfo);
+                    Metadata metadata = new Metadata();
+                    String content = extractContentTikaOnly(fileInfo, metadata);
                     throttleExtraction();
                     if (content != null && !content.isBlank()) {
                         doc.add(new TextField("content", content, Field.Store.NO));
+                        addMetadataFields(doc, metadata);
                     } else {
                         contentQueue.add(fileInfo);
                     }
@@ -851,7 +873,8 @@ public class LuceneIndexManager extends PFComponent {
         if (fileInfo.isDiretory()) return;
         if (!isContentExtractable(fileInfo)) return;
         try {
-            String content = extractContent(fileInfo);
+            Metadata metadata = new Metadata();
+            String content = extractContent(fileInfo, metadata);
             if (content == null || content.isBlank()) {
                 if (isFine()) {
                     logFine(folder + ": No content extracted for " + fileInfo);
@@ -867,6 +890,7 @@ public class LuceneIndexManager extends PFComponent {
             }
             Document doc = buildDocument(fileInfo);
             doc.add(new TextField("content", content, Field.Store.NO));
+            addMetadataFields(doc, metadata);
             writer.updateDocument(
                     new Term("docId", buildDocId(fileInfo)), doc);
             if (isFine()) {
@@ -894,7 +918,28 @@ public class LuceneIndexManager extends PFComponent {
         return configured != null && configured.toLowerCase(Locale.ROOT).contains(ext.toLowerCase(Locale.ROOT));
     }
 
-    private String extractContentTikaOnly(FileInfo fileInfo) {
+    private static void addMetadataFields(Document doc, Metadata metadata) {
+        if (metadata == null) {
+            return;
+        }
+        String title = metadata.get(TikaCoreProperties.TITLE);
+        if (StringUtils.isNotBlank(title)) {
+            doc.add(new TextField("docTitle", title, Field.Store.YES));
+        }
+        String author = metadata.get(TikaCoreProperties.CREATOR);
+        if (StringUtils.isNotBlank(author)) {
+            doc.add(new TextField("docAuthor", author, Field.Store.YES));
+        }
+    }
+
+    private static void seedFilename(Metadata metadata, Path filePath) {
+        Path name = filePath.getFileName();
+        if (name != null) {
+            metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name.toString());
+        }
+    }
+
+    private String extractContentTikaOnly(FileInfo fileInfo, Metadata metadata) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             if (isFine()) {
@@ -904,9 +949,10 @@ public class LuceneIndexManager extends PFComponent {
             return null;
         }
 
+        seedFilename(metadata, filePath);
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
             BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
-            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
+            getSharedParser().parse(stream, handler, metadata, new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 if (!hasEncodingIssues(text)) return text;
@@ -952,15 +998,6 @@ public class LuceneIndexManager extends PFComponent {
      * parser; without the hint an RTF (and other extension-typed formats) can
      * be misdetected as text/plain and then fail charset detection. PF-1930.
      */
-    private static Metadata filenameHint(Path filePath) {
-        Metadata metadata = new Metadata();
-        Path name = filePath.getFileName();
-        if (name != null) {
-            metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name.toString());
-        }
-        return metadata;
-    }
-
     /**
      * Fallback RTF-to-text extraction using the JDK's built-in
      * {@link RTFEditorKit}. Used when Tika cannot detect the character encoding
@@ -984,7 +1021,7 @@ public class LuceneIndexManager extends PFComponent {
         }
     }
 
-    private String extractContent(FileInfo fileInfo) {
+    private String extractContent(FileInfo fileInfo, Metadata metadata) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             if (isFine()) {
@@ -1008,8 +1045,9 @@ public class LuceneIndexManager extends PFComponent {
         // 1) Tika text extraction (shared parser, no per-file init cost)
         BodyContentHandler handler =
                 new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
+        seedFilename(metadata, filePath);
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
-            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
+            getSharedParser().parse(stream, handler, metadata, new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 tikaText = text;
@@ -1214,7 +1252,8 @@ public class LuceneIndexManager extends PFComponent {
      */
     public List<FileInfo> searchFiles(String queryText, int maxResults) {
         return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
+                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES,
+                null, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -1230,7 +1269,8 @@ public class LuceneIndexManager extends PFComponent {
                                       boolean includeDeleted) {
         return doSearch(queryText, maxResults,
                 includeDeleted ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
+                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES,
+                null, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -1239,7 +1279,8 @@ public class LuceneIndexManager extends PFComponent {
     public List<FileInfo> searchDeletedFiles(String queryText,
                                              int maxResults) {
         return doSearch(queryText, maxResults, DeletedFilter.ONLY,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
+                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES,
+                null, null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -1259,11 +1300,96 @@ public class LuceneIndexManager extends PFComponent {
 
         return doSearch(queryText, maxResults, deletedFilter,
                 criteria.getPath(), criteria.getExtension(), criteria.getModifiedBy(),
-                criteria.getTags(), criteria.getType());
+                criteria.getTags(), criteria.getType(),
+                criteria.getModifiedAfter(), criteria.getModifiedBefore(),
+                criteria.getMinSize(), criteria.getMaxSize(),
+                criteria.getModifiedByAccountId(), criteria.getModifiedByDeviceId(),
+                criteria.getCategory(),
+                buildSort(criteria.getSortField(), criteria.isSortDescending()),
+                criteria.getTitle(), criteria.getAuthor());
+    }
+
+    public Map<String, Integer> suggestTerms(String field, String prefix) {
+        Map<String, Integer> counts = new HashMap<>();
+        if (StringUtils.isBlank(field)) {
+            return counts;
+        }
+        String pfx = prefix == null ? "" : prefix.toLowerCase(Locale.ROOT);
+        IndexSearcher searcher = null;
+        try {
+            searcher = searcherManager.acquire();
+            IndexReader reader = searcher.getIndexReader();
+            for (LeafReaderContext leaf : reader.leaves()) {
+                Terms terms = leaf.reader().terms(field);
+                if (terms == null) {
+                    continue;
+                }
+                TermsEnum termsEnum = terms.iterator();
+                if (!pfx.isEmpty()) {
+                    if (termsEnum.seekCeil(new BytesRef(pfx)) == TermsEnum.SeekStatus.END) {
+                        continue;
+                    }
+                    BytesRef term = termsEnum.term();
+                    while (term != null) {
+                        String value = term.utf8ToString();
+                        if (!value.startsWith(pfx)) {
+                            break;
+                        }
+                        counts.merge(value, termsEnum.docFreq(), Integer::sum);
+                        term = termsEnum.next();
+                    }
+                } else {
+                    BytesRef term;
+                    while ((term = termsEnum.next()) != null) {
+                        counts.merge(term.utf8ToString(), termsEnum.docFreq(), Integer::sum);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logWarning(folder + ": Term suggest failed for field '" + field + "': " + e.getMessage());
+        } finally {
+            if (searcher != null) {
+                try {
+                    searcherManager.release(searcher);
+                } catch (IOException e) {
+                    logWarning(folder + ": Failed to release searcher: " + e.getMessage());
+                }
+            }
+        }
+        return counts;
     }
 
     /** Controls how the deleted flag is handled in searches. */
     private enum DeletedFilter { INCLUDE, EXCLUDE, ONLY }
+
+    private static Query fieldKeywordQuery(String field, String value) {
+        String[] tokens = value.toLowerCase(Locale.ROOT).trim().split("\\s+");
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        boolean any = false;
+        for (String token : tokens) {
+            if (!token.isEmpty()) {
+                builder.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.MUST);
+                any = true;
+            }
+        }
+        return any ? builder.build() : null;
+    }
+
+    private static Sort buildSort(String sortField, boolean descending) {
+        if (StringUtils.isBlank(sortField)) {
+            return null;
+        }
+        switch (sortField.toLowerCase(Locale.ROOT).trim()) {
+            case "date":
+                return new Sort(new SortField("modifiedDate", SortField.Type.LONG, descending));
+            case "size":
+                return new Sort(new SortField("size", SortField.Type.LONG, descending));
+            case "name":
+                return new Sort(new SortField("nameSort", SortField.Type.STRING, descending));
+            default:
+                return null;
+        }
+    }
 
     /**
      * Core search implementation. Builds a combined Lucene query that
@@ -1292,7 +1418,12 @@ public class LuceneIndexManager extends PFComponent {
                                     DeletedFilter deletedFilter,
                                     String directory, String extension,
                                     String modifiedBy, Collection<String> tags,
-                                    FileInfoCriteria.Type type) {
+                                    FileInfoCriteria.Type type,
+                                    Long modifiedAfter, Long modifiedBefore,
+                                    Long minSize, Long maxSize,
+                                    String modifiedByAccountId, String modifiedByDeviceId,
+                                    String category, Sort sort,
+                                    String title, String author) {
 
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
@@ -1362,8 +1493,53 @@ public class LuceneIndexManager extends PFComponent {
                 }
             }
 
+            if (modifiedAfter != null || modifiedBefore != null) {
+                long lower = modifiedAfter != null ? modifiedAfter : Long.MIN_VALUE;
+                long upper = modifiedBefore != null ? modifiedBefore : Long.MAX_VALUE;
+                bqBuilder.add(LongPoint.newRangeQuery("modifiedDate", lower, upper),
+                        BooleanClause.Occur.MUST);
+            }
+
+            if (minSize != null || maxSize != null) {
+                long lower = minSize != null ? minSize : 0L;
+                long upper = maxSize != null ? maxSize : Long.MAX_VALUE;
+                bqBuilder.add(LongPoint.newRangeQuery("size", lower, upper),
+                        BooleanClause.Occur.MUST);
+            }
+
+            if (StringUtils.isNotBlank(modifiedByAccountId)) {
+                bqBuilder.add(new TermQuery(new Term("modifiedByAccountId", modifiedByAccountId.trim())),
+                        BooleanClause.Occur.MUST);
+            }
+
+            if (StringUtils.isNotBlank(modifiedByDeviceId)) {
+                bqBuilder.add(new TermQuery(new Term("modifiedByDeviceId", modifiedByDeviceId.trim())),
+                        BooleanClause.Occur.MUST);
+            }
+
+            if (StringUtils.isNotBlank(category)) {
+                bqBuilder.add(new TermQuery(new Term("category", category.toLowerCase(Locale.ROOT).trim())),
+                        BooleanClause.Occur.MUST);
+            }
+
+            if (StringUtils.isNotBlank(title)) {
+                Query titleQuery = fieldKeywordQuery("docTitle", title);
+                if (titleQuery != null) {
+                    bqBuilder.add(titleQuery, BooleanClause.Occur.MUST);
+                }
+            }
+
+            if (StringUtils.isNotBlank(author)) {
+                Query authorQuery = fieldKeywordQuery("docAuthor", author);
+                if (authorQuery != null) {
+                    bqBuilder.add(authorQuery, BooleanClause.Occur.MUST);
+                }
+            }
+
             Query finalQuery = bqBuilder.build();
-            TopDocs topDocs = searcher.search(finalQuery, maxResults);
+            TopDocs topDocs = sort != null
+                    ? searcher.search(finalQuery, maxResults, sort)
+                    : searcher.search(finalQuery, maxResults);
 
             if (isFine()) {
                 logFine(folder + ": Found " + topDocs.totalHits + " for query '" + queryText + "'");
@@ -1404,17 +1580,27 @@ public class LuceneIndexManager extends PFComponent {
      *         sanitization
      */
     private Query buildQuery(String queryText) {
+        List<String> phrases = extractPhrases(queryText);
+
         String sanitized = queryText.trim().toLowerCase(Locale.ROOT)
                 .replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ")
                 .replaceAll("\\s+", " ")
                 .trim();
 
-        if (sanitized.isEmpty()) return null;
+        if (sanitized.isEmpty() && phrases.isEmpty()) return null;
 
-        String[] tokens = sanitized.split("\\s+");
+        String[] tokens = sanitized.isEmpty() ? new String[0] : sanitized.split("\\s+");
         BooleanQuery.Builder allTokens = new BooleanQuery.Builder();
+        boolean hasPositive = false;
 
-        for (String token : tokens) {
+        for (String rawToken : tokens) {
+            String token = rawToken;
+
+            boolean negated = false;
+            while (token.startsWith("-")) {
+                negated = true;
+                token = token.substring(1);
+            }
             // PFS-5306: The StandardTokenizer used for indexing never emits a token ending in a dot
             // (a dot only survives between alphanumerics). A trailing dot typed by the user - e.g. the
             // tag "Stoffliste 29.7." - would therefore match nothing and, as a MUST clause, kill the
@@ -1426,34 +1612,89 @@ public class LuceneIndexManager extends PFComponent {
                 continue;
             }
 
-            BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
-
-            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f);
-
-            // Accent-folded variant (ö -> o, ä -> a, etc.)
-            String folded = foldAccents(token);
-            if (!folded.equals(token) && !folded.isEmpty()) {
-                addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f);
+            if (negated) {
+                BooleanQuery.Builder exclusion = new BooleanQuery.Builder();
+                addTokenQueries(exclusion, token, 1.0f, 1.0f, 1.0f, false);
+                exclusion.setMinimumNumberShouldMatch(1);
+                allTokens.add(exclusion.build(), BooleanClause.Occur.MUST_NOT);
+                continue;
             }
 
-            // Accent-stripped variant (ö removed entirely) — handles
-            // documents where extraction lost characters completely
+            BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
+
+            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f, true);
+
+            String folded = foldAccents(token);
+            if (!folded.equals(token) && !folded.isEmpty()) {
+                addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, false);
+            }
+
             String stripped = stripAccents(token);
             if (!stripped.equals(token) && !stripped.equals(folded) && !stripped.isEmpty()) {
-                addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f);
+                addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, false);
             }
 
             fieldDisjunction.setMinimumNumberShouldMatch(1);
             allTokens.add(fieldDisjunction.build(), BooleanClause.Occur.MUST);
+            hasPositive = true;
         }
 
-        return allTokens.build();
+        for (String phrase : phrases) {
+            Query phraseQuery = buildPhraseQuery(phrase);
+            if (phraseQuery != null) {
+                allTokens.add(phraseQuery, BooleanClause.Occur.MUST);
+                hasPositive = true;
+            }
+        }
+
+        BooleanQuery built = allTokens.build();
+        if (hasPositive) {
+            return built;
+        }
+        if (built.clauses().isEmpty()) {
+            return null;
+        }
+        BooleanQuery.Builder wrapped = new BooleanQuery.Builder();
+        wrapped.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
+        for (BooleanClause clause : built.clauses()) {
+            wrapped.add(clause);
+        }
+        return wrapped.build();
+    }
+
+    private static List<String> extractPhrases(String queryText) {
+        List<String> phrases = new ArrayList<>();
+        Matcher m = PHRASE_PATTERN.matcher(queryText);
+        while (m.find()) {
+            String phrase = m.group(1).trim().toLowerCase(Locale.ROOT);
+            if (!phrase.isEmpty() && phrase.contains(" ")) {
+                phrases.add(phrase);
+            }
+        }
+        return phrases;
+    }
+
+    private Query buildPhraseQuery(String phrase) {
+        String[] words = phrase.split("\\s+");
+        if (words.length == 0) {
+            return null;
+        }
+        BooleanQuery.Builder disjunction = new BooleanQuery.Builder();
+        for (String field : PHRASE_FIELDS) {
+            PhraseQuery.Builder pb = new PhraseQuery.Builder();
+            for (String word : words) {
+                pb.add(new Term(field, word));
+            }
+            disjunction.add(pb.build(), BooleanClause.Occur.SHOULD);
+        }
+        disjunction.setMinimumNumberShouldMatch(1);
+        return disjunction.build();
     }
 
     private void addTokenQueries(BooleanQuery.Builder builder,
                                  String token,
                                  float exactBoost, float prefixBoost,
-                                 float wildcardBoost) {
+                                 float wildcardBoost, boolean fuzzy) {
         for (String field : SEARCH_FIELDS) {
             builder.add(
                     new BoostQuery(new TermQuery(
@@ -1473,6 +1714,15 @@ public class LuceneIndexManager extends PFComponent {
                         new BoostQuery(new WildcardQuery(
                                 new Term(field, "*" + token + "*")),
                                 wildcardBoost),
+                        BooleanClause.Occur.SHOULD);
+            }
+
+            if (fuzzy && token.length() >= 4 && INFIX_WILDCARD_FIELDS.contains(field)) {
+                int maxEdits = token.length() >= 6 ? 2 : 1;
+                builder.add(
+                        new BoostQuery(new FuzzyQuery(
+                                new Term(field, token), maxEdits),
+                                wildcardBoost * 0.5f),
                         BooleanClause.Occur.SHOULD);
             }
         }

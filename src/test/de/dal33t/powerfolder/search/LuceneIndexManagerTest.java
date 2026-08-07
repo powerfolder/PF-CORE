@@ -21,13 +21,17 @@ package de.dal33t.powerfolder.search;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
+import java.util.Map;
 
 public class LuceneIndexManagerTest extends ControllerTestCase {
 
@@ -222,6 +226,280 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // -----------------------------------------------------------------------
     // Multiple index + search cycles
     // -----------------------------------------------------------------------
+
+    public void testSearchByModifiedDateRange() throws Exception {
+        Folder folder = getFolder();
+        Path oldFile = TestHelper.createRandomFile(folder.getLocalBase(), "OldDoc.pdf");
+        Path newFile = TestHelper.createRandomFile(folder.getLocalBase(), "NewDoc.pdf");
+
+        long cutoff = 1_500_000_000_000L;
+        Files.setLastModifiedTime(oldFile, FileTime.fromMillis(1_400_000_000_000L));
+        Files.setLastModifiedTime(newFile, FileTime.fromMillis(1_600_000_000_000L));
+
+        scanFolder(folder);
+        indexAndWait();
+
+        FileInfoCriteria after = dateRangeCriteria();
+        after.setModifiedAfter(cutoff);
+        List<FileInfo> afterResults = getIndexManager().searchFiles(after);
+        assertEquals(1, afterResults.size());
+        assertEquals("NewDoc.pdf", afterResults.get(0).getFilenameOnly());
+
+        FileInfoCriteria before = dateRangeCriteria();
+        before.setModifiedBefore(cutoff);
+        List<FileInfo> beforeResults = getIndexManager().searchFiles(before);
+        assertEquals(1, beforeResults.size());
+        assertEquals("OldDoc.pdf", beforeResults.get(0).getFilenameOnly());
+
+        FileInfoCriteria between = dateRangeCriteria();
+        between.setModifiedAfter(1_350_000_000_000L);
+        between.setModifiedBefore(1_450_000_000_000L);
+        List<FileInfo> betweenResults = getIndexManager().searchFiles(between);
+        assertEquals(1, betweenResults.size());
+        assertEquals("OldDoc.pdf", betweenResults.get(0).getFilenameOnly());
+    }
+
+    public void testSearchByModifiedDateInclusiveBoundary() throws Exception {
+        Folder folder = getFolder();
+        Path file = TestHelper.createRandomFile(folder.getLocalBase(), "Boundary.pdf");
+
+        long exact = 1_500_000_000_000L;
+        Files.setLastModifiedTime(file, FileTime.fromMillis(exact));
+
+        scanFolder(folder);
+        indexAndWait();
+
+        FileInfoCriteria atLower = dateRangeCriteria();
+        atLower.setModifiedAfter(exact);
+        assertEquals(1, getIndexManager().searchFiles(atLower).size());
+
+        FileInfoCriteria atUpper = dateRangeCriteria();
+        atUpper.setModifiedBefore(exact);
+        assertEquals(1, getIndexManager().searchFiles(atUpper).size());
+
+        FileInfoCriteria justAfter = dateRangeCriteria();
+        justAfter.setModifiedAfter(exact + 1);
+        assertEquals(0, getIndexManager().searchFiles(justAfter).size());
+
+        FileInfoCriteria justBefore = dateRangeCriteria();
+        justBefore.setModifiedBefore(exact - 1);
+        assertEquals(0, getIndexManager().searchFiles(justBefore).size());
+    }
+
+    public void testSearchByModifiedDateCombinedWithKeyword() throws Exception {
+        Folder folder = getFolder();
+        Path oldReport = TestHelper.createRandomFile(folder.getLocalBase(), "Report_Old.pdf");
+        Path newReport = TestHelper.createRandomFile(folder.getLocalBase(), "Report_New.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Invoice_New.pdf");
+
+        long cutoff = 1_500_000_000_000L;
+        Files.setLastModifiedTime(oldReport, FileTime.fromMillis(1_400_000_000_000L));
+        Files.setLastModifiedTime(newReport, FileTime.fromMillis(1_600_000_000_000L));
+
+        scanFolder(folder);
+        indexAndWait();
+
+        FileInfoCriteria criteria = dateRangeCriteria();
+        criteria.addKeyWord("report");
+        criteria.setModifiedAfter(cutoff);
+
+        List<FileInfo> results = getIndexManager().searchFiles(criteria);
+        assertEquals(1, results.size());
+        assertEquals("Report_New.pdf", results.get(0).getFilenameOnly());
+    }
+
+    public void testSearchBySizeRange() throws Exception {
+        Folder folder = getFolder();
+        Path small = folder.getLocalBase().resolve("small.bin");
+        Path big = folder.getLocalBase().resolve("big.bin");
+        Files.write(small, new byte[100]);
+        Files.write(big, new byte[50_000]);
+
+        scanFolder(folder);
+        indexAndWait();
+
+        FileInfoCriteria minCrit = dateRangeCriteria();
+        minCrit.setMinSize(1_000L);
+        List<FileInfo> large = getIndexManager().searchFiles(minCrit);
+        assertEquals(1, large.size());
+        assertEquals("big.bin", large.get(0).getFilenameOnly());
+
+        FileInfoCriteria maxCrit = dateRangeCriteria();
+        maxCrit.setMaxSize(1_000L);
+        List<FileInfo> smallRes = getIndexManager().searchFiles(maxCrit);
+        assertEquals(1, smallRes.size());
+        assertEquals("small.bin", smallRes.get(0).getFilenameOnly());
+
+        FileInfoCriteria between = dateRangeCriteria();
+        between.setMinSize(50L);
+        between.setMaxSize(200L);
+        List<FileInfo> betweenRes = getIndexManager().searchFiles(between);
+        assertEquals(1, betweenRes.size());
+        assertEquals("small.bin", betweenRes.get(0).getFilenameOnly());
+
+        FileInfoCriteria none = dateRangeCriteria();
+        none.setMinSize(1_000_000L);
+        assertEquals(0, getIndexManager().searchFiles(none).size());
+    }
+
+    public void testSearchByCategory() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "holiday.jpg");
+        TestHelper.createRandomFile(folder.getLocalBase(), "clip.mp4");
+        TestHelper.createRandomFile(folder.getLocalBase(), "report.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        FileInfoCriteria img = dateRangeCriteria();
+        img.setCategory("image");
+        List<FileInfo> images = getIndexManager().searchFiles(img);
+        assertEquals(1, images.size());
+        assertEquals("holiday.jpg", images.get(0).getFilenameOnly());
+
+        FileInfoCriteria vid = dateRangeCriteria();
+        vid.setCategory("video");
+        assertEquals(1, getIndexManager().searchFiles(vid).size());
+
+        FileInfoCriteria doc = dateRangeCriteria();
+        doc.setCategory("document");
+        assertEquals(1, getIndexManager().searchFiles(doc).size());
+
+        FileInfoCriteria audio = dateRangeCriteria();
+        audio.setCategory("audio");
+        assertEquals(0, getIndexManager().searchFiles(audio).size());
+    }
+
+    public void testSortBySizeDescendingAndNameAscending() throws Exception {
+        Folder folder = getFolder();
+        Files.write(folder.getLocalBase().resolve("banana.bin"), new byte[300]);
+        Files.write(folder.getLocalBase().resolve("apple.bin"), new byte[100]);
+        Files.write(folder.getLocalBase().resolve("cherry.bin"), new byte[200]);
+        scanFolder(folder);
+        indexAndWait();
+
+        FileInfoCriteria sizeDesc = dateRangeCriteria();
+        sizeDesc.setSortField("size");
+        sizeDesc.setSortDescending(true);
+        List<FileInfo> bySize = getIndexManager().searchFiles(sizeDesc);
+        assertEquals(3, bySize.size());
+        assertEquals("banana.bin", bySize.get(0).getFilenameOnly());
+        assertEquals("cherry.bin", bySize.get(1).getFilenameOnly());
+        assertEquals("apple.bin", bySize.get(2).getFilenameOnly());
+
+        FileInfoCriteria nameAsc = dateRangeCriteria();
+        nameAsc.setSortField("name");
+        List<FileInfo> byName = getIndexManager().searchFiles(nameAsc);
+        assertEquals(3, byName.size());
+        assertEquals("apple.bin", byName.get(0).getFilenameOnly());
+        assertEquals("banana.bin", byName.get(1).getFilenameOnly());
+        assertEquals("cherry.bin", byName.get(2).getFilenameOnly());
+    }
+
+    public void testSortByDateDescending() throws Exception {
+        Folder folder = getFolder();
+        Path older = folder.getLocalBase().resolve("older.bin");
+        Path newer = folder.getLocalBase().resolve("newer.bin");
+        Files.write(older, new byte[10]);
+        Files.write(newer, new byte[10]);
+        Files.setLastModifiedTime(older, FileTime.fromMillis(1_400_000_000_000L));
+        Files.setLastModifiedTime(newer, FileTime.fromMillis(1_600_000_000_000L));
+        scanFolder(folder);
+        indexAndWait();
+
+        FileInfoCriteria dateDesc = dateRangeCriteria();
+        dateDesc.setSortField("date");
+        dateDesc.setSortDescending(true);
+        List<FileInfo> byDate = getIndexManager().searchFiles(dateDesc);
+        assertEquals(2, byDate.size());
+        assertEquals("newer.bin", byDate.get(0).getFilenameOnly());
+        assertEquals("older.bin", byDate.get(1).getFilenameOnly());
+    }
+
+    public void testSuggestTermsByExtensionRankedAndPrefixed() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "a.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "b.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "c.docx");
+        scanFolder(folder);
+        indexAndWait();
+
+        Map<String, Integer> pdf = getIndexManager().suggestTerms("extensionExact", "pd");
+        assertEquals(Integer.valueOf(2), pdf.get("pdf"));
+        assertFalse(pdf.containsKey("docx"));
+
+        Map<String, Integer> all = getIndexManager().suggestTerms("extensionExact", "");
+        assertTrue(all.containsKey("pdf"));
+        assertTrue(all.containsKey("docx"));
+
+        assertTrue(getIndexManager().suggestTerms("extensionExact", "zzz").isEmpty());
+    }
+
+    private FileInfoCriteria dateRangeCriteria() {
+        FileInfoCriteria criteria = new FileInfoCriteria();
+        criteria.addMySelf(getFolder());
+        criteria.setRecursive(true);
+        criteria.setType(FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
+        criteria.setIncludeDeleted(false);
+        return criteria;
+    }
+
+    public void testPhraseSearchRespectsWordOrder() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Annual Financial Report Draft.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Financial Report Annual Draft.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        List<FileInfo> exact = getIndexManager().searchFiles("\"annual financial report\"", 10);
+        assertEquals(1, exact.size());
+        assertEquals("Annual Financial Report Draft.pdf", exact.get(0).getFilenameOnly());
+
+        List<FileInfo> loose = getIndexManager().searchFiles("annual financial report", 10);
+        assertEquals(2, loose.size());
+
+        assertEquals(0, getIndexManager().searchFiles("\"report financial\"", 10).size());
+    }
+
+    public void testFuzzyTypoTolerance() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Report Summary.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertTrue("typo 'mueler' should still find Mueller",
+                getIndexManager().searchFiles("mueler", 10).size() >= 1);
+        assertTrue("typo 'reprot' should still find Report",
+                getIndexManager().searchFiles("reprot", 10).size() >= 1);
+        assertEquals("nonsense must not match",
+                0, getIndexManager().searchFiles("xyzqwk", 10).size());
+    }
+
+    public void testNegationExcludesTerm() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Report_Annual.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Report_Monthly.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertEquals(2, getIndexManager().searchFiles("report", 10).size());
+
+        List<FileInfo> excluded = getIndexManager().searchFiles("report -annual", 10);
+        assertEquals(1, excluded.size());
+        assertEquals("Report_Monthly.pdf", excluded.get(0).getFilenameOnly());
+    }
+
+    public void testNegationOnlyReturnsEverythingElse() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "KeepMe.txt");
+        TestHelper.createRandomFile(folder.getLocalBase(), "DropVideo.txt");
+        scanFolder(folder);
+        indexAndWait();
+
+        List<FileInfo> results = getIndexManager().searchFiles("-dropvideo", 10);
+        assertEquals(1, results.size());
+        assertEquals("KeepMe.txt", results.get(0).getFilenameOnly());
+    }
 
     public void testIncrementalIndexing() throws Exception {
         Folder folder = getFolder();
