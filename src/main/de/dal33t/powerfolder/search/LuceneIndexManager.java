@@ -95,6 +95,8 @@ public class LuceneIndexManager extends PFComponent {
             {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
              "modifiedByDeviceName", "extensionExact", "tags"};
 
+    private static final Pattern BINARY_NOISE_PATTERN = Pattern.compile("[A-Za-z0-9+/=_-]{32,}");
+
     /**
      * PFS-5652: fields that get the infix wildcard ("*token*"). Restricted to the name/path and editor
      * fields where mid-token matching actually helps (e.g. finding "Müller" inside an editor display name
@@ -825,7 +827,7 @@ public class LuceneIndexManager extends PFComponent {
                     String content = extractContentTikaOnly(fileInfo);
                     throttleExtraction();
                     if (content != null && !content.isBlank()) {
-                        doc.add(new TextField("content", content, Field.Store.NO));
+                        doc.add(new TextField("content", stripBinaryNoise(content), Field.Store.NO));
                     } else {
                         contentQueue.add(fileInfo);
                     }
@@ -866,7 +868,7 @@ public class LuceneIndexManager extends PFComponent {
                 return;
             }
             Document doc = buildDocument(fileInfo);
-            doc.add(new TextField("content", content, Field.Store.NO));
+            doc.add(new TextField("content", stripBinaryNoise(content), Field.Store.NO));
             writer.updateDocument(
                     new Term("docId", buildDocId(fileInfo)), doc);
             if (isFine()) {
@@ -884,6 +886,13 @@ public class LuceneIndexManager extends PFComponent {
     // ------------------------------------------------------------------------
     // Content extraction (Tika + encoding repair + OCR)
     // ------------------------------------------------------------------------
+
+    static String stripBinaryNoise(String content) {
+        if (content == null || content.isEmpty()) {
+            return content;
+        }
+        return BINARY_NOISE_PATTERN.matcher(content).replaceAll(" ");
+    }
 
     private boolean isContentExtractable(FileInfo fileInfo) {
         String ext = fileInfo.getExtension();
@@ -1460,10 +1469,12 @@ public class LuceneIndexManager extends PFComponent {
                             new Term(field, token)), exactBoost),
                     BooleanClause.Occur.SHOULD);
 
-            builder.add(
-                    new BoostQuery(new PrefixQuery(
-                            new Term(field, token)), prefixBoost),
-                    BooleanClause.Occur.SHOULD);
+            if (!CONTENT_FIELD.equals(field)) {
+                builder.add(
+                        new BoostQuery(new PrefixQuery(
+                                new Term(field, token)), prefixBoost),
+                        BooleanClause.Occur.SHOULD);
+            }
 
             // PFS-5652: infix wildcard only on the name/path fields (see INFIX_WILDCARD_FIELDS). On the
             // full-text content field it would scan the whole term dictionary; on the other fields it just
