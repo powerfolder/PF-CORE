@@ -74,6 +74,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     public static final String PROPERTYNAME_OTP = "otp";
     public static final String PROPERTYNAME_LDAPDN = "ldapDN";
     public static final String PROPERTYNAME_SHIBBOLETH_PERSISTENT_ID = "shibbolethPersistentID";
+    public static final String PROPERTYNAME_OIDC_SUBJECT = "oidcSubject";
     public static final String PROPERTYNAME_LANGUAGE = "language";
     public static final String PROPERTYNAME_PERMISSIONS = "permissions";
     public static final String PROPERTYNAME_REGISTER_DATE = "registerDate";
@@ -130,6 +131,11 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Index(name = "IDX_SHIB_PID")
     @Column(length = 2047)
     private String shibbolethPersistentID;
+
+    // PFS-5503: Microsoft Entra ID stable external identity entra:{tid}:{oid}.
+    @Index(name = "IDX_ENTRA_OID")
+    @Column(length = 511)
+    private String oidcSubject;
     private Date registerDate;
     private Date lastLoginDate;
     @ManyToOne
@@ -905,6 +911,14 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.shibbolethPersistentID = shibbolethPersistentID;
     }
 
+    public String getOidcSubject() {
+        return oidcSubject;
+    }
+
+    public void setOidcSubject(String oidcSubject) {
+        this.oidcSubject = oidcSubject;
+    }
+
     public Date getRegisterDate() {
         return registerDate;
     }
@@ -1087,6 +1101,10 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     public boolean authByLDAP() {
         return StringUtils.isNotBlank(ldapDN);
+    }
+
+    public boolean authByOIDC() {
+        return StringUtils.isNotBlank(oidcSubject);
     }
 
     public boolean authByRADIUS() {
@@ -1584,6 +1602,10 @@ public class Account implements Serializable, D2DObject, Auditable {
 
         if (isBlank(this.shibbolethPersistentID)) {
             this.shibbolethPersistentID = account.shibbolethPersistentID;
+        }
+
+        if (isBlank(this.oidcSubject)) {
+            this.oidcSubject = account.oidcSubject;
         }
 
         // Add permissions
