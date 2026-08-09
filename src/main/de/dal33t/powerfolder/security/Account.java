@@ -1113,7 +1113,7 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     public boolean authByDatabase() {
-        return !authByLDAP() && !authByRADIUS() && !authByShibboleth();
+        return !authByLDAP() && !authByRADIUS() && !authByShibboleth() && !authByOIDC();
     }
 
     /**
@@ -1129,6 +1129,8 @@ public class Account implements Serializable, D2DObject, Auditable {
             return "ldap";
         } else if (authByRADIUS()) {
             return "radius";
+        } else if (authByOIDC()) {
+            return "entra";
         } else if (authByDatabase()) {
             return "database";
         } else {
