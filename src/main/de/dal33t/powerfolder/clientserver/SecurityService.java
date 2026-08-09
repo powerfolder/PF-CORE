@@ -317,7 +317,7 @@ public interface SecurityService {
      * @param groupOidsToAssign
      *            OIDs of existing groups (each must already hold a permission
      *            on the folder) to add the requester to; may be null/empty.
-     * @param managerComment
+     * @param folderAdminComment
      *            optional comment of the processing manager, may be null.
      * @param grantDirectPermission
      *            whether to grant the direct {@link FolderPermission} carried
@@ -327,7 +327,7 @@ public interface SecurityService {
      *         no longer existed (already processed or withdrawn).
      */
     boolean approveJoinRequest(Invitation invitation,
-        Collection<String> groupOidsToAssign, String managerComment,
+        Collection<String> groupOidsToAssign, String folderAdminComment,
         boolean grantDirectPermission);
 
     /**
@@ -338,10 +338,10 @@ public interface SecurityService {
      *
      * @param invitation
      *            the pending join request.
-     * @param managerComment
+     * @param folderAdminComment
      *            optional comment of the processing manager, may be null.
      * @return {@code true} if the request was processed, {@code false} if it
      *         no longer existed (already processed or withdrawn).
      */
-    boolean declineJoinRequest(Invitation invitation, String managerComment);
+    boolean declineJoinRequest(Invitation invitation, String folderAdminComment);
 }
