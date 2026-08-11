@@ -21,8 +21,11 @@ package de.dal33t.powerfolder.disk.dao;
 
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
+import de.dal33t.powerfolder.search.FileCategoryMapper;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 
@@ -366,6 +369,168 @@ public class FileInfoCriteria {
         tags.add(tag.trim());
     }
 
+    /**
+     * Tests a single {@link FileInfo} against all content criteria: name, extension, editor, modification
+     * date, size, category, title, author and tags. The structural criteria - domains, path, type, deleted
+     * state and max results - stay with the DAO that walks the index.
+     */
+    public boolean matches(FileInfo fileInfo) {
+        return matchesName(fileInfo, keyWords) && matchesExtension(fileInfo, extension)
+                && matchesModifiedBy(fileInfo, modifiedBy)
+                && matchesModifiedDate(fileInfo, modifiedAfter, modifiedBefore)
+                && matchesSize(fileInfo, minSize, maxSize)
+                && matchesModifiedById(fileInfo, modifiedByAccountId, modifiedByDeviceId)
+                && matchesCategory(fileInfo, category) && matchesTitle(fileInfo, title)
+                && matchesAuthor(fileInfo, author) && matchesTags(fileInfo, tags);
+    }
+
+    private static boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
+        if (keyWords.isEmpty()) {
+            return true;
+        }
+        String name = fileInfo.getFilenameOnly().toLowerCase();
+        for (String keyWord : keyWords) {
+            if (!name.contains(keyWord)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean matchesExtension(FileInfo fileInfo, String extension) {
+        if (extension == null || extension.isEmpty()) {
+            return true;
+        }
+        return fileInfo.getExtension().equalsIgnoreCase(extension);
+    }
+
+    private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
+        if (modifiedBy == null || modifiedBy.isEmpty()) {
+            return true;
+        }
+        AccountInfo account = fileInfo.getModifiedByAccount();
+        if (account == null) {
+            return false;
+        }
+        String content = account.getDisplayName() + account.getUsername();
+        MemberInfo member = fileInfo.getModifiedBy();
+        if (member != null) {
+            content += member.nick;
+        }
+        return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
+    }
+
+    private static boolean matchesModifiedDate(FileInfo fileInfo, Long after, Long before) {
+        if (after == null && before == null) {
+            return true;
+        }
+        Date modified = fileInfo.getModifiedDate();
+        if (modified == null) {
+            return false;
+        }
+        long time = modified.getTime();
+        if (after != null && time < after) {
+            return false;
+        }
+        return before == null || time <= before;
+    }
+
+    private static boolean matchesSize(FileInfo fileInfo, Long minSize, Long maxSize) {
+        if (minSize == null && maxSize == null) {
+            return true;
+        }
+        long size = fileInfo.getSize();
+        if (minSize != null && size < minSize) {
+            return false;
+        }
+        return maxSize == null || size <= maxSize;
+    }
+
+    private static boolean matchesModifiedById(FileInfo fileInfo, String accountId, String deviceId) {
+        if (isBlank(accountId) && isBlank(deviceId)) {
+            return true;
+        }
+        if (StringUtils.isNotBlank(accountId)) {
+            AccountInfo account = fileInfo.getModifiedByAccount();
+            if (account == null || !accountId.trim().equals(account.getOID())) {
+                return false;
+            }
+        }
+        if (StringUtils.isNotBlank(deviceId)) {
+            MemberInfo member = fileInfo.getModifiedBy();
+            if (member == null || !deviceId.trim().equals(member.id)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean matchesCategory(FileInfo fileInfo, String category) {
+        if (isBlank(category)) {
+            return true;
+        }
+        String wanted = category.toLowerCase(Locale.ROOT).trim();
+        String actual = fileInfo.isDiretory()
+                ? FileCategoryMapper.FOLDER : FileCategoryMapper.categoryOf(fileInfo.getExtension());
+        return actual.equals(wanted);
+    }
+
+    /**
+     * PFS-5653: without extracted document metadata - the case for every caller but the Lucene index -
+     * <code>title:</code> falls back to the file name. Matched like the other text criteria:
+     * case-insensitive substring.
+     */
+    private static boolean matchesTitle(FileInfo fileInfo, String title) {
+        if (isBlank(title)) {
+            return true;
+        }
+        String fileName = fileInfo.getFilenameOnly();
+        return fileName != null && fileName.toUpperCase().contains(title.toUpperCase().trim());
+    }
+
+    /**
+     * PFS-5653: without extracted document metadata <code>author:</code> falls back to the account that
+     * changed the file last. Unlike {@link #matchesModifiedBy(FileInfo, String)} the device nick is not
+     * consulted - an author is a person, not a machine.
+     */
+    private static boolean matchesAuthor(FileInfo fileInfo, String author) {
+        if (isBlank(author)) {
+            return true;
+        }
+        AccountInfo account = fileInfo.getModifiedByAccount();
+        if (account == null) {
+            return false;
+        }
+        String content = account.getDisplayName() + account.getUsername();
+        return content.toUpperCase().contains(author.toUpperCase().trim());
+    }
+
+    /**
+     * Tags are always matched case-insensitively, in whatever case they were typed when tagging or when
+     * searching. Compared directly against the (few) file tags, without any per-file allocation.
+     */
+    private static boolean matchesTags(FileInfo fileInfo, Set<String> wantedTags) {
+        if (wantedTags.isEmpty()) {
+            return true;
+        }
+        List<String> fileTags = fileInfo.getTagsList();
+        if (fileTags.size() < wantedTags.size()) {
+            return false;
+        }
+        for (String wanted : wantedTags) {
+            boolean found = false;
+            for (String tag : fileTags) {
+                if (tag.equalsIgnoreCase(wanted)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public boolean hasSearchCriteria() {
         return !keyWords.isEmpty()

@@ -789,7 +789,9 @@ public class LuceneIndexManager extends PFComponent {
             if (!tagList.isEmpty()) {
                 doc.add(new TextField("tags", String.join(" ", tagList), Field.Store.NO));
                 for (String tag : tagList) {
-                    doc.add(new StringField("tagsExact", tag.toLowerCase(Locale.ROOT), Field.Store.NO));
+                    /* Tags are always matched case-insensitively: the term is normalized the same way here
+                     * and in the tagsExact query below - lowercased and trimmed. */
+                    doc.add(new StringField("tagsExact", tag.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
                 }
             }
         }
