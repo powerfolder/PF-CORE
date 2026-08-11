@@ -112,6 +112,9 @@ public class LuceneIndexManager extends PFComponent {
      */
     private static final int SUGGEST_MAX_TERMS = 200;
 
+    /** Result cap for a search whose criteria set none. */
+    private static final int DEFAULT_MAX_RESULTS = 1_000;
+
     /**
      * PFS-5652: fields that get the infix wildcard ("*token*"). Restricted to the name/path and editor
      * fields where mid-token matching actually helps (e.g. finding "Müller" inside an editor display name
@@ -1272,7 +1275,10 @@ public class LuceneIndexManager extends PFComponent {
      * @return matching FileInfo objects (non-deleted only)
      */
     public List<FileInfo> searchFiles(String queryText, int maxResults) {
-        return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE, new FileInfoCriteria());
+        FileInfoCriteria criteria = new FileInfoCriteria();
+        criteria.addKeyWord(queryText);
+        criteria.setMaxResults(maxResults);
+        return doSearch(criteria);
     }
 
     /**
@@ -1285,12 +1291,7 @@ public class LuceneIndexManager extends PFComponent {
      */
     public List<FileInfo> searchFiles(FileInfoCriteria criteria) {
         Reject.ifNull(criteria, "FileInfoCriteria");
-
-        int maxResults = criteria.getMaxResults() > 0 ? criteria.getMaxResults() : 1_000;
-        DeletedFilter deletedFilter = criteria.includeDeleted() ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE;
-        String queryText = String.join(" ", criteria.getKeyWords());
-
-        return doSearch(queryText, maxResults, deletedFilter, criteria);
+        return doSearch(criteria);
     }
 
     /**
@@ -1352,9 +1353,6 @@ public class LuceneIndexManager extends PFComponent {
         return counts;
     }
 
-    /** Controls how the deleted flag is handled in searches. */
-    private enum DeletedFilter { INCLUDE, EXCLUDE, ONLY }
-
     /** @return a query requiring every word of the value in the field, or null if there is no value. */
     private static Query fieldKeywordQuery(String field, String value) {
         if (StringUtils.isBlank(value)) {
@@ -1396,19 +1394,9 @@ public class LuceneIndexManager extends PFComponent {
      * Adds one MUST clause per active filter of the criteria. The keywords are not part of it: the caller
      * adds them on top, so the same filter query can be reused for the typo-tolerant second pass.
      */
-    private static void addFilterClauses(BooleanQuery.Builder bqBuilder, DeletedFilter deletedFilter,
-                                         FileInfoCriteria criteria)
-    {
-        switch (deletedFilter) {
-            case EXCLUDE:
-                bqBuilder.add(new TermQuery(new Term("deleted", "false")), BooleanClause.Occur.MUST);
-                break;
-            case ONLY:
-                bqBuilder.add(new TermQuery(new Term("deleted", "true")), BooleanClause.Occur.MUST);
-                break;
-            case INCLUDE:
-            default:
-                break;
+    private static void addFilterClauses(BooleanQuery.Builder bqBuilder, FileInfoCriteria criteria) {
+        if (!criteria.includeDeleted()) {
+            bqBuilder.add(new TermQuery(new Term("deleted", "false")), BooleanClause.Occur.MUST);
         }
 
         if (criteria.getType() == FileInfoCriteria.Type.FILES_ONLY) {
@@ -1497,7 +1485,7 @@ public class LuceneIndexManager extends PFComponent {
      * <ul>
      *   <li><b>Keywords:</b> per-token exact / prefix / wildcard
      *       queries across searchable fields</li>
-     *   <li><b>Deleted filter:</b> include, exclude, or only deleted</li>
+     *   <li><b>Deleted filter:</b> excluded unless the criteria ask for them</li>
      *   <li><b>Directory:</b> {@link PrefixQuery} on path (non-analyzed)</li>
      *   <li><b>Extension:</b> exact {@link TermQuery} on extensionExact (non-analyzed)</li>
      *   <li><b>ModifiedBy:</b> {@link WildcardQuery} on the modifiedBy
@@ -1506,27 +1494,24 @@ public class LuceneIndexManager extends PFComponent {
      * {@code TopDocs} returned by Lucene contains the final matching
      * items, which are then converted to FileInfo instances.
      *
-     * @param queryText     the user's search keywords. Kept separate from the criteria because the
-     *                      keyword-only entry points have no criteria to take them from.
-     * @param maxResults    maximum number of results
-     * @param deletedFilter how to handle the deleted flag
-     * @param criteria      every other filter, never null - an empty instance means "no restriction"
+     * @param criteria everything the search needs - keywords, filters, order and result cap. An empty
+     *                 instance means "no restriction"; the cap falls back to {@link #DEFAULT_MAX_RESULTS}.
      * @return matching FileInfo objects
      */
-    private List<FileInfo> doSearch(String queryText, int maxResults,
-                                    DeletedFilter deletedFilter,
-                                    FileInfoCriteria criteria) {
+    private List<FileInfo> doSearch(FileInfoCriteria criteria) {
+        String queryText = String.join(" ", criteria.getKeyWords());
+        int maxResults = criteria.getMaxResults() > 0 ? criteria.getMaxResults() : DEFAULT_MAX_RESULTS;
+        Sort sort = buildSort(criteria.getSortField(), criteria.isSortDescending());
 
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
-        Sort sort = buildSort(criteria.getSortField(), criteria.isSortDescending());
 
         IndexSearcher searcher = null;
         try {
             searcher = searcherManager.acquire();
 
             BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
-            addFilterClauses(bqBuilder, deletedFilter, criteria);
+            addFilterClauses(bqBuilder, criteria);
 
             /* The filter clauses are built once; the keyword part is added on top, so the query can be
              * repeated with typo tolerance without rebuilding the filters. */
