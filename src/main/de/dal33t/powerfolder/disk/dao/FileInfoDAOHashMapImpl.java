@@ -312,10 +312,13 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                         break;
                     }
-                    if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
-                        if (!fileInfos.contains(directoryInfo) && criteria.matches(directoryInfo)) {
-                            fileInfos.add(directoryInfo);
-                        }
+                    boolean visible = !directoryInfo.isDeleted() || criteria.includeDeleted();
+                    boolean below = isInSubDir(directoryInfo, relativePath, criteria.isRecursive())
+                            && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath);
+                    if (visible && below && !fileInfos.contains(directoryInfo)
+                            && criteria.matches(directoryInfo))
+                    {
+                        fileInfos.add(directoryInfo);
                     }
                 }
             }
@@ -324,10 +327,10 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                         break;
                     }
-                    if ((!fileInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
-                        if (!fileInfos.contains(fileInfo) && criteria.matches(fileInfo)) {
-                            fileInfos.add(fileInfo);
-                        }
+                    boolean visible = !fileInfo.isDeleted() || criteria.includeDeleted();
+                    boolean below = isInSubDir(fileInfo, relativePath, criteria.isRecursive());
+                    if (visible && below && !fileInfos.contains(fileInfo) && criteria.matches(fileInfo)) {
+                        fileInfos.add(fileInfo);
                     }
                 }
             }
