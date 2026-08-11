@@ -48,7 +48,7 @@ public class FileInfoCriteria {
     private int maxResults = -1;
     private boolean includeDeleted = false;
     private String fileName;
-    private String extension;
+    private final Set<String> extensions = new LinkedHashSet<>();
     private String modifiedBy;
     private String modifiedByAccountId;
     private String modifiedByDeviceId;
@@ -263,12 +263,19 @@ public class FileInfoCriteria {
         this.fileName = fileName;
     }
 
-    public String getExtension() {
-        return extension;
+    /**
+     * @return the extensions a file may have, e.g. doc and pdf. Several are OR-combined, like the
+     *         {@link #getCategories() categories}: one question with more than one acceptable answer.
+     */
+    public Set<String> getExtensions() {
+        return Collections.unmodifiableSet(extensions);
     }
 
-    public void setExtension(String extension) {
-        this.extension = extension;
+    public void addExtension(String extension) {
+        if (isBlank(extension)) {
+            return;
+        }
+        extensions.add(extension.trim().toLowerCase(Locale.ROOT));
     }
 
     public String getModifiedBy() {
@@ -386,7 +393,7 @@ public class FileInfoCriteria {
      */
     public boolean matches(FileInfo fileInfo) {
         return matchesName(fileInfo, keyWords) && matchesFileName(fileInfo, fileName)
-                && matchesExtension(fileInfo, extension)
+                && matchesExtension(fileInfo, extensions)
                 && matchesModifiedBy(fileInfo, modifiedBy)
                 && matchesModifiedDate(fileInfo, modifiedAfter, modifiedBefore)
                 && matchesSize(fileInfo, minSize, maxSize)
@@ -420,11 +427,12 @@ public class FileInfoCriteria {
         return name != null && name.toUpperCase().contains(fileName.toUpperCase().trim());
     }
 
-    private static boolean matchesExtension(FileInfo fileInfo, String extension) {
-        if (extension == null || extension.isEmpty()) {
+    private static boolean matchesExtension(FileInfo fileInfo, Set<String> extensions) {
+        if (extensions.isEmpty()) {
             return true;
         }
-        return fileInfo.getExtension().equalsIgnoreCase(extension);
+        String actual = fileInfo.getExtension();
+        return actual != null && extensions.contains(actual.toLowerCase(Locale.ROOT));
     }
 
     private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
@@ -537,7 +545,7 @@ public class FileInfoCriteria {
     public boolean hasSearchCriteria() {
         return !keyWords.isEmpty()
                 || StringUtils.isNotBlank(fileName)
-                || StringUtils.isNotBlank(extension)
+                || !extensions.isEmpty()
                 || StringUtils.isNotBlank(modifiedBy)
                 || StringUtils.isNotBlank(modifiedByAccountId)
                 || StringUtils.isNotBlank(modifiedByDeviceId)
@@ -558,7 +566,7 @@ public class FileInfoCriteria {
             + modifiedAfter + ", modifiedBefore=" + modifiedBefore + ", minSize="
             + minSize + ", maxSize=" + maxSize + ", modifiedByAccountId="
             + modifiedByAccountId + ", modifiedByDeviceId=" + modifiedByDeviceId
-            + ", categories=" + categories + "]";
+            + ", extensions=" + extensions + ", categories=" + categories + "]";
     }
 
     public enum Type {

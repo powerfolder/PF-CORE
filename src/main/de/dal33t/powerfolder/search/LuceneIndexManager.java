@@ -1449,10 +1449,15 @@ public class LuceneIndexManager extends PFComponent {
             bqBuilder.add(fileNameQuery, BooleanClause.Occur.MUST);
         }
 
-        if (StringUtils.isNotBlank(criteria.getExtension())) {
-            bqBuilder.add(
-                    new TermQuery(new Term("extensionExact", criteria.getExtension().toLowerCase(Locale.ROOT))),
-                    BooleanClause.Occur.MUST);
+        if (!criteria.getExtensions().isEmpty()) {
+            /* Any of the chosen extensions may match - "doc or pdf", the same way the categories combine. */
+            BooleanQuery.Builder anyExtension = new BooleanQuery.Builder();
+            for (String extension : criteria.getExtensions()) {
+                anyExtension.add(new TermQuery(new Term("extensionExact", extension.toLowerCase(Locale.ROOT))),
+                        BooleanClause.Occur.SHOULD);
+            }
+            anyExtension.setMinimumNumberShouldMatch(1);
+            bqBuilder.add(anyExtension.build(), BooleanClause.Occur.MUST);
         }
 
         if (StringUtils.isNotBlank(criteria.getModifiedBy())) {
