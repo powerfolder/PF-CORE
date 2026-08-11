@@ -56,8 +56,6 @@ public class FileInfoCriteria {
     private Long minSize;
     private Long maxSize;
     private String category;
-    private String title;
-    private String author;
     private SortField sortField;
     private boolean sortDescending;
     private final Set<String> tags = new LinkedHashSet<>();
@@ -326,22 +324,6 @@ public class FileInfoCriteria {
         this.category = category;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
     public SortField getSortField() {
         return sortField;
     }
@@ -371,8 +353,8 @@ public class FileInfoCriteria {
 
     /**
      * Tests a single {@link FileInfo} against all content criteria: name, extension, editor, modification
-     * date, size, category, title, author and tags. The structural criteria - domains, path, type, deleted
-     * state and max results - stay with the DAO that walks the index.
+     * date, size, category and tags. The structural criteria - domains, path, type, deleted state and max
+     * results - stay with the DAO that walks the index.
      */
     public boolean matches(FileInfo fileInfo) {
         return matchesName(fileInfo, keyWords) && matchesExtension(fileInfo, extension)
@@ -380,8 +362,7 @@ public class FileInfoCriteria {
                 && matchesModifiedDate(fileInfo, modifiedAfter, modifiedBefore)
                 && matchesSize(fileInfo, minSize, maxSize)
                 && matchesModifiedById(fileInfo, modifiedByAccountId, modifiedByDeviceId)
-                && matchesCategory(fileInfo, category) && matchesTitle(fileInfo, title)
-                && matchesAuthor(fileInfo, author) && matchesTags(fileInfo, tags);
+                && matchesCategory(fileInfo, category) && matchesTags(fileInfo, tags);
     }
 
     private static boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
@@ -476,36 +457,6 @@ public class FileInfoCriteria {
     }
 
     /**
-     * PFS-5653: without extracted document metadata - the case for every caller but the Lucene index -
-     * <code>title:</code> falls back to the file name. Matched like the other text criteria:
-     * case-insensitive substring.
-     */
-    private static boolean matchesTitle(FileInfo fileInfo, String title) {
-        if (isBlank(title)) {
-            return true;
-        }
-        String fileName = fileInfo.getFilenameOnly();
-        return fileName != null && fileName.toUpperCase().contains(title.toUpperCase().trim());
-    }
-
-    /**
-     * PFS-5653: without extracted document metadata <code>author:</code> falls back to the account that
-     * changed the file last. Unlike {@link #matchesModifiedBy(FileInfo, String)} the device nick is not
-     * consulted - an author is a person, not a machine.
-     */
-    private static boolean matchesAuthor(FileInfo fileInfo, String author) {
-        if (isBlank(author)) {
-            return true;
-        }
-        AccountInfo account = fileInfo.getModifiedByAccount();
-        if (account == null) {
-            return false;
-        }
-        String content = account.getDisplayName() + account.getUsername();
-        return content.toUpperCase().contains(author.toUpperCase().trim());
-    }
-
-    /**
      * Tags are always matched case-insensitively, in whatever case they were typed when tagging or when
      * searching. Compared directly against the (few) file tags, without any per-file allocation.
      */
@@ -543,8 +494,6 @@ public class FileInfoCriteria {
                 || minSize != null
                 || maxSize != null
                 || StringUtils.isNotBlank(category)
-                || StringUtils.isNotBlank(title)
-                || StringUtils.isNotBlank(author)
                 || !tags.isEmpty();
     }
 
@@ -556,8 +505,7 @@ public class FileInfoCriteria {
             + modifiedAfter + ", modifiedBefore=" + modifiedBefore + ", minSize="
             + minSize + ", maxSize=" + maxSize + ", modifiedByAccountId="
             + modifiedByAccountId + ", modifiedByDeviceId=" + modifiedByDeviceId
-            + ", category=" + category + ", title=" + title + ", author="
-            + author + "]";
+            + ", category=" + category + "]";
     }
 
     public enum Type {

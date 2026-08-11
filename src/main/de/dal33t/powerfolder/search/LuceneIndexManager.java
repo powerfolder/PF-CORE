@@ -99,7 +99,7 @@ public class LuceneIndexManager extends PFComponent {
     /** Searchable fields used by all query methods. */
     private static final String[] SEARCH_FIELDS =
             {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
-             "modifiedByDeviceName", "extensionExact", "tags", "docTitle", "docAuthor"};
+             "modifiedByDeviceName", "extensionExact", "tags"};
 
     private static final String[] PHRASE_FIELDS =
             {"fileName", "relativeName", CONTENT_FIELD};
@@ -854,12 +854,10 @@ public class LuceneIndexManager extends PFComponent {
 
             if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled() && isContentExtractable(fileInfo)) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
-                    Metadata metadata = new Metadata();
-                    String content = extractContentTikaOnly(fileInfo, metadata);
+                    String content = extractContentTikaOnly(fileInfo);
                     throttleExtraction();
                     if (content != null && !content.isBlank()) {
                         doc.add(new TextField("content", content, Field.Store.NO));
-                        addMetadataFields(doc, metadata);
                     } else {
                         contentQueue.add(fileInfo);
                     }
@@ -885,8 +883,7 @@ public class LuceneIndexManager extends PFComponent {
         if (fileInfo.isDiretory()) return;
         if (!isContentExtractable(fileInfo)) return;
         try {
-            Metadata metadata = new Metadata();
-            String content = extractContent(fileInfo, metadata);
+            String content = extractContent(fileInfo);
             if (content == null || content.isBlank()) {
                 if (isFine()) {
                     logFine(folder + ": No content extracted for " + fileInfo);
@@ -902,7 +899,6 @@ public class LuceneIndexManager extends PFComponent {
             }
             Document doc = buildDocument(fileInfo);
             doc.add(new TextField("content", content, Field.Store.NO));
-            addMetadataFields(doc, metadata);
             writer.updateDocument(
                     new Term("docId", buildDocId(fileInfo)), doc);
             if (isFine()) {
@@ -930,22 +926,6 @@ public class LuceneIndexManager extends PFComponent {
         return configured != null && configured.toLowerCase(Locale.ROOT).contains(ext.toLowerCase(Locale.ROOT));
     }
 
-    private static void addMetadataFields(Document doc, Metadata metadata) {
-        if (metadata == null) {
-            return;
-        }
-        String title = metadata.get(TikaCoreProperties.TITLE);
-        if (StringUtils.isNotBlank(title)) {
-            doc.add(new TextField("docTitle", title, Field.Store.YES));
-            addSuggestField(doc, "docTitleExact", title);
-        }
-        String author = metadata.get(TikaCoreProperties.CREATOR);
-        if (StringUtils.isNotBlank(author)) {
-            doc.add(new TextField("docAuthor", author, Field.Store.YES));
-            addSuggestField(doc, "docAuthorExact", author);
-        }
-    }
-
     /**
      * PFS-5653: adds a non-analyzed copy of a value for {@link #suggestTerms(String, String)}. The analyzed
      * fields hold one term per word, so suggesting from them offers "jane" and "doe" instead of "Jane Doe".
@@ -956,14 +936,22 @@ public class LuceneIndexManager extends PFComponent {
         doc.add(new StringField(field, value.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
     }
 
-    private static void seedFilename(Metadata metadata, Path filePath) {
+    /**
+     * Builds Tika {@link Metadata} carrying the file name as a resource-name
+     * hint. Tika's {@code AutoDetectParser} uses the file extension to pick a
+     * parser; without the hint an RTF (and other extension-typed formats) can
+     * be misdetected as text/plain and then fail charset detection. PF-1930.
+     */
+    private static Metadata filenameHint(Path filePath) {
+        Metadata metadata = new Metadata();
         Path name = filePath.getFileName();
         if (name != null) {
             metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name.toString());
         }
+        return metadata;
     }
 
-    private String extractContentTikaOnly(FileInfo fileInfo, Metadata metadata) {
+    private String extractContentTikaOnly(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             if (isFine()) {
@@ -973,10 +961,9 @@ public class LuceneIndexManager extends PFComponent {
             return null;
         }
 
-        seedFilename(metadata, filePath);
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
             BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
-            getSharedParser().parse(stream, handler, metadata, new ParseContext());
+            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 if (!hasEncodingIssues(text)) return text;
@@ -1017,12 +1004,6 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
-     * Builds Tika {@link Metadata} carrying the file name as a resource-name
-     * hint. Tika's {@code AutoDetectParser} uses the file extension to pick a
-     * parser; without the hint an RTF (and other extension-typed formats) can
-     * be misdetected as text/plain and then fail charset detection. PF-1930.
-     */
-    /**
      * Fallback RTF-to-text extraction using the JDK's built-in
      * {@link RTFEditorKit}. Used when Tika cannot detect the character encoding
      * of an RTF document. Strips the RTF control words, leaving the readable
@@ -1045,7 +1026,7 @@ public class LuceneIndexManager extends PFComponent {
         }
     }
 
-    private String extractContent(FileInfo fileInfo, Metadata metadata) {
+    private String extractContent(FileInfo fileInfo) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             if (isFine()) {
@@ -1069,9 +1050,8 @@ public class LuceneIndexManager extends PFComponent {
         // 1) Tika text extraction (shared parser, no per-file init cost)
         BodyContentHandler handler =
                 new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
-        seedFilename(metadata, filePath);
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
-            getSharedParser().parse(stream, handler, metadata, new ParseContext());
+            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 tikaText = text;
@@ -1353,23 +1333,6 @@ public class LuceneIndexManager extends PFComponent {
         return counts;
     }
 
-    /** @return a query requiring every word of the value in the field, or null if there is no value. */
-    private static Query fieldKeywordQuery(String field, String value) {
-        if (StringUtils.isBlank(value)) {
-            return null;
-        }
-        String[] tokens = value.toLowerCase(Locale.ROOT).trim().split("\\s+");
-        BooleanQuery.Builder builder = new BooleanQuery.Builder();
-        boolean any = false;
-        for (String token : tokens) {
-            if (!token.isEmpty()) {
-                builder.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.MUST);
-                any = true;
-            }
-        }
-        return any ? builder.build() : null;
-    }
-
     /**
      * Maps a requested order onto the docValues field that carries it. The accepted spellings live in
      * {@link FileInfoCriteria.SortField}, so this is only about which field to read.
@@ -1467,15 +1430,6 @@ public class LuceneIndexManager extends PFComponent {
             bqBuilder.add(
                     new TermQuery(new Term("category", criteria.getCategory().toLowerCase(Locale.ROOT).trim())),
                     BooleanClause.Occur.MUST);
-        }
-
-        addIfNotNull(bqBuilder, fieldKeywordQuery("docTitle", criteria.getTitle()));
-        addIfNotNull(bqBuilder, fieldKeywordQuery("docAuthor", criteria.getAuthor()));
-    }
-
-    private static void addIfNotNull(BooleanQuery.Builder bqBuilder, Query query) {
-        if (query != null) {
-            bqBuilder.add(query, BooleanClause.Occur.MUST);
         }
     }
 
