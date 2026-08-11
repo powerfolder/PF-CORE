@@ -61,10 +61,10 @@ public class FileInfoDAODateFilterTest extends FileInfoDAOTestCase {
     public void testCriteriaHasSearchCriteriaWithDateBounds() {
         assertFalse(new FileInfoCriteria().hasSearchCriteria());
         FileInfoCriteria after = new FileInfoCriteria();
-        after.setModifiedAfter(OLD);
+        after.setModifiedAfter(new Date(OLD));
         assertTrue(after.hasSearchCriteria());
         FileInfoCriteria before = new FileInfoCriteria();
-        before.setModifiedBefore(NEW);
+        before.setModifiedBefore(new Date(NEW));
         assertTrue(before.hasSearchCriteria());
     }
 
@@ -76,8 +76,8 @@ public class FileInfoDAODateFilterTest extends FileInfoDAOTestCase {
         FileInfoCriteria c = new FileInfoCriteria();
         c.addDomain(null);
         c.setRecursive(true);
-        c.setModifiedAfter(after);
-        c.setModifiedBefore(before);
+        c.setModifiedAfter(after == null ? null : new Date(after));
+        c.setModifiedBefore(before == null ? null : new Date(before));
         return c;
     }
 }

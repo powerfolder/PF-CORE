@@ -1400,11 +1400,12 @@ public class LuceneIndexManager extends PFComponent {
             }
         }
 
-        Long modifiedAfter = criteria.getModifiedAfter();
-        Long modifiedBefore = criteria.getModifiedBefore();
+        Date modifiedAfter = criteria.getModifiedAfter();
+        Date modifiedBefore = criteria.getModifiedBefore();
         if (modifiedAfter != null || modifiedBefore != null) {
-            long lower = modifiedAfter != null ? modifiedAfter : Long.MIN_VALUE;
-            long upper = modifiedBefore != null ? modifiedBefore : Long.MAX_VALUE;
+            /* The index stores the modification date as millis, so this is where a Date becomes a number. */
+            long lower = modifiedAfter != null ? modifiedAfter.getTime() : Long.MIN_VALUE;
+            long upper = modifiedBefore != null ? modifiedBefore.getTime() : Long.MAX_VALUE;
             bqBuilder.add(LongPoint.newRangeQuery("modifiedDate", lower, upper), BooleanClause.Occur.MUST);
         }
 

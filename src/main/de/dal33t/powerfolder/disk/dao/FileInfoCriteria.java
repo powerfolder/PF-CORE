@@ -51,8 +51,8 @@ public class FileInfoCriteria {
     private String modifiedBy;
     private String modifiedByAccountId;
     private String modifiedByDeviceId;
-    private Long modifiedAfter;
-    private Long modifiedBefore;
+    private Date modifiedAfter;
+    private Date modifiedBefore;
     private Long minSize;
     private Long maxSize;
     private String category;
@@ -284,19 +284,19 @@ public class FileInfoCriteria {
         this.modifiedByDeviceId = modifiedByDeviceId;
     }
 
-    public Long getModifiedAfter() {
+    public Date getModifiedAfter() {
         return modifiedAfter;
     }
 
-    public void setModifiedAfter(Long modifiedAfter) {
+    public void setModifiedAfter(Date modifiedAfter) {
         this.modifiedAfter = modifiedAfter;
     }
 
-    public Long getModifiedBefore() {
+    public Date getModifiedBefore() {
         return modifiedBefore;
     }
 
-    public void setModifiedBefore(Long modifiedBefore) {
+    public void setModifiedBefore(Date modifiedBefore) {
         this.modifiedBefore = modifiedBefore;
     }
 
@@ -401,7 +401,7 @@ public class FileInfoCriteria {
         return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
     }
 
-    private static boolean matchesModifiedDate(FileInfo fileInfo, Long after, Long before) {
+    private static boolean matchesModifiedDate(FileInfo fileInfo, Date after, Date before) {
         if (after == null && before == null) {
             return true;
         }
@@ -409,11 +409,11 @@ public class FileInfoCriteria {
         if (modified == null) {
             return false;
         }
-        long time = modified.getTime();
-        if (after != null && time < after) {
+        if (after != null && modified.before(after)) {
             return false;
         }
-        return before == null || time <= before;
+        /* Both bounds are inclusive: "before:2024-12-31" means up to the last millisecond of that day. */
+        return before == null || !modified.after(before);
     }
 
     private static boolean matchesSize(FileInfo fileInfo, Long minSize, Long maxSize) {

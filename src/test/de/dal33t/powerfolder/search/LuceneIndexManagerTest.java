@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -240,20 +241,20 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         FileInfoCriteria after = dateRangeCriteria();
-        after.setModifiedAfter(cutoff);
+        after.setModifiedAfter(new Date(cutoff));
         List<FileInfo> afterResults = getIndexManager().searchFiles(after);
         assertEquals(1, afterResults.size());
         assertEquals("NewDoc.pdf", afterResults.get(0).getFilenameOnly());
 
         FileInfoCriteria before = dateRangeCriteria();
-        before.setModifiedBefore(cutoff);
+        before.setModifiedBefore(new Date(cutoff));
         List<FileInfo> beforeResults = getIndexManager().searchFiles(before);
         assertEquals(1, beforeResults.size());
         assertEquals("OldDoc.pdf", beforeResults.get(0).getFilenameOnly());
 
         FileInfoCriteria between = dateRangeCriteria();
-        between.setModifiedAfter(1_350_000_000_000L);
-        between.setModifiedBefore(1_450_000_000_000L);
+        between.setModifiedAfter(new Date(1_350_000_000_000L));
+        between.setModifiedBefore(new Date(1_450_000_000_000L));
         List<FileInfo> betweenResults = getIndexManager().searchFiles(between);
         assertEquals(1, betweenResults.size());
         assertEquals("OldDoc.pdf", betweenResults.get(0).getFilenameOnly());
@@ -270,19 +271,19 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         FileInfoCriteria atLower = dateRangeCriteria();
-        atLower.setModifiedAfter(exact);
+        atLower.setModifiedAfter(new Date(exact));
         assertEquals(1, getIndexManager().searchFiles(atLower).size());
 
         FileInfoCriteria atUpper = dateRangeCriteria();
-        atUpper.setModifiedBefore(exact);
+        atUpper.setModifiedBefore(new Date(exact));
         assertEquals(1, getIndexManager().searchFiles(atUpper).size());
 
         FileInfoCriteria justAfter = dateRangeCriteria();
-        justAfter.setModifiedAfter(exact + 1);
+        justAfter.setModifiedAfter(new Date(exact + 1));
         assertEquals(0, getIndexManager().searchFiles(justAfter).size());
 
         FileInfoCriteria justBefore = dateRangeCriteria();
-        justBefore.setModifiedBefore(exact - 1);
+        justBefore.setModifiedBefore(new Date(exact - 1));
         assertEquals(0, getIndexManager().searchFiles(justBefore).size());
     }
 
@@ -301,7 +302,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         FileInfoCriteria criteria = dateRangeCriteria();
         criteria.addKeyWord("report");
-        criteria.setModifiedAfter(cutoff);
+        criteria.setModifiedAfter(new Date(cutoff));
 
         List<FileInfo> results = getIndexManager().searchFiles(criteria);
         assertEquals(1, results.size());
