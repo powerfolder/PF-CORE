@@ -26,6 +26,8 @@ public final class FileCategoryMapper {
 
     public static final String IMAGE = "image";
     public static final String DOCUMENT = "document";
+    public static final String SPREADSHEET = "spreadsheet";
+    public static final String PRESENTATION = "presentation";
     public static final String VIDEO = "video";
     public static final String AUDIO = "audio";
     public static final String ARCHIVE = "archive";
@@ -39,9 +41,11 @@ public final class FileCategoryMapper {
         put(IMAGE, "jpg", "jpeg", "png", "gif", "bmp", "tif", "tiff", "webp", "heic", "svg");
         put(VIDEO, "mp4", "mov", "avi", "mkv", "wmv", "webm", "m4v");
         put(AUDIO, "mp3", "wav", "flac", "aac", "ogg", "m4a");
-        put(DOCUMENT, "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "odp", "rtf");
+        put(DOCUMENT, "pdf", "doc", "docx", "odt", "rtf");
+        put(SPREADSHEET, "xls", "xlsx", "ods", "csv");
+        put(PRESENTATION, "ppt", "pptx", "odp");
         put(ARCHIVE, "zip", "rar", "7z", "tar", "gz", "bz2");
-        put(TEXT, "txt", "md", "csv", "log", "json", "xml", "yml", "yaml");
+        put(TEXT, "txt", "md", "log", "json", "xml", "yml", "yaml");
     }
 
     private FileCategoryMapper() {

@@ -755,7 +755,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 16;
+    private static final int INDEX_FORMAT_VERSION = 17;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
