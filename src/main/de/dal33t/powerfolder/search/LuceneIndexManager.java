@@ -100,7 +100,20 @@ public class LuceneIndexManager extends PFComponent {
     /** Searchable fields used by all query methods. */
     private static final String[] SEARCH_FIELDS =
             {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
-             "modifiedByDeviceName", "extensionExact", "tags"};
+             "modifiedByDeviceName", "extensionExact", "tags", "docTitle", "docAuthor"};
+
+    /**
+     * PFS-5653: what a name search looks at - the file name and the title a document carries in its own
+     * metadata, so a PDF titled "Annual Report" answers a search for that name.
+     */
+    private static final String[] NAME_FIELDS = {"fileName", "docTitle"};
+
+    /**
+     * PFS-5653: who a "changed by" search looks at - whoever last wrote the file, and the author the
+     * document names itself.
+     */
+    private static final String[] EDITOR_FIELDS =
+            {"modifiedByDisplayName", "modifiedByUsername", "modifiedByDeviceName", "docAuthor"};
 
     private static final String[] PHRASE_FIELDS =
             {"fileName", "relativeName", CONTENT_FIELD};
@@ -756,7 +769,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 18;
+    private static final int INDEX_FORMAT_VERSION = 19;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -856,10 +869,12 @@ public class LuceneIndexManager extends PFComponent {
 
             if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled() && isContentExtractable(fileInfo)) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
-                    String content = extractContentTikaOnly(fileInfo);
+                    Metadata metadata = new Metadata();
+                    String content = extractContentTikaOnly(fileInfo, metadata);
                     throttleExtraction();
                     if (content != null && !content.isBlank()) {
                         doc.add(new TextField("content", content, Field.Store.NO));
+                        addMetadataFields(doc, metadata);
                     } else {
                         contentQueue.add(fileInfo);
                     }
@@ -885,7 +900,8 @@ public class LuceneIndexManager extends PFComponent {
         if (fileInfo.isDiretory()) return;
         if (!isContentExtractable(fileInfo)) return;
         try {
-            String content = extractContent(fileInfo);
+            Metadata metadata = new Metadata();
+            String content = extractContent(fileInfo, metadata);
             if (content == null || content.isBlank()) {
                 if (isFine()) {
                     logFine(folder + ": No content extracted for " + fileInfo);
@@ -901,6 +917,7 @@ public class LuceneIndexManager extends PFComponent {
             }
             Document doc = buildDocument(fileInfo);
             doc.add(new TextField("content", content, Field.Store.NO));
+            addMetadataFields(doc, metadata);
             writer.updateDocument(
                     new Term("docId", buildDocId(fileInfo)), doc);
             if (isFine()) {
@@ -944,8 +961,7 @@ public class LuceneIndexManager extends PFComponent {
      * parser; without the hint an RTF (and other extension-typed formats) can
      * be misdetected as text/plain and then fail charset detection. PF-1930.
      */
-    private static Metadata filenameHint(Path filePath) {
-        Metadata metadata = new Metadata();
+    private static Metadata filenameHint(Metadata metadata, Path filePath) {
         Path name = filePath.getFileName();
         if (name != null) {
             metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name.toString());
@@ -953,7 +969,27 @@ public class LuceneIndexManager extends PFComponent {
         return metadata;
     }
 
-    private String extractContentTikaOnly(FileInfo fileInfo) {
+    /**
+     * PFS-5653: the title and author a document carries in its own metadata - a PDF names both. They are no
+     * filters of their own: the title joins what a name search looks at, the author what a "changed by"
+     * search looks at, so a document found by its title or written by someone shows up without anyone
+     * having to know that PDFs carry metadata at all.
+     */
+    private static void addMetadataFields(Document doc, Metadata metadata) {
+        if (metadata == null) {
+            return;
+        }
+        String title = metadata.get(TikaCoreProperties.TITLE);
+        if (StringUtils.isNotBlank(title)) {
+            doc.add(new TextField("docTitle", title, Field.Store.YES));
+        }
+        String author = metadata.get(TikaCoreProperties.CREATOR);
+        if (StringUtils.isNotBlank(author)) {
+            doc.add(new TextField("docAuthor", author, Field.Store.YES));
+        }
+    }
+
+    private String extractContentTikaOnly(FileInfo fileInfo, Metadata metadata) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             if (isFine()) {
@@ -965,7 +1001,7 @@ public class LuceneIndexManager extends PFComponent {
 
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
             BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
-            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
+            getSharedParser().parse(stream, handler, filenameHint(metadata, filePath), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 if (!hasEncodingIssues(text)) return text;
@@ -1028,7 +1064,7 @@ public class LuceneIndexManager extends PFComponent {
         }
     }
 
-    private String extractContent(FileInfo fileInfo) {
+    private String extractContent(FileInfo fileInfo, Metadata metadata) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             if (isFine()) {
@@ -1053,7 +1089,7 @@ public class LuceneIndexManager extends PFComponent {
         BodyContentHandler handler =
                 new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
-            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
+            getSharedParser().parse(stream, handler, filenameHint(metadata, filePath), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 tikaText = text;
@@ -1373,9 +1409,11 @@ public class LuceneIndexManager extends PFComponent {
                 continue;
             }
             BooleanQuery.Builder word = new BooleanQuery.Builder();
-            word.add(new TermQuery(new Term("fileName", token)), BooleanClause.Occur.SHOULD);
-            word.add(new PrefixQuery(new Term("fileName", token)), BooleanClause.Occur.SHOULD);
-            word.add(new WildcardQuery(new Term("fileName", "*" + token + "*")), BooleanClause.Occur.SHOULD);
+            for (String field : NAME_FIELDS) {
+                word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                word.add(new PrefixQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                word.add(new WildcardQuery(new Term(field, "*" + token + "*")), BooleanClause.Occur.SHOULD);
+            }
             word.setMinimumNumberShouldMatch(1);
             allWords.add(word.build(), BooleanClause.Occur.MUST);
             any = true;
@@ -1420,10 +1458,10 @@ public class LuceneIndexManager extends PFComponent {
         if (StringUtils.isNotBlank(criteria.getModifiedBy())) {
             String wildcard = "*" + criteria.getModifiedBy().toLowerCase(Locale.ROOT).trim() + "*";
             BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
-            modQuery.add(new WildcardQuery(new Term("modifiedByDisplayName", wildcard)),
-                    BooleanClause.Occur.SHOULD);
-            modQuery.add(new WildcardQuery(new Term("modifiedByUsername", wildcard)), BooleanClause.Occur.SHOULD);
-            modQuery.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)), BooleanClause.Occur.SHOULD);
+            for (String field : EDITOR_FIELDS) {
+                modQuery.add(new WildcardQuery(new Term(field, wildcard)), BooleanClause.Occur.SHOULD);
+            }
+            modQuery.setMinimumNumberShouldMatch(1);
             bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
         }
 
