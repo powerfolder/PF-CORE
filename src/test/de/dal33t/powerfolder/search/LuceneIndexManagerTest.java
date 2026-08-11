@@ -483,6 +483,55 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertFalse(analyzed.containsKey("project north"));
     }
 
+    /**
+     * PFS-5653: name: looks at the file name only, while a plain keyword also matches the path a file sits
+     * in - that is the whole reason for the operator to exist.
+     */
+    public void testNameFilterIgnoresThePath() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase().resolve("budget"), "notes.txt");
+        TestHelper.createRandomFile(folder.getLocalBase(), "budget final.txt");
+        scanFolder(folder);
+        indexAndWait();
+
+        FileInfoCriteria byKeyword = filesOnlyCriteria();
+        byKeyword.addKeyWord("budget");
+        assertEquals("the keyword also matches the file inside the budget directory", 2,
+                getIndexManager().searchFiles(byKeyword).size());
+
+        List<FileInfo> named = searchByFileName("budget");
+        assertEquals(1, named.size());
+        assertEquals("budget final.txt", named.get(0).getFilenameOnly());
+    }
+
+    public void testNameFilterMatchesEveryWordAnywhereInTheName() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Annual Report 2024.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Report Draft.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertEquals(1, searchByFileName("annual report").size());
+        assertEquals(2, searchByFileName("report").size());
+        assertEquals("a partial word still matches", 2, searchByFileName("repo").size());
+        assertEquals(0, searchByFileName("invoice").size());
+    }
+
+    private List<FileInfo> searchByFileName(String fileName) {
+        FileInfoCriteria criteria = filesOnlyCriteria();
+        criteria.setFileName(fileName);
+        return getIndexManager().searchFiles(criteria);
+    }
+
+    /** Directories carry a file name too - excluding them keeps the name: assertions about files. */
+    private FileInfoCriteria filesOnlyCriteria() {
+        FileInfoCriteria criteria = new FileInfoCriteria();
+        criteria.addMySelf(getFolder());
+        criteria.setRecursive(true);
+        criteria.setType(FileInfoCriteria.Type.FILES_ONLY);
+        return criteria;
+    }
+
     /** PFS-5653: typo tolerance is a fallback - a query that found something is not re-run fuzzily. */
     public void testFuzzyOnlyKicksInWhenNothingWasFound() throws Exception {
         Folder folder = getFolder();

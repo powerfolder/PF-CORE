@@ -47,6 +47,7 @@ public class FileInfoCriteria {
     private Set<String> keyWords = new HashSet<>();
     private int maxResults = -1;
     private boolean includeDeleted = false;
+    private String fileName;
     private String extension;
     private String modifiedBy;
     private String modifiedByAccountId;
@@ -252,6 +253,15 @@ public class FileInfoCriteria {
         this.includeDeleted = includeDeleted;
     }
 
+    /** @return the text the file name must contain, independent of the keywords. */
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
     public String getExtension() {
         return extension;
     }
@@ -357,7 +367,8 @@ public class FileInfoCriteria {
      * results - stay with the DAO that walks the index.
      */
     public boolean matches(FileInfo fileInfo) {
-        return matchesName(fileInfo, keyWords) && matchesExtension(fileInfo, extension)
+        return matchesName(fileInfo, keyWords) && matchesFileName(fileInfo, fileName)
+                && matchesExtension(fileInfo, extension)
                 && matchesModifiedBy(fileInfo, modifiedBy)
                 && matchesModifiedDate(fileInfo, modifiedAfter, modifiedBefore)
                 && matchesSize(fileInfo, minSize, maxSize)
@@ -376,6 +387,18 @@ public class FileInfoCriteria {
             }
         }
         return true;
+    }
+
+    /**
+     * PFS-5653: the name: filter. Case-insensitive substring of the file name - the keywords of a search
+     * also reach the path and, in the index, the content, this one does not.
+     */
+    private static boolean matchesFileName(FileInfo fileInfo, String fileName) {
+        if (isBlank(fileName)) {
+            return true;
+        }
+        String name = fileInfo.getFilenameOnly();
+        return name != null && name.toUpperCase().contains(fileName.toUpperCase().trim());
     }
 
     private static boolean matchesExtension(FileInfo fileInfo, String extension) {
@@ -485,6 +508,7 @@ public class FileInfoCriteria {
 
     public boolean hasSearchCriteria() {
         return !keyWords.isEmpty()
+                || StringUtils.isNotBlank(fileName)
                 || StringUtils.isNotBlank(extension)
                 || StringUtils.isNotBlank(modifiedBy)
                 || StringUtils.isNotBlank(modifiedByAccountId)
@@ -500,7 +524,7 @@ public class FileInfoCriteria {
     @Override
     public String toString() {
         return "FileInfoCriteria [domains=" + domains + ", type=" + type
-            + ", path=" + path + ", keyWords=" + keyWords + ", recursive="
+            + ", path=" + path + ", keyWords=" + keyWords + ", fileName=" + fileName + ", recursive="
             + recursive + ", maxResults=" + maxResults + ", modifiedAfter="
             + modifiedAfter + ", modifiedBefore=" + modifiedBefore + ", minSize="
             + minSize + ", maxSize=" + maxSize + ", modifiedByAccountId="

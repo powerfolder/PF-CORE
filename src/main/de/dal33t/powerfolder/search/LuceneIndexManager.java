@@ -1354,6 +1354,34 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
+     * PFS-5653: the name: filter. Every word has to appear in the file name - exactly, as a prefix or
+     * anywhere inside it - and nowhere else: unlike the keywords, this one never looks at the path, the
+     * content or who changed the file.
+     *
+     * @return the query, or null if there is nothing to filter by.
+     */
+    private static Query fileNameQuery(String value) {
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        BooleanQuery.Builder allWords = new BooleanQuery.Builder();
+        boolean any = false;
+        for (String token : value.toLowerCase(Locale.ROOT).trim().split("\\s+")) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            BooleanQuery.Builder word = new BooleanQuery.Builder();
+            word.add(new TermQuery(new Term("fileName", token)), BooleanClause.Occur.SHOULD);
+            word.add(new PrefixQuery(new Term("fileName", token)), BooleanClause.Occur.SHOULD);
+            word.add(new WildcardQuery(new Term("fileName", "*" + token + "*")), BooleanClause.Occur.SHOULD);
+            word.setMinimumNumberShouldMatch(1);
+            allWords.add(word.build(), BooleanClause.Occur.MUST);
+            any = true;
+        }
+        return any ? allWords.build() : null;
+    }
+
+    /**
      * Adds one MUST clause per active filter of the criteria. The keywords are not part of it: the caller
      * adds them on top, so the same filter query can be reused for the typo-tolerant second pass.
      */
@@ -1374,6 +1402,11 @@ public class LuceneIndexManager extends PFComponent {
             bqBuilder.add(
                     new PrefixQuery(new Term("relativeNameExact", prefix.toLowerCase(Locale.ROOT))),
                     BooleanClause.Occur.MUST);
+        }
+
+        Query fileNameQuery = fileNameQuery(criteria.getFileName());
+        if (fileNameQuery != null) {
+            bqBuilder.add(fileNameQuery, BooleanClause.Occur.MUST);
         }
 
         if (StringUtils.isNotBlank(criteria.getExtension())) {
