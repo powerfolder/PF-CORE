@@ -141,7 +141,9 @@ public class FileInfoComparator implements
                 } else if (o2.getModifiedDate() == null) {
                     return AFTER;
                 }
-                x = o2.getModifiedDate().compareTo(o1.getModifiedDate());
+                /* PFS-5653: ascending, like every other comparator here - it used to compare the other way
+                 * round, so whoever reversed it for a descending order got the oldest first. */
+                x = o1.getModifiedDate().compareTo(o2.getModifiedDate());
                 if (x == 0) {
                     return sortByFileName(o1, o2, false);
                 }

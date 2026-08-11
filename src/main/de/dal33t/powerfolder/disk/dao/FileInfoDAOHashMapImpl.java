@@ -20,11 +20,9 @@ package de.dal33t.powerfolder.disk.dao;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
@@ -300,12 +298,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         if (relativePath.length() > 0 && !relativePath.endsWith("/")) {
             relativePath += "/";
         }
-        // Hoist criteria accessors out of the per-file loops: getKeyWords()/getTags() allocate an
-        // unmodifiable wrapper per call, and the wanted tags are lowercased once for the whole scan.
-        Set<String> keyWords = criteria.getKeyWords();
-        String extension = criteria.getExtension();
-        String modifiedBy = criteria.getModifiedBy();
-        Set<String> wantedTagsLower = toLowerCase(criteria.getTags());
         Collection<FileInfo> fileInfos = new HashSet<>();
         for (String domainString : criteria.getDomains()) {
             Domain domain = getDomain(domainString);
@@ -320,10 +312,13 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                         break;
                     }
-                    if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
-                        if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, keyWords) && matchesExtension(directoryInfo, extension) && matchesModifiedBy(directoryInfo, modifiedBy) && matchesTags(directoryInfo, wantedTagsLower)) {
-                            fileInfos.add(directoryInfo);
-                        }
+                    boolean visible = !directoryInfo.isDeleted() || criteria.includeDeleted();
+                    boolean below = isInSubDir(directoryInfo, relativePath, criteria.isRecursive())
+                            && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath);
+                    if (visible && below && !fileInfos.contains(directoryInfo)
+                            && criteria.matches(directoryInfo))
+                    {
+                        fileInfos.add(directoryInfo);
                     }
                 }
             }
@@ -332,10 +327,10 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                         break;
                     }
-                    if ((!fileInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
-                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, keyWords) && matchesExtension(fileInfo, extension) && matchesModifiedBy(fileInfo, modifiedBy) && matchesTags(fileInfo, wantedTagsLower)) {
-                            fileInfos.add(fileInfo);
-                        }
+                    boolean visible = !fileInfo.isDeleted() || criteria.includeDeleted();
+                    boolean below = isInSubDir(fileInfo, relativePath, criteria.isRecursive());
+                    if (visible && below && !fileInfos.contains(fileInfo) && criteria.matches(fileInfo)) {
+                        fileInfos.add(fileInfo);
                     }
                 }
             }
@@ -390,80 +385,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             }
         }
         return true;
-    }
-
-    private boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
-        if (keyWords.isEmpty()) {
-            return true;
-        }
-        String name = fileInfo.getFilenameOnly().toLowerCase();
-        for (String keyWord : keyWords) {
-            if (!name.contains(keyWord)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean matchesExtension(FileInfo fileInfo, String extension) {
-        if (extension == null || extension.isEmpty()) {
-            return true;
-        }
-        return fileInfo.getExtension().equalsIgnoreCase(extension);
-    }
-
-    /**
-     * @param tagsLower the wanted tags, already lowercased once per scan via {@link #toLowerCase(Set)}. Matching
-     *                  compares case-insensitively against the (few) file tags without any per-file allocation.
-     */
-    private static boolean matchesTags(FileInfo fileInfo, Set<String> tagsLower) {
-        if (tagsLower == null || tagsLower.isEmpty()) {
-            return true;
-        }
-        List<String> fileTags = fileInfo.getTagsList();
-        if (fileTags.size() < tagsLower.size()) {
-            return false;
-        }
-        for (String wanted : tagsLower) {
-            boolean found = false;
-            for (String tag : fileTags) {
-                if (tag.equalsIgnoreCase(wanted)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static Set<String> toLowerCase(Set<String> tags) {
-        if (tags.isEmpty()) {
-            return Collections.emptySet();
-        }
-        Set<String> lower = new HashSet<>(tags.size());
-        for (String tag : tags) {
-            lower.add(tag.toLowerCase(Locale.ROOT));
-        }
-        return lower;
-    }
-
-    private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
-        if (modifiedBy == null || modifiedBy.isEmpty()) {
-            return true;
-        }
-        AccountInfo account = fileInfo.getModifiedByAccount();
-        if (account == null) {
-            return false;
-        }
-        String content = account.getDisplayName() + account.getUsername();
-        MemberInfo member = fileInfo.getModifiedBy();
-        if (member != null) {
-            content += member.nick;
-        }
-        return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
     }
 
     private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {

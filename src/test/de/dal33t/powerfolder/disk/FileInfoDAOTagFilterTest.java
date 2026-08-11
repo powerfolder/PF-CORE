@@ -18,6 +18,7 @@ public class FileInfoDAOTagFilterTest extends FileInfoDAOTestCase {
         dao.store(null, tagged("a.txt", "[\"Contract\",\"2026\"]"));
         dao.store(null, tagged("b.txt", "[\"Contract\"]"));
         dao.store(null, tagged("c.txt", "[\"Invoice\"]"));
+        dao.store(null, tagged("e.txt", "[\"offer\"]")); // stored lowercase
         dao.store(null, createFileInfo("d.txt", 1, false)); // untagged
     }
 
@@ -28,7 +29,7 @@ public class FileInfoDAOTagFilterTest extends FileInfoDAOTestCase {
     }
 
     public void testNoTagFilterReturnsAll() {
-        assertEquals(4, dao.findFilesFast(crit()).size());
+        assertEquals(5, dao.findFilesFast(crit()).size());
     }
 
     public void testSingleTagFilter() {
@@ -46,6 +47,17 @@ public class FileInfoDAOTagFilterTest extends FileInfoDAOTestCase {
     public void testTagMatchIsCaseInsensitive() {
         assertEquals(2, dao.findFilesFast(crit("contract")).size());
         assertEquals(1, dao.findFilesFast(crit("iNVoIce")).size());
+    }
+
+    /** Tags are matched case-insensitively in both directions - a lowercase tag is found by any casing. */
+    public void testTagStoredInLowerCaseIsFoundByAnyCasing() {
+        assertEquals(1, dao.findFilesFast(crit("OFFER")).size());
+        assertEquals(1, dao.findFilesFast(crit("Offer")).size());
+        assertEquals(1, dao.findFilesFast(crit("offer")).size());
+    }
+
+    public void testPaddedTagQueryIsTrimmed() {
+        assertEquals(2, dao.findFilesFast(crit("  contract  ")).size());
     }
 
     public void testUnknownTagReturnsNothing() {

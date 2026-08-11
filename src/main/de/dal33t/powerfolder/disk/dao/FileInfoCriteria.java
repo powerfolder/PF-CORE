@@ -19,10 +19,13 @@
  */
 package de.dal33t.powerfolder.disk.dao;
 
+import de.dal33t.powerfolder.DocumentType;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 
@@ -44,8 +47,19 @@ public class FileInfoCriteria {
     private Set<String> keyWords = new HashSet<>();
     private int maxResults = -1;
     private boolean includeDeleted = false;
-    private String extension;
+    private String fileName;
+    private final Set<String> extensions = new LinkedHashSet<>();
     private String modifiedBy;
+    private String modifiedByAccountId;
+    private String modifiedByDeviceId;
+    private String modifiedByDeviceName;
+    private Date modifiedAfter;
+    private Date modifiedBefore;
+    private Long minSize;
+    private Long maxSize;
+    private final Set<String> categories = new LinkedHashSet<>();
+    private SortField sortField;
+    private boolean sortDescending;
     private final Set<String> tags = new LinkedHashSet<>();
 
     /**
@@ -240,12 +254,28 @@ public class FileInfoCriteria {
         this.includeDeleted = includeDeleted;
     }
 
-    public String getExtension() {
-        return extension;
+    /** @return the text the file name must contain, independent of the keywords. */
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setExtension(String extension) {
-        this.extension = extension;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    /**
+     * @return the extensions a file may have, e.g. doc and pdf. Several are OR-combined, like the
+     *         {@link #getCategories() categories}: one question with more than one acceptable answer.
+     */
+    public Set<String> getExtensions() {
+        return Collections.unmodifiableSet(extensions);
+    }
+
+    public void addExtension(String extension) {
+        if (isBlank(extension)) {
+            return;
+        }
+        extensions.add(extension.trim().toLowerCase(Locale.ROOT));
     }
 
     public String getModifiedBy() {
@@ -254,6 +284,95 @@ public class FileInfoCriteria {
 
     public void setModifiedBy(String modifiedBy) {
         this.modifiedBy = modifiedBy;
+    }
+
+    public String getModifiedByAccountId() {
+        return modifiedByAccountId;
+    }
+
+    public void setModifiedByAccountId(String modifiedByAccountId) {
+        this.modifiedByAccountId = modifiedByAccountId;
+    }
+
+    public String getModifiedByDeviceId() {
+        return modifiedByDeviceId;
+    }
+
+    public void setModifiedByDeviceId(String modifiedByDeviceId) {
+        this.modifiedByDeviceId = modifiedByDeviceId;
+    }
+
+    /** @return the text the name of the device that changed the file last must contain. */
+    public String getModifiedByDeviceName() {
+        return modifiedByDeviceName;
+    }
+
+    public void setModifiedByDeviceName(String modifiedByDeviceName) {
+        this.modifiedByDeviceName = modifiedByDeviceName;
+    }
+
+    public Date getModifiedAfter() {
+        return modifiedAfter;
+    }
+
+    public void setModifiedAfter(Date modifiedAfter) {
+        this.modifiedAfter = modifiedAfter;
+    }
+
+    public Date getModifiedBefore() {
+        return modifiedBefore;
+    }
+
+    public void setModifiedBefore(Date modifiedBefore) {
+        this.modifiedBefore = modifiedBefore;
+    }
+
+    public Long getMinSize() {
+        return minSize;
+    }
+
+    public void setMinSize(Long minSize) {
+        this.minSize = minSize;
+    }
+
+    public Long getMaxSize() {
+        return maxSize;
+    }
+
+    public void setMaxSize(Long maxSize) {
+        this.maxSize = maxSize;
+    }
+
+    /**
+     * @return the categories a file may belong to, e.g. image and document. Several are OR-combined: one
+     *         question ("what kind of file") with more than one acceptable answer, unlike the tags, where
+     *         every one given has to be present.
+     */
+    public Set<String> getCategories() {
+        return Collections.unmodifiableSet(categories);
+    }
+
+    public void addCategory(String category) {
+        if (isBlank(category)) {
+            return;
+        }
+        categories.add(category.trim().toLowerCase(Locale.ROOT));
+    }
+
+    public SortField getSortField() {
+        return sortField;
+    }
+
+    public void setSortField(SortField sortField) {
+        this.sortField = sortField;
+    }
+
+    public boolean isSortDescending() {
+        return sortDescending;
+    }
+
+    public void setSortDescending(boolean sortDescending) {
+        this.sortDescending = sortDescending;
     }
 
     public Set<String> getTags() {
@@ -267,22 +386,214 @@ public class FileInfoCriteria {
         tags.add(tag.trim());
     }
 
+    /**
+     * Tests a single {@link FileInfo} against all content criteria: name, extension, editor, modification
+     * date, size, category and tags. The structural criteria - domains, path, type, deleted state and max
+     * results - stay with the DAO that walks the index.
+     */
+    public boolean matches(FileInfo fileInfo) {
+        return matchesName(fileInfo, keyWords) && matchesFileName(fileInfo, fileName)
+                && matchesExtension(fileInfo, extensions)
+                && matchesModifiedBy(fileInfo, modifiedBy)
+                && matchesModifiedDate(fileInfo, modifiedAfter, modifiedBefore)
+                && matchesSize(fileInfo, minSize, maxSize)
+                && matchesModifiedById(fileInfo, modifiedByAccountId, modifiedByDeviceId)
+                && matchesDeviceName(fileInfo, modifiedByDeviceName)
+                && matchesCategory(fileInfo, categories) && matchesTags(fileInfo, tags);
+    }
+
+    private static boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
+        if (keyWords.isEmpty()) {
+            return true;
+        }
+        String name = fileInfo.getFilenameOnly().toLowerCase();
+        for (String keyWord : keyWords) {
+            if (!name.contains(keyWord)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * PFS-5653: the name: filter. Case-insensitive substring of the file name - the keywords of a search
+     * also reach the path and, in the index, the content, this one does not.
+     */
+    private static boolean matchesFileName(FileInfo fileInfo, String fileName) {
+        if (isBlank(fileName)) {
+            return true;
+        }
+        String name = fileInfo.getFilenameOnly();
+        return name != null && name.toUpperCase().contains(fileName.toUpperCase().trim());
+    }
+
+    private static boolean matchesExtension(FileInfo fileInfo, Set<String> extensions) {
+        if (extensions.isEmpty()) {
+            return true;
+        }
+        String actual = fileInfo.getExtension();
+        return actual != null && extensions.contains(actual.toLowerCase(Locale.ROOT));
+    }
+
+    private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
+        if (modifiedBy == null || modifiedBy.isEmpty()) {
+            return true;
+        }
+        AccountInfo account = fileInfo.getModifiedByAccount();
+        if (account == null) {
+            return false;
+        }
+        String content = account.getDisplayName() + account.getUsername();
+        MemberInfo member = fileInfo.getModifiedBy();
+        if (member != null) {
+            content += member.nick;
+        }
+        return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
+    }
+
+    private static boolean matchesModifiedDate(FileInfo fileInfo, Date after, Date before) {
+        if (after == null && before == null) {
+            return true;
+        }
+        Date modified = fileInfo.getModifiedDate();
+        if (modified == null) {
+            return false;
+        }
+        if (after != null && modified.before(after)) {
+            return false;
+        }
+        /* Both bounds are inclusive: "before:2024-12-31" means up to the last millisecond of that day. */
+        return before == null || !modified.after(before);
+    }
+
+    private static boolean matchesSize(FileInfo fileInfo, Long minSize, Long maxSize) {
+        if (minSize == null && maxSize == null) {
+            return true;
+        }
+        long size = fileInfo.getSize();
+        if (minSize != null && size < minSize) {
+            return false;
+        }
+        return maxSize == null || size <= maxSize;
+    }
+
+    private static boolean matchesModifiedById(FileInfo fileInfo, String accountId, String deviceId) {
+        if (isBlank(accountId) && isBlank(deviceId)) {
+            return true;
+        }
+        if (StringUtils.isNotBlank(accountId)) {
+            AccountInfo account = fileInfo.getModifiedByAccount();
+            if (account == null || !accountId.trim().equals(account.getOID())) {
+                return false;
+            }
+        }
+        if (StringUtils.isNotBlank(deviceId)) {
+            MemberInfo member = fileInfo.getModifiedBy();
+            if (member == null || !deviceId.trim().equals(member.id)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** PFS-5653: the device: filter - the name of the device a file was changed on. */
+    private static boolean matchesDeviceName(FileInfo fileInfo, String deviceName) {
+        if (isBlank(deviceName)) {
+            return true;
+        }
+        MemberInfo member = fileInfo.getModifiedBy();
+        return member != null && member.nick != null
+                && member.nick.toUpperCase().contains(deviceName.toUpperCase().trim());
+    }
+
+    private static boolean matchesCategory(FileInfo fileInfo, Set<String> categories) {
+        if (categories.isEmpty()) {
+            return true;
+        }
+        String actual = fileInfo.isDiretory()
+                ? DocumentType.FOLDER : DocumentType.categoryOf(fileInfo.getExtension());
+        return categories.contains(actual);
+    }
+
+    /**
+     * Tags are always matched case-insensitively, in whatever case they were typed when tagging or when
+     * searching. Compared directly against the (few) file tags, without any per-file allocation.
+     */
+    private static boolean matchesTags(FileInfo fileInfo, Set<String> wantedTags) {
+        if (wantedTags.isEmpty()) {
+            return true;
+        }
+        List<String> fileTags = fileInfo.getTagsList();
+        if (fileTags.size() < wantedTags.size()) {
+            return false;
+        }
+        for (String wanted : wantedTags) {
+            boolean found = false;
+            for (String tag : fileTags) {
+                if (tag.equalsIgnoreCase(wanted)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public boolean hasSearchCriteria() {
         return !keyWords.isEmpty()
-                || StringUtils.isNotBlank(extension)
+                || StringUtils.isNotBlank(fileName)
+                || !extensions.isEmpty()
                 || StringUtils.isNotBlank(modifiedBy)
+                || StringUtils.isNotBlank(modifiedByAccountId)
+                || StringUtils.isNotBlank(modifiedByDeviceId)
+                || StringUtils.isNotBlank(modifiedByDeviceName)
+                || modifiedAfter != null
+                || modifiedBefore != null
+                || minSize != null
+                || maxSize != null
+                || !categories.isEmpty()
                 || !tags.isEmpty();
     }
 
     @Override
     public String toString() {
         return "FileInfoCriteria [domains=" + domains + ", type=" + type
-            + ", path=" + path + ", keyWords=" + keyWords + ", recursive="
-            + recursive + ", maxResults=" + maxResults + "]";
+            + ", path=" + path + ", keyWords=" + keyWords + ", fileName=" + fileName + ", recursive="
+            + recursive + ", maxResults=" + maxResults + ", modifiedAfter="
+            + modifiedAfter + ", modifiedBefore=" + modifiedBefore + ", minSize="
+            + minSize + ", maxSize=" + maxSize + ", modifiedByAccountId="
+            + modifiedByAccountId + ", modifiedByDeviceId=" + modifiedByDeviceId
+            + ", extensions=" + extensions + ", categories=" + categories + "]";
     }
 
     public enum Type {
         FILES_AND_DIRECTORIES, FILES_ONLY, DIRECTORIES_ONLY
+    }
+
+    /**
+     * PFS-5653: the orders a result can be sorted by. Single source of truth for every spelling a caller may
+     * use - the "sort:" search operator, the sortname request parameter - so that the Lucene sort and the
+     * comparator applied afterwards can never disagree on what "date" means.
+     */
+    public enum SortField {
+        NAME, SIZE, DATE;
+
+        /**
+         * @param value the name of a field, in any case - "date", "DATE", " Date ".
+         * @return the field it names, or null if it names none.
+         */
+        public static SortField parse(String value) {
+            if (StringUtils.isBlank(value)) {
+                return null;
+            }
+            try {
+                return valueOf(value.trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
     }
 }

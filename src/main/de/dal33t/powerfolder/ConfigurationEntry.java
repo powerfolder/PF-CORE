@@ -1055,6 +1055,13 @@ public enum ConfigurationEntry {
             Math.max(2, Runtime.getRuntime().availableProcessors() / 4), true),
 
     /**
+     * PFS-5653: Typo tolerance (Lucene FuzzyQuery, 1-2 edits) for search terms of at least 4 characters.
+     * Only used as a fallback: a query that already found something is never re-run fuzzily, so precision
+     * and cost of normal searches are unaffected. Set to false to switch typo tolerance off entirely.
+     */
+    SEARCH_INDEX_FUZZY_ENABLED("search.index.fuzzy.enabled", true),
+
+    /**
      * Maximum extracted text length (characters) per file. Limits how much text Tika produces.
      * 1 MB ≈ 500 pages — sufficient for search. Default: 1048576.
      */

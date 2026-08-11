@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.search;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.DocumentType;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -34,12 +35,17 @@ import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Waiter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -71,6 +77,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -93,7 +100,34 @@ public class LuceneIndexManager extends PFComponent {
     /** Searchable fields used by all query methods. */
     private static final String[] SEARCH_FIELDS =
             {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
-             "modifiedByDeviceName", "extensionExact", "tags"};
+             "modifiedByDeviceName", "extensionExact", "tags", "docTitle", "docAuthor"};
+
+    /**
+     * PFS-5653: what a name search looks at - the file name and the title a document carries in its own
+     * metadata, so a PDF titled "Annual Report" answers a search for that name.
+     */
+    private static final String[] NAME_FIELDS = {"fileName", "docTitle"};
+
+    /**
+     * PFS-5653: who a "changed by" search looks at - whoever last wrote the file, and the author the
+     * document names itself.
+     */
+    private static final String[] EDITOR_FIELDS =
+            {"modifiedByDisplayName", "modifiedByUsername", "modifiedByDeviceName", "docAuthor"};
+
+    private static final String[] PHRASE_FIELDS =
+            {"fileName", "relativeName", CONTENT_FIELD};
+
+    private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
+
+    /**
+     * PFS-5653: upper bound of distinct terms {@link #suggestTerms(String, String)} reads per field. Only
+     * the most frequent handful is ever shown, so this merely keeps a keystroke bounded on large indexes.
+     */
+    private static final int SUGGEST_MAX_TERMS = 200;
+
+    /** Result cap for a search whose criteria set none. */
+    private static final int DEFAULT_MAX_RESULTS = 1_000;
 
     private static final Pattern BINARY_NOISE_PATTERN = Pattern.compile("[A-Za-z0-9+/=_-]{32,}");
 
@@ -737,7 +771,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 13;
+    private static final int INDEX_FORMAT_VERSION = 19;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -761,7 +795,12 @@ public class LuceneIndexManager extends PFComponent {
         long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
         doc.add(new LongPoint("modifiedDate", modifiedDate));
         doc.add(new StoredField("modifiedDate", modifiedDate));
+        doc.add(new NumericDocValuesField("modifiedDate", modifiedDate));
+        doc.add(new LongPoint("size", fileInfo.getSize()));
         doc.add(new StoredField("size", fileInfo.getSize()));
+        doc.add(new NumericDocValuesField("size", fileInfo.getSize()));
+        doc.add(new SortedDocValuesField("nameSort",
+                new BytesRef(fileName.toLowerCase(Locale.ROOT))));
         doc.add(new StoredField("version", fileInfo.getVersion()));
         if (StringUtils.isNotBlank(fileInfo.getOID())) {
             doc.add(new StoredField("oid", fileInfo.getOID()));
@@ -775,7 +814,9 @@ public class LuceneIndexManager extends PFComponent {
             if (!tagList.isEmpty()) {
                 doc.add(new TextField("tags", String.join(" ", tagList), Field.Store.NO));
                 for (String tag : tagList) {
-                    doc.add(new StringField("tagsExact", tag.toLowerCase(Locale.ROOT), Field.Store.NO));
+                    /* Tags are always matched case-insensitively: the term is normalized the same way here
+                     * and in the tagsExact query below - lowercased and trimmed. */
+                    doc.add(new StringField("tagsExact", tag.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
                 }
             }
         }
@@ -787,6 +828,7 @@ public class LuceneIndexManager extends PFComponent {
             }
             if (StringUtils.isNotBlank(modAccount.getDisplayName())) {
                 doc.add(new TextField("modifiedByDisplayName", modAccount.getDisplayName(), Field.Store.YES));
+                addSuggestField(doc, "modifiedByDisplayNameExact", modAccount.getDisplayName());
             }
             if (StringUtils.isNotBlank(modAccount.getUsername())) {
                 doc.add(new TextField("modifiedByUsername", modAccount.getUsername(), Field.Store.YES));
@@ -799,6 +841,7 @@ public class LuceneIndexManager extends PFComponent {
             }
             if (StringUtils.isNotBlank(modDevice.nick)) {
                 doc.add(new TextField("modifiedByDeviceName", modDevice.nick, Field.Store.YES));
+                addSuggestField(doc, "modifiedByDeviceNameExact", modDevice.nick);
             }
         }
 
@@ -807,6 +850,10 @@ public class LuceneIndexManager extends PFComponent {
 
         doc.add(new StringField("isDir",
                 fileInfo.isDiretory() ? "true" : "false", Field.Store.YES));
+
+        String category = fileInfo.isDiretory()
+                ? DocumentType.FOLDER : DocumentType.categoryOf(extension);
+        doc.add(new StringField("category", category, Field.Store.YES));
 
         return doc;
     }
@@ -824,10 +871,12 @@ public class LuceneIndexManager extends PFComponent {
 
             if (!fileInfo.isDeleted() && !fileInfo.isDiretory() && isExtractContentEnabled() && isContentExtractable(fileInfo)) {
                 if (fileInfo.getSize() <= INLINE_EXTRACT_MAX_SIZE) {
-                    String content = extractContentTikaOnly(fileInfo);
+                    Metadata metadata = new Metadata();
+                    String content = extractContentTikaOnly(fileInfo, metadata);
                     throttleExtraction();
                     if (content != null && !content.isBlank()) {
                         doc.add(new TextField("content", stripBinaryNoise(content), Field.Store.NO));
+                        addMetadataFields(doc, metadata);
                     } else {
                         contentQueue.add(fileInfo);
                     }
@@ -853,7 +902,8 @@ public class LuceneIndexManager extends PFComponent {
         if (fileInfo.isDiretory()) return;
         if (!isContentExtractable(fileInfo)) return;
         try {
-            String content = extractContent(fileInfo);
+            Metadata metadata = new Metadata();
+            String content = extractContent(fileInfo, metadata);
             if (content == null || content.isBlank()) {
                 if (isFine()) {
                     logFine(folder + ": No content extracted for " + fileInfo);
@@ -869,6 +919,7 @@ public class LuceneIndexManager extends PFComponent {
             }
             Document doc = buildDocument(fileInfo);
             doc.add(new TextField("content", stripBinaryNoise(content), Field.Store.NO));
+            addMetadataFields(doc, metadata);
             writer.updateDocument(
                     new Term("docId", buildDocId(fileInfo)), doc);
             if (isFine()) {
@@ -903,7 +954,51 @@ public class LuceneIndexManager extends PFComponent {
         return configured != null && configured.toLowerCase(Locale.ROOT).contains(ext.toLowerCase(Locale.ROOT));
     }
 
-    private String extractContentTikaOnly(FileInfo fileInfo) {
+    /**
+     * PFS-5653: adds a non-analyzed copy of a value for {@link #suggestTerms(String, String)}. The analyzed
+     * fields hold one term per word, so suggesting from them offers "jane" and "doe" instead of "Jane Doe".
+     * Lowercased and trimmed like the other {@code *Exact} fields, which keeps the prefix scan
+     * case-insensitive - searching is case-insensitive too, so a lowercase suggestion still matches.
+     */
+    private static void addSuggestField(Document doc, String field, String value) {
+        doc.add(new StringField(field, value.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
+    }
+
+    /**
+     * Builds Tika {@link Metadata} carrying the file name as a resource-name
+     * hint. Tika's {@code AutoDetectParser} uses the file extension to pick a
+     * parser; without the hint an RTF (and other extension-typed formats) can
+     * be misdetected as text/plain and then fail charset detection. PF-1930.
+     */
+    private static Metadata filenameHint(Metadata metadata, Path filePath) {
+        Path name = filePath.getFileName();
+        if (name != null) {
+            metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name.toString());
+        }
+        return metadata;
+    }
+
+    /**
+     * PFS-5653: the title and author a document carries in its own metadata - a PDF names both. They are no
+     * filters of their own: the title joins what a name search looks at, the author what a "changed by"
+     * search looks at, so a document found by its title or written by someone shows up without anyone
+     * having to know that PDFs carry metadata at all.
+     */
+    private static void addMetadataFields(Document doc, Metadata metadata) {
+        if (metadata == null) {
+            return;
+        }
+        String title = metadata.get(TikaCoreProperties.TITLE);
+        if (StringUtils.isNotBlank(title)) {
+            doc.add(new TextField("docTitle", title, Field.Store.YES));
+        }
+        String author = metadata.get(TikaCoreProperties.CREATOR);
+        if (StringUtils.isNotBlank(author)) {
+            doc.add(new TextField("docAuthor", author, Field.Store.YES));
+        }
+    }
+
+    private String extractContentTikaOnly(FileInfo fileInfo, Metadata metadata) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             if (isFine()) {
@@ -915,7 +1010,7 @@ public class LuceneIndexManager extends PFComponent {
 
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
             BodyContentHandler handler = new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
-            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
+            getSharedParser().parse(stream, handler, filenameHint(metadata, filePath), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 if (!hasEncodingIssues(text)) return text;
@@ -956,21 +1051,6 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
-     * Builds Tika {@link Metadata} carrying the file name as a resource-name
-     * hint. Tika's {@code AutoDetectParser} uses the file extension to pick a
-     * parser; without the hint an RTF (and other extension-typed formats) can
-     * be misdetected as text/plain and then fail charset detection. PF-1930.
-     */
-    private static Metadata filenameHint(Path filePath) {
-        Metadata metadata = new Metadata();
-        Path name = filePath.getFileName();
-        if (name != null) {
-            metadata.set(TikaCoreProperties.RESOURCE_NAME_KEY, name.toString());
-        }
-        return metadata;
-    }
-
-    /**
      * Fallback RTF-to-text extraction using the JDK's built-in
      * {@link RTFEditorKit}. Used when Tika cannot detect the character encoding
      * of an RTF document. Strips the RTF control words, leaving the readable
@@ -993,7 +1073,7 @@ public class LuceneIndexManager extends PFComponent {
         }
     }
 
-    private String extractContent(FileInfo fileInfo) {
+    private String extractContent(FileInfo fileInfo, Metadata metadata) {
         Path filePath = fileInfo.getDiskFile(folder);
         if (filePath == null || !Files.exists(filePath)) {
             if (isFine()) {
@@ -1018,7 +1098,7 @@ public class LuceneIndexManager extends PFComponent {
         BodyContentHandler handler =
                 new BodyContentHandler(ConfigurationEntry.SEARCH_INDEX_MAX_TEXT_LENGTH.getValueInt(getController()));
         try (InputStream stream = new BufferedInputStream(Files.newInputStream(filePath), 256 * 1024)) {
-            getSharedParser().parse(stream, handler, filenameHint(filePath), new ParseContext());
+            getSharedParser().parse(stream, handler, filenameHint(metadata, filePath), new ParseContext());
             String text = handler.toString();
             if (text != null && !text.isBlank()) {
                 tikaText = text;
@@ -1222,33 +1302,10 @@ public class LuceneIndexManager extends PFComponent {
      * @return matching FileInfo objects (non-deleted only)
      */
     public List<FileInfo> searchFiles(String queryText, int maxResults) {
-        return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
-    }
-
-    /**
-     * Searches for files matching the query text, optionally including
-     * deleted files (for recycle bin / version history views).
-     *
-     * @param queryText      the user's search query
-     * @param maxResults     maximum number of results to return
-     * @param includeDeleted if true, deleted files are included in results
-     * @return matching FileInfo objects
-     */
-    public List<FileInfo> searchFiles(String queryText, int maxResults,
-                                      boolean includeDeleted) {
-        return doSearch(queryText, maxResults,
-                includeDeleted ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
-    }
-
-    /**
-     * Searches for deleted files only — intended for recycle bin views.
-     */
-    public List<FileInfo> searchDeletedFiles(String queryText,
-                                             int maxResults) {
-        return doSearch(queryText, maxResults, DeletedFilter.ONLY,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES);
+        FileInfoCriteria criteria = new FileInfoCriteria();
+        criteria.addKeyWord(queryText);
+        criteria.setMaxResults(maxResults);
+        return doSearch(criteria);
     }
 
     /**
@@ -1261,18 +1318,219 @@ public class LuceneIndexManager extends PFComponent {
      */
     public List<FileInfo> searchFiles(FileInfoCriteria criteria) {
         Reject.ifNull(criteria, "FileInfoCriteria");
-
-        int maxResults = criteria.getMaxResults() > 0 ? criteria.getMaxResults() : 1_000;
-        DeletedFilter deletedFilter = criteria.includeDeleted() ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE;
-        String queryText = String.join(" ", criteria.getKeyWords());
-
-        return doSearch(queryText, maxResults, deletedFilter,
-                criteria.getPath(), criteria.getExtension(), criteria.getModifiedBy(),
-                criteria.getTags(), criteria.getType());
+        return doSearch(criteria);
     }
 
-    /** Controls how the deleted flag is handled in searches. */
-    private enum DeletedFilter { INCLUDE, EXCLUDE, ONLY }
+    /**
+     * Suggests indexed values of a field, optionally restricted to those starting with the given prefix.
+     * <p>
+     * PFS-5653: term enumeration is bounded by {@link #SUGGEST_MAX_TERMS} per field. Without that cap a
+     * single keystroke could walk every distinct term of every folder index - the suggest endpoint is called
+     * while the user is typing, so the work per call has to stay predictable.
+     *
+     * @return the matching values with the number of documents each appears in.
+     */
+    public Map<String, Integer> suggestTerms(String field, String prefix) {
+        Map<String, Integer> counts = new HashMap<>();
+        if (StringUtils.isBlank(field)) {
+            return counts;
+        }
+        String pfx = prefix == null ? "" : prefix.toLowerCase(Locale.ROOT);
+        IndexSearcher searcher = null;
+        try {
+            searcher = searcherManager.acquire();
+            IndexReader reader = searcher.getIndexReader();
+            for (LeafReaderContext leaf : reader.leaves()) {
+                Terms terms = leaf.reader().terms(field);
+                if (terms == null) {
+                    continue;
+                }
+                TermsEnum termsEnum = terms.iterator();
+                if (!pfx.isEmpty() && termsEnum.seekCeil(new BytesRef(pfx)) == TermsEnum.SeekStatus.END) {
+                    continue;
+                }
+                BytesRef term = pfx.isEmpty() ? termsEnum.next() : termsEnum.term();
+                while (term != null) {
+                    String value = term.utf8ToString();
+                    if (!pfx.isEmpty() && !value.startsWith(pfx)) {
+                        break;
+                    }
+                    counts.merge(value, termsEnum.docFreq(), Integer::sum);
+                    if (counts.size() >= SUGGEST_MAX_TERMS) {
+                        if (isFine()) {
+                            logFine(folder + ": Term suggest for field '" + field + "' capped at "
+                                    + SUGGEST_MAX_TERMS + " terms, prefix '" + pfx + "'");
+                        }
+                        return counts;
+                    }
+                    term = termsEnum.next();
+                }
+            }
+        } catch (Exception e) {
+            logWarning(folder + ": Term suggest failed for field '" + field + "': " + e.getMessage());
+        } finally {
+            if (searcher != null) {
+                try {
+                    searcherManager.release(searcher);
+                } catch (IOException e) {
+                    logWarning(folder + ": Failed to release searcher: " + e.getMessage());
+                }
+            }
+        }
+        return counts;
+    }
+
+    /**
+     * Maps a requested order onto the docValues field that carries it. The accepted spellings live in
+     * {@link FileInfoCriteria.SortField}, so this is only about which field to read.
+     */
+    private static Sort buildSort(FileInfoCriteria.SortField sortField, boolean descending) {
+        if (sortField == null) {
+            return null;
+        }
+        switch (sortField) {
+            case DATE:
+                return new Sort(new SortField("modifiedDate", SortField.Type.LONG, descending));
+            case SIZE:
+                return new Sort(new SortField("size", SortField.Type.LONG, descending));
+            case NAME:
+                return new Sort(new SortField("nameSort", SortField.Type.STRING, descending));
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * PFS-5653: the name: filter. Every word has to appear in the file name - exactly, as a prefix or
+     * anywhere inside it - and nowhere else: unlike the keywords, this one never looks at the path, the
+     * content or who changed the file.
+     *
+     * @return the query, or null if there is nothing to filter by.
+     */
+    private static Query fileNameQuery(String value) {
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        BooleanQuery.Builder allWords = new BooleanQuery.Builder();
+        boolean any = false;
+        for (String token : value.toLowerCase(Locale.ROOT).trim().split("\\s+")) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            BooleanQuery.Builder word = new BooleanQuery.Builder();
+            for (String field : NAME_FIELDS) {
+                word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                word.add(new PrefixQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                word.add(new WildcardQuery(new Term(field, "*" + token + "*")), BooleanClause.Occur.SHOULD);
+            }
+            word.setMinimumNumberShouldMatch(1);
+            allWords.add(word.build(), BooleanClause.Occur.MUST);
+            any = true;
+        }
+        return any ? allWords.build() : null;
+    }
+
+    /**
+     * Adds one MUST clause per active filter of the criteria. The keywords are not part of it: the caller
+     * adds them on top, so the same filter query can be reused for the typo-tolerant second pass.
+     */
+    private static void addFilterClauses(BooleanQuery.Builder bqBuilder, FileInfoCriteria criteria) {
+        if (!criteria.includeDeleted()) {
+            bqBuilder.add(new TermQuery(new Term("deleted", "false")), BooleanClause.Occur.MUST);
+        }
+
+        if (criteria.getType() == FileInfoCriteria.Type.FILES_ONLY) {
+            bqBuilder.add(new TermQuery(new Term("isDir", "false")), BooleanClause.Occur.MUST);
+        } else if (criteria.getType() == FileInfoCriteria.Type.DIRECTORIES_ONLY) {
+            bqBuilder.add(new TermQuery(new Term("isDir", "true")), BooleanClause.Occur.MUST);
+        }
+
+        String directory = criteria.getPath();
+        if (directory != null && !directory.isEmpty() && !"/".equals(directory)) {
+            String prefix = directory.endsWith("/") ? directory : directory + "/";
+            bqBuilder.add(
+                    new PrefixQuery(new Term("relativeNameExact", prefix.toLowerCase(Locale.ROOT))),
+                    BooleanClause.Occur.MUST);
+        }
+
+        Query fileNameQuery = fileNameQuery(criteria.getFileName());
+        if (fileNameQuery != null) {
+            bqBuilder.add(fileNameQuery, BooleanClause.Occur.MUST);
+        }
+
+        if (!criteria.getExtensions().isEmpty()) {
+            /* Any of the chosen extensions may match - "doc or pdf", the same way the categories combine. */
+            BooleanQuery.Builder anyExtension = new BooleanQuery.Builder();
+            for (String extension : criteria.getExtensions()) {
+                anyExtension.add(new TermQuery(new Term("extensionExact", extension.toLowerCase(Locale.ROOT))),
+                        BooleanClause.Occur.SHOULD);
+            }
+            anyExtension.setMinimumNumberShouldMatch(1);
+            bqBuilder.add(anyExtension.build(), BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getModifiedBy())) {
+            String wildcard = "*" + criteria.getModifiedBy().toLowerCase(Locale.ROOT).trim() + "*";
+            BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
+            for (String field : EDITOR_FIELDS) {
+                modQuery.add(new WildcardQuery(new Term(field, wildcard)), BooleanClause.Occur.SHOULD);
+            }
+            modQuery.setMinimumNumberShouldMatch(1);
+            bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
+        }
+
+        for (String tag : criteria.getTags()) {
+            if (StringUtils.isNotBlank(tag)) {
+                bqBuilder.add(
+                        new TermQuery(new Term("tagsExact", tag.toLowerCase(Locale.ROOT).trim())),
+                        BooleanClause.Occur.MUST);
+            }
+        }
+
+        Date modifiedAfter = criteria.getModifiedAfter();
+        Date modifiedBefore = criteria.getModifiedBefore();
+        if (modifiedAfter != null || modifiedBefore != null) {
+            /* The index stores the modification date as millis, so this is where a Date becomes a number. */
+            long lower = modifiedAfter != null ? modifiedAfter.getTime() : Long.MIN_VALUE;
+            long upper = modifiedBefore != null ? modifiedBefore.getTime() : Long.MAX_VALUE;
+            bqBuilder.add(LongPoint.newRangeQuery("modifiedDate", lower, upper), BooleanClause.Occur.MUST);
+        }
+
+        Long minSize = criteria.getMinSize();
+        Long maxSize = criteria.getMaxSize();
+        if (minSize != null || maxSize != null) {
+            long lower = minSize != null ? minSize : 0L;
+            long upper = maxSize != null ? maxSize : Long.MAX_VALUE;
+            bqBuilder.add(LongPoint.newRangeQuery("size", lower, upper), BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getModifiedByAccountId())) {
+            bqBuilder.add(new TermQuery(new Term("modifiedByAccountId", criteria.getModifiedByAccountId().trim())),
+                    BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getModifiedByDeviceId())) {
+            bqBuilder.add(new TermQuery(new Term("modifiedByDeviceId", criteria.getModifiedByDeviceId().trim())),
+                    BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getModifiedByDeviceName())) {
+            String wildcard = "*" + criteria.getModifiedByDeviceName().toLowerCase(Locale.ROOT).trim() + "*";
+            bqBuilder.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)),
+                    BooleanClause.Occur.MUST);
+        }
+
+        if (!criteria.getCategories().isEmpty()) {
+            /* Any of the chosen categories may match - "images or documents", not both at once. */
+            BooleanQuery.Builder anyCategory = new BooleanQuery.Builder();
+            for (String category : criteria.getCategories()) {
+                anyCategory.add(new TermQuery(new Term("category", category.toLowerCase(Locale.ROOT).trim())),
+                        BooleanClause.Occur.SHOULD);
+            }
+            anyCategory.setMinimumNumberShouldMatch(1);
+            bqBuilder.add(anyCategory.build(), BooleanClause.Occur.MUST);
+        }
+    }
 
     /**
      * Core search implementation. Builds a combined Lucene query that
@@ -1280,7 +1538,7 @@ public class LuceneIndexManager extends PFComponent {
      * <ul>
      *   <li><b>Keywords:</b> per-token exact / prefix / wildcard
      *       queries across searchable fields</li>
-     *   <li><b>Deleted filter:</b> include, exclude, or only deleted</li>
+     *   <li><b>Deleted filter:</b> excluded unless the criteria ask for them</li>
      *   <li><b>Directory:</b> {@link PrefixQuery} on path (non-analyzed)</li>
      *   <li><b>Extension:</b> exact {@link TermQuery} on extensionExact (non-analyzed)</li>
      *   <li><b>ModifiedBy:</b> {@link WildcardQuery} on the modifiedBy
@@ -1289,19 +1547,14 @@ public class LuceneIndexManager extends PFComponent {
      * {@code TopDocs} returned by Lucene contains the final matching
      * items, which are then converted to FileInfo instances.
      *
-     * @param queryText     the user's search keywords
-     * @param maxResults    maximum number of results
-     * @param deletedFilter how to handle the deleted flag
-     * @param directory     restrict to files under this path (may be null)
-     * @param extension     restrict to this file extension (may be null)
-     * @param modifiedBy    restrict to files modified by this user (may be null)
+     * @param criteria everything the search needs - keywords, filters, order and result cap. An empty
+     *                 instance means "no restriction"; the cap falls back to {@link #DEFAULT_MAX_RESULTS}.
      * @return matching FileInfo objects
      */
-    private List<FileInfo> doSearch(String queryText, int maxResults,
-                                    DeletedFilter deletedFilter,
-                                    String directory, String extension,
-                                    String modifiedBy, Collection<String> tags,
-                                    FileInfoCriteria.Type type) {
+    private List<FileInfo> doSearch(FileInfoCriteria criteria) {
+        String queryText = String.join(" ", criteria.getKeyWords());
+        int maxResults = criteria.getMaxResults() > 0 ? criteria.getMaxResults() : DEFAULT_MAX_RESULTS;
+        Sort sort = buildSort(criteria.getSortField(), criteria.isSortDescending());
 
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
@@ -1311,71 +1564,29 @@ public class LuceneIndexManager extends PFComponent {
             searcher = searcherManager.acquire();
 
             BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
+            addFilterClauses(bqBuilder, criteria);
 
-            if (hasKeywords) {
-                Query contentQuery = buildQuery(queryText);
-                if (contentQuery != null) {
-                    bqBuilder.add(contentQuery, BooleanClause.Occur.MUST);
-                }
-            }
-
-            switch (deletedFilter) {
-                case EXCLUDE:
-                    bqBuilder.add(new TermQuery(new Term("deleted", "false")), BooleanClause.Occur.MUST);
-                    break;
-                case ONLY:
-                    bqBuilder.add(new TermQuery(new Term("deleted", "true")), BooleanClause.Occur.MUST);
-                    break;
-                case INCLUDE:
-                default:
-                    break;
-            }
-
-            if (type == FileInfoCriteria.Type.FILES_ONLY) {
-                bqBuilder.add(new TermQuery(new Term("isDir", "false")), BooleanClause.Occur.MUST);
-            } else if (type == FileInfoCriteria.Type.DIRECTORIES_ONLY) {
-                bqBuilder.add(new TermQuery(new Term("isDir", "true")), BooleanClause.Occur.MUST);
-            }
-
-            if (directory != null && !directory.isEmpty() && !"/".equals(directory)) {
-                String prefix = directory.endsWith("/") ? directory : directory + "/";
-                bqBuilder.add(
-                        new PrefixQuery(new Term("relativeNameExact", prefix.toLowerCase(Locale.ROOT))),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (StringUtils.isNotBlank(extension)) {
-                bqBuilder.add(
-                        new TermQuery(new Term("extensionExact", extension.toLowerCase(Locale.ROOT))),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (StringUtils.isNotBlank(modifiedBy)) {
-                String term = modifiedBy.toLowerCase(Locale.ROOT).trim();
-                String wildcard = "*" + term + "*";
-                BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
-                modQuery.add(new WildcardQuery(new Term("modifiedByDisplayName", wildcard)),
-                        BooleanClause.Occur.SHOULD);
-                modQuery.add(new WildcardQuery(new Term("modifiedByUsername", wildcard)), BooleanClause.Occur.SHOULD);
-                modQuery.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)), BooleanClause.Occur.SHOULD);
-                bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
-            }
-
-            if (tags != null) {
-                for (String tag : tags) {
-                    if (StringUtils.isNotBlank(tag)) {
-                        bqBuilder.add(
-                                new TermQuery(new Term("tagsExact", tag.toLowerCase(Locale.ROOT).trim())),
-                                BooleanClause.Occur.MUST);
-                    }
-                }
-            }
-
-            Query finalQuery = bqBuilder.build();
-            TopDocs topDocs = searcher.search(finalQuery, maxResults);
+            /* The filter clauses are built once; the keyword part is added on top, so the query can be
+             * repeated with typo tolerance without rebuilding the filters. */
+            Query filterQuery = bqBuilder.build();
+            Query contentQuery = hasKeywords ? buildQuery(queryText, false) : null;
+            TopDocs topDocs = search(searcher, withContent(filterQuery, contentQuery), maxResults, sort);
 
             if (isFine()) {
                 logFine(folder + ": Found " + topDocs.totalHits + " for query '" + queryText + "'");
+            }
+
+            /* PFS-5653: typo tolerance costs a FuzzyQuery per token and field and drags in near-misses, so
+             * it is a fallback only - a query that found something is never re-run fuzzily. */
+            if (topDocs.scoreDocs.length == 0 && contentQuery != null && isFuzzySearchEnabled()) {
+                Query fuzzyQuery = buildQuery(queryText, true);
+                if (fuzzyQuery != null) {
+                    topDocs = search(searcher, withContent(filterQuery, fuzzyQuery), maxResults, sort);
+                    if (isFine()) {
+                        logFine(folder + ": Fuzzy fallback found " + topDocs.totalHits
+                                + " for query '" + queryText + "'");
+                    }
+                }
             }
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
@@ -1403,27 +1614,62 @@ public class LuceneIndexManager extends PFComponent {
         return results;
     }
 
+    private static TopDocs search(IndexSearcher searcher, Query query, int maxResults, Sort sort)
+            throws IOException
+    {
+        return sort != null ? searcher.search(query, maxResults, sort) : searcher.search(query, maxResults);
+    }
+
+    /** Combines the filter clauses with the keyword part, which may be absent. */
+    private static Query withContent(Query filterQuery, Query contentQuery) {
+        if (contentQuery == null) {
+            return filterQuery;
+        }
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        for (BooleanClause clause : ((BooleanQuery) filterQuery).clauses()) {
+            builder.add(clause);
+        }
+        builder.add(contentQuery, BooleanClause.Occur.MUST);
+        return builder.build();
+    }
+
+    private boolean isFuzzySearchEnabled() {
+        return ConfigurationEntry.SEARCH_INDEX_FUZZY_ENABLED.getValueBoolean(getController());
+    }
+
     /**
      * Builds a Lucene query from user input. For each sanitized token,
      * creates a per-field disjunction of exact / prefix / wildcard
      * queries with boosting to prefer exact matches. All tokens are
      * combined with AND semantics.
      *
+     * @param fuzzy whether the tokens may also match with 1-2 edits (typo tolerance). Only set for the
+     *              fallback pass, see {@link #isFuzzySearchEnabled()}.
      * @return the composed query, or null if input is empty after
      *         sanitization
      */
-    private Query buildQuery(String queryText) {
+    private Query buildQuery(String queryText, boolean fuzzy) {
+        List<String> phrases = extractPhrases(queryText);
+
         String sanitized = queryText.trim().toLowerCase(Locale.ROOT)
                 .replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ")
                 .replaceAll("\\s+", " ")
                 .trim();
 
-        if (sanitized.isEmpty()) return null;
+        if (sanitized.isEmpty() && phrases.isEmpty()) return null;
 
-        String[] tokens = sanitized.split("\\s+");
+        String[] tokens = sanitized.isEmpty() ? new String[0] : sanitized.split("\\s+");
         BooleanQuery.Builder allTokens = new BooleanQuery.Builder();
+        boolean hasPositive = false;
 
-        for (String token : tokens) {
+        for (String rawToken : tokens) {
+            String token = rawToken;
+
+            boolean negated = false;
+            while (token.startsWith("-")) {
+                negated = true;
+                token = token.substring(1);
+            }
             // PFS-5306: The StandardTokenizer used for indexing never emits a token ending in a dot
             // (a dot only survives between alphanumerics). A trailing dot typed by the user - e.g. the
             // tag "Stoffliste 29.7." - would therefore match nothing and, as a MUST clause, kill the
@@ -1435,34 +1681,103 @@ public class LuceneIndexManager extends PFComponent {
                 continue;
             }
 
-            BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
-
-            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f);
-
-            // Accent-folded variant (ö -> o, ä -> a, etc.)
-            String folded = foldAccents(token);
-            if (!folded.equals(token) && !folded.isEmpty()) {
-                addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f);
+            if (negated) {
+                BooleanQuery.Builder exclusion = new BooleanQuery.Builder();
+                addTokenQueries(exclusion, token, 1.0f, 1.0f, 1.0f, false);
+                exclusion.setMinimumNumberShouldMatch(1);
+                allTokens.add(exclusion.build(), BooleanClause.Occur.MUST_NOT);
+                continue;
             }
 
-            // Accent-stripped variant (ö removed entirely) — handles
-            // documents where extraction lost characters completely
+            BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
+
+            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f, fuzzy);
+
+            String folded = foldAccents(token);
+            if (!folded.equals(token) && !folded.isEmpty()) {
+                addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, false);
+            }
+
             String stripped = stripAccents(token);
             if (!stripped.equals(token) && !stripped.equals(folded) && !stripped.isEmpty()) {
-                addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f);
+                addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, false);
             }
 
             fieldDisjunction.setMinimumNumberShouldMatch(1);
             allTokens.add(fieldDisjunction.build(), BooleanClause.Occur.MUST);
+            hasPositive = true;
         }
 
-        return allTokens.build();
+        for (String phrase : phrases) {
+            Query phraseQuery = buildPhraseQuery(phrase);
+            if (phraseQuery != null) {
+                allTokens.add(phraseQuery, BooleanClause.Occur.MUST);
+                hasPositive = true;
+            }
+        }
+
+        BooleanQuery built = allTokens.build();
+        if (hasPositive) {
+            return built;
+        }
+        if (built.clauses().isEmpty()) {
+            return null;
+        }
+        BooleanQuery.Builder wrapped = new BooleanQuery.Builder();
+        wrapped.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
+        for (BooleanClause clause : built.clauses()) {
+            wrapped.add(clause);
+        }
+        return wrapped.build();
+    }
+
+    /**
+     * PFS-5653: a quoted single word is an exact-match request just like a quoted sequence of words - it
+     * used to be dropped, leaving the word to be matched by prefix, wildcard and typo tolerance instead,
+     * i.e. the opposite of what the quotes asked for.
+     */
+    private static List<String> extractPhrases(String queryText) {
+        List<String> phrases = new ArrayList<>();
+        Matcher m = PHRASE_PATTERN.matcher(queryText);
+        while (m.find()) {
+            String phrase = m.group(1).trim().toLowerCase(Locale.ROOT);
+            if (!phrase.isEmpty()) {
+                phrases.add(phrase);
+            }
+        }
+        return phrases;
+    }
+
+    private Query buildPhraseQuery(String phrase) {
+        String[] words = phrase.split("\\s+");
+        if (words.length == 0) {
+            return null;
+        }
+        BooleanQuery.Builder disjunction = new BooleanQuery.Builder();
+        if (words.length == 1) {
+            /* A single quoted word has no word order to respect - it asks for the exact term, and it asks
+             * it of every searchable field, not just the name/path/content ones a phrase can span. */
+            for (String field : SEARCH_FIELDS) {
+                disjunction.add(new TermQuery(new Term(field, words[0])), BooleanClause.Occur.SHOULD);
+            }
+            disjunction.setMinimumNumberShouldMatch(1);
+            return disjunction.build();
+        }
+        for (String field : PHRASE_FIELDS) {
+            PhraseQuery.Builder pb = new PhraseQuery.Builder();
+            for (String word : words) {
+                pb.add(new Term(field, word));
+            }
+            disjunction.add(pb.build(), BooleanClause.Occur.SHOULD);
+        }
+        disjunction.setMinimumNumberShouldMatch(1);
+        return disjunction.build();
     }
 
     private void addTokenQueries(BooleanQuery.Builder builder,
                                  String token,
                                  float exactBoost, float prefixBoost,
-                                 float wildcardBoost) {
+                                 float wildcardBoost, boolean fuzzy) {
         for (String field : SEARCH_FIELDS) {
             builder.add(
                     new BoostQuery(new TermQuery(
@@ -1484,6 +1799,15 @@ public class LuceneIndexManager extends PFComponent {
                         new BoostQuery(new WildcardQuery(
                                 new Term(field, "*" + token + "*")),
                                 wildcardBoost),
+                        BooleanClause.Occur.SHOULD);
+            }
+
+            if (fuzzy && token.length() >= 4 && INFIX_WILDCARD_FIELDS.contains(field)) {
+                int maxEdits = token.length() >= 6 ? 2 : 1;
+                builder.add(
+                        new BoostQuery(new FuzzyQuery(
+                                new Term(field, token), maxEdits),
+                                wildcardBoost * 0.5f),
                         BooleanClause.Occur.SHOULD);
             }
         }
