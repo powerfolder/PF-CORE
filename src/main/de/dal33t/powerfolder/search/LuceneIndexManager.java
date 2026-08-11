@@ -755,7 +755,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 15;
+    private static final int INDEX_FORMAT_VERSION = 16;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -825,6 +825,7 @@ public class LuceneIndexManager extends PFComponent {
             }
             if (StringUtils.isNotBlank(modDevice.nick)) {
                 doc.add(new TextField("modifiedByDeviceName", modDevice.nick, Field.Store.YES));
+                addSuggestField(doc, "modifiedByDeviceNameExact", modDevice.nick);
             }
         }
 
@@ -1457,6 +1458,12 @@ public class LuceneIndexManager extends PFComponent {
 
         if (StringUtils.isNotBlank(criteria.getModifiedByDeviceId())) {
             bqBuilder.add(new TermQuery(new Term("modifiedByDeviceId", criteria.getModifiedByDeviceId().trim())),
+                    BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getModifiedByDeviceName())) {
+            String wildcard = "*" + criteria.getModifiedByDeviceName().toLowerCase(Locale.ROOT).trim() + "*";
+            bqBuilder.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)),
                     BooleanClause.Occur.MUST);
         }
 

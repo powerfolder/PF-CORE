@@ -52,6 +52,7 @@ public class FileInfoCriteria {
     private String modifiedBy;
     private String modifiedByAccountId;
     private String modifiedByDeviceId;
+    private String modifiedByDeviceName;
     private Date modifiedAfter;
     private Date modifiedBefore;
     private Long minSize;
@@ -294,6 +295,15 @@ public class FileInfoCriteria {
         this.modifiedByDeviceId = modifiedByDeviceId;
     }
 
+    /** @return the text the name of the device that changed the file last must contain. */
+    public String getModifiedByDeviceName() {
+        return modifiedByDeviceName;
+    }
+
+    public void setModifiedByDeviceName(String modifiedByDeviceName) {
+        this.modifiedByDeviceName = modifiedByDeviceName;
+    }
+
     public Date getModifiedAfter() {
         return modifiedAfter;
     }
@@ -373,6 +383,7 @@ public class FileInfoCriteria {
                 && matchesModifiedDate(fileInfo, modifiedAfter, modifiedBefore)
                 && matchesSize(fileInfo, minSize, maxSize)
                 && matchesModifiedById(fileInfo, modifiedByAccountId, modifiedByDeviceId)
+                && matchesDeviceName(fileInfo, modifiedByDeviceName)
                 && matchesCategory(fileInfo, category) && matchesTags(fileInfo, tags);
     }
 
@@ -469,6 +480,16 @@ public class FileInfoCriteria {
         return true;
     }
 
+    /** PFS-5653: the device: filter - the name of the device a file was changed on. */
+    private static boolean matchesDeviceName(FileInfo fileInfo, String deviceName) {
+        if (isBlank(deviceName)) {
+            return true;
+        }
+        MemberInfo member = fileInfo.getModifiedBy();
+        return member != null && member.nick != null
+                && member.nick.toUpperCase().contains(deviceName.toUpperCase().trim());
+    }
+
     private static boolean matchesCategory(FileInfo fileInfo, String category) {
         if (isBlank(category)) {
             return true;
@@ -513,6 +534,7 @@ public class FileInfoCriteria {
                 || StringUtils.isNotBlank(modifiedBy)
                 || StringUtils.isNotBlank(modifiedByAccountId)
                 || StringUtils.isNotBlank(modifiedByDeviceId)
+                || StringUtils.isNotBlank(modifiedByDeviceName)
                 || modifiedAfter != null
                 || modifiedBefore != null
                 || minSize != null

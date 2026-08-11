@@ -55,6 +55,27 @@ public class FileInfoDAOModifiedByIdFilterTest extends FileInfoDAOTestCase {
         assertEquals(0, dao.findFilesFast(crit("acc-alice", "dev-2")).size());
     }
 
+    /** PFS-5653: device: matches the device name as a case-insensitive substring, unlike the exact ids. */
+    public void testDeviceNameMatchesSubstringCaseInsensitively() {
+        FileInfoCriteria c = new FileInfoCriteria();
+        c.addDomain(null);
+        c.setRecursive(true);
+        c.setModifiedByDeviceName("NICK");
+        assertEquals(3, dao.findFilesFast(c).size());
+
+        c = new FileInfoCriteria();
+        c.addDomain(null);
+        c.setRecursive(true);
+        c.setModifiedByDeviceName("ick");
+        assertEquals(3, dao.findFilesFast(c).size());
+
+        c = new FileInfoCriteria();
+        c.addDomain(null);
+        c.setRecursive(true);
+        c.setModifiedByDeviceName("other-device");
+        assertEquals(0, dao.findFilesFast(c).size());
+    }
+
     public void testPartialIdIsNotAMatch() {
         assertEquals(0, dao.findFilesFast(crit("acc", null)).size());
     }
