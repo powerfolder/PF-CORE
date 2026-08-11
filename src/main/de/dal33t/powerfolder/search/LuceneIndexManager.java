@@ -107,6 +107,12 @@ public class LuceneIndexManager extends PFComponent {
     private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
 
     /**
+     * PFS-5653: upper bound of distinct terms {@link #suggestTerms(String, String)} reads per field. Only
+     * the most frequent handful is ever shown, so this merely keeps a keystroke bounded on large indexes.
+     */
+    private static final int SUGGEST_MAX_TERMS = 200;
+
+    /**
      * PFS-5652: fields that get the infix wildcard ("*token*"). Restricted to the name/path and editor
      * fields where mid-token matching actually helps (e.g. finding "Müller" inside an editor display name
      * or username). Building a WildcardQuery compiles an automaton per field (CompiledAutomaton, not
@@ -746,7 +752,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 14;
+    private static final int INDEX_FORMAT_VERSION = 15;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -803,6 +809,7 @@ public class LuceneIndexManager extends PFComponent {
             }
             if (StringUtils.isNotBlank(modAccount.getDisplayName())) {
                 doc.add(new TextField("modifiedByDisplayName", modAccount.getDisplayName(), Field.Store.YES));
+                addSuggestField(doc, "modifiedByDisplayNameExact", modAccount.getDisplayName());
             }
             if (StringUtils.isNotBlank(modAccount.getUsername())) {
                 doc.add(new TextField("modifiedByUsername", modAccount.getUsername(), Field.Store.YES));
@@ -927,11 +934,23 @@ public class LuceneIndexManager extends PFComponent {
         String title = metadata.get(TikaCoreProperties.TITLE);
         if (StringUtils.isNotBlank(title)) {
             doc.add(new TextField("docTitle", title, Field.Store.YES));
+            addSuggestField(doc, "docTitleExact", title);
         }
         String author = metadata.get(TikaCoreProperties.CREATOR);
         if (StringUtils.isNotBlank(author)) {
             doc.add(new TextField("docAuthor", author, Field.Store.YES));
+            addSuggestField(doc, "docAuthorExact", author);
         }
+    }
+
+    /**
+     * PFS-5653: adds a non-analyzed copy of a value for {@link #suggestTerms(String, String)}. The analyzed
+     * fields hold one term per word, so suggesting from them offers "jane" and "doe" instead of "Jane Doe".
+     * Lowercased and trimmed like the other {@code *Exact} fields, which keeps the prefix scan
+     * case-insensitive - searching is case-insensitive too, so a lowercase suggestion still matches.
+     */
+    private static void addSuggestField(Document doc, String field, String value) {
+        doc.add(new StringField(field, value.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
     }
 
     private static void seedFilename(Metadata metadata, Path filePath) {
@@ -1311,6 +1330,15 @@ public class LuceneIndexManager extends PFComponent {
                 criteria.getTitle(), criteria.getAuthor());
     }
 
+    /**
+     * Suggests indexed values of a field, optionally restricted to those starting with the given prefix.
+     * <p>
+     * PFS-5653: term enumeration is bounded by {@link #SUGGEST_MAX_TERMS} per field. Without that cap a
+     * single keystroke could walk every distinct term of every folder index - the suggest endpoint is called
+     * while the user is typing, so the work per call has to stay predictable.
+     *
+     * @return the matching values with the number of documents each appears in.
+     */
     public Map<String, Integer> suggestTerms(String field, String prefix) {
         Map<String, Integer> counts = new HashMap<>();
         if (StringUtils.isBlank(field)) {
@@ -1327,24 +1355,24 @@ public class LuceneIndexManager extends PFComponent {
                     continue;
                 }
                 TermsEnum termsEnum = terms.iterator();
-                if (!pfx.isEmpty()) {
-                    if (termsEnum.seekCeil(new BytesRef(pfx)) == TermsEnum.SeekStatus.END) {
-                        continue;
+                if (!pfx.isEmpty() && termsEnum.seekCeil(new BytesRef(pfx)) == TermsEnum.SeekStatus.END) {
+                    continue;
+                }
+                BytesRef term = pfx.isEmpty() ? termsEnum.next() : termsEnum.term();
+                while (term != null) {
+                    String value = term.utf8ToString();
+                    if (!pfx.isEmpty() && !value.startsWith(pfx)) {
+                        break;
                     }
-                    BytesRef term = termsEnum.term();
-                    while (term != null) {
-                        String value = term.utf8ToString();
-                        if (!value.startsWith(pfx)) {
-                            break;
+                    counts.merge(value, termsEnum.docFreq(), Integer::sum);
+                    if (counts.size() >= SUGGEST_MAX_TERMS) {
+                        if (isFine()) {
+                            logFine(folder + ": Term suggest for field '" + field + "' capped at "
+                                    + SUGGEST_MAX_TERMS + " terms, prefix '" + pfx + "'");
                         }
-                        counts.merge(value, termsEnum.docFreq(), Integer::sum);
-                        term = termsEnum.next();
+                        return counts;
                     }
-                } else {
-                    BytesRef term;
-                    while ((term = termsEnum.next()) != null) {
-                        counts.merge(term.utf8ToString(), termsEnum.docFreq(), Integer::sum);
-                    }
+                    term = termsEnum.next();
                 }
             }
         } catch (Exception e) {
@@ -1435,13 +1463,6 @@ public class LuceneIndexManager extends PFComponent {
             searcher = searcherManager.acquire();
 
             BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
-
-            if (hasKeywords) {
-                Query contentQuery = buildQuery(queryText);
-                if (contentQuery != null) {
-                    bqBuilder.add(contentQuery, BooleanClause.Occur.MUST);
-                }
-            }
 
             switch (deletedFilter) {
                 case EXCLUDE:
@@ -1538,13 +1559,27 @@ public class LuceneIndexManager extends PFComponent {
                 }
             }
 
-            Query finalQuery = bqBuilder.build();
-            TopDocs topDocs = sort != null
-                    ? searcher.search(finalQuery, maxResults, sort)
-                    : searcher.search(finalQuery, maxResults);
+            /* The filter clauses are built once; the keyword part is added on top, so the query can be
+             * repeated with typo tolerance without rebuilding the filters. */
+            Query filterQuery = bqBuilder.build();
+            Query contentQuery = hasKeywords ? buildQuery(queryText, false) : null;
+            TopDocs topDocs = search(searcher, withContent(filterQuery, contentQuery), maxResults, sort);
 
             if (isFine()) {
                 logFine(folder + ": Found " + topDocs.totalHits + " for query '" + queryText + "'");
+            }
+
+            /* PFS-5653: typo tolerance costs a FuzzyQuery per token and field and drags in near-misses, so
+             * it is a fallback only - a query that found something is never re-run fuzzily. */
+            if (topDocs.scoreDocs.length == 0 && contentQuery != null && isFuzzySearchEnabled()) {
+                Query fuzzyQuery = buildQuery(queryText, true);
+                if (fuzzyQuery != null) {
+                    topDocs = search(searcher, withContent(filterQuery, fuzzyQuery), maxResults, sort);
+                    if (isFine()) {
+                        logFine(folder + ": Fuzzy fallback found " + topDocs.totalHits
+                                + " for query '" + queryText + "'");
+                    }
+                }
             }
 
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
@@ -1572,16 +1607,41 @@ public class LuceneIndexManager extends PFComponent {
         return results;
     }
 
+    private static TopDocs search(IndexSearcher searcher, Query query, int maxResults, Sort sort)
+            throws IOException
+    {
+        return sort != null ? searcher.search(query, maxResults, sort) : searcher.search(query, maxResults);
+    }
+
+    /** Combines the filter clauses with the keyword part, which may be absent. */
+    private static Query withContent(Query filterQuery, Query contentQuery) {
+        if (contentQuery == null) {
+            return filterQuery;
+        }
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
+        for (BooleanClause clause : ((BooleanQuery) filterQuery).clauses()) {
+            builder.add(clause);
+        }
+        builder.add(contentQuery, BooleanClause.Occur.MUST);
+        return builder.build();
+    }
+
+    private boolean isFuzzySearchEnabled() {
+        return ConfigurationEntry.SEARCH_INDEX_FUZZY_ENABLED.getValueBoolean(getController());
+    }
+
     /**
      * Builds a Lucene query from user input. For each sanitized token,
      * creates a per-field disjunction of exact / prefix / wildcard
      * queries with boosting to prefer exact matches. All tokens are
      * combined with AND semantics.
      *
+     * @param fuzzy whether the tokens may also match with 1-2 edits (typo tolerance). Only set for the
+     *              fallback pass, see {@link #isFuzzySearchEnabled()}.
      * @return the composed query, or null if input is empty after
      *         sanitization
      */
-    private Query buildQuery(String queryText) {
+    private Query buildQuery(String queryText, boolean fuzzy) {
         List<String> phrases = extractPhrases(queryText);
 
         String sanitized = queryText.trim().toLowerCase(Locale.ROOT)
@@ -1624,7 +1684,7 @@ public class LuceneIndexManager extends PFComponent {
 
             BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
 
-            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f, true);
+            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f, fuzzy);
 
             String folded = foldAccents(token);
             if (!folded.equals(token) && !folded.isEmpty()) {
@@ -1664,12 +1724,17 @@ public class LuceneIndexManager extends PFComponent {
         return wrapped.build();
     }
 
+    /**
+     * PFS-5653: a quoted single word is an exact-match request just like a quoted sequence of words - it
+     * used to be dropped, leaving the word to be matched by prefix, wildcard and typo tolerance instead,
+     * i.e. the opposite of what the quotes asked for.
+     */
     private static List<String> extractPhrases(String queryText) {
         List<String> phrases = new ArrayList<>();
         Matcher m = PHRASE_PATTERN.matcher(queryText);
         while (m.find()) {
             String phrase = m.group(1).trim().toLowerCase(Locale.ROOT);
-            if (!phrase.isEmpty() && phrase.contains(" ")) {
+            if (!phrase.isEmpty()) {
                 phrases.add(phrase);
             }
         }
@@ -1682,6 +1747,15 @@ public class LuceneIndexManager extends PFComponent {
             return null;
         }
         BooleanQuery.Builder disjunction = new BooleanQuery.Builder();
+        if (words.length == 1) {
+            /* A single quoted word has no word order to respect - it asks for the exact term, and it asks
+             * it of every searchable field, not just the name/path/content ones a phrase can span. */
+            for (String field : SEARCH_FIELDS) {
+                disjunction.add(new TermQuery(new Term(field, words[0])), BooleanClause.Occur.SHOULD);
+            }
+            disjunction.setMinimumNumberShouldMatch(1);
+            return disjunction.build();
+        }
         for (String field : PHRASE_FIELDS) {
             PhraseQuery.Builder pb = new PhraseQuery.Builder();
             for (String word : words) {

@@ -460,6 +460,75 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(0, getIndexManager().searchFiles("\"report financial\"", 10).size());
     }
 
+    /**
+     * PFS-5653: a suggest field holds the whole value as one term, so a value containing a space survives as
+     * one suggestion. Suggesting from an analyzed field would offer its single words instead - which is why
+     * every remote operator points at a {@code *Exact} field (see SearchOperatorTest in PF-PRO).
+     */
+    public void testSuggestTermsKeepMultiWordValuesInOneTerm() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "minutes.pdf");
+        scanFolder(folder);
+        FileInfo file = getFolder().getKnownFiles().iterator().next();
+        getFolder().updateTags(file, "[\"Project North\"]");
+        indexAndWait();
+
+        Map<String, Integer> exact = getIndexManager().suggestTerms("tagsExact", "pro");
+        assertEquals("the whole tag is one suggestion", 1, exact.size());
+        assertTrue("lowercased, so the prefix scan is case-insensitive", exact.containsKey("project north"));
+
+        Map<String, Integer> analyzed = getIndexManager().suggestTerms("tags", "pro");
+        assertTrue("the analyzed field only ever holds single words", analyzed.containsKey("project"));
+        assertFalse(analyzed.containsKey("project north"));
+    }
+
+    /** PFS-5653: typo tolerance is a fallback - a query that found something is not re-run fuzzily. */
+    public void testFuzzyOnlyKicksInWhenNothingWasFound() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Mueler Notiz.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        List<FileInfo> exact = getIndexManager().searchFiles("mueller", 10);
+        assertEquals("the near-miss must not dilute a query that matches exactly", 1, exact.size());
+        assertEquals("Mueller Vertrag.pdf", exact.get(0).getFilenameOnly());
+
+        /* "muellre" matches nothing exactly, so the fallback runs and both near-misses come back - which is
+         * precisely the widening that must not happen while "mueller" still has an exact hit. */
+        assertEquals("a typo that matches nothing exactly falls back to fuzzy",
+                2, getIndexManager().searchFiles("muellre", 10).size());
+    }
+
+    public void testFuzzyCanBeSwitchedOff() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertEquals(1, getIndexManager().searchFiles("muellre", 10).size());
+
+        ConfigurationEntry.SEARCH_INDEX_FUZZY_ENABLED.setValue(getController(), false);
+        assertEquals("no typo tolerance once disabled", 0, getIndexManager().searchFiles("muellre", 10).size());
+        assertEquals("exact matching still works", 1, getIndexManager().searchFiles("mueller", 10).size());
+    }
+
+    /** PFS-5653: a quoted single word asks for the exact term, not for a prefix/wildcard/fuzzy match. */
+    public void testQuotedSingleWordIsMatchedExactly() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Muellerhaus Notiz.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        List<FileInfo> quoted = getIndexManager().searchFiles("\"mueller\"", 10);
+        assertEquals(1, quoted.size());
+        assertEquals("Mueller Vertrag.pdf", quoted.get(0).getFilenameOnly());
+
+        assertEquals("unquoted still matches the longer name too",
+                2, getIndexManager().searchFiles("mueller", 10).size());
+    }
+
     public void testFuzzyTypoTolerance() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
