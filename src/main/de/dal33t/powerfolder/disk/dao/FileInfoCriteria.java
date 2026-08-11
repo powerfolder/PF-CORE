@@ -58,7 +58,7 @@ public class FileInfoCriteria {
     private String category;
     private String title;
     private String author;
-    private String sortField;
+    private SortField sortField;
     private boolean sortDescending;
     private final Set<String> tags = new LinkedHashSet<>();
 
@@ -342,11 +342,11 @@ public class FileInfoCriteria {
         this.author = author;
     }
 
-    public String getSortField() {
+    public SortField getSortField() {
         return sortField;
     }
 
-    public void setSortField(String sortField) {
+    public void setSortField(SortField sortField) {
         this.sortField = sortField;
     }
 
@@ -562,5 +562,29 @@ public class FileInfoCriteria {
 
     public enum Type {
         FILES_AND_DIRECTORIES, FILES_ONLY, DIRECTORIES_ONLY
+    }
+
+    /**
+     * PFS-5653: the orders a result can be sorted by. Single source of truth for every spelling a caller may
+     * use - the "sort:" search operator, the sortname request parameter - so that the Lucene sort and the
+     * comparator applied afterwards can never disagree on what "date" means.
+     */
+    public enum SortField {
+        NAME, SIZE, DATE;
+
+        /**
+         * @param value the name of a field, in any case - "date", "DATE", " Date ".
+         * @return the field it names, or null if it names none.
+         */
+        public static SortField parse(String value) {
+            if (StringUtils.isBlank(value)) {
+                return null;
+            }
+            try {
+                return valueOf(value.trim().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
     }
 }

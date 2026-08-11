@@ -1272,36 +1272,7 @@ public class LuceneIndexManager extends PFComponent {
      * @return matching FileInfo objects (non-deleted only)
      */
     public List<FileInfo> searchFiles(String queryText, int maxResults) {
-        return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES,
-                null, null, null, null, null, null, null, null, null, null);
-    }
-
-    /**
-     * Searches for files matching the query text, optionally including
-     * deleted files (for recycle bin / version history views).
-     *
-     * @param queryText      the user's search query
-     * @param maxResults     maximum number of results to return
-     * @param includeDeleted if true, deleted files are included in results
-     * @return matching FileInfo objects
-     */
-    public List<FileInfo> searchFiles(String queryText, int maxResults,
-                                      boolean includeDeleted) {
-        return doSearch(queryText, maxResults,
-                includeDeleted ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES,
-                null, null, null, null, null, null, null, null, null, null);
-    }
-
-    /**
-     * Searches for deleted files only — intended for recycle bin views.
-     */
-    public List<FileInfo> searchDeletedFiles(String queryText,
-                                             int maxResults) {
-        return doSearch(queryText, maxResults, DeletedFilter.ONLY,
-                null, null, null, null, FileInfoCriteria.Type.FILES_AND_DIRECTORIES,
-                null, null, null, null, null, null, null, null, null, null);
+        return doSearch(queryText, maxResults, DeletedFilter.EXCLUDE, new FileInfoCriteria());
     }
 
     /**
@@ -1319,15 +1290,7 @@ public class LuceneIndexManager extends PFComponent {
         DeletedFilter deletedFilter = criteria.includeDeleted() ? DeletedFilter.INCLUDE : DeletedFilter.EXCLUDE;
         String queryText = String.join(" ", criteria.getKeyWords());
 
-        return doSearch(queryText, maxResults, deletedFilter,
-                criteria.getPath(), criteria.getExtension(), criteria.getModifiedBy(),
-                criteria.getTags(), criteria.getType(),
-                criteria.getModifiedAfter(), criteria.getModifiedBefore(),
-                criteria.getMinSize(), criteria.getMaxSize(),
-                criteria.getModifiedByAccountId(), criteria.getModifiedByDeviceId(),
-                criteria.getCategory(),
-                buildSort(criteria.getSortField(), criteria.isSortDescending()),
-                criteria.getTitle(), criteria.getAuthor());
+        return doSearch(queryText, maxResults, deletedFilter, criteria);
     }
 
     /**
@@ -1392,7 +1355,11 @@ public class LuceneIndexManager extends PFComponent {
     /** Controls how the deleted flag is handled in searches. */
     private enum DeletedFilter { INCLUDE, EXCLUDE, ONLY }
 
+    /** @return a query requiring every word of the value in the field, or null if there is no value. */
     private static Query fieldKeywordQuery(String field, String value) {
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
         String[] tokens = value.toLowerCase(Locale.ROOT).trim().split("\\s+");
         BooleanQuery.Builder builder = new BooleanQuery.Builder();
         boolean any = false;
@@ -1405,19 +1372,122 @@ public class LuceneIndexManager extends PFComponent {
         return any ? builder.build() : null;
     }
 
-    private static Sort buildSort(String sortField, boolean descending) {
-        if (StringUtils.isBlank(sortField)) {
+    /**
+     * Maps a requested order onto the docValues field that carries it. The accepted spellings live in
+     * {@link FileInfoCriteria.SortField}, so this is only about which field to read.
+     */
+    private static Sort buildSort(FileInfoCriteria.SortField sortField, boolean descending) {
+        if (sortField == null) {
             return null;
         }
-        switch (sortField.toLowerCase(Locale.ROOT).trim()) {
-            case "date":
+        switch (sortField) {
+            case DATE:
                 return new Sort(new SortField("modifiedDate", SortField.Type.LONG, descending));
-            case "size":
+            case SIZE:
                 return new Sort(new SortField("size", SortField.Type.LONG, descending));
-            case "name":
+            case NAME:
                 return new Sort(new SortField("nameSort", SortField.Type.STRING, descending));
             default:
                 return null;
+        }
+    }
+
+    /**
+     * Adds one MUST clause per active filter of the criteria. The keywords are not part of it: the caller
+     * adds them on top, so the same filter query can be reused for the typo-tolerant second pass.
+     */
+    private static void addFilterClauses(BooleanQuery.Builder bqBuilder, DeletedFilter deletedFilter,
+                                         FileInfoCriteria criteria)
+    {
+        switch (deletedFilter) {
+            case EXCLUDE:
+                bqBuilder.add(new TermQuery(new Term("deleted", "false")), BooleanClause.Occur.MUST);
+                break;
+            case ONLY:
+                bqBuilder.add(new TermQuery(new Term("deleted", "true")), BooleanClause.Occur.MUST);
+                break;
+            case INCLUDE:
+            default:
+                break;
+        }
+
+        if (criteria.getType() == FileInfoCriteria.Type.FILES_ONLY) {
+            bqBuilder.add(new TermQuery(new Term("isDir", "false")), BooleanClause.Occur.MUST);
+        } else if (criteria.getType() == FileInfoCriteria.Type.DIRECTORIES_ONLY) {
+            bqBuilder.add(new TermQuery(new Term("isDir", "true")), BooleanClause.Occur.MUST);
+        }
+
+        String directory = criteria.getPath();
+        if (directory != null && !directory.isEmpty() && !"/".equals(directory)) {
+            String prefix = directory.endsWith("/") ? directory : directory + "/";
+            bqBuilder.add(
+                    new PrefixQuery(new Term("relativeNameExact", prefix.toLowerCase(Locale.ROOT))),
+                    BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getExtension())) {
+            bqBuilder.add(
+                    new TermQuery(new Term("extensionExact", criteria.getExtension().toLowerCase(Locale.ROOT))),
+                    BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getModifiedBy())) {
+            String wildcard = "*" + criteria.getModifiedBy().toLowerCase(Locale.ROOT).trim() + "*";
+            BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
+            modQuery.add(new WildcardQuery(new Term("modifiedByDisplayName", wildcard)),
+                    BooleanClause.Occur.SHOULD);
+            modQuery.add(new WildcardQuery(new Term("modifiedByUsername", wildcard)), BooleanClause.Occur.SHOULD);
+            modQuery.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)), BooleanClause.Occur.SHOULD);
+            bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
+        }
+
+        for (String tag : criteria.getTags()) {
+            if (StringUtils.isNotBlank(tag)) {
+                bqBuilder.add(
+                        new TermQuery(new Term("tagsExact", tag.toLowerCase(Locale.ROOT).trim())),
+                        BooleanClause.Occur.MUST);
+            }
+        }
+
+        Long modifiedAfter = criteria.getModifiedAfter();
+        Long modifiedBefore = criteria.getModifiedBefore();
+        if (modifiedAfter != null || modifiedBefore != null) {
+            long lower = modifiedAfter != null ? modifiedAfter : Long.MIN_VALUE;
+            long upper = modifiedBefore != null ? modifiedBefore : Long.MAX_VALUE;
+            bqBuilder.add(LongPoint.newRangeQuery("modifiedDate", lower, upper), BooleanClause.Occur.MUST);
+        }
+
+        Long minSize = criteria.getMinSize();
+        Long maxSize = criteria.getMaxSize();
+        if (minSize != null || maxSize != null) {
+            long lower = minSize != null ? minSize : 0L;
+            long upper = maxSize != null ? maxSize : Long.MAX_VALUE;
+            bqBuilder.add(LongPoint.newRangeQuery("size", lower, upper), BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getModifiedByAccountId())) {
+            bqBuilder.add(new TermQuery(new Term("modifiedByAccountId", criteria.getModifiedByAccountId().trim())),
+                    BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getModifiedByDeviceId())) {
+            bqBuilder.add(new TermQuery(new Term("modifiedByDeviceId", criteria.getModifiedByDeviceId().trim())),
+                    BooleanClause.Occur.MUST);
+        }
+
+        if (StringUtils.isNotBlank(criteria.getCategory())) {
+            bqBuilder.add(
+                    new TermQuery(new Term("category", criteria.getCategory().toLowerCase(Locale.ROOT).trim())),
+                    BooleanClause.Occur.MUST);
+        }
+
+        addIfNotNull(bqBuilder, fieldKeywordQuery("docTitle", criteria.getTitle()));
+        addIfNotNull(bqBuilder, fieldKeywordQuery("docAuthor", criteria.getAuthor()));
+    }
+
+    private static void addIfNotNull(BooleanQuery.Builder bqBuilder, Query query) {
+        if (query != null) {
+            bqBuilder.add(query, BooleanClause.Occur.MUST);
         }
     }
 
@@ -1436,128 +1506,27 @@ public class LuceneIndexManager extends PFComponent {
      * {@code TopDocs} returned by Lucene contains the final matching
      * items, which are then converted to FileInfo instances.
      *
-     * @param queryText     the user's search keywords
+     * @param queryText     the user's search keywords. Kept separate from the criteria because the
+     *                      keyword-only entry points have no criteria to take them from.
      * @param maxResults    maximum number of results
      * @param deletedFilter how to handle the deleted flag
-     * @param directory     restrict to files under this path (may be null)
-     * @param extension     restrict to this file extension (may be null)
-     * @param modifiedBy    restrict to files modified by this user (may be null)
+     * @param criteria      every other filter, never null - an empty instance means "no restriction"
      * @return matching FileInfo objects
      */
     private List<FileInfo> doSearch(String queryText, int maxResults,
                                     DeletedFilter deletedFilter,
-                                    String directory, String extension,
-                                    String modifiedBy, Collection<String> tags,
-                                    FileInfoCriteria.Type type,
-                                    Long modifiedAfter, Long modifiedBefore,
-                                    Long minSize, Long maxSize,
-                                    String modifiedByAccountId, String modifiedByDeviceId,
-                                    String category, Sort sort,
-                                    String title, String author) {
+                                    FileInfoCriteria criteria) {
 
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
+        Sort sort = buildSort(criteria.getSortField(), criteria.isSortDescending());
 
         IndexSearcher searcher = null;
         try {
             searcher = searcherManager.acquire();
 
             BooleanQuery.Builder bqBuilder = new BooleanQuery.Builder();
-
-            switch (deletedFilter) {
-                case EXCLUDE:
-                    bqBuilder.add(new TermQuery(new Term("deleted", "false")), BooleanClause.Occur.MUST);
-                    break;
-                case ONLY:
-                    bqBuilder.add(new TermQuery(new Term("deleted", "true")), BooleanClause.Occur.MUST);
-                    break;
-                case INCLUDE:
-                default:
-                    break;
-            }
-
-            if (type == FileInfoCriteria.Type.FILES_ONLY) {
-                bqBuilder.add(new TermQuery(new Term("isDir", "false")), BooleanClause.Occur.MUST);
-            } else if (type == FileInfoCriteria.Type.DIRECTORIES_ONLY) {
-                bqBuilder.add(new TermQuery(new Term("isDir", "true")), BooleanClause.Occur.MUST);
-            }
-
-            if (directory != null && !directory.isEmpty() && !"/".equals(directory)) {
-                String prefix = directory.endsWith("/") ? directory : directory + "/";
-                bqBuilder.add(
-                        new PrefixQuery(new Term("relativeNameExact", prefix.toLowerCase(Locale.ROOT))),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (StringUtils.isNotBlank(extension)) {
-                bqBuilder.add(
-                        new TermQuery(new Term("extensionExact", extension.toLowerCase(Locale.ROOT))),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (StringUtils.isNotBlank(modifiedBy)) {
-                String term = modifiedBy.toLowerCase(Locale.ROOT).trim();
-                String wildcard = "*" + term + "*";
-                BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
-                modQuery.add(new WildcardQuery(new Term("modifiedByDisplayName", wildcard)),
-                        BooleanClause.Occur.SHOULD);
-                modQuery.add(new WildcardQuery(new Term("modifiedByUsername", wildcard)), BooleanClause.Occur.SHOULD);
-                modQuery.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)), BooleanClause.Occur.SHOULD);
-                bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
-            }
-
-            if (tags != null) {
-                for (String tag : tags) {
-                    if (StringUtils.isNotBlank(tag)) {
-                        bqBuilder.add(
-                                new TermQuery(new Term("tagsExact", tag.toLowerCase(Locale.ROOT).trim())),
-                                BooleanClause.Occur.MUST);
-                    }
-                }
-            }
-
-            if (modifiedAfter != null || modifiedBefore != null) {
-                long lower = modifiedAfter != null ? modifiedAfter : Long.MIN_VALUE;
-                long upper = modifiedBefore != null ? modifiedBefore : Long.MAX_VALUE;
-                bqBuilder.add(LongPoint.newRangeQuery("modifiedDate", lower, upper),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (minSize != null || maxSize != null) {
-                long lower = minSize != null ? minSize : 0L;
-                long upper = maxSize != null ? maxSize : Long.MAX_VALUE;
-                bqBuilder.add(LongPoint.newRangeQuery("size", lower, upper),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (StringUtils.isNotBlank(modifiedByAccountId)) {
-                bqBuilder.add(new TermQuery(new Term("modifiedByAccountId", modifiedByAccountId.trim())),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (StringUtils.isNotBlank(modifiedByDeviceId)) {
-                bqBuilder.add(new TermQuery(new Term("modifiedByDeviceId", modifiedByDeviceId.trim())),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (StringUtils.isNotBlank(category)) {
-                bqBuilder.add(new TermQuery(new Term("category", category.toLowerCase(Locale.ROOT).trim())),
-                        BooleanClause.Occur.MUST);
-            }
-
-            if (StringUtils.isNotBlank(title)) {
-                Query titleQuery = fieldKeywordQuery("docTitle", title);
-                if (titleQuery != null) {
-                    bqBuilder.add(titleQuery, BooleanClause.Occur.MUST);
-                }
-            }
-
-            if (StringUtils.isNotBlank(author)) {
-                Query authorQuery = fieldKeywordQuery("docAuthor", author);
-                if (authorQuery != null) {
-                    bqBuilder.add(authorQuery, BooleanClause.Occur.MUST);
-                }
-            }
+            addFilterClauses(bqBuilder, deletedFilter, criteria);
 
             /* The filter clauses are built once; the keyword part is added on top, so the query can be
              * repeated with typo tolerance without rebuilding the filters. */

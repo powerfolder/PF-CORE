@@ -378,7 +378,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         FileInfoCriteria sizeDesc = dateRangeCriteria();
-        sizeDesc.setSortField("size");
+        sizeDesc.setSortField(FileInfoCriteria.SortField.SIZE);
         sizeDesc.setSortDescending(true);
         List<FileInfo> bySize = getIndexManager().searchFiles(sizeDesc);
         assertEquals(3, bySize.size());
@@ -387,7 +387,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("apple.bin", bySize.get(2).getFilenameOnly());
 
         FileInfoCriteria nameAsc = dateRangeCriteria();
-        nameAsc.setSortField("name");
+        nameAsc.setSortField(FileInfoCriteria.SortField.NAME);
         List<FileInfo> byName = getIndexManager().searchFiles(nameAsc);
         assertEquals(3, byName.size());
         assertEquals("apple.bin", byName.get(0).getFilenameOnly());
@@ -407,7 +407,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         FileInfoCriteria dateDesc = dateRangeCriteria();
-        dateDesc.setSortField("date");
+        dateDesc.setSortField(FileInfoCriteria.SortField.DATE);
         dateDesc.setSortDescending(true);
         List<FileInfo> byDate = getIndexManager().searchFiles(dateDesc);
         assertEquals(2, byDate.size());
