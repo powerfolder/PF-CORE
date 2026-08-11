@@ -37,16 +37,34 @@ public class FileInfoDAOCategoryFilterTest extends FileInfoDAOTestCase {
         assertEquals(1, dao.findFilesFast(crit("video")).size());
     }
 
-    public void testDocument() {
-        assertEquals(1, dao.findFilesFast(crit("document")).size());
+    public void testPdfIsItsOwnCategory() {
+        assertEquals(1, dao.findFilesFast(crit("pdf")).size());
+        assertEquals("a pdf is not a document any more", 0, dao.findFilesFast(crit("document")).size());
     }
 
     public void testArchive() {
         assertEquals(1, dao.findFilesFast(crit("archive")).size());
     }
 
+    public void testExtensionNoTypeClaimsCountsAsOther() {
+        /* Nothing here is of an unknown type, and "other" is not offered as a filter either. */
+        assertEquals(0, dao.findFilesFast(crit("other")).size());
+    }
+
     public void testFolderCategoryMatchesDirectory() {
         assertEquals(1, dao.findFilesFast(crit("folder")).size());
+    }
+
+    /** PFS-5653: several categories are OR-combined - one question, more than one acceptable answer. */
+    public void testSeveralCategoriesAreOrCombined() {
+        FileInfoCriteria c = crit("image");
+        c.addCategory("pdf");
+        assertEquals(2, dao.findFilesFast(c).size());
+
+        c = crit("image");
+        c.addCategory("pdf");
+        c.addCategory("archive");
+        assertEquals(3, dao.findFilesFast(c).size());
     }
 
     public void testAudioHasNoMatch() {
@@ -61,7 +79,7 @@ public class FileInfoDAOCategoryFilterTest extends FileInfoDAOTestCase {
         FileInfoCriteria c = new FileInfoCriteria();
         c.addDomain(null);
         c.setRecursive(true);
-        c.setCategory(category);
+        c.addCategory(category);
         return c;
     }
 }

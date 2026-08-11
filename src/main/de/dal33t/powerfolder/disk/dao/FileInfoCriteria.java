@@ -19,13 +19,13 @@
  */
 package de.dal33t.powerfolder.disk.dao;
 
+import de.dal33t.powerfolder.DocumentType;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
-import de.dal33t.powerfolder.search.FileCategoryMapper;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 
@@ -57,7 +57,7 @@ public class FileInfoCriteria {
     private Date modifiedBefore;
     private Long minSize;
     private Long maxSize;
-    private String category;
+    private final Set<String> categories = new LinkedHashSet<>();
     private SortField sortField;
     private boolean sortDescending;
     private final Set<String> tags = new LinkedHashSet<>();
@@ -336,12 +336,20 @@ public class FileInfoCriteria {
         this.maxSize = maxSize;
     }
 
-    public String getCategory() {
-        return category;
+    /**
+     * @return the categories a file may belong to, e.g. image and document. Several are OR-combined: one
+     *         question ("what kind of file") with more than one acceptable answer, unlike the tags, where
+     *         every one given has to be present.
+     */
+    public Set<String> getCategories() {
+        return Collections.unmodifiableSet(categories);
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void addCategory(String category) {
+        if (isBlank(category)) {
+            return;
+        }
+        categories.add(category.trim().toLowerCase(Locale.ROOT));
     }
 
     public SortField getSortField() {
@@ -384,7 +392,7 @@ public class FileInfoCriteria {
                 && matchesSize(fileInfo, minSize, maxSize)
                 && matchesModifiedById(fileInfo, modifiedByAccountId, modifiedByDeviceId)
                 && matchesDeviceName(fileInfo, modifiedByDeviceName)
-                && matchesCategory(fileInfo, category) && matchesTags(fileInfo, tags);
+                && matchesCategory(fileInfo, categories) && matchesTags(fileInfo, tags);
     }
 
     private static boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
@@ -490,14 +498,13 @@ public class FileInfoCriteria {
                 && member.nick.toUpperCase().contains(deviceName.toUpperCase().trim());
     }
 
-    private static boolean matchesCategory(FileInfo fileInfo, String category) {
-        if (isBlank(category)) {
+    private static boolean matchesCategory(FileInfo fileInfo, Set<String> categories) {
+        if (categories.isEmpty()) {
             return true;
         }
-        String wanted = category.toLowerCase(Locale.ROOT).trim();
         String actual = fileInfo.isDiretory()
-                ? FileCategoryMapper.FOLDER : FileCategoryMapper.categoryOf(fileInfo.getExtension());
-        return actual.equals(wanted);
+                ? DocumentType.FOLDER : DocumentType.categoryOf(fileInfo.getExtension());
+        return categories.contains(actual);
     }
 
     /**
@@ -539,7 +546,7 @@ public class FileInfoCriteria {
                 || modifiedBefore != null
                 || minSize != null
                 || maxSize != null
-                || StringUtils.isNotBlank(category)
+                || !categories.isEmpty()
                 || !tags.isEmpty();
     }
 
@@ -551,7 +558,7 @@ public class FileInfoCriteria {
             + modifiedAfter + ", modifiedBefore=" + modifiedBefore + ", minSize="
             + minSize + ", maxSize=" + maxSize + ", modifiedByAccountId="
             + modifiedByAccountId + ", modifiedByDeviceId=" + modifiedByDeviceId
-            + ", category=" + category + "]";
+            + ", categories=" + categories + "]";
     }
 
     public enum Type {

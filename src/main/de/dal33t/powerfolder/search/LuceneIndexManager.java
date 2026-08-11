@@ -20,6 +20,7 @@
 package de.dal33t.powerfolder.search;
 
 import de.dal33t.powerfolder.ConfigurationEntry;
+import de.dal33t.powerfolder.DocumentType;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.PFComponent;
 import de.dal33t.powerfolder.disk.Folder;
@@ -755,7 +756,7 @@ public class LuceneIndexManager extends PFComponent {
     // Index versioning — bump when Lucene/Tika/OCR libs change in a way
     // that makes existing index data incompatible or stale.
     // -----------------------------------------------------------------------
-    private static final int INDEX_FORMAT_VERSION = 17;
+    private static final int INDEX_FORMAT_VERSION = 18;
 
     private Document buildDocument(FileInfo fileInfo) {
         String docId = buildDocId(fileInfo);
@@ -836,7 +837,7 @@ public class LuceneIndexManager extends PFComponent {
                 fileInfo.isDiretory() ? "true" : "false", Field.Store.YES));
 
         String category = fileInfo.isDiretory()
-                ? FileCategoryMapper.FOLDER : FileCategoryMapper.categoryOf(extension);
+                ? DocumentType.FOLDER : DocumentType.categoryOf(extension);
         doc.add(new StringField("category", category, Field.Store.YES));
 
         return doc;
@@ -1467,10 +1468,15 @@ public class LuceneIndexManager extends PFComponent {
                     BooleanClause.Occur.MUST);
         }
 
-        if (StringUtils.isNotBlank(criteria.getCategory())) {
-            bqBuilder.add(
-                    new TermQuery(new Term("category", criteria.getCategory().toLowerCase(Locale.ROOT).trim())),
-                    BooleanClause.Occur.MUST);
+        if (!criteria.getCategories().isEmpty()) {
+            /* Any of the chosen categories may match - "images or documents", not both at once. */
+            BooleanQuery.Builder anyCategory = new BooleanQuery.Builder();
+            for (String category : criteria.getCategories()) {
+                anyCategory.add(new TermQuery(new Term("category", category.toLowerCase(Locale.ROOT).trim())),
+                        BooleanClause.Occur.SHOULD);
+            }
+            anyCategory.setMinimumNumberShouldMatch(1);
+            bqBuilder.add(anyCategory.build(), BooleanClause.Occur.MUST);
         }
     }
 

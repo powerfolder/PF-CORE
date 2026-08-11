@@ -352,21 +352,31 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         FileInfoCriteria img = dateRangeCriteria();
-        img.setCategory("image");
+        img.addCategory("image");
         List<FileInfo> images = getIndexManager().searchFiles(img);
         assertEquals(1, images.size());
         assertEquals("holiday.jpg", images.get(0).getFilenameOnly());
 
         FileInfoCriteria vid = dateRangeCriteria();
-        vid.setCategory("video");
+        vid.addCategory("video");
         assertEquals(1, getIndexManager().searchFiles(vid).size());
 
+        FileInfoCriteria pdf = dateRangeCriteria();
+        pdf.addCategory("pdf");
+        assertEquals("a pdf has its own category", 1, getIndexManager().searchFiles(pdf).size());
+
         FileInfoCriteria doc = dateRangeCriteria();
-        doc.setCategory("document");
-        assertEquals(1, getIndexManager().searchFiles(doc).size());
+        doc.addCategory("document");
+        assertEquals("and is therefore no document", 0, getIndexManager().searchFiles(doc).size());
+
+        /* Several categories are OR-combined - the image and the pdf, not the video. */
+        FileInfoCriteria imageOrPdf = dateRangeCriteria();
+        imageOrPdf.addCategory("image");
+        imageOrPdf.addCategory("pdf");
+        assertEquals(2, getIndexManager().searchFiles(imageOrPdf).size());
 
         FileInfoCriteria audio = dateRangeCriteria();
-        audio.setCategory("audio");
+        audio.addCategory("audio");
         assertEquals(0, getIndexManager().searchFiles(audio).size());
     }
 
