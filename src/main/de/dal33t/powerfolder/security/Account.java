@@ -99,6 +99,12 @@ public class Account implements Serializable, D2DObject, Auditable {
     public static final String PROPERTYNAME_AGREED_TOS_VERSION = "agreedToSVersion";
     public static final String PROPERTYNAME_JSON_DATA = "jsonData";
 
+    /**
+     * PFS-5732: Context suffix that marks an email address as delivered by SAML/Shibboleth. Analogous to the LDAP
+     * search base that is appended to email addresses imported from LDAP.
+     */
+    public static final String EMAIL_CONTEXT_SAML = "saml";
+
     @Id
     private String oid;
     @Index(name = "IDX_USERNAME")
@@ -1382,6 +1388,120 @@ public class Account implements Serializable, D2DObject, Auditable {
             }
         }
         return store;
+    }
+
+    /**
+     * PFS-5732: Adds an email address to the account, marked as an email address delivered by SAML/Shibboleth.
+     * <p>
+     * Analogous to {@link #addEmail(String, String)} for LDAP. In contrast to LDAP an already stored email address
+     * of ANOTHER source (plain or LDAP) is replaced by the SAML email address, because SAML is the leading source
+     * for accounts that log in via SAML.
+     *
+     * @param email The email address
+     * @return true if the email address was added or replaced an existing one
+     */
+    public boolean addSamlEmail(String email) {
+        Reject.ifBlank(email, "Email");
+        email = email.trim().toLowerCase();
+        String samlEmail = email + ":" + EMAIL_CONTEXT_SAML;
+        // If email address with SAML context is already in email list, only remove the duplicates of other sources
+        if (emails.contains(samlEmail)) {
+            boolean store = false;
+            for (String rawEmail : emails) {
+                if (!samlEmail.equals(rawEmail) && email.equals(getEmailAddress(rawEmail))) {
+                    emails.remove(rawEmail);
+                    store = true;
+                }
+            }
+            return store;
+        }
+        // If email address is already in emails list without or with LDAP search context, replace the email address
+        boolean replaced = false;
+        for (String rawEmail : emails) {
+            if (!email.equals(getEmailAddress(rawEmail))) {
+                continue;
+            }
+            int index = emails.indexOf(rawEmail);
+            emails.remove(index);
+            if (!replaced) {
+                emails.add(index, samlEmail);
+                replaced = true;
+            }
+        }
+        if (replaced) {
+            return true;
+        }
+        // Add email address as first one, so the primary SAML address stays the primary address of the account
+        emails.add(0, samlEmail);
+        return true;
+    }
+
+    /**
+     * PFS-5732: Remove the email addresses stored for the account, that are marked as SAML email addresses but are
+     * not in the list {@code samlEmails}. Analogous to
+     * {@link #removeNonExistingLdapEmails(List, String)} for LDAP.
+     *
+     * @param samlEmails The email addresses delivered by the identity provider on this login
+     * @return true if at least one email address was removed
+     */
+    public boolean removeNonExistingSamlEmails(Collection<String> samlEmails) {
+        Reject.ifNull(samlEmails, "SAML emails");
+        // Append SAML context to emails
+        List<String> existingEmails = new ArrayList<>(samlEmails.size());
+        for (String email : samlEmails) {
+            if (isBlank(email)) {
+                continue;
+            }
+            existingEmails.add(email.trim().toLowerCase() + ":" + EMAIL_CONTEXT_SAML);
+        }
+        boolean store = false;
+        for (String email : emails) {
+            // Only check email addresses belonging to the SAML context
+            if (EMAIL_CONTEXT_SAML.equalsIgnoreCase(getEmailContext(email))) {
+                // If email is no longer delivered by the identity provider, remove it
+                if (!existingEmails.contains(email)) {
+                    emails.remove(email);
+                    store = true;
+                }
+            }
+        }
+        return store;
+    }
+
+    /**
+     * PFS-5732w: Remove all email addresses that were imported from LDAP, e.g. because the account is now
+     * authenticated and its email addresses are maintained by SAML.
+     *
+     * @return true if at least one email address was removed
+     */
+    public boolean removeLdapEmails() {
+        boolean store = false;
+        for (String email : emails) {
+            String context = getEmailContext(email);
+            if (context != null && !EMAIL_CONTEXT_SAML.equalsIgnoreCase(context)) {
+                emails.remove(email);
+                store = true;
+            }
+        }
+        return store;
+    }
+
+    /**
+     * @param rawEmail an email address, possibly with a context suffix
+     * @return the email address without its context suffix
+     */
+    private static String getEmailAddress(String rawEmail) {
+        int index = rawEmail.indexOf(':');
+        return index > 0 ? rawEmail.substring(0, index) : rawEmail;
+    }
+
+    /**
+     * @param rawEmail an email address, possibly with a context suffix
+     * @return the context of the email address, e.g. the LDAP search base or {@link #EMAIL_CONTEXT_SAML}, or null
+     */
+    private static String getEmailContext(String rawEmail) {
+        int index = rawEmail.indexOf(':');
+        return index > 0 ? rawEmail.substring(index + 1) : null;
     }
 
     public List<String> getEmails() {
