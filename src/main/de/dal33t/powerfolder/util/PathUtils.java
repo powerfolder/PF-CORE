@@ -60,8 +60,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class PathUtils {
 
-    private static final Logger log = Logger.getLogger(PathUtils.class
-            .getName());
+    private static final Logger log = Logger.getLogger(PathUtils.class.getName());
 
     private static final int BYTE_CHUNK_SIZE = 8192;
 
@@ -71,11 +70,8 @@ public class PathUtils {
     public static final String DESKTOP_INI_FILENAME = "desktop.ini";
     public static final String INVALID_CHARS = "/\\:*?\"<>|";
 
-    private static ExceptionListener IO_EXCEPTION_LISTENER = new ExceptionListener() {
-        @Override
-        public void exceptionThrown(Exception e) {
-            // Do nothing by default.
-        }
+    private static ExceptionListener IO_EXCEPTION_LISTENER = e -> {
+        // Do nothing by default.
     };
 
     // no instances
@@ -89,11 +85,8 @@ public class PathUtils {
      */
     public static void setIOExceptionListener(ExceptionListener listener) {
         if (listener == null) {
-            IO_EXCEPTION_LISTENER = new ExceptionListener() {
-                @Override
-                public void exceptionThrown(Exception e) {
-                    // Do nothing.
-                }
+            IO_EXCEPTION_LISTENER = e -> {
+                // Do nothing.
             };
         } else {
             IO_EXCEPTION_LISTENER = listener;
@@ -128,8 +121,7 @@ public class PathUtils {
                 current = current.getParent();
             }
         } catch (RuntimeException e) {
-            log.log(Level.WARNING, "Problem while checking if subdir is replicated: "
-                    + path, e);
+            log.log(Level.WARNING, "Problem while checking if subdir is replicated: " + path, e);
         }
         return false;
     }
@@ -142,8 +134,7 @@ public class PathUtils {
         if (file == null) {
             throw new NullPointerException("File is null");
         }
-        return file.getFileName().toString()
-                .equalsIgnoreCase(DESKTOP_INI_FILENAME);
+        return file.getFileName().toString().equalsIgnoreCase(DESKTOP_INI_FILENAME);
     }
 
     /**
@@ -293,8 +284,7 @@ public class PathUtils {
 
             return false;
         } catch (IOException ioe) {
-            log.warning("Unable to check, if path " + path.toString()
-                    + " is a network drive. " + ioe);
+            log.warning("Unable to check, if path " + path.toString() + " is a network drive. " + ioe);
             return false;
         }
     }
@@ -329,8 +319,7 @@ public class PathUtils {
             StringBuffer consoleOutput = new StringBuffer();
 
             String line;
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(stdout));
+            BufferedReader in = new BufferedReader(new InputStreamReader(stdout));
             while ((line = in.readLine()) != null) {
                 // System.out.println(line);
                 consoleOutput.append(line);
@@ -353,6 +342,38 @@ public class PathUtils {
     }
 
     /**
+     * Returns a path that does not exist yet: if the desired path already exists it appends
+     * (2), (3), and so on. Does NOT create anything — use this when the caller needs a free
+     * target for an atomic {@link Files#move}, which requires a non-existing target.
+     *
+     * @param desired the desired path
+     * @return the desired path or the first free "(n)"-suffixed sibling
+     */
+    public static Path findNonExistingPath(Path desired) {
+        Reject.ifNull(desired, "Path is null");
+
+        Path candidate = desired;
+        int suffix = 2;
+
+        String baseName = desired.getFileName().toString();
+        String ext = "";
+        int i = baseName.lastIndexOf('.');
+        if (i >= 0) {
+            ext = baseName.substring(i);
+            baseName = baseName.substring(0, i);
+        }
+
+        while (Files.exists(candidate)) {
+            candidate = desired.getParent().resolve(baseName + " (" + suffix + ")" + ext);
+            suffix++;
+            if (suffix > 999999999) {
+                throw new IllegalStateException("Unable to find non-existing path. Tried " + candidate);
+            }
+        }
+        return candidate;
+    }
+
+    /**
      * Searches and takes care that this directory is new and not yet existing.
      * If dir already exists it appends (1), (2), and so on until it finds an
      * non-existing sub directory. DOES NOT try to remove ILLEGAL characters
@@ -363,27 +384,7 @@ public class PathUtils {
      * @return the directory that is guranteed to be NEW and EMPTY.
      */
     public static Path createEmptyDirectory(Path baseDir) {
-        Reject.ifNull(baseDir, "Base dir is null");
-
-        Path candidate = baseDir;
-        int suffix = 2;
-
-        String baseDirName = baseDir.getFileName().toString();
-        String baseDirExt = "";
-        int i = baseDirName.lastIndexOf('.');
-        if (i >= 0) {
-            baseDirExt = baseDirName.substring(i);
-            baseDirName = baseDirName.substring(0, i);
-        }
-
-        while (Files.exists(candidate)) {
-            candidate = baseDir.getParent().resolve(baseDirName + " (" + suffix + ")" + baseDirExt);
-            suffix++;
-            if (suffix > 999999999) {
-                throw new IllegalStateException(
-                        "Unable to find empty directory Tried " + candidate);
-            }
-        }
+        Path candidate = findNonExistingPath(baseDir);
 
         try {
             Files.createDirectories(candidate);
@@ -419,18 +420,12 @@ public class PathUtils {
     }
 
     public static int getNumberOfSiblings(Path base) {
-        return getNumberOfSiblings(base, new Filter<Path>() {
-            @Override
-            public boolean accept(Path entry) {
-                return true;
-            }
-        });
+        return getNumberOfSiblings(base, entry -> true);
     }
 
     public static int getNumberOfSiblings(Path base, Filter<Path> filter) {
         int i = 0;
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(base,
-                filter)) {
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(base, filter)) {
 
             if (files == null) {
                 return 0;

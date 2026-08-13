@@ -357,6 +357,13 @@ public class FolderWatcher extends PFComponent {
                     return;
                 }
                 FileInfo lookup = lookupInstance(rootPath, name);
+                // PFC-3543: ignore events inside an interrupted subfolder - that
+                // subtree is owned by its own folder/DAO; handling it here would
+                // leak its files into this folder's database. Uses the FileInfo
+                // (relative name), no Path conversion.
+                if (folder.isInInterruptedSubFolder(lookup)) {
+                    return;
+                }
                 if (ignoreFiles.containsKey(lookup)) {
                     // Skipping ignored file
                     return;

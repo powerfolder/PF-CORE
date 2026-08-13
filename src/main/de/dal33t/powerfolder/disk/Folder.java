@@ -495,12 +495,18 @@ public class Folder extends PFComponent {
         List<FileInfo> files;
         if (searchIndexManager != null && criteria.hasSearchCriteria()
                 && !searchIndexManager.isRebuilding()) {
-            // Lucene results first (ranked), then DAO results for any
-            // files the index missed (e.g. content not yet indexed)
-            LinkedHashSet<FileInfo> merged = new LinkedHashSet<>(
-                    searchIndexManager.searchFiles(criteria));
-            merged.addAll(getDAO().findFilesFast(criteria));
-            files = new ArrayList<>(merged);
+            List<FileInfo> indexed = searchIndexManager.searchFiles(criteria);
+            // PFS-5652: the DAO fallback is an O(files) linear scan. Only run it to catch files the index
+            // has not processed yet; when nothing is pending the Lucene result is complete for name/metadata
+            // search and the scan can be skipped.
+            if (searchIndexManager.getPendingCount() == 0) {
+                files = new ArrayList<>(indexed);
+            } else {
+                // Lucene results first (ranked), then DAO results for any files the index missed.
+                LinkedHashSet<FileInfo> merged = new LinkedHashSet<>(indexed);
+                merged.addAll(getDAO().findFilesFast(criteria));
+                files = new ArrayList<>(merged);
+            }
         } else {
             files = new ArrayList<>(getDAO().findFilesFast(criteria));
         }
@@ -540,6 +546,16 @@ public class Folder extends PFComponent {
         if (isWarning() && !currentInfo.isMetaFolder()) {
             logWarning(this + ": Added " + problem);
         }
+    }
+
+    /**
+     * PFS-5687: Notifies the problem listeners without storing the problem in the folder's problem list,
+     * so it does not show up as visible folder problem.
+     *
+     * @param problem the problem to notify the listeners about
+     */
+    public void notifyProblemListenersSilently(Problem problem) {
+        problemListenerSupport.problemAdded(problem);
     }
 
     /**
@@ -846,6 +862,17 @@ public class Folder extends PFComponent {
         }
 
         if (foundTopFolder == null && isSubFolder()) {
+            // PFC-3543: NEVER auto-promote a subfolder with interrupted inheritance. Its whole point
+            // is data isolation below a parent: dropping the parent silently discards the permission
+            // barrier, the location and the index entry - and the version-bumped change replicates.
+            // An empty ancestor chain is no proof of relocation either (mount order, disconnected
+            // device, a path bug - the storage-path check was one and promoted 150 of them). Log
+            // SEVERE and keep the hierarchy for a human to inspect.
+            if (!currentInfo.inheritsPermissions()) {
+                logSevere(this + ": NOT promoting to topfolder - permission inheritance is interrupted."
+                    + " No mounted folder found above " + getLocalBase() + ", hierarchy left unchanged");
+                return false;
+            }
             logWarning(this + ": Promoting folder to topfolder based on filesystem location");
             FolderInfo corrected = FolderInfoFactory.changeParent(getInfo(), null);
             updateInfo(corrected);
@@ -1036,15 +1063,20 @@ public class Folder extends PFComponent {
                     try {
                         FileInfo oldLocalFileInfo = fInfo.getLocalFileInfo(getController().getFolderRepository());
                         if (oldLocalFileInfo != null) {
+                            boolean conflict = false;
                             if (ConfigurationEntry.CONFLICT_DETECTION.getValueBoolean(getController())
                                 && !currentInfo.isMetaFolder()) {
                                 try {
-                                    doSimpleConflictDetection(fInfo, oldLocalFileInfo, targetFile);
+                                    conflict = doSimpleConflictDetection(fInfo, oldLocalFileInfo, targetFile);
                                 } catch (Exception e) {
                                     logSevere("Problem withe conflict detection. " + e);
                                 }
                             }
                             arch.archive(oldLocalFileInfo, targetFile, false);
+                            if (conflict) {
+                                // PFS-5687: after archiving, so the mail can link the overwritten version
+                                notifyProblemListenersSilently(new FileConflictProblem(fInfo));
+                            }
                         }
                         logFileOperation("UPDATED", oldLocalFileInfo, fInfo);
                     } catch (IOException e) {
@@ -1164,7 +1196,11 @@ public class Folder extends PFComponent {
         return true;
     }
 
-    private FileInfo doSimpleConflictDetection(FileInfo fInfo,
+    /**
+     * @return true if a conflict was detected. The caller notifies the problem listeners after archiving
+     *         the overwritten version (PFS-5687).
+     */
+    private boolean doSimpleConflictDetection(FileInfo fInfo,
         FileInfo oldLocalFileInfo, Path oldFilePath)
     {
         boolean conflict = oldLocalFileInfo.getVersion() == fInfo.getVersion()
@@ -1176,13 +1212,13 @@ public class Folder extends PFComponent {
 
         // PFS-1329
         if (oldLocalFileInfo.getSize() == 0) {
-            return null;
+            return false;
         }
 
         if (conflict) {
             // PFC-2666: Workaround
             if ("eml".equalsIgnoreCase(fInfo.getExtension())) {
-                return null;
+                return false;
             }
             logWarning("Conflict detected on file " + fInfo.toDetailString()
                     + ". old: " + oldLocalFileInfo.toDetailString());
@@ -1206,10 +1242,9 @@ public class Folder extends PFComponent {
                 scanChangedFile(conflictCopyInfo);
             } catch (IOException e) {
                 logWarning("Unable to create copy of conflicting file to " + conflictCopyPath + ". " + e);
-                addProblem(new FileConflictProblem(fInfo));
             }
         }
-        return null;
+        return conflict;
     }
 
     /**
@@ -1593,6 +1628,15 @@ public class Folder extends PFComponent {
         }
         Path file = getDiskFile(fInfo);
 
+        // PFC-3543: never scan files that live inside an interrupted subfolder.
+        // That subtree is owned by its own folder/DAO. The scanner and watcher
+        // already exclude it upstream, so reaching this backstop is unexpected;
+        // warn (not fine) so it can be identified in the logs.
+        if (isInInterruptedSubFolder(file)) {
+            logWarning(fInfo + ": Skipped scan - inside interrupted subfolder at " + file);
+            return null;
+        }
+
         // ignore our database file
         if (file.getFileName().toString().equals(Constants.DB_FILENAME)
             || file.getFileName().toString().equals(Constants.DB_BACKUP_FILENAME))
@@ -1774,6 +1818,15 @@ public class Folder extends PFComponent {
             return;
         }
 
+        // PFC-3543: never scan directories inside an interrupted subfolder - that
+        // subtree is owned by its own folder/DAO. The scanner excludes it upstream,
+        // so reaching this backstop is unexpected; warn (not fine) so it can be
+        // identified in the logs.
+        if (isInInterruptedSubFolder(dir)) {
+            logWarning(dirInfo + ": Skipped scan - inside interrupted subfolder at " + dir);
+            return;
+        }
+
         Path expected = dirInfo.getDiskFile(getController().getFolderRepository());
         if (!expected.equals(dir)) {
             logWarning("Metadata mismatch: " + dirInfo.toDetailString() + ". Expected at " + expected + ". Got " + dir);
@@ -1821,6 +1874,24 @@ public class Folder extends PFComponent {
         store(getMySelf(), finalDirInfo);
         setDBDirty();
         broadcastMessages(useExt -> new Message[] {FolderFilesChanged.create(finalDirInfo, useExt)});
+    }
+
+    public FileInfo updateTags(FileInfo fileInfo, String tags) {
+        Reject.ifNull(fileInfo, "FileInfo");
+        FileInfo existing = getFile(fileInfo);
+        if (existing == null) {
+            return null;
+        }
+        FileInfo updated = correctFolderInfo(FileInfoFactory.withTags(existing, tags));
+        synchronized (scanLock) {
+            store(getMySelf(), updated);
+            setDBDirty();
+        }
+        if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
+            searchIndexManager.indexFiles(Collections.singletonList(updated));
+        }
+        broadcastMessages(useExt -> new Message[] {FolderFilesChanged.create(updated, useExt)});
+        return updated;
     }
 
     /**
@@ -2092,6 +2163,185 @@ public class Folder extends PFComponent {
                 dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
             }
         }
+    }
+
+    /**
+     * PFC-3543: Whether the given path belongs to an interrupted subfolder (its base
+     * or anywhere below it). Used by the scanner and watcher to keep an interrupted
+     * subfolder's subtree out of this folder's database. Delegates to the cached
+     * {@link InterruptedSubFolderIndex}; this folder's own base is excluded.
+     *
+     * @param path an absolute path (a scanned directory or a watched file)
+     * @return {@code true} if {@code path} belongs to an interrupted subfolder
+     *         other than this folder itself
+     */
+    public boolean isInInterruptedSubFolder(Path path) {
+        return getController().getFolderRepository().getInterruptedSubFolders().contains(path, getLocalBase());
+    }
+
+    /**
+     * PFC-3543: FileInfo variant of {@link #isInInterruptedSubFolder(Path)} for the
+     * DAO store path. Allocation-free (relative-name comparison, no {@link Path} per
+     * file). Delegates to the cached {@link InterruptedSubFolderIndex}.
+     *
+     * @param fInfo a file of this folder
+     * @return {@code true} if {@code fInfo} belongs to an interrupted subfolder
+     */
+    public boolean isInInterruptedSubFolder(FileInfo fInfo) {
+        return getController().getFolderRepository().getInterruptedSubFolders().contains(fInfo, getInfo());
+    }
+
+    /**
+     * PFC-3543: Removes FileInfos that live inside an interrupted subfolder from
+     * the given collection. Such files are owned by that subfolder's own DAO and
+     * must never enter this folder's DAO - not even via a remote file list from an
+     * old / feature-off peer that still reports the subtree as part of this folder.
+     * Returns the input unchanged in the common case (no interrupted subfolders),
+     * allocating only when files actually have to be dropped.
+     */
+    private Collection<FileInfo> filterInterruptedSubFolderFiles(Collection<FileInfo> fileInfos) {
+        if (fileInfos == null || fileInfos.isEmpty()) {
+            return fileInfos;
+        }
+        if (getController().getFolderRepository().getInterruptedSubFolders().isEmpty()) {
+            return fileInfos;
+        }
+        List<FileInfo> kept = null;
+        for (FileInfo fInfo : fileInfos) {
+            if (isInInterruptedSubFolder(fInfo)) {
+                if (kept == null) {
+                    // First drop: keep everything seen so far, drop this one.
+                    kept = new ArrayList<>(fileInfos.size());
+                    for (FileInfo seen : fileInfos) {
+                        if (seen == fInfo) {
+                            break;
+                        }
+                        kept.add(seen);
+                    }
+                }
+                logWarning(fInfo + ": Skipped store - inside interrupted subfolder");
+            } else if (kept != null) {
+                kept.add(fInfo);
+            }
+        }
+        return kept != null ? kept : fileInfos;
+    }
+
+    /**
+     * PFC-3543 / PFC-3565: Interrupts or restores the permission inheritance of this
+     * subfolder and migrates its FileInfo database accordingly. Must be called on the
+     * subfolder itself. The repository is the authority for the index; this method asks it
+     * to refresh so the scan/watcher/store guards match the new state before any file moves.
+     * <p>
+     * On interruption ({@code inherits == false}) the subfolder switches from the shared top
+     * DAO to its own {@link FileInfoDAOHashMapImpl}. The subtree's FileInfos are copied from
+     * the top folder's database into the subfolder's own database (mapped to the subfolder)
+     * and then raw-removed from the top - a removal that does NOT mark them deleted and does
+     * NOT propagate a deletion to peers. This keeps the interrupted subtree out of the top
+     * folder's data (isolation / security) while preserving every FileInfo version.
+     * <p>
+     * On restore ({@code inherits == true}) the reverse happens: the subfolder's own FileInfos
+     * are mapped back to the top folder, stored in the top database, and the subfolder switches
+     * back to the shared top DAO. Only the local (own) domain is migrated here; remote peers
+     * re-synchronize their per-member state through the regular folder-list exchange after the
+     * protocol renegotiates.
+     *
+     * @param inherits {@code true} to restore inheritance, {@code false} to interrupt it
+     */
+    public void setInheritsPermissions(boolean inherits) {
+        Reject.ifFalse(isSubFolder(), this + ": inheritsPermissions can only be changed on a subfolder");
+        FolderInfo newInfo = FolderInfoFactory.changeInheritsPermissions(currentInfo, inherits);
+        if (newInfo == currentInfo) {
+            // No change - nothing to migrate.
+            return;
+        }
+        synchronized (scanLock) {
+            Folder topFolder = getTopFolder();
+            if (topFolder == null) {
+                // No top folder present here: the subfolder already uses its own fallback DAO,
+                // there is nothing to migrate. Just flip the flag and refresh the index.
+                logWarning(this + ": Changing inheritsPermissions to " + inherits
+                    + " without top folder present - no database migration");
+                updateInfo(newInfo);
+                getController().getFolderRepository().refreshInterruptedSubFolders();
+                return;
+            }
+
+            // Snapshot the rows to migrate from the CURRENT database, before switching DAOs.
+            // Interrupt reads the subtree from the top DAO (rows are prefixed with the subfolder
+            // location); restore reads this subfolder's own DAO (all local rows are the subtree).
+            Collection<FileInfo> toMigrate = inherits
+                ? collectLocalRows(getDAO(), false)
+                : collectLocalRows(topFolder.getDAO(), true);
+
+            updateInfo(newInfo);
+            getController().getFolderRepository().refreshInterruptedSubFolders();
+            initFileInfoDAO();
+            initFileArchiver(getFileArchiver().getVersionsPerFile());
+
+            int dirCount = 0;
+            for (FileInfo row : toMigrate) {
+                if (row.isDiretory()) {
+                    dirCount++;
+                }
+            }
+            int fileCount = toMigrate.size() - dirCount;
+            if (inherits) {
+                // Restore: move rows from the subfolder's own database back into the top folder.
+                List<FileInfo> topInfos = new ArrayList<>(toMigrate.size());
+                for (FileInfo subInfo : toMigrate) {
+                    topInfos.add(FileInfoFactory.mapToTopFolder(subInfo));
+                }
+                topFolder.getDAO().store(null, topInfos);
+                topFolder.setDBDirty();
+                logInfo(this + ": Restored permission inheritance, merged its own database back into top folder "
+                    + topFolder + " - migrated " + fileCount + " files and " + dirCount + " directories");
+            } else {
+                // Interrupt: move rows from the top database into the subfolder's own database,
+                // then raw-remove them from the top (no deletion is propagated to peers).
+                List<FileInfo> subInfos = new ArrayList<>(toMigrate.size());
+                for (FileInfo topInfo : toMigrate) {
+                    subInfos.add(FileInfoFactory.mapToSubFolder(topInfo, currentInfo));
+                }
+                getDAO().store(null, subInfos);
+                for (FileInfo topInfo : toMigrate) {
+                    topFolder.getDAO().delete(null, topInfo);
+                }
+                topFolder.setDBDirty();
+                setDBDirty();
+                logInfo(this + ": Interrupted permission inheritance, split off from top folder " + topFolder
+                    + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
+            }
+        }
+    }
+
+    /**
+     * PFC-3543: Collects the local-domain files and directories to migrate on an
+     * interrupt / restore of this subfolder.
+     *
+     * @param source      the database to read from (the top folder's DAO on interrupt, this
+     *                    subfolder's own DAO on restore)
+     * @param onlySubtree {@code true} to keep only rows below this subfolder's location (top
+     *                    DAO case); {@code false} to keep all local rows (own DAO case)
+     * @return the FileInfos and DirectoryInfos to migrate
+     */
+    private Collection<FileInfo> collectLocalRows(FileInfoDAO source, boolean onlySubtree) {
+        // PFC-3543: the directory node that IS the subfolder root stays in the top folder so the
+        // subfolder remains listed/navigable there; only its CONTENTS are isolated. isInsideSubFolder()
+        // excludes that exact root node (isInSubFolder would match it via startsWith).
+        // PFC-3575: how that kept node is surfaced/filtered by access is a follow-up.
+        List<FileInfo> rows = new ArrayList<>();
+        for (FileInfo fInfo : source.findAllFiles(null)) {
+            if (!onlySubtree || fInfo.isInsideSubFolder(currentInfo)) {
+                rows.add(fInfo);
+            }
+        }
+        for (DirectoryInfo dInfo : source.findAllDirectories(null)) {
+            if (!onlySubtree || dInfo.isInsideSubFolder(currentInfo)) {
+                rows.add(dInfo);
+            }
+        }
+        return rows;
     }
 
     private void initFileArchiver(int versions) {
@@ -2878,12 +3128,17 @@ public class Folder extends PFComponent {
         syncProfile = aSyncProfile;
 
         if (!currentInfo.isMetaFolder()) {
-            String syncProfKey = PREFIX_V4 + configEntryId
-                + FolderSettings.SYNC_PROFILE;
-            getController().getConfig().put(syncProfKey,
-                syncProfile.getFieldList());
-            if (saveConfig) {
-                getController().saveConfig();
+            // Only persist if the folder is still registered in the config. Otherwise a concurrent
+            // remove/unmount (e.g. dynamic folder mounting in HA clusters) already dropped all
+            // f.<entryId>.* keys and writing here would leave an orphaned syncprofile-only entry.
+            if (getController().getConfig().containsKey(PREFIX_V4 + configEntryId + FolderSettings.ID)) {
+                String syncProfKey = PREFIX_V4 + configEntryId + FolderSettings.SYNC_PROFILE;
+                getController().getConfig().put(syncProfKey, syncProfile.getFieldList());
+                if (saveConfig) {
+                    getController().saveConfig();
+                }
+            } else {
+                logFine(this + ": Not persisting sync profile, folder no longer in config");
             }
         }
 
@@ -4158,6 +4413,9 @@ public class Folder extends PFComponent {
     private void store(Member member, int newDomainSize,
         Collection<FileInfo> fileInfos)
     {
+        // PFC-3543: keep interrupted-subfolder files out of this folder's DAO,
+        // regardless of which (local or remote) domain they would be stored under.
+        fileInfos = filterInterruptedSubFolderFiles(fileInfos);
         synchronized (dbAccessLock) {
             String domainID = member.isMySelf() ? null : member.getId();
             if (newDomainSize > 0) {
@@ -4687,6 +4945,11 @@ public class Folder extends PFComponent {
             }
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(file, path -> Files.isRegularFile(path))) {
                 for (Path path : stream) {
+                    // PFC-3543: never touch files of an interrupted subfolder - that
+                    // subtree is owned by its own folder/DAO.
+                    if (isInInterruptedSubFolder(path)) {
+                        continue;
+                    }
                     FileInfo lookupInstance = FileInfoFactory.lookupInstance(this, path);
                     FileInfo storedInfo = getFile(lookupInstance);
                     if (storedInfo == null) {
@@ -5515,24 +5778,30 @@ public class Folder extends PFComponent {
     private void filesChanged(final List<FileInfo> fileInfos) {
         Reject.ifNull(fileInfos, "FileInfo is null");
 
-        for (int i = 0; i < fileInfos.size(); i++) {
-            FileInfo fileInfo = fileInfos.get(i);
-            final FileInfo localInfo = getFile(fileInfo);
-            fileInfos.set(i, localInfo);
+        // Resolve to the local database instances. A file that is not in this folder's database -
+        // e.g. one inside an interrupted subfolder, which is managed by that subfolder's own
+        // database (PFC-3543) - resolves to null here; skip it so it is never handed to the search
+        // index (a null element NPEs in LuceneIndexManager) or broadcast. The owning subfolder
+        // indexes and broadcasts it itself.
+        List<FileInfo> localInfos = new ArrayList<>(fileInfos.size());
+        for (FileInfo fileInfo : fileInfos) {
+            FileInfo localInfo = getFile(fileInfo);
+            if (localInfo != null) {
+                localInfos.add(localInfo);
+            }
+        }
+        if (localInfos.isEmpty()) {
+            return;
         }
 
-         if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
-            searchIndexManager.indexFiles(fileInfos);
+        if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
+            searchIndexManager.indexFiles(localInfos);
         }
-        fireFilesChanged(fileInfos);
+        fireFilesChanged(localInfos);
         setDBDirty();
 
-        if (fileInfos.size() >= 1
-            || diskItemFilter.isRetained(fileInfos.get(0)))
-        {
-            broadcastMessages(useExt -> FolderFilesChanged.create(getInfo(), fileInfos,
-                    diskItemFilter, useExt));
-        }
+        broadcastMessages(useExt -> FolderFilesChanged.create(getInfo(), localInfos,
+                diskItemFilter, useExt));
     }
 
     private void fireFilesChanged(List<FileInfo> fileInfos) {

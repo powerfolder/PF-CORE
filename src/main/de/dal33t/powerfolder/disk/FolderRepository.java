@@ -57,6 +57,7 @@ import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -79,8 +80,15 @@ public class FolderRepository extends PFComponent implements Runnable {
             .getName());
     // PFS-1657
     private static final String DIRNAME_SNAPSHOT = ".snapshot";
+    // PFS-5652: log searches that exceed this duration, so slow queries can be diagnosed.
+    private static final long SLOW_SEARCH_THRESHOLD_MS = 10_000L;
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
+
+    // PFC-3543: index of the currently interrupted subfolders. This repository is
+    // the authority for structural changes and refreshes it on folder add/remove/
+    // rename (and, later PFC-3565, on interruption toggle).
+    private final InterruptedSubFolderIndex interruptedSubFolders = new InterruptedSubFolderIndex();
     private Thread myThread;
     private final FileRequestor fileRequestor;
     private Folder currentlyMaintainingFolder;
@@ -891,6 +899,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         // make sure that on restart of folder the folders are freshly read
         folders.clear();
         metaFolders.clear();
+        // PFC-3543: no folders left, so no interrupted subfolders left either.
+        interruptedSubFolders.unregister();
 
         locking.shutdown();
 
@@ -998,17 +1008,61 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folders, "Folders");
         Reject.ifNull(criteria, "Criteria");
 
+        // Cap the number of folder searches running at once so a single search never floods the shared
+        // IO pool. Each task holds a permit until it finished; searches are a mix of Lucene/DAO reads,
+        // so a bit above the core count is fine.
+        int maxConcurrent = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
+        Semaphore limiter = new Semaphore(maxConcurrent);
+
+        long started = System.currentTimeMillis();
+
         List<FileInfo> results = new ArrayList<>();
+        List<Future<List<FileInfo>>> futures = new ArrayList<>(folders.size());
         for (Folder folder : folders) {
             if (folder == null) {
                 continue;
             }
             criteria.addMySelf(folder);
             try {
-                results.addAll(folder.searchFiles(criteria));
-            } catch (RuntimeException e) {
-                logWarning("Unable to search folder " + folder + ": " + e);
+                limiter.acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
+            FutureTask<List<FileInfo>> task = new FutureTask<>(() -> {
+                try {
+                    return folder.searchFiles(criteria);
+                } catch (RuntimeException e) {
+                    logWarning("Unable to search folder " + folder + ": " + e, e);
+                    return Collections.<FileInfo>emptyList();
+                } finally {
+                    limiter.release();
+                }
+            });
+            if (getController().getIOProvider().startIO(task) != null) {
+                futures.add(task);
+            } else {
+                // Not submitted (e.g. during shutdown) -> the task never runs, so release the permit here.
+                limiter.release();
+            }
+        }
+
+        for (Future<List<FileInfo>> future : futures) {
+            try {
+                results.addAll(future.get());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            } catch (ExecutionException e) {
+                logWarning("Unable to search folder: " + e.getCause(), e);
+            }
+        }
+
+        long took = System.currentTimeMillis() - started;
+        if (took > SLOW_SEARCH_THRESHOLD_MS) {
+            logWarning("Slow file search: took " + took + "ms, keywords=" + criteria.getKeyWords()
+                + ", folders=" + folders.size() + ", hits=" + results.size() + ", path=" + criteria.getPath()
+                + ", type=" + criteria.getType() + ", recursive=" + criteria.isRecursive());
         }
         return results;
     }
@@ -1039,6 +1093,27 @@ public class FolderRepository extends PFComponent implements Runnable {
         CompositeCollection<Folder> composite = new CompositeCollection<Folder>();
         composite.addComposited(folders.values(), metaFolders.values());
         return Collections.unmodifiableCollection(composite);
+    }
+
+    /**
+     * PFC-3543: The index of the currently interrupted subfolders. Used by
+     * {@link Folder} on the scan/watcher/DAO hot path to keep the subtree of an
+     * interrupted subfolder out of this folder's database.
+     *
+     * @return the interrupted subfolder index (never {@code null})
+     */
+    InterruptedSubFolderIndex getInterruptedSubFolders() {
+        return interruptedSubFolders;
+    }
+
+    /**
+     * PFC-3543: Recomputes the interrupted-subfolder index from the current folders.
+     * The repository is the authority for structural changes; it is called on the rare
+     * events that can change the set - a folder is mounted, removed or renamed, or a
+     * subfolder's inheritance interruption is toggled ({@link Folder#setInheritsPermissions}).
+     */
+    void refreshInterruptedSubFolders() {
+        interruptedSubFolders.refresh(folders.values());
     }
 
     /**
@@ -1231,6 +1306,30 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         return null;
+    }
+
+    /**
+     * PFS-5510: The nearest MOUNTED shared subfolder that encloses the addressed location
+     * ({@code folder} + {@code relativeName}) - so a directory/file deeper inside a shared subfolder
+     * resolves to that subfolder, not just an exact subfolder root. Accepts a top folder or a
+     * subfolder as input. Thin adapter over
+     * {@link FolderInfo#findEnclosingSubFolder(java.util.Collection, FolderInfo, String)} with the
+     * mounted subfolders as candidates. Returns {@code null} if no mounted shared subfolder encloses
+     * the location.
+     *
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed directory/file path relative to {@code folder}, may be blank
+     * @return the enclosing mounted subfolder, or {@code null}
+     */
+    public Folder findEnclosingSubFolder(FolderInfo folder, String relativeName) {
+        if (folder == null || relativeName == null) {
+            return null;
+        }
+        // Ground truth is the mounted Folder's CURRENT info (the map keys may be stale versions -
+        // FolderInfo.equals compares only the id), so collect the candidates via Folder.getInfo().
+        FolderInfo enclosing = FolderInfo.findEnclosingSubFolder(
+                getFolders().stream().map(Folder::getInfo).collect(Collectors.toList()), folder, relativeName);
+        return enclosing != null ? getFolder(enclosing) : null;
     }
 
     /**
@@ -1460,6 +1559,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning(folderInfo + " already in folders list");
         }
         folders.put(folder.getInfo(), folder);
+        // PFC-3543: a newly mounted folder may be an interrupted subfolder.
+        refreshInterruptedSubFolders();
         saveFolderConfig(folderInfo, folderSettings, saveConfig);
 
         if (!metaFolder.hasOwnDatabase()) {
@@ -1583,13 +1684,14 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Remove internal
             folders.remove(folder.getInfo());
+            // PFC-3543: keep the interrupted-subfolder index in sync.
+            refreshInterruptedSubFolders();
             folder.removeProblemListener(valveProblemListenerSupport);
 
             // Break transfers
             getController().getTransferManager().breakTransfers(
                     folder.getInfo());
 
-            // Shutdown folder
             folder.shutdown();
 
             // synchronize memberships
@@ -2395,6 +2497,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.updateInfo(newFolderInfo);
         folders.remove(newFolderInfo);
         folders.put(newFolderInfo, folder);
+        // PFC-3543: local base / interruption state may have changed on rename.
+        refreshInterruptedSubFolders();
         Folder metaFolder = getMetaFolder(newFolderInfo);
         if (metaFolder != null) {
             metaFolder.updateInfo(newFolderInfo.getMetaFolderInfo());

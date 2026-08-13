@@ -21,17 +21,49 @@ package de.dal33t.powerfolder.security;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
 import org.junit.Test;
 
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 
 public class GroupTest {
+
+    /**
+     * PFS-5510: {@link Group#getAllowedAccess(FolderInfo, String)} computes the group's EFFECTIVE
+     * access on the addressed location, including permissions inherited from parent groups.
+     */
+    @Test
+    public void testEffectiveAllowedAccessOnSubFolder() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+            "team/shared", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo teamShared = FolderInfoFactory.newFolder(location);
+
+        Group writers = new Group("Writers");
+        writers.grant(FolderPermission.readWrite(teamShared));
+
+        assertEquals(AccessMode.NO_ACCESS, writers.getAllowedAccess(top));
+        assertEquals(AccessMode.READ_WRITE, writers.getAllowedAccess(top, "team/shared"));
+        assertEquals(AccessMode.READ_WRITE, writers.getAllowedAccess(top, "team/shared/deep/file.txt"));
+        assertEquals(AccessMode.NO_ACCESS, writers.getAllowedAccess(top, "team/other"));
+        // the subfolder itself as the addressed folder
+        assertEquals(AccessMode.READ_WRITE, writers.getAllowedAccess(teamShared, "deep"));
+
+        // inherited from the parent group (nested groups)
+        Group child = new Group("Child");
+        child.addParent(writers);
+        assertEquals(AccessMode.READ_WRITE, child.getAllowedAccess(top, "team/shared/file.txt"));
+        assertEquals(AccessMode.NO_ACCESS, child.getAllowedAccess(top, "team/other"));
+    }
 
     private static final FolderInfo FOLDER_A =
         FolderInfoFactory.newTopFolderForTest("FolderA", "fA");
@@ -134,5 +166,103 @@ public class GroupTest {
 
         child.removeParent(parent);
         assertFalse(child.getParents().contains(parent));
+    }
+
+    /**
+     * A group never OWNS a folder - ownership carries the quota and the charging and belongs to an
+     * account. The grant is skipped for a top folder, for an inheriting subfolder and for an interrupted
+     * one (PFC-3543), and it must not throw: it is a class invariant, not a caller error.
+     */
+    @Test
+    public void testOwnerPermissionIsNeverGrantedToAGroup() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top-owner");
+        FolderInfo inheriting = newSubFolder(top, "inheriting");
+        FolderInfo interrupted = FolderInfoFactory.changeInheritsPermissions(
+            newSubFolder(top, "interrupted"), false);
+
+        Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
+        try {
+            Group owners = new Group("Owners");
+            owners.grant(FolderPermission.owner(top));
+            owners.grant(FolderPermission.owner(inheriting));
+            owners.grant(FolderPermission.owner(interrupted));
+
+            assertTrue("A group must not hold any folder permission from an owner grant: "
+                + owners.getPermissions(), owners.getPermissions().isEmpty());
+            assertEquals(AccessMode.NO_ACCESS, owners.getAllowedAccess(top));
+            assertEquals(AccessMode.NO_ACCESS, owners.getAllowedAccess(interrupted));
+        } finally {
+            // The feature flag is process-wide - never leak it into other tests.
+            Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
+        }
+    }
+
+    /**
+     * How a mode is changed: a bare grant of a LOWER mode is a no-op, because the higher one already
+     * implies it - the callers therefore revoke first and grant afterwards
+     * ({@code ServerSecurityService.setFolderPermission}). That makes it essential that
+     * revokeAllFolderPermissions really clears EVERY mode; a leftover would keep being reported by
+     * getAllowedAccess, which checks the higher modes first.
+     */
+    @Test
+    public void testModeIsChangedByRevokingFirst() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top-lower");
+
+        Group team = new Group("Team");
+        team.grant(FolderPermission.admin(top));
+        assertEquals(AccessMode.ADMIN, team.getAllowedAccess(top));
+
+        // Granting a lower mode on top of a higher one changes nothing - it is already implied
+        team.grant(FolderPermission.readWrite(top));
+        assertEquals(1, team.getPermissions().size());
+        assertEquals(AccessMode.ADMIN, team.getAllowedAccess(top));
+
+        // The supported way down: revoke, then grant
+        team.revokeAllFolderPermissions(top);
+        assertTrue("Revoke must clear every mode: " + team.getPermissions(),
+            team.getPermissions().isEmpty());
+        assertEquals(AccessMode.NO_ACCESS, team.getAllowedAccess(top));
+
+        team.grant(FolderPermission.readWrite(top));
+        assertEquals(1, team.getPermissions().size());
+        assertEquals(AccessMode.READ_WRITE, team.getAllowedAccess(top));
+
+        // Raising works with a bare grant, since the lower mode does not imply the higher one
+        team.grant(FolderPermission.admin(top));
+        assertEquals(1, team.getPermissions().size());
+        assertEquals(AccessMode.ADMIN, team.getAllowedAccess(top));
+    }
+
+    /**
+     * PFS-5510: the DIRECT permission is a different question from the effective access, and on a
+     * subfolder the two differ. {@code getPermissionFor} answers the direct one on a group (its callers
+     * select the direct holders), while {@link #getAllowedAccess} follows parents and inheritance.
+     */
+    @Test
+    public void testDirectPermissionIgnoresParentsAndInheritance() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top-direct");
+        FolderInfo teamShared = newSubFolder(top, "team/shared");
+
+        Group parent = new Group("Parent");
+        parent.grant(FolderPermission.admin(top));
+        Group child = new Group("Child");
+        child.grant(FolderPermission.read(teamShared));
+        child.addParent(parent);
+
+        // Granted here
+        assertEquals(AccessMode.READ, child.getDirectPermissionFor(teamShared).getMode());
+        assertEquals(AccessMode.READ, child.getPermissionFor(teamShared).getMode());
+        // Only inherited, never granted on the child itself
+        assertNull(child.getDirectPermissionFor(top));
+        assertNull(child.getPermissionFor(top));
+        // ...while the effective access sees the parent group and the top folder
+        assertEquals(AccessMode.ADMIN, child.getAllowedAccess(top));
+        assertEquals(AccessMode.ADMIN, child.getAllowedAccess(teamShared));
+    }
+
+    private static FolderInfo newSubFolder(FolderInfo top, String path) {
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top, path,
+            null, 0, null, null, new Date(), 1, null, true, null);
+        return FolderInfoFactory.newFolder(location);
     }
 }

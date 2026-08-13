@@ -27,7 +27,9 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import de.dal33t.powerfolder.util.logging.LoggingManager;
 
+import java.util.logging.Level;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.util.ArrayList;
@@ -43,10 +45,39 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     private UploadsTableModel bartModel;
     private MyUploadTableModelListener bartModelListener;
+    private java.util.Timer stackDumpTimer;
 
     @Override
     protected void setUp() throws Exception {
+        // Diagnostics for sporadic hangs of this class on CI (PFC-3573): log which method runs and what happens.
+        // If a test runs longer than 8 minutes, dump all thread stacks. To a FILE in test-reports (uploaded as CI
+        // artifact) - NOT to System.out: the hang also freezes stdout (blocked PrintStream lock), and the ant fork
+        // timeout kill discards buffered output.
+        System.out.println(">>> UploadsTableModelTest#" + getName());
+        stackDumpTimer = new java.util.Timer("StackDumpWatchdog", true);
+        stackDumpTimer.schedule(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                StringBuilder dump = new StringBuilder("=== STACK DUMP - " + getName() + " runs > 8 minutes ===\n");
+                for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+                    dump.append("Thread: ").append(e.getKey().getName()).append(" state=")
+                        .append(e.getKey().getState()).append('\n');
+                    for (StackTraceElement ste : e.getValue()) {
+                        dump.append("    at ").append(ste).append('\n');
+                    }
+                }
+                try {
+                    java.nio.file.Path dir = java.nio.file.Paths.get("test-reports");
+                    java.nio.file.Files.createDirectories(dir);
+                    java.nio.file.Files.write(dir.resolve("threaddump-UploadsTableModelTest-" + getName() + ".txt"),
+                        dump.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    // Ignore - diagnostics only
+                }
+            }
+        }, 8 * 60 * 1000, 8 * 60 * 1000);
         super.setUp();
+        LoggingManager.setConsoleLogging(Level.INFO);
         connectBartAndLisa();
 
         // Join on testfolder
@@ -66,6 +97,16 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
         ConfigurationEntry.UPLOAD_AUTO_CLEANUP_FREQUENCY
             .setValue(getContollerBart(), "0");
 
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        // Cancel AFTER super.tearDown(): the PFC-3573 hang happened in controller shutdown during tearDown -
+        // cancelling first would disarm the watchdog exactly for that case.
+        super.tearDown();
+        if (stackDumpTimer != null) {
+            stackDumpTimer.cancel();
+        }
     }
 
     public void testSingleFileUpload() {
@@ -131,8 +172,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testRunningUpload() {
-        // Create a 100 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 100000000);
+        // Throttle so the upload stays observable as running; 20MB at 2MB/s = ~10 seconds
+        getContollerBart().getTransferManager().setUploadCPSForLAN(2 * 1024 * 1024);
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20 * 1024 * 1024);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -169,12 +211,14 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
     }
 
     public void testAbortUpload() {
-        ConfigurationEntry.DOWNLOAD_LIMIT_LAN.setValue(getContollerLisa(),
-            "1000");
+        // Throttle lisas download so the upload is still running when it gets aborted. Setting the
+        // ConfigurationEntry directly (as before) never took effect - the TransferManager applies limits
+        // via updateSpeedLimits() only.
+        getContollerLisa().getTransferManager().setDownloadCPSForLAN(1024 * 1024);
 
         assertEquals(0, bartModelListener.events.size());
-        // Create a 200 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 200000000);
+        // Create a 20 megs file. At 1MB/s the transfer runs ~20 seconds - the abort happens mid-transfer.
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 20 * 1024 * 1024);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());
@@ -234,10 +278,9 @@ public class UploadsTableModelTest extends TwoControllerTestCase {
 
     public void testDisconnectWhileUpload() {
         getContollerBart().getTransferManager().setUploadCPSForLAN(40000);
-        getContollerLisa().getTransferManager().setUploadCPSForWAN(40000);
 
-        // Create a 30 megs file
-        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 300000000);
+        // Create a 10 megs file. At ~40KB/s the upload is guaranteed to be still running when disconnecting.
+        TestHelper.createRandomFile(getFolderAtBart().getLocalBase(), 10 * 1024 * 1024);
         getFolderAtBart().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
         scanFolder(getFolderAtBart());

@@ -381,7 +381,7 @@ public final class FileInfoFactory {
     {
         Reject.ifNull(original, "Original FileInfo is null");
         Reject.ifTrue(original.isLookupInstance(),
-            "Cannot delete lookup FileInfo!");
+            "Cannot mark lookup FileInfo as deleted. Has to be an actual FileInfo.");
         // PFC-2352: TODO Think about hashes!
         if (original.isFile()) {
             return new FileInfo(original.getRelativeName(), original.getOID(),
@@ -393,6 +393,28 @@ public final class FileInfoFactory {
                 original.getOID(), delbyDevice, delByAccount, delDate,
                 original.getVersion() + 1, original.getHashes(), true,
                 original.getTags(), original.getFolderInfo());
+        } else {
+            throw new IllegalArgumentException("Illegal original FileInfo: "
+                + original.getClass() + ": " + original.toDetailString());
+        }
+    }
+
+    public static FileInfo withTags(FileInfo original, String tags) {
+        Reject.ifNull(original, "Original FileInfo is null");
+        Reject.ifTrue(original.isLookupInstance(),
+            "Cannot set tags on lookup FileInfo!");
+        if (original.isFile()) {
+            return new FileInfo(original.getRelativeName(), original.getOID(),
+                original.getSize(), original.getModifiedBy(),
+                original.getModifiedByAccount(), original.getModifiedDate(),
+                original.getVersion() + 1, original.getHashes(),
+                original.isDeleted(), tags, original.getFolderInfo());
+        } else if (original.isDiretory()) {
+            return new DirectoryInfo(original.getRelativeName(),
+                original.getOID(), original.getModifiedBy(),
+                original.getModifiedByAccount(), original.getModifiedDate(),
+                original.getVersion() + 1, original.getHashes(),
+                original.isDeleted(), tags, original.getFolderInfo());
         } else {
             throw new IllegalArgumentException("Illegal original FileInfo: "
                 + original.getClass() + ": " + original.toDetailString());

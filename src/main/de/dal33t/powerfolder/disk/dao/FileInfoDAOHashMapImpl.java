@@ -20,11 +20,9 @@ package de.dal33t.powerfolder.disk.dao;
 
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria.Type;
-import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
-import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
@@ -248,6 +246,8 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             path += "/";
         }
         boolean recursive = criteria.isRecursive();
+        // getKeyWords() allocates an unmodifiable wrapper per call - fetch it once for the whole scan.
+        Set<String> keyWords = criteria.getKeyWords();
         Collection<FileInfo> items = new HashSet<FileInfo>();
         for (String domainStr : criteria.getDomains()) {
             Domain domain = getDomain(domainStr);
@@ -261,7 +261,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     }
 
                     if (isInSubDir(dInfo, path, recursive) && !Util.equalsRelativeName(dInfo.getRelativeName(), path)) {
-                        if (!items.contains(dInfo) && matches(dInfo, criteria.getKeyWords())) {
+                        if (!items.contains(dInfo) && matches(dInfo, keyWords)) {
                             if (!dInfo.isDeleted() || criteria.includeDeleted()) {
                                 items.add(dInfo);
                             }
@@ -277,7 +277,7 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     }
 
                     if (isInSubDir(fInfo, path, recursive)) {
-                        if (!items.contains(fInfo) && matches(fInfo, criteria.getKeyWords())) {
+                        if (!items.contains(fInfo) && matches(fInfo, keyWords)) {
                             if (!fInfo.isDeleted() || criteria.includeDeleted()) {
                                 items.add(fInfo);
                             }
@@ -307,12 +307,17 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                 break;
             }
-            for (DirectoryInfo directoryInfo : domain.directories.values()) {
-                if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
-                    break;
-                }
-                if ((!directoryInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(directoryInfo, relativePath, criteria.isRecursive()) && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath)) {
-                    if (!fileInfos.contains(directoryInfo) && matchesName(directoryInfo, criteria.getKeyWords()) && matchesExtension(directoryInfo, criteria.getExtension()) && matchesModifiedBy(directoryInfo, criteria.getModifiedBy())) {
+            if (criteria.getType() == Type.DIRECTORIES_ONLY || criteria.getType() == Type.FILES_AND_DIRECTORIES) {
+                for (DirectoryInfo directoryInfo : domain.directories.values()) {
+                    if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
+                        break;
+                    }
+                    boolean visible = !directoryInfo.isDeleted() || criteria.includeDeleted();
+                    boolean below = isInSubDir(directoryInfo, relativePath, criteria.isRecursive())
+                            && !Util.equalsRelativeName(directoryInfo.getRelativeName(), relativePath);
+                    if (visible && below && !fileInfos.contains(directoryInfo)
+                            && criteria.matches(directoryInfo))
+                    {
                         fileInfos.add(directoryInfo);
                     }
                 }
@@ -322,10 +327,10 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
                     if (criteria.getMaxResults() > 0 && fileInfos.size() >= criteria.getMaxResults()) {
                         break;
                     }
-                    if ((!fileInfo.isDeleted() || criteria.includeDeleted()) && isInSubDir(fileInfo, relativePath, criteria.isRecursive())) {
-                        if (!fileInfos.contains(fileInfo) && matchesName(fileInfo, criteria.getKeyWords()) && matchesExtension(fileInfo, criteria.getExtension()) && matchesModifiedBy(fileInfo, criteria.getModifiedBy())) {
-                            fileInfos.add(fileInfo);
-                        }
+                    boolean visible = !fileInfo.isDeleted() || criteria.includeDeleted();
+                    boolean below = isInSubDir(fileInfo, relativePath, criteria.isRecursive());
+                    if (visible && below && !fileInfos.contains(fileInfo) && criteria.matches(fileInfo)) {
+                        fileInfos.add(fileInfo);
                     }
                 }
             }
@@ -380,42 +385,6 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
             }
         }
         return true;
-    }
-
-    private boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
-        if (keyWords.isEmpty()) {
-            return true;
-        }
-        String name = fileInfo.getFilenameOnly().toLowerCase();
-        for (String keyWord : keyWords) {
-            if (!name.contains(keyWord)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean matchesExtension(FileInfo fileInfo, String extension) {
-        if (extension == null || extension.isEmpty()) {
-            return true;
-        }
-        return fileInfo.getExtension().equalsIgnoreCase(extension);
-    }
-
-    private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
-        if (modifiedBy == null || modifiedBy.isEmpty()) {
-            return true;
-        }
-        AccountInfo account = fileInfo.getModifiedByAccount();
-        if (account == null) {
-            return false;
-        }
-        String content = account.getDisplayName() + account.getUsername();
-        MemberInfo member = fileInfo.getModifiedBy();
-        if (member != null) {
-            content += member.nick;
-        }
-        return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
     }
 
     private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {

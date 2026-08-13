@@ -316,7 +316,10 @@ For creation of the installer:
 	<target name="jar-unsigned" depends="compile, dist-misc">
 		<!-- Put everything in ${build.dir} into the PowerFolder.jar file -->
 
-		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true" duplicate="preserve">
+		<!-- Intermediate jar, only consumed by the PF-PRO server build (jar-free): fast deflate for own
+		     classes, library entries are copied as-is instead of being re-compressed. -->
+		<jar jarfile="${dist.dir}/PowerFolder.jar" basedir="${build.dir}" excludes="test*/**/*" update="true"
+			duplicate="preserve" level="1" keepcompression="true">
 			<manifest>
 				<attribute name="Built-By" value="${BuildBy}" />
 				<attribute name="Version" value="${MajorVersion}.${MinorVersion}.${RevisionVersion}" />
@@ -556,8 +559,9 @@ For creation of the installer:
 		<mkdir dir="${build.reports.dir}/raw" />
 		<mkdir dir="${build.reports.dir}/html" />
 		<mkdir dir="${build.reports.dir}/htmlnoframes" />
-		<!-- Batchrun all tests -->
-		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="2g" showoutput="yes">
+		<!-- Batchrun all tests. timeout: kill a hanging test class fork after 30 minutes instead of blocking
+		     the runner until the 2h job timeout -->
+		<junit printsummary="yes" haltonfailure="false" fork="yes" maxmemory="2g" showoutput="yes" timeout="1800000">
 			<!-- Reason: https://code.google.com/p/opendedup/issues/detail?id=34 -->
 			<sysproperty key="file.encoding" value="UTF-8"/>
 			<classpath>

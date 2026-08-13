@@ -292,6 +292,9 @@ public class FileArchiverImpl implements FileArchiver {
                 if (deleteEmptyDirs && subSuccess) {
                     try {
                         Files.delete(entry);
+                    } catch (DirectoryNotEmptyException dnee) {
+                        // Expected: directory still holds archive versions within retention
+                        log.finer(dnee.toString());
                     } catch (IOException ioe) {
                         log.warning(ioe.toString());
                     }

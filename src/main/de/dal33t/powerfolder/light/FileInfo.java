@@ -41,6 +41,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -77,6 +78,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     public static final String PROPERTYNAME_DELETED = "deleted";
     public static final String PROPERTYNAME_FOLDER_INFO = "folderInfo";
 
+    /*
+     * WARNING: Changing this value causes SIGNIFICANT problems and is virtually never the right
+     * move: every serialized instance becomes unreadable (InvalidClassException) - stored folder
+     * databases as well as wire messages from nodes still running the old value. Adding fields
+     * is a serialization-COMPATIBLE change under the SAME UID; see the detailed note on
+     * FolderInfo#serialVersionUID.
+     */
     private static final long serialVersionUID = 100L;
 
     /**
@@ -439,6 +447,13 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
 
     public String getTags() {
         return tags;
+    }
+
+    /**
+     * @return the tags parsed into single values (never null, empty when untagged). PFS-5306
+     */
+    public List<String> getTagsList() {
+        return TagUtil.parse(tags);
     }
 
     /**
@@ -829,6 +844,29 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
         subPath += subFolderInfo.getName();
         return filePath != null && filePath.startsWith(subPath);
+    }
+
+    /**
+     * PFC-3543: Like {@link #isInSubFolder(FolderInfo)} but excludes the directory node that IS the
+     * subfolder root (whose relative name equals the subfolder location) - i.e. matches only the
+     * content INSIDE the subfolder. Used by the interrupt data isolation so that root directory node
+     * stays in the top folder and remains listed/navigable, while only the subfolder's contents are
+     * isolated into its own database.
+     * <p>
+     * PFC-3575: keeping the root node in the top folder is the pragmatic first step; how the node's
+     * visibility is modelled (who may see/enter an interrupted subfolder) is a follow-up there.
+     */
+    public boolean isInsideSubFolder(FolderInfo subFolderInfo) {
+        Reject.ifNull(subFolderInfo, "SubFolderInfo");
+        Reject.ifFalse(subFolderInfo.isSubFolder(), "Must be subfolder");
+
+        String subPath = "";
+        if (!subFolderInfo.getParent().getRelativeName().isEmpty()) {
+            subPath += subFolderInfo.getParent().getRelativeName() + '/';
+        }
+        subPath += subFolderInfo.getName();
+        String filePath = this.getRelativeName();
+        return filePath != null && filePath.startsWith(subPath) && !filePath.equals(subPath);
     }
 
     public boolean isInSubFolder(String subFolderPath) {

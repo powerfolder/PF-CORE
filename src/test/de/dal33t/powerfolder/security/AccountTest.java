@@ -19,22 +19,151 @@
  */
 package de.dal33t.powerfolder.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.light.DirectoryInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
+import de.dal33t.powerfolder.util.Format;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import de.dal33t.powerfolder.util.Format;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 public class AccountTest {
+
+    /**
+     * PFS-5510: {@link Account#getAllowedAccess(FolderInfo, String)} computes the EFFECTIVE access
+     * on the addressed location - permissions granted on an enclosing shared subfolder (directly or
+     * through (nested) groups) raise it above the plain top-folder access, and it is never lower.
+     */
+    @Test
+    public void testEffectiveAllowedAccessOnSubFolder() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+            "structure/deep/shared", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo structureDeepShared = FolderInfoFactory.newFolder(location);
+
+        // hans: direct READ on the top folder, READ_WRITE through a group on the subfolder
+        Group writers = new Group("Writers");
+        writers.grant(FolderPermission.readWrite(structureDeepShared));
+
+        Account hans = new Account();
+        hans.grant(FolderPermission.read(top));
+        hans.addGroup(writers);
+
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(top));
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(top, "elsewhere/file.txt"));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(top, "structure/deep/shared"));
+        assertEquals(AccessMode.READ_WRITE,
+            hans.getAllowedAccess(top, "structure/deep/shared/deeper/file.txt"));
+        // the subfolder itself as the addressed folder
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(structureDeepShared, ""));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(structureDeepShared, "deeper/file.txt"));
+
+        // nested groups: member of the child group only, the parent holds the subfolder permission
+        Group parent = new Group("Parent");
+        parent.grant(FolderPermission.readWrite(structureDeepShared));
+        Group child = new Group("Child");
+        child.addParent(parent);
+
+        Account nested = new Account();
+        nested.addGroup(child);
+
+        assertEquals(AccessMode.NO_ACCESS, nested.getAllowedAccess(top));
+        assertEquals(AccessMode.READ_WRITE,
+            nested.getAllowedAccess(top, "structure/deep/shared/deep/file.txt"));
+        assertEquals(AccessMode.NO_ACCESS, nested.getAllowedAccess(top, "unrelated"));
+
+        // a weaker subfolder grant never lowers a stronger top-folder access (union, highest wins)
+        Group readers = new Group("Readers");
+        readers.grant(FolderPermission.read(structureDeepShared));
+
+        Account boss = new Account();
+        boss.grant(FolderPermission.readWrite(top));
+        boss.addGroup(readers);
+
+        assertEquals(AccessMode.READ_WRITE,
+            boss.getAllowedAccess(top, "structure/deep/shared/file.txt"));
+    }
+
+    /**
+     * PFS-5510: mirrors the manually verified end-to-end scenario (localhost + narvi QA):
+     * hans@powerfolder.com holds direct READ on the top folder "!Test!", the group "Schreibgruppe"
+     * holds READ_WRITE on the shared subfolder "!Test!/Schreibrechte", and hans is a member of that
+     * group. hans must be able to write inside "Schreibrechte" (root and deeper) while the rest of
+     * "!Test!" stays read-only - the direct READ must not override the group write access.
+     */
+    @Test
+    public void testHansWritesInSchreibrechteViaSchreibgruppe() {
+        FolderInfo test = FolderInfoFactory.newTopFolderForTest("!Test!", "test");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(test,
+            "Schreibrechte", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo schreibrechte = FolderInfoFactory.newFolder(location);
+
+        Group schreibgruppe = new Group("Schreibgruppe");
+        schreibgruppe.grant(FolderPermission.readWrite(schreibrechte));
+
+        Account hans = new Account();
+        hans.setUsername("hans@powerfolder.com");
+        hans.grant(FolderPermission.read(test));
+        hans.addGroup(schreibgruppe);
+
+        // hans sees the top folder read-only ...
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(test));
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(test, "elsewhere/report.txt"));
+        // ... but has effective write access inside the shared subfolder - root and deeper
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(test, "Schreibrechte"));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(test, "Schreibrechte/deep"));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(test, "Schreibrechte/deep/upload.txt"));
+        // the subfolder addressed by its own folder id behaves the same
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(schreibrechte, ""));
+        assertEquals(AccessMode.READ_WRITE, hans.getAllowedAccess(schreibrechte, "deep"));
+
+        // without the group membership only the direct READ remains
+        hans.removeGroup(schreibgruppe);
+        assertEquals(AccessMode.READ, hans.getAllowedAccess(test, "Schreibrechte/deep"));
+    }
+
+    /**
+     * PFS-5510 / PFC-3543: an INTERRUPTED subfolder is decoupled from its top folder - the top-folder
+     * permission does not reach it, only permissions granted on the subfolder itself (directly or
+     * through groups) count there. The effective access may therefore be LOWER than the top-folder
+     * access inside an interrupted subfolder.
+     */
+    @Test
+    public void testEffectiveAllowedAccessHonorsInterruptedInheritance() {
+        Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
+        try {
+            FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top-inh");
+            DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+                "isolated", null, 0, null, null, new Date(), 1, null, true, null);
+            FolderInfo isolated = FolderInfoFactory.changeInheritsPermissions(
+                FolderInfoFactory.newFolder(location), false);
+
+            Group readers = new Group("Readers");
+            readers.grant(FolderPermission.read(isolated));
+
+            Account account = new Account();
+            account.grant(FolderPermission.readWrite(top));
+            account.addGroup(readers);
+
+            // Outside the interrupted subfolder the top-folder READ_WRITE applies...
+            assertEquals(AccessMode.READ_WRITE, account.getAllowedAccess(top, "elsewhere"));
+            // ...inside it the top permission does NOT inherit - only the subfolder grant counts.
+            assertEquals(AccessMode.READ, account.getAllowedAccess(top, "isolated"));
+            assertEquals(AccessMode.READ, account.getAllowedAccess(top, "isolated/deep/file.txt"));
+        } finally {
+            // The feature flag is process-wide - never leak it into other tests.
+            Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
+        }
+    }
 
     @Test
     public void testLEU() {
@@ -275,5 +404,176 @@ public class AccountTest {
         assertEquals(email2, emails.get(1));
         assertEquals(email3, emails.get(2));
     }
-    
+
+    /**
+     * PFS-5684: The base path follows the username on a rename.
+     */
+    @Test
+    public void testBasePathFollowsUsernameRename() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("/data/powerfolder/usera");
+
+        account.setUsername("userb");
+
+        assertEquals("/data/powerfolder/userb", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameOnWindowsPath() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("D:\\PowerFolder\\storage\\usera");
+
+        account.setUsername("userb");
+
+        assertEquals("D:\\PowerFolder\\storage\\userb", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameWithMail() {
+        Account account = new Account();
+        account.setUsername("user.a@company.com");
+        account.setBasePath("/data/powerfolder/user.a@company.com");
+
+        account.setUsername("user.b@company.com");
+
+        assertEquals("/data/powerfolder/user.b@company.com", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameWithInvalidFilenameChars() {
+        Account account = new Account();
+        account.setUsername("user/a");
+        account.setBasePath("/data/powerfolder/user_a");
+
+        account.setUsername("user:b");
+
+        assertEquals("/data/powerfolder/user_b", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameWithTrailingSeparator() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("/data/powerfolder/usera/");
+
+        account.setUsername("userb");
+
+        assertEquals("/data/powerfolder/userb/", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathFollowsUsernameRenameCaseInsensitive() {
+        Account account = new Account();
+        account.setUsername("UserA");
+        account.setBasePath("/data/powerfolder/usera");
+
+        account.setUsername("userb");
+
+        assertEquals("/data/powerfolder/userb", account.getBasePath());
+    }
+
+    @Test
+    public void testCustomBasePathIsKeptOnUsernameRename() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("/mnt/volume7/customdir");
+
+        account.setUsername("userb");
+
+        assertEquals("/mnt/volume7/customdir", account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathUntouchedWithoutRename() {
+        Account account = new Account();
+        account.setUsername("usera");
+        account.setBasePath("/data/powerfolder/usera");
+
+        // Same username again, e.g. on a store without changes
+        account.setUsername("usera");
+
+        assertEquals("/data/powerfolder/usera", account.getBasePath());
+    }
+
+    @Test
+    public void testBlankBasePathStaysBlankOnUsernameRename() {
+        Account account = new Account();
+        account.setUsername("usera");
+
+        account.setUsername("userb");
+
+        assertEquals(null, account.getBasePath());
+    }
+
+    @Test
+    public void testBasePathIsNotAdaptedOnAccountCreation() {
+        Account account = new Account();
+        account.setBasePath("/data/powerfolder/usera");
+
+        // No old username: this is the initial assignment, not a rename
+        account.setUsername("userb");
+
+        assertEquals("/data/powerfolder/usera", account.getBasePath());
+    }
+
+    /**
+     * The charged folders are the ones the account OWNS, taken from its own permissions only: a group
+     * never owns a folder, so nothing a group carries may show up here. Every folder appears once, also
+     * when several permissions point at it.
+     */
+    @Test
+    public void testFoldersChargedAreTheOwnedOnesOnly() {
+        FolderInfo owned = FolderInfoFactory.newTopFolderForTest("Owned", "charged-owned");
+        FolderInfo viaGroup = FolderInfoFactory.newTopFolderForTest("ViaGroup", "charged-group");
+        FolderInfo justAdmin = FolderInfoFactory.newTopFolderForTest("JustAdmin", "charged-admin");
+
+        // A group cannot even hold the owner permission - the account must not get charged through it
+        Group owners = new Group("Owners");
+        owners.grant(FolderPermission.owner(viaGroup));
+
+        Account account = new Account();
+        account.grant(FolderPermission.owner(owned));
+        account.grant(FolderPermission.admin(justAdmin));
+        account.addGroup(owners);
+
+        Collection<FolderInfo> charged = account.getFoldersCharged();
+        assertEquals("Only the owned folder is charged: " + charged, 1, charged.size());
+        assertTrue(charged.contains(owned));
+        assertFalse(charged.contains(viaGroup));
+        assertFalse(charged.contains(justAdmin));
+
+        // Re-granting owner does not duplicate the entry
+        account.grant(FolderPermission.owner(owned));
+        assertEquals(1, account.getFoldersCharged().size());
+    }
+
+    /**
+     * PFS-5510: the DIRECT permission is a different question from the effective one. On a subfolder they
+     * differ, which is what an ACL view has to be able to tell apart.
+     */
+    @Test
+    public void testDirectPermissionIgnoresGroupsAndInheritance() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "top-direct-acc");
+        DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top,
+            "team/shared", null, 0, null, null, new Date(), 1, null, true, null);
+        FolderInfo teamShared = FolderInfoFactory.newFolder(location);
+
+        Group admins = new Group("Admins");
+        admins.grant(FolderPermission.admin(top));
+
+        Account account = new Account();
+        account.grant(FolderPermission.read(teamShared));
+        account.addGroup(admins);
+
+        // Granted directly on the subfolder
+        assertEquals(AccessMode.READ, account.getDirectPermissionFor(teamShared).getMode());
+        // Nothing granted on the top folder itself - it comes from the group
+        assertNull(account.getDirectPermissionFor(top));
+        // ...while the effective permission reports the group's ADMIN, on both
+        assertEquals(AccessMode.ADMIN, account.getPermissionFor(top).getMode());
+        assertEquals(AccessMode.ADMIN, account.getPermissionFor(teamShared).getMode());
+    }
+
 }

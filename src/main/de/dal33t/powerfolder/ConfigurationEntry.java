@@ -531,6 +531,33 @@ public enum ConfigurationEntry {
     FOLDER_SHARE_SUBFOLDER_ENABLED("folder.share.subfolder.enabled", true),
 
     /**
+     * PFC-3543: Enable the "interruption of permission inheritance" feature,
+     * which allows breaking the permission inheritance on individual subfolders
+     * so they get their own explicit permissions. Disabled by default; can be
+     * switched on/off centrally. Mirrored into the core feature flag
+     * {@link de.dal33t.powerfolder.Feature#FOLDER_PERMISSION_INHERITANCE_INTERRUPTION}
+     * on startup so the core can honor it without a controller.
+     */
+    FOLDER_PERMISSION_INHERITANCE_INTERRUPTION_ENABLED(
+        "folder.permission.inheritance_interruption.enabled", false, true),
+
+    /**
+     * PFC-3576 (spec 3.7): view variant for a shared / interrupted subfolder a user has access to
+     * WITHOUT access to its parent (top) folder.
+     * <ul>
+     *   <li><b>false (default) — "show at top level":</b> the shared subfolder appears directly as a
+     *       top-level entry in the user's folder list; the parent is not shown.</li>
+     *   <li><b>true — "navigate through the structure":</b> the user sees the parent (top) folder and
+     *       navigates through an otherwise empty structure (only the path down to the shared subfolder
+     *       is visible) until reaching the subfolder, where the full content is shown.</li>
+     * </ul>
+     * Applies identically to plain subfolder sharing (inheritance intact) and interrupted subfolders.
+     * Only meaningful while {@link #FOLDER_SHARE_SUBFOLDER_ENABLED} is on. Evaluated per request on the
+     * server, so no core {@code Feature} mirror is required.
+     */
+    FOLDER_SUBFOLDER_NAVIGATION_VIEW_ENABLED("folder.subfolder.navigation_view.enabled", false),
+
+    /**
      * PFS-798: If invitor can invite "external" non existing users (e.g. not in LDAP nor in DB).
      * Will create a new user account with server default settings for invitee.
      */
@@ -1026,6 +1053,13 @@ public enum ConfigurationEntry {
      */
     SEARCH_INDEX_MAX_THREADS("search.indexing.maxThreads",
             Math.max(2, Runtime.getRuntime().availableProcessors() / 4), true),
+
+    /**
+     * PFS-5653: Typo tolerance (Lucene FuzzyQuery, 1-2 edits) for search terms of at least 4 characters.
+     * Only used as a fallback: a query that already found something is never re-run fuzzily, so precision
+     * and cost of normal searches are unaffected. Set to false to switch typo tolerance off entirely.
+     */
+    SEARCH_INDEX_FUZZY_ENABLED("search.index.fuzzy.enabled", true),
 
     /**
      * Maximum extracted text length (characters) per file. Limits how much text Tika produces.

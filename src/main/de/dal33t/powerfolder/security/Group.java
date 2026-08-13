@@ -21,6 +21,7 @@ package de.dal33t.powerfolder.security;
 
 import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.GroupInfo;
 import de.dal33t.powerfolder.protocol.GroupInfoProto;
@@ -154,7 +155,14 @@ public class Group implements Serializable, D2DObject, Auditable {
                 return true;
             }
             if (p instanceof FolderOwnerPermission) {
-                Reject.ifTrue(foInfo.isSubFolder(), foInfo + ": Cannot grant owner permission on subfolder");
+                // A group never OWNS a folder: ownership carries the quota and the charging, and both
+                // belong to an account. Every ownership path on the server grants to an Account only
+                // (ServerSecurityService), and Account.getFoldersCharged() consequently looks at the
+                // account's own permissions. Rejected for top folders as well as for subfolders,
+                // inheriting or interrupted (PFC-3543).
+                LOG.warning(this + ": Not allowed to grant owner permission on " + foInfo
+                    + " - a group never owns a folder");
+                return true;
             }
         }
         return false;
@@ -193,9 +201,19 @@ public class Group implements Serializable, D2DObject, Auditable {
         }
     }
 
+    /**
+     * Revokes every folder permission of this group on the given folder.
+     * <p>
+     * Owner is included although a group must never hold it (see {@code isInvalidGrant}): a legacy row
+     * or an import from before that guard would otherwise stay, and since {@link #grant} calls this to
+     * replace the previous mode - and {@link #getAllowedAccess(FolderInfo)} checks owner first - any
+     * downgrade would silently have no effect. This way a grant cleans such a leftover up.
+     *
+     * @param foInfo the folder to revoke all permissions on
+     */
     public void revokeAllFolderPermissions(FolderInfo foInfo) {
-        revoke(FolderPermission.read(foInfo),
-            FolderPermission.readWrite(foInfo), FolderPermission.admin(foInfo));
+        revoke(FolderPermission.read(foInfo), FolderPermission.readWrite(foInfo),
+            FolderPermission.admin(foInfo), FolderPermission.owner(foInfo));
     }
 
     public void revokeAllGroupAdminPermissions() {
@@ -365,21 +383,52 @@ public class Group implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * @see {@link Account#getPermissionFor(FolderInfo)}
-     **/
+     * The {@link FolderPermission} granted directly on the given folder.
+     * <p>
+     * CAUTION - this does NOT mirror {@link Account#getPermissionFor(FolderInfo)}, which answers the
+     * EFFECTIVE permission (own plus groups plus inherited from the top folder). This one has always
+     * answered the DIRECT permission, and it keeps doing so, because its callers select their candidates
+     * via {@code findWithFolderPermission(folderInfo)} and want exactly that. On a top folder the
+     * difference is invisible, on a subfolder it is not - so the two meanings now have their own names
+     * ({@link #getDirectPermissionFor(FolderInfo)} / {@link #getAllowedAccess(FolderInfo)}) and the
+     * callers get moved over separately, as that changes what an ACL view displays.
+     *
+     * @param foInfo the folder to get the direct permission on
+     * @return the granted FolderPermission, or {@code null} if none is granted on that folder itself
+     */
     public FolderPermission getPermissionFor(FolderInfo foInfo) {
+        return getDirectPermissionFor(foInfo);
+    }
+
+    /**
+     * PFS-5510: The {@link FolderPermission} granted DIRECTLY on the given folder - this group's own
+     * permissions only, matched on exactly that folder. Parent groups do not count and nothing is
+     * inherited from the top folder, so an ACL view can tell an explicit grant apart from an inherited
+     * one. Mirrors {@link Account#getDirectPermissionFor(FolderInfo)}.
+     *
+     * @param foInfo the folder to get the direct permission on
+     * @return the granted FolderPermission, or {@code null} if none is granted on that folder itself
+     */
+    public FolderPermission getDirectPermissionFor(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder info is null");
         for (Permission perm : permissions) {
             if (perm instanceof FolderPermission) {
                 FolderPermission foPerm = (FolderPermission) perm;
-                if (foPerm.getFolder().equals(foInfo)) {
+                if (foInfo.equals(foPerm.getFolder())) {
                     return foPerm;
                 }
             }
         }
-
-        return FolderPermission.get(foInfo, AccessMode.NO_ACCESS);
+        return null;
     }
 
+    /**
+     * The folders this group holds a permission on ITSELF. Parent groups are not followed - use
+     * {@link #getAllFolders()} for that. Callers that show or edit the group's own folder assignment
+     * want this one; callers that resolve access want {@link #getAllFolders()}.
+     *
+     * @return the folders of this group's own permissions
+     */
     public Collection<FolderInfo> getFolders() {
         Collection<FolderInfo> folder = new ArrayList<FolderInfo>(
             permissions.size());
@@ -411,6 +460,76 @@ public class Group implements Serializable, D2DObject, Auditable {
             return FolderPermission.read(folder).getMode();
         }
         return AccessMode.NO_ACCESS;
+    }
+
+    /**
+     * PFS-5510: The EFFECTIVE access of this group (including permissions inherited from parent
+     * groups) on the addressed location: resolves the innermost subfolder the group holds a
+     * permission on that encloses ({@code folder} + {@code relativeName}) and evaluates the access
+     * there. Purely structure-based (the permission lists carry the subfolder FolderInfos incl. their
+     * location), so it works without a mounted folder. For an INHERITING subfolder the result is
+     * never lower than the plain {@link #getAllowedAccess(FolderInfo)}, since top-folder permissions
+     * inherit downward. Accepts a top folder or a subfolder as {@code folder}.
+     * <p>
+     * Interrupted permission inheritance (PFC-3543) is honored by the resolution itself: an interrupted
+     * subfolder is a barrier it does not look past, also when the group holds no permission on it. See
+     * {@link Account#getAllowedAccess(FolderInfo, String)}.
+     *
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the effective access mode, {@link AccessMode#NO_ACCESS} for none
+     */
+    public AccessMode getAllowedAccess(FolderInfo folder, String relativeName) {
+        FolderInfo governing = FolderInfo.findEnclosingSubFolder(getAllFolders(), folder, relativeName);
+        return getAllowedAccess(governing != null ? governing : folder);
+    }
+
+    /**
+     * PFS-5510: Answers if the group is allowed to write at the addressed location - the EFFECTIVE
+     * access resolves the enclosing shared subfolder (incl. permissions inherited from parent
+     * groups), see {@link #getAllowedAccess(FolderInfo, String)}.
+     *
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the group is allowed to write at the addressed location.
+     */
+    public boolean hasWritePermissions(FolderInfo foInfo, String subDirPath) {
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ_WRITE) >= 0;
+    }
+
+    /**
+     * PFS-5510: Answers if the group is allowed to read at the addressed location - the EFFECTIVE
+     * access resolves the enclosing shared subfolder (incl. permissions inherited from parent
+     * groups), see {@link #getAllowedAccess(FolderInfo, String)}.
+     *
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the group is allowed to read at the addressed location.
+     */
+    public boolean hasReadPermissions(FolderInfo foInfo, String subDirPath) {
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ) >= 0;
+    }
+
+    /**
+     * PFS-5510: Like {@link #hasWritePermissions(FolderInfo, String)}, addressed by the file itself.
+     *
+     * @param fileInfo the addressed file/directory
+     * @return true if the group is allowed to write at the file's location.
+     */
+    public boolean hasWritePermissions(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        return hasWritePermissions(fileInfo.getFolderInfo(), fileInfo.getRelativeName());
+    }
+
+    /**
+     * PFS-5510: Like {@link #hasReadPermissions(FolderInfo, String)}, addressed by the file itself.
+     *
+     * @param fileInfo the addressed file/directory
+     * @return true if the group is allowed to read at the file's location.
+     */
+    public boolean hasReadPermissions(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        return hasReadPermissions(fileInfo.getFolderInfo(), fileInfo.getRelativeName());
     }
     
     /**
@@ -564,7 +683,12 @@ public class Group implements Serializable, D2DObject, Auditable {
                         this.permissions.add(new FolderCreatePermission(permissionInfoProto));
                         break;
                     case FOLDER_OWNER :
-                        this.permissions.add(new FolderOwnerPermission(permissionInfoProto));
+                        // A group never owns a folder (see isInvalidGrant). This import path writes to
+                        // the permission list directly, so the invariant has to be enforced here too -
+                        // otherwise a peer or client could push an ownership in through the back door.
+                        LOG.warning(this + ": Dropping owner permission from D2D import on "
+                            + new FolderOwnerPermission(permissionInfoProto).getFolder()
+                            + " - a group never owns a folder");
                         break;
                     case FOLDER_READ :
                         this.permissions.add(new FolderReadPermission(permissionInfoProto));

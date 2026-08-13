@@ -44,12 +44,30 @@ test-macOS:
     - macOS
   script:
     - pkill -f java || true
+    - mkdir -p test-reports
+    # PFC-3573: external thread-dump watchdog. If a test JVM runs longer than ~10 minutes it is considered hung;
+    # jstack -F works even when the JVM is frozen (safepoint stall). Dumps land in the test-reports artifact.
+    - |
+      (
+        for i in $(seq 1 20); do
+          sleep 300
+          for p in $(pgrep -f JUnitTestRunner || true); do
+            AGE=$(ps -o etime= -p "$p" | tr -d ' ')
+            case "$AGE" in
+              *:*:*|[1-9][0-9]:*) jstack -F "$p" > "test-reports/jstack-${i}-${p}.txt" 2>&1 || jstack "$p" > "test-reports/jstack-${i}-${p}.txt" 2>&1 ;;
+            esac
+          done
+        done
+      ) &
+      WATCHDOG_PID=$!
     - ant run-tests
+    - kill $WATCHDOG_PID 2>/dev/null || true
   artifacts:
     reports:
       junit: test-reports/raw/TEST-*.xml
     paths:
       - test-reports/*
+    when: always
 
 test-Windows:
   stage: test

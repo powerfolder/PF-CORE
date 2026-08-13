@@ -26,6 +26,7 @@ import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
+import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
@@ -97,6 +98,12 @@ public class Account implements Serializable, D2DObject, Auditable {
     public static final String PROPERTYNAME_ORGANIZATION_ID = "organizationOID";
     public static final String PROPERTYNAME_AGREED_TOS_VERSION = "agreedToSVersion";
     public static final String PROPERTYNAME_JSON_DATA = "jsonData";
+
+    /**
+     * PFS-5732: Context suffix that marks an email address as delivered by SAML/Shibboleth. Analogous to the LDAP
+     * search base that is appended to email addresses imported from LDAP.
+     */
+    public static final String EMAIL_CONTEXT_SAML = "saml";
 
     @Id
     private String oid;
@@ -405,7 +412,11 @@ public class Account implements Serializable, D2DObject, Auditable {
                 return true;
             }
             if (p instanceof FolderOwnerPermission) {
-                Reject.ifTrue(foInfo.isSubFolder(), foInfo + ": Cannot grant owner permission on subfolder");
+                // PFC-3543: an interrupted subfolder (inheritance broken) is treated as an
+                // independent folder and gets its own owner (= the top folder's owner) for
+                // ownership/quota. Only a still-inheriting subfolder may not have an owner.
+                Reject.ifTrue(foInfo.isSubFolder() && foInfo.inheritsPermissions(),
+                    foInfo + ": Cannot grant owner permission on inheriting subfolder");
             }
         }
         return false;
@@ -460,14 +471,38 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * Returns the {@link FolderPermission} this {@link Account} has for a
-     * certain {@code Folder}.
+     * The EFFECTIVE {@link FolderPermission} of this {@link Account} on a folder: its own permissions,
+     * the ones from its (nested) groups, and the ones inherited from the top folder all count. On a
+     * subfolder the result can therefore be higher than what is granted on that subfolder itself - use
+     * {@link #getDirectPermissionFor(FolderInfo)} when the question is what was granted HERE.
      *
-     * @param foInfo
-     * @return A FolderPermission with the correct {@code AccessMode}.
+     * @param foInfo the folder to get the permission on
+     * @return a FolderPermission with the effective {@code AccessMode}, {@code null} for no access
      */
     public FolderPermission getPermissionFor(FolderInfo foInfo) {
         return FolderPermission.get(foInfo, getAllowedAccess(foInfo));
+    }
+
+    /**
+     * PFS-5510: The {@link FolderPermission} granted DIRECTLY on the given folder - own permissions
+     * only, matched on exactly that folder. Groups do not count, and nothing is inherited from the top
+     * folder, so an ACL view can tell an explicit grant apart from an inherited one. The counterpart is
+     * {@link #getPermissionFor(FolderInfo)}, which answers the effective access.
+     *
+     * @param foInfo the folder to get the direct permission on
+     * @return the granted FolderPermission, or {@code null} if none is granted on that folder itself
+     */
+    public FolderPermission getDirectPermissionFor(FolderInfo foInfo) {
+        Reject.ifNull(foInfo, "Folder info is null");
+        for (Permission p : permissions) {
+            if (p instanceof FolderPermission) {
+                FolderPermission fp = (FolderPermission) p;
+                if (foInfo.equals(fp.getFolder())) {
+                    return fp;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -502,6 +537,30 @@ public class Account implements Serializable, D2DObject, Auditable {
             return FolderPermission.read(folder).getMode();
         }
         return AccessMode.NO_ACCESS;
+    }
+
+    /**
+     * PFS-5510: The EFFECTIVE access on the addressed location: resolves the innermost subfolder the
+     * account holds a permission on - directly or through (nested) groups - that encloses
+     * ({@code folder} + {@code relativeName}) and evaluates the access there. Purely structure-based
+     * (permission lists carry the subfolder FolderInfos incl. their location), so it works without a
+     * mounted folder. For an INHERITING subfolder the result is never lower than the plain
+     * {@link #getAllowedAccess(FolderInfo)}, since top-folder permissions inherit downward. Accepts a
+     * top folder or a subfolder as {@code folder}.
+     * <p>
+     * Interrupted permission inheritance (PFC-3543) is honored by the resolution itself: an interrupted
+     * subfolder is a barrier it does not look past, also when the account holds no permission on it and
+     * therefore does not carry it in its own permission structures. Evaluating at the barrier then
+     * yields {@link AccessMode#NO_ACCESS}, since a top permission does not imply a decoupled subfolder,
+     * while a permission granted directly on it (or on a subfolder below it) still counts.
+     *
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the effective access mode, {@link AccessMode#NO_ACCESS} for none
+     */
+    public AccessMode getAllowedAccess(FolderInfo folder, String relativeName) {
+        FolderInfo governing = FolderInfo.findEnclosingSubFolder(getFolders(), folder, relativeName);
+        return getAllowedAccess(governing != null ? governing : folder);
     }
 
     /**
@@ -566,26 +625,25 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * @return the list of folders this account gets charged for.
+     * The folders this account gets charged for - the ones it OWNS. Only its own permissions are
+     * examined: a group never owns a folder (see {@code Group.isInvalidGrant}), ownership carries the
+     * quota and the charging and therefore belongs to an account. Every ownership path on the server
+     * grants to an Account only.
+     * <p>
+     * PFC-3543: An interrupted subfolder counts as a folder of its own here, since it is decoupled and
+     * gets its own owner. A still-inheriting subfolder can never have one.
+     *
+     * @return the folders this account gets charged for, each one once
      */
     public Collection<FolderInfo> getFoldersCharged() {
         if (permissions.isEmpty()) {
             return Collections.emptyList();
         }
-        Collection<FolderInfo> folders = new ArrayList<FolderInfo>(
-                permissions.size());
+        Collection<FolderInfo> folders = new LinkedHashSet<>();
         for (Permission p : permissions) {
             if (p instanceof FolderOwnerPermission) {
                 FolderPermission fp = (FolderPermission) p;
                 folders.add(fp.getFolder());
-            }
-        }
-        for (Group g : groups) {
-            for (Permission p : g.getPermissions()) {
-                if (p instanceof FolderOwnerPermission) {
-                    FolderPermission fp = (FolderPermission) p;
-                    folders.add(fp.getFolder());
-                }
             }
         }
         return folders;
@@ -671,7 +729,39 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     public void setUsername(String username) {
+        String oldUsername = this.username;
         this.username = username;
+        adaptBasePathToUsername(oldUsername);
+    }
+
+    /**
+     * PFS-5684: On a rename, move the account's base path along with the username, but only if the base path's last
+     * element still is the old username - a base path set to something else is an admin's explicit choice and stays.
+     *
+     * @param oldUsername the username before the rename
+     */
+    private void adaptBasePathToUsername(String oldUsername) {
+        if (isBlank(basePath) || isBlank(oldUsername) || isBlank(username) || username.equals(oldUsername)) {
+            return;
+        }
+        // Keep trailing separators as they are, they are not part of the last path element
+        int end = basePath.length();
+        while (end > 0 && (basePath.charAt(end - 1) == '/' || basePath.charAt(end - 1) == '\\')) {
+            end--;
+        }
+        String trailing = basePath.substring(end);
+        String path = basePath.substring(0, end);
+        int i = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        String lastElement = path.substring(i + 1);
+        // The directory may hold the plain username or the one stripped of invalid filename chars
+        if (!lastElement.equalsIgnoreCase(oldUsername)
+            && !lastElement.equalsIgnoreCase(PathUtils.removeInvalidFilenameChars(oldUsername)))
+        {
+            return;
+        }
+        basePath = path.substring(0, i + 1) + PathUtils.removeInvalidFilenameChars(username) + trailing;
+        // FINE, not INFO: the username is personal data (PII).
+        LOG.fine("Account renamed. New base path: " + basePath);
     }
 
     public String getDisplayName() {
@@ -1300,6 +1390,120 @@ public class Account implements Serializable, D2DObject, Auditable {
         return store;
     }
 
+    /**
+     * PFS-5732: Adds an email address to the account, marked as an email address delivered by SAML/Shibboleth.
+     * <p>
+     * Analogous to {@link #addEmail(String, String)} for LDAP. In contrast to LDAP an already stored email address
+     * of ANOTHER source (plain or LDAP) is replaced by the SAML email address, because SAML is the leading source
+     * for accounts that log in via SAML.
+     *
+     * @param email The email address
+     * @return true if the email address was added or replaced an existing one
+     */
+    public boolean addSamlEmail(String email) {
+        Reject.ifBlank(email, "Email");
+        email = email.trim().toLowerCase();
+        String samlEmail = email + ":" + EMAIL_CONTEXT_SAML;
+        // If email address with SAML context is already in email list, only remove the duplicates of other sources
+        if (emails.contains(samlEmail)) {
+            boolean store = false;
+            for (String rawEmail : emails) {
+                if (!samlEmail.equals(rawEmail) && email.equals(getEmailAddress(rawEmail))) {
+                    emails.remove(rawEmail);
+                    store = true;
+                }
+            }
+            return store;
+        }
+        // If email address is already in emails list without or with LDAP search context, replace the email address
+        boolean replaced = false;
+        for (String rawEmail : emails) {
+            if (!email.equals(getEmailAddress(rawEmail))) {
+                continue;
+            }
+            int index = emails.indexOf(rawEmail);
+            emails.remove(index);
+            if (!replaced) {
+                emails.add(index, samlEmail);
+                replaced = true;
+            }
+        }
+        if (replaced) {
+            return true;
+        }
+        // Add email address as first one, so the primary SAML address stays the primary address of the account
+        emails.add(0, samlEmail);
+        return true;
+    }
+
+    /**
+     * PFS-5732: Remove the email addresses stored for the account, that are marked as SAML email addresses but are
+     * not in the list {@code samlEmails}. Analogous to
+     * {@link #removeNonExistingLdapEmails(List, String)} for LDAP.
+     *
+     * @param samlEmails The email addresses delivered by the identity provider on this login
+     * @return true if at least one email address was removed
+     */
+    public boolean removeNonExistingSamlEmails(Collection<String> samlEmails) {
+        Reject.ifNull(samlEmails, "SAML emails");
+        // Append SAML context to emails
+        List<String> existingEmails = new ArrayList<>(samlEmails.size());
+        for (String email : samlEmails) {
+            if (isBlank(email)) {
+                continue;
+            }
+            existingEmails.add(email.trim().toLowerCase() + ":" + EMAIL_CONTEXT_SAML);
+        }
+        boolean store = false;
+        for (String email : emails) {
+            // Only check email addresses belonging to the SAML context
+            if (EMAIL_CONTEXT_SAML.equalsIgnoreCase(getEmailContext(email))) {
+                // If email is no longer delivered by the identity provider, remove it
+                if (!existingEmails.contains(email)) {
+                    emails.remove(email);
+                    store = true;
+                }
+            }
+        }
+        return store;
+    }
+
+    /**
+     * PFS-5732w: Remove all email addresses that were imported from LDAP, e.g. because the account is now
+     * authenticated and its email addresses are maintained by SAML.
+     *
+     * @return true if at least one email address was removed
+     */
+    public boolean removeLdapEmails() {
+        boolean store = false;
+        for (String email : emails) {
+            String context = getEmailContext(email);
+            if (context != null && !EMAIL_CONTEXT_SAML.equalsIgnoreCase(context)) {
+                emails.remove(email);
+                store = true;
+            }
+        }
+        return store;
+    }
+
+    /**
+     * @param rawEmail an email address, possibly with a context suffix
+     * @return the email address without its context suffix
+     */
+    private static String getEmailAddress(String rawEmail) {
+        int index = rawEmail.indexOf(':');
+        return index > 0 ? rawEmail.substring(0, index) : rawEmail;
+    }
+
+    /**
+     * @param rawEmail an email address, possibly with a context suffix
+     * @return the context of the email address, e.g. the LDAP search base or {@link #EMAIL_CONTEXT_SAML}, or null
+     */
+    private static String getEmailContext(String rawEmail) {
+        int index = rawEmail.indexOf(':');
+        return index > 0 ? rawEmail.substring(index + 1) : null;
+    }
+
     public List<String> getEmails() {
         if (emails == null || emails.isEmpty()) {
             return Collections.emptyList();
@@ -1662,23 +1866,68 @@ public class Account implements Serializable, D2DObject, Auditable {
      * @param foInfo the folder to check
      * @return true if the user is allowed to write into the folder.
      */
-    public boolean hasReadWritePermissions(FolderInfo foInfo) {
+    public boolean hasWritePermissions(FolderInfo foInfo) {
         Reject.ifNull(foInfo, "Folder info is null");
         return hasPermission(FolderPermission.readWrite(foInfo));
     }
 
     /**
-     * Answers if the user is allowed to write into the folder.
+     * PFS-5510: Answers if the user is allowed to write at the addressed location - the EFFECTIVE
+     * access resolves the enclosing shared subfolder (granted directly or through (nested) groups),
+     * see {@link #getAllowedAccess(FolderInfo, String)}.
      *
-     * @param foInfo the folder to check
-     * @return true if the user is allowed to write into the folder.
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the user is allowed to write at the addressed location.
      */
-    public boolean hasWritePermissions(FolderInfo foInfo) {
-        return hasReadWritePermissions(foInfo);
+    public boolean hasWritePermissions(FolderInfo foInfo, String subDirPath) {
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ_WRITE) >= 0;
     }
 
     /**
-     * @param foInfo
+     * PFS-5510: Answers if the user is allowed to read at the addressed location - the EFFECTIVE
+     * access resolves the enclosing shared subfolder (granted directly or through (nested) groups),
+     * see {@link #getAllowedAccess(FolderInfo, String)}.
+     *
+     * @param foInfo     the addressed folder (top folder or shared subfolder)
+     * @param subDirPath the addressed path relative to {@code foInfo}, may be blank
+     * @return true if the user is allowed to read at the addressed location.
+     */
+    public boolean hasReadPermissions(FolderInfo foInfo, String subDirPath) {
+        return getAllowedAccess(foInfo, subDirPath).compareTo(AccessMode.READ) >= 0;
+    }
+
+    /**
+     * PFS-5510: Like {@link #hasWritePermissions(FolderInfo, String)}, addressed by the file itself.
+     *
+     * @param fileInfo the addressed file/directory
+     * @return true if the user is allowed to write at the file's location.
+     */
+    public boolean hasWritePermissions(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        return hasWritePermissions(fileInfo.getFolderInfo(), fileInfo.getRelativeName());
+    }
+
+    /**
+     * PFS-5510: Like {@link #hasReadPermissions(FolderInfo, String)}, addressed by the file itself.
+     *
+     * @param fileInfo the addressed file/directory
+     * @return true if the user is allowed to read at the file's location.
+     */
+    public boolean hasReadPermissions(FileInfo fileInfo) {
+        Reject.ifNull(fileInfo, "FileInfo is null");
+        return hasReadPermissions(fileInfo.getFolderInfo(), fileInfo.getRelativeName());
+    }
+
+    /**
+     * Answers if the user is admin of the folder. Inheritance from the top folder and its interruption
+     * (PFC-3543) are honored, but only for the folder that is passed in - there is no path-aware
+     * overload like {@link #hasWritePermissions(FolderInfo, String)}. A caller that holds a top folder
+     * plus a path must resolve the addressed subfolder first (see
+     * {@code RequestAnalyzer.getFolder(true)}), otherwise it asks about the top folder and allows too
+     * much.
+     *
+     * @param foInfo the folder to check
      * @return true if the user is admin of the folder.
      */
     public boolean hasAdminPermission(FolderInfo foInfo) {
@@ -1716,7 +1965,10 @@ public class Account implements Serializable, D2DObject, Auditable {
     }
 
     /**
-     * @param foInfo
+     * Answers if the user is owner of the folder. Like {@link #hasAdminPermission(FolderInfo)} this has
+     * no path-aware overload - the addressed subfolder has to be resolved by the caller.
+     *
+     * @param foInfo the folder to check
      * @return true if the user is owner of the folder.
      */
     public boolean hasOwnerPermission(FolderInfo foInfo) {

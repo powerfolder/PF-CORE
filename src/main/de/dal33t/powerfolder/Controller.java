@@ -88,8 +88,8 @@ import static org.quartz.CronScheduleBuilder.dailyAtHourAndMinute;
 public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
-    private static final int MAJOR_VERSION = 27;
-    private static final int MINOR_VERSION = 3;
+    private static final int MAJOR_VERSION = 28;
+    private static final int MINOR_VERSION = 0;
     private static final int REVISION_VERSION = 100;
 
     /**
@@ -530,6 +530,14 @@ public class Controller extends PFComponent {
         ConfigurationLoader.loadAndMergePList(this);
         // Read from installer temp file
         ConfigurationLoader.loadAndMergeFromInstaller(this);
+
+        // PFC-3543: mirror the "interruption of permission inheritance" config into
+        // the core feature flag so FolderInfo can honor it without a controller.
+        if (ConfigurationEntry.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION_ENABLED.getValueBoolean(this)) {
+            Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
+        } else {
+            Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
+        }
 
         if (verbose != ConfigurationEntry.VERBOSE.getValueBoolean(this)) {
             verbose = ConfigurationEntry.VERBOSE.getValueBoolean(this);
