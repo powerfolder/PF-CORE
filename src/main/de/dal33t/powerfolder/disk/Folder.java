@@ -862,6 +862,17 @@ public class Folder extends PFComponent {
         }
 
         if (foundTopFolder == null && isSubFolder()) {
+            // PFC-3543: NEVER auto-promote a subfolder with interrupted inheritance. Its whole point
+            // is data isolation below a parent: dropping the parent silently discards the permission
+            // barrier, the location and the index entry - and the version-bumped change replicates.
+            // An empty ancestor chain is no proof of relocation either (mount order, disconnected
+            // device, a path bug - the storage-path check was one and promoted 150 of them). Log
+            // SEVERE and keep the hierarchy for a human to inspect.
+            if (!currentInfo.inheritsPermissions()) {
+                logSevere(this + ": NOT promoting to topfolder - permission inheritance is interrupted."
+                    + " No mounted folder found above " + getLocalBase() + ", hierarchy left unchanged");
+                return false;
+            }
             logWarning(this + ": Promoting folder to topfolder based on filesystem location");
             FolderInfo corrected = FolderInfoFactory.changeParent(getInfo(), null);
             updateInfo(corrected);
