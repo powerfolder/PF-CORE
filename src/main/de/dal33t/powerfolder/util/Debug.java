@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.message.Identity;
 import de.dal33t.powerfolder.message.NodeInformation;
 import de.dal33t.powerfolder.net.ConnectionHandler;
 import de.dal33t.powerfolder.net.ConnectionQuality;
+import de.dal33t.powerfolder.search.LuceneIndexManager;
 import de.dal33t.powerfolder.transfer.Download;
 import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.TransferManager;
@@ -313,6 +314,8 @@ public class Debug {
                     b.append(" (none)\n");
                 }
 
+                addSearchIndexInfo(b, folders);
+
                 TransferManager tm = c.getTransferManager();
                 // dump transfers
                 Collection<DownloadManager> downloads = c.getTransferManager()
@@ -433,6 +436,45 @@ public class Debug {
 
             return b.toString();
         }
+    }
+
+    /**
+     * Adds the state of the Lucene search indexes: how many files are still queued for indexing. Summed up over all
+     * folders - the individual folders are not listed.
+     *
+     * @param b
+     * @param folders
+     */
+    private static void addSearchIndexInfo(StringBuffer b, Collection<Folder> folders) {
+        int indexedFolders = 0;
+        int rebuildingFolders = 0;
+        int totalPending = 0;
+        int totalContentPending = 0;
+        long totalEntries = 0;
+        for (Folder folder : folders) {
+            LuceneIndexManager index = folder.getSearchIndexManager();
+            if (index == null) {
+                continue;
+            }
+            indexedFolders++;
+            if (index.isRebuilding()) {
+                rebuildingFolders++;
+            }
+            totalPending += index.getPendingCount();
+            totalContentPending += index.getContentPendingCount();
+            int entries = index.getIndexEntryCount();
+            if (entries > 0) {
+                totalEntries += entries;
+            }
+        }
+        b.append("\nSearch index: ");
+        if (indexedFolders == 0) {
+            b.append("disabled\n");
+            return;
+        }
+        b.append(indexedFolders).append(" of ").append(folders.size()).append(" folders indexed, ").append(totalEntries)
+            .append(" entries, ").append(totalPending).append(" file(s) pending, ").append(totalContentPending)
+            .append(" file(s) pending content, ").append(rebuildingFolders).append(" folder(s) rebuilding\n");
     }
 
     /**

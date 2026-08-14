@@ -1885,6 +1885,11 @@ public class LuceneIndexManager extends PFComponent {
         return indexQueue.size();
     }
 
+    /** Number of files waiting for content (Tika/OCR) extraction. */
+    public int getContentPendingCount() {
+        return contentQueue.size();
+    }
+
     /**
      * Returns true while a full rebuild is in progress. Callers should
      * fall back to DAO-based search while this returns true, since the
