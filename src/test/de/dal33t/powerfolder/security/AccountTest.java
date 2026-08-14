@@ -539,7 +539,7 @@ public class AccountTest {
         account.addGroup(owners);
 
         Collection<FolderInfo> charged = account.getFoldersCharged();
-        assertEquals("Only the owned folder is charged: " + charged, 1, charged.size());
+        assertEquals(1, charged.size(), "Only the owned folder is charged: " + charged);
         assertTrue(charged.contains(owned));
         assertFalse(charged.contains(viaGroup));
         assertFalse(charged.contains(justAdmin));

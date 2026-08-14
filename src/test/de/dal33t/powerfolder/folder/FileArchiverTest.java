@@ -334,6 +334,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(0, getFolderAtBart().countProblems());
     }
 
+    @Test
     public void testMaintainAndCleanup() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(5);
@@ -375,6 +376,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(1, archiver.getArchivedFilesInfos(fib).size());
     }
 
+    @Test
     public void testMaintainAndCleanupWithDate() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(-1);
@@ -408,6 +410,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(0, archiver.getSize());
     }
 
+    @Test
     public void testRecoverLostFileInfos() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(-1);
@@ -454,6 +457,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertTrue(recovered.isDeleted(), "Recovered FileInfo should be marked as deleted");
     }
 
+    @Test
     public void testNightlyArchiveMaintenanceSizeRecalculated() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(5);
@@ -494,6 +498,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(0, archiver.getSize());
     }
 
+    @Test
     public void testRestoreWithCurrentFile() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(-1);
@@ -545,6 +550,7 @@ public class FileArchiverTest extends TwoControllerTestCase {
             "Current file should have been archived before restoring");
     }
 
+    @Test
     public void testRestoreWithCurrentFileNull() throws IOException {
         final Folder fb = getFolderAtBart();
         fb.setArchiveVersions(-1);

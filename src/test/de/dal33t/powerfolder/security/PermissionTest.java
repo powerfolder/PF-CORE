@@ -22,72 +22,84 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
-public class PermissionTest extends TestCase {
+public class PermissionTest {
+    @Test
     public void testAdminPermission() {
         Permission p = AdminPermission.INSTANCE;
-        assertEquals("AdminPermission IDs not equal", p.getId(),
-            AdminPermission.class.getSimpleName());
+        assertEquals(p.getId(),
+            AdminPermission.class.getSimpleName(), "AdminPermission IDs not equal");
     }
 
+    @Test
     public void testChangePreferencesPermission() {
         Permission p = ChangePreferencesPermission.INSTANCE;
-        assertEquals("ChangePreferencesPermission IDs not equal", p.getId(),
-            ChangePreferencesPermission.class.getSimpleName());
+        assertEquals(p.getId(),
+            ChangePreferencesPermission.class.getSimpleName(), "ChangePreferencesPermission IDs not equal");
     }
 
+    @Test
     public void testChangeTransferModePermission() {
         Permission p = ChangeTransferModePermission.INSTANCE;
-        assertEquals("ChangeTransferModePermission IDs not equal", p.getId(),
-            ChangeTransferModePermission.class.getSimpleName());
+        assertEquals(p.getId(),
+            ChangeTransferModePermission.class.getSimpleName(), "ChangeTransferModePermission IDs not equal");
     }
 
+    @Test
     public void testFolderCreatePermission() {
         Permission p = FolderCreatePermission.INSTANCE;
-        assertEquals("FolderCreatePermission IDs not equal", p.getId(),
-            FolderCreatePermission.class.getSimpleName());
+        assertEquals(p.getId(),
+            FolderCreatePermission.class.getSimpleName(), "FolderCreatePermission IDs not equal");
     }
 
+    @Test
     public void testFolderRemovePermission() {
         Permission p = FolderRemovePermission.INSTANCE;
-        assertEquals("FolderRemovePermission IDs not equal", p.getId(),
-            FolderRemovePermission.class.getSimpleName());
+        assertEquals(p.getId(),
+            FolderRemovePermission.class.getSimpleName(), "FolderRemovePermission IDs not equal");
     }
 
+    @Test
     public void testFolderAdminPermission() {
         Permission fap = new FolderAdminPermission(FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
-        assertEquals("FolderAdminPermission IDs not equal", fap.getId(),
-            "4711_FP_FolderAdminPermission");
+        assertEquals(fap.getId(),
+            "4711_FP_FolderAdminPermission", "FolderAdminPermission IDs not equal");
     }
 
+    @Test
     public void testFolderOwnerPermission() {
         FolderOwnerPermission fap = new FolderOwnerPermission(FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
-        assertEquals("FolderOwnerPermission IDs not equal", fap.getId(),
-            "4711_FP_FolderOwnerPermission");
+        assertEquals(fap.getId(),
+            "4711_FP_FolderOwnerPermission", "FolderOwnerPermission IDs not equal");
     }
 
+    @Test
     public void testFolderReadPermission() {
         FolderReadPermission fap = new FolderReadPermission(FolderInfoFactory.newTopFolderForTest(
             "myFolder", "4711"));
-        assertEquals("FolderReadPermission IDs not equal", fap.getId(),
-            "4711_FP_FolderReadPermission");
+        assertEquals(fap.getId(),
+            "4711_FP_FolderReadPermission", "FolderReadPermission IDs not equal");
     }
 
+    @Test
     public void testFolderReadWritePermission() {
         FolderReadWritePermission fap = new FolderReadWritePermission(
             FolderInfoFactory.newTopFolderForTest("myFolder", "4711"));
-        assertEquals("FolderReadWritePermission IDs not equal", fap.getId(),
-            "4711_FP_FolderReadWritePermission");
+        assertEquals(fap.getId(),
+            "4711_FP_FolderReadWritePermission", "FolderReadWritePermission IDs not equal");
     }
 
     /**
      * Folder owner must be singular, therefore no other Permission should imply
      * FolderOwnerPermission.
      */
+    @Test
     public void testFolderOwnerIndependence() {
         Organization org = new Organization();
         Group grp = new Group("testGroup");
@@ -112,11 +124,12 @@ public class PermissionTest extends TestCase {
         };
         Permission ownerPermission = new FolderOwnerPermission(foInfo);
         for (Permission p : allPermissions) {
-            assertFalse(p.getClass().getName() + " implies " + FolderOwnerPermission.class.getName(),
-                p.implies(ownerPermission));
+            assertFalse(p.implies(ownerPermission),
+                p.getClass().getName() + " implies " + FolderOwnerPermission.class.getName());
         }
     }
 
+    @Test
     public void testAllFoldersAdminPermission() {
         Account account;
         account = new AnonymousAccount();
@@ -126,6 +139,7 @@ public class PermissionTest extends TestCase {
         assertTrue(account.hasAdminPermission(FolderInfoFactory.newTopFolderForTest("xx", "21")));
     }
 
+    @Test
     public void testFolderPermissionIdsUnified() {
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("myFolder", "4711");
 
@@ -152,11 +166,12 @@ public class PermissionTest extends TestCase {
 
     private void assertPermissionId(Permission p, String expectedId) {
         assertEquals(
-                p.getClass().getSimpleName() + " ID mismatch",
                 expectedId,
-                p.getId()
+                p.getId(),
+                p.getClass().getSimpleName() + " ID mismatch"
         );
     }
+    @Test
     public void testFolderPermissionHierarchy() {
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "42");
 
@@ -179,6 +194,7 @@ public class PermissionTest extends TestCase {
         assertFalse(admin.implies(owner));
     }
 
+    @Test
     public void testFolderPermissionIsolation() {
         FolderInfo fi1 = FolderInfoFactory.newTopFolderForTest("A", "1");
         FolderInfo fi2 = FolderInfoFactory.newTopFolderForTest("B", "2");
@@ -190,6 +206,7 @@ public class PermissionTest extends TestCase {
         assertFalse(p2.implies(p1));
     }
 
+    @Test
     public void testFolderPermissionSameIdDifferentInstance() {
         FolderInfo fi1 = FolderInfoFactory.newTopFolderForTest("folder", "99");
         FolderInfo fi2 = FolderInfoFactory.newTopFolderForTest("folder", "99");
@@ -201,6 +218,7 @@ public class PermissionTest extends TestCase {
         assertTrue(p2.implies(p1));
     }
 
+    @Test
     public void testFolderOwnerImpliesAllFolderPermissions() {
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "7");
 
@@ -212,6 +230,7 @@ public class PermissionTest extends TestCase {
         assertTrue(owner.implies(new FolderReadPermission(fi)));
     }
 
+    @Test
     public void testFolderPermissionImplicationMatrix() {
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "100");
 
@@ -232,9 +251,9 @@ public class PermissionTest extends TestCase {
             Permission source = pair[0];
             Permission target = pair[1];
             assertTrue(
+                    source.implies(target),
                     source.getClass().getSimpleName() + " should imply "
-                            + target.getClass().getSimpleName(),
-                    source.implies(target)
+                            + target.getClass().getSimpleName()
             );
         }
 
@@ -247,6 +266,7 @@ public class PermissionTest extends TestCase {
         assertFalse(read.implies(owner));
     }
 
+    @Test
     public void testFolderPermissionsDoNotCrossFolders() {
         FolderInfo fi1 = FolderInfoFactory.newTopFolderForTest("A", "1");
         FolderInfo fi2 = FolderInfoFactory.newTopFolderForTest("B", "2");
@@ -268,14 +288,15 @@ public class PermissionTest extends TestCase {
         for (Permission a : p1) {
             for (Permission b : p2) {
                 assertFalse(
+                        a.implies(b),
                         a.getClass().getSimpleName() + " must not imply "
-                                + b.getClass().getSimpleName() + " of another folder",
-                        a.implies(b)
+                                + b.getClass().getSimpleName() + " of another folder"
                 );
             }
         }
     }
 
+    @Test
     public void testAccountFolderPermissionResolution() {
         Account acc = new Account();
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "11");
@@ -294,6 +315,7 @@ public class PermissionTest extends TestCase {
      * direct top-folder READ only inherits READ on the subfolder and must not suppress the
      * group's WRITE. Pure model check - no server/controller involved.
      */
+    @Test
     public void testGroupWriteOnSubfolderWinsOverDirectTopFolderRead() {
         FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "GRP-SUB-WRITE-1");
         FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "sub"));
@@ -305,12 +327,12 @@ public class PermissionTest extends TestCase {
         writeGroup.grant(new FolderReadWritePermission(sub));
         acc.addGroup(writeGroup);
 
-        assertTrue("Direct top-folder READ must inherit READ on the subfolder",
-                acc.hasReadPermissions(sub));
-        assertTrue("Group WRITE on the subfolder must grant write despite the direct top READ",
-                acc.hasWritePermissions(sub));
-        assertEquals("Effective subfolder access must be READ_WRITE",
-                AccessMode.READ_WRITE, acc.getAllowedAccess(sub));
+        assertTrue(acc.hasReadPermissions(sub),
+                "Direct top-folder READ must inherit READ on the subfolder");
+        assertTrue(acc.hasWritePermissions(sub),
+                "Group WRITE on the subfolder must grant write despite the direct top READ");
+        assertEquals(AccessMode.READ_WRITE, acc.getAllowedAccess(sub),
+                "Effective subfolder access must be READ_WRITE");
     }
 
     /**
@@ -318,6 +340,7 @@ public class PermissionTest extends TestCase {
      * propagate to members of its child group (child -> parent resolution). The account is only
      * a member of the child group; the WRITE sits on the parent group.
      */
+    @Test
     public void testChildGroupMemberInheritsParentGroupSubfolderWrite() {
         FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder", "GRP-NESTED-1");
         FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "sub"));
@@ -330,12 +353,13 @@ public class PermissionTest extends TestCase {
         Account acc = new Account();
         acc.addGroup(child);                                // only a member of the child group
 
-        assertTrue("A member of the child group must inherit the parent group's subfolder WRITE",
-                acc.hasWritePermissions(sub));
-        assertEquals("Effective subfolder access via nested group must be READ_WRITE",
-                AccessMode.READ_WRITE, acc.getAllowedAccess(sub));
+        assertTrue(acc.hasWritePermissions(sub),
+                "A member of the child group must inherit the parent group's subfolder WRITE");
+        assertEquals(AccessMode.READ_WRITE, acc.getAllowedAccess(sub),
+                "Effective subfolder access via nested group must be READ_WRITE");
     }
 
+    @Test
     public void testTopFolderPermissionImpliesSamePermissionOnSubfolder() {
         // --- given: top folder ---
         FolderInfo topFolder =
@@ -372,6 +396,7 @@ public class PermissionTest extends TestCase {
         assertTrue(topDelete.implies(new FolderDeletePermission(subFolder)));
     }
 
+    @Test
     public void testTopFolderAdminImpliesReadPermissionOnSubfolder() {
         // --- given: top folder ---
         FolderInfo topFolder =
@@ -392,11 +417,12 @@ public class PermissionTest extends TestCase {
                 new FolderReadPermission(subFolder);
 
         assertTrue(
-                "Admin permission on top folder must imply read permission on subfolder",
-                topAdmin.implies(subRead)
+                topAdmin.implies(subRead),
+                "Admin permission on top folder must imply read permission on subfolder"
         );
     }
 
+    @Test
     public void testTopFolderToSubfolderPermissionMatrix() {
         FolderInfo top =
                 FolderInfoFactory.newTopFolderForTest("TopFolder", "MATRIX-NO-SUB-OWNER");
@@ -450,6 +476,7 @@ public class PermissionTest extends TestCase {
         assertTrue(topDelete.implies(subDelete));
     }
 
+    @Test
     public void testOwnerPermissionMustNotBeGrantedOnSubfolder() {
         FolderInfo top =
                 FolderInfoFactory.newTopFolderForTest("TopFolder", "NO-SUB-OWNER");
@@ -468,6 +495,7 @@ public class PermissionTest extends TestCase {
         }
     }
 
+    @Test
     public void testFolderDeletePermissionImpliesItself() {
         FolderInfo folder =
                 FolderInfoFactory.newTopFolderForTest("Folder", "DEL-SELF");
@@ -475,11 +503,12 @@ public class PermissionTest extends TestCase {
         Permission delete = new FolderDeletePermission(folder);
 
         assertTrue(
-                "FolderDeletePermission must imply itself",
-                delete.implies(delete)
+                delete.implies(delete),
+                "FolderDeletePermission must imply itself"
         );
     }
 
+    @Test
     public void testFolderDeletePermissionIsInheritedToSubfolder() {
         FolderInfo top =
                 FolderInfoFactory.newTopFolderForTest("Top", "DEL-INH-1");
@@ -493,12 +522,13 @@ public class PermissionTest extends TestCase {
         Permission subDelete = new FolderDeletePermission(sub);
 
         assertTrue(
-                "FolderDeletePermission must be inherited from top folder to subfolder",
-                topDelete.implies(subDelete)
+                topDelete.implies(subDelete),
+                "FolderDeletePermission must be inherited from top folder to subfolder"
         );
     }
 
 
+    @Test
     public void testFolderDeletePermissionIsNotInheritedToParentFolder() {
         FolderInfo top =
                 FolderInfoFactory.newTopFolderForTest("Top", "DEL-UP");
@@ -512,11 +542,12 @@ public class PermissionTest extends TestCase {
         Permission topDelete = new FolderDeletePermission(top);
 
         assertFalse(
-                "FolderDeletePermission must not be inherited from subfolder to parent folder",
-                subDelete.implies(topDelete)
+                subDelete.implies(topDelete),
+                "FolderDeletePermission must not be inherited from subfolder to parent folder"
         );
     }
 
+    @Test
     public void testFolderDeletePermissionDoesNotCrossSiblingSubfolders() {
         FolderInfo top =
                 FolderInfoFactory.newTopFolderForTest("Top", "DEL-SIB");
@@ -535,11 +566,12 @@ public class PermissionTest extends TestCase {
         Permission deleteB = new FolderDeletePermission(subB);
 
         assertFalse(
-                "FolderDeletePermission must not cross sibling subfolders",
-                deleteA.implies(deleteB)
+                deleteA.implies(deleteB),
+                "FolderDeletePermission must not cross sibling subfolders"
         );
     }
 
+    @Test
     public void testTopFolderPermissionIsInheritedToSubAndSubSubFolder() {
         // --- given: top folder ---
         FolderInfo topFolder =
@@ -606,6 +638,7 @@ public class PermissionTest extends TestCase {
         assertFalse(topDelete.implies(new FolderReadPermission(subSubFolder)));
     }
 
+    @Test
     public void testSubfolderPermissionIsInheritedToSubSubFolder() {
         // --- given: top folder ---
         FolderInfo topFolder =
@@ -656,6 +689,7 @@ public class PermissionTest extends TestCase {
         assertFalse(subDelete.implies(new FolderReadPermission(subSubFolder)));
     }
 
+    @Test
     public void testSubfolderDoesNotImplySimilarPrefixFolder() {
         FolderInfo top =
                 FolderInfoFactory.newTopFolderForTest("Top", "CC-1");
@@ -674,11 +708,12 @@ public class PermissionTest extends TestCase {
                 new FolderAdminPermission(sub);
 
         assertFalse(
-                "Subfolder 'sub' must not imply permissions on 'subdir'",
-                subAdmin.implies(new FolderAdminPermission(subdir))
+                subAdmin.implies(new FolderAdminPermission(subdir)),
+                "Subfolder 'sub' must not imply permissions on 'subdir'"
         );
     }
 
+    @Test
     public void testSubfolderImpliesNestedFolderWithSlashBoundary() {
         FolderInfo top =
                 FolderInfoFactory.newTopFolderForTest("Top", "CC-2");
@@ -697,8 +732,8 @@ public class PermissionTest extends TestCase {
                 new FolderAdminPermission(sub);
 
         assertTrue(
-                "Subfolder 'sub' must imply permissions on 'sub/dir'",
-                subAdmin.implies(new FolderAdminPermission(subDir))
+                subAdmin.implies(new FolderAdminPermission(subDir)),
+                "Subfolder 'sub' must imply permissions on 'sub/dir'"
         );
     }
 
@@ -709,6 +744,7 @@ public class PermissionTest extends TestCase {
      * because hasPermission returns true. Combined with revokeAllFolderPermission,
      * explicit folder permissions are silently lost.
      */
+    @Test
     public void testOrgAdminImpliesFolderAdminBlocksDirectGrant() {
         String orgOID = "ORG-1218";
         OrganizationAdminPermission.ORGANIZATION_PERMISSION_HELPER =
@@ -724,8 +760,8 @@ public class PermissionTest extends TestCase {
         account.grant(new OrganizationAdminPermission(orgOID));
         account.grant(new FolderAdminPermission(fi));
 
-        assertTrue("OrgAdmin implies FolderAdmin",
-            account.hasPermission(new FolderAdminPermission(fi)));
+        assertTrue(account.hasPermission(new FolderAdminPermission(fi)),
+            "OrgAdmin implies FolderAdmin");
 
         // Simulate saveFoldersToAccount: revoke + grant
         account.revokeAllFolderPermission(fi);
@@ -733,10 +769,11 @@ public class PermissionTest extends TestCase {
 
         // After revoking OrgAdmin, the explicit FolderAdmin should still exist
         account.revoke(new OrganizationAdminPermission(orgOID));
-        assertTrue("BUG: FolderAdmin lost because grant was no-op due to OrgAdmin implies",
-            account.hasPermission(new FolderAdminPermission(fi)));
+        assertTrue(account.hasPermission(new FolderAdminPermission(fi)),
+            "BUG: FolderAdmin lost because grant was no-op due to OrgAdmin implies");
     }
 
+    @Test
     public void testAccountGrantAndRevokeMultipleFolders() {
         Account account = new Account();
         FolderInfo folderA = FolderInfoFactory.newTopFolderForTest("FolderA", "MF-A");
@@ -792,6 +829,7 @@ public class PermissionTest extends TestCase {
      * PF-1218: grant() must not downgrade an existing higher permission
      * on the same folder.
      */
+    @Test
     public void testAccountGrantMustNotDowngrade() {
         Account account = new Account();
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "NO-DOWN-1");
@@ -799,42 +837,43 @@ public class PermissionTest extends TestCase {
         // Owner must not be downgraded to Admin
         account.grant(new FolderOwnerPermission(fi));
         account.grant(new FolderAdminPermission(fi));
-        assertTrue("Owner must not be downgraded to Admin",
-            account.hasPermission(new FolderOwnerPermission(fi)));
+        assertTrue(account.hasPermission(new FolderOwnerPermission(fi)),
+            "Owner must not be downgraded to Admin");
 
         // Owner must not be downgraded to ReadWrite
         account.grant(new FolderReadWritePermission(fi));
-        assertTrue("Owner must not be downgraded to ReadWrite",
-            account.hasPermission(new FolderOwnerPermission(fi)));
+        assertTrue(account.hasPermission(new FolderOwnerPermission(fi)),
+            "Owner must not be downgraded to ReadWrite");
 
         // Owner must not be downgraded to Read
         account.grant(new FolderReadPermission(fi));
-        assertTrue("Owner must not be downgraded to Read",
-            account.hasPermission(new FolderOwnerPermission(fi)));
+        assertTrue(account.hasPermission(new FolderOwnerPermission(fi)),
+            "Owner must not be downgraded to Read");
 
         // Admin must not be downgraded to ReadWrite
         Account account2 = new Account();
         account2.grant(new FolderAdminPermission(fi));
         account2.grant(new FolderReadWritePermission(fi));
-        assertTrue("Admin must not be downgraded to ReadWrite",
-            account2.hasPermission(new FolderAdminPermission(fi)));
+        assertTrue(account2.hasPermission(new FolderAdminPermission(fi)),
+            "Admin must not be downgraded to ReadWrite");
 
         // Admin must not be downgraded to Read
         account2.grant(new FolderReadPermission(fi));
-        assertTrue("Admin must not be downgraded to Read",
-            account2.hasPermission(new FolderAdminPermission(fi)));
+        assertTrue(account2.hasPermission(new FolderAdminPermission(fi)),
+            "Admin must not be downgraded to Read");
 
         // ReadWrite must not be downgraded to Read
         Account account3 = new Account();
         account3.grant(new FolderReadWritePermission(fi));
         account3.grant(new FolderReadPermission(fi));
-        assertTrue("ReadWrite must not be downgraded to Read",
-            account3.hasPermission(new FolderReadWritePermission(fi)));
+        assertTrue(account3.hasPermission(new FolderReadWritePermission(fi)),
+            "ReadWrite must not be downgraded to Read");
     }
 
     /**
      * PF-1218: grant() must allow upgrading to a higher permission.
      */
+    @Test
     public void testAccountGrantAllowsUpgrade() {
         Account account = new Account();
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "UP-1");
@@ -843,8 +882,8 @@ public class PermissionTest extends TestCase {
         account.grant(new FolderReadPermission(fi));
         account.grant(new FolderReadWritePermission(fi));
         assertTrue(account.hasPermission(new FolderReadWritePermission(fi)));
-        assertFalse("Read must be replaced by ReadWrite",
-            account.hasPermission(new FolderOwnerPermission(fi)));
+        assertFalse(account.hasPermission(new FolderOwnerPermission(fi)),
+            "Read must be replaced by ReadWrite");
 
         // ReadWrite -> Admin
         account.grant(new FolderAdminPermission(fi));
@@ -858,6 +897,7 @@ public class PermissionTest extends TestCase {
     /**
      * PF-1218: Group.grant() must not downgrade an existing higher permission.
      */
+    @Test
     public void testGroupGrantMustNotDowngrade() {
         Group group = new Group("testGroup");
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "GRP-DOWN-1");
@@ -865,18 +905,19 @@ public class PermissionTest extends TestCase {
         // Admin must not be downgraded to ReadWrite
         group.grant(new FolderAdminPermission(fi));
         group.grant(new FolderReadWritePermission(fi));
-        assertTrue("Group Admin must not be downgraded to ReadWrite",
-            group.hasPermission(new FolderAdminPermission(fi)));
+        assertTrue(group.hasPermission(new FolderAdminPermission(fi)),
+            "Group Admin must not be downgraded to ReadWrite");
 
         // Admin must not be downgraded to Read
         group.grant(new FolderReadPermission(fi));
-        assertTrue("Group Admin must not be downgraded to Read",
-            group.hasPermission(new FolderAdminPermission(fi)));
+        assertTrue(group.hasPermission(new FolderAdminPermission(fi)),
+            "Group Admin must not be downgraded to Read");
     }
 
     /**
      * PF-1218: Group.grant() must allow upgrading to a higher permission.
      */
+    @Test
     public void testGroupGrantAllowsUpgrade() {
         Group group = new Group("testGroup");
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "GRP-UP-1");
@@ -889,6 +930,7 @@ public class PermissionTest extends TestCase {
     /**
      * PF-1218: FolderPermission.equals and hashCode must distinguish subclasses.
      */
+    @Test
     public void testFolderPermissionEqualsAndHashCodeAreClassAware() {
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "CLASS-AWARE-1");
 
@@ -902,14 +944,14 @@ public class PermissionTest extends TestCase {
         for (int i = 0; i < all.length; i++) {
             for (int j = 0; j < all.length; j++) {
                 if (i == j) {
-                    assertEquals(all[i].getClass().getSimpleName() + " must equal itself",
-                        all[i], all[j]);
-                    assertEquals(all[i].getClass().getSimpleName() + " hashCode must match",
-                        all[i].hashCode(), all[j].hashCode());
+                    assertEquals(all[i], all[j],
+                        all[i].getClass().getSimpleName() + " must equal itself");
+                    assertEquals(all[i].hashCode(), all[j].hashCode(),
+                        all[i].getClass().getSimpleName() + " hashCode must match");
                 } else {
-                    assertFalse(all[i].getClass().getSimpleName() + " must not equal "
-                        + all[j].getClass().getSimpleName(),
-                        all[i].equals(all[j]));
+                    assertFalse(all[i].equals(all[j]),
+                        all[i].getClass().getSimpleName() + " must not equal "
+                        + all[j].getClass().getSimpleName());
                 }
             }
         }
@@ -925,6 +967,7 @@ public class PermissionTest extends TestCase {
     /**
      * PF-1218: Group.grant() must revoke existing folder permission before adding new one.
      */
+    @Test
     public void testGroupGrantRevokesExistingBeforeAdding() {
         Group group = new Group("testGroup");
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "GRP-REVOKE-1");
@@ -933,7 +976,7 @@ public class PermissionTest extends TestCase {
         assertTrue(group.hasPermission(new FolderReadPermission(fi)));
 
         group.grant(new FolderAdminPermission(fi));
-        assertTrue("Admin must be granted", group.hasPermission(new FolderAdminPermission(fi)));
+        assertTrue(group.hasPermission(new FolderAdminPermission(fi)), "Admin must be granted");
 
         // Read must have been revoked — only one folder permission per folder
         int folderPermCount = 0;
@@ -943,12 +986,13 @@ public class PermissionTest extends TestCase {
                 folderPermCount++;
             }
         }
-        assertEquals("Only one folder permission should remain after upgrade", 1, folderPermCount);
+        assertEquals(1, folderPermCount, "Only one folder permission should remain after upgrade");
     }
 
     /**
      * PF-1218: Granting the same permission twice must not create duplicates.
      */
+    @Test
     public void testGrantIdempotent() {
         Account account = new Account();
         FolderInfo fi = FolderInfoFactory.newTopFolderForTest("folder", "IDEMP-1");
@@ -963,7 +1007,7 @@ public class PermissionTest extends TestCase {
                 count++;
             }
         }
-        assertEquals("Duplicate grant must not create two entries", 1, count);
+        assertEquals(1, count, "Duplicate grant must not create two entries");
 
         // Same for Group
         Group group = new Group("testGroup");
@@ -977,13 +1021,14 @@ public class PermissionTest extends TestCase {
                 count++;
             }
         }
-        assertEquals("Group: duplicate grant must not create two entries", 1, count);
+        assertEquals(1, count, "Group: duplicate grant must not create two entries");
     }
 
     /**
      * PF-1218: The saveFoldersToAccount pattern (revoke + grant) must preserve
      * explicit folder permissions even when OrgAdmin implies them.
      */
+    @Test
     public void testRevokeAllThenRegrantPreservesPermission() {
         String orgOID = "ORG-REGRANT";
         OrganizationAdminPermission.ORGANIZATION_PERMISSION_HELPER =
@@ -1005,8 +1050,8 @@ public class PermissionTest extends TestCase {
 
         // Remove OrgAdmin — explicit FolderAdmin must survive
         account.revoke(new OrganizationAdminPermission(orgOID));
-        assertTrue("Explicit FolderAdmin must survive revoke+grant cycle",
-            account.hasPermission(new FolderAdminPermission(fi)));
+        assertTrue(account.hasPermission(new FolderAdminPermission(fi)),
+            "Explicit FolderAdmin must survive revoke+grant cycle");
     }
 
     private FolderInfo createTopFolder(String id) {

@@ -224,6 +224,7 @@ public class FileProblemTest extends ControllerTestCase {
             "abcd-2.txt","Failed to make unique abcd.txt to abcd-2.txt");
     }
 
+    @Test
     public void test8dot3NotationProblem() {
         setupTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 

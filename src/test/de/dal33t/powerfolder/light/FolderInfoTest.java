@@ -18,30 +18,33 @@
  */
 package de.dal33t.powerfolder.light;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class FolderInfoTest extends TestCase {
+public class FolderInfoTest {
 
+    @Test
     public void testGetMetaInfo() {
         FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Name of folder");
-        assertFalse(foInfo.toString(), foInfo.isMetaFolder());
-        assertFalse(foInfo.id,
-            foInfo.id.contains(Constants.METAFOLDER_ID_PREFIX));
-        assertFalse(foInfo.getName(),
-            foInfo.getName().contains(Constants.METAFOLDER_ID_PREFIX));
+        assertFalse(foInfo.isMetaFolder(), foInfo.toString());
+        assertFalse(foInfo.id.contains(Constants.METAFOLDER_ID_PREFIX),
+            foInfo.id);
+        assertFalse(foInfo.getName().contains(Constants.METAFOLDER_ID_PREFIX),
+            foInfo.getName());
 
         FolderInfo metaFolder = foInfo.getMetaFolderInfo();
-        assertTrue(metaFolder.toString(), metaFolder.isMetaFolder());
-        assertTrue(metaFolder.id,
-            metaFolder.id.contains(Constants.METAFOLDER_ID_PREFIX));
-        assertTrue(metaFolder.getName(),
-            metaFolder.getName().contains(Constants.METAFOLDER_ID_PREFIX));
+        assertTrue(metaFolder.isMetaFolder(), metaFolder.toString());
+        assertTrue(metaFolder.id.contains(Constants.METAFOLDER_ID_PREFIX),
+            metaFolder.id);
+        assertTrue(metaFolder.getName().contains(Constants.METAFOLDER_ID_PREFIX),
+            metaFolder.getName());
 
         assertEquals(foInfo, metaFolder.lookupContentFolderInfo());
         assertEquals(metaFolder, foInfo.getMetaFolderInfo());
@@ -57,6 +60,7 @@ public class FolderInfoTest extends TestCase {
      * {@link FolderInfo#findEnclosingSubFolder(java.util.Collection, FolderInfo, String)} - it powers
      * Account/Group.getAllowedAccess(folder, path) and FolderRepository.findEnclosingSubFolder.
      */
+    @Test
     public void testFindEnclosingSubFolder() {
         FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder");
         FolderInfo otherTop = FolderInfoFactory.newTopFolderForTest("OtherTop");
@@ -146,6 +150,7 @@ public class FolderInfoTest extends TestCase {
      * its own candidates. Purely structural here - the inheritance flag itself is not consulted, the
      * caller decides what is a barrier.
      */
+    @Test
     public void testFindEnclosingSubFolderWithBarriers() {
         FolderInfo top = FolderInfoFactory.newTopFolderForTest("TopFolder");
         FolderInfo otherTop = FolderInfoFactory.newTopFolderForTest("OtherTop");

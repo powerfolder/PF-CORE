@@ -27,6 +27,10 @@ import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -36,6 +40,7 @@ import java.util.Map;
 
 public class LuceneIndexManagerTest extends ControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         System.setProperty("powerfolder.index.startupDelayMs", "0");
@@ -67,6 +72,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Basic indexing + search
     // -----------------------------------------------------------------------
 
+    @Test
     public void testIndexAndSearchByFilename() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Report_2024.pdf");
@@ -80,6 +86,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("Report_2024.pdf", results.get(0).getFilenameOnly());
     }
 
+    @Test
     public void testPrefixSearch() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Bestaetigung_des_Wohnungsgebers.pdf");
@@ -87,14 +94,15 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         indexAndWait();
 
-        assertTrue("Search for 'woh' should find the file",
-                getIndexManager().searchFiles("woh", 10).size() > 0);
-        assertTrue("Search for 'bes' should find the file",
-                getIndexManager().searchFiles("bes", 10).size() > 0);
-        assertTrue("Search for 'wohn' should find the file",
-                getIndexManager().searchFiles("wohn", 10).size() > 0);
+        assertTrue(getIndexManager().searchFiles("woh", 10).size() > 0,
+                "Search for 'woh' should find the file");
+        assertTrue(getIndexManager().searchFiles("bes", 10).size() > 0,
+                "Search for 'bes' should find the file");
+        assertTrue(getIndexManager().searchFiles("wohn", 10).size() > 0,
+                "Search for 'wohn' should find the file");
     }
 
+    @Test
     public void testSearchMultipleFiles() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Vertrag_Miete.pdf");
@@ -112,6 +120,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(1, results.size());
     }
 
+    @Test
     public void testSearchNoResults() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "document.pdf");
@@ -127,6 +136,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Purge files
     // -----------------------------------------------------------------------
 
+    @Test
     public void testPurgeRemovesFromIndex() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "ToPurge.txt");
@@ -145,6 +155,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Subdirectory search
     // -----------------------------------------------------------------------
 
+    @Test
     public void testSearchInSubdirectory() throws Exception {
         Folder folder = getFolder();
         Path subDir = folder.getLocalBase().resolve("invoices");
@@ -155,13 +166,14 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         List<FileInfo> all = getIndexManager().searchFiles("invoice", 10);
-        assertTrue("Should find at least both invoice files", all.size() >= 2);
+        assertTrue(all.size() >= 2, "Should find at least both invoice files");
     }
 
     // -----------------------------------------------------------------------
     // Rebuild
     // -----------------------------------------------------------------------
 
+    @Test
     public void testRebuildIndex() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "BeforeRebuild.txt");
@@ -182,6 +194,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Index entry count
     // -----------------------------------------------------------------------
 
+    @Test
     public void testIndexEntryCount() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "File1.txt");
@@ -198,6 +211,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     // Empty query
     // -----------------------------------------------------------------------
 
+    @Test
     public void testEmptyQueryReturnsAllFiles() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "AnyFile.txt");
@@ -205,14 +219,15 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         indexAndWait();
 
-        assertTrue("Empty query should return all indexed files",
-                getIndexManager().searchFiles("", 10).size() >= 1);
+        assertTrue(getIndexManager().searchFiles("", 10).size() >= 1,
+                "Empty query should return all indexed files");
     }
 
     // -----------------------------------------------------------------------
     // Umlaut / accent handling
     // -----------------------------------------------------------------------
 
+    @Test
     public void testAccentFolding() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Uebergabe_Protokoll.pdf");
@@ -220,14 +235,15 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         indexAndWait();
 
-        assertTrue("Search for 'ueberg' should find umlauted file",
-                getIndexManager().searchFiles("ueberg", 10).size() > 0);
+        assertTrue(getIndexManager().searchFiles("ueberg", 10).size() > 0,
+                "Search for 'ueberg' should find umlauted file");
     }
 
     // -----------------------------------------------------------------------
     // Multiple index + search cycles
     // -----------------------------------------------------------------------
 
+    @Test
     public void testSearchByModifiedDateRange() throws Exception {
         Folder folder = getFolder();
         Path oldFile = TestHelper.createRandomFile(folder.getLocalBase(), "OldDoc.pdf");
@@ -260,6 +276,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("OldDoc.pdf", betweenResults.get(0).getFilenameOnly());
     }
 
+    @Test
     public void testSearchByModifiedDateInclusiveBoundary() throws Exception {
         Folder folder = getFolder();
         Path file = TestHelper.createRandomFile(folder.getLocalBase(), "Boundary.pdf");
@@ -287,6 +304,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(0, getIndexManager().searchFiles(justBefore).size());
     }
 
+    @Test
     public void testSearchByModifiedDateCombinedWithKeyword() throws Exception {
         Folder folder = getFolder();
         Path oldReport = TestHelper.createRandomFile(folder.getLocalBase(), "Report_Old.pdf");
@@ -309,6 +327,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("Report_New.pdf", results.get(0).getFilenameOnly());
     }
 
+    @Test
     public void testSearchBySizeRange() throws Exception {
         Folder folder = getFolder();
         Path small = folder.getLocalBase().resolve("small.bin");
@@ -343,6 +362,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(0, getIndexManager().searchFiles(none).size());
     }
 
+    @Test
     public void testSearchByCategory() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "holiday.jpg");
@@ -363,11 +383,11 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         FileInfoCriteria pdf = dateRangeCriteria();
         pdf.addCategory("pdf");
-        assertEquals("a pdf has its own category", 1, getIndexManager().searchFiles(pdf).size());
+        assertEquals(1, getIndexManager().searchFiles(pdf).size(), "a pdf has its own category");
 
         FileInfoCriteria doc = dateRangeCriteria();
         doc.addCategory("document");
-        assertEquals("and is therefore no document", 0, getIndexManager().searchFiles(doc).size());
+        assertEquals(0, getIndexManager().searchFiles(doc).size(), "and is therefore no document");
 
         /* Several categories are OR-combined - the image and the pdf, not the video. */
         FileInfoCriteria imageOrPdf = dateRangeCriteria();
@@ -380,6 +400,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(0, getIndexManager().searchFiles(audio).size());
     }
 
+    @Test
     public void testSortBySizeDescendingAndNameAscending() throws Exception {
         Folder folder = getFolder();
         Files.write(folder.getLocalBase().resolve("banana.bin"), new byte[300]);
@@ -406,6 +427,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("cherry.bin", byName.get(2).getFilenameOnly());
     }
 
+    @Test
     public void testSortByDateDescending() throws Exception {
         Folder folder = getFolder();
         Path older = folder.getLocalBase().resolve("older.bin");
@@ -426,6 +448,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("older.bin", byDate.get(1).getFilenameOnly());
     }
 
+    @Test
     public void testSuggestTermsByExtensionRankedAndPrefixed() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "a.pdf");
@@ -454,6 +477,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         return criteria;
     }
 
+    @Test
     public void testPhraseSearchRespectsWordOrder() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Annual Financial Report Draft.pdf");
@@ -476,6 +500,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
      * one suggestion. Suggesting from an analyzed field would offer its single words instead - which is why
      * every remote operator points at a {@code *Exact} field (see SearchOperatorTest in PF-PRO).
      */
+    @Test
     public void testSuggestTermsKeepMultiWordValuesInOneTerm() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "minutes.pdf");
@@ -485,11 +510,11 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         Map<String, Integer> exact = getIndexManager().suggestTerms("tagsExact", "pro");
-        assertEquals("the whole tag is one suggestion", 1, exact.size());
-        assertTrue("lowercased, so the prefix scan is case-insensitive", exact.containsKey("project north"));
+        assertEquals(1, exact.size(), "the whole tag is one suggestion");
+        assertTrue(exact.containsKey("project north"), "lowercased, so the prefix scan is case-insensitive");
 
         Map<String, Integer> analyzed = getIndexManager().suggestTerms("tags", "pro");
-        assertTrue("the analyzed field only ever holds single words", analyzed.containsKey("project"));
+        assertTrue(analyzed.containsKey("project"), "the analyzed field only ever holds single words");
         assertFalse(analyzed.containsKey("project north"));
     }
 
@@ -497,6 +522,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
      * PFS-5653: name: looks at the file name only, while a plain keyword also matches the path a file sits
      * in - that is the whole reason for the operator to exist.
      */
+    @Test
     public void testNameFilterIgnoresThePath() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase().resolve("budget"), "notes.txt");
@@ -506,14 +532,15 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         FileInfoCriteria byKeyword = filesOnlyCriteria();
         byKeyword.addKeyWord("budget");
-        assertEquals("the keyword also matches the file inside the budget directory", 2,
-                getIndexManager().searchFiles(byKeyword).size());
+        assertEquals(2, getIndexManager().searchFiles(byKeyword).size(),
+                "the keyword also matches the file inside the budget directory");
 
         List<FileInfo> named = searchByFileName("budget");
         assertEquals(1, named.size());
         assertEquals("budget final.txt", named.get(0).getFilenameOnly());
     }
 
+    @Test
     public void testNameFilterMatchesEveryWordAnywhereInTheName() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Annual Report 2024.pdf");
@@ -523,7 +550,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
 
         assertEquals(1, searchByFileName("annual report").size());
         assertEquals(2, searchByFileName("report").size());
-        assertEquals("a partial word still matches", 2, searchByFileName("repo").size());
+        assertEquals(2, searchByFileName("repo").size(), "a partial word still matches");
         assertEquals(0, searchByFileName("invoice").size());
     }
 
@@ -543,6 +570,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
     }
 
     /** PFS-5653: typo tolerance is a fallback - a query that found something is not re-run fuzzily. */
+    @Test
     public void testFuzzyOnlyKicksInWhenNothingWasFound() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
@@ -551,15 +579,16 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         indexAndWait();
 
         List<FileInfo> exact = getIndexManager().searchFiles("mueller", 10);
-        assertEquals("the near-miss must not dilute a query that matches exactly", 1, exact.size());
+        assertEquals(1, exact.size(), "the near-miss must not dilute a query that matches exactly");
         assertEquals("Mueller Vertrag.pdf", exact.get(0).getFilenameOnly());
 
         /* "muellre" matches nothing exactly, so the fallback runs and both near-misses come back - which is
          * precisely the widening that must not happen while "mueller" still has an exact hit. */
-        assertEquals("a typo that matches nothing exactly falls back to fuzzy",
-                2, getIndexManager().searchFiles("muellre", 10).size());
+        assertEquals(2, getIndexManager().searchFiles("muellre", 10).size(),
+                "a typo that matches nothing exactly falls back to fuzzy");
     }
 
+    @Test
     public void testFuzzyCanBeSwitchedOff() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
@@ -569,11 +598,12 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(1, getIndexManager().searchFiles("muellre", 10).size());
 
         ConfigurationEntry.SEARCH_INDEX_FUZZY_ENABLED.setValue(getController(), false);
-        assertEquals("no typo tolerance once disabled", 0, getIndexManager().searchFiles("muellre", 10).size());
-        assertEquals("exact matching still works", 1, getIndexManager().searchFiles("mueller", 10).size());
+        assertEquals(0, getIndexManager().searchFiles("muellre", 10).size(), "no typo tolerance once disabled");
+        assertEquals(1, getIndexManager().searchFiles("mueller", 10).size(), "exact matching still works");
     }
 
     /** PFS-5653: a quoted single word asks for the exact term, not for a prefix/wildcard/fuzzy match. */
+    @Test
     public void testQuotedSingleWordIsMatchedExactly() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
@@ -585,10 +615,11 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(1, quoted.size());
         assertEquals("Mueller Vertrag.pdf", quoted.get(0).getFilenameOnly());
 
-        assertEquals("unquoted still matches the longer name too",
-                2, getIndexManager().searchFiles("mueller", 10).size());
+        assertEquals(2, getIndexManager().searchFiles("mueller", 10).size(),
+                "unquoted still matches the longer name too");
     }
 
+    @Test
     public void testFuzzyTypoTolerance() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Mueller Vertrag.pdf");
@@ -596,14 +627,15 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         scanFolder(folder);
         indexAndWait();
 
-        assertTrue("typo 'mueler' should still find Mueller",
-                getIndexManager().searchFiles("mueler", 10).size() >= 1);
-        assertTrue("typo 'reprot' should still find Report",
-                getIndexManager().searchFiles("reprot", 10).size() >= 1);
-        assertEquals("nonsense must not match",
-                0, getIndexManager().searchFiles("xyzqwk", 10).size());
+        assertTrue(getIndexManager().searchFiles("mueler", 10).size() >= 1,
+                "typo 'mueler' should still find Mueller");
+        assertTrue(getIndexManager().searchFiles("reprot", 10).size() >= 1,
+                "typo 'reprot' should still find Report");
+        assertEquals(0, getIndexManager().searchFiles("xyzqwk", 10).size(),
+                "nonsense must not match");
     }
 
+    @Test
     public void testNegationExcludesTerm() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "Report_Annual.pdf");
@@ -618,6 +650,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("Report_Monthly.pdf", excluded.get(0).getFilenameOnly());
     }
 
+    @Test
     public void testNegationOnlyReturnsEverythingElse() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "KeepMe.txt");
@@ -630,6 +663,7 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals("KeepMe.txt", results.get(0).getFilenameOnly());
     }
 
+    @Test
     public void testIncrementalIndexing() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "First.txt");

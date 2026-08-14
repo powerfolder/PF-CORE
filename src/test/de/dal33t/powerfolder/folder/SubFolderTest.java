@@ -34,6 +34,10 @@ import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,12 +49,14 @@ import java.util.logging.Level;
 
 public class SubFolderTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
+    @Test
     public void testShare() throws IOException {
         String subDir = "structure/deep/sharedsubdir.123";
 
@@ -80,6 +86,7 @@ public class SubFolderTest extends TwoControllerTestCase {
 
     }
 
+    @Test
     public void testSubdirDAOSingleFile() throws IOException {
         String subDir = "subdir";
 
@@ -117,6 +124,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals("", rootOfSubdir.getRelativeName());
     }
 
+    @Test
     public void testSubdirDAOWithNestedSubdir() throws IOException {
         String subDir = "subdir";
         String nestedSubDir = "subdir-1";
@@ -179,6 +187,7 @@ public class SubFolderTest extends TwoControllerTestCase {
     }
 
 
+    @Test
     public void testFileInfo() {
         String subDir = "structure/deep/sharedsubdir.123";
 
@@ -228,6 +237,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals(subFolderInfo, subFileInfo.getFolderInfo());
     }
 
+    @Test
     public void testDAO() {
         String subDir = "structure/deep/sharedsubdir.123";
         FolderInfo topFolderInfo = FolderInfoFactory.newTopFolder("TOP", "TopFolder");
@@ -301,8 +311,8 @@ public class SubFolderTest extends TwoControllerTestCase {
         Collection<FileInfo> resultTop = topDAO.findFiles(topCriteria);
         Collection<FileInfo> resultSub = subDAO.findFiles(subCriteria);
 
-        assertEquals("Top DAO should return both files", 2, resultTop.size());
-        assertEquals("Sub DAO should return only scoped file via findFiles", 1, resultSub.size());
+        assertEquals(2, resultTop.size(), "Top DAO should return both files");
+        assertEquals(1, resultSub.size(), "Sub DAO should return only scoped file via findFiles");
 
         // --- findFilesFast ---
 
@@ -319,13 +329,14 @@ public class SubFolderTest extends TwoControllerTestCase {
         Collection<FileInfo> resultTopFast = topDAO.findFilesFast(topCriteriaFast);
         Collection<FileInfo> resultSubFast = subDAO.findFilesFast(subCriteriaFast);
 
-        assertEquals("Top DAO should return both files (fast)", 2, resultTopFast.size());
-        assertEquals("Sub DAO should return only scoped file via findFilesFast", 1, resultSubFast.size());
+        assertEquals(2, resultTopFast.size(), "Top DAO should return both files (fast)");
+        assertEquals(1, resultSubFast.size(), "Sub DAO should return only scoped file via findFilesFast");
 
         FileInfo subFileFound = resultSubFast.iterator().next();
         assertEquals(subFile, subFileFound);
       }
 
+    @Test
     public void testSubFolderDAOComplexHierarchyWithDeletedFilesAndDirs() {
         // --- Setup: Top and subfolder ---
         String subDir = "structure/deep/sharedsubdir.123";
@@ -409,9 +420,9 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         // --- All files in sub must be correctly mapped ---
         for (FileInfo f : allFiles) {
-            assertTrue("Must be in subfolder", f.isInSubFolder(subFolderInfo));
-            assertFalse("Path should not leak full folder", f.getRelativeName().contains("sharedsubdir.123"));
-            assertFalse("Must not contain sibling folder", f.getRelativeName().contains("sharedsubdir_fake"));
+            assertTrue(f.isInSubFolder(subFolderInfo), "Must be in subfolder");
+            assertFalse(f.getRelativeName().contains("sharedsubdir.123"), "Path should not leak full folder");
+            assertFalse(f.getRelativeName().contains("sharedsubdir_fake"), "Must not contain sibling folder");
         }
 
         // --- findFilesFast parity ---
@@ -435,6 +446,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals(0, subDAO.findAllFiles(null).size());
     }
 
+    @Test
     public void testGetSubFoldersExplicitVsDirectoryOnly() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
@@ -478,8 +490,8 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         // --- Only explicitly shared folders must be returned and the top folder ---
         assertEquals(3, result.size());
-        assertTrue(result.toString(), result.containsKey(sharedAInfo));
-        assertTrue(result.toString(), result.containsKey(sharedBInfo));
+        assertTrue(result.containsKey(sharedAInfo), result.toString());
+        assertTrue(result.containsKey(sharedBInfo), result.toString());
 
         // --- Directory-only entries (not subfolders) ---
         DirectoryInfo implicitC =
@@ -495,6 +507,7 @@ public class SubFolderTest extends TwoControllerTestCase {
     }
 
 
+    @Test
     public void testGetSubFoldersWithNestedSharedFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository =
@@ -565,6 +578,7 @@ public class SubFolderTest extends TwoControllerTestCase {
      * subfolder, so directories/files deeper inside a shared subfolder resolve to it (not just an
      * exact root), and unrelated / top-level paths resolve to nothing.
      */
+    @Test
     public void testFindEnclosingSubFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
@@ -621,6 +635,7 @@ public class SubFolderTest extends TwoControllerTestCase {
      * ancestor, a nested share inside another share (innermost wins across many levels), sibling
      * shares, and deep/unrelated paths that resolve to the correct subfolder or to nothing.
      */
+    @Test
     public void testFindEnclosingSubFolderDeepAndComplex() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
@@ -684,6 +699,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertNull(repository.findEnclosingSubFolder(topInfo, "does/not/exist"));
     }
 
+    @Test
     public void testUnshare() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
@@ -722,6 +738,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertTrue(Files.exists(testFile));
     }
 
+    @Test
     public void testUnshareNonExistentIsNoop() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
@@ -741,6 +758,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals(folderCountBefore, repository.getFoldersCount());
     }
 
+    @Test
     public void testUnshareTriggeredByFilesystemDeletion() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
@@ -768,6 +786,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals(1, repository.getFoldersCount());
     }
 
+    @Test
     public void testUnshareTriggeredByRemoteDeletion() throws IOException {
         LoggingManager.setConsoleLogging(Level.FINE);
         Folder topFolderBart = getFolderAtBart();
@@ -842,6 +861,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals(1, repositoryBart.getFoldersCount());
     }
 
+    @Test
     public void testUnshareTriggeredByScanChangedFile() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
@@ -871,6 +891,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         assertEquals(1, repository.getFoldersCount());
     }
 
+    @Test
     public void testSubFolderUsesArchiverProxy() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "projects/team/shared";
@@ -884,12 +905,13 @@ public class SubFolderTest extends TwoControllerTestCase {
         Folder subFolder = topFolder.share(dirInfo);
         assertNotNull(subFolder);
 
-        assertTrue("Subfolder archiver should be a proxy",
-            subFolder.getFileArchiver() instanceof SubFolderFileArchiverProxy);
-        assertNotSame("Subfolder archiver should not be the same instance as top folder's",
-            topFolder.getFileArchiver(), subFolder.getFileArchiver());
+        assertTrue(subFolder.getFileArchiver() instanceof SubFolderFileArchiverProxy,
+            "Subfolder archiver should be a proxy");
+        assertNotSame(topFolder.getFileArchiver(), subFolder.getFileArchiver(),
+            "Subfolder archiver should not be the same instance as top folder's");
     }
 
+    @Test
     public void testSubFolderArchiverArchivesIntoTopFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "data/reports/monthly";
@@ -915,26 +937,27 @@ public class SubFolderTest extends TwoControllerTestCase {
         subFolder.getFileArchiver().archive(fileInSub, testFile, true);
 
         // The archived file should be findable via both archivers
-        assertTrue("Top archiver should find the archived file",
-            topFolder.getFileArchiver().hasArchivedFileInfo(fileInTop));
-        assertTrue("Sub archiver should find the archived file",
-            subFolder.getFileArchiver().hasArchivedFileInfo(fileInSub));
+        assertTrue(topFolder.getFileArchiver().hasArchivedFileInfo(fileInTop),
+            "Top archiver should find the archived file");
+        assertTrue(subFolder.getFileArchiver().hasArchivedFileInfo(fileInSub),
+            "Sub archiver should find the archived file");
 
         // Retrieve archived versions via subfolder archiver
         List<FileInfo> subVersions = subFolder.getFileArchiver().getArchivedFilesInfos(fileInSub);
-        assertFalse("Should have archived versions", subVersions.isEmpty());
+        assertFalse(subVersions.isEmpty(), "Should have archived versions");
 
         for (FileInfo version : subVersions) {
-            assertEquals("Archived version should have subfolder's FolderInfo",
-                subFolder.getInfo(), version.getFolderInfo());
+            assertEquals(subFolder.getInfo(), version.getFolderInfo(),
+                "Archived version should have subfolder's FolderInfo");
         }
 
         // Retrieve via top archiver
         List<FileInfo> topVersions = topFolder.getFileArchiver().getArchivedFilesInfos(fileInTop);
-        assertFalse("Top should also have archived versions", topVersions.isEmpty());
+        assertFalse(topVersions.isEmpty(), "Top should also have archived versions");
         assertEquals(subVersions.size(), topVersions.size());
     }
 
+    @Test
     public void testSubFolderArchiverRestore() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "topfolder/modules/core";
@@ -963,10 +986,11 @@ public class SubFolderTest extends TwoControllerTestCase {
         // Restore to a temporary path
         Path restoreTarget = root.resolve("restored_toRestore.txt");
         boolean restored = subFolder.getFileArchiver().restore(archivedVersion, restoreTarget);
-        assertTrue("Restore should succeed", restored);
-        assertTrue("Restored file should exist", Files.exists(restoreTarget));
+        assertTrue(restored, "Restore should succeed");
+        assertTrue(Files.exists(restoreTarget), "Restored file should exist");
     }
 
+    @Test
     public void testSubFolderArchiverSizeIsZero() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "departments/engineering/builds";
@@ -979,9 +1003,10 @@ public class SubFolderTest extends TwoControllerTestCase {
         DirectoryInfo dirInfo = (DirectoryInfo) topFolder.getFileInfo(subDir);
         Folder subFolder = topFolder.share(dirInfo);
 
-        assertEquals("Subfolder archiver size should be 0", 0, subFolder.getFileArchiver().getSize());
+        assertEquals(0, subFolder.getFileArchiver().getSize(), "Subfolder archiver size should be 0");
     }
 
+    @Test
     public void testSubFolderArchiverMaintainAndCleanupIsNoop() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "storage/archive/2024";
@@ -996,9 +1021,10 @@ public class SubFolderTest extends TwoControllerTestCase {
         List<FileInfo> result = subFolder.getFileArchiver().maintainAndCleanup(
             new Date(), subFolder.getDAO(), subFolder.getInfo(),
             getContollerBart().getMySelf().getAccountInfo());
-        assertTrue("maintainAndCleanup on proxy should return empty list", result.isEmpty());
+        assertTrue(result.isEmpty(), "maintainAndCleanup on proxy should return empty list");
     }
 
+    @Test
     public void testSubFolderArchiverPurgeFile() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "projects/docs/internal";
@@ -1024,12 +1050,13 @@ public class SubFolderTest extends TwoControllerTestCase {
         subFolder.getFileArchiver().purge(fileInSub, subFolder, null);
 
         // Archived version should be gone from both views
-        assertFalse("Sub archiver should no longer have archived file",
-            subFolder.getFileArchiver().hasArchivedFileInfo(fileInSub));
-        assertFalse("Top archiver should no longer have archived file",
-            topFolder.getFileArchiver().hasArchivedFileInfo(fileInTop));
+        assertFalse(subFolder.getFileArchiver().hasArchivedFileInfo(fileInSub),
+            "Sub archiver should no longer have archived file");
+        assertFalse(topFolder.getFileArchiver().hasArchivedFileInfo(fileInTop),
+            "Top archiver should no longer have archived file");
     }
 
+    @Test
     public void testSubFolderArchiverPurgeFolderMismatch() throws IOException {
         Folder topFolder = getFolderAtBart();
         String subDir = "teams/backend/services";
@@ -1058,6 +1085,7 @@ public class SubFolderTest extends TwoControllerTestCase {
      * has an empty filename and cannot pass validate() with a real size.
      * Callers like findSameFiles must guard against calling getSize() on it.
      */
+    @Test
     public void testMapToSubFolderBaseDirectoryIsLookupInstance() {
         String subDir = "structure/deep/sharedsubdir.123";
 
@@ -1070,9 +1098,10 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         FileInfo sharedBaseDir = FileInfoFactory.mapToSubFolder(topBaseDir, subFolderInfo);
         assertEquals("", sharedBaseDir.getRelativeName());
-        assertTrue("Mapped base dir must be a lookup instance", sharedBaseDir.isLookupInstance());
+        assertTrue(sharedBaseDir.isLookupInstance(), "Mapped base dir must be a lookup instance");
     }
 
+    @Test
     public void testSubFolderDAOExcludesBaseDirectory() {
         String subDir = "shared/subdir";
         FolderInfo topFolderInfo = FolderInfoFactory.newTopFolder("TOP", "TopFolder");
@@ -1103,10 +1132,10 @@ public class SubFolderTest extends TwoControllerTestCase {
         // Base directory must NOT appear in findAllDirectories
         Collection<DirectoryInfo> dirs = subDAO.findAllDirectories(null);
         for (DirectoryInfo dir : dirs) {
-            assertFalse("Base directory must not be in findAllDirectories: " + dir,
-                    dir.isBaseDirectory());
+            assertFalse(dir.isBaseDirectory(),
+                    "Base directory must not be in findAllDirectories: " + dir);
         }
-        assertEquals("Only the child directory should be returned", 1, dirs.size());
+        assertEquals(1, dirs.size(), "Only the child directory should be returned");
         assertEquals("docs", dirs.iterator().next().getRelativeName());
 
         // File should still be there
@@ -1122,6 +1151,7 @@ public class SubFolderTest extends TwoControllerTestCase {
      * with size=null (e.g. from DB or internal creation), writes it as -1 via
      * writeExternal, the receiver reads -1 → null, then findSameFiles calls getSize().
      */
+    @Test
     public void testReadExternalSizeMinusOneGetSizeNPE() throws Exception {
         FolderInfo topFolderInfo = FolderInfoFactory.newTopFolder("TOP", "TopFolder");
         DirectoryInfo dirInfo = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
@@ -1146,6 +1176,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         }
     }
 
+    @Test
     public void testUnshareOnlyAllowedFromTopFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
 
