@@ -416,15 +416,49 @@ public class FileInfoCriteria {
     }
 
     /**
-     * PFS-5653: the name: filter. Case-insensitive substring of the file name - the keywords of a search
-     * also reach the path and, in the index, the content, this one does not.
+     * PFS-5653: the name: filter. Every word of the value has to appear in the file name - the keywords of
+     * a search also reach the path and, in the index, the content, this one does not.
      */
     private static boolean matchesFileName(FileInfo fileInfo, String fileName) {
-        if (isBlank(fileName)) {
+        List<String> words = nameWords(fileName);
+        if (words.isEmpty()) {
             return true;
         }
         String name = fileInfo.getFilenameOnly();
-        return name != null && name.toUpperCase().contains(fileName.toUpperCase().trim());
+        if (name == null) {
+            return false;
+        }
+        String lower = name.toLowerCase();
+        for (String word : words) {
+            if (!lower.contains(word)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The words a "name:" value is compared by, lower cased. The index tokenizes a file name on everything
+     * that is neither a letter nor a digit, so "!Migrationsreport!" is stored as "migrationsreport" - a
+     * value has to be cut the same way, otherwise the punctuation the user typed matches nothing. A value
+     * of nothing but punctuation leaves no word at all and therefore filters nothing.
+     */
+    public static List<String> nameWords(String value) {
+        if (isBlank(value)) {
+            return Collections.emptyList();
+        }
+        List<String> words = new ArrayList<>();
+        for (String word : value.toLowerCase().replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ").split("\\s+")) {
+            /* PFS-5306: the tokenizer keeps a dot only between alphanumerics, so a trailing one - as in
+             * "29.7." - would be searched for but never indexed. */
+            while (word.endsWith(".")) {
+                word = word.substring(0, word.length() - 1);
+            }
+            if (!word.isEmpty()) {
+                words.add(word);
+            }
+        }
+        return words;
     }
 
     private static boolean matchesExtension(FileInfo fileInfo, Set<String> extensions) {
@@ -540,6 +574,24 @@ public class FileInfoCriteria {
             }
         }
         return true;
+    }
+
+    /**
+     * PFS-5653: true when the criteria carry something no folder can answer. Asking for documents, for
+     * PDFs, for something larger than 10 MB or changed by someone is asking about files - a name or a tag
+     * is not, folders carry both.
+     */
+    public boolean describesFilesOnly() {
+        boolean fileCategory = !categories.isEmpty() && !categories.contains(DocumentType.FOLDER);
+
+        return fileCategory
+                || !extensions.isEmpty()
+                || minSize != null
+                || maxSize != null
+                || modifiedAfter != null
+                || modifiedBefore != null
+                || StringUtils.isNotBlank(modifiedBy)
+                || StringUtils.isNotBlank(modifiedByDeviceName);
     }
 
     public boolean hasSearchCriteria() {

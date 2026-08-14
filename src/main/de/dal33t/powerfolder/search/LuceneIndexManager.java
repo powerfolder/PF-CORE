@@ -1403,20 +1403,15 @@ public class LuceneIndexManager extends PFComponent {
     /**
      * PFS-5653: the name: filter. Every word has to appear in the file name - exactly, as a prefix or
      * anywhere inside it - and nowhere else: unlike the keywords, this one never looks at the path, the
-     * content or who changed the file.
+     * content or who changed the file. The value is cut into words the same way the name was tokenized
+     * when it was indexed, so the punctuation of a name like "!Migrationsreport!" does not kill the query.
      *
      * @return the query, or null if there is nothing to filter by.
      */
     private static Query fileNameQuery(String value) {
-        if (StringUtils.isBlank(value)) {
-            return null;
-        }
         BooleanQuery.Builder allWords = new BooleanQuery.Builder();
         boolean any = false;
-        for (String token : value.toLowerCase(Locale.ROOT).trim().split("\\s+")) {
-            if (token.isEmpty()) {
-                continue;
-            }
+        for (String token : FileInfoCriteria.nameWords(value)) {
             BooleanQuery.Builder word = new BooleanQuery.Builder();
             for (String field : NAME_FIELDS) {
                 word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
