@@ -433,43 +433,45 @@ public abstract class TwoControllerTestCase {
         // Connect
         //System.out.print("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick());
 
+        // PFS-5561: on loaded CI runners a single connect attempt with a 10s handshake wait was
+        // flaky (intermittent "Unable to connect Bart and Lisa"). Retry the connect a few times
+        // and wait longer for the handshake. A healthy run still returns within ~1s on the first
+        // attempt, because waitForCondition returns as soon as both nodes are completely connected.
+        Condition connectedCondition = new Condition() {
+            @Override
+            public boolean reached() {
+                Member member2atCon1 = cont1.getNodeManager().getNode(
+                    cont2.getMySelf().getId());
+                Member member1atCon2 = cont2.getNodeManager().getNode(
+                    cont1.getMySelf().getId());
+                boolean connected = member2atCon1 != null
+                    && member1atCon2 != null
+                    && member2atCon1.isCompletelyConnected()
+                    && member1atCon2.isCompletelyConnected();
+                boolean nodeManagersOK = cont1.getNodeManager()
+                    .getConnectedNodes().contains(member2atCon1)
+                    && cont2.getNodeManager().getConnectedNodes()
+                        .contains(member1atCon2);
+                return connected && nodeManagersOK;
+            }
+        };
         Exception e = null;
-        try {
-            cont1.connect(cont2.getConnectionListener().getAddress());
-        } catch (Exception ex) {
-            e = ex;
-            // Try harder.
+        for (int attempt = 1; attempt <= 3; attempt++) {
             try {
                 cont1.connect(cont2.getConnectionListener().getAddress());
-            } catch (Exception e2) {
-                e = e2;
+            } catch (Exception ex) {
+                e = ex;
+            }
+            try {
+                TestHelper.waitForCondition(30, connectedCondition);
+                return true;
+            } catch (RuntimeException re) {
+                // Handshake not completed within the wait; retry unless this was the last attempt.
             }
         }
-        try {
-            TestHelper.waitForCondition(10, new Condition() {
-                @Override
-                public boolean reached() {
-                    Member member2atCon1 = cont1.getNodeManager().getNode(
-                        cont2.getMySelf().getId());
-                    Member member1atCon2 = cont2.getNodeManager().getNode(
-                        cont1.getMySelf().getId());
-                    boolean connected = member2atCon1 != null
-                        && member1atCon2 != null
-                        && member2atCon1.isCompletelyConnected()
-                        && member1atCon2.isCompletelyConnected();
-                    boolean nodeManagersOK = cont1.getNodeManager()
-                        .getConnectedNodes().contains(member2atCon1)
-                        && cont2.getNodeManager().getConnectedNodes()
-                            .contains(member1atCon2);
-                    return connected && nodeManagersOK;
-                }
-            });
-        } catch (RuntimeException re) {
-            System.err.println("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick() + " ... FAILED: " + e);
-            return false;
-        }
-        //System.out.println(" ... SUCCESS");
-        return true;
+        System.err.println("Connecting " + cont1.getMySelf().getNick() + " and "
+            + cont2.getMySelf().getNick() + " ... FAILED after 3 attempts: " + e);
+        return false;
     }
 
     /**
