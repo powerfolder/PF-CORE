@@ -192,7 +192,7 @@ public enum ConfigurationEntry {
     /**
      * URL of the Online Storage features
      */
-    PROVIDER_ABOUT_URL("provider.url.about", "https://www.powerfolder.com/about-us-2/"),
+    PROVIDER_ABOUT_URL("provider.url.about", "https://www.powerfolder.com/ueber-uns.html"),
 
     /**
      * Quickstart guides to PowerFolder
@@ -214,7 +214,7 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder Cookies policy
      */
-    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", "https://www.powerfolder.com/de/7084-2/"),
+    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", "https://www.powerfolder.com/datenschutz.html"),
 
     /**
      * Whether to show support url in application menu
@@ -232,12 +232,12 @@ public enum ConfigurationEntry {
      * <p>
      * Recommended use: {@link ProUtil#getBuyNowURL(Controller)}
      */
-    PROVIDER_BUY_URL("provider.url.buy", "https://www.powerfolder.com/pricing"),
+    PROVIDER_BUY_URL("provider.url.buy", "https://my.powerfolder.com/pricing"),
 
     /**
      * URL where the contact form resides
      */
-    PROVIDER_CONTACT_URL("provider.url.contact", "https://www.powerfolder.com/contact"),
+    PROVIDER_CONTACT_URL("provider.url.contact", "https://sales.powerfolder.com"),
 
     /**
      * URL of the PowerFolder Wiki. ATTENTION: This URL gets extended by article
