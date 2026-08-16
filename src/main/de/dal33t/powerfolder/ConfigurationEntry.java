@@ -192,7 +192,7 @@ public enum ConfigurationEntry {
     /**
      * URL of the Online Storage features
      */
-    PROVIDER_ABOUT_URL("provider.url.about", "https://www.powerfolder.com/ueber-uns.html"),
+    PROVIDER_ABOUT_URL("provider.url.about", "https://www.powerfolder.com/about.html"),
 
     /**
      * Quickstart guides to PowerFolder
@@ -214,7 +214,7 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder Cookies policy
      */
-    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", "https://www.powerfolder.com/datenschutz.html"),
+    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", "https://www.powerfolder.com/privacy.html"),
 
     /**
      * Whether to show support url in application menu
