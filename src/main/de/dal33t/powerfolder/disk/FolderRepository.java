@@ -1370,6 +1370,36 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PF-1790/PFC-3543: A subfolder's base dir IS its location inside the top folder - fully
+     * derivable, never subject to name patterns or "Name (2)" sidesteps. A divergent settings path
+     * (e.g. a previously uniquified twin, persisted by an earlier defect) detaches the folder from
+     * its data: content reads come from the wrong directory, and the top folder scans the real
+     * directory forever because the path-based interrupted-subfolder guard compares the configured
+     * base. Correcting it here also heals such persisted damage on the next mount.
+     *
+     * @return the settings with the corrected base dir, or the given settings when nothing diverges
+     *         (top folders, unmounted top folder)
+     */
+    private FolderSettings correctSubFolderBaseDir(FolderInfo folderInfo,
+                                                   FolderSettings folderSettings) {
+        if (!folderInfo.isSubFolder()) {
+            return folderSettings;
+        }
+        Folder topFolder = getFolder(folderInfo.getTopFolder());
+        if (topFolder == null) {
+            return folderSettings;
+        }
+        Path expectedBase = topFolder.getLocalBase()
+                .resolve(folderInfo.getLocation().getRelativeName());
+        if (expectedBase.equals(folderSettings.getLocalBaseDir())) {
+            return folderSettings;
+        }
+        logWarning(folderInfo + ": Correcting subfolder base dir from "
+                + folderSettings.getLocalBaseDir() + " to " + expectedBase);
+        return folderSettings.changeBaseDir(expectedBase);
+    }
+
+    /**
      * Creates a folder from a folder info object and sets the sync profile.
      * <p>
      * Also stores a invitation file for the folder in the local directory if
@@ -1382,7 +1412,14 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
                                FolderSettings folderSettings) {
         try {
-            if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
+            if (folderInfo.isSubFolder()) {
+                // PF-1790/PFC-3543: a subfolder's base IS its location inside the top folder, and the
+                // directory usually exists WITH content - that content is the subfolder's own.
+                // Sidestepping to a "Name (2)" twin would detach the folder from its data and let the
+                // top folder scan the real directory forever.
+                folderSettings = correctSubFolderBaseDir(folderInfo, folderSettings);
+                Files.createDirectories(folderSettings.getLocalBaseDir());
+            } else if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
                     .getValueBoolean(getController())) {
                 Files.createDirectories(folderSettings.getLocalBaseDir());
             } else if (Files.notExists(folderSettings.getLocalBaseDir()) ||
@@ -1429,6 +1466,11 @@ public class FolderRepository extends PFComponent implements Runnable {
                                 FolderSettings folderSettings, boolean saveConfig, boolean fireEvent) {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
+
+        // PF-1790/PFC-3543: the common path of ALL folder creations corrects a subfolder's base dir,
+        // so a divergent persisted path (e.g. a previously uniquified "Name (2)" twin) heals on the
+        // next mount no matter which caller mounts it.
+        folderSettings = correctSubFolderBaseDir(folderInfo, folderSettings);
 
         if (hasJoinedFolder(folderInfo)) {
             Folder existingFolder = folders.get(folderInfo);
