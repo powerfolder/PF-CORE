@@ -203,8 +203,7 @@ public class FileLink implements Serializable {
 
     public Path getDiskFile(Controller controllor) {
         Reject.ifNull(controllor, "Controller");
-        FileInfo fInfo = FileInfoFactory.lookupDirectory(folderInfo,
-            relativeName);
+        FileInfo fInfo = FileInfoFactory.lookupDirectory(folderInfo, relativeName);
         return fInfo.getDiskFile(controllor.getFolderRepository());
     }
 
@@ -215,17 +214,17 @@ public class FileLink implements Serializable {
      * Validates expiration, optional password, and path correctness.
      *
      * @param controller Controller instance (needed to resolve folder/file info)
-     * @param folderInfo The folder that OWNS the addressed location - it and {@code relativeName}
-     *            must come from the same resolution, since a location inside a subfolder with
-     *            interrupted inheritance belongs to that subfolder and is named relative to it
+     * @param fileInfo The file or directory being accessed - the whole resolved location, folder
+     *            included. A location inside a subfolder with interrupted inheritance belongs to that
+     *            subfolder and is named relative to it, so folder and name must come from one
+     *            resolution; passing them as a single FileInfo makes that impossible to get wrong
      *            (PFC-3543)
-     * @param relativeName Relative path of the file/directory within {@code folderInfo}
      * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @return true if read access is allowed, false otherwise
      */
-    public boolean hasReadPermissions(Controller controller, FolderInfo folderInfo, String relativeName,
+    public boolean hasReadPermissions(Controller controller, FileInfo fileInfo,
                                       String optionalPasswordOrToken) {
-        return checkAccessPermissions(controller, folderInfo, relativeName, optionalPasswordOrToken, false);
+        return checkAccessPermissions(controller, fileInfo, optionalPasswordOrToken, false);
     }
 
     /**
@@ -233,33 +232,33 @@ public class FileLink implements Serializable {
      * Validates expiration, optional password, and path correctness.
      *
      * @param controller Controller instance (needed to resolve folder/file info)
-     * @param folderInfo The folder that OWNS the addressed location - see
-     *            {@link #hasReadPermissions(Controller, FolderInfo, String, String)}
-     * @param relativeName Relative path of the file/directory within {@code folderInfo}
+     * @param fileInfo The file or directory being accessed - see
+     *            {@link #hasReadPermissions(Controller, FileInfo, String)}
      * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @return true if write access is allowed, false otherwise
      */
-    public boolean hasWritePermissions(Controller controller, FolderInfo folderInfo, String relativeName,
+    public boolean hasWritePermissions(Controller controller, FileInfo fileInfo,
                                        String optionalPasswordOrToken) {
-        return checkAccessPermissions(controller, folderInfo, relativeName, optionalPasswordOrToken, true);
+        return checkAccessPermissions(controller, fileInfo, optionalPasswordOrToken, true);
     }
 
     /**
      * Internal helper for both read and write permission checks.
      *
      * @param controller Controller instance
-     * @param folderInfo The folder that OWNS the addressed location
-     * @param relativeName Relative path within {@code folderInfo}
+     * @param fileInfo The file or directory being accessed
      * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @param write True if checking write access, false for read access
      * @return true if access is allowed, false otherwise
      */
-    private boolean checkAccessPermissions(Controller controller, FolderInfo folderInfo,
-                                           String relativeName, String optionalPasswordOrToken, boolean write) {
+    private boolean checkAccessPermissions(Controller controller, FileInfo fileInfo,
+                                           String optionalPasswordOrToken, boolean write) {
 
         Reject.ifNull(controller, "Controller");
-        Reject.ifNull(folderInfo, "FolderInfo");
-        Reject.ifNull(relativeName, "relativeName");
+        Reject.ifNull(fileInfo, "FileInfo");
+
+        FolderInfo folderInfo = fileInfo.getFolderInfo();
+        String relativeName = fileInfo.getRelativeName();
 
         // Normalize path to prevent traversal attacks (../, ./, etc.)
         // This prevents attacks like: b/../c/d.docx which would bypass startsWith("b/") check
