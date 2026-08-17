@@ -2274,6 +2274,18 @@ public class Folder extends PFComponent {
                 ? collectLocalRows(getDAO(), false)
                 : collectLocalRows(topFolder.getDAO(), true);
 
+            if (!inherits) {
+                /* PFS-5306: last chance to save the tags of the directory this folder occupies - its
+                 * row is about to leave the top folder and is not representable in this folder's own
+                 * coordinates (blank name), so nothing would carry them. Tagging travels onto the
+                 * FolderInfo, where the tags of a subfolder belong anyway; a directory tagged before
+                 * it was shared brought them along already (FolderInfoFactory#newFolder). */
+                String rootTags = tagsOfRootRow(toMigrate);
+                if (StringUtils.isNotBlank(rootTags) && StringUtils.isBlank(newInfo.getTags())) {
+                    newInfo = FolderInfoFactory.changeTags(newInfo, rootTags);
+                }
+            }
+
             updateInfo(newInfo);
             getController().getFolderRepository().refreshInterruptedSubFolders();
             initFileInfoDAO();
@@ -2307,7 +2319,9 @@ public class Folder extends PFComponent {
                 }
                 FileInfo locationInTopFolder = FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(),
                     currentInfo.getLocation().getRelativeName(), null, 0L, getMySelf().getInfo(),
-                    getController().getMySelf().getAccountInfo(), locationModified, 0, null, true, null);
+                    getController().getMySelf().getAccountInfo(), locationModified, 0, null, true,
+                    // PFS-5306: the tags travelled on the FolderInfo while the directory had no row.
+                    currentInfo.getTags());
                 topInfos.add(locationInTopFolder);
                 topFolder.getDAO().store(null, topInfos);
                 topFolder.setDBDirty();
@@ -2340,6 +2354,26 @@ public class Folder extends PFComponent {
                     + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
             }
         }
+    }
+
+    /**
+     * PFS-5306: The tags of the row that IS this subfolder - the directory it occupies in the top
+     * folder, named by its location.
+     *
+     * @param topRows the rows about to be migrated out of the top folder, in top coordinates
+     * @return the tags as a raw JSON array string, {@code null} when the row is untagged or absent
+     */
+    private String tagsOfRootRow(Collection<FileInfo> topRows) {
+        DirectoryInfo location = currentInfo.getLocation();
+        if (location == null) {
+            return null;
+        }
+        for (FileInfo row : topRows) {
+            if (row.isDiretory() && location.getRelativeName().equals(row.getRelativeName())) {
+                return row.getTags();
+            }
+        }
+        return null;
     }
 
     /**

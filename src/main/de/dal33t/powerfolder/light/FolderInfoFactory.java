@@ -77,8 +77,15 @@ public class FolderInfoFactory {
         return new FolderInfo(name, id, 0, null).intern();
     }
 
+    /**
+     * PF-1790: A directory becomes a subfolder. Its tags travel along (PFS-5306): from here on the
+     * folder IS that directory, and this is the one moment where the tags can still be taken over -
+     * once the directory's row is gone (an interruption migrates it away, PFC-3543) they would be
+     * lost with it.
+     */
     public static FolderInfo newFolder(DirectoryInfo subdir) {
-        return new FolderInfo(subdir.getFilenameOnly(), IdGenerator.makeFolderId(), 0, subdir.getParent()).intern();
+        return new FolderInfo(subdir.getFilenameOnly(), IdGenerator.makeFolderId(), 0,
+            subdir.getParent(), subdir.getTags(), true).intern();
     }
 
     public static FolderInfo newFolder(String id, String name, DirectoryInfo parent) {
