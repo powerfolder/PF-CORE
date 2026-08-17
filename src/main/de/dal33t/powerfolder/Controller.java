@@ -90,7 +90,7 @@ public class Controller extends PFComponent {
 
     private static final int MAJOR_VERSION = 28;
     private static final int MINOR_VERSION = 1;
-    private static final int REVISION_VERSION = 4;
+    private static final int REVISION_VERSION = 5;
 
     /**
      * Program version.
@@ -1245,7 +1245,7 @@ public class Controller extends PFComponent {
         threadPool.schedule(() -> {
             performHousekeeping(false);
         } , 1, TimeUnit.MINUTES);
-        
+
         // ============
         // Do profiling
         // ============
@@ -1353,7 +1353,7 @@ public class Controller extends PFComponent {
             backupConfigAssets();
             folderRepository.nightlyMaintenance();
         }
-        
+
         // Prune stats.
         transferManager.pruneStats();
     }
@@ -1634,7 +1634,7 @@ public class Controller extends PFComponent {
             }
         }
     }
-    
+
     /**
      * Saves the current config to disk
      */
@@ -1974,7 +1974,7 @@ public class Controller extends PFComponent {
     public void setNetworkingMode(NetworkingMode newMode) {
         setNetworkingMode(newMode, true);
     }
-    
+
     public void setNetworkingMode(NetworkingMode newMode, boolean restartNodeManager) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.
