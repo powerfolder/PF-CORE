@@ -25,9 +25,11 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -78,6 +80,14 @@ public class InterruptedSubFolderIndex {
     private volatile Path[] bases = NO_BASES;
     private volatile FolderInfo[] subFolders = NO_INFOS;
 
+    // Startup/mount bridge: interrupted subfolders KNOWN to exist (from the configuration or the
+    // server database) whose Folder objects are not mounted yet. Top folders are created (and their
+    // scan runs asynchronously) before their subfolders - without the seeds the scanner would descend
+    // into an interrupted subtree in exactly that window and re-ingest it into the top folder's
+    // database. Merged into every refresh; a seed is dropped for good once its folder mounts - the
+    // mount state is the authority from then on.
+    private final Map<FolderInfo, Path> seeds = new ConcurrentHashMap<>();
+
     /**
      * Recomputes the index from the given folders. Allocates only here, never on
      * the read hot path. An interrupted subfolder is one that is a subfolder, does
@@ -88,8 +98,12 @@ public class InterruptedSubFolderIndex {
     void refresh(Collection<Folder> folders) {
         List<Path> newBases = null;
         List<FolderInfo> newSubs = null;
+        Set<FolderInfo> mounted = seeds.isEmpty() ? null : new HashSet<>();
         for (Folder folder : folders) {
             FolderInfo foInfo = folder.getInfo();
+            if (mounted != null) {
+                mounted.add(foInfo);
+            }
             if (!foInfo.isSubFolder() || foInfo.inheritsPermissions()) {
                 continue;
             }
@@ -103,6 +117,22 @@ public class InterruptedSubFolderIndex {
             }
             newBases.add(base);
             newSubs.add(foInfo);
+        }
+        // Merge the seeds of subfolders that are not mounted yet. A seed whose folder mounted -
+        // interrupted or not - has served its purpose: the mount state is the authority.
+        if (mounted != null) {
+            for (Map.Entry<FolderInfo, Path> seed : seeds.entrySet()) {
+                if (mounted.contains(seed.getKey())) {
+                    seeds.remove(seed.getKey());
+                    continue;
+                }
+                if (newBases == null) {
+                    newBases = new LinkedList<>();
+                    newSubs = new LinkedList<>();
+                }
+                newBases.add(seed.getValue());
+                newSubs.add(seed.getKey());
+            }
         }
         bases = newBases == null ? NO_BASES : newBases.toArray(new Path[0]);
         subFolders = newSubs == null ? NO_INFOS : newSubs.toArray(new FolderInfo[0]);
@@ -120,6 +150,32 @@ public class InterruptedSubFolderIndex {
     void unregister() {
         REGISTRY.remove(this);
         mergeBarriers();
+    }
+
+    /**
+     * PFC-3543: Pre-seeds the index with a subfolder KNOWN to be interrupted (from the configuration
+     * or the server database) whose {@link Folder} object is not mounted yet. Top folders are created
+     * first and their scan runs asynchronously - without the seed that scan would descend into the
+     * interrupted subtree before the subfolder mounts (the mounted-folder refresh cannot know it yet)
+     * and the DAO store guard would be the only - also mount-dependent - line of defense. Additive
+     * and idempotent; the seed takes part in every {@link #refresh} and is dropped for good once its
+     * folder mounts. The caller triggers a refresh afterwards to publish the seed.
+     *
+     * @param subFolder the interrupted subfolder
+     * @param base      its local base, derived as top folder base + location
+     */
+    void seed(FolderInfo subFolder, Path base) {
+        seeds.put(subFolder, base);
+    }
+
+    /**
+     * Ends a seeding bridge wholesale: every expected subfolder has been created (or failed and was
+     * logged), the mounted-folder refresh is the only authority again. Used by the config-based
+     * startup, which knows when its folder creation is complete. The caller triggers a refresh
+     * afterwards.
+     */
+    void clearSeeds() {
+        seeds.clear();
     }
 
     /**
@@ -179,15 +235,19 @@ public class InterruptedSubFolderIndex {
      * deep inside the subtree directly - a single {@code startsWith} covers both.
      * <p>
      * Allocation-free. {@code ownBase} is excluded so an interrupted subfolder
-     * still scans and stores its own content. The subfolder's root directory itself
-     * ({@code path.equals(base)}) is NOT foreign either: it stays in the top folder so
-     * the subfolder remains listed/navigable - only paths strictly below it are foreign.
-     * PFC-3575: the visibility model for that kept root node is a follow-up.
+     * still scans and stores its own content.
+     * <p>
+     * PFC-3575: the subfolder's root directory itself counts as foreign as well. It used to be
+     * excluded so the row stayed behind in the top folder and kept the subfolder listed - which meant
+     * the scanner descended into the subtree on every run, produced the entry, and the DAO guard threw
+     * the store away again: a permanent warning loop for no gain. The subfolder is surfaced by the
+     * folder view now (synthesized for callers who may see it), so the top folder has no business
+     * touching that path at all.
      *
      * @param path    an absolute path (a scanned directory or a watched file)
      * @param ownBase the local base of the querying folder (excluded from the match)
-     * @return {@code true} if {@code path} is strictly below an interrupted subfolder
-     *         other than the querying folder itself
+     * @return {@code true} if {@code path} is at or below an interrupted subfolder other than the
+     *         querying folder itself
      */
     boolean contains(Path path, Path ownBase) {
         if (path == null) {
@@ -200,7 +260,7 @@ public class InterruptedSubFolderIndex {
                 // Never treat the querying folder's own subtree as foreign.
                 continue;
             }
-            if (path.startsWith(base) && !path.equals(base)) {
+            if (path.startsWith(base)) {
                 return true;
             }
         }

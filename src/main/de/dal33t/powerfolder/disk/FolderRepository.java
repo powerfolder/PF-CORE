@@ -641,6 +641,22 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Phase 2: Execution – begrenzte Parallelität (2 × CPU)
         // ---------------------------------------------------------------------
 
+        // PFC-3543: top folders are created (and scanned) BEFORE their subfolders exist. Seed the
+        // interrupted-subfolder index from the configuration so no top folder scan descends into an
+        // interrupted subtree during that window. inheritsPermissions() reports "inherits" while the
+        // feature is disabled, so nothing is seeded then.
+        boolean seeded = false;
+        for (Map.Entry<FolderInfo, FolderSettings> e : subFolders.entrySet()) {
+            if (e.getKey().inheritsPermissions()) {
+                continue;
+            }
+            interruptedSubFolders.seed(e.getKey(), e.getValue().getLocalBaseDir());
+            seeded = true;
+        }
+        if (seeded) {
+            refreshInterruptedSubFolders();
+        }
+
         int threads = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
 
         ExecutorService executor = Executors.newFixedThreadPool(
@@ -737,6 +753,10 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         } finally {
             executor.shutdown();
+            // PFC-3543: all subfolders from the configuration exist now (or failed and were
+            // logged) - end the startup bridge, the mounted-folder refresh is the authority again.
+            interruptedSubFolders.clearSeeds();
+            refreshInterruptedSubFolders();
         }
     }
 
@@ -1114,6 +1134,23 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     void refreshInterruptedSubFolders() {
         interruptedSubFolders.refresh(folders.values());
+    }
+
+    /**
+     * PFC-3543: Seeds the interrupted-subfolder index with a subfolder KNOWN to be interrupted whose
+     * {@link Folder} object is not mounted yet - the server knows them from its database before any
+     * mount, the client from its configuration. The top folder's (asynchronous) scan must ignore the
+     * subtree already in the window before the subfolder mounts; the seed is dropped automatically
+     * once it does. Additive and idempotent.
+     *
+     * @param subFolder the interrupted subfolder
+     * @param base      its local base, derived as top folder base + location
+     */
+    public void seedInterruptedSubFolder(FolderInfo subFolder, Path base) {
+        Reject.ifNull(subFolder, "FolderInfo");
+        Reject.ifNull(base, "Path");
+        interruptedSubFolders.seed(subFolder, base);
+        refreshInterruptedSubFolders();
     }
 
     /**
