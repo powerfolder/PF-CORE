@@ -82,10 +82,19 @@ public class FolderInfoFactory {
      * folder IS that directory, and this is the one moment where the tags can still be taken over -
      * once the directory's row is gone (an interruption migrates it away, PFC-3543) they would be
      * lost with it.
+     * <p>
+     * The version starts at the directory's version for the same reason. The two counters stay
+     * separate clocks - a FolderInfo version counts metadata changes (rename, tags, inheritance), a
+     * FileInfo version counts content changes - but starting HERE and only ever growing makes the
+     * folder version an upper bound of the directory's. That is what lets a restored inheritance write
+     * the directory row back without it losing against an older copy still held elsewhere: a lower
+     * version loses in {@link de.dal33t.powerfolder.light.FileInfo#isNewerThan}.
      */
     public static FolderInfo newFolder(DirectoryInfo subdir) {
-        return new FolderInfo(subdir.getFilenameOnly(), IdGenerator.makeFolderId(), 0,
-            subdir.getParent(), subdir.getTags(), true).intern();
+        // Becoming a subfolder is a step of its own, so the version advances like on every other
+        // change of this object (rename, tags, inheritance) instead of restarting.
+        return new FolderInfo(subdir.getFilenameOnly(), IdGenerator.makeFolderId(),
+            subdir.getVersion() + 1, subdir.getParent(), subdir.getTags(), true).intern();
     }
 
     public static FolderInfo newFolder(String id, String name, DirectoryInfo parent) {

@@ -2310,19 +2310,7 @@ public class Folder extends PFComponent {
                  * without it the parent has no row for that directory until the next scan, and
                  * everything that resolves a directory by its row (unshare, versions, links) fails in
                  * the meantime. */
-                Date locationModified = new Date(0);
-                try {
-                    locationModified = new Date(Files.getLastModifiedTime(getLocalBase()).toMillis());
-                } catch (IOException e) {
-                    logFine(this + ": Unable to read the modification date of " + getLocalBase()
-                        + " - restoring its directory row with the epoch. " + e);
-                }
-                FileInfo locationInTopFolder = FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(),
-                    currentInfo.getLocation().getRelativeName(), null, 0L, getMySelf().getInfo(),
-                    getController().getMySelf().getAccountInfo(), locationModified, 0, null, true,
-                    // PFS-5306: the tags travelled on the FolderInfo while the directory had no row.
-                    currentInfo.getTags());
-                topInfos.add(locationInTopFolder);
+                topInfos.add(buildBaseDirectoryInfo(topFolder, currentInfo.getVersion()));
                 topFolder.getDAO().store(null, topInfos);
                 topFolder.setDBDirty();
                 logInfo(this + ": Restored permission inheritance, merged its own database back into top folder "
@@ -2354,6 +2342,40 @@ public class Folder extends PFComponent {
                     + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
             }
         }
+    }
+
+    /**
+     * PFS-5306 / PFC-3543: This subfolder's base directory in the coordinates of its TOP folder - the
+     * directory it occupies there, built from what the FOLDER knows, since it carried that directory's
+     * tags and version while it was one. Needed whenever the folder hands the directory back: a
+     * restored inheritance (the interruption migrated the row away) and unsharing (the folder object
+     * goes away). The counterpart inside this folder is {@link #getBaseDirectoryInfo()}.
+     * <p>
+     * The version only ever moves forward. It does not matter whether content or metadata changed -
+     * what matters is that the direction is unambiguous, so "which copy is newer" stays decidable
+     * ({@link FileInfo#isNewerThan}). A row already present therefore never loses its place either.
+     *
+     * @param topFolder  the top folder the row belongs into
+     * @param minVersion the version this step justifies - the result is at least this, and at least
+     *                   the version of a row already present
+     */
+    private FileInfo buildBaseDirectoryInfo(Folder topFolder, int minVersion) {
+        DirectoryInfo location = currentInfo.getLocation();
+        FileInfo present = topFolder.getFile(
+            FileInfoFactory.lookupDirectory(topFolder.getInfo(), location.getRelativeName()));
+        Date modified = new Date(0);
+        try {
+            modified = new Date(Files.getLastModifiedTime(getLocalBase()).toMillis());
+        } catch (IOException e) {
+            logFine(this + ": Unable to read the modification date of " + getLocalBase()
+                + " - writing its directory row with the epoch. " + e);
+        }
+        String tags = StringUtils.isNotBlank(currentInfo.getTags())
+            ? currentInfo.getTags() : (present != null ? present.getTags() : null);
+        return FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(), location.getRelativeName(),
+            present != null ? present.getOID() : null, 0L, getMySelf().getInfo(),
+            getController().getMySelf().getAccountInfo(), modified,
+            Math.max(minVersion, present != null ? present.getVersion() : 0), null, true, tags);
     }
 
     /**
@@ -6137,6 +6159,22 @@ public class Folder extends PFComponent {
         }
 
         logInfo(this + ": Unsharing subfolder " + subFolder);
+
+        /* PFC-3543: an interrupted subfolder owns its content database. Restore the inheritance first,
+         * so its rows move back into this folder while the folder still exists - otherwise everything
+         * it knew about its files is dropped with it, and only a rescan brings them back, without their
+         * versions, tags and modifiers. */
+        if (!subFolder.getInfo().inheritsPermissions()) {
+            subFolder.setInheritsPermissions(true);
+        }
+
+        /* The folder carried the directory's tags and version while it WAS that directory - hand them
+         * back, advanced by this step, so the directory continues where the folder left off instead of
+         * falling back to whatever its old row said (PFS-5306). */
+        synchronized (dbAccessLock) {
+            getDAO().store(null, subFolder.buildBaseDirectoryInfo(this, subFolder.getInfo().getVersion() + 1));
+        }
+        setDBDirty();
 
         getController().getFolderRepository().removeFolder(subFolder, false);
     }
