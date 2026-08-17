@@ -171,6 +171,22 @@ public class FileLink implements Serializable {
 
     // Helpers ****************************************************************
 
+    /**
+     * PFC-3543: The {@link FolderInfo} of a mounted folder by id - used to recognize the interrupted
+     * subfolder an addressed location belongs to. Only mounted folders can be addressed at all, so
+     * the repository is the authority here.
+     *
+     * @return the folder's current info, or {@code null} if it is not mounted
+     */
+    private static FolderInfo folderInfoOf(Controller controller, String folderID) {
+        if (controller == null || isBlank(folderID)) {
+            return null;
+        }
+        Folder folder = controller.getFolderRepository()
+            .getFolder(FolderInfoFactory.lookupInstance(folderID, ""));
+        return folder != null ? folder.getInfo() : null;
+    }
+
     public FileInfo getFileInfo(Controller controller) {
         FileInfo fInfo;
         if (isNotBlank(getExtension())) {
@@ -274,8 +290,33 @@ public class FileLink implements Serializable {
             return false;
         }
 
-        // Folder must match
+        /* Folder must match. PFC-3543: a location inside a subfolder with interrupted inheritance is
+         * OWNED by that subfolder - it is addressed in the subfolder's coordinates and arrives here
+         * with the subfolder's id. Translate it back into this link's folder so both sides are
+         * compared in one coordinate system; a link created before the interruption still carries the
+         * top folder's coordinates. */
+        String requestedName = relativeName;
         if (!this.folderInfo.getId().equals(folderID)) {
+            FolderInfo requestedFolder = folderInfoOf(controller, folderID);
+            if (requestedFolder == null || !requestedFolder.isSubFolder()
+                || !this.folderInfo.equals(requestedFolder.getTopFolder())
+                || requestedFolder.getLocation() == null)
+            {
+                return false;
+            }
+            String location = requestedFolder.getLocation().getRelativeName();
+            requestedName = requestedName.isEmpty() ? location : location + "/" + requestedName;
+        }
+        relativeName = requestedName;
+
+        /* The barrier itself (spec 5/6): a link anchored ABOVE an interrupted subfolder must not reach
+         * into it - that subtree carries its own permissions, and the link was issued without them. A
+         * link anchored AT or INSIDE the subfolder keeps working, including one created before the
+         * interruption. */
+        FolderInfo barrier = FolderInfo.findEnclosingInterruptedSubFolder(this.folderInfo, relativeName);
+        if (barrier != null
+            && !barrier.equals(FolderInfo.findEnclosingInterruptedSubFolder(this.folderInfo, this.relativeName)))
+        {
             return false;
         }
 
