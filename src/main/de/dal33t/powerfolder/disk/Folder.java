@@ -2288,10 +2288,27 @@ public class Folder extends PFComponent {
             int fileCount = toMigrate.size() - dirCount;
             if (inherits) {
                 // Restore: move rows from the subfolder's own database back into the top folder.
-                List<FileInfo> topInfos = new ArrayList<>(toMigrate.size());
+                List<FileInfo> topInfos = new ArrayList<>(toMigrate.size() + 1);
                 for (FileInfo subInfo : toMigrate) {
                     topInfos.add(FileInfoFactory.mapToTopFolder(subInfo));
                 }
+                /* The interruption did not migrate the subfolder's root row - in the subfolder's own
+                 * coordinates it is not representable - so nothing maps back to the directory the
+                 * subfolder occupied in the top folder. Recreate it from disk, the way a scan would:
+                 * without it the parent has no row for that directory until the next scan, and
+                 * everything that resolves a directory by its row (unshare, versions, links) fails in
+                 * the meantime. */
+                Date locationModified = new Date(0);
+                try {
+                    locationModified = new Date(Files.getLastModifiedTime(getLocalBase()).toMillis());
+                } catch (IOException e) {
+                    logFine(this + ": Unable to read the modification date of " + getLocalBase()
+                        + " - restoring its directory row with the epoch. " + e);
+                }
+                FileInfo locationInTopFolder = FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(),
+                    currentInfo.getLocation().getRelativeName(), null, 0L, getMySelf().getInfo(),
+                    getController().getMySelf().getAccountInfo(), locationModified, 0, null, true, null);
+                topInfos.add(locationInTopFolder);
                 topFolder.getDAO().store(null, topInfos);
                 topFolder.setDBDirty();
                 logInfo(this + ": Restored permission inheritance, merged its own database back into top folder "
