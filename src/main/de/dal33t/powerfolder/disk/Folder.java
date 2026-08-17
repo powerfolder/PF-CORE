@@ -2301,7 +2301,17 @@ public class Folder extends PFComponent {
                 // then raw-remove them from the top (no deletion is propagated to peers).
                 List<FileInfo> subInfos = new ArrayList<>(toMigrate.size());
                 for (FileInfo topInfo : toMigrate) {
-                    subInfos.add(FileInfoFactory.mapToSubFolder(topInfo, currentInfo));
+                    FileInfo subInfo = FileInfoFactory.mapToSubFolder(topInfo, currentInfo);
+                    if (subInfo.isBaseDirectory()) {
+                        /* This row IS the subfolder's root. In the subfolder's own coordinates its name
+                         * is blank, which no stored row may be (FileInfo.validate) - the mapping can
+                         * only produce a size-less lookup instance, and storing that poisons every
+                         * later read of it (the JSON layer unboxes getSize()). The base directory needs
+                         * no row anyway: it is implied by the folder itself. It still disappears from
+                         * the TOP database below, which is the point of PFC-3575. */
+                        continue;
+                    }
+                    subInfos.add(subInfo);
                 }
                 getDAO().store(null, subInfos);
                 for (FileInfo topInfo : toMigrate) {

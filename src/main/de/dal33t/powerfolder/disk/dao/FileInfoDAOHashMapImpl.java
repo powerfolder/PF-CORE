@@ -24,6 +24,7 @@ import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileHistory;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Util;
 import de.dal33t.powerfolder.util.logging.Loggable;
@@ -215,6 +216,18 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
         Domain d = getDomain(domain);
 
         for (FileInfo fileInfo : infos) {
+            if (fileInfo.isLookupInstance()) {
+                /* PFC-3543: A lookup instance is a PROBE, not a row: it carries no size, and every
+                 * later read of it breaks (the JSON layer unboxes getSize(), so one such row takes
+                 * down the whole folder listing). The folder's own base directory can only ever be
+                 * one - a blank relative name is illegal for a real row (FileInfo.validate) - and it
+                 * is not content anyway: it is implied by the folder itself. The subfolder migration
+                 * produced exactly these rows when an inheritance interruption was interrupted and
+                 * restored again; rejecting them here keeps every writer honest. */
+                logWarning(fileInfo.toDetailString() + ": Refused to store a lookup instance",
+                    new StackDump());
+                continue;
+            }
             if (fileInfo.isFile()) {
                 if (isFiner()) {
                     logFiner("Storing file: " + fileInfo.toDetailString());
