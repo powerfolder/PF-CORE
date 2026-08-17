@@ -766,7 +766,24 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         if (folder == null) {
             return null;
         }
-        return folder.getFile(this);
+        FileInfo localInfo = folder.getFile(this);
+        if (localInfo != null) {
+            return localInfo;
+        }
+        // PFC-3543/PFC-3575: a location inside an interrupted subfolder has its row in the
+        // subfolder's OWN database - the addressed folder cannot know it. Resolve through the
+        // subfolder, so every caller (the JSON "local" flag, downloads, ...) finds the file where
+        // it actually lives. No-op while the feature is off: there are no barriers then.
+        FolderInfo interrupted = FolderInfo.findEnclosingInterruptedSubFolder(folderInfo, getRelativeName());
+        if (interrupted == null) {
+            return null;
+        }
+        Folder subFolder = repo.getFolder(interrupted);
+        String subRelativeName = FolderInfo.relativeNameIn(interrupted, folderInfo, getRelativeName());
+        if (subFolder == null || subRelativeName == null) {
+            return null;
+        }
+        return subFolder.getFile(FileInfoFactory.lookupInstance(interrupted, subRelativeName, isDiretory()));
     }
 
     /**
@@ -847,14 +864,18 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
     }
 
     /**
-     * PFC-3543: Like {@link #isInSubFolder(FolderInfo)} but excludes the directory node that IS the
-     * subfolder root (whose relative name equals the subfolder location) - i.e. matches only the
-     * content INSIDE the subfolder. Used by the interrupt data isolation so that root directory node
-     * stays in the top folder and remains listed/navigable, while only the subfolder's contents are
-     * isolated into its own database.
+     * PFC-3543: Whether this item belongs to the given subfolder - its root node included. Used by the
+     * interrupt data isolation: everything this matches is owned by the subfolder's own database and
+     * must stay out of the top folder's.
      * <p>
-     * PFC-3575: keeping the root node in the top folder is the pragmatic first step; how the node's
-     * visibility is modelled (who may see/enter an interrupted subfolder) is a follow-up there.
+     * PFC-3575: the root node used to be EXCLUDED here, so it stayed behind in the top folder to keep
+     * the subfolder listed and resolvable. That was the pragmatic first step and it cost more than it
+     * bought: the row is indistinguishable from real content, so the scanner kept re-discovering it
+     * while the DAO guard kept rejecting the store (a permanent warning loop), readers could not tell
+     * which database owns the location, and its visibility had to be handled as a DENY list - filter it
+     * out wherever someone remembers to. The subfolder is now surfaced by
+     * {@code FolderView}, which SYNTHESIZES the entry for callers who may see it (an allow list), and
+     * resolved through the repository's subfolders instead of through this row.
      */
     public boolean isInsideSubFolder(FolderInfo subFolderInfo) {
         Reject.ifNull(subFolderInfo, "SubFolderInfo");
@@ -866,7 +887,8 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
         }
         subPath += subFolderInfo.getName();
         String filePath = this.getRelativeName();
-        return filePath != null && filePath.startsWith(subPath) && !filePath.equals(subPath);
+        return filePath != null
+            && (filePath.equals(subPath) || filePath.startsWith(subPath + '/'));
     }
 
     public boolean isInSubFolder(String subFolderPath) {

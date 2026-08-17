@@ -362,6 +362,54 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     /**
+     * PFC-3543: The innermost subfolder with INTERRUPTED permission inheritance that encloses the
+     * addressed location, or {@code null} if none does.
+     * <p>
+     * Such a subfolder keeps its content in its OWN database (PFC-3565) - the rows were migrated out of
+     * the top folder when the inheritance was interrupted. Anything that READS content for an addressed
+     * path therefore has to go through it instead of through the top folder, no matter how the caller
+     * reached the path. Use {@link #relativeNameIn(FolderInfo, FolderInfo, String)} to translate the
+     * addressed path into that subfolder's coordinates.
+     * <p>
+     * Allocation-free when nothing is interrupted, which is the common case.
+     *
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the innermost enclosing interrupted subfolder, or {@code null}
+     */
+    public static FolderInfo findEnclosingInterruptedSubFolder(FolderInfo folder, String relativeName) {
+        FolderInfo[] barriers = InterruptedSubFolderIndex.barriers();
+        return barriers.length == 0 ? null : findEnclosingSubFolder(null, barriers, folder, relativeName);
+    }
+
+    /**
+     * PFC-3543: The addressed location expressed relative to one of its enclosing subfolders - the path
+     * to use when reading from that subfolder instead of from {@code folder}.
+     *
+     * @param subFolder    an enclosing subfolder, e.g. from
+     *                     {@link #findEnclosingInterruptedSubFolder(FolderInfo, String)}
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the path relative to {@code subFolder}, blank when it IS the addressed location, or
+     *         {@code null} if {@code subFolder} does not enclose the location
+     */
+    public static String relativeNameIn(FolderInfo subFolder, FolderInfo folder, String relativeName) {
+        if (subFolder == null || folder == null || !subFolder.isSubFolder()) {
+            return null;
+        }
+        DirectoryInfo location = subFolder.getLocation();
+        String path = addressedPath(folder, relativeName);
+        if (location == null || path == null) {
+            return null;
+        }
+        String base = location.getRelativeName();
+        if (path.equals(base)) {
+            return "";
+        }
+        return path.startsWith(base + "/") ? path.substring(base.length() + 1) : null;
+    }
+
+    /**
      * The addressed path in TOP FOLDER coordinates: a subfolder's own location is prepended, so all
      * comparisons happen in one coordinate system.
      *
