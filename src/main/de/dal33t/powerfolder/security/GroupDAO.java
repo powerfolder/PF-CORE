@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.security;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import de.dal33t.powerfolder.clientserver.GroupFilterModel;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -97,6 +98,16 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return the number of groups that have permission to {@code folderInfo}.
      */
     int countWithFolderPermission(FolderInfo folderInfo);
+
+    /**
+     * PFS-5758: The same count for MANY folders in one query. A folder listing needs the number for
+     * every row, and asking per row cost a query plus a commit each.
+     *
+     * @param folderInfos the folders to count for
+     * @return the number of groups per folder; a folder no group holds a permission on is absent from
+     *         the map, so read it with a default of 0
+     */
+    Map<FolderInfo, Integer> countWithFolderPermission(Collection<FolderInfo> folderInfos);
 
     /**
      * Return a list of groups, where the account specified by
