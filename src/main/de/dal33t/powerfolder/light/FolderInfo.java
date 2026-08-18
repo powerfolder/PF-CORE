@@ -319,6 +319,25 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * @param relativeName the addressed path relative to {@code folder}, may be blank
      * @return the innermost enclosing subfolder from {@code candidates}, or {@code null}
      */
+    /**
+     * @param folders the folders to map, may be null or empty
+     * @return their IDs in iteration order, as the DAOs that take an ID array expect them, never null
+     */
+    public static String[] ids(Collection<FolderInfo> folders) {
+        if (folders == null || folders.isEmpty()) {
+            return new String[0];
+        }
+        String[] ids = new String[folders.size()];
+        int i = 0;
+        for (FolderInfo foInfo : folders) {
+            if (i == ids.length) {
+                break;
+            }
+            ids[i++] = foInfo != null ? foInfo.id : null;
+        }
+        return ids;
+    }
+
     public static FolderInfo findEnclosingSubFolder(Collection<FolderInfo> candidates, FolderInfo folder,
                                                     String relativeName) {
         return findEnclosingSubFolder(candidates, InterruptedSubFolderIndex.barriers(), folder, relativeName);
