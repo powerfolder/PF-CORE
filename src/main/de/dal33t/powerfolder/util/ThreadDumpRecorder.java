@@ -26,16 +26,14 @@ import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * PFS-5739: Writes a thread dump every few minutes so that a support package created AFTER an
@@ -47,8 +45,9 @@ import java.util.zip.GZIPOutputStream;
  * node contributes its own. They live and die with those logs: {@link #removeOldDumps(int)} uses the
  * log retention ({@link ConfigurationEntry#LOG_FILE_DELETE_DAYS}) instead of a setting of its own.
  * <p>
- * Recording is meant to be unnoticeable: one gzipped file per run (a dump of a busy server is several
- * MB of very repetitive text), and any failure - a full disk above all - produces a warning and
+ * Recording is meant to be unnoticeable: one zip per run holding the dump as a .txt (a dump of a busy
+ * server is several MB of very repetitive text, and a zip opens with a double click on every platform
+ * we support), and any failure - a full disk above all - produces a warning and
  * nothing else. The task also swallows errors on purpose, because a scheduled task that throws is
  * never run again.
  */
@@ -58,7 +57,9 @@ public class ThreadDumpRecorder extends PFComponent {
     public static final String DUMP_SUBDIR = "Threaddumps";
 
     private static final String FILE_PREFIX = "Threads-";
-    private static final String FILE_SUFFIX = ".txt.gz";
+    private static final String FILE_SUFFIX = ".zip";
+    /** The name of the single entry inside {@link #FILE_SUFFIX}. */
+    private static final String ENTRY_SUFFIX = ".txt";
     private static final String TIMESTAMP_FORMAT = "yyyy-MM-dd_HH-mm-ss";
 
     public ThreadDumpRecorder(Controller controller) {
@@ -125,15 +126,18 @@ public class ThreadDumpRecorder extends PFComponent {
         if (dir == null) {
             return;
         }
-        Path dumpFile = dir.resolve(FILE_PREFIX + new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date())
-            + FILE_SUFFIX);
+        String name = FILE_PREFIX + new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date());
+        Path dumpFile = dir.resolve(name + FILE_SUFFIX);
         try {
             Files.createDirectories(dir);
             String dump = Debug.dumpCurrentStacktraces(false);
-            try (OutputStream out = new GZIPOutputStream(new BufferedOutputStream(Files.newOutputStream(dumpFile)));
-                 Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8))
+            try (ZipOutputStream out = new ZipOutputStream(
+                    new BufferedOutputStream(Files.newOutputStream(dumpFile)), StandardCharsets.UTF_8))
             {
-                writer.write(dump);
+                out.putNextEntry(new ZipEntry(name + ENTRY_SUFFIX));
+                // No Writer around it: closing one would close the stream and the entry with it.
+                out.write(dump.getBytes(StandardCharsets.UTF_8));
+                out.closeEntry();
             }
             if (isFiner()) {
                 logFiner(dumpFile + ": Recorded thread dump (" + dump.length() + " chars)");
