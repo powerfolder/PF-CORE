@@ -488,6 +488,9 @@ public class Controller extends PFComponent {
             scheduleAndRepeat(() -> logInfo(Profiling.dumpStats()), 1000L * 60, 1000L * 60 * 60);
         }
 
+        // PFS-5739: record thread dumps periodically, so an incident can still be analysed afterwards
+        new ThreadDumpRecorder(this).start();
+
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
         logInfo("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + arch + ")");
         logInfo("Java: " + JavaVersion.systemVersion().toString() + " ("
@@ -964,6 +967,7 @@ public class Controller extends PFComponent {
             .getValueInt(getController());
         if (maxDays >= 0) {
             LoggingManager.removeOldLogs(maxDays);
+            new ThreadDumpRecorder(this).removeOldDumps(maxDays);
         }
     }
 
@@ -1347,6 +1351,7 @@ public class Controller extends PFComponent {
                 .getValueInt(getController());
             if (days >= 0) {
                 LoggingManager.removeOldLogs(days);
+                new ThreadDumpRecorder(this).removeOldDumps(days);
             }
             logFine("Reconfigured logs for new day: " + now);
 

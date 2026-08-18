@@ -1113,6 +1113,13 @@ public enum ConfigurationEntry {
     LOG_FILE_DELETE_DAYS("log.file.keep.days", 31, true),
 
     /**
+     * PFS-5739: Interval in minutes at which a thread dump is recorded next to the log files, so that
+     * a support package created later still holds the stack traces of the incident. 0 = disabled. The
+     * dumps are kept as long as the log files ({@link #LOG_FILE_DELETE_DAYS}).
+     */
+    THREAD_DUMP_INTERVAL_MINUTES("threaddump.interval.minutes", 5, true),
+
+    /**
      * The loglevel to print to console when verbose=true
      */
     LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName(), true),
