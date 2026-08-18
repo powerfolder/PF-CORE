@@ -68,17 +68,17 @@ public class ThreadDumpRecorder extends PFComponent {
 
     /**
      * Starts the periodic recording, unless it is switched off
-     * ({@code threaddump.interval.minutes} = 0).
+     * ({@code threaddump.interval.seconds} = 0).
      */
     public void start() {
-        int minutes = ConfigurationEntry.THREAD_DUMP_INTERVAL_MINUTES.getValueInt(getController());
-        if (minutes <= 0) {
+        int seconds = ConfigurationEntry.THREAD_DUMP_INTERVAL_SECONDS.getValueInt(getController());
+        if (seconds <= 0) {
             logFine("Thread dump recording is disabled");
             return;
         }
-        long period = 1000L * 60 * minutes;
+        long period = 1000L * seconds;
         getController().scheduleAndRepeat(this::record, period, period);
-        logInfo(dumpDir() + ": Recording a thread dump every " + minutes + " minute(s), kept for "
+        logInfo(dumpDir() + ": Recording a thread dump every " + seconds + " second(s), kept for "
             + ConfigurationEntry.LOG_FILE_DELETE_DAYS.getValueInt(getController()) + " day(s)");
     }
 

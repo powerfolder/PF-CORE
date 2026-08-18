@@ -1113,11 +1113,14 @@ public enum ConfigurationEntry {
     LOG_FILE_DELETE_DAYS("log.file.keep.days", 31, true),
 
     /**
-     * PFS-5739: Interval in minutes at which a thread dump is recorded next to the log files, so that
+     * PFS-5739: Interval in SECONDS at which a thread dump is recorded next to the log files, so that
      * a support package created later still holds the stack traces of the incident. 0 = disabled. The
      * dumps are kept as long as the log files ({@link #LOG_FILE_DELETE_DAYS}).
+     * <p>
+     * Seconds, not minutes, so that a hang can be sampled closely while it is being reproduced - a
+     * minute is a long time to wait for the next sample. The default of 300 is the previous 5 minutes.
      */
-    THREAD_DUMP_INTERVAL_MINUTES("threaddump.interval.minutes", 5, true),
+    THREAD_DUMP_INTERVAL_SECONDS("threaddump.interval.seconds", 300, true),
 
     /**
      * The loglevel to print to console when verbose=true
