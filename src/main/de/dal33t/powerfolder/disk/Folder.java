@@ -2154,7 +2154,7 @@ public class Folder extends PFComponent {
             Folder topFolder = getTopFolder();
             if (topFolder != null) {
                 FileInfoDAO parentDAO = topFolder.getDAO();
-                logInfo(this + ": Using DAO of topfolder " + topFolder + " at " + currentInfo.getLocation());
+                logFine(this + ": Using DAO of topfolder " + topFolder + " at " + currentInfo.getLocation());
                 dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo);
                 // Well, it actually does not have an OWN, but
                 isDAOpopulated = true;
@@ -2435,7 +2435,7 @@ public class Folder extends PFComponent {
             if (topFolder != null) {
                 archiver = new SubFolderFileArchiverProxy(
                     (FileArchiverImpl) topFolder.getFileArchiver(), currentInfo);
-                logInfo(this + ": Using archiver of topfolder " + topFolder);
+                logFine(this + ": Using archiver of topfolder " + topFolder);
             } else {
                 logWarning(this + ": Using own fallback archiver for subfolder. Parent folder not here.");
                 archiver = ArchiveMode.FULL_BACKUP.getInstance(this);
