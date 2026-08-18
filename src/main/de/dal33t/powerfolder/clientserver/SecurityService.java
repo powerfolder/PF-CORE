@@ -220,7 +220,14 @@ public interface SecurityService {
          * Start the subfolder without permissions, except the folder owner and the acting
          * admin (self-lockout protection).
          */
-        DISCARD
+        DISCARD,
+        /**
+         * PFC-3614: Restore the explicit permissions this subfolder had the last time its
+         * inheritance was interrupted - they were archived when it was restored (spec 3.6), so an
+         * earlier state need not be set up by hand again. Falls back to {@link #ADOPT_SNAPSHOT}
+         * when there is no archive to apply.
+         */
+        RESTORE_ARCHIVED
     }
 
     /**
