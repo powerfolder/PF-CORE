@@ -23,13 +23,7 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -183,15 +177,17 @@ public class InterruptedSubFolderIndex {
      * above, never from a lookup - all allocation for the barrier lookup happens here.
      */
     private static void mergeBarriers() {
-        List<FolderInfo> merged = null;
+        /* The set does the de-duplication: a list scanned with contains() made this quadratic in the
+         * number of barriers, and it runs on every single interruption. A migration that interrupts
+         * thousands of subfolders spent its time here (measured in a thread dump: ArrayList.indexOf
+         * under mergeBarriers). Insertion order is kept, so the snapshot stays stable. */
+        Set<FolderInfo> merged = null;
         for (FolderInfo[] section : REGISTRY.values()) {
             for (FolderInfo subFolder : section) {
                 if (merged == null) {
-                    merged = new ArrayList<>();
+                    merged = new LinkedHashSet<>();
                 }
-                if (!merged.contains(subFolder)) {
-                    merged.add(subFolder);
-                }
+                merged.add(subFolder);
             }
         }
         allBarriers = merged == null ? NO_INFOS : merged.toArray(new FolderInfo[0]);

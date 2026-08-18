@@ -6118,6 +6118,18 @@ public class Folder extends PFComponent {
     }
 
     public Folder share(DirectoryInfo subDirInfo) {
+        return share(subDirInfo, true);
+    }
+
+    /**
+     * PF-1790: Shares a subdirectory as a subfolder.
+     *
+     * @param saveConfig whether the configuration is written right away. A bulk run - a migration
+     *                   sharing thousands of subdirectories - passes {@code false} and saves once at
+     *                   the end: the configuration is rewritten and re-sorted in full on every save,
+     *                   so doing it per folder turns the run quadratic.
+     */
+    public Folder share(DirectoryInfo subDirInfo, boolean saveConfig) {
         Reject.ifNull(subDirInfo, "Subdirectory");
         Reject.ifFalse(subDirInfo.getFolderInfo().equals(currentInfo), "Folder mismatch");
         Reject.ifTrue(isSubFolder(), "Folder is Subfolder. Sharing subfolder only allowed from top level folder");
@@ -6130,7 +6142,8 @@ public class Folder extends PFComponent {
         Path subDirPath = subDirInfo.getDiskFile(getController().getFolderRepository());
         FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
         FolderSettings folderSettings = new FolderSettings(subDirPath, getSyncProfile(), getFileArchiver().getVersionsPerFile());
-        subFolder = getController().getFolderRepository().createFolder(subFolderInfo, folderSettings);
+        subFolder = getController().getFolderRepository().createFolder(subFolderInfo, folderSettings,
+            saveConfig);
         subFolder.addDefaultExcludes();
 
         // From top folder:

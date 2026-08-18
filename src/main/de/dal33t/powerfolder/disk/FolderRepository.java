@@ -1409,8 +1409,21 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param folderSettings the settings for the folder
      * @return the freshly created folder
      */
-    public Folder createFolder(FolderInfo folderInfo,
-                               FolderSettings folderSettings) {
+    public Folder createFolder(FolderInfo folderInfo, FolderSettings folderSettings) {
+        return createFolder(folderInfo, folderSettings, true);
+    }
+
+    /**
+     * PF-1790: Creating many folders in one go - a migration that shares thousands of subdirectories -
+     * must be able to write the configuration ONCE at the end. Saving it per folder rewrites and
+     * re-sorts the whole file every time, which is what made such a run crawl (measured in a thread
+     * dump: PropertiesUtil.store0 under every single share).
+     *
+     * @param saveConfig whether to persist the configuration right away; pass {@code false} in a bulk
+     *                   run and call {@link Controller#saveConfig()} once when it is done
+     */
+    public Folder createFolder(FolderInfo folderInfo, FolderSettings folderSettings,
+                               boolean saveConfig) {
         try {
             if (folderInfo.isSubFolder()) {
                 // PF-1790/PFC-3543: a subfolder's base IS its location inside the top folder, and the
@@ -1436,7 +1449,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning("Unable to create Folder: " + folderInfo.getName() + " @ " +
                     folderSettings.getLocalBaseDir() + " : " + ioe.getMessage());
         }
-        Folder folder = createFolder(folderInfo, folderSettings, true, true);
+        Folder folder = createFolder(folderInfo, folderSettings, saveConfig, true);
 
         // Obtain permission. Don't do this on startup (createFolder0)
         if (getController().getOSClient().isLoggedIn()
