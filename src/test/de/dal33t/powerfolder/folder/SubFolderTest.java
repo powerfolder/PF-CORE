@@ -561,6 +561,56 @@ public class SubFolderTest extends TwoControllerTestCase {
     }
 
     /**
+     * PFC-3543: a SUBFOLDER can be asked for its own subfolders, and answers in ITS coordinates.
+     * Whoever resolves a path lands on the folder owning it, so without this a nested subfolder was
+     * unreachable from its parent: its children own their content and leave no row behind.
+     */
+    public void testGetSubFoldersOfSubFolder() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+
+        /*
+         * /top
+         * ├── sharedA                    (shared subfolder)
+         * │   ├── implicit1              (directory, NOT shared)
+         * │   └── sharedA1               (shared subfolder, nested below sharedA)
+         * └── sharedB                    (shared subfolder, sibling of sharedA)
+         */
+        Path root = topFolder.getPhysicalDir();
+        Files.createDirectories(root.resolve("sharedA/implicit1"));
+        Files.createDirectories(root.resolve("sharedA/sharedA1"));
+        Files.createDirectories(root.resolve("sharedB"));
+        TestHelper.scanFolder(topFolder);
+
+        Folder sharedA = topFolder.share((DirectoryInfo) topFolder.getFileInfo("sharedA"));
+        Folder sharedA1 = topFolder.share((DirectoryInfo) topFolder.getFileInfo("sharedA/sharedA1"));
+        Folder sharedB = topFolder.share((DirectoryInfo) topFolder.getFileInfo("sharedB"));
+        assertNotNull(sharedA);
+        assertNotNull(sharedA1);
+        assertNotNull(sharedB);
+
+        // --- Call API under test: the PARENT SUBFOLDER, not the top folder ---
+        Map<DirectoryInfo, Folder> result = repository.getSubFolders(sharedA);
+
+        // Itself under its base row plus its one child - the sibling sharedB is not below it.
+        assertEquals(result.toString(), 2, result.size());
+        DirectoryInfo childKey = FileInfoFactory.lookupDirectory(sharedA.getInfo(), "sharedA1");
+        assertTrue("Child must be keyed relative to its parent subfolder: " + result,
+            result.containsKey(childKey));
+        assertSame("Child key must map to the nested subfolder", sharedA1, result.get(childKey));
+        assertFalse("A sibling of the parent is not one of its children: " + result,
+            result.containsKey(FileInfoFactory.lookupDirectory(sharedA.getInfo(), "sharedB")));
+        assertFalse("A plain directory is not a subfolder: " + result,
+            result.containsKey(FileInfoFactory.lookupDirectory(sharedA.getInfo(), "implicit1")));
+
+        // The top folder still sees every subfolder in ITS coordinates - unchanged behaviour.
+        Map<DirectoryInfo, Folder> fromTop = repository.getSubFolders(topFolder);
+        assertEquals(fromTop.toString(), 4, fromTop.size());
+        assertTrue(fromTop.toString(),
+            fromTop.containsKey(FileInfoFactory.lookupDirectory(topFolder.getInfo(), "sharedA/sharedA1")));
+    }
+
+    /**
      * PFS-5510: findEnclosingSubFolder walks up the addressed path to the nearest mounted shared
      * subfolder, so directories/files deeper inside a shared subfolder resolve to it (not just an
      * exact root), and unrelated / top-level paths resolve to nothing.

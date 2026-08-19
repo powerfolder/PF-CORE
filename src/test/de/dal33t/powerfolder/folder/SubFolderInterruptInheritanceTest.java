@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.folder;
 
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.SubFolderFileArchiverProxy;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
@@ -27,6 +28,7 @@ import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
@@ -34,6 +36,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 /**
  * PFC-3543 / PFC-3565: Integration tests for interrupting and restoring the permission
@@ -192,5 +195,66 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         // Give any (erroneous) deletion broadcast time to travel, then confirm the peer file survives.
         TestHelper.waitMilliSeconds(2000);
         assertTrue("Interrupt must not delete the peer's physical file", Files.exists(lisaFile));
+    }
+
+    /**
+     * PFC-3543: interruptions nest - an interrupted subfolder below an interrupted one, which is what
+     * the Alfresco migration produces. The inner one must own its content, the outer one must still be
+     * able to name it as its child, and the path resolution must land on the INNERMOST of the two. This
+     * is the case that made everything below the second level invisible in the web portal.
+     */
+    public void testNestedInterruptionResolvesToInnermostAndStaysListable() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+        FolderInfo topInfo = topFolder.getInfo();
+
+        Path outerPath = Files.createDirectories(topFolder.getPhysicalDir().resolve("outer"));
+        Path innerPath = Files.createDirectories(outerPath.resolve("inner"));
+        TestHelper.createRandomFile(outerPath, "outer.txt");
+        Path innerFile = TestHelper.createRandomFile(innerPath, "inner.txt");
+        TestHelper.scanFolder(topFolder);
+
+        FileInfo innerFileInfo = topFolder.getFileInfo(innerFile);
+        assertNotNull("File must be scanned into the top folder", innerFileInfo);
+
+        Folder outer = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer"));
+        Folder inner = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer/inner"));
+        assertNotNull(outer);
+        assertNotNull(inner);
+
+        // --- Interrupt both, innermost first (the order the migration uses) ---
+        inner.setInheritsPermissions(false);
+        outer.setInheritsPermissions(false);
+        assertFalse(inner.getInfo().inheritsPermissions());
+        assertFalse(outer.getInfo().inheritsPermissions());
+
+        // The outer subfolder can name its child - in ITS coordinates, so a listing of the outer
+        // folder can show it even though the child leaves no row behind.
+        Map<DirectoryInfo, Folder> childrenOfOuter = repository.getSubFolders(outer);
+        DirectoryInfo childKey = FileInfoFactory.lookupDirectory(outer.getInfo(), "inner");
+        assertTrue("Nested subfolder must be a child of the outer one: " + childrenOfOuter,
+            childrenOfOuter.containsKey(childKey));
+        assertSame(inner, childrenOfOuter.get(childKey));
+
+        // Resolution of a deep path lands on the INNERMOST barrier, and its own path is relative to it.
+        assertEquals(inner.getInfo(),
+            FolderInfo.findEnclosingInterruptedSubFolder(topInfo, "outer/inner/inner.txt"));
+        assertEquals("inner.txt",
+            FolderInfo.relativeNameIn(inner.getInfo(), topInfo, "outer/inner/inner.txt"));
+        assertEquals(outer.getInfo(),
+            FolderInfo.findEnclosingInterruptedSubFolder(topInfo, "outer/outer.txt"));
+
+        // The content itself sits in the innermost folder's own database, reachable through it.
+        FileInfo inInner = inner.getDAO()
+            .find(FileInfoFactory.mapToSubFolder(innerFileInfo, inner.getInfo()), null);
+        assertNotNull("Nested content must live in the innermost subfolder's own DAO", inInner);
+        assertNull("The top folder must not keep the nested row",
+            topFolder.getDAO().find(innerFileInfo, null));
+
+        // --- Restoring the inner one hands its content back to the folder that owns the location ---
+        inner.setInheritsPermissions(true);
+        assertTrue(inner.getInfo().inheritsPermissions());
+        assertNotNull("After the restore the outer folder must hold the content",
+            outer.getDAO().find(FileInfoFactory.mapToSubFolder(innerFileInfo, outer.getInfo()), null));
     }
 }
