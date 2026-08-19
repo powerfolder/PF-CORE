@@ -1213,26 +1213,44 @@ public class FolderRepository extends PFComponent implements Runnable {
      * even if they are located beneath the top-level folder in the hierarchy.
      * </p>
      *
-     * @param topFolder
-     *         the top-level folder whose subfolders should be returned;
+     * PFC-3543: A SUBFOLDER may be passed as well, and then its own subfolders are returned - keyed by
+     * their location relative to IT. Subfolders nest (an interrupted one below an interrupted one), and
+     * their stored location is always in top-folder coordinates, so the children of a subfolder are the
+     * subfolders of the same top folder whose location lies inside its own. Reading a nested subfolder
+     * used to be impossible for that reason: whoever resolved a path landed on the subfolder and could
+     * not ask it for its children, which made everything below the second level invisible.
+     *
+     * @param folder
+     *         the folder whose subfolders should be returned - a top folder or a subfolder;
      *         must not be {@code null}
      * @return
-     *         a sorted {@link Map} mapping {@link DirectoryInfo} instances
-     *         to their corresponding {@link Folder} objects;
+     *         a sorted {@link Map} mapping {@link DirectoryInfo} instances - in the coordinates of
+     *         {@code folder} - to their corresponding {@link Folder} objects;
      *         empty if no matching subfolders exist
      */
-    public Map<DirectoryInfo, Folder> getSubFolders(Folder topFolder) {
-        Reject.ifNull(topFolder, "TopFolder");
-        Reject.ifFalse(topFolder.isTopFolder(), "Is not TopFolder");
+    public Map<DirectoryInfo, Folder> getSubFolders(Folder folder) {
+        Reject.ifNull(folder, "Folder");
 
         Map<DirectoryInfo, Folder> subFolders = new TreeMap<>(Comparator.comparing(FileInfo::getRelativeName));
-        subFolders.put(topFolder.getBaseDirectoryInfo(), topFolder);
+        subFolders.put(folder.getBaseDirectoryInfo(), folder);
 
-        for (Folder folder: folders.values()) {
-            if (!folder.isSubFolder() || !topFolder.equals(folder.getTopFolder())) {
+        FolderInfo topFolderInfo = folder.isTopFolder() ? folder.getInfo() : folder.getInfo().getTopFolder();
+        String ownLocation = folder.isTopFolder() ? "" : folder.getInfo().getLocation().getRelativeName() + "/";
+        for (Folder candidate: folders.values()) {
+            if (!candidate.isSubFolder() || !topFolderInfo.equals(candidate.getInfo().getTopFolder())) {
                 continue;
             }
-            subFolders.put(folder.getInfo().getLocation(), folder);
+            DirectoryInfo location = candidate.getInfo().getLocation();
+            if (folder.isTopFolder()) {
+                subFolders.put(location, candidate);
+                continue;
+            }
+            // Only what lies below the addressed subfolder, expressed relative to it.
+            if (!location.getRelativeName().startsWith(ownLocation)) {
+                continue;
+            }
+            subFolders.put((DirectoryInfo) FileInfoFactory.mapToSubFolder(location, folder.getInfo()),
+                candidate);
         }
         return subFolders;
     }
