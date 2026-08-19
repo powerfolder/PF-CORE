@@ -271,31 +271,28 @@ public class InterruptedSubFolderIndex {
     }
 
     /**
-     * FileInfo-based membership check for the DAO store path. Compares relative
-     * names as Strings via {@link FileInfo#isInSubFolder(FolderInfo)} and allocates
-     * no {@link Path} per file. Only interrupted subfolders of {@code ownInfo} are
-     * considered (relative names are only comparable within the same top folder),
-     * which also excludes the querying folder's own subtree.
+     * FileInfo-based membership check for the DAO store path - the guard that keeps a remote file list
+     * from writing a subfolder's content into the wrong database. Compares relative names as Strings,
+     * so it allocates no {@link Path} per file.
+     * <p>
+     * Like the {@link #contains(Path, Path)} variant, the INNERMOST enclosing subfolder decides.
+     * {@link FolderInfo#findEnclosingInterruptedSubFolder} translates the addressed path into top-folder
+     * coordinates and only considers subfolders of the same top folder, so a SUBFOLDER may ask as well:
+     * it used to look at subfolders whose direct parent is the querying folder, and since sharing is
+     * only allowed from a top folder ({@code Folder.share}) there never are any - an interrupted
+     * subfolder therefore accepted everything below it, including the content of a nested interrupted
+     * folder that a peer still reported as part of it.
      *
      * @param fInfo   a file of the querying folder
-     * @param ownInfo the {@link FolderInfo} of the querying folder
-     * @return {@code true} if {@code fInfo} belongs to an interrupted subfolder
+     * @param ownInfo the {@link FolderInfo} of the querying folder (top folder or subfolder)
+     * @return {@code true} if {@code fInfo} belongs to an interrupted subfolder other than the querying
+     *         folder itself
      */
     boolean contains(FileInfo fInfo, FolderInfo ownInfo) {
-        if (fInfo == null) {
+        if (fInfo == null || ownInfo == null) {
             return false;
         }
-        FolderInfo[] snapshot = subFolders;
-        for (int i = 0; i < snapshot.length; i++) {
-            FolderInfo sub = snapshot[i];
-            FolderInfo subTop = sub.getTopFolder();
-            if (subTop == null || !subTop.equals(ownInfo)) {
-                continue;
-            }
-            if (fInfo.isInsideSubFolder(sub)) {
-                return true;
-            }
-        }
-        return false;
+        FolderInfo innermost = FolderInfo.findEnclosingInterruptedSubFolder(ownInfo, fInfo.getRelativeName());
+        return innermost != null && !innermost.equals(ownInfo);
     }
 }
