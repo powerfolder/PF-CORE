@@ -230,8 +230,8 @@ public class InterruptedSubFolderIndex {
      * hits an interrupted subfolder exactly at its base; the watcher sees files
      * deep inside the subtree directly - a single {@code startsWith} covers both.
      * <p>
-     * Allocation-free. {@code ownBase} is excluded so an interrupted subfolder
-     * still scans and stores its own content.
+     * Allocation-free. The INNERMOST enclosing subfolder decides: {@code ownBase} being that one means
+     * the path is the querying folder's own content, even when an ancestor is separated as well.
      * <p>
      * PFC-3575: the subfolder's root directory itself counts as foreign as well. It used to be
      * excluded so the row stayed behind in the top folder and kept the subfolder listed - which meant
@@ -241,26 +241,33 @@ public class InterruptedSubFolderIndex {
      * touching that path at all.
      *
      * @param path    an absolute path (a scanned directory or a watched file)
-     * @param ownBase the local base of the querying folder (excluded from the match)
-     * @return {@code true} if {@code path} is at or below an interrupted subfolder other than the
-     *         querying folder itself
+     * @param ownBase the local base of the querying folder
+     * @return {@code true} if the innermost interrupted subfolder enclosing {@code path} is one other
+     *         than the querying folder itself
      */
     boolean contains(Path path, Path ownBase) {
         if (path == null) {
             return false;
         }
+        /* PFC-3543 / PFS-5767: interrupted subfolders NEST - a folder and folders inside it can each be
+         * separated ("Inspektionsreisen", "Inspektionsreisen/DLD Beef audit 2025" and four folders below
+         * that, in one migrated workspace). What decides the owner of a path is the INNERMOST enclosing
+         * subfolder, so that is what is compared against the querying folder. Skipping only the own base
+         * and returning on the first match made the inner folder refuse its own content whenever an
+         * ancestor was separated too: neither folder scanned that subtree, so its files never entered
+         * any database and stayed invisible in the web interface. */
         Path[] snapshot = bases;
+        Path innermost = null;
         for (int i = 0; i < snapshot.length; i++) {
             Path base = snapshot[i];
-            if (base.equals(ownBase)) {
-                // Never treat the querying folder's own subtree as foreign.
+            if (!path.startsWith(base)) {
                 continue;
             }
-            if (path.startsWith(base)) {
-                return true;
+            if (innermost == null || base.getNameCount() > innermost.getNameCount()) {
+                innermost = base;
             }
         }
-        return false;
+        return innermost != null && !innermost.equals(ownBase);
     }
 
     /**
