@@ -152,14 +152,21 @@ public class FactoryResetDialog extends BaseDialog {
 
         // 4. Remove all folders
         Collection<Folder> allFolders = new ArrayList<>(repo.getFolders());
-        for (Folder folder : allFolders) {
-            try {
-                repo.removeFolder(folder, true, false, false);
-                logInfo("Factory reset: removed folder " + folder.getName());
-            } catch (Exception e) {
-                logWarning("Factory reset: error removing folder "
-                    + folder.getName() + ": " + e);
+        // PFC-3620: A factory reset removes every folder. Suspend the configuration write so it
+        // happens once for the whole run instead of once per removed folder.
+        repo.setSuspendConfigStore(true);
+        try {
+            for (Folder folder : allFolders) {
+                try {
+                    repo.removeFolder(folder, true, false);
+                    logInfo("Factory reset: removed folder " + folder.getName());
+                } catch (Exception e) {
+                    logWarning("Factory reset: error removing folder "
+                        + folder.getName() + ": " + e);
+                }
             }
+        } finally {
+            repo.setSuspendConfigStore(false);
         }
 
         // 5. Clear configuration

@@ -99,6 +99,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Object scanTrigger = new Object();
     private boolean triggered;
     private final AtomicInteger suspendNewFolderSearch = new AtomicInteger(0);
+    /**
+     * PFC-3620: how many callers currently suspend the automatic configuration store, and whether
+     * something accumulated while they did. See {@link #setSuspendConfigStore(boolean)}.
+     */
+    private final AtomicInteger suspendConfigStore = new AtomicInteger(0);
+    private final AtomicBoolean configStorePending = new AtomicBoolean(false);
     private Path foldersBasedir;
 
     /**
@@ -690,7 +696,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                     Files.createDirectories(folderSettings.getLocalBaseDir());
                                 }
 
-                                createFolder(foInfo, folderSettings, false, true);
+                                createFolder(foInfo, folderSettings, true);
                             } catch (Exception ex) {
                                 logWarning("Problem creating top-level folder " + foInfo, ex);
                             }
@@ -732,7 +738,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                     return;
                                 }
 
-                                createFolder(foInfo, folderSettings, false, true);
+                                createFolder(foInfo, folderSettings, true);
                             } catch (Exception ex) {
                                 logWarning("Problem creating subfolder " + foInfo, ex);
                             }
@@ -1428,20 +1434,6 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @return the freshly created folder
      */
     public Folder createFolder(FolderInfo folderInfo, FolderSettings folderSettings) {
-        return createFolder(folderInfo, folderSettings, true);
-    }
-
-    /**
-     * PF-1790: Creating many folders in one go - a migration that shares thousands of subdirectories -
-     * must be able to write the configuration ONCE at the end. Saving it per folder rewrites and
-     * re-sorts the whole file every time, which is what made such a run crawl (measured in a thread
-     * dump: PropertiesUtil.store0 under every single share).
-     *
-     * @param saveConfig whether to persist the configuration right away; pass {@code false} in a bulk
-     *                   run and call {@link Controller#saveConfig()} once when it is done
-     */
-    public Folder createFolder(FolderInfo folderInfo, FolderSettings folderSettings,
-                               boolean saveConfig) {
         try {
             if (folderInfo.isSubFolder()) {
                 // PF-1790/PFC-3543: a subfolder's base IS its location inside the top folder, and the
@@ -1467,7 +1459,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning("Unable to create Folder: " + folderInfo.getName() + " @ " +
                     folderSettings.getLocalBaseDir() + " : " + ioe.getMessage());
         }
-        Folder folder = createFolder(folderInfo, folderSettings, saveConfig, true);
+        Folder folder = createFolder(folderInfo, folderSettings, true);
 
         // Obtain permission. Don't do this on startup (createFolder0)
         if (getController().getOSClient().isLoggedIn()
@@ -1489,12 +1481,11 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param folderInfo     the folder info object
      * @param folderSettings the settings for the folder
-     * @param saveConfig     true if the configuration file should be saved after creation.
      * @param fireEvent      if the methd should fire
      * @return the freshly created folder
      */
     public Folder createFolder(FolderInfo folderInfo,
-                                FolderSettings folderSettings, boolean saveConfig, boolean fireEvent) {
+                                FolderSettings folderSettings, boolean fireEvent) {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
 
@@ -1573,9 +1564,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             try {
                 if (PathUtils.isNetworkPath(localBaseDir)) {
-                    if (saveConfig) {
-                        getController().saveConfig();
-                    }
+                    storeConfig();
                     logWarning("Not allowed to create " + folderInfo
                             + " at " + folderSettings.getLocalBaseDir()
                             + ". Network shares not allowed");
@@ -1671,7 +1660,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         folders.put(folder.getInfo(), folder);
         // PFC-3543: a newly mounted folder may be an interrupted subfolder.
         refreshInterruptedSubFolders();
-        saveFolderConfig(folderInfo, folderSettings, saveConfig);
+        saveFolderConfig(folderInfo, folderSettings);
 
         if (!metaFolder.hasOwnDatabase()) {
             // Scan once. To get it working.
@@ -1717,18 +1706,15 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param folderInfo
      * @param folderSettings
-     * @param saveConfig
      */
     public void saveFolderConfig(FolderInfo folderInfo,
-                                 FolderSettings folderSettings, boolean saveConfig) {
+                                 FolderSettings folderSettings) {
         // store folder in config
         Properties config = getController().getConfig();
 
         folderSettings.set(folderInfo, config);
 
-        if (saveConfig) {
-            getController().saveConfig();
-        }
+        storeConfig();
     }
 
     /**
@@ -1738,7 +1724,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param deleteSystemSubDir
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
-        removeFolder(folder, deleteSystemSubDir, true, true);
+        removeFolder(folder, deleteSystemSubDir, true);
     }
 
     /**
@@ -1746,10 +1732,10 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param folder
      * @param deleteSystemSubDir
-     * @param saveConfig
+     * @param fireEvent
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir,
-                             boolean saveConfig, boolean fireEvent) {
+                             boolean fireEvent) {
         Reject.ifNull(folder, "Folder is null");
 
         boolean isWebDAV = PathUtils.isWebDAVFolder(folder.getLocalBase());
@@ -1774,10 +1760,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             // remove folder from config
             removeConfigEntries(folder.getConfigEntryId());
 
-            // Save config
-            if (saveConfig) {
-                getController().saveConfig();
-            }
+            // Save config - a bulk removal (see setSuspendConfigStore) stores it once at the end.
+            storeConfig();
 
             // Shutdown meta folder as well
             Folder metaFolder = getMetaFolder(folder.getInfo());
@@ -2103,6 +2087,64 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFC-3620: Suspends the automatic configuration store of this repository.
+     * <p>
+     * ATTENTION: This is a stack based system like {@link #setSuspendNewFolderSearch(boolean)} - suspend
+     * ONCE and release in a finally block. While suspended, {@link #createFolder}, {@link #removeFolder}
+     * and {@link #saveFolderConfig} only change the properties in memory; the LAST release writes the
+     * configuration once, if anything accumulated.
+     * <p>
+     * Why it exists: writing the configuration rewrites and re-sorts BOTH files completely (see
+     * {@link Controller#saveConfig()}), and {@link FolderSettings#removeEntries} walks the whole
+     * property map. Doing that per folder made bulk work quadratic - deleting a migrated workspace with
+     * 1,629 subfolders ran for hours, the thread dump sitting in removeEntries under every single
+     * removal. Callers used to pass a {@code saveConfig} flag through four methods for this; the
+     * knowledge of "this is a bulk run" belongs to the caller doing the bulk, not to every signature in
+     * between.
+     * <p>
+     * Why a counter and not a boolean: the workspaces of a migration run in parallel
+     * ({@code MigrationEngine}), so two paths can be in a bulk run at the same time. With a boolean the
+     * release of one would lift the suspension of the other. A forgotten release cannot lose the
+     * configuration for good - every direct {@link Controller#saveConfig()} caller still writes.
+     *
+     * @param suspend {@code true} to suspend, {@code false} to release
+     */
+    public void setSuspendConfigStore(boolean suspend) {
+        if (suspend) {
+            suspendConfigStore.incrementAndGet();
+            return;
+        }
+        int level = suspendConfigStore.decrementAndGet();
+        if (level < 0) {
+            // More releases than suspensions - a caller released twice. Do not let the counter drift
+            // negative, or the next bulk run writes per folder again.
+            suspendConfigStore.set(0);
+            logWarning("setSuspendConfigStore(false) without a matching suspend");
+            level = 0;
+        }
+        if (level == 0 && configStorePending.getAndSet(false)) {
+            logFine("Writing the configuration once for the completed bulk operation");
+            getController().saveConfig();
+        }
+    }
+
+    /**
+     * PFC-3620: Stores the configuration, unless a bulk operation suspended it - then the last release
+     * stores it. Used wherever a folder change has to be persisted.
+     * <p>
+     * During startup this is a no-op: the folder restore runs from {@code Controller.start()} BEFORE
+     * the controller marks itself started, and {@link Controller#saveConfig()} returns early until
+     * then. Restoring folders from the configuration has nothing to persist anyway.
+     */
+    private void storeConfig() {
+        if (suspendConfigStore.get() > 0) {
+            configStorePending.set(true);
+            return;
+        }
+        getController().saveConfig();
+    }
+
+    /**
      * ATTENTION: This is a stack based system. When suspending the search do it
      * only ONCE and make sure you release the lock in a finally block Can be
      * set by the UI when we are creating folders so that lookForNewFolders does
@@ -2424,7 +2466,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     Folder existingFolder = foInfo.getFolder(getController());
                     if (existingFolder != null && existingFolder.checkIfDeviceDisconnected()) {
-                        removeFolder(existingFolder, false, false, true);
+                        removeFolder(existingFolder, false, true);
                     }
                     FolderInfo renamedFI = tryRenaming(client, file, foInfo, stillPresent);
                     if (renamedFI != null && renamedFI.equals(foInfo)
@@ -2502,7 +2544,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // 2) Sync locally
-        Folder folder = createFolder(foInfo, fs, true, true);
+        Folder folder = createFolder(foInfo, fs, true);
         folder.addDefaultExcludes();
 
         if (scheduleCreateOnServer) {
@@ -2695,7 +2737,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logInfo("Renaming " + foInfo + " to '" + newName + "'");
 
             if (folder != null && folder.checkIfDeviceDisconnected()) {
-                removeFolder(folder, false, false, true);
+                removeFolder(folder, false, true);
                 ignoredFolderDirectories.remove(folder.getLocalBase());
             }
 
@@ -3077,7 +3119,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             List<String> patterns = folder.getDiskItemFilter().getPatterns();
 
             // Remove the old folder from the repository.
-            removeFolder(folder, false, false, false);
+            removeFolder(folder, false, false);
 
             // Move it.
             try {
@@ -3283,7 +3325,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     scheduleCreateOnServer = true;
                 }
 
-                Folder folder = createFolder(foInfo, settings, true, true);
+                Folder folder = createFolder(foInfo, settings, true);
                 folder.addDefaultExcludes();
 
                 if (scheduleCreateOnServer) {
@@ -3411,7 +3453,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     scanBasedirLock.lock();
                     Files.createDirectories(settings.getLocalBaseDir());
 
-                    Folder folder = createFolder(folderInfo, settings, true, true);
+                    Folder folder = createFolder(folderInfo, settings, true);
                     folder.addDefaultExcludes();
                     folderInfos.put(folderInfo, settings);
                 } catch (IOException ioe) {
