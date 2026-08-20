@@ -185,11 +185,18 @@ public class FolderScanner extends PFComponent {
 
             Path base = currentScanningFolder.getLocalBase();
             remaining.clear();
+            /* PFC-3543: a row inside an interrupted subfolder is not this folder's business. The scan
+             * does not walk that subtree, so such a row would be left over at the end and flagged as
+             * deleted - which the store then refuses, so the next scan flags it again. */
             for (FileInfo fInfo : currentScanningFolder.getKnownFiles()) {
-                remaining.put(fInfo.getRelativeName(), fInfo);
+                if (!currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
+                    remaining.put(fInfo.getRelativeName(), fInfo);
+                }
             }
             for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
-                remaining.put(fInfo.getRelativeName(), fInfo);
+                if (!currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
+                    remaining.put(fInfo.getRelativeName(), fInfo);
+                }
             }
             if (isFiner()) {
                 logFiner("Scan of folder: " + folder.getName() + " start. Items in FileDB: " + remaining.size());
@@ -746,9 +753,13 @@ public class FolderScanner extends PFComponent {
                             failure = true;
                             return false;
                         }
-                    } else if (Files.isDirectory(path) && !PathUtils.isReplicatedSubdir(path)
+                    } else if (Files.isDirectory(path) && !PathUtils.isReplicatedSubdir(path)) {
                         // PFC-3543: do not descend into interrupted subfolders (own database).
-                        && !currentScanningFolder.isInInterruptedSubFolder(path)) {
+                        // Skipping is by design - deciding it in the condition above let the barrier
+                        // fall into the "unable to scan" branch below, once per scan and subfolder.
+                        if (currentScanningFolder.isInInterruptedSubFolder(path)) {
+                            continue;
+                        }
                         if (PathUtils.isScannable(path, currentScanningFolder)
                             && !scanDir(path)) {
                             failure = true;
