@@ -88,14 +88,20 @@ public class Group implements Serializable, D2DObject, Auditable {
     @Column(nullable = true, unique = false)
     private String organizationOID;
 
+    /* Both collections are loaded eagerly, so a query over many groups loads them for every row.
+     * Without a batch size that is one SELECT per group and collection - a list of a few thousand
+     * groups spent seconds on nothing else. Batched, the same load takes a handful of statements.
+     * The size matches the one Account and Organization use for their collections. */
     @CollectionOfElements
     @Type(type = "permissionType")
+    @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.NONE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
     @ManyToMany
     @JoinTable(name = "AGroup_Parents", joinColumns = @JoinColumn(name = "child_oid"), inverseJoinColumns = @JoinColumn(name = "parent_oid"))
+    @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Group> parents;
