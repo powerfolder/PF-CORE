@@ -3187,21 +3187,17 @@ public class Folder extends PFComponent {
     }
 
     /**
-     * Sets the synchronisation profile for this folder. Saves the config
+     * Sets the synchronisation profile for this folder and persists it.
+     * <p>
+     * PFC-3620: persisting means rewriting the whole configuration for this one property, so a caller
+     * that switches the profile of MANY folders - or that only wants the profile changed temporarily -
+     * suspends the save around its work: see
+     * {@link FolderRepository#setSuspendConfigSave(boolean)}. The {@code saveConfig} flag this method
+     * used to carry said the same thing, but only for one call at a time.
      *
      * @param aSyncProfile
      */
     public void setSyncProfile(SyncProfile aSyncProfile) {
-        setSyncProfile(aSyncProfile, true);
-    }
-
-    /**
-     * Sets the synchronisation profile for this folder.
-     *
-     * @param aSyncProfile
-     * @param saveConfig store config?
-     */
-    public void setSyncProfile(SyncProfile aSyncProfile, boolean saveConfig) {
         Reject.ifNull(aSyncProfile, "Unable to set null sync profile");
         if (syncProfile.equals(aSyncProfile)) {
             // Skip.
@@ -3217,9 +3213,7 @@ public class Folder extends PFComponent {
             if (getController().getConfig().containsKey(PREFIX_V4 + configEntryId + FolderSettings.ID)) {
                 String syncProfKey = PREFIX_V4 + configEntryId + FolderSettings.SYNC_PROFILE;
                 getController().getConfig().put(syncProfKey, syncProfile.getFieldList());
-                if (saveConfig) {
-                    getController().saveConfig();
-                }
+                getController().getFolderRepository().saveConfig();
             } else {
                 logFine(this + ": Not persisting sync profile, folder no longer in config");
             }
@@ -6121,8 +6115,8 @@ public class Folder extends PFComponent {
      * PF-1790: Shares a subdirectory as a subfolder.
      * <p>
      * PFC-3620: A caller sharing thousands of subdirectories - a migration, for example - should
-     * suspend the configuration store around the bulk run via
-     * {@link FolderRepository#setSuspendConfigStore(boolean)}, so the configuration is written once
+     * suspend the configuration save around the bulk run via
+     * {@link FolderRepository#setSuspendConfigSave(boolean)}, so the configuration is written once
      * at the end instead of once per subfolder.
      */
     public Folder share(DirectoryInfo subDirInfo) {

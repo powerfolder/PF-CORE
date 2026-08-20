@@ -100,11 +100,11 @@ public class FolderRepository extends PFComponent implements Runnable {
     private boolean triggered;
     private final AtomicInteger suspendNewFolderSearch = new AtomicInteger(0);
     /**
-     * PFC-3620: how many callers currently suspend the automatic configuration store, and whether
-     * something accumulated while they did. See {@link #setSuspendConfigStore(boolean)}.
+     * PFC-3620: how many callers currently suspend the automatic configuration save, and whether
+     * something accumulated while they did. See {@link #setSuspendConfigSave(boolean)}.
      */
-    private final AtomicInteger suspendConfigStore = new AtomicInteger(0);
-    private final AtomicBoolean configStorePending = new AtomicBoolean(false);
+    private final AtomicInteger suspendConfigSave = new AtomicInteger(0);
+    private final AtomicBoolean configSavePending = new AtomicBoolean(false);
     private Path foldersBasedir;
 
     /**
@@ -674,6 +674,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
         );
 
+        /* PFC-3620: restoring the folders of the configuration has nothing to persist, and the
+         * suspension says so instead of relying on the startup order. It happens to be a no-op today
+         * - start() runs before the controller marks itself started and saveConfig() returns early
+         * until then - but that order must not be what protects a server with 8,500 folders from
+         * 8,500 configuration rewrites. */
+        setSuspendConfigSave(true);
         try {
             // -------------------------------------------------------------
             // Phase 2.1: Top-Level-Folder erstellen
@@ -759,6 +765,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         } finally {
             executor.shutdown();
+            setSuspendConfigSave(false);
             // PFC-3543: all subfolders from the configuration exist now (or failed and were
             // logged) - end the startup bridge, the mounted-folder refresh is the authority again.
             interruptedSubFolders.clearSeeds();
@@ -1564,7 +1571,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             try {
                 if (PathUtils.isNetworkPath(localBaseDir)) {
-                    storeConfig();
+                    saveConfig();
                     logWarning("Not allowed to create " + folderInfo
                             + " at " + folderSettings.getLocalBaseDir()
                             + ". Network shares not allowed");
@@ -1714,7 +1721,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         folderSettings.set(folderInfo, config);
 
-        storeConfig();
+        saveConfig();
     }
 
     /**
@@ -1760,8 +1767,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             // remove folder from config
             removeConfigEntries(folder.getConfigEntryId());
 
-            // Save config - a bulk removal (see setSuspendConfigStore) stores it once at the end.
-            storeConfig();
+            // Save config - a bulk removal (see setSuspendConfigSave) saves it once at the end.
+            saveConfig();
 
             // Shutdown meta folder as well
             Folder metaFolder = getMetaFolder(folder.getInfo());
@@ -2087,7 +2094,7 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
-     * PFC-3620: Suspends the automatic configuration store of this repository.
+     * PFC-3620: Suspends the automatic configuration save of this repository.
      * <p>
      * ATTENTION: This is a stack based system like {@link #setSuspendNewFolderSearch(boolean)} - suspend
      * ONCE and release in a finally block. While suspended, {@link #createFolder}, {@link #removeFolder}
@@ -2109,36 +2116,39 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param suspend {@code true} to suspend, {@code false} to release
      */
-    public void setSuspendConfigStore(boolean suspend) {
+    public void setSuspendConfigSave(boolean suspend) {
         if (suspend) {
-            suspendConfigStore.incrementAndGet();
+            suspendConfigSave.incrementAndGet();
             return;
         }
-        int level = suspendConfigStore.decrementAndGet();
+        int level = suspendConfigSave.decrementAndGet();
         if (level < 0) {
             // More releases than suspensions - a caller released twice. Do not let the counter drift
             // negative, or the next bulk run writes per folder again.
-            suspendConfigStore.set(0);
-            logWarning("setSuspendConfigStore(false) without a matching suspend");
+            suspendConfigSave.set(0);
+            logWarning("setSuspendConfigSave(false) without a matching suspend");
             level = 0;
         }
-        if (level == 0 && configStorePending.getAndSet(false)) {
-            logFine("Writing the configuration once for the completed bulk operation");
+        if (level == 0 && configSavePending.getAndSet(false)) {
+            logFine("Saving the configuration once for the completed bulk operation");
             getController().saveConfig();
         }
     }
 
     /**
-     * PFC-3620: Stores the configuration, unless a bulk operation suspended it - then the last release
-     * stores it. Used wherever a folder change has to be persisted.
+     * PFC-3620: Saves the configuration, unless a bulk operation suspended it - then the last release
+     * saves it. Used wherever a folder change has to be persisted.
      * <p>
-     * During startup this is a no-op: the folder restore runs from {@code Controller.start()} BEFORE
-     * the controller marks itself started, and {@link Controller#saveConfig()} returns early until
-     * then. Restoring folders from the configuration has nothing to persist anyway.
+     * The startup restore holds the suspension of its own accord, so it does not depend on
+     * {@link Controller#saveConfig()} returning early while the controller is not started yet.
+     * <p>
+     * Package-visible: {@link Folder#setSyncProfile(SyncProfile)} persists a single folder property
+     * and has to go through the same suspension - a handler switching the profile of every folder used
+     * to rewrite the whole configuration per folder.
      */
-    private void storeConfig() {
-        if (suspendConfigStore.get() > 0) {
-            configStorePending.set(true);
+    void saveConfig() {
+        if (suspendConfigSave.get() > 0) {
+            configSavePending.set(true);
             return;
         }
         getController().saveConfig();
