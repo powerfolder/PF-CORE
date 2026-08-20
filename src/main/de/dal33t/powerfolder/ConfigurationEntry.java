@@ -1407,6 +1407,14 @@ public enum ConfigurationEntry {
                 if (Objects.equals(value, "unlimited")) {
                     return -1;
                 }
+
+                /* PFS-5776: "none" is what the preferences store for the first step of their version
+                 * dropdown, and it means what it says - keep no version at all, which is the 0 the
+                 * folder settings dialog stores for the same step. Without this it fell through to
+                 * the 25 below, so an administrator who picked "none" silently got the maximum. */
+                if (value != null && "none".equalsIgnoreCase(value.trim())) {
+                    return 0;
+                }
             }
             return 25;
         }
