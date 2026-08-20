@@ -3202,7 +3202,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Create the new Folder in the repository.
             Folder oldFolder = folder;
-            folder = createFolder(folder.getInfo().intern(), fs, true, false);
+            folder = createFolder(folder.getInfo().intern(), fs, false);
             PathUtils.setAttributesOnWindows(folder.getLocalBase(), null, true);
             PathUtils.setAttributesOnWindows(folder.getSystemSubDir(), true, true);
 
