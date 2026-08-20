@@ -41,6 +41,12 @@ public class GroupFilterModel implements Serializable {
 
     private int maxResults;
 
+    /**
+     * PFS-5770: How many matches to skip, so a page can be cut by the query instead of in memory.
+     * Only meaningful together with {@link #maxResults}; zero starts at the first match.
+     */
+    private int firstResult;
+
     public static GroupFilterModel all(int maxResults) {
         GroupFilterModel filterModel = new GroupFilterModel();
         filterModel.maxResults = maxResults;
@@ -170,6 +176,22 @@ public class GroupFilterModel implements Serializable {
         this.groupOIDs = groupOIDs;
     }
 
+    /**
+     * @return how many matches to skip before the first returned one.
+     */
+    public int getFirstResult() {
+        return firstResult;
+    }
+
+    /**
+     * Skips the given number of matches. Together with
+     * {@link #setMaxResults(int)} this cuts one page out of the result in the
+     * query, instead of loading everything and slicing it afterwards.
+     */
+    public void setFirstResult(int firstResult) {
+        this.firstResult = firstResult;
+    }
+
     // Logic
 
     public void reset() {
@@ -183,5 +205,6 @@ public class GroupFilterModel implements Serializable {
         topLevel = false;
         searchFolders = true;
         groupOIDs = null;
+        firstResult = 0;
     }
 }

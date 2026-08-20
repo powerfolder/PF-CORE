@@ -55,6 +55,19 @@ public interface GroupDAO extends GenericDAO<Group> {
     List<Group> getGroups(GroupFilterModel filterModel);
 
     /**
+     * Count the Groups that apply to the passed filter, without loading them.
+     * <p>
+     * PFS-5770: what a paged list needs next to the page itself - the filter's
+     * {@code firstResult} and {@code maxResults} are ignored here, the count is
+     * over all matches.
+     *
+     * @param filterModel
+     *            The filters to apply
+     * @return the number of groups that fit the filter.
+     */
+    int countGroups(GroupFilterModel filterModel);
+
+    /**
      * Get a list of all groups, that hold a permission to a folder.
      * 
      * @param folderInfo
