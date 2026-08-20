@@ -175,8 +175,8 @@ For creation of the installer:
 
 			<!-- ContextMenu and IconOverlay -->
 			<include name="com.liferay.nativity-1.0.6.jar" />
-			<include name="jackson-databind-2.21.4.jar" />
-			<include name="jackson-core-2.21.4.jar" />
+			<include name="jackson-databind-2.21.6.jar" />
+			<include name="jackson-core-2.21.6.jar" />
 			<include name="jackson-annotations-2.21.jar" />
 			<include name="netty-common-4.1.137.Final.jar" />
 			<include name="netty-buffer-4.1.137.Final.jar" />
