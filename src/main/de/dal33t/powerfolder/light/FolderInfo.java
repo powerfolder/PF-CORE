@@ -253,15 +253,27 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * e.g. if the structure is "subdir/is/here/subfolder" this would return "subdir/is/here/subfolder"
      */
     public DirectoryInfo getLocation() {
+        String path = locationPath();
+        return path == null ? null : FileInfoFactory.lookupDirectory(topFolder, path);
+    }
+
+    /**
+     * PFC-3543: The same location as {@link #getLocation()}, but as the plain path - no
+     * {@link DirectoryInfo} is built. Whoever only compares paths must use this one: the barrier
+     * resolution asks every interrupted subfolder of the system per call, and building a
+     * DirectoryInfo per barrier and per call was the single most expensive thing in a scan of a
+     * migrated server (visible in a thread dump as Pattern.match, from the message the FileInfo
+     * constructor used to format eagerly).
+     * <p>
+     * Composed on every call - one string, no state: {@link FolderInfo} stays immutable.
+     *
+     * @return the location path in top-folder coordinates, or {@code null} for a top folder
+     */
+    public String locationPath() {
         if (topFolder == null) {
             return null;
         }
-        String path = topPath;
-        if (isNotBlank(path)) {
-            path += '/';
-        }
-        path += name;
-        return FileInfoFactory.lookupDirectory(topFolder, path);
+        return isNotBlank(topPath) ? topPath + '/' + name : name;
     }
 
     /**
@@ -340,7 +352,8 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
 
     public static FolderInfo findEnclosingSubFolder(Collection<FolderInfo> candidates, FolderInfo folder,
                                                     String relativeName) {
-        return findEnclosingSubFolder(candidates, InterruptedSubFolderIndex.barriers(), folder, relativeName);
+        return findEnclosingSubFolder(candidates, InterruptedSubFolderIndex.barriersOf(topOf(folder)),
+            folder, relativeName);
     }
 
     /**
@@ -374,7 +387,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (path == null) {
             return null;
         }
-        FolderInfo top = folder.isSubFolder() ? folder.getTopFolder() : folder;
+        FolderInfo top = topOf(folder);
         FolderInfo innermost = findInnermostEnclosing(candidates, top, path, null);
         // Barriers only win on a strictly deeper match, so a tie goes to the candidates.
         return hasBarriers ? findInnermostEnclosing(barriers, top, path, innermost) : innermost;
@@ -397,7 +410,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * @return the innermost enclosing interrupted subfolder, or {@code null}
      */
     public static FolderInfo findEnclosingInterruptedSubFolder(FolderInfo folder, String relativeName) {
-        FolderInfo[] barriers = InterruptedSubFolderIndex.barriers();
+        FolderInfo[] barriers = InterruptedSubFolderIndex.barriersOf(topOf(folder));
         return barriers.length == 0 ? null : findEnclosingSubFolder(null, barriers, folder, relativeName);
     }
 
@@ -416,16 +429,23 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (subFolder == null || folder == null || !subFolder.isSubFolder()) {
             return null;
         }
-        DirectoryInfo location = subFolder.getLocation();
+        String base = subFolder.locationPath();
         String path = addressedPath(folder, relativeName);
-        if (location == null || path == null) {
+        if (base == null || path == null) {
             return null;
         }
-        String base = location.getRelativeName();
         if (path.equals(base)) {
             return "";
         }
         return path.startsWith(base + "/") ? path.substring(base.length() + 1) : null;
+    }
+
+    /** The top folder an addressed folder belongs to - itself when it is one. {@code null} stays null. */
+    private static FolderInfo topOf(FolderInfo folder) {
+        if (folder == null) {
+            return null;
+        }
+        return folder.isSubFolder() ? folder.getTopFolder() : folder;
     }
 
     /**
@@ -439,11 +459,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (!folder.isSubFolder()) {
             return path;
         }
-        DirectoryInfo location = folder.getLocation();
-        if (location == null) {
+        String base = folder.locationPath();
+        if (base == null) {
             return null;
         }
-        String base = location.getRelativeName();
         return path.isEmpty() ? base : base + "/" + path;
     }
 
@@ -506,11 +525,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (candidate == null || !candidate.isSubFolder() || !top.equals(candidate.getTopFolder())) {
             return -1;
         }
-        DirectoryInfo location = candidate.getLocation();
-        if (location == null) {
+        String candidatePath = candidate.locationPath();
+        if (candidatePath == null) {
             return -1;
         }
-        String candidatePath = location.getRelativeName();
         if (path.equals(candidatePath) || path.startsWith(candidatePath + "/")) {
             return candidatePath.length();
         }

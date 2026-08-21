@@ -67,6 +67,8 @@ public class InterruptedSubFolderIndex {
     // volatile read - the sections exist to keep several controllers in one JVM apart.
     private static final Map<InterruptedSubFolderIndex, FolderInfo[]> REGISTRY = new ConcurrentHashMap<>();
     private static volatile FolderInfo[] allBarriers = NO_INFOS;
+    /** The same barriers grouped by top folder - see {@link #barriersOf(FolderInfo)}. */
+    private static volatile Map<FolderInfo, FolderInfo[]> barriersByTop = Collections.emptyMap();
 
     // Two parallel snapshots, swapped atomically on refresh: absolute local bases
     // for the Path-based scanner/watcher checks, and the matching FolderInfos for
@@ -191,6 +193,21 @@ public class InterruptedSubFolderIndex {
             }
         }
         allBarriers = merged == null ? NO_INFOS : merged.toArray(new FolderInfo[0]);
+        /* Grouped by top folder as well: a resolution only ever compares the barriers of the addressed
+         * workspace, and walking all of them - 7800 on the migrated test system - is what made the
+         * check expensive per file. Built here, where allocation is allowed. */
+        Map<FolderInfo, List<FolderInfo>> grouped = new HashMap<>();
+        for (FolderInfo subFolder : allBarriers) {
+            FolderInfo top = subFolder.getTopFolder();
+            if (top != null) {
+                grouped.computeIfAbsent(top, key -> new ArrayList<>()).add(subFolder);
+            }
+        }
+        Map<FolderInfo, FolderInfo[]> byTop = new HashMap<>(Math.max(4, grouped.size() * 2));
+        for (Map.Entry<FolderInfo, List<FolderInfo>> entry : grouped.entrySet()) {
+            byTop.put(entry.getKey(), entry.getValue().toArray(new FolderInfo[0]));
+        }
+        barriersByTop = byTop;
     }
 
     /**
@@ -214,6 +231,23 @@ public class InterruptedSubFolderIndex {
      */
     public static FolderInfo[] barriers() {
         return allBarriers;
+    }
+
+    /**
+     * PFC-3543: The barriers of ONE top folder. What a resolution needs: a subfolder of another
+     * workspace can never enclose the addressed path, and asking for all of them made every single
+     * check walk the interrupted folders of the whole system - thousands of them on a migrated server,
+     * per file of a scan and per web request.
+     *
+     * @param topFolder the top folder the addressed path belongs to
+     * @return its interrupted subfolders, empty when it has none. A SHARED snapshot - never modify it
+     */
+    public static FolderInfo[] barriersOf(FolderInfo topFolder) {
+        if (topFolder == null) {
+            return NO_INFOS;
+        }
+        FolderInfo[] found = barriersByTop.get(topFolder);
+        return found != null ? found : NO_INFOS;
     }
 
     /**
