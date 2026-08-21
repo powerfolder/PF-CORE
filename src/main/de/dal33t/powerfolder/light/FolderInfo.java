@@ -875,6 +875,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     boolean save(Path file) {
         if (Files.notExists(file.getParent())) {
+            // Most frequent way a FolderInfo fails to persist, and it used to return silently -
+            // indistinguishable from a successful save. Folder.updateInfo reports the consequence.
+            LOG.fine(this + ": Unable to store FolderInfo, directory does not exist: " + file.getParent());
             return false;
         }
         try (ObjectOutputStream oout = new ObjectOutputStream(
@@ -882,6 +885,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             oout.writeObject(this);
         } catch (Exception e) {
             LOG.warning(this + ": Unable to store FolderInfo to " + file + ". " + e);
+            return false;
         }
         return true;
     }

@@ -4831,9 +4831,9 @@ public class Folder extends PFComponent {
                     logWarning(e.getMessage());
                 }
             } else if (!deviceDisconnected) {
-                logSevere("Failed to create system subdir: " + systemSubDir);
+                logWarning(toString() + ": Not creating system subdir, storage/device unavailable: " + systemSubDir);
             } else if (isFine()) {
-                logFine("Failed to create system subdir: " + systemSubDir);
+                logFine(toString() + ": Not creating system subdir, storage/device unavailable: " + systemSubDir);
             }
         }
         return systemSubDir;
@@ -5611,12 +5611,23 @@ public class Folder extends PFComponent {
         }
         this.currentInfo = folderInfo.intern(true);
         FolderInfo onDisk = FolderInfoFactory.readFrom(this);
-        if (onDisk == null
-                || !onDisk.equals(currentInfo)
-                || onDisk.getVersion() < currentInfo.getVersion()
+        // Losing parent or name means this folder loads as a top folder again on the next start and
+        // correctTopAndSubfolderRelation has to repair it once more. A lost version alone is minor.
+        boolean structural = onDisk == null
                 || !Util.equals(onDisk.getParent(), currentInfo.getParent())
-                || !onDisk.getName().equals(currentInfo.getName())) {
-            FolderInfoFactory.writeFolderInfo(this);
+                || !onDisk.getName().equals(currentInfo.getName());
+        if (structural
+                || !onDisk.equals(currentInfo)
+                || onDisk.getVersion() < currentInfo.getVersion()) {
+            if (!FolderInfoFactory.writeFolderInfo(this)) {
+                if (structural) {
+                    logWarning(this + ": Unable to persist FolderInfo to " + getSystemSubDir0()
+                        + ". Parent/name change is lost on restart"
+                        + (deviceDisconnected ? " - storage/device disconnected" : ""));
+                } else if (isFine()) {
+                    logFine(this + ": Unable to persist FolderInfo to " + getSystemSubDir0());
+                }
+            }
         }
     }
 

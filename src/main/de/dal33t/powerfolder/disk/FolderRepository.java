@@ -620,7 +620,14 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
                 if (foInfo == null) {
-                    // TODO: Analyze if local base dir is subfolder of top level as fallback
+                    // Parent unknown. The entry is filed under the top folders below and
+                    // Folder#correctTopAndSubfolderRelation derives the parent from the storage
+                    // location once the top folder exists - that is what the TODO that used to sit
+                    // here asked for, and it is implemented there.
+                    if (isFine()) {
+                        logFine(folderName + '/' + folderEntryId + ": No FolderInfo meta-data file below "
+                            + folderSettings.getLocalBaseDir() + ", parent unknown");
+                    }
                     foInfo = lookupInstance(folderId, folderName);
                 } else if (!foInfo.getId().equals(folderId)) {
                     String folderIdFromFile = foInfo.getId();
