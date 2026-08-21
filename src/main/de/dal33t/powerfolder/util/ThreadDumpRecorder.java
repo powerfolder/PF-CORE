@@ -68,7 +68,7 @@ public class ThreadDumpRecorder extends PFComponent {
 
     /**
      * Starts the periodic recording, unless it is switched off
-     * ({@code threaddump.interval.seconds} = 0).
+     * ({@code threaddump.interval.seconds} = 0 or less).
      */
     public void start() {
         int seconds = ConfigurationEntry.THREAD_DUMP_INTERVAL_SECONDS.getValueInt(getController());

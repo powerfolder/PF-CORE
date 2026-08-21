@@ -1294,16 +1294,6 @@ public class Controller extends PFComponent {
                     logFine("Dataitems: "
                         + Debug.countDataitems(Controller.this));
                 }
-                String dump = Debug.dumpCurrentStacktraces(false);
-                if (StringUtils.isNotBlank(dump)
-                    && isFine()
-                    && ConfigurationEntry.LOG_ACTIVE_THREADS
-                        .getValueBoolean(getController()))
-                {
-                    logFine("Active threads:\n\n" + dump);
-                } else {
-                    logFine("No active threads");
-                }
             }
         }, 1, 5, TimeUnit.MINUTES);
     }

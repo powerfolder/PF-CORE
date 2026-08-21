@@ -1114,8 +1114,9 @@ public enum ConfigurationEntry {
 
     /**
      * PFS-5739: Interval in SECONDS at which a thread dump is recorded next to the log files, so that
-     * a support package created later still holds the stack traces of the incident. 0 = disabled. The
-     * dumps are kept as long as the log files ({@link #LOG_FILE_DELETE_DAYS}).
+     * a support package created later still holds the stack traces of the incident. 0 or less =
+     * disabled, and that is the only switch - the checkbox in the preferences writes it. The dumps
+     * are kept as long as the log files ({@link #LOG_FILE_DELETE_DAYS}).
      * <p>
      * Seconds, not minutes, so that a hang can be sampled closely while it is being reproduced - a
      * minute is a long time to wait for the next sample. The default of 300 is the previous 5 minutes.
@@ -1140,11 +1141,6 @@ public enum ConfigurationEntry {
     LOG_SYSLOG_HOST("log.syslog.host", null, true),
 
     LOG_SYSLOG_PORT("log.syslog.port", 514, true),
-
-    /**
-     * Should the active threads be logged?
-     */
-    LOG_ACTIVE_THREADS("log.active_threads", false, true),
 
     /**
      * Whether to request debug reports
