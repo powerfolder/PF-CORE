@@ -85,6 +85,19 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
 
+    /**
+     * Cache for {@link #findExistingFolder(Path, boolean)} without the extra real-path I/O.
+     * Optimizes {@link Folder#correctTopAndSubfolderRelation()}: it walks the complete ancestor
+     * chain of every folder, so the same parent directories are looked up over and over - each
+     * time a full linear scan over all folders. That made startup O(n * depth * n) and burned
+     * minutes single-threaded in {@link #correctTopAndSubfolderRelations()} on large servers.
+     * Only the pure in-memory comparison is cached, never a result derived from the filesystem,
+     * and it is invalidated on every structural change (add / remove / rename). An empty
+     * {@link Optional} caches the dominant "no folder at this path" answer, which
+     * {@link SimpleCache} cannot hold as null.
+     */
+    private final SimpleCache<Path, Optional<Folder>> existingFolderCache = new SimpleCache<>(60, TimeUnit.SECONDS);
+
     // PFC-3543: index of the currently interrupted subfolders. This repository is
     // the authority for structural changes and refreshes it on folder add/remove/
     // rename (and, later PFC-3565, on interruption toggle).
@@ -1304,30 +1317,39 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public Folder findExistingFolder(Path targetDir, boolean toRealPath) {
         if (!targetDir.isAbsolute()) {
-            targetDir = foldersBasedir
-                    .resolve(targetDir);
-            logInfo("Original path: " + targetDir
-                    + ". Choosen relative path: " + targetDir);
+            targetDir = foldersBasedir.resolve(targetDir);
+            logInfo("Original path: " + targetDir + ". Choosen relative path: " + targetDir);
         }
 
-        for (Folder folder : getController().getFolderRepository()
-                .getFolders()) {
+        if (!toRealPath) {
+            Optional<Folder> cached = existingFolderCache.getValidEntry(targetDir);
+            // null means cache miss, an empty Optional means the cached answer is "no folder here"
+            if (cached != null) {
+                return cached.orElse(null);
+            }
+        }
+
+        Folder found = null;
+        for (Folder folder : getFolders()) {
             if (folder.getLocalBase().equals(targetDir)) {
-                return folder;
+                found = folder;
+                break;
             }
             if (toRealPath) {
                 try {
-                    if (folder.getCommitOrLocalDir().toRealPath()
-                            .equals(targetDir.toRealPath())) {
-                        return folder;
+                    if (folder.getCommitOrLocalDir().toRealPath().equals(targetDir.toRealPath())) {
+                        found = folder;
+                        break;
                     }
                 } catch (IOException e) {
-                    logFine("Unable to access: " + folder.getLocalBase() + ". "
-                            + e);
+                    logFine("Unable to access: " + folder.getLocalBase() + ". " + e);
                 }
             }
         }
-        return null;
+        if (!toRealPath) {
+            existingFolderCache.put(targetDir, Optional.ofNullable(found));
+        }
+        return found;
     }
 
     /**
@@ -1665,6 +1687,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning(folderInfo + " already in folders list");
         }
         folders.put(folder.getInfo(), folder);
+        // Only the new folder's own local base can change its answer, so the load phase keeps its cache.
+        existingFolderCache.invalidate(folder.getLocalBase());
         // PFC-3543: a newly mounted folder may be an interrupted subfolder.
         refreshInterruptedSubFolders();
         saveFolderConfig(folderInfo, folderSettings);
@@ -1785,6 +1809,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Remove internal
             folders.remove(folder.getInfo());
+            existingFolderCache.invalidate(folder.getLocalBase());
             // PFC-3543: keep the interrupted-subfolder index in sync.
             refreshInterruptedSubFolders();
             folder.removeProblemListener(valveProblemListenerSupport);
@@ -2659,6 +2684,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.updateInfo(newFolderInfo);
         folders.remove(newFolderInfo);
         folders.put(newFolderInfo, folder);
+        // A rename may relocate the folder, so drop everything rather than guessing the old path.
+        existingFolderCache.invalidateAll();
         // PFC-3543: local base / interruption state may have changed on rename.
         refreshInterruptedSubFolders();
         Folder metaFolder = getMetaFolder(newFolderInfo);
