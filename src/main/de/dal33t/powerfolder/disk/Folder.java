@@ -2604,7 +2604,9 @@ public class Folder extends PFComponent {
             return;
         }
 
-        logFine("Unable to read folder db, even from backup. Maybe new folder?");
+        if (isFine()) {
+            logFine(this + ": Unable to read folder db, even from backup. Maybe new folder?");
+        }
     }
 
     /**

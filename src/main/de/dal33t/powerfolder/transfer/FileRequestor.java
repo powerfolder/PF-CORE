@@ -190,14 +190,11 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (!folder.hasOwnDatabase()) {
-            if (folder.isScanning() || folder.isDeviceDisconnected()) {
-                if (isFine()) {
-                    logFine("Not requesting files. No own database for " + folder);
-                }
-            } else {
-                if (isInfo()) {
-                    logInfo("Not requesting files. No own database for " + folder);
-                }
+            // Expected transient state until the first scan populated the DAO. Every periodical
+            // trigger hits every folder still waiting for it, so this must never be logged above
+            // FINE - on a server with many unscanned folders it drowns the log otherwise.
+            if (isFine()) {
+                logFine(folder + ": Not requesting files, no own database yet");
             }
             return;
         }
