@@ -246,6 +246,9 @@ public class Debug {
                     + "/" + Format.formatBytesShort(Runtime.getRuntime().totalMemory())
                     + "/" + Format.formatBytesShort(Runtime.getRuntime().maxMemory()));
             b.append("\nDataitems: " + countDataitems(c));
+            if (c.isStarted()) {
+                addSearchIndexInfo(b, c.getFolderRepository().getFolders(true));
+            }
             b.append("\nNetworking mode: ");
             b.append(c.getNetworkingMode().name());
             double uptimeDays = ((double) c.getUptime()) / 1000 / 60 / 60 / 24;
@@ -313,8 +316,6 @@ public class Debug {
                 if (folders.isEmpty()) {
                     b.append(" (none)\n");
                 }
-
-                addSearchIndexInfo(b, folders);
 
                 TransferManager tm = c.getTransferManager();
                 // dump transfers
@@ -469,12 +470,12 @@ public class Debug {
         }
         b.append("\nSearch index: ");
         if (indexedFolders == 0) {
-            b.append("disabled\n");
+            b.append("disabled");
             return;
         }
         b.append(indexedFolders).append(" of ").append(folders.size()).append(" folders indexed, ").append(totalEntries)
             .append(" entries, ").append(totalPending).append(" file(s) pending, ").append(totalContentPending)
-            .append(" file(s) pending content, ").append(rebuildingFolders).append(" folder(s) rebuilding\n");
+            .append(" file(s) pending content, ").append(rebuildingFolders).append(" folder(s) rebuilding");
     }
 
     /**
