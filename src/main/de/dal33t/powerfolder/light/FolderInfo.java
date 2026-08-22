@@ -223,14 +223,42 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     private void setParent(DirectoryInfo parent) {
-        if (parent != null) {
-            Reject.ifNull(parent.getRelativeName(), "Parent relative name / path must not be null");
-            this.topFolder = parent.getFolderInfo();
-            this.topPath = parent.getRelativeName();
-        } else {
+        if (parent == null) {
             this.topFolder = null;
             this.topPath = null;
+            return;
         }
+        Reject.ifNull(parent.getRelativeName(), "Parent relative name / path must not be null");
+        DirectoryInfo topParent = toTopCoordinates(parent);
+        this.topFolder = topParent.getFolderInfo();
+        this.topPath = topParent.getRelativeName();
+    }
+
+    /**
+     * PFC-3543: a subfolder names the TOP folder, always - the structure never chains. A parent in a
+     * SUBFOLDER's coordinates reaches this class from three directions: the DAO proxy of an interrupted
+     * subfolder answers in its own coordinates, the wire carries the parent as it was sent, and a stored
+     * row is unmarshalled as it stands. All three come through {@link #setParent}, so this is the one
+     * place that can hold the invariant. A chain would hold itself in place: fk_fi_topfolder refuses to
+     * let the middle row go, and the folder would be invisible below its own top folder.
+     *
+     * @return the parent expressed in top-folder coordinates
+     */
+    private static DirectoryInfo toTopCoordinates(DirectoryInfo parent) {
+        DirectoryInfo topParent = parent;
+        // A chain of more than one link only exists in broken data; the bound keeps a cyclic one out.
+        for (int i = 0; i < 32; i++) {
+            FolderInfo parentFolder = topParent.getFolderInfo();
+            if (parentFolder == null || !parentFolder.isSubFolder()) {
+                return topParent;
+            }
+            DirectoryInfo lifted = FileInfoFactory.mapToTopFolder(topParent);
+            LOG.log(Level.WARNING, "Parent " + parent + " belongs to the subfolder " + parentFolder
+                + ", lifted to " + lifted + " - a subfolder points at the top folder, never at another"
+                + " subfolder");
+            topParent = lifted;
+        }
+        return topParent;
     }
 
     /**

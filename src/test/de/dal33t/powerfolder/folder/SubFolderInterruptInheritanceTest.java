@@ -281,7 +281,11 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         assertEquals("Precondition: the outer one points at the top folder",
             topInfo, outer.getInfo().getTopFolder());
 
-        Folder inner = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer/inner"));
+        // The nested row lives in the outer subfolder's database now and comes back in ITS coordinates.
+        // Mapping it to the top folder before sharing is what the web API does - subfolders are
+        // registered on the top folder, however deep they sit.
+        DirectoryInfo innerInOuter = (DirectoryInfo) outer.getFileInfo("inner");
+        Folder inner = topFolder.share((DirectoryInfo) FileInfoFactory.mapToTopFolder(innerInOuter));
         assertNotNull("The nested directory must be shareable through the top folder", inner);
         inner.setInheritsPermissions(false);
 
@@ -294,6 +298,7 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
                 subInfo.getTopFolder().isSubFolder());
         }
         // The nesting shows in the PATH, never in the top folder reference.
-        assertEquals("outer/inner", inner.getInfo().getTopPath());
+        assertEquals("outer", inner.getInfo().getTopPath());
+        assertEquals("outer/inner", inner.getInfo().locationPath());
     }
 }
