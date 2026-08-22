@@ -91,14 +91,17 @@ public class FolderInfoFactory {
      * version loses in {@link de.dal33t.powerfolder.light.FileInfo#isNewerThan}.
      */
     public static FolderInfo newFolder(DirectoryInfo subdir) {
+        /* A subfolder points at the TOP folder, always - subfolders never chain. Interrupting a
+         * directory INSIDE an already interrupted subfolder hands the parent in that SUBFOLDER's
+         * coordinates (SubFolderFileInfoDAOProxy answers in the coordinates of the folder that owns
+         * the row), and taking it unchanged made that subfolder the top folder of the new one. The
+         * chain then holds itself: fk_fi_topfolder refuses to let the middle row go, and deleting the
+         * workspace fails on its own foreign key. */
+        DirectoryInfo parent = FileInfoFactory.mapToTopFolder(subdir.getParent());
         // Becoming a subfolder is a step of its own, so the version advances like on every other
         // change of this object (rename, tags, inheritance) instead of restarting.
         return new FolderInfo(subdir.getFilenameOnly(), IdGenerator.makeFolderId(),
-            subdir.getVersion() + 1, subdir.getParent(), subdir.getTags(), true).intern();
-    }
-
-    public static FolderInfo newFolder(String id, String name, DirectoryInfo parent) {
-        return new FolderInfo(name, id, 0, parent).intern();
+            subdir.getVersion() + 1, parent, subdir.getTags(), true).intern();
     }
 
     // TODO Really needed?

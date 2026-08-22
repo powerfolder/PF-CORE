@@ -257,4 +257,43 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         assertNotNull("After the restore the outer folder must hold the content",
             outer.getDAO().find(FileInfoFactory.mapToSubFolder(innerFileInfo, outer.getInfo()), null));
     }
+
+    /**
+     * PFC-3543: a subfolder points at the TOP folder. ALWAYS - the structure never chains, whatever the
+     * order the subfolders are shared and interrupted in. A subfolder naming another subfolder as its
+     * top folder holds itself in place: fk_fi_topfolder refuses to let the middle row go, and deleting
+     * the workspace fails on its own foreign key.
+     */
+    public void testSubFolderAlwaysPointsAtTheTopFolder() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderInfo topInfo = topFolder.getInfo();
+
+        Path outerPath = Files.createDirectories(topFolder.getPhysicalDir().resolve("outer"));
+        Files.createDirectories(outerPath.resolve("inner"));
+        TestHelper.createRandomFile(outerPath.resolve("inner"), "inner.txt");
+        TestHelper.scanFolder(topFolder);
+
+        // The OUTER one first, and interrupted before the inner one is even shared: from here on the
+        // nested rows are answered in its coordinates, which is what a delta run of the migration meets.
+        Folder outer = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer"));
+        outer.setInheritsPermissions(false);
+        assertFalse(outer.getInfo().inheritsPermissions());
+        assertEquals("Precondition: the outer one points at the top folder",
+            topInfo, outer.getInfo().getTopFolder());
+
+        Folder inner = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer/inner"));
+        assertNotNull("The nested directory must be shareable through the top folder", inner);
+        inner.setInheritsPermissions(false);
+
+        for (Folder subFolder : new Folder[]{outer, inner}) {
+            FolderInfo subInfo = subFolder.getInfo();
+            assertTrue(subInfo + " must be a subfolder", subInfo.isSubFolder());
+            assertEquals(subInfo + " must point at the top folder, not at another subfolder",
+                topInfo, subInfo.getTopFolder());
+            assertFalse("The top folder of " + subInfo + " must not itself be a subfolder",
+                subInfo.getTopFolder().isSubFolder());
+        }
+        // The nesting shows in the PATH, never in the top folder reference.
+        assertEquals("outer/inner", inner.getInfo().getTopPath());
+    }
 }
