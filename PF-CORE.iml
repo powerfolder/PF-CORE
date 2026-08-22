@@ -736,5 +736,32 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="jackson-databind-2.21.6.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jackson-databind-2.21.6.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="jackson-core-2.21.6.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jackson-core-2.21.6.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="jackson-annotations-2.21.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/jackson-annotations-2.21.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
