@@ -2299,7 +2299,22 @@ public class Folder extends PFComponent {
             }
             int fileCount = toMigrate.size() - dirCount;
             if (inherits) {
-                // Restore: move rows from the subfolder's own database back into the top folder.
+                /* Restore: hand the rows to the folder that OWNS this location now. That is the top
+                 * folder in the plain case - but with nested interruptions (PFS-5767) it is the
+                 * innermost barrier still standing above me. Handing everything to the top folder put
+                 * the rows behind that barrier, where nobody reads them: a path below it resolves to
+                 * the barrier and asks ITS database, so the restored content was invisible although it
+                 * sat on disk. My own flag is already flipped above, so the lookup cannot answer with
+                 * me. */
+                Folder owner = topFolder;
+                FolderInfo enclosing = FolderInfo.findEnclosingInterruptedSubFolder(
+                    topFolder.getInfo(), currentInfo.locationPath());
+                if (enclosing != null && !enclosing.equals(currentInfo)) {
+                    Folder enclosingFolder = getController().getFolderRepository().getFolder(enclosing);
+                    if (enclosingFolder != null) {
+                        owner = enclosingFolder;
+                    }
+                }
                 List<FileInfo> topInfos = new ArrayList<>(toMigrate.size() + 1);
                 for (FileInfo subInfo : toMigrate) {
                     topInfos.add(FileInfoFactory.mapToTopFolder(subInfo));
@@ -2311,10 +2326,19 @@ public class Folder extends PFComponent {
                  * everything that resolves a directory by its row (unshare, versions, links) fails in
                  * the meantime. */
                 topInfos.add(buildBaseDirectoryInfo(topFolder, currentInfo.getVersion()));
-                topFolder.getDAO().store(null, topInfos);
-                topFolder.setDBDirty();
-                logInfo(this + ": Restored permission inheritance, merged its own database back into top folder "
-                    + topFolder + " - migrated " + fileCount + " files and " + dirCount + " directories");
+
+                List<FileInfo> ownerInfos = topInfos;
+                if (owner != topFolder) {
+                    // The rows are in top-folder coordinates; the owner keeps its own.
+                    ownerInfos = new ArrayList<>(topInfos.size());
+                    for (FileInfo topInfo : topInfos) {
+                        ownerInfos.add(FileInfoFactory.mapToSubFolder(topInfo, owner.getInfo()));
+                    }
+                }
+                owner.getDAO().store(null, ownerInfos);
+                owner.setDBDirty();
+                logInfo(this + ": Restored permission inheritance, merged its own database back into "
+                    + owner + " - migrated " + fileCount + " files and " + dirCount + " directories");
             } else {
                 // Interrupt: move rows from the top database into the subfolder's own database,
                 // then raw-remove them from the top (no deletion is propagated to peers).
