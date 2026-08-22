@@ -2130,7 +2130,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * <p>
      * ATTENTION: This is a stack based system like {@link #setSuspendNewFolderSearch(boolean)} - suspend
      * ONCE and release in a finally block. While suspended, {@link #createFolder}, {@link #removeFolder}
-     * and {@link #saveFolderConfig} only change the properties in memory; the LAST release writes the
+     * and {@link #saveFolderConfig} only change the properties in memory; EVERY release writes the
      * configuration once, if anything accumulated.
      * <p>
      * Why it exists: writing the configuration rewrites and re-sorts BOTH files completely (see
@@ -2145,6 +2145,13 @@ public class FolderRepository extends PFComponent implements Runnable {
      * ({@code MigrationEngine}), so two paths can be in a bulk run at the same time. With a boolean the
      * release of one would lift the suspension of the other. A forgotten release cannot lose the
      * configuration for good - every direct {@link Controller#saveConfig()} caller still writes.
+     * <p>
+     * Why every release writes and not only the one that brings the counter to zero: the counter is
+     * global, the bulk runs are not. With 15 workspaces migrating at once it does not reach zero for
+     * hours, so the pending save was deferred for the whole run and everything created in between
+     * existed in memory only - a restart left 225 migrated workspaces out of the configuration and
+     * therefore unmounted, while the database held them complete. Every caller suspends around a LOOP
+     * and never per folder, so one write per completed loop is the granularity this was built for.
      *
      * @param suspend {@code true} to suspend, {@code false} to release
      */
@@ -2153,15 +2160,13 @@ public class FolderRepository extends PFComponent implements Runnable {
             suspendConfigSave.incrementAndGet();
             return;
         }
-        int level = suspendConfigSave.decrementAndGet();
-        if (level < 0) {
+        if (suspendConfigSave.decrementAndGet() < 0) {
             // More releases than suspensions - a caller released twice. Do not let the counter drift
             // negative, or the next bulk run writes per folder again.
             suspendConfigSave.set(0);
-            logWarning("setSuspendConfigSave(false) without a matching suspend");
-            level = 0;
+            logWarning("setSuspendConfigSave(false) without a matching suspend", new StackDump());
         }
-        if (level == 0 && configSavePending.getAndSet(false)) {
+        if (configSavePending.getAndSet(false)) {
             logFine("Saving the configuration once for the completed bulk operation");
             getController().saveConfig();
         }
