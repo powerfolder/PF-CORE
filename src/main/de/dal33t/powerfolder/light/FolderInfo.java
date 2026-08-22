@@ -28,6 +28,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.InterruptedSubFolderIndex;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.TagUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -253,9 +254,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
                 return topParent;
             }
             DirectoryInfo lifted = FileInfoFactory.mapToTopFolder(topParent);
+            // With the stack: the lift repairs the value, the caller that produced it is the bug.
             LOG.log(Level.WARNING, "Parent " + parent + " belongs to the subfolder " + parentFolder
                 + ", lifted to " + lifted + " - a subfolder points at the top folder, never at another"
-                + " subfolder");
+                + " subfolder", new StackDump());
             topParent = lifted;
         }
         return topParent;
