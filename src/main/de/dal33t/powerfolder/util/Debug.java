@@ -38,6 +38,11 @@ import de.dal33t.powerfolder.util.compare.MemberComparator;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
 
 import java.io.*;
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -817,174 +822,271 @@ public class Debug {
         return getStackTrace(Thread.currentThread().getStackTrace());
     }
 
-    public static String dumpCurrentStacktraces(boolean hideIdleThreds) {
-        ThreadGroup top = Thread.currentThread().getThreadGroup();
-        while (top.getParent() != null) {
-            top = top.getParent();
+    /**
+     * Dumps all threads in the layout HotSpot itself uses, so the result can be read by the usual
+     * analysers (jstack output, thread dump analyzers) instead of only by eye.
+     * <p>
+     * os_prio, tid, nid and the stack pointer that jstack prints are HotSpot internals with no Java
+     * API behind them. They are left out rather than filled with substitutes, everything else the
+     * platform exposes is here - including the monitor and synchronizer information that the old
+     * ThreadGroup walk could not reach.
+     *
+     * @param hideIdleThreads
+     *            only dump threads that are actually doing something
+     */
+    public static String dumpCurrentStacktraces(boolean hideIdleThreads) {
+        ThreadMXBean mx = ManagementFactory.getThreadMXBean();
+        ThreadInfo[] infos;
+        try {
+            infos = mx.dumpAllThreads(mx.isObjectMonitorUsageSupported(),
+                mx.isSynchronizerUsageSupported());
+        } catch (UnsupportedOperationException e) {
+            // Lock information is optional for a JVM. The stack traces are worth having without it.
+            infos = mx.dumpAllThreads(false, false);
         }
-        StringBuilder b = new StringBuilder("Current Threads - Stacktraces Start:\n");
-        for (String dumps : getGroupInfo(top, hideIdleThreds)) {
-            b.append(dumps);
-        }
-        b.append("\nCurrent Threads - Stacktraces End");
-        return b.toString();
-    }
 
-    public static String dumpThreadInfo(Thread thread, boolean hideIdleThreds) {
-        String threadDump = dumpStackTrace(thread, hideIdleThreds);
-        if (StringUtils.isBlank(threadDump)) {
-            return null;
-        }
-        String dump = '\"' + thread.getName() + "\" - Thread t@" + thread.hashCode() + '\n';
-        dump += "   java.lang.Thread.State: " + thread.getState();
-        dump += "\n";
-        dump += threadDump;
-        dump += "\n";
-
-        // dump += "   Locked ownable synchronizers:\n";
-        // dump += "        - unknown\n";
-        // dump += "\n";
-
-        return dump;
-    }
-
-    private static List<String> getGroupInfo(ThreadGroup group,
-        boolean hideIdleThreds)
-    {
-        if (group == null) {
-            return Collections.EMPTY_LIST;
-        }
-        Thread threads[] = new Thread[group.activeCount()];
-        List<String> threadDumps = new LinkedList<String>();
-        group.enumerate(threads, false);
-
-        for (Thread thread : threads) {
-            if (thread != null) {
-                String dump = dumpThreadInfo(thread, hideIdleThreds);
-                if (StringUtils.isBlank(dump)) {
-                    continue;
-                }
-                threadDumps.add(dump);
-            }
-        }
-        ThreadGroup[] activeGroup = new ThreadGroup[group.activeGroupCount()];
-        group.enumerate(activeGroup, false);
-
-        int i = 0;
-        while (i < activeGroup.length) {
-            if (activeGroup[i] != null) {
-                threadDumps.addAll(getGroupInfo(activeGroup[i], hideIdleThreds));
-            }
-            i++;
-        }
-        return threadDumps;
-    }
-
-    private static String dumpStackTrace(Thread t, boolean hideIdleThreds) {
-        boolean runningOrBlocked = t.getState() == Thread.State.RUNNABLE || t.getState() == Thread.State.BLOCKED;
-        if (hideIdleThreds && !runningOrBlocked) {
-            return null;
-        }
         StringBuilder b = new StringBuilder();
-        for (StackTraceElement te : t.getStackTrace()) {
-            if (hideIdleThreds) {
-                if (te.toString().contains("java.lang.ref.Reference.waitForReferencePendingList")) {
-                    return null;
-                }
-                if (te.toString().contains("sun.nio.ch.EPoll.wait")) {
-                    return null;
-                }
-                if (te.toString().contains("sun.nio.ch.Net.poll")) {
-                    return null;
-                }
-                if (te.toString().contains("sun.nio.ch.Net.accept")) {
-                    return null;
-                }
-                if (te.toString().contains("sun.nio.ch.SocketDispatcher.read")) {
-                    return null;
-                }
-                if (te.toString().contains(
-                    "java.net.SocketInputStream.socketRead0"))
-                {
-                    return null;
-                }
-                if (te.toString().contains("java.lang.Thread.sleep")) {
-                    return null;
-                }
-                if (te.toString().contains("java.lang.Object.wait")) {
-                    return null;
-                }
-                if (te.toString()
-                    .contains("sun.awt.windows.WToolkit.eventLoop"))
-                {
-                    return null;
-                }
-                if (te.toString().contains("sun.misc.Unsafe.park")) {
-                    return null;
-                }
-                if (te.toString().contains(
-                    "java.net.PlainSocketImpl.socketAccept"))
-                {
-                    return null;
-                }
-                if (te.toString().contains(
-                    "java.net.SocketOutputStream.socketWrite0(Native Method)"))
-                {
-                    return null;
-                }
-                if (te.toString().contains(
-                    "java.net.PlainDatagramSocketImpl.receive0"))
-                {
-                    return null;
-                }
-                if (te.toString().contains("java.lang.Thread.getStackTrace")) {
-                    return null;
-                }
-                if (te.toString().contains(
-                    "java.net.PlainSocketImpl.socketConnect"))
-                {
-                    return null;
-                }
-                if (te
-                    .toString()
-                    .contains(
-                        "net.contentobjects.jnotify.linux.JNotify_linux.nativeNotifyLoop"))
-                {
-                    return null;
-                }
-                if (te.toString().contains(
-                    "de.dal33t.powerfolder.util.net.UDTSocket.recv"))
-                {
-                    return null;
-                }
-                if (te.toString().contains(
-                        "sun.nio.ch.ServerSocketChannelImpl.accept0")) {
-                    return null;
-                }
-                if (te.toString().contains(
-                        "java.net.DualStackPlainSocketImpl.accept0")) {
-                    return null;
-                }
-                if (te.toString().contains(
-                        "sun.nio.ch.WindowsSelectorImpl$SubSelector.poll0")) {
-                    return null;
-                }
-                if (te.toString()
-                        .contains("sun.nio.ch.ServerSocketChannelImpl.accept"))
-                {
-                    return null;
-                }
-                if (te.toString().contains(
-                        "java.net.TwoStacksPlainDatagramSocketImpl.receive0")) {
-                    return null;
-                }
-            }
+        b.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())).append('\n');
+        b.append("Full thread dump ").append(System.getProperty("java.vm.name")).append(" (")
+            .append(System.getProperty("java.vm.version")).append(' ')
+            .append(System.getProperty("java.vm.info")).append("):\n");
 
-            b.append("        " + te);
-            b.append("\n");
+        for (ThreadInfo info : infos) {
+            if (info == null) {
+                // The thread died between dumpAllThreads and here.
+                continue;
+            }
+            if (hideIdleThreads && isIdle(info)) {
+                continue;
+            }
+            appendThread(b, mx, info);
         }
+        appendDeadlocks(b, mx);
         return b.toString();
     }
+
+    private static void appendThread(StringBuilder b, ThreadMXBean mx, ThreadInfo info) {
+        b.append('\n').append('"').append(info.getThreadName()).append('"');
+        b.append(" #").append(info.getThreadId());
+        if (info.isDaemon()) {
+            b.append(" daemon");
+        }
+        b.append(" prio=").append(info.getPriority());
+        long cpuNanos = cpuTime(mx, info.getThreadId());
+        if (cpuNanos >= 0) {
+            b.append(" cpu=").append(cpuNanos / 1000000L).append("ms");
+        }
+        b.append(' ').append(runStateOf(info)).append('\n');
+
+        b.append("   java.lang.Thread.State: ").append(info.getThreadState());
+        String detail = stateDetailOf(info);
+        if (detail != null) {
+            b.append(" (").append(detail).append(')');
+        }
+        b.append('\n');
+
+        StackTraceElement[] stack = info.getStackTrace();
+        MonitorInfo[] monitors = info.getLockedMonitors();
+        for (int i = 0; i < stack.length; i++) {
+            b.append("\tat ").append(stack[i]).append('\n');
+            if (i == 0 && info.getLockInfo() != null) {
+                b.append("\t- ").append(waitVerbOf(info)).append(' ').append(lockText(info.getLockInfo()));
+                if (info.getLockOwnerName() != null) {
+                    b.append(" owned by \"").append(info.getLockOwnerName()).append("\" #")
+                        .append(info.getLockOwnerId());
+                }
+                b.append('\n');
+            }
+            for (MonitorInfo monitor : monitors) {
+                if (monitor.getLockedStackDepth() == i) {
+                    b.append("\t- locked ").append(lockText(monitor)).append('\n');
+                }
+            }
+        }
+
+        b.append('\n').append("   Locked ownable synchronizers:\n");
+        LockInfo[] synchronizers = info.getLockedSynchronizers();
+        if (synchronizers.length == 0) {
+            b.append("\t- None\n");
+        } else {
+            for (LockInfo synchronizer : synchronizers) {
+                b.append("\t- ").append(lockText(synchronizer)).append('\n');
+            }
+        }
+    }
+
+    private static void appendDeadlocks(StringBuilder b, ThreadMXBean mx) {
+        long[] deadlocked;
+        try {
+            deadlocked = mx.findDeadlockedThreads();
+        } catch (UnsupportedOperationException e) {
+            deadlocked = mx.findMonitorDeadlockedThreads();
+        }
+        if (deadlocked == null || deadlocked.length == 0) {
+            b.append('\n').append("Found no Java-level deadlocks.\n");
+            return;
+        }
+        b.append('\n').append("Found ").append(deadlocked.length)
+            .append(" Java-level deadlocked thread(s):\n");
+        for (ThreadInfo info : mx.getThreadInfo(deadlocked, true, true)) {
+            if (info == null) {
+                continue;
+            }
+            b.append("\t\"").append(info.getThreadName()).append("\" #").append(info.getThreadId());
+            if (info.getLockInfo() != null) {
+                b.append(" waiting for ").append(lockText(info.getLockInfo()));
+            }
+            if (info.getLockOwnerName() != null) {
+                b.append(" owned by \"").append(info.getLockOwnerName()).append("\" #")
+                    .append(info.getLockOwnerId());
+            }
+            b.append('\n');
+        }
+    }
+
+    private static long cpuTime(ThreadMXBean mx, long threadId) {
+        if (!mx.isThreadCpuTimeSupported() || !mx.isThreadCpuTimeEnabled()) {
+            return -1;
+        }
+        try {
+            return mx.getThreadCpuTime(threadId);
+        } catch (UnsupportedOperationException e) {
+            return -1;
+        }
+    }
+
+    /**
+     * The identity hash code, not the address jstack prints - the Java API exposes no address. It
+     * identifies a lock within one dump, which is what matters when following who waits for whom.
+     */
+    private static String lockText(LockInfo lock) {
+        return String.format("<0x%08x> (a %s)", lock.getIdentityHashCode(), lock.getClassName());
+    }
+
+    /**
+     * The word jstack puts in front of the lock a thread is waiting for, which differs by how it
+     * waits: a monitor is entered, a condition is parked on, Object.wait() is waited on.
+     */
+    private static String waitVerbOf(ThreadInfo info) {
+        if (info.getThreadState() == Thread.State.BLOCKED) {
+            return "waiting to lock";
+        }
+        return isParked(info) ? "parking to wait for" : "waiting on";
+    }
+
+    /**
+     * The description behind the thread header, e.g. "waiting for monitor entry".
+     */
+    private static String runStateOf(ThreadInfo info) {
+        switch (info.getThreadState()) {
+            case RUNNABLE:
+                return "runnable";
+            case BLOCKED:
+                return "waiting for monitor entry";
+            case WAITING:
+            case TIMED_WAITING:
+                if (isParked(info)) {
+                    return "waiting on condition";
+                }
+                return isSleeping(info) ? "sleeping" : "in Object.wait()";
+            default:
+                return info.getThreadState().toString().toLowerCase();
+        }
+    }
+
+    /**
+     * The parenthesis behind java.lang.Thread.State, or {@code null} when there is none.
+     */
+    private static String stateDetailOf(ThreadInfo info) {
+        switch (info.getThreadState()) {
+            case BLOCKED:
+                return "on object monitor";
+            case WAITING:
+            case TIMED_WAITING:
+                if (isParked(info)) {
+                    return "parking";
+                }
+                return isSleeping(info) ? "sleeping" : "on object monitor";
+            default:
+                return null;
+        }
+    }
+
+    private static boolean isParked(ThreadInfo info) {
+        return topFrameIs(info, "jdk.internal.misc.Unsafe", "park")
+            || topFrameIs(info, "sun.misc.Unsafe", "park");
+    }
+
+    /**
+     * Thread.sleep sits behind version dependent frames - sleep, sleepNanos, sleepNanos0 - so the
+     * top frames are scanned for the method prefix instead of matching one exact name.
+     */
+    private static boolean isSleeping(ThreadInfo info) {
+        StackTraceElement[] stack = info.getStackTrace();
+        for (int i = 0; i < Math.min(3, stack.length); i++) {
+            if ("java.lang.Thread".equals(stack[i].getClassName())
+                && stack[i].getMethodName().startsWith("sleep"))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean topFrameIs(ThreadInfo info, String className, String methodName) {
+        StackTraceElement[] stack = info.getStackTrace();
+        return stack.length > 0 && className.equals(stack[0].getClassName())
+            && methodName.equals(stack[0].getMethodName());
+    }
+
+    /**
+     * Whether a thread is only sitting in one of the usual waits and has nothing to tell. Same
+     * intent as the filter this replaces: keep what runs or is blocked, drop the parked pools,
+     * pollers and acceptors.
+     */
+    private static boolean isIdle(ThreadInfo info) {
+        Thread.State state = info.getThreadState();
+        if (state != Thread.State.RUNNABLE && state != Thread.State.BLOCKED) {
+            return true;
+        }
+        for (StackTraceElement frame : info.getStackTrace()) {
+            String at = frame.toString();
+            for (String idle : IDLE_FRAMES) {
+                if (at.contains(idle)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Frames that mean "waiting for work or for the network", not "doing something".
+     */
+    private static final String[] IDLE_FRAMES = {
+        "java.lang.ref.Reference.waitForReferencePendingList",
+        "sun.nio.ch.EPoll.wait",
+        "sun.nio.ch.Net.poll",
+        "sun.nio.ch.Net.accept",
+        "sun.nio.ch.SocketDispatcher.read",
+        "java.net.SocketInputStream.socketRead0",
+        "java.lang.Thread.sleep",
+        "java.lang.Object.wait",
+        "sun.awt.windows.WToolkit.eventLoop",
+        "sun.misc.Unsafe.park",
+        "jdk.internal.misc.Unsafe.park",
+        "java.net.PlainSocketImpl.socketAccept",
+        "java.net.SocketOutputStream.socketWrite0(Native Method)",
+        "java.net.PlainDatagramSocketImpl.receive0",
+        "java.lang.Thread.getStackTrace",
+        "java.net.PlainSocketImpl.socketConnect",
+        "net.contentobjects.jnotify.linux.JNotify_linux.nativeNotifyLoop",
+        "de.dal33t.powerfolder.util.net.UDTSocket.recv",
+        "sun.nio.ch.ServerSocketChannelImpl.accept0",
+        "java.net.DualStackPlainSocketImpl.accept0",
+        "sun.nio.ch.WindowsSelectorImpl$SubSelector.poll0",
+        "sun.nio.ch.ServerSocketChannelImpl.accept",
+        "java.net.TwoStacksPlainDatagramSocketImpl.receive0"};
 
     private static String detailedObjectState0(Class<?> c, Object o) {
         if (c == Object.class) {
