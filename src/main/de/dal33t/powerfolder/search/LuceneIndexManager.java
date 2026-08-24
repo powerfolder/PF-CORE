@@ -704,7 +704,13 @@ public class LuceneIndexManager extends PFComponent {
                             + ": " + oom.getMessage());
                     throw oom;
                 } catch (Exception e) {
-                    logWarning(folder + ": Failed to index " + fileInfo + ": " + e.getMessage());
+                    // Quiet once closed: the folder is going away, so a file it cannot read any
+                    // more is expected, not a defect.
+                    if (closed.get()) {
+                        logFine(folder + ": Index skipped for " + fileInfo + ": " + e.getMessage());
+                    } else {
+                        logWarning(folder + ": Failed to index " + fileInfo + ": " + e.getMessage());
+                    }
                 }
             }
 
@@ -738,7 +744,12 @@ public class LuceneIndexManager extends PFComponent {
                             + ": " + oom.getMessage());
                     throw oom;
                 } catch (Exception e) {
-                    logWarning(folder + ": Content extraction failed for " + fileInfo + ": " + e.getMessage());
+                    if (closed.get()) {
+                        logFine(folder + ": Extraction skipped for " + fileInfo + ": " + e.getMessage());
+                    } else {
+                        logWarning(folder + ": Content extraction failed for " + fileInfo + ": "
+                                + e.getMessage());
+                    }
                 }
                 throttleExtraction();
             }
@@ -1928,17 +1939,33 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     public void shutdown() {
+        shutdown(false);
+    }
+
+    /**
+     * @param discard the folder is being DELETED, so its index goes with it: nothing is waited for
+     *                and nothing is written. The wait alone cost 120 ms per folder while an extraction
+     *                was in flight - 7 ms with an idle worker - and a purge walks tens of thousands of
+     *                folders, so a deletion right after a migration crawled while the OCR backlog was
+     *                still being worked off. The final commit is just as pointless: it either writes an
+     *                index nobody will read again, or it fails because removeFolder already took the
+     *                files away ("Commit failed: NoSuchFileException ... write.lock").
+     */
+    public void shutdown(boolean discard) {
         if (!closed.compareAndSet(false, true)) return;
         if (isFine()) {
-            logFine(folder + ": Shutting down...");
+            logFine(folder + (discard ? ": Discarding index..." : ": Shutting down..."));
         }
 
         // Let the background worker finish the file it is currently extracting.
         // It only checks closed between files — proceeding immediately would
         // close the IndexWriter under it, and callers removing the folder would
         // start deleting files it is still reading (Tika: "InputStream must
-        // have > 0 bytes").
-        awaitWorkerTermination();
+        // have > 0 bytes"). Discarding accepts exactly that: the worker fails on a file that is
+        // being deleted anyway, and its log stays quiet because closed is set (workerLoop).
+        if (!discard) {
+            awaitWorkerTermination();
+        }
 
         // Do NOT drain the backlog through Tika here — that can block shutdown
         // for minutes. Discard the queues; if anything was still pending,
@@ -1947,7 +1974,7 @@ public class LuceneIndexManager extends PFComponent {
         int pending = indexQueue.size() + contentQueue.size();
         indexQueue.clear();
         contentQueue.clear();
-        if (pending > 0) {
+        if (!discard && pending > 0) {
             try {
                 Files.deleteIfExists(indexPath.resolve(META_FILE_NAME));
             } catch (IOException e) {
@@ -1957,10 +1984,14 @@ public class LuceneIndexManager extends PFComponent {
                     + " — full index rebuild scheduled for next start");
         }
 
-        commitAndRefresh();
+        if (!discard) {
+            commitAndRefresh();
+        }
         try { searcherManager.close(); }
         catch (Exception ignored) {}
-        try { writer.close(); }
+        // rollback(), not close(): closing an IndexWriter COMMITS. There is nothing to commit for
+        // an index that is being thrown away.
+        try { if (discard) { writer.rollback(); } else { writer.close(); } }
         catch (Exception ignored) {}
 
         if (isFine()) {
