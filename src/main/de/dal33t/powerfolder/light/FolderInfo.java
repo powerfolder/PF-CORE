@@ -464,10 +464,14 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (base == null || path == null) {
             return null;
         }
-        if (path.equals(base)) {
+        int length = base.length();
+        if (!path.startsWith(base)) {
+            return null;
+        }
+        if (path.length() == length) {
             return "";
         }
-        return path.startsWith(base + "/") ? path.substring(base.length() + 1) : null;
+        return path.charAt(length) == '/' ? path.substring(length + 1) : null;
     }
 
     /** The top folder an addressed folder belongs to - itself when it is one. {@code null} stays null. */
@@ -559,10 +563,13 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (candidatePath == null) {
             return -1;
         }
-        if (path.equals(candidatePath) || path.startsWith(candidatePath + "/")) {
-            return candidatePath.length();
+        // Segment-exact without building the candidate path plus a slash: this runs per candidate and per
+        // addressed path - the concat was one throwaway string per comparison.
+        int length = candidatePath.length();
+        if (!path.startsWith(candidatePath)) {
+            return -1;
         }
-        return -1;
+        return path.length() == length || path.charAt(length) == '/' ? length : -1;
     }
 
     /**

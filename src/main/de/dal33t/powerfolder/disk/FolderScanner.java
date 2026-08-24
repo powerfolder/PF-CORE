@@ -188,13 +188,15 @@ public class FolderScanner extends PFComponent {
             /* PFC-3543: a row inside an interrupted subfolder is not this folder's business. The scan
              * does not walk that subtree, so such a row would be left over at the end and flagged as
              * deleted - which the store then refuses, so the next scan flags it again. */
+            boolean anyInterrupted = !getController().getFolderRepository()
+                .getInterruptedSubFolders().isEmpty();
             for (FileInfo fInfo : currentScanningFolder.getKnownFiles()) {
-                if (!currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
+                if (!anyInterrupted || !currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
                     remaining.put(fInfo.getRelativeName(), fInfo);
                 }
             }
             for (FileInfo fInfo : currentScanningFolder.getKnownDirectories()) {
-                if (!currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
+                if (!anyInterrupted || !currentScanningFolder.isInInterruptedSubFolder(fInfo)) {
                     remaining.put(fInfo.getRelativeName(), fInfo);
                 }
             }

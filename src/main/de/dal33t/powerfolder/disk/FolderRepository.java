@@ -1422,10 +1422,27 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (folder == null || relativeName == null) {
             return null;
         }
-        // Ground truth is the mounted Folder's CURRENT info (the map keys may be stale versions -
-        // FolderInfo.equals compares only the id), so collect the candidates via Folder.getInfo().
-        FolderInfo enclosing = FolderInfo.findEnclosingSubFolder(
-                getFolders().stream().map(Folder::getInfo).collect(Collectors.toList()), folder, relativeName);
+        /* Ground truth is the mounted Folder's CURRENT info (the map keys may be stale versions, FolderInfo
+         * .equals compares only the id), so the candidates come from Folder.getInfo(). Only the subfolders of
+         * the addressed workspace can enclose the path, and this runs per request: filtering while walking
+         * keeps a system without shared subfolders - the normal one - at zero allocations, instead of building
+         * a list of every mounted folder first. */
+        FolderInfo top = folder.isSubFolder() ? folder.getTopFolder() : folder;
+        List<FolderInfo> candidates = null;
+        for (Folder candidate : folders.values()) {
+            FolderInfo candidateInfo = candidate.getInfo();
+            if (!candidateInfo.isSubFolder() || !top.equals(candidateInfo.getTopFolder())) {
+                continue;
+            }
+            if (candidates == null) {
+                candidates = new ArrayList<>();
+            }
+            candidates.add(candidateInfo);
+        }
+        if (candidates == null) {
+            return null;
+        }
+        FolderInfo enclosing = FolderInfo.findEnclosingSubFolder(candidates, folder, relativeName);
         return enclosing != null ? getFolder(enclosing) : null;
     }
 

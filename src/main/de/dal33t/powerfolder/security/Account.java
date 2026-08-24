@@ -663,8 +663,12 @@ public class Account implements Serializable, D2DObject, Auditable {
      * granted.
      */
     public Collection<FolderInfo> getFolders() {
-        List<FolderInfo> folderInfos = new ArrayList<FolderInfo>(
-                permissions.size());
+        /* A set, not a list: the group folders used to be de-duplicated with contains() over the list, one scan
+         * per group folder, and this method is walked by every permission evaluation - an account in groups
+         * holding a few hundred folders paid that quadratically. Insertion order is kept. The direct permissions
+         * cannot collide anyway, grant() keeps at most one permission per folder; and where a folder does show
+         * up twice, counting it twice (getMaxFolders, nFolder) was never the intention. */
+        Set<FolderInfo> folderInfos = new LinkedHashSet<>(permissions.size());
         for (Permission permission : permissions) {
             if (permission instanceof FolderPermission) {
                 FolderPermission fp = (FolderPermission) permission;
@@ -678,7 +682,7 @@ public class Account implements Serializable, D2DObject, Auditable {
                 continue;
             }
             for (FolderInfo f : g.getAllFolders()) {
-                if (f != null && !folderInfos.contains(f)) {
+                if (f != null) {
                     folderInfos.add(f);
                 }
             }

@@ -243,7 +243,9 @@ public class InterruptedSubFolderIndex {
      * @return its interrupted subfolders, empty when it has none. A SHARED snapshot - never modify it
      */
     public static FolderInfo[] barriersOf(FolderInfo topFolder) {
-        if (topFolder == null) {
+        // Nothing interrupted anywhere - the default on virtually every system: out on an array length, without
+        // hashing a FolderInfo. This is called per file of a scan and per addressed path.
+        if (allBarriers.length == 0 || topFolder == null) {
             return NO_INFOS;
         }
         FolderInfo[] found = barriersByTop.get(topFolder);
