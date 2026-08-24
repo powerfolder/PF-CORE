@@ -96,6 +96,30 @@ public final class FileInfoFactory {
         return lookupInstance(folder.getInfo(), fn, Files.isDirectory(file));
     }
 
+    /**
+     * PFC-3616: the addressed location in the coordinates of the innermost interrupted subfolder around it - or
+     * unchanged, when no barrier encloses it.
+     * <p>
+     * Such a subfolder keeps its content in its OWN database and carries its own permissions, so a caller that
+     * addressed the location through the top folder has to act on the subfolder instead: read its rows, list its
+     * children, check ITS access, write into it. This is the counterpart to {@link #mapToTopFolder(FileInfo)} and
+     * the one place the file protocols (WebDAV, SMB) and the servlets share for that step. A location AT the
+     * barrier maps to the subfolder's base directory.
+     * <p>
+     * No-op while nothing is interrupted, which is the common case.
+     *
+     * @param addressed the location as the caller addressed it
+     * @return the same location in the coordinates of the subfolder that stores it, or {@code addressed} itself
+     */
+    public static FileInfo mapToInnermostSubFolder(FileInfo addressed) {
+        if (addressed == null) {
+            return null;
+        }
+        FolderInfo innermost = FolderInfo.findEnclosingInterruptedSubFolder(addressed.getFolderInfo(),
+            addressed.getRelativeName());
+        return innermost == null ? addressed : mapToSubFolder(addressed, innermost);
+    }
+
     public static DirectoryInfo mapToTopFolder(DirectoryInfo directoryInfo) {
         if (directoryInfo == null) {
             return null;
@@ -104,7 +128,7 @@ public final class FileInfoFactory {
         FolderInfo folderInfo = directoryInfo.getFolderInfo();
         if (folderInfo != null && folderInfo.isSubFolder()) {
             if (directoryInfo.isLookupInstance()) {
-                String topRelativePath = folderInfo.getLocation().getRelativeName();
+                String topRelativePath = folderInfo.locationPath();
                 if (!directoryInfo.isBaseDirectory()) {
                     topRelativePath += '/' + directoryInfo.getRelativeName();
                 }
@@ -441,7 +465,9 @@ public final class FileInfoFactory {
         Reject.ifFalse(subFolderInfo.isSubFolder(), "Not a subfolder");
 
         String topFileInfoRelativeName = topFileInfo.getRelativeName();
-        String locationName = subFolderInfo.getLocation().getRelativeName();
+        // locationPath(), not getLocation(): the DirectoryInfo would be built and thrown away again, once per
+        // mapped row - and every listing of a subfolder maps every row it returns.
+        String locationName = subFolderInfo.locationPath();
 
         Reject.ifFalse(topFileInfoRelativeName.startsWith(locationName), "FileInfo not in subfolder");
 
