@@ -69,6 +69,7 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.*;
@@ -495,10 +496,11 @@ public class LuceneIndexManager extends PFComponent {
     // ------------------------------------------------------------------------
 
     /**
-     * Queues files for background indexing. Returns immediately.
+     * Queues files for background indexing. Returns immediately. Nothing is accepted once
+     * {@link #shutdown()} has begun - see {@link #closed}.
      */
     public void indexFiles(Collection<FileInfo> files) {
-        if (files == null || files.isEmpty()) return;
+        if (closed.get() || files == null || files.isEmpty()) return;
         indexQueue.addAll(files);
         ensureWorkerRunning();
         if (isFine()) {
@@ -512,7 +514,7 @@ public class LuceneIndexManager extends PFComponent {
      * sets the flag accordingly.
      */
     public void markDeleted(Collection<FileInfo> files) {
-        if (files == null || files.isEmpty()) return;
+        if (closed.get() || files == null || files.isEmpty()) return;
         indexQueue.addAll(files);
         ensureWorkerRunning();
     }
@@ -522,7 +524,7 @@ public class LuceneIndexManager extends PFComponent {
      * must be immediate so recycle bin views don't show stale entries.
      */
     public void purgeFiles(Collection<FileInfo> files) {
-        if (files == null || files.isEmpty()) return;
+        if (closed.get() || files == null || files.isEmpty()) return;
         if (!writer.isOpen()) return;
         try {
             for (FileInfo fileInfo : files) {
@@ -575,7 +577,7 @@ public class LuceneIndexManager extends PFComponent {
 
     public void updateIndex(ScanResult scanResult) {
         Reject.ifNull(scanResult, "ScanResult");
-        if (!scanResult.isChangeDetected()) return;
+        if (closed.get() || !scanResult.isChangeDetected()) return;
 
         int count = 0;
         for (FileInfo f : safe(scanResult.getNewFiles())) {
@@ -1855,6 +1857,13 @@ public class LuceneIndexManager extends PFComponent {
             // finishing its last file.
             if (isFine()) {
                 logFine(folder + ": Commit skipped — index already closed");
+            }
+        } catch (NoSuchFileException e) {
+            // Expected while a folder is being deleted: removeFolder takes the content away,
+            // write.lock with it, and the final commit of shutdown() then finds nothing to commit
+            // to. The index of a folder that is going away is worthless anyway - not a warning.
+            if (isFine()) {
+                logFine(folder + ": Commit skipped — index directory gone: " + e.getFile());
             }
         } catch (Exception e) {
             logWarning(folder + ": Commit failed: " + e);
