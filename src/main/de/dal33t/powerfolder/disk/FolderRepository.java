@@ -57,11 +57,11 @@ import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -165,7 +165,19 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @see #scanBasedir()
      * @see #handleDeviceDisconnected(Folder)
      */
-    private final ReentrantLock scanBasedirLock = new ReentrantLock();
+    /**
+     * Guards the base directory scan against the structural changes it would trip over: creating,
+     * removing and moving folders. The SCAN takes the write lock, a structural CHANGE takes the read
+     * one - the names read the wrong way round on purpose, because what needs to be alone is the scan,
+     * not the change.
+     * <p>
+     * It was one exclusive lock before, so every mount and unmount of a node ran one after another
+     * although only the scan ever needed to. A production node was found with 62713 thread-dump samples
+     * queued behind it, its database pool starved (7658 c3p0 acquisition failures in a day) and even
+     * writing a log line contending. What the lock guarantees has not changed: the scan still never
+     * runs beside a change.
+     */
+    private final ReentrantReadWriteLock basedirScanLock = new ReentrantReadWriteLock();
     private ScheduledFuture<?> scanBaseDirFuture;
 
     /**
@@ -1793,101 +1805,108 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         boolean isWebDAV = PathUtils.isWebDAVFolder(folder.getLocalBase());
 
+        /* The read lock lets removals of DIFFERENT folders run side by side; the monitor of the folder
+         * itself keeps two removals of the SAME one apart, which the single exclusive lock used to do
+         * on the way. Nothing else in the code base locks on a Folder, so this cannot deadlock. */
+        basedirScanLock.readLock().lock();
         try {
-            scanBasedirLock.lock();
+            synchronized (folder) {
 
-            // Remove link if it exists.
-            removeLink(folder);
+                // Remove link if it exists.
+                removeLink(folder);
 
-            // Remove the desktop shortcut
-            folder.removeDesktopShortcut();
+                // Remove the desktop shortcut
+                folder.removeDesktopShortcut();
 
-            // Detach any problem listeners.
-            folder.clearAllProblemListeners();
+                // Detach any problem listeners.
+                folder.clearAllProblemListeners();
 
-            // Remove desktop ini if it exists
-            if (OSUtil.isWindowsSystem()) {
-                PathUtils.deleteDesktopIni(folder.getLocalBase());
-            }
+                // Remove desktop ini if it exists
+                if (OSUtil.isWindowsSystem()) {
+                    PathUtils.deleteDesktopIni(folder.getLocalBase());
+                }
 
-            // remove folder from config
-            removeConfigEntries(folder.getConfigEntryId());
+                // remove folder from config
+                removeConfigEntries(folder.getConfigEntryId());
 
-            // Save config - a bulk removal (see setSuspendConfigSave) saves it once at the end.
-            saveConfig();
+                // Save config - a bulk removal (see setSuspendConfigSave) saves it once at the end.
+                saveConfig();
 
-            // Shutdown meta folder as well
-            Folder metaFolder = getMetaFolder(folder.getInfo());
-            if (metaFolder != null) {
-                metaFolders.remove(metaFolder.getInfo());
-                metaFolders.remove(folder.getInfo());
+                // Shutdown meta folder as well
+                Folder metaFolder = getMetaFolder(folder.getInfo());
+                if (metaFolder != null) {
+                    metaFolders.remove(metaFolder.getInfo());
+                    metaFolders.remove(folder.getInfo());
+
+                    // Break transfers
+                    getController().getTransferManager().breakTransfers(
+                            metaFolder.getInfo());
+
+                    metaFolder.shutdown();
+                }
+
+                // Remove internal
+                folders.remove(folder.getInfo());
+                existingFolderCache.invalidate(folder.getLocalBase());
+                // PFC-3543: keep the interrupted-subfolder index in sync.
+                refreshInterruptedSubFolders();
+                folder.removeProblemListener(valveProblemListenerSupport);
 
                 // Break transfers
                 getController().getTransferManager().breakTransfers(
-                        metaFolder.getInfo());
+                        folder.getInfo());
 
-                metaFolder.shutdown();
-            }
+                folder.shutdown();
 
-            // Remove internal
-            folders.remove(folder.getInfo());
-            existingFolderCache.invalidate(folder.getLocalBase());
-            // PFC-3543: keep the interrupted-subfolder index in sync.
-            refreshInterruptedSubFolders();
-            folder.removeProblemListener(valveProblemListenerSupport);
+                // synchronize memberships
+                triggerSynchronizeAllFolderMemberships();
 
-            // Break transfers
-            getController().getTransferManager().breakTransfers(
-                    folder.getInfo());
-
-            folder.shutdown();
-
-            // synchronize memberships
-            triggerSynchronizeAllFolderMemberships();
-
-            // Abort scanning
-            boolean folderCurrentlyScannng = folder.equals(folderScanner
-                    .getCurrentScanningFolder());
-            if (folderCurrentlyScannng) {
-                folderScanner.abortScan();
-            }
-
-            // Delete the .PowerFolder dir and contents
-            if (deleteSystemSubDir) {
-                // Sleep a couple of seconds for things to settle,
-                // before removing dirs, to avoid conflicts.
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
+                // Abort scanning
+                boolean folderCurrentlyScannng = folder.equals(folderScanner
+                        .getCurrentScanningFolder());
+                if (folderCurrentlyScannng) {
+                    folderScanner.abortScan();
                 }
 
-                try {
-                    PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir());
-                } catch (IOException e) {
-                    logWarning("Failed to delete: " + folder.getSystemSubDir() + ". " + e);
-                }
-
-                if (!isWebDAV) {
-                    // Remove the folder if totally empty.
-                    Path localBase = folder.getLocalBase();
+                // Delete the .PowerFolder dir and contents
+                if (deleteSystemSubDir) {
+                    // Sleep a couple of seconds for things to settle,
+                    // before removing dirs, to avoid conflicts.
                     try {
-                        if (EncryptedFileSystemUtils.isCryptoInstance(localBase) && PathUtils.isEmptyDir(localBase)) {
-                            PathUtils.recursiveDeleteVisitor(EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase));
-                        } else {
-                            Files.delete(localBase);
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                    }
+
+                    try {
+                        PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir());
+                    } catch (IOException e) {
+                        logWarning("Failed to delete: " + folder.getSystemSubDir() + ". " + e);
+                    }
+
+                    if (!isWebDAV) {
+                        // Remove the folder if totally empty.
+                        Path localBase = folder.getLocalBase();
+                        try {
+                            if (EncryptedFileSystemUtils.isCryptoInstance(localBase)
+                                    && PathUtils.isEmptyDir(localBase)) {
+                                PathUtils.recursiveDeleteVisitor(
+                                        EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase));
+                            } else {
+                                Files.delete(localBase);
+                            }
+                        } catch (DirectoryNotEmptyException | NoSuchFileException e) {
+                            // this can happen, and is just fine
+                        } catch (IOException ioe) {
+                            logSevere("Failed to delete local base: "
+                                    + localBase.toAbsolutePath() + ": "
+                                    + ioe);
                         }
-                    } catch (DirectoryNotEmptyException | NoSuchFileException e) {
-                        // this can happen, and is just fine
-                    } catch (IOException ioe) {
-                        logSevere("Failed to delete local base: "
-                                + localBase.toAbsolutePath() + ": "
-                                + ioe);
                     }
                 }
-            }
 
+            }
         } finally {
-            scanBasedirLock.unlock();
+            basedirScanLock.readLock().unlock();
         }
 
         if (fireEvent) {
@@ -2239,7 +2258,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             return false;
         }
         // sync with #handleDeviceDisconnectd(Folder)
-        scanBasedirLock.lock();
+        // The scan is the one that has to be alone - see basedirScanLock.
+        basedirScanLock.writeLock().lock();
         boolean ok = false;
         try {
             if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
@@ -2251,7 +2271,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 ok = lookForFoldersToBeRemoved() && ok;
             }
         } finally {
-            scanBasedirLock.unlock();
+            basedirScanLock.writeLock().unlock();
         }
         return ok;
     }
@@ -3080,7 +3100,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         try {
-            scanBasedirLock.lock();
+            basedirScanLock.readLock().lock();
             if (isFine()) {
                 logFine("Syncing folder setup with account permissions("
                         + a.getFolders().size() + "): " + a.getUsername());
@@ -3120,7 +3140,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         } finally {
-            scanBasedirLock.unlock();
+            basedirScanLock.readLock().unlock();
             accountSyncLock.unlock();
         }
     }
@@ -3166,7 +3186,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean moved = false;
         long start = System.currentTimeMillis();
         try {
-            scanBasedirLock.lock();
+            basedirScanLock.readLock().lock();
 
             Path sourceDirectory = folder.getPhysicalDir().toRealPath();
 
@@ -3293,7 +3313,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFine(e);
             return null;
         } finally {
-            scanBasedirLock.unlock();
+            basedirScanLock.readLock().unlock();
         }
 
         return moved ? folder : null;
@@ -3360,7 +3380,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Actually create the directory
             try {
-                scanBasedirLock.lock();
+                basedirScanLock.readLock().lock();
                 try {
                     Files.createDirectories(settings.getLocalBaseDir());
                 } catch (IOException ioe) {
@@ -3407,7 +3427,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logWarning("Unable to create folder " + folderName + " at "
                         + settings.getLocalBaseDir() + ". " + e);
             } finally {
-                scanBasedirLock.unlock();
+                basedirScanLock.readLock().unlock();
             }
         }
         // If a UI client is running and AUTO_SETUP_ACCOUNT_FOLDERS is enabled, check if there is enough disk space for all folders.
@@ -3514,7 +3534,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 try {
                     // Actually create the directory
-                    scanBasedirLock.lock();
+                    basedirScanLock.readLock().lock();
                     Files.createDirectories(settings.getLocalBaseDir());
 
                     Folder folder = createFolder(folderInfo, settings, true);
@@ -3529,7 +3549,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             + folderInfo.getName() + " at "
                             + settings.getLocalBaseDir() + ". " + e);
                 } finally {
-                    scanBasedirLock.unlock();
+                    basedirScanLock.readLock().unlock();
                 }
             }
         }
