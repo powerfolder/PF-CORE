@@ -488,9 +488,6 @@ public class Controller extends PFComponent {
             scheduleAndRepeat(() -> logInfo(Profiling.dumpStats()), 1000L * 60, 1000L * 60 * 60);
         }
 
-        // PFS-5739: record thread dumps periodically, so an incident can still be analysed afterwards
-        new ThreadDumpRecorder(this).start();
-
         String arch = OSUtil.is64BitPlatform() ? "64bit" : "32bit";
         logInfo("OS: " + System.getProperty("os.name") + " " + System.getProperty("os.version") + " (" + arch + ")");
         logInfo("Java: " + JavaVersion.systemVersion().toString() + " ("
@@ -583,6 +580,14 @@ public class Controller extends PFComponent {
         if (!configURLLoaded) {
             ConfigurationLoader.loadAndMergeConfigURL(this);
         }
+
+        /* PFS-5739: record thread dumps periodically, so an incident can still be analysed
+         * afterwards. Started here and not earlier because threaddump.interval.seconds may come
+         * from the configuration URL, which is merged just above and, when config.url itself comes
+         * from the distribution, only on this second attempt. Starting before that read the local
+         * value or the default and ignored what the server prescribed. Nothing is lost by waiting:
+         * the first dump is one interval away either way. */
+        new ThreadDumpRecorder(this).start();
 
         logFine("Build time: " + getBuildTime());
         logInfo("Program version " + PROGRAM_VERSION);
