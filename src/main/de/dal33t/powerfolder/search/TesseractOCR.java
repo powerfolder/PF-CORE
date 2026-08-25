@@ -107,6 +107,9 @@ public class TesseractOCR extends Loggable {
     /** Pool of Tesseract instances for concurrent access. */
     private final BlockingQueue<Tesseract> pool;
 
+    /** Where the training data ended up, so a pooled instance can be rebuilt after a failure. */
+    private volatile String tessdataDir;
+
     // ------------------------------------------------------------------------
     // Initialization
     // ------------------------------------------------------------------------
@@ -144,15 +147,10 @@ public class TesseractOCR extends Loggable {
                 return;
             }
 
+            this.tessdataDir = tessdataPath.toString();
             // Create pooled Tesseract instances
             for (int i = 0; i < poolSize; i++) {
-                Tesseract tess = new Tesseract();
-                tess.setDatapath(tessdataPath.toString());
-                tess.setLanguage(languageConfig);
-                tess.setOcrEngineMode(1);
-                tess.setVariable("user_defined_dpi", "150");
-                tess.setVariable("debug_file", OSUtil.isWindowsSystem() ? "NUL" : "/dev/null");
-                pool.add(tess);
+                pool.add(newInstance());
             }
 
             logInfo("Tesseract OCR initialized with " + poolSize + " pooled instances, languages: "
@@ -256,6 +254,7 @@ public class TesseractOCR extends Loggable {
         }
 
         Tesseract tess = null;
+        boolean healthy = false;
         try {
             // Indexing is a background batch job — waiting is better than
             // permanently dropping the file's searchable content. With the pool
@@ -269,9 +268,8 @@ public class TesseractOCR extends Loggable {
 
             long start = System.currentTimeMillis();
             String result = tess.doOCR(file.toFile());
+            healthy = true;
             long elapsed = System.currentTimeMillis() - start;
-            pool.offer(tess);
-            tess = null;
             if (result != null && !result.isBlank()) {
                 if (isFine()) {
                     logFine("OCR completed for " + file.getFileName() + " (" + result.length()
@@ -292,8 +290,58 @@ public class TesseractOCR extends Loggable {
             return null;
         } finally {
             if (tess != null) {
-                pool.offer(tess);
+                returnToPool(tess, healthy);
             }
+        }
+    }
+
+    /**
+     * Builds a configured, not yet initialised instance. The native handle is only created when doOCR
+     * runs, so this costs nothing until then.
+     *
+     * @return null when there is no training data, i.e. when OCR is not usable at all
+     */
+    private Tesseract newInstance() {
+        String datapath = tessdataDir;
+        if (datapath == null) {
+            return null;
+        }
+        Tesseract tess = new Tesseract();
+        tess.setDatapath(datapath);
+        tess.setLanguage(languageConfig);
+        tess.setOcrEngineMode(1);
+        tess.setVariable("user_defined_dpi", "150");
+        tess.setVariable("debug_file", OSUtil.isWindowsSystem() ? "NUL" : "/dev/null");
+        return tess;
+    }
+
+    /**
+     * An instance whose {@code doOCR} did not return cleanly is thrown away instead of put back. Tess4J
+     * deletes the native handle in a finally INSIDE doOCR, so after a failure nobody knows whether that
+     * handle is gone, half-built or garbage - and the next call on the same object runs
+     * TessBaseAPIDelete on it. That is not an exception one can catch: it is a SIGSEGV in C that takes
+     * the whole server down, which is what the crash file of 2026-07-10 shows
+     * (TessBaseAPIDelete+0xc, called from Tesseract.dispose, called from doOCR).
+     * <p>
+     * If no replacement can be built the pool simply gets smaller. Less OCR is the better outcome:
+     * a pool that runs empty logs "pool exhausted" and skips the content, an instance that kills the
+     * process takes everything with it.
+     */
+    private void returnToPool(Tesseract tess, boolean healthy) {
+        if (healthy) {
+            pool.offer(tess);
+            return;
+        }
+        if (!ocrEnabled) {
+            return;
+        }
+        Tesseract fresh = newInstance();
+        if (fresh != null) {
+            pool.offer(fresh);
+            logFine("Replaced a Tesseract instance after a failed OCR run");
+        } else {
+            logWarning("A Tesseract instance failed and could not be replaced - the OCR pool holds "
+                    + pool.size() + " instance(s) now");
         }
     }
 
