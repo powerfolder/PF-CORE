@@ -301,4 +301,36 @@ public class SubFolderInterruptInheritanceTest extends TwoControllerTestCase {
         assertEquals("outer", inner.getInfo().getTopPath());
         assertEquals("outer/inner", inner.getInfo().locationPath());
     }
+
+    /**
+     * PFC-3630: interrupting the OUTER folder first and the inner one afterwards - the order a
+     * migration produces, and the one an admin produces who tightens a workspace from the top down.
+     * The inner interruption has to read the rows where they live by then: in the outer subfolder's
+     * database, not in the top folder's. Reading the top folder found nothing, so the content stayed
+     * with the outer folder while the inner one came up empty - for everybody, its own holders
+     * included.
+     */
+    public void testInterruptingOuterFirstKeepsTheContentOfTheInnerOne() throws IOException {
+        Folder topFolder = getFolderAtBart();
+
+        Path innerPath = Files.createDirectories(
+            topFolder.getPhysicalDir().resolve("outer").resolve("inner"));
+        TestHelper.createRandomFile(innerPath, "inner.txt");
+        TestHelper.createRandomFile(topFolder.getPhysicalDir().resolve("outer"), "outer.txt");
+        TestHelper.scanFolder(topFolder);
+
+        Folder outer = topFolder.share((DirectoryInfo) topFolder.getFileInfo("outer"));
+        outer.setInheritsPermissions(false);
+        DirectoryInfo innerInOuter = (DirectoryInfo) outer.getFileInfo("inner");
+        Folder inner = topFolder.share((DirectoryInfo) FileInfoFactory.mapToTopFolder(innerInOuter));
+        inner.setInheritsPermissions(false);
+
+        FileInfo innerFile = FileInfoFactory.lookupInstance(inner.getInfo(), "inner.txt");
+        assertNotNull("The inner folder must hold its own file after the interruption",
+            inner.getDAO().find(innerFile, null));
+        assertNull("The outer folder must not keep the row of the inner subtree",
+            outer.getDAO().find(FileInfoFactory.lookupInstance(outer.getInfo(), "inner/inner.txt"), null));
+        assertNotNull("The outer folder keeps its own file",
+            outer.getDAO().find(FileInfoFactory.lookupInstance(outer.getInfo(), "outer.txt"), null));
+    }
 }

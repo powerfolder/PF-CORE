@@ -2267,12 +2267,26 @@ public class Folder extends PFComponent {
                 return;
             }
 
-            // Snapshot the rows to migrate from the CURRENT database, before switching DAOs.
-            // Interrupt reads the subtree from the top DAO (rows are prefixed with the subfolder
-            // location); restore reads this subfolder's own DAO (all local rows are the subtree).
+            /* Snapshot the rows to migrate from the CURRENT database, before switching DAOs. Restore
+             * reads this subfolder's own database - all its rows are the subtree. Interrupt reads the
+             * folder that OWNS my location today: the top folder in the plain case, and the innermost
+             * barrier still standing above me when interruptions nest (PFS-5767). Reading the top
+             * folder there found nothing, so the content stayed behind that barrier while my own
+             * database came up empty - the mirror image of what the restore had to learn. */
+            Folder source = topFolder;
+            if (!inherits) {
+                FolderInfo enclosing = FolderInfo.findEnclosingInterruptedSubFolder(
+                    topFolder.getInfo(), currentInfo.locationPath());
+                if (enclosing != null && !enclosing.equals(currentInfo)) {
+                    Folder enclosingFolder = getController().getFolderRepository().getFolder(enclosing);
+                    if (enclosingFolder != null) {
+                        source = enclosingFolder;
+                    }
+                }
+            }
             Collection<FileInfo> toMigrate = inherits
-                ? collectLocalRows(getDAO(), false)
-                : collectLocalRows(topFolder.getDAO(), true);
+                ? collectLocalRows(this, false)
+                : collectLocalRows(source, true);
 
             if (!inherits) {
                 /* PFS-5306: last chance to save the tags of the directory this folder occupies - its
@@ -2358,11 +2372,13 @@ public class Folder extends PFComponent {
                 }
                 getDAO().store(null, subInfos);
                 for (FileInfo topInfo : toMigrate) {
-                    topFolder.getDAO().delete(null, topInfo);
+                    // The rows are in top-folder coordinates; the source keeps its own.
+                    source.getDAO().delete(null, source == topFolder ? topInfo
+                        : FileInfoFactory.mapToSubFolder(topInfo, source.getInfo()));
                 }
-                topFolder.setDBDirty();
+                source.setDBDirty();
                 setDBDirty();
-                logInfo(this + ": Interrupted permission inheritance, split off from top folder " + topFolder
+                logInfo(this + ": Interrupted permission inheritance, split off from " + source
                     + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
             }
         }
@@ -2432,20 +2448,31 @@ public class Folder extends PFComponent {
      *                    DAO case); {@code false} to keep all local rows (own DAO case)
      * @return the FileInfos and DirectoryInfos to migrate
      */
-    private Collection<FileInfo> collectLocalRows(FileInfoDAO source, boolean onlySubtree) {
-        // PFC-3543: the directory node that IS the subfolder root stays in the top folder so the
-        // subfolder remains listed/navigable there; only its CONTENTS are isolated. isInsideSubFolder()
-        // excludes that exact root node (isInSubFolder would match it via startsWith).
-        // PFC-3575: how that kept node is surfaced/filtered by access is a follow-up.
+    /**
+     * The rows to hand over, read from {@code source}.
+     * <p>
+     * PFC-3543: the directory node that IS the subfolder root stays in the top folder so the subfolder
+     * remains listed/navigable there; only its CONTENTS are isolated. {@code isInsideSubFolder()}
+     * excludes that exact root node ({@code isInSubFolder} would match it via startsWith).
+     *
+     * @param source      the folder whose database is read
+     * @param onlySubtree {@code true} for an interruption: only my subtree, in TOP-folder coordinates -
+     *                    the source may be a barrier above me and then answers in its own. {@code false}
+     *                    for a restore: my own rows, in my own coordinates, all of them
+     */
+    private Collection<FileInfo> collectLocalRows(Folder source, boolean onlySubtree) {
+        boolean fromSubFolder = onlySubtree && source.getInfo().isSubFolder();
         List<FileInfo> rows = new ArrayList<>();
-        for (FileInfo fInfo : source.findAllFiles(null)) {
-            if (!onlySubtree || fInfo.isInsideSubFolder(currentInfo)) {
-                rows.add(fInfo);
+        for (FileInfo fInfo : source.getDAO().findAllFiles(null)) {
+            FileInfo row = fromSubFolder ? FileInfoFactory.mapToTopFolder(fInfo) : fInfo;
+            if (!onlySubtree || row.isInsideSubFolder(currentInfo)) {
+                rows.add(row);
             }
         }
-        for (DirectoryInfo dInfo : source.findAllDirectories(null)) {
-            if (!onlySubtree || dInfo.isInsideSubFolder(currentInfo)) {
-                rows.add(dInfo);
+        for (DirectoryInfo dInfo : source.getDAO().findAllDirectories(null)) {
+            FileInfo row = fromSubFolder ? FileInfoFactory.mapToTopFolder(dInfo) : dInfo;
+            if (!onlySubtree || row.isInsideSubFolder(currentInfo)) {
+                rows.add(row);
             }
         }
         return rows;
