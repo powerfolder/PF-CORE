@@ -1038,9 +1038,12 @@ public enum ConfigurationEntry {
     SEARCH_INDEX_OCR_LANGUAGES("search.index.ocr.languages", "fast", true),
 
     /**
-     * Maximum file size in MB that will be submitted for OCR. Files larger than this are skipped. Default: 100 MB.
+     * Maximum file size in MB that will be submitted for OCR. Files larger than this are skipped.
+     * Default: 20 MB. A scan of that size is already a few hundred pages, and every page has to be
+     * rendered and recognised - one such file can occupy an indexing worker for many minutes while
+     * the rest of the folder waits.
      */
-    SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB("search.index.ocr.maxFileSizeMB", 100, true),
+    SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB("search.index.ocr.maxFileSizeMB", 20, true),
 
     /**
      * PFS-5311: Maximum number of concurrent indexing worker threads. Controls how many folders can
