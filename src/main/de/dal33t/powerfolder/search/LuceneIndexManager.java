@@ -235,7 +235,11 @@ public class LuceneIndexManager extends PFComponent {
     private final LinkedBlockingQueue<FileInfo> indexQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<FileInfo> contentQueue = new LinkedBlockingQueue<>();
     private final AtomicInteger uncommittedCount = new AtomicInteger(0);
+    /** The stop signal for the worker. Also set by requestStop(), before any shutdown. */
     private final AtomicBoolean closed = new AtomicBoolean(false);
+
+    /** Guards the shutdown body so it runs exactly once, independently of the stop signal. */
+    private final AtomicBoolean shutdownStarted = new AtomicBoolean(false);
     private volatile long lastCommitTime;
 
     /** True while the worker is running on the IO thread pool. */
@@ -1943,6 +1947,19 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
+     * Tells the worker to stop, without waiting for it and without closing anything.
+     * <p>
+     * Lets a caller that is shutting many folders down signal all of them first, so the workers drain
+     * side by side instead of one after another. The wait inside a single {@link #shutdown()} is up to
+     * a second and a server holds thousands of folders, so the sequence outlived the patience of the
+     * stop script: the process was killed mid-shutdown four times in one night, which costs whatever
+     * the folder database had not persisted yet.
+     */
+    public void requestStop() {
+        closed.set(true);
+    }
+
+    /**
      * @param discard the folder is being DELETED, so its index goes with it: nothing is waited for
      *                and nothing is written. The wait alone cost 120 ms per folder while an extraction
      *                was in flight - 7 ms with an idle worker - and a purge walks tens of thousands of
@@ -1952,7 +1969,10 @@ public class LuceneIndexManager extends PFComponent {
      *                files away ("Commit failed: NoSuchFileException ... write.lock").
      */
     public void shutdown(boolean discard) {
-        if (!closed.compareAndSet(false, true)) return;
+        // The gate is its own flag: `closed` is the stop signal and may already be set by
+        // requestStop(), which must not make the shutdown body skip itself.
+        if (!shutdownStarted.compareAndSet(false, true)) return;
+        closed.set(true);
         if (isFine()) {
             logFine(folder + (discard ? ": Discarding index..." : ": Shutting down..."));
         }

@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.search.LuceneIndexManager;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
@@ -953,6 +954,19 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Stop file requestor
         fileRequestor.shutdown();
+
+        /* Two phases. Every index is told to stop first, then the folders are closed one by one.
+         * A single index shutdown waits up to a second for its worker, and a server holds thousands
+         * of folders - done strictly in sequence, that outlived the patience of the stop script, which
+         * killed the process mid-shutdown four times in one night. Signalled up front, the workers
+         * drain side by side and each wait below finds its worker already gone. Nothing is discarded:
+         * the folders stay, so their indexes are still committed and closed properly underneath. */
+        for (Folder metaFolder : metaFolders.values()) {
+            requestIndexStop(metaFolder);
+        }
+        for (Folder folder : folders.values()) {
+            requestIndexStop(folder);
+        }
 
         // shutdown all folders
         for (Folder metaFolder : metaFolders.values()) {
@@ -3872,4 +3886,12 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+
+    /** Signals a folder's search index to stop working, if it has one. Never waits. */
+    private static void requestIndexStop(Folder folder) {
+        LuceneIndexManager index = folder.getSearchIndexManager();
+        if (index != null) {
+            index.requestStop();
+        }
+    }
 }
