@@ -485,6 +485,16 @@ public class Folder extends PFComponent {
     }
 
     /**
+     * @return true while the search index of this folder is being rebuilt in full. A folder in that
+     *         state should not be unmounted: the rebuild would be thrown away AND its meta file
+     *         deleted, so the next mount starts the whole thing over.
+     */
+    public boolean isIndexRebuilding() {
+        LuceneIndexManager index = searchIndexManager;
+        return index != null && index.isRebuilding();
+    }
+
+    /**
      * Searches for files matching the given criteria. Uses the Lucene
      * search index if available; otherwise falls back to the DAO.
      *
