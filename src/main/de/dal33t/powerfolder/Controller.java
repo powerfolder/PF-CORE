@@ -972,8 +972,10 @@ public class Controller extends PFComponent {
             .getValueInt(getController());
         if (maxDays >= 0) {
             LoggingManager.removeOldLogs(maxDays);
-            new ThreadDumpRecorder(this).removeOldDumps(maxDays);
         }
+        // Outside that guard: the dumps have a retention of their own and are pruned even where
+        // the logs are kept forever.
+        new ThreadDumpRecorder(this).removeOldDumps();
     }
 
     /**
@@ -1346,8 +1348,8 @@ public class Controller extends PFComponent {
                 .getValueInt(getController());
             if (days >= 0) {
                 LoggingManager.removeOldLogs(days);
-                new ThreadDumpRecorder(this).removeOldDumps(days);
             }
+            new ThreadDumpRecorder(this).removeOldDumps();
             logFine("Reconfigured logs for new day: " + now);
 
             backupConfigAssets();

@@ -42,8 +42,9 @@ import java.util.zip.ZipOutputStream;
  * <p>
  * The dumps are written next to the log files ({@link LoggingManager#getDebugDir()}, subdirectory
  * {@value #DUMP_SUBDIR}) and therefore travel into the support package with them - in a cluster each
- * node contributes its own. They live and die with those logs: {@link #removeOldDumps(int)} uses the
- * log retention ({@link ConfigurationEntry#LOG_FILE_DELETE_DAYS}) instead of a setting of its own.
+ * node contributes its own. How long they are kept is the shorter of
+ * {@link ConfigurationEntry#THREAD_DUMP_KEEP_DAYS} and the log retention
+ * ({@link ConfigurationEntry#LOG_FILE_DELETE_DAYS}) - see {@link #retentionDays()}.
  * <p>
  * Recording is meant to be unnoticeable: one zip per run holding the dump as a .txt (a dump of a busy
  * server is several MB of very repetitive text, and a zip opens with a double click on every platform
@@ -78,15 +79,37 @@ public class ThreadDumpRecorder extends PFComponent {
         }
         long period = 1000L * seconds;
         getController().scheduleAndRepeat(this::record, period, period);
+        int keep = retentionDays();
         logInfo(dumpDir() + ": Recording a thread dump every " + seconds + " second(s), kept for "
-            + ConfigurationEntry.LOG_FILE_DELETE_DAYS.getValueInt(getController()) + " day(s)");
+            + (keep < 0 ? "as long as the disk allows" : keep + " day(s)"));
     }
 
     /**
-     * Deletes recorded dumps that are at least {@code maxAgeDays} old - called by the same
+     * How long dumps are kept: the shorter of {@link ConfigurationEntry#THREAD_DUMP_KEEP_DAYS} and
+     * the log retention. Negative means keep - a value that says so is not a limit, so the other
+     * one decides, and where both say it nothing is deleted.
+     */
+    int retentionDays() {
+        int ownDays = ConfigurationEntry.THREAD_DUMP_KEEP_DAYS.getValueInt(getController());
+        int logDays = ConfigurationEntry.LOG_FILE_DELETE_DAYS.getValueInt(getController());
+        if (ownDays < 0) {
+            return logDays;
+        }
+        if (logDays < 0) {
+            return ownDays;
+        }
+        return Math.min(ownDays, logDays);
+    }
+
+    /**
+     * Deletes recorded dumps that have outlived {@link #retentionDays()} - called by the same
      * housekeeping that prunes the log files.
      */
-    public void removeOldDumps(int maxAgeDays) {
+    public void removeOldDumps() {
+        int maxAgeDays = retentionDays();
+        if (maxAgeDays < 0) {
+            return;
+        }
         Path dir = dumpDir();
         if (dir == null || !Files.exists(dir)) {
             return;

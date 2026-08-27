@@ -1122,9 +1122,32 @@ public enum ConfigurationEntry {
      * are kept as long as the log files ({@link #LOG_FILE_DELETE_DAYS}).
      * <p>
      * Seconds, not minutes, so that a hang can be sampled closely while it is being reproduced - a
-     * minute is a long time to wait for the next sample. The default of 300 is the previous 5 minutes.
+     * minute is a long time to wait for the next sample.
+     * <p>
+     * The default is 30, which is 120 samples an hour. That is what makes a dump useful as a
+     * measurement rather than a snapshot: "2.6 percent of the samples wait on that lock", "101 of
+     * 100 download slots in use" are answers a handful of samples an hour cannot give. Faster is
+     * not better - every dump stops the JVM at a safepoint across all of its threads, and a second
+     * apart that begins to disturb what it is meant to measure.
+     * <p>
+     * It is not free. A dump is roughly 5 KB compressed on a quiet server and 15 KB on a busy one
+     * (it grows with the number of threads), so at 30 seconds it writes something between 14 and
+     * 45 MB a day - and it is kept as long as the log files, 31 days by default. On an
+     * installation whose logs are a few hundred MB, the dumps are of the same order.
      */
-    THREAD_DUMP_INTERVAL_SECONDS("threaddump.interval.seconds", 300, true),
+    THREAD_DUMP_INTERVAL_SECONDS("threaddump.interval.seconds", 30, true),
+
+    /**
+     * Days to keep the recorded thread dumps. The dumps used to live exactly as long as the log
+     * files, and that is what made them big: at one every 30 seconds a month of them is a
+     * gigabyte on a busy server, while their worth runs out after a few days - a support package
+     * is pulled soon after the incident, and nobody diagnoses last month's hang from samples.
+     * <p>
+     * The shorter of this and {@link #LOG_FILE_DELETE_DAYS} wins: dumps without the log lines that
+     * go with them explain nothing, so they must not outlive them. A negative value means "keep",
+     * and where both say so, nothing is deleted.
+     */
+    THREAD_DUMP_KEEP_DAYS("threaddump.keep.days", 7, true),
 
     /**
      * The loglevel to print to console when verbose=true
