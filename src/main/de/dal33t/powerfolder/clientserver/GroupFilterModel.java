@@ -68,8 +68,9 @@ public class GroupFilterModel implements Serializable {
     }
 
     public void setQueryname(String queryname) {
-        this.queryname = queryname ;
-
+        /* A search keyword with a space at either end found nothing: it goes into a LIKE as
+           "%00_testsite2 %". Same normalisation as setUsername above. */
+        this.queryname = queryname != null ? queryname.trim() : null;
     }
 
     public String getMemberOfOrganizationOID() {

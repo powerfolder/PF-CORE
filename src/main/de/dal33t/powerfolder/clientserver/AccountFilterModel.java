@@ -116,7 +116,9 @@ public class AccountFilterModel implements Serializable {
     }
 
     public void setQueryname(String queryname) {
-        this.queryname = queryname;
+        /* A space at either end of the keyword would end up inside the LIKE pattern and match
+           nothing. Same normalisation as setUsername above. */
+        this.queryname = queryname != null ? queryname.trim() : null;
     }
 
     public void applyFromQuery(String query) {
