@@ -191,6 +191,30 @@ public interface GroupDAO extends GenericDAO<Group> {
     Collection<Group> findByName(String name);
 
     /**
+     * PFS-5803: the group OIDs holding a permission on <em>exactly</em> the given folder id - the
+     * "Folder" search mode of the Groups table. The folder is matched by id equality only (no name
+     * matching and no subfolder expansion), so the result is the set of groups with access to that
+     * one folder. Implementations open and close their own session, so it can be called from an API
+     * action.
+     *
+     * @param folderId the exact folder id to look up
+     * @return group OIDs with a permission on that folder; empty if the id is blank or matches nothing
+     */
+    Collection<String> findGroupOIDsByExactFolderId(String folderId);
+
+    /**
+     * PFS-5803: the group OIDs whose members match the query - by member username, first or last name -
+     * including groups that hold the member only through a nested subgroup, at any depth. The "Member"
+     * search mode of the Groups table. Implementations open and close their own session, so it can be
+     * called from an API action.
+     *
+     * @param query the member search text (username / first / last name)
+     * @return group OIDs holding a matching member directly or through any nested subgroup; empty if
+     *         the query is blank or matches nothing
+     */
+    Collection<String> findGroupOIDsByMember(String query);
+
+    /**
      * Deletes every group whose OID starts with {@code oidPrefix} with a few set-based statements
      * instead of one transaction per group: memberships, group-admin permissions on accounts,
      * parent/child links, the groups' own permissions and the groups themselves.
