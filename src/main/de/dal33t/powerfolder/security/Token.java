@@ -23,9 +23,12 @@ import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.ServerInfo;
 import de.dal33t.powerfolder.util.*;
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 
 import javax.persistence.Entity;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -37,7 +40,10 @@ import java.util.Date;
  * @author <a href="mailto:sprajc@powerfolder.com">Christian Sprajc</a>
  */
 @Entity
-@org.hibernate.annotations.Table(appliesTo = "Token", indexes = {@Index(name = "IDX_TOKEN_AOID", columnNames = {AccountInfo.PROPERTYNAME_OID})})
+@Table(name = "Token", indexes = {
+    @Index(name = "IDX_TOKEN_AOID", columnList = AccountInfo.PROPERTYNAME_OID),
+    @Index(name = "IDX_TOKEN_VALID_TO", columnList = Token.PROPERTYNAME_VALID_TO)
+})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Token implements Serializable {
 
@@ -76,7 +82,6 @@ public class Token implements Serializable {
     private String secrect;
 
     private boolean revoked;
-    @Index(name = "IDX_TOKEN_VALID_TO")
     private Date validTo;
 
     @ManyToOne

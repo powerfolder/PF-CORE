@@ -36,7 +36,6 @@ import de.dal33t.powerfolder.util.intern.FolderInfoInternalizer;
 import de.dal33t.powerfolder.util.intern.Internalizer;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
 
 import javax.persistence.*;
 import java.io.*;
@@ -58,6 +57,7 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  * @version $Revision: 1.9 $
  */
 @Entity
+@Table(indexes = @Index(name = "IDX_FOLDER_NAME", columnList = FolderInfo.PROPERTYNAME_NAME))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class FolderInfo implements Serializable, Cloneable, D2DObject {
     private static final Logger LOG = Logger.getLogger(FolderInfo.class.getName());
@@ -83,7 +83,6 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     public static final String PROPERTYNAME_INHERITS_PERMISSIONS = "inheritsPermissions";
     public static final String PROPERTYNAME_TAGS = "tags";
 
-    @Index(name="IDX_FOLDER_NAME")
     private String name;
     @Id
     public String id;

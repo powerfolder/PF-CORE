@@ -29,7 +29,6 @@ import de.dal33t.powerfolder.security.FolderReadWritePermission;
 import de.dal33t.powerfolder.util.*;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -49,6 +48,7 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  * @author Sprajc
  */
 @Entity
+@Table(indexes = @Index(name = "IDX_FIL_REL_NAME", columnList = FileLink.PROPERTYNAME_RELATIVE_NAME))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class FileLink implements Serializable {
 
@@ -69,7 +69,6 @@ public class FileLink implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "folderInfo_id")
     private FolderInfo folderInfo;
-    @Index(name = "IDX_FIL_REL_NAME")
     @Column(length = 1024)
     private String relativeName;
     @Deprecated

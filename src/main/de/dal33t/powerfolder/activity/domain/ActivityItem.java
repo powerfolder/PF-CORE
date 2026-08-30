@@ -22,7 +22,6 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.protocol.ActivityItemProto;
 import de.dal33t.powerfolder.security.Account;
-import org.hibernate.annotations.Index;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,6 +36,7 @@ import java.util.UUID;
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 @Entity
+@Table(indexes = @Index(name = "IDX_ACTIVITY_TYPE", columnList = ActivityItem.PROPERTY_TYPE))
 public class ActivityItem implements D2DObject {
 
     public static final String PROPERTY_CREATION_DATE = "creationDate";
@@ -51,7 +51,6 @@ public class ActivityItem implements D2DObject {
     private final Date creationDate;
 
     @Enumerated(EnumType.STRING)
-    @Index(name = "IDX_ACTIVITY_TYPE")
     private final ActivityType type;
 
     @ManyToOne

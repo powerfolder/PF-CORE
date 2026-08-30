@@ -22,7 +22,6 @@ import com.google.protobuf.AbstractMessage;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.protocol.FileActivityProto;
-import org.hibernate.annotations.Index;
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;
@@ -33,6 +32,7 @@ import java.util.UUID;
  * @author <a href="mailto:krickl@powerfolder.com">Maximilian Krickl</a>
  */
 @Entity
+@Table(indexes = @Index(name = "IDX_REL_PATH", columnList = "relativePath"))
 public class FileActivity implements D2DObject {
     @Id
     @Column(length = 32)
@@ -42,7 +42,6 @@ public class FileActivity implements D2DObject {
     @JoinColumn(name = "folder_id")
     private final FolderInfo folderInfo;
 
-    @Index(name = "IDX_REL_PATH")
     private final String relativePath;
 
     private final Date modificationDate;

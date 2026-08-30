@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.protocol.GroupInfoProto;
 import de.dal33t.powerfolder.protocol.PermissionInfoProto;
 import de.dal33t.powerfolder.util.*;
 import de.dal33t.powerfolder.util.db.PermissionUserType;
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.*;
 import org.json.JSONException;
@@ -42,6 +43,8 @@ import org.json.JSONObject;
 
 import javax.persistence.Entity;
 import javax.persistence.*;
+import javax.persistence.Index;
+import javax.persistence.Table;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -61,6 +64,15 @@ import static de.dal33t.powerfolder.util.StringUtils.isNotBlank;
  */
 @TypeDef(name = "permissionType", typeClass = PermissionUserType.class)
 @Entity
+@Table(indexes = {
+    @Index(name = "IDX_USERNAME", columnList = Account.PROPERTYNAME_USERNAME),
+    @Index(name = "IDX_AOTP", columnList = Account.PROPERTYNAME_OTP),
+    @Index(name = "IDX_LDAPDN", columnList = Account.PROPERTYNAME_LDAPDN),
+    @Index(name = "IDX_SHIB_PID", columnList = Account.PROPERTYNAME_SHIBBOLETH_PERSISTENT_ID),
+    @Index(name = "IDX_ACC_FIRSTNAME", columnList = Account.PROPERTYNAME_FIRSTNAME),
+    @Index(name = "IDX_ACC_SURNAME", columnList = Account.PROPERTYNAME_SURNAME),
+    @Index(name = "IDX_ACC_ORG_ID", columnList = Account.PROPERTYNAME_ORGANIZATION_ID)
+})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Account implements Serializable, D2DObject, Auditable {
 
@@ -107,19 +119,17 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     @Id
     private String oid;
-    @Index(name = "IDX_USERNAME")
     @Column(nullable = false, unique = true)
     private String username;
     private String password;
     // PFS-862: One time token password
-    @Index(name = "IDX_AOTP")
     @Column(length = 127)
     private String otp;
 
     // PFC-2455: Tokens for federation services
-    @CollectionOfElements(targetElement = String.class)
-    @MapKeyManyToMany(targetEntity = ServerInfo.class, joinColumns = @JoinColumn(name = "serviceInfo_id"))
-    @JoinTable(name = "Account_tokens", joinColumns = @JoinColumn(name = "oid"))
+    @ElementCollection(targetClass = String.class)
+    @CollectionTable(name = "Account_tokens", joinColumns = @JoinColumn(name = "oid"))
+    @MapKeyJoinColumn(name = "serviceInfo_id")
     @Column(name = "tokenSecret")
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -129,11 +139,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Column(length = 15)
     private String language;
 
-    @Index(name = "IDX_LDAPDN")
     @Column(length = 511)
     private String ldapDN;
 
-    @Index(name = "IDX_SHIB_PID")
     @Column(length = 2047)
     private String shibbolethPersistentID;
     private Date registerDate;
@@ -151,10 +159,8 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Column(length = 63)
     private String title;
     @Column(length = 127)
-    @Index(name = "IDX_ACC_FIRSTNAME")
     private String firstname;
     @Column(length = 127)
-    @Index(name = "IDX_ACC_SURNAME")
     private String surname;
     @Column(length = 63)
     private String telephone;
@@ -176,7 +182,6 @@ public class Account implements Serializable, D2DObject, Auditable {
     @Column(length = 511)
     private String basePath;
 
-    @Index(name = "IDX_ACC_ORG_ID")
     @Column(nullable = true, unique = false)
     private String organizationOID;
 
@@ -214,8 +219,10 @@ public class Account implements Serializable, D2DObject, Auditable {
      * The possible license key files of this account.
      * <code>AccountService.getValidLicenseKey</code>.
      */
-    @CollectionOfElements
-    @IndexColumn(name = "IDX_LICENSE", base = 0, nullable = false)
+    @ElementCollection
+    @CollectionTable(name = "Account_licenseKeyFileList", joinColumns = @JoinColumn(name = "Account_oid"))
+    @OrderColumn(name = "IDX_LICENSE")
+    @Column(name = "element")
     @Cascade(value = {CascadeType.ALL})
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -241,8 +248,10 @@ public class Account implements Serializable, D2DObject, Auditable {
     @JoinColumn(name = "defaultSyncFolder_id")
     private FolderInfo defaultSynchronizedFolder;
 
-    @CollectionOfElements
+    @ElementCollection
+    @CollectionTable(name = "Account_permissions", joinColumns = @JoinColumn(name = "Account_oid"))
     @Type(type = "permissionType")
+    @Column(name = "element")
     @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.NONE)
     @LazyCollection(LazyCollectionOption.FALSE)
@@ -257,8 +266,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     /**
      * The possible email address of this account.
      */
-    @CollectionOfElements
-    @IndexColumn(name = "IDX_EMAIL", base = 0, nullable = false)
+    @ElementCollection
+    @CollectionTable(name = "Account_emails", joinColumns = @JoinColumn(name = "Account_oid"))
+    @OrderColumn(name = "IDX_EMAIL")
     @Cascade(value = {CascadeType.ALL})
     @BatchSize(size = 1337)
     @Column(name = "element", length = 512)
