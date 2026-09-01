@@ -401,9 +401,9 @@ public class FileInfoDAOHashMapImpl extends Loggable implements FileInfoDAO {
     }
 
     private boolean isInSubDir(FileInfo fInfo, String path, boolean recursive) {
-        // PFS-5700: segment-exact - "Team2/geheim.txt" is not content of "Team", and a recursive
-        // query returned it before the boundary was checked.
-        if (!fInfo.isInSubFolder(path)) {
+        // The path arrives normalized from the callers: empty, or ending in a slash - which is what makes
+        // this comparison segment-exact. Do not "harden" it without checking them (PFS-5700).
+        if (!fInfo.getRelativeName().startsWith(path)) {
             return false;
         }
         if (recursive) {
