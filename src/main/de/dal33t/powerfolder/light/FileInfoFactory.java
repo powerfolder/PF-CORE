@@ -469,7 +469,9 @@ public final class FileInfoFactory {
         // mapped row - and every listing of a subfolder maps every row it returns.
         String locationName = subFolderInfo.locationPath();
 
-        Reject.ifFalse(topFileInfoRelativeName.startsWith(locationName), "FileInfo not in subfolder");
+        // PFS-5700: segment-exact, so a mismatched pair fails loudly here instead of producing a row
+        // named "/geheim.txt" inside the subfolder.
+        Reject.ifFalse(topFileInfo.isInSubFolder(locationName), "FileInfo not in subfolder");
 
         int stripFrom = locationName.length();
         if (locationName.length() < topFileInfoRelativeName.length()) {

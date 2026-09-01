@@ -175,7 +175,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     @Override
     public Collection<DirectoryInfo> findAllDirectories(String domain) {
         return delegate.findAllDirectories(domain).stream()
-                .filter(d -> d.getRelativeName().startsWith(subfolderPath))
+                .filter(d -> d.isInSubFolder(subfolderPath))
                 .map(this::toSub)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

@@ -108,6 +108,40 @@ public class FileInfoTest extends TestCase {
         testAssertEquals(fInfo, copy);
     }
 
+    /**
+     * PFS-5700: sharing "Team" must not hand out anything of the sibling "Team2". Both live in the same
+     * top folder, and the shared subfolder reads the top folder's rows through a filter on this method -
+     * a bare prefix comparison made the neighbour's files content of the share.
+     */
+    public void testNamePrefixNeighbourIsNotInTheSharedSubFolder() {
+        FolderInfo top = FolderInfoFactory.newTopFolderForTest("Top", "PFS-5700");
+        FolderInfo team = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "Team"));
+
+        FileInfo own = FileInfoFactory.lookupInstance(top, "Team/report.txt");
+        FileInfo neighbour = FileInfoFactory.lookupInstance(top, "Team2/geheim.txt");
+        FileInfo neighbourFile = FileInfoFactory.lookupInstance(top, "Team2");
+        FileInfo root = FileInfoFactory.lookupDirectory(top, "Team");
+
+        assertTrue("The share's own file belongs to it", own.isInSubFolder("Team"));
+        assertTrue("The share's root node belongs to it", root.isInSubFolder("Team"));
+        assertFalse("A file below the name-prefix neighbour is not content of the share",
+            neighbour.isInSubFolder("Team"));
+        assertFalse("A file whose name starts with the share's name is not content of it",
+            neighbourFile.isInSubFolder("Team"));
+
+        assertTrue("The share's own file belongs to it", own.isInSubFolder(team));
+        assertFalse("A file below the name-prefix neighbour is not content of the share",
+            neighbour.isInSubFolder(team));
+
+        // The mapping into subfolder coordinates must refuse it rather than produce a "/geheim.txt" row.
+        try {
+            FileInfoFactory.mapToSubFolder(neighbour, team);
+            fail("Mapping a neighbour's file into the share must be refused");
+        } catch (IllegalArgumentException e) {
+            // Expected
+        }
+    }
+
     private void testAssertEquals(FileInfo fInfo, FileInfo copy) {
         // Test
         assertEquals(fInfo, copy);
