@@ -54,6 +54,7 @@ public class Token implements Serializable {
     public static final String PROPERTYNAME_NODE_INFO = "nodeInfo";
     public static final String PROPERTYNAME_ACCOUNT_INFO = "accountInfo";
     public static final String PROPERTYNAME_SERVICE_INFO = "serviceInfo";
+    public static final String PROPERTYNAME_NOTES = "notes";
 
     // PFC-2455: 1 Minute
     private static final long REQUEST_TOKEN_TIMEOUT = 1000L * 60;
@@ -70,6 +71,12 @@ public class Token implements Serializable {
     private static final long OAUTH_ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 24;
     // PF-615: OCM
     private static final long OCM_TOKEN_TIMEOUT = 1000L * 60 * 30;
+    // Password-reset links: single-use and short-lived (OWASP Forgot Password recommendation)
+    private static final long PASSWORD_RESET_TOKEN_TIMEOUT = 1000L * 60 * 30;
+    // Initial "set your password" links from welcome/registration mails are often opened much later
+    private static final long INITIAL_PASSWORD_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24;
+
+    public static final String NOTES_PASSWORD_RESET_PREFIX = "password_reset:";
 
     @Id
     private String id;
@@ -158,6 +165,38 @@ public class Token implements Serializable {
         token.addNotesWithDate(
                 aInfo.getUsername() + " adding email " + eMailToAdd);
         return token;
+    }
+
+    /**
+     * A single-use token authorizing a password reset for one account. Deliberately carries NO
+     * accountInfo: every token authentication path requires accountInfo, so a leaked reset link can
+     * never be used to log in. The account is bound via the notes instead.
+     *
+     * @param accountOID   the OID of the account whose password may be reset.
+     * @param initialSetup true for "set your initial password" links in welcome/registration mails
+     *                     (24h validity), false for regular password recovery (30 minutes).
+     */
+    public static Token newPasswordResetToken(String accountOID, boolean initialSetup) {
+        Reject.ifBlank(accountOID, "Account OID");
+        long timeout = initialSetup ? INITIAL_PASSWORD_TOKEN_TIMEOUT : PASSWORD_RESET_TOKEN_TIMEOUT;
+        Token token = new Token(new Date(System.currentTimeMillis() + timeout), null, null, null);
+        token.setNotes(NOTES_PASSWORD_RESET_PREFIX + accountOID);
+        return token;
+    }
+
+    public boolean isPasswordReset() {
+        return notes != null && notes.startsWith(NOTES_PASSWORD_RESET_PREFIX);
+    }
+
+    /**
+     * @return the OID of the account this password-reset token is bound to, or null if this is no
+     *         password-reset token.
+     */
+    public String getPasswordResetAccountOID() {
+        if (!isPasswordReset()) {
+            return null;
+        }
+        return notes.substring(NOTES_PASSWORD_RESET_PREFIX.length());
     }
 
     /**
