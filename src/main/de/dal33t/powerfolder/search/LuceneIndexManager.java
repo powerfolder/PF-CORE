@@ -1994,9 +1994,14 @@ public class LuceneIndexManager extends PFComponent {
         int pending = indexQueue.size() + contentQueue.size();
         indexQueue.clear();
         contentQueue.clear();
+        /* Set only when the meta file is really gone: that file IS the rebuild order, and if it
+         * survives, the next start reads this index instead of rebuilding it - so it had better
+         * be committed. */
+        boolean rebuildScheduled = false;
         if (!discard && pending > 0) {
             try {
                 Files.deleteIfExists(indexPath.resolve(META_FILE_NAME));
+                rebuildScheduled = true;
             } catch (IOException e) {
                 logWarning(folder + ": Failed to delete index meta: " + e);
             }
@@ -2004,14 +2009,21 @@ public class LuceneIndexManager extends PFComponent {
                     + " — full index rebuild scheduled for next start");
         }
 
-        if (!discard) {
+        /* An index the next start throws away is not worth two fsyncs. commitAndRefresh() is one
+         * and writer.close() is another, and both of them write an index that the rebuild will
+         * overwrite - the same reasoning the discard path already follows. narvi holds 7 425
+         * interrupted subfolders after a migration, each of them an index of its own, and closing
+         * them took 63 of the 70 seconds its shutdown lasted. */
+        boolean throwingAway = discard || rebuildScheduled;
+
+        if (!throwingAway) {
             commitAndRefresh();
         }
         try { searcherManager.close(); }
         catch (Exception ignored) {}
         // rollback(), not close(): closing an IndexWriter COMMITS. There is nothing to commit for
         // an index that is being thrown away.
-        try { if (discard) { writer.rollback(); } else { writer.close(); } }
+        try { if (throwingAway) { writer.rollback(); } else { writer.close(); } }
         catch (Exception ignored) {}
 
         if (isFine()) {

@@ -955,18 +955,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Stop file requestor
         fileRequestor.shutdown();
 
-        /* Two phases. Every index is told to stop first, then the folders are closed one by one.
-         * A single index shutdown waits up to a second for its worker, and a server holds thousands
-         * of folders - done strictly in sequence, that outlived the patience of the stop script, which
-         * killed the process mid-shutdown four times in one night. Signalled up front, the workers
-         * drain side by side and each wait below finds its worker already gone. Nothing is discarded:
-         * the folders stay, so their indexes are still committed and closed properly underneath. */
-        for (Folder metaFolder : metaFolders.values()) {
-            requestIndexStop(metaFolder);
-        }
-        for (Folder folder : folders.values()) {
-            requestIndexStop(folder);
-        }
+        shutdownIndexes();
 
         // shutdown all folders
         for (Folder metaFolder : metaFolders.values()) {
@@ -3893,5 +3882,100 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (index != null) {
             index.requestStop();
         }
+    }
+
+    /**
+     * Stops and closes every search index, before the folders are closed one by one
+     * <p>
+     * Telling them to stop comes first, all of them, without waiting for any. A single index
+     * shutdown waits up to a second for its worker, and a server holds thousands of folders - done
+     * strictly in sequence that outlived the patience of the stop script, which killed the process
+     * mid-shutdown four times in one night. Signalled up front, the workers drain side by side and
+     * each wait below finds its worker already gone.
+     * <p>
+     * The closing then runs side by side as well. Closing one index is a commit and a file handle,
+     * a few milliseconds, and that is fine until a migration leaves thousands of interrupted
+     * subfolders behind, each of them a folder with an index of its own. narvi carries 7 425 of
+     * them, and closing them in sequence took 63 of the 70 seconds its shutdown lasted. Nothing
+     * here waits on anything else, so the only reason it was slow is that it was serial.
+     * <p>
+     * Nothing is discarded: the folders stay, so their indexes are committed and closed properly
+     * underneath - all but the ones whose queue did not drain, which the next start rebuilds from
+     * scratch anyway. {@link Folder#shutdown()} still asks its index to shut down afterwards; that
+     * second call returns at the {@code shutdownStarted} gate without doing anything, so the order
+     * of the rest of the shutdown is untouched. Meta folders are signalled but not closed here -
+     * Folder.shutdown skips their index as well.
+     */
+    private void shutdownIndexes() {
+        for (Folder metaFolder : metaFolders.values()) {
+            requestIndexStop(metaFolder);
+        }
+
+        for (Folder folder : folders.values()) {
+            requestIndexStop(folder);
+        }
+
+        List<Folder> indexed = new ArrayList<>(folders.size());
+
+        for (Folder folder : folders.values()) {
+            if (folder.getSearchIndexManager() != null && !folder.getInfo().isMetaFolder()) {
+                indexed.add(folder);
+            }
+        }
+
+        if (indexed.size() < 2) {
+            return;
+        }
+
+        int threads = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
+
+        ExecutorService executor = Executors.newFixedThreadPool(
+                threads,
+                r -> {
+                    Thread t = new Thread(r, "Index-shutdown");
+                    t.setDaemon(true);
+                    return t;
+                }
+        );
+
+        long started = System.currentTimeMillis();
+
+        try {
+            List<Future<?>> tasks = new ArrayList<>(indexed.size());
+
+            for (Folder folder : indexed) {
+                tasks.add(
+                        executor.submit(() -> {
+                            try {
+                                LuceneIndexManager index = folder.getSearchIndexManager();
+
+                                if (index != null) {
+                                    index.shutdown();
+                                }
+                            } catch (Exception ex) {
+                                logWarning("Problem closing the search index of "
+                                        + folder.getInfo(), ex);
+                            }
+                        })
+                );
+            }
+
+            // Explicit barrier: no folder is closed while its index is still being written.
+            for (Future<?> f : tasks) {
+                try {
+                    f.get();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception e) {
+                    logWarning("Search index shutdown failed", e);
+                }
+            }
+        } finally {
+            executor.shutdown();
+        }
+
+        logInfo("Closed " + indexed.size() + " search index(es) in "
+                + (System.currentTimeMillis() - started) + " ms");
     }
 }
