@@ -65,7 +65,7 @@ public class Token implements Serializable {
     //24h
     private static final long CLOSE_ACCOUNT_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24;
     private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
-    // PFS-2296: Unlimited time
+    // PFS-2296: Unlimited time. Really?
     private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
     // PF-895: 1 day:
     private static final long OAUTH_ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 24;
@@ -75,6 +75,8 @@ public class Token implements Serializable {
     private static final long PASSWORD_RESET_TOKEN_TIMEOUT = 1000L * 60 * 30;
     // Initial "set your password" links from welcome/registration mails are often opened much later
     private static final long INITIAL_PASSWORD_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24;
+    // PFS-5665: "set your password" links in migration mails — users may react weeks after the batch mailing
+    private static final long MIGRATION_PASSWORD_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 28;
 
     public static final String NOTES_PASSWORD_RESET_PREFIX = "password_reset:";
 
@@ -168,17 +170,34 @@ public class Token implements Serializable {
     }
 
     /**
-     * A single-use token authorizing a password reset for one account. Deliberately carries NO
-     * accountInfo: every token authentication path requires accountInfo, so a leaked reset link can
-     * never be used to log in. The account is bound via the notes instead.
+     * A single-use token authorizing a password reset for one account — the "forgot password" entry
+     * point (30 minutes). Deliberately carries NO accountInfo: every token authentication path
+     * requires accountInfo, so a leaked reset link can never be used to log in. The account is bound
+     * via the notes instead.
      *
-     * @param accountOID   the OID of the account whose password may be reset.
-     * @param initialSetup true for "set your initial password" links in welcome/registration mails
-     *                     (24h validity), false for regular password recovery (30 minutes).
+     * @param accountOID the OID of the account whose password may be reset.
      */
-    public static Token newPasswordResetToken(String accountOID, boolean initialSetup) {
+    public static Token newPasswordResetToken(String accountOID) {
+        return newPasswordResetToken(accountOID, PASSWORD_RESET_TOKEN_TIMEOUT);
+    }
+
+    /**
+     * Entry point 2: "set your initial password" links in welcome/registration mails (24 hours).
+     */
+    public static Token newInitialPasswordToken(String accountOID) {
+        return newPasswordResetToken(accountOID, INITIAL_PASSWORD_TOKEN_TIMEOUT);
+    }
+
+    /**
+     * PFS-5665, entry point 3: "set your password" links in migration mails (4 weeks — users may
+     * react weeks after the batch mailing).
+     */
+    public static Token newAfterMigrationPasswordToken(String accountOID) {
+        return newPasswordResetToken(accountOID, MIGRATION_PASSWORD_TOKEN_TIMEOUT);
+    }
+
+    private static Token newPasswordResetToken(String accountOID, long timeout) {
         Reject.ifBlank(accountOID, "Account OID");
-        long timeout = initialSetup ? INITIAL_PASSWORD_TOKEN_TIMEOUT : PASSWORD_RESET_TOKEN_TIMEOUT;
         Token token = new Token(new Date(System.currentTimeMillis() + timeout), null, null, null);
         token.setNotes(NOTES_PASSWORD_RESET_PREFIX + accountOID);
         return token;
