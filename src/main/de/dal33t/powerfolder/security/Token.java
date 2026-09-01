@@ -65,9 +65,9 @@ public class Token implements Serializable {
     //24h
     private static final long CLOSE_ACCOUNT_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24;
     private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
-    // PFS-2296: 14 days — an expired link is recoverable: "forgot password" on an unactivated
+    // PFS-2296: 1 year — an expired link is recoverable: "forgot password" on an unactivated
     // account re-sends the welcome mail with a fresh registration token.
-    private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 14;
+    private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365;
     // PF-895: 1 day:
     private static final long OAUTH_ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 24;
     // PF-615: OCM
