@@ -1185,6 +1185,26 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFC-3543: Forgets a subfolder that is GONE for good - deleted, not merely unmounted
+     * <p>
+     * A seed is retired when its folder mounts, and that is its only way out: everything else stays
+     * a barrier, because "not mounted yet" is precisely what a seed says. A deleted subfolder never
+     * mounts again, so its barrier outlives it and keeps a path reserved for a folder that no
+     * longer exists - the top folder is then refused every write below it
+     * ("Skipped scan - inside interrupted subfolder") and nothing owns the path instead.
+     * <p>
+     * Not in {@link #removeFolder}: that is the plain unmount as well, and there the barrier has to
+     * survive for the next mount. Only the caller that DELETES a folder may say this.
+     *
+     * @param subFolder the subfolder that no longer exists
+     */
+    public void forgetInterruptedSubFolder(FolderInfo subFolder) {
+        if (interruptedSubFolders.dropSeed(subFolder)) {
+            refreshInterruptedSubFolders();
+        }
+    }
+
+    /**
      * PFC-3543: Seeds the interrupted-subfolder index with a subfolder KNOWN to be interrupted whose
      * {@link Folder} object is not mounted yet - the server knows them from its database before any
      * mount, the client from its configuration. The top folder's (asynchronous) scan must ignore the

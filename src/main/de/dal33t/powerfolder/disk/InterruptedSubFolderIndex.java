@@ -198,6 +198,33 @@ public class InterruptedSubFolderIndex {
     }
 
     /**
+     * PFC-3543: Drops the seed of a subfolder that is GONE - deleted, not merely unmounted
+     * <p>
+     * {@link #refresh0} retires a seed when its folder mounts, and that is the only way out it has:
+     * everything else stays a barrier, because "not mounted yet" is exactly what a seed is for. A
+     * deleted subfolder never mounts again, so its barrier outlives it and blocks the path it used
+     * to occupy for the rest of the process.
+     * <p>
+     * That is not theoretical. A migration purge deleted "AG Stoffliste/05 Vorträge" and the next
+     * run did not interrupt it again, so no folder owned that path any more - while the seed still
+     * said one did. Every write below it went through the top folder and PF-CORE refused it
+     * ("Skipped scan - inside interrupted subfolder"): no FileInfo, and with it no tags, for 14 of
+     * the workspace's 216 tagged items. Over a whole run of 237 workspaces it was 14 667 files. The
+     * workspace's own migration report was written into such a path too and could not be secured.
+     * <p>
+     * Seeds exist only where folders mount on demand, which is why this surfaced the day dynamic
+     * mounting was switched on and not before.
+     *
+     * @param subFolder the subfolder that no longer exists
+     *
+     * @return true when a seed was actually dropped, so the caller can skip a rebuild it does not
+     *         need
+     */
+    boolean dropSeed(FolderInfo subFolder) {
+        return subFolder != null && seeds.remove(subFolder) != null;
+    }
+
+    /**
      * PFS-5814: Seeds a whole workspace at once and says whether the index actually changed.
      * <p>
      * Every mount seeds the interrupted subfolders of its workspace, and a refresh is not cheap: it
