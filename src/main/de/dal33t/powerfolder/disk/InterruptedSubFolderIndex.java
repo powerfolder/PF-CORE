@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * PFC-3543: Index of all subfolders whose permission inheritance is currently
@@ -84,6 +85,14 @@ public class InterruptedSubFolderIndex {
     // mount state is the authority from then on.
     private final Map<FolderInfo, Path> seeds = new ConcurrentHashMap<>();
 
+    /* PFS-5814: A rebuild is serialized and coalesced. Every mounting thread seeds the workspace it is
+     * about to mount, and a rebuild walks all folders of the repository and the barriers of the whole
+     * process - done in parallel by two hundred threads, that is all any of them did. A thread whose
+     * seeds a concurrent rebuild has already picked up leaves without starting one of its own. */
+    private final Object refreshLock = new Object();
+    private final AtomicLong seedVersion = new AtomicLong();
+    private long publishedSeedVersion;
+
     /**
      * Recomputes the index from the given folders. Allocates only here, never on
      * the read hot path. An interrupted subfolder is one that is a subfolder, does
@@ -92,6 +101,30 @@ public class InterruptedSubFolderIndex {
      * @param folders all (non-meta) folders of the repository
      */
     void refresh(Collection<Folder> folders) {
+        synchronized (refreshLock) {
+            // Read before the walk: a seed added while it runs gets a higher version and its own rebuild.
+            publishedSeedVersion = seedVersion.get();
+            refresh0(folders);
+        }
+    }
+
+    /**
+     * PFS-5814: Rebuilds only if no concurrent rebuild has already carried the given seed version.
+     *
+     * @param version the version {@link #seedAll(Map)} handed out
+     * @param folders all (non-meta) folders of the repository
+     */
+    void publishSeeds(long version, Collection<Folder> folders) {
+        synchronized (refreshLock) {
+            if (publishedSeedVersion >= version) {
+                return;
+            }
+            publishedSeedVersion = seedVersion.get();
+            refresh0(folders);
+        }
+    }
+
+    private void refresh0(Collection<Folder> folders) {
         List<Path> newBases = null;
         List<FolderInfo> newSubs = null;
         Set<FolderInfo> mounted = seeds.isEmpty() ? null : new HashSet<>();
@@ -162,6 +195,27 @@ public class InterruptedSubFolderIndex {
      */
     void seed(FolderInfo subFolder, Path base) {
         seeds.put(subFolder, base);
+    }
+
+    /**
+     * PFS-5814: Seeds a whole workspace at once and says whether the index actually changed.
+     * <p>
+     * Every mount seeds the interrupted subfolders of its workspace, and a refresh is not cheap: it
+     * walks all folders of the repository and rebuilds the barrier snapshot of the whole process. Done
+     * per subfolder, a workspace with thirty interruptions paid it thirty times - times every mounting
+     * thread. The mount asks once now, and a mount that finds every seed already there pays nothing.
+     *
+     * @param newSeeds the interrupted subfolders with their local bases
+     * @return the version to hand to {@link #publishSeeds(long, Collection)}, or 0 when every seed
+         *         was already there and nothing has to be rebuilt
+     */
+    long seedAll(Map<FolderInfo, Path> newSeeds) {
+        boolean changed = false;
+        for (Map.Entry<FolderInfo, Path> seed : newSeeds.entrySet()) {
+            Path previous = seeds.put(seed.getKey(), seed.getValue());
+            changed |= !seed.getValue().equals(previous);
+        }
+        return changed ? seedVersion.incrementAndGet() : 0;
     }
 
     /**

@@ -1191,14 +1191,22 @@ public class FolderRepository extends PFComponent implements Runnable {
      * subtree already in the window before the subfolder mounts; the seed is dropped automatically
      * once it does. Additive and idempotent.
      *
-     * @param subFolder the interrupted subfolder
-     * @param base      its local base, derived as top folder base + location
+     * PFS-5814: Takes the whole workspace at once. A refresh walks all folders of the repository and
+     * rebuilds the barrier snapshot of the process, so it must not happen per subfolder - and not at
+     * all when every seed is already there, which is what a mount of an already known workspace finds.
+     *
+     * @param subFolders the interrupted subfolders with their local bases, derived as top folder base
+     *                   plus location
      */
-    public void seedInterruptedSubFolder(FolderInfo subFolder, Path base) {
-        Reject.ifNull(subFolder, "FolderInfo");
-        Reject.ifNull(base, "Path");
-        interruptedSubFolders.seed(subFolder, base);
-        refreshInterruptedSubFolders();
+    public void seedInterruptedSubFolders(Map<FolderInfo, Path> subFolders) {
+        Reject.ifNull(subFolders, "SubFolders");
+        if (subFolders.isEmpty()) {
+            return;
+        }
+        long version = interruptedSubFolders.seedAll(subFolders);
+        if (version > 0) {
+            interruptedSubFolders.publishSeeds(version, folders.values());
+        }
     }
 
     /**
