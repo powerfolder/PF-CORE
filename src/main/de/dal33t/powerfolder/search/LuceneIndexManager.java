@@ -98,10 +98,17 @@ public class LuceneIndexManager extends PFComponent {
     /** The full-text content field. */
     private static final String CONTENT_FIELD = "content";
 
-    /** Searchable fields used by all query methods. */
+    /**
+     * What a keyword search looks at: what a file is called, where it sits, what it says, and what it was
+     * tagged or titled with.
+     *
+     * PFS-5653: who wrote a file is deliberately not part of this. The accounts of a server usually share
+     * a mail domain, so a keyword that also sits in their usernames used to answer with every file those
+     * accounts had ever touched - the editor is asked for with "modifiedby:" instead, see
+     * {@link #EDITOR_FIELDS}.
+     */
     private static final String[] SEARCH_FIELDS =
-            {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
-             "modifiedByDeviceName", "extensionExact", "tags", "docTitle", "docAuthor"};
+            {"fileName", "relativeName", CONTENT_FIELD, "extensionExact", "tags", "docTitle"};
 
     /**
      * PFS-5653: what a name search looks at - the file name and the title a document carries in its own
@@ -115,6 +122,9 @@ public class LuceneIndexManager extends PFComponent {
      */
     private static final String[] EDITOR_FIELDS =
             {"modifiedByDisplayName", "modifiedByUsername", "modifiedByDeviceName", "docAuthor"};
+
+    /** PFS-5653: who a "device:" search looks at - the name of the device a file was last written on. */
+    private static final String[] DEVICE_FIELDS = {"modifiedByDeviceName"};
 
     private static final String[] PHRASE_FIELDS =
             {"fileName", "relativeName", CONTENT_FIELD};
@@ -1421,7 +1431,7 @@ public class LuceneIndexManager extends PFComponent {
      * PFS-5653: the name: filter. Every word has to appear in the file name - exactly, as a prefix or
      * anywhere inside it - and nowhere else: unlike the keywords, this one never looks at the path, the
      * content or who changed the file. The value is cut into words the same way the name was tokenized
-     * when it was indexed, so the punctuation of a name like "!Migrationsreport!" does not kill the query.
+     * when it was indexed, so the punctuation of a name like "!urgent!" does not kill the query.
      *
      * @return the query, or null if there is nothing to filter by.
      */
@@ -1437,6 +1447,30 @@ public class LuceneIndexManager extends PFComponent {
             }
             word.setMinimumNumberShouldMatch(1);
             allWords.add(word.build(), BooleanClause.Occur.MUST);
+            any = true;
+        }
+        return any ? allWords.build() : null;
+    }
+
+    /**
+     * PFS-5653: the filters that match a name against analyzed fields - "modifiedby:" and "device:". Every
+     * word of the value has to appear in one of the given fields, exactly or anywhere inside a term. Built
+     * word by word because those fields are tokenized: a display name of two words is stored as two
+     * terms, so a single term carrying the space between them would match nothing.
+     *
+     * @return the query, or null if the value holds no word to filter by.
+     */
+    private static Query wordsAnywhereIn(String value, String[] fields) {
+        BooleanQuery.Builder allWords = new BooleanQuery.Builder();
+        boolean any = false;
+        for (String word : FileInfoCriteria.nameWords(value)) {
+            BooleanQuery.Builder oneWord = new BooleanQuery.Builder();
+            for (String field : fields) {
+                oneWord.add(new TermQuery(new Term(field, word)), BooleanClause.Occur.SHOULD);
+                oneWord.add(new WildcardQuery(new Term(field, "*" + word + "*")), BooleanClause.Occur.SHOULD);
+            }
+            oneWord.setMinimumNumberShouldMatch(1);
+            allWords.add(oneWord.build(), BooleanClause.Occur.MUST);
             any = true;
         }
         return any ? allWords.build() : null;
@@ -1481,14 +1515,9 @@ public class LuceneIndexManager extends PFComponent {
             bqBuilder.add(anyExtension.build(), BooleanClause.Occur.MUST);
         }
 
-        if (StringUtils.isNotBlank(criteria.getModifiedBy())) {
-            String wildcard = "*" + criteria.getModifiedBy().toLowerCase(Locale.ROOT).trim() + "*";
-            BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
-            for (String field : EDITOR_FIELDS) {
-                modQuery.add(new WildcardQuery(new Term(field, wildcard)), BooleanClause.Occur.SHOULD);
-            }
-            modQuery.setMinimumNumberShouldMatch(1);
-            bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
+        Query editorQuery = wordsAnywhereIn(criteria.getModifiedBy(), EDITOR_FIELDS);
+        if (editorQuery != null) {
+            bqBuilder.add(editorQuery, BooleanClause.Occur.MUST);
         }
 
         for (String tag : criteria.getTags()) {
@@ -1526,10 +1555,9 @@ public class LuceneIndexManager extends PFComponent {
                     BooleanClause.Occur.MUST);
         }
 
-        if (StringUtils.isNotBlank(criteria.getModifiedByDeviceName())) {
-            String wildcard = "*" + criteria.getModifiedByDeviceName().toLowerCase(Locale.ROOT).trim() + "*";
-            bqBuilder.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)),
-                    BooleanClause.Occur.MUST);
+        Query deviceQuery = wordsAnywhereIn(criteria.getModifiedByDeviceName(), DEVICE_FIELDS);
+        if (deviceQuery != null) {
+            bqBuilder.add(deviceQuery, BooleanClause.Occur.MUST);
         }
 
         if (!criteria.getCategories().isEmpty()) {

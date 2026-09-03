@@ -439,7 +439,7 @@ public class FileInfoCriteria {
 
     /**
      * The words a "name:" value is compared by, lower cased. The index tokenizes a file name on everything
-     * that is neither a letter nor a digit, so "!Migrationsreport!" is stored as "migrationsreport" - a
+     * that is neither a letter nor a digit, so "!urgent!" is stored as "urgent" - a
      * value has to be cut the same way, otherwise the punctuation the user typed matches nothing. A value
      * of nothing but punctuation leaves no word at all and therefore filters nothing.
      */
@@ -454,11 +454,21 @@ public class FileInfoCriteria {
             while (word.endsWith(".")) {
                 word = word.substring(0, word.length() - 1);
             }
-            if (!word.isEmpty()) {
+            if (hasLetterOrDigit(word)) {
                 words.add(word);
             }
         }
         return words;
+    }
+
+    /** Dots, hyphens and underscores stay inside a word, but on their own they are no word at all. */
+    private static boolean hasLetterOrDigit(String word) {
+        for (int i = 0; i < word.length(); i++) {
+            if (Character.isLetterOrDigit(word.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean matchesExtension(FileInfo fileInfo, Set<String> extensions) {
@@ -470,19 +480,23 @@ public class FileInfoCriteria {
     }
 
     private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
-        if (modifiedBy == null || modifiedBy.isEmpty()) {
+        List<String> words = nameWords(modifiedBy);
+        if (words.isEmpty()) {
             return true;
         }
         AccountInfo account = fileInfo.getModifiedByAccount();
         if (account == null) {
             return false;
         }
-        String content = account.getDisplayName() + account.getUsername();
+        /* Kept apart by blanks: a word may sit in the display name, the username or the device nick, but
+         * never across the seam between two of them. */
+        StringBuilder content = new StringBuilder()
+                .append(account.getDisplayName()).append(' ').append(account.getUsername());
         MemberInfo member = fileInfo.getModifiedBy();
         if (member != null) {
-            content += member.nick;
+            content.append(' ').append(member.nick);
         }
-        return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
+        return containsAllWords(content.toString(), words);
     }
 
     private static boolean matchesModifiedDate(FileInfo fileInfo, Date after, Date before) {
@@ -532,12 +546,23 @@ public class FileInfoCriteria {
 
     /** PFS-5653: the device: filter - the name of the device a file was changed on. */
     private static boolean matchesDeviceName(FileInfo fileInfo, String deviceName) {
-        if (isBlank(deviceName)) {
+        List<String> words = nameWords(deviceName);
+        if (words.isEmpty()) {
             return true;
         }
         MemberInfo member = fileInfo.getModifiedBy();
-        return member != null && member.nick != null
-                && member.nick.toUpperCase().contains(deviceName.toUpperCase().trim());
+        return member != null && member.nick != null && containsAllWords(member.nick, words);
+    }
+
+    /** True when every word - already lower cased by {@link #nameWords(String)} - sits in the text. */
+    private static boolean containsAllWords(String text, List<String> words) {
+        String lower = text.toLowerCase();
+        for (String word : words) {
+            if (!lower.contains(word)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean matchesCategory(FileInfo fileInfo, Set<String> categories) {

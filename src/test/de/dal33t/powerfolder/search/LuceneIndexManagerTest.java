@@ -527,6 +527,71 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(0, searchByFileName("invoice").size());
     }
 
+    /** PFS-5653: punctuation in a name is dropped when indexing, so the value has to be cut the same way. */
+    public void testNameFilterSurvivesPunctuation() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "!urgent! memo.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "draft.txt");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertEquals(1, searchByFileName("!urgent!").size());
+        assertEquals("the same name without the punctuation", 1, searchByFileName("urgent").size());
+        assertEquals("a value of nothing but punctuation filters nothing", 2,
+                searchByFileName("!!!").size());
+    }
+
+    /**
+     * PFS-5653: a keyword asks about the file, not about who wrote it. The accounts of a server usually
+     * share a mail domain, so a keyword matching the editor used to answer with everything those accounts
+     * had ever touched - the editor is asked for with "modifiedby:" and "device:".
+     */
+    public void testKeywordDoesNotMatchTheEditor() throws Exception {
+        Folder folder = getFolder();
+        getController().getMySelf().setNick("Jane Laptop");
+        TestHelper.createRandomFile(folder.getLocalBase(), "ledger.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertEquals("the file is there", 1, searchByFileName("ledger").size());
+        assertEquals("but not under the name of the device that wrote it", 0,
+                getIndexManager().searchFiles("laptop", 10).size());
+
+        FileInfoCriteria byDevice = filesOnlyCriteria();
+        byDevice.setModifiedByDeviceName("laptop");
+        assertEquals("which is what device: is for", 1, getIndexManager().searchFiles(byDevice).size());
+    }
+
+    /**
+     * PFS-5653: the editor filters are matched word by word. A device or display name of two words is
+     * stored as two terms, so looking for the whole string at once found nothing.
+     */
+    public void testEditorFilterMatchesEveryWordOfTheName() throws Exception {
+        Folder folder = getFolder();
+        getController().getMySelf().setNick("Jane Laptop");
+        TestHelper.createRandomFile(folder.getLocalBase(), "ledger.pdf");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertEquals(1, searchByDeviceName("Jane Laptop").size());
+        assertEquals("the order they were typed in does not matter", 1,
+                searchByDeviceName("laptop jane").size());
+        assertEquals("a single word of the name is enough", 1, searchByDeviceName("jane").size());
+        assertEquals("one word of two that does not fit rules the file out", 0,
+                searchByDeviceName("jane desktop").size());
+
+        FileInfoCriteria byEditor = filesOnlyCriteria();
+        byEditor.setModifiedBy("Jane Laptop");
+        assertEquals("modifiedby: reaches the device nick as well", 1,
+                getIndexManager().searchFiles(byEditor).size());
+    }
+
+    private List<FileInfo> searchByDeviceName(String deviceName) {
+        FileInfoCriteria criteria = filesOnlyCriteria();
+        criteria.setModifiedByDeviceName(deviceName);
+        return getIndexManager().searchFiles(criteria);
+    }
+
     private List<FileInfo> searchByFileName(String fileName) {
         FileInfoCriteria criteria = filesOnlyCriteria();
         criteria.setFileName(fileName);
