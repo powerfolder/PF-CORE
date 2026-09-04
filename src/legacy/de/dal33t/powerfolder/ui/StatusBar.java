@@ -488,6 +488,10 @@ public class StatusBar extends PFUIComponent {
         public void folderCreated(FolderRepositoryEvent e) {
         }
 
+        @Override
+        public void subFolderUnshared(FolderRepositoryEvent e) {
+        }
+
         public void folderRemoved(FolderRepositoryEvent e) {
         }
 
