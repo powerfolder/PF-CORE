@@ -27,6 +27,8 @@ import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAO;
 import de.dal33t.powerfolder.disk.dao.FileInfoDAOHashMapImpl;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
+import de.dal33t.powerfolder.event.FolderRepositoryAdapter;
+import de.dal33t.powerfolder.event.FolderRepositoryEvent;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
@@ -37,6 +39,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -770,6 +773,75 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         // Physical file still on disk
         assertTrue(Files.exists(testFile));
+    }
+
+    /**
+     * PFC-3536: Unsharing is the one moment the server may drop what it persisted for the subfolder, so
+     * the repository says so with an event of its own. The subfolder's .PowerFolder directory stays: it
+     * may hold archived versions from an interruption that nothing carries back (PFC-3633).
+     */
+    public void testUnshareFiresEvent() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+        final List<FolderInfo> unshared = new ArrayList<>();
+        repository.addFolderRepositoryListener(new FolderRepositoryAdapter() {
+            @Override
+            public void subFolderUnshared(FolderRepositoryEvent e) {
+                unshared.add(e.getFolder().getInfo());
+            }
+
+            @Override
+            public boolean fireInEventDispatchThread() {
+                return false;
+            }
+        });
+
+        Path sharedPath = Files.createDirectories(topFolder.getPhysicalDir().resolve("withevent"));
+        TestHelper.createRandomFile(sharedPath, "data.txt");
+        TestHelper.scanFolder(topFolder);
+        DirectoryInfo sharedDirInfo = (DirectoryInfo) topFolder.getFileInfo("withevent");
+        Folder subFolder = topFolder.share(sharedDirInfo);
+        Path systemSubDir = subFolder.getSystemSubDir();
+        assertTrue("Sanity: the subfolder has its own system directory", Files.isDirectory(systemSubDir));
+        assertTrue("Sharing must not fire the unshare event", unshared.isEmpty());
+
+        topFolder.unshare(sharedDirInfo);
+
+        assertEquals("Unsharing must fire the event exactly once", 1, unshared.size());
+        assertEquals("The event must name the unshared subfolder", subFolder.getInfo(), unshared.get(0));
+        assertTrue("The subfolder's .PowerFolder directory stays - it may hold archived versions",
+            Files.isDirectory(systemSubDir));
+        assertTrue("The content must stay where it is", Files.exists(sharedPath.resolve("data.txt")));
+    }
+
+    /**
+     * PFC-3536: A plain removal - what a dynamic unmount does - goes through the same removeFolder but
+     * is NOT an unshare. Listeners that drop the subfolder's rows on the event must never see one here.
+     */
+    public void testRemoveFolderDoesNotFireUnshareEvent() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+        final List<FolderInfo> unshared = new ArrayList<>();
+        repository.addFolderRepositoryListener(new FolderRepositoryAdapter() {
+            @Override
+            public void subFolderUnshared(FolderRepositoryEvent e) {
+                unshared.add(e.getFolder().getInfo());
+            }
+
+            @Override
+            public boolean fireInEventDispatchThread() {
+                return false;
+            }
+        });
+
+        Files.createDirectories(topFolder.getPhysicalDir().resolve("unmounted"));
+        TestHelper.scanFolder(topFolder);
+        Folder subFolder = topFolder.share((DirectoryInfo) topFolder.getFileInfo("unmounted"));
+
+        repository.removeFolder(subFolder, false);
+
+        assertEquals("Removing a subfolder is not unsharing it", 0, unshared.size());
+        assertNull("Sanity: the subfolder left the repository", repository.getFolder(subFolder.getInfo()));
     }
 
     public void testUnshareNonExistentIsNoop() throws IOException {

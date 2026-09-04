@@ -6252,6 +6252,11 @@ public class Folder extends PFComponent {
         }
         setDBDirty();
 
+        /* The subfolder's .PowerFolder directory stays. Index, meta folder and database are stale copies
+         * now, but a subfolder that was interrupted at some point archived its file versions in there
+         * (initFileArchiver: an interrupted subfolder has an archiver of its own), and nothing moves
+         * them back to the top folder's archive on restore - see PFC-3633. Deleting the directory would
+         * delete those versions. */
         getController().getFolderRepository().removeFolder(subFolder, false);
         /* PFC-3536: removeFolder also runs for a plain unmount, so nobody listening to it may throw the
          * subfolder's rows away. This is the one place that knows the share itself is over - without
