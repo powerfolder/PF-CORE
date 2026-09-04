@@ -464,6 +464,14 @@ public class Folder extends PFComponent {
         if (currentInfo.isMetaFolder()) {
             return;
         }
+        /* PFC-3632: a subfolder that inherits its permissions has no rows of its own - its DAO is a
+         * proxy on the top folder - so the top folder's index already covers everything below it. An
+         * index of its own would index every file a second time and answer a search twice. It searches
+         * the top folder's index instead (searchFiles). Only an interrupted subfolder, which owns its
+         * database, owns an index. */
+        if (isSubFolder() && currentInfo.inheritsPermissions()) {
+            return;
+        }
         try {
             searchIndexManager = new LuceneIndexManager(getController(), this);
             boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
@@ -503,13 +511,25 @@ public class Folder extends PFComponent {
      */
     public List<FileInfo> searchFiles(FileInfoCriteria criteria) {
         List<FileInfo> files;
-        if (searchIndexManager != null && criteria.hasSearchCriteria()
-                && !searchIndexManager.isRebuilding()) {
-            List<FileInfo> indexed = searchIndexManager.searchFiles(criteria);
+        /* PFC-3632: an inheriting subfolder has no index of its own (initSearchIndex) - the top folder's
+         * index holds its rows. Asking that one, scoped to the subfolder's path, keeps the content search
+         * working here; the DAO fallback below could only match names and metadata. */
+        Folder indexOwner = this;
+        LuceneIndexManager index = searchIndexManager;
+        if (index == null && isSubFolder() && currentInfo.inheritsPermissions()) {
+            Folder topFolder = getTopFolder();
+            if (topFolder != null) {
+                indexOwner = topFolder;
+                index = topFolder.searchIndexManager;
+            }
+        }
+        if (index != null && criteria.hasSearchCriteria() && !index.isRebuilding()) {
+            List<FileInfo> indexed = indexOwner == this
+                ? index.searchFiles(criteria) : searchIndexOfTopFolder(index, criteria);
             // PFS-5652: the DAO fallback is an O(files) linear scan. Only run it to catch files the index
             // has not processed yet; when nothing is pending the Lucene result is complete for name/metadata
             // search and the scan can be skipped.
-            if (searchIndexManager.getPendingCount() == 0) {
+            if (index.getPendingCount() == 0) {
                 files = new ArrayList<>(indexed);
             } else {
                 // Lucene results first (ranked), then DAO results for any files the index missed.
@@ -526,6 +546,53 @@ public class Folder extends PFComponent {
 
     private void filterExcludedFromSync(List<FileInfo> files) {
         files.removeIf(diskItemFilter::isExcluded);
+    }
+
+    /**
+     * PFC-3632: Searches the top folder's index for the rows of this inheriting subfolder. The criteria
+     * are mapped into top-folder coordinates the way {@code SubFolderFileInfoDAOProxy} does it for the
+     * DAO, and the hits are mapped back, so the caller sees them as rows of this subfolder.
+     */
+    private List<FileInfo> searchIndexOfTopFolder(LuceneIndexManager topIndex, FileInfoCriteria criteria) {
+        String subFolderPath = currentInfo.getLocation().getRelativeName();
+        String originalPath = criteria.getPath();
+        criteria.mapToSubFolderPath(subFolderPath);
+        try {
+            List<FileInfo> hits = topIndex.searchFiles(criteria);
+            List<FileInfo> mapped = new ArrayList<>(hits.size());
+            for (FileInfo hit : hits) {
+                if (!hit.isInSubFolder(subFolderPath)) {
+                    continue;
+                }
+                FileInfo subHit = FileInfoFactory.mapToSubFolder(hit, currentInfo);
+                if (subHit != null) {
+                    mapped.add(subHit);
+                }
+            }
+            return mapped;
+        } finally {
+            criteria.setPath(originalPath);
+        }
+    }
+
+    /**
+     * PFC-3632: Drops this folder's own search index - the manager and the directory. Used when a
+     * subfolder restores its inheritance: the top folder's index owns its rows again.
+     */
+    private void dropSearchIndex() {
+        LuceneIndexManager index = searchIndexManager;
+        searchIndexManager = null;
+        if (index != null) {
+            index.shutdown(true);
+        }
+        Path indexDir = getSystemSubDir().resolve("index");
+        if (Files.exists(indexDir)) {
+            try {
+                PathUtils.recursiveDeleteVisitor(indexDir);
+            } catch (IOException e) {
+                logWarning(this + ": Unable to delete the search index directory " + indexDir + ". " + e);
+            }
+        }
     }
 
     public void addProblemListener(ProblemListener l) {
@@ -2361,6 +2428,12 @@ public class Folder extends PFComponent {
                 }
                 owner.getDAO().store(null, ownerInfos);
                 owner.setDBDirty();
+                /* PFC-3632: the rows are the owner's again, so its index takes them and this folder's own
+                 * index has no purpose left. The raw DAO store above does not index. */
+                dropSearchIndex();
+                if (owner.searchIndexManager != null) {
+                    owner.searchIndexManager.indexFiles(ownerInfos);
+                }
                 logInfo(this + ": Restored permission inheritance, merged its own database back into "
                     + owner + " - migrated " + fileCount + " files and " + dirCount + " directories");
             } else {
@@ -2388,6 +2461,19 @@ public class Folder extends PFComponent {
                 }
                 source.setDBDirty();
                 setDBDirty();
+                /* PFC-3632: this folder owns its rows now, so it gets an index of its own (initSearchIndex
+                 * refused one while it inherited) and the source's index lets go of them - the raw DAO
+                 * delete above does not touch the index, and both indexes answering would be the very
+                 * duplication this is about. */
+                if (source.searchIndexManager != null) {
+                    List<FileInfo> sourceRows = new ArrayList<>(toMigrate.size());
+                    for (FileInfo topInfo : toMigrate) {
+                        sourceRows.add(source == topFolder ? topInfo
+                            : FileInfoFactory.mapToSubFolder(topInfo, source.getInfo()));
+                    }
+                    source.searchIndexManager.purgeFiles(sourceRows);
+                }
+                initSearchIndex();
                 logInfo(this + ": Interrupted permission inheritance, split off from " + source
                     + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
             }
