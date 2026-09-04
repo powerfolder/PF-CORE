@@ -777,10 +777,10 @@ public class SubFolderTest extends TwoControllerTestCase {
 
     /**
      * PFC-3536: Unsharing is the one moment the server may drop what it persisted for the subfolder, so
-     * the repository says so with an event of its own. The subfolder's .PowerFolder directory stays: it
-     * may hold archived versions from an interruption that nothing carries back (PFC-3633).
+     * the repository says so with an event of its own - and the subfolder's .PowerFolder directory, a
+     * stale copy from then on, goes with the folder (its archived versions moved back first, PFC-3633).
      */
-    public void testUnshareFiresEvent() throws IOException {
+    public void testUnshareFiresEventAndDeletesSystemSubDir() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderRepository repository = getContollerBart().getFolderRepository();
         final List<FolderInfo> unshared = new ArrayList<>();
@@ -809,8 +809,7 @@ public class SubFolderTest extends TwoControllerTestCase {
 
         assertEquals("Unsharing must fire the event exactly once", 1, unshared.size());
         assertEquals("The event must name the unshared subfolder", subFolder.getInfo(), unshared.get(0));
-        assertTrue("The subfolder's .PowerFolder directory stays - it may hold archived versions",
-            Files.isDirectory(systemSubDir));
+        assertFalse("The subfolder's .PowerFolder directory must be gone", Files.exists(systemSubDir));
         assertTrue("The content must stay where it is", Files.exists(sharedPath.resolve("data.txt")));
     }
 

@@ -129,6 +129,26 @@ public interface FileArchiver {
     long getSize();
 
     /**
+     * PFC-3633: Moves the versions archived below {@code fromPath} into {@code target} below
+     * {@code toPath}, merging into whatever is there. A subfolder interrupting its inheritance takes its
+     * versions out of the top folder's archive this way and hands them back on restore. Both paths are
+     * relative names in the coordinates of the respective folder; a blank path means the whole archive.
+     * Moving an archive onto itself does nothing. Nothing here fails the caller - a version that would
+     * not move is logged and stays where it was.
+     *
+     * @param fromPath the relative path below which this archive's versions are taken
+     * @param target   the archive that receives them
+     * @param toPath   the relative path they are placed under in the target
+     */
+    void moveVersions(String fromPath, FileArchiver target, String toPath);
+
+    /**
+     * PFC-3633: The directory holding the versions archived below the relative path - the archive root
+     * for a blank path. Where {@link #moveVersions} takes versions from and puts them.
+     */
+    Path versionsDirectory(String relativePath);
+
+    /**
      * Purges all archived versions in this folder.
      * The folder's archiver must be this instance.
      *

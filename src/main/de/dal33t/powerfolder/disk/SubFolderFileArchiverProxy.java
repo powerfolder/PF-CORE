@@ -154,6 +154,21 @@ public class SubFolderFileArchiverProxy implements FileArchiver {
             + fileInfo.getRelativeName() + " in subfolder " + folder.getName() + " by " + account);
     }
 
+    /** A path of this subfolder, in the coordinates of the top folder whose archive holds it. */
+    private String toTop(String relativePath) {
+        return relativePath == null || relativePath.isEmpty() ? subfolderPath : subfolderPath + "/" + relativePath;
+    }
+
+    @Override
+    public void moveVersions(String fromPath, FileArchiver target, String toPath) {
+        delegate.moveVersions(toTop(fromPath), target, toPath);
+    }
+
+    @Override
+    public Path versionsDirectory(String relativePath) {
+        return delegate.versionsDirectory(toTop(relativePath));
+    }
+
     @Override
     public List<FileInfo> maintainAndCleanup(
         Date cleanupDate, FileInfoDAO dao, FolderInfo folderInfo, AccountInfo myAccount)

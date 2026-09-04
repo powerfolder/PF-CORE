@@ -2380,6 +2380,8 @@ public class Folder extends PFComponent {
             updateInfo(newInfo);
             getController().getFolderRepository().refreshInterruptedSubFolders();
             initFileInfoDAO();
+            // PFC-3633: the archiver of the state being left - a restore moves its versions out of it.
+            FileArchiver archiverBefore = getFileArchiver();
             initFileArchiver(getFileArchiver().getVersionsPerFile());
 
             int dirCount = 0;
@@ -2428,6 +2430,9 @@ public class Folder extends PFComponent {
                 }
                 owner.getDAO().store(null, ownerInfos);
                 owner.setDBDirty();
+                /* PFC-3633: the versions archived while this folder owned its content go with the rows -
+                 * the owner's archive is the one its proxy reads from now. */
+                archiverBefore.moveVersions("", owner.getFileArchiver(), pathIn(owner));
                 /* PFC-3632: the rows are the owner's again, so its index takes them and this folder's own
                  * index has no purpose left. The raw DAO store above does not index. */
                 dropSearchIndex();
@@ -2461,6 +2466,10 @@ public class Folder extends PFComponent {
                 }
                 source.setDBDirty();
                 setDBDirty();
+                /* PFC-3633: the versions archived so far sit in the source's archive under this folder's
+                 * path. The own archiver does not look there, so they come along - otherwise the version
+                 * history of every file below is empty until the inheritance is restored. */
+                source.getFileArchiver().moveVersions(pathIn(source), getFileArchiver(), "");
                 /* PFC-3632: this folder owns its rows now, so it gets an index of its own (initSearchIndex
                  * refused one while it inherited) and the source's index lets go of them - the raw DAO
                  * delete above does not touch the index, and both indexes answering would be the very
@@ -2478,6 +2487,21 @@ public class Folder extends PFComponent {
                     + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
             }
         }
+    }
+
+    /**
+     * PFC-3633: This subfolder's location relative to {@code container} - the top folder, or an
+     * enclosing interrupted subfolder when interruptions nest (PFS-5767). That is where its rows and
+     * its archived versions live inside the container.
+     */
+    private String pathIn(Folder container) {
+        String location = currentInfo.getLocation().getRelativeName();
+        Folder topFolder = getTopFolder();
+        if (topFolder == null || container == topFolder) {
+            return location;
+        }
+        String inContainer = FolderInfo.relativeNameIn(container.getInfo(), topFolder.getInfo(), location);
+        return inContainer != null ? inContainer : location;
     }
 
     /**
@@ -6338,12 +6362,11 @@ public class Folder extends PFComponent {
         }
         setDBDirty();
 
-        /* The subfolder's .PowerFolder directory stays. Index, meta folder and database are stale copies
-         * now, but a subfolder that was interrupted at some point archived its file versions in there
-         * (initFileArchiver: an interrupted subfolder has an archiver of its own), and nothing moves
-         * them back to the top folder's archive on restore - see PFC-3633. Deleting the directory would
-         * delete those versions. */
-        getController().getFolderRepository().removeFolder(subFolder, false);
+        /* PFC-3536: the subfolder's own .PowerFolder directory goes with it - index, meta folder and the
+         * database it owned while interrupted are stale copies now that the directory is the top folder's
+         * again, and the restore above moved its archived versions back into the top folder's archive
+         * (PFC-3633). The content itself is untouched, it never lived in there. */
+        getController().getFolderRepository().removeFolder(subFolder, true);
         /* PFC-3536: removeFolder also runs for a plain unmount, so nobody listening to it may throw the
          * subfolder's rows away. This is the one place that knows the share itself is over - without
          * the signal the server kept the FolderInfo, and the next share of the same directory created a

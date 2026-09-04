@@ -200,6 +200,82 @@ public class FileArchiverImpl implements FileArchiver {
         return archiveDirectory;
     }
 
+    /**
+     * Both sides are archive directories on the same file system, so every version is a rename. A version
+     * present on both sides is the same version - archive names carry the version number - so the one
+     * already in place stays and the other is dropped. The Size files are not versions: both are deleted,
+     * which makes {@link #getSize()} count again on either side. Directories emptied by the move are removed.
+     */
+    @Override
+    public void moveVersions(String fromPath, FileArchiver target, String toPath) {
+        Reject.ifNull(target, "target");
+        final Path from = versionsDirectory(fromPath);
+        final Path to = target.versionsDirectory(toPath);
+        if (!Files.isDirectory(from) || from.equals(to)) {
+            return;
+        }
+        final int[] moved = {0};
+        try {
+            Files.walkFileTree(from, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    if (SIZE_INFO_FILE.equals(file.getFileName().toString())) {
+                        Files.deleteIfExists(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+                    Path versionTarget = to.resolve(from.relativize(file).toString());
+                    if (Files.exists(versionTarget)) {
+                        Files.deleteIfExists(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+                    Files.createDirectories(versionTarget.getParent());
+                    Files.move(file, versionTarget);
+                    moved[0]++;
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    if (exc != null) {
+                        throw exc;
+                    }
+                    if (!dir.equals(archiveDirectory)) {
+                        try {
+                            Files.deleteIfExists(dir);
+                        } catch (DirectoryNotEmptyException e) {
+                            log.warning("Archive directory not empty after the move: " + dir);
+                        }
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            log.log(Level.WARNING, "Unable to move archived versions from " + from + " to " + to + ". " + e, e);
+        }
+        sizeChanged();
+        try {
+            Files.deleteIfExists(target.versionsDirectory("").resolve(SIZE_INFO_FILE));
+        } catch (IOException e) {
+            log.warning("Unable to delete the size file of " + target.versionsDirectory("") + ". " + e);
+        }
+        if (moved[0] > 0) {
+            log.info("Moved " + moved[0] + " archived versions from " + from + " to " + to);
+        }
+    }
+
+    @Override
+    public Path versionsDirectory(String relativePath) {
+        if (relativePath == null || relativePath.isEmpty()) {
+            return archiveDirectory;
+        }
+        return archiveDirectory.resolve(FileInfoFactory.encodeIllegalChars(relativePath));
+    }
+
+    private synchronized void sizeChanged() {
+        size = null;
+        saveSize();
+    }
+
     private void checkArchivedFile(Collection<Path> versions)
             throws IOException {
 
@@ -683,6 +759,11 @@ public class FileArchiverImpl implements FileArchiver {
     @Override
     public synchronized long getSize() {
         Long thisSize = size;
+        /* PFC-3633: a missing Size file means somebody moved versions in or out behind this archiver's
+         * back (moveVersions of another archiver) - the cached number is stale, count again. */
+        if (thisSize != null && Files.notExists(archiveDirectory.resolve(SIZE_INFO_FILE))) {
+            thisSize = null;
+        }
         if (thisSize == null) {
             long s = calculateUserPayloadSize(archiveDirectory);
             size = s;
