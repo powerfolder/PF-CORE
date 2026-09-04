@@ -6253,6 +6253,11 @@ public class Folder extends PFComponent {
         setDBDirty();
 
         getController().getFolderRepository().removeFolder(subFolder, false);
+        /* PFC-3536: removeFolder also runs for a plain unmount, so nobody listening to it may throw the
+         * subfolder's rows away. This is the one place that knows the share itself is over - without
+         * the signal the server kept the FolderInfo, and the next share of the same directory created a
+         * second one beside it. */
+        getController().getFolderRepository().fireSubFolderUnshared(subFolder);
     }
 
     private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {

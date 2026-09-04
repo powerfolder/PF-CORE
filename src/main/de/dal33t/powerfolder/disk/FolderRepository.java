@@ -3600,6 +3600,15 @@ public class FolderRepository extends PFComponent implements Runnable {
                 .folderRemoved(new FolderRepositoryEvent(this, folder));
     }
 
+    /**
+     * PFC-3536: Called by {@link Folder#unshare} once the subfolder is out of the repository. Package
+     * visible on purpose: only the unshare may say so, a plain unmount goes through the same
+     * {@link #removeFolder} and must not.
+     */
+    void fireSubFolderUnshared(Folder subFolder) {
+        folderRepositoryListenerSupport.subFolderUnshared(new FolderRepositoryEvent(this, subFolder));
+    }
+
     private void fireFolderMoved(Folder newFolder, Folder oldFolder) {
         folderRepositoryListenerSupport
                 .folderMoved(new FolderRepositoryEvent(this, newFolder, oldFolder));
