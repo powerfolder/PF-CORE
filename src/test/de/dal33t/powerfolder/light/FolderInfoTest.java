@@ -218,6 +218,32 @@ public class FolderInfoTest extends TestCase {
         assertEquals(archive, FolderInfo.findEnclosingSubFolder(null, barriers, top, "archive"));
     }
 
+    /**
+     * PFS-5818: A real folder must never carry a permission id separator - a permission on it could
+     * not be told apart from another folder's, not even by the database. A LOOKUP instance is exempt:
+     * it is built from whatever an id parameter of a request said, and the answer to a crafted one is
+     * "not found", not an exception.
+     */
+    public void testAFolderIdNeverCarriesAPermissionSeparator() {
+        for (String separator : new String[] {"_FP_", "_GP_", "_OP_"}) {
+            try {
+                FolderInfoFactory.newTopFolderForTest("Nasty", "A" + separator + "B");
+                fail("A folder id containing " + separator + " must be refused");
+            } catch (IllegalArgumentException expected) {
+                assertTrue(expected.getMessage(), expected.getMessage().contains(separator));
+            }
+
+            /* The same id as a lookup instance: allowed, it only asks a question */
+            FolderInfo lookup = FolderInfoFactory.lookupInstance("A" + separator + "B");
+            assertTrue("A lookup instance must stay possible", lookup.isLookupInstance());
+            assertEquals("A" + separator + "B", lookup.getId());
+        }
+
+        /* An ordinary id is untouched, separators are upper case and ids are not */
+        assertEquals("M_bvl", FolderInfoFactory.newTopFolderForTest("BVL", "M_bvl").getId());
+        assertEquals("m_fp_x", FolderInfoFactory.newTopFolderForTest("Lower", "m_fp_x").getId());
+    }
+
     private static FolderInfo newSubFolder(FolderInfo top, String path) {
         DirectoryInfo location = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(top, path,
             null, 0, null, null, new Date(), 1, null, true, null);

@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.disk.InterruptedSubFolderIndex;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
@@ -141,6 +142,12 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     FolderInfo(String name, String id, int version, DirectoryInfo parent, String tags,
         boolean inheritsPermissions)
     {
+        /* PFS-5818: a real folder never carries a permission id separator. A LOOKUP instance is
+           exempt: it is a query object built from whatever an id parameter of a request said, and
+           the answer to a crafted one is "not found", not an exception. */
+        if (version >= 0) {
+            Permission.rejectSeparatorIn(id, "Folder");
+        }
         this.name = name;
         this.id = id;
         this.version = version;

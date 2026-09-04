@@ -122,6 +122,7 @@ public class Group implements Serializable, D2DObject, Auditable {
 
     public Group(String oid, String name) {
         Reject.ifBlank(oid, "OID");
+        Permission.rejectSeparatorIn(oid, "Group");
         this.oid = oid;
         this.name = name;
         this.permissions = new CopyOnWriteArrayList<>();

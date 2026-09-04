@@ -134,6 +134,7 @@ public class Organization implements Serializable , Auditable {
 
     public Organization(String oid) {
         Reject.ifBlank(oid, "OID");
+        Permission.rejectSeparatorIn(oid, "Organization");
         this.oid = oid;
         this.osSubscription = new OnlineStorageSubscription();
         this.domains = new CopyOnWriteArrayList<>();
