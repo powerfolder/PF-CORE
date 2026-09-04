@@ -73,8 +73,19 @@ public class SubFolderSearchIndexTest extends TwoControllerTestCase {
         TestHelper.createRandomFile(reports, "Quarterly Report.txt");
         TestHelper.scanFolder(topFolder);
         waitForIndex(topFolder);
-        assertEquals("Sanity: the top folder's index finds the file (" + topFolder.getSearchIndexManager().getIndexEntryCount()
-            + " entries)", 1, topFolder.searchFiles(criteria(topFolder, "quarterly")).size());
+        // The queue is empty before the commit is visible - wait for the hit, not for the queue.
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return topFolder.searchFiles(criteria(topFolder, "quarterly")).size() == 1;
+            }
+
+            @Override
+            public String message() {
+                return "Sanity: the top folder's index does not find the file ("
+                    + topFolder.getSearchIndexManager().getIndexEntryCount() + " entries)";
+            }
+        });
         FileInfoCriteria scoped = criteria(topFolder, "quarterly");
         scoped.setPath("reports");
         assertEquals("Sanity: the top folder's index finds the file below the path", 1, topFolder.searchFiles(scoped).size());
