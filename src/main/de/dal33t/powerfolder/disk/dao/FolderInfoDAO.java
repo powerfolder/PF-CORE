@@ -77,8 +77,9 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
      * }</pre>
      *
      * @param topFolderInfo
-     *         the top-level folder info whose subfolders should be returned;
-     *         must not be {@code null}
+     *         the folder info whose subfolders should be returned; must not be {@code null}. A
+     *         SUBFOLDER is a valid question as well: the interruptions nest, so a subfolder can be
+     *         the top folder of rows of its own
      * @return
      *         a {@link Collection} of {@link FolderInfo} objects;
      *         empty if no matching subfolders exist
