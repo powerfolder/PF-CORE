@@ -5348,9 +5348,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!member.hasCompleteFileListFor(currentInfo)) {
-                if (isFine()) {
-                    logFine("Skipping " + member
-                        + " no complete filelist from him");
+                if (isFiner()) {
+                    logFiner("Skipping " + member + " no complete filelist from him");
                 }
                 continue;
             }
@@ -5455,9 +5454,8 @@ public class Folder extends PFComponent {
         if (incomingFiles.isEmpty()) {
             logFiner("No Incoming files");
         } else {
-            if (isFine()) {
-                logFine(getName() + ":" + (incomingCount != null ? "" : "Aprox. ")
-                    + incomingFiles.size() + " incoming files");
+            if (isFiner()) {
+                logFiner(getName() + ":" + (incomingCount != null ? "" : "Aprox. ") + incomingFiles.size() + " incoming files");
             }
         }
 
@@ -5482,9 +5480,8 @@ public class Folder extends PFComponent {
                 continue;
             }
             if (!member.hasCompleteFileListFor(currentInfo)) {
-                if (isFine()) {
-                    logFine("Skipping " + member
-                        + " no complete filelist from him");
+                if (isFiner()) {
+                    logFiner("Skipping " + member + " no complete filelist from him");
                 }
                 continue;
             }
