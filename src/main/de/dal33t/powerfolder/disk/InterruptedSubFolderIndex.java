@@ -359,8 +359,9 @@ public class InterruptedSubFolderIndex {
      *
      * @param path    an absolute path (a scanned directory or a watched file)
      * @param ownBase the local base of the querying folder
-     * @return {@code true} if the innermost interrupted subfolder enclosing {@code path} is one other
-     *         than the querying folder itself
+     * @return {@code true} if the innermost interrupted subfolder enclosing {@code path} encloses the
+     *         querying folder's own base as well - then that subfolder, and not the querying folder,
+     *         owns the path
      */
     boolean contains(Path path, Path ownBase) {
         if (path == null) {
@@ -384,7 +385,16 @@ public class InterruptedSubFolderIndex {
                 innermost = base;
             }
         }
-        return innermost != null && !innermost.equals(ownBase);
+        /* The querying folder owns the path where its own base lies INSIDE that subfolder, not only
+         * where it IS the subfolder. A folder can sit below the base of another one: the metadata
+         * folder of an interrupted subfolder has its base at <subfolder>/.PowerFolder/meta, and
+         * comparing for equality refused it its own content ("Skipped scan - inside interrupted
+         * subfolder", followed by "Folder not joined, not requesting files"). Nobody else owns that
+         * path - the subfolder itself excludes its system directory - so the member list of every
+         * interrupted subfolder simply never synced. A folder OUTSIDE the barrier, i.e. the top
+         * folder, is still refused: that is what the barrier is for. */
+        // A folder without a base owns nothing, so an enclosing barrier decides - as before.
+        return innermost != null && (ownBase == null || !ownBase.startsWith(innermost));
     }
 
     /**
