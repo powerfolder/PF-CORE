@@ -238,8 +238,15 @@ public class LuceneIndexManager extends PFComponent {
     private final Folder folder;
     private final Path indexPath;
     private final StandardAnalyzer analyzer;
-    private final IndexWriter writer;
-    private final SearcherManager searcherManager;
+    /**
+     * PFS-5778: opened on first use - by the worker before it indexes, by a search before it reads - not
+     * in the constructor. Opening an IndexWriter reads the segment files and maps them, which took a
+     * good part of the 40 ms every subfolder cost on the request thread when a tree mounted; an index
+     * nobody asks for is never opened at all. {@code null} until {@link #ensureOpen()} succeeded.
+     */
+    private volatile IndexWriter writer;
+    private volatile SearcherManager searcherManager;
+    private final Object openLock = new Object();
     private final TesseractOCR ocrEngine;
 
     private final LinkedBlockingQueue<FileInfo> indexQueue = new LinkedBlockingQueue<>();
@@ -272,40 +279,6 @@ public class LuceneIndexManager extends PFComponent {
 
         this.analyzer = new StandardAnalyzer();
 
-        IndexWriter w = null;
-        try {
-            IndexWriterConfig config = new IndexWriterConfig(analyzer);
-            FSDirectory directory = FSDirectory.open(indexPath);
-            w = new IndexWriter(directory, config);
-        } catch (Exception e) {
-            // Index incompatible (e.g. created by a newer/older Lucene
-            // version) or corrupt. Wipe and start fresh.
-            logWarning(folder + ": Incompatible or corrupt index, rebuilding: " + e.getMessage());
-            if (w != null) {
-                try { w.close(); } catch (Exception ignored) {}
-                w = null;
-            }
-            deleteIndexFiles();
-            IndexWriterConfig config = new IndexWriterConfig(analyzer);
-            FSDirectory directory = FSDirectory.open(indexPath);
-            w = new IndexWriter(directory, config);
-        }
-
-        try {
-            this.searcherManager =
-                    new SearcherManager(w, true, true, null);
-            this.writer = w;
-        } catch (IOException e) {
-            if (w != null) {
-                try {
-                    w.close();
-                } catch (IOException suppressed) {
-                    e.addSuppressed(suppressed);
-                }
-            }
-            throw e;
-        }
-
         String ocrLanguages = ConfigurationEntry.SEARCH_INDEX_OCR_LANGUAGES.getValue(controller);
         int maxIndexThreads = ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(controller);
         // 1:1 with the indexing threads — they are the only callers of performOCR,
@@ -316,8 +289,68 @@ public class LuceneIndexManager extends PFComponent {
         this.ocrEngine = TesseractOCR.getInstance();
 
         if (isFine()) {
-            logFine(folder + ": Lucene index initialized at " + indexPath.toAbsolutePath());
+            logFine(folder + ": Lucene index registered at " + indexPath.toAbsolutePath());
         }
+    }
+
+    /**
+     * Opens the index if it is not open yet. Corrupt or incompatible index files (another Lucene
+     * version, for example) are wiped so the index starts fresh and {@link #rebuildIndexIfRequired()}
+     * finds no meta file at the next start.
+     *
+     * @return {@code false} if the index is shut down or could not be opened - the caller does without
+     *         it, the way it does without an index that was never enabled
+     */
+    private boolean ensureOpen() {
+        if (writer != null) {
+            return true;
+        }
+        if (closed.get()) {
+            return false;
+        }
+        synchronized (openLock) {
+            if (writer != null) {
+                return true;
+            }
+            if (closed.get()) {
+                return false;
+            }
+            IndexWriter w = null;
+            try {
+                try {
+                    w = new IndexWriter(FSDirectory.open(indexPath), new IndexWriterConfig(analyzer));
+                } catch (Exception e) {
+                    logWarning(folder + ": Incompatible or corrupt index, rebuilding: " + e.getMessage());
+                    if (w != null) {
+                        try { w.close(); } catch (Exception ignored) {}
+                    }
+                    deleteIndexFiles();
+                    w = new IndexWriter(FSDirectory.open(indexPath), new IndexWriterConfig(analyzer));
+                }
+                SearcherManager sm = new SearcherManager(w, true, true, null);
+                // The searcher first: a reader of the writer sees both or neither.
+                searcherManager = sm;
+                writer = w;
+                if (isFine()) {
+                    logFine(folder + ": Lucene index opened at " + indexPath.toAbsolutePath());
+                }
+                return true;
+            } catch (Exception e) {
+                logWarning(folder + ": Unable to open the Lucene index: " + e, e);
+                if (w != null) {
+                    try { w.close(); } catch (Exception ignored) {}
+                }
+                return false;
+            }
+        }
+    }
+
+    /**
+     * @return whether the index is open, or can be opened, for searching. A folder whose index cannot
+     *         be opened is searched through its database instead.
+     */
+    public boolean isSearchable() {
+        return ensureOpen();
     }
 
     /**
@@ -429,14 +462,18 @@ public class LuceneIndexManager extends PFComponent {
             return true;
         }
 
-        // 3) Verify index is readable
-        try {
-            IndexSearcher s = searcherManager.acquire();
-            try { s.getIndexReader().numDocs(); }
-            finally { searcherManager.release(s); }
-        } catch (Exception e) {
-            logWarning(folder + ": Index corrupt — rebuild required");
-            return true;
+        // 3) Verify index is readable - if it is open. An index not opened yet is verified by ensureOpen
+        //    when its turn comes: a corrupt one is wiped there, and the missing meta file orders the rebuild.
+        SearcherManager sm = searcherManager;
+        if (sm != null) {
+            try {
+                IndexSearcher s = sm.acquire();
+                try { s.getIndexReader().numDocs(); }
+                finally { sm.release(s); }
+            } catch (Exception e) {
+                logWarning(folder + ": Index corrupt — rebuild required");
+                return true;
+            }
         }
 
         // 4) PFS-5311: content extraction was off and is now on
@@ -539,7 +576,7 @@ public class LuceneIndexManager extends PFComponent {
      */
     public void purgeFiles(Collection<FileInfo> files) {
         if (closed.get() || files == null || files.isEmpty()) return;
-        if (!writer.isOpen()) return;
+        if (!ensureOpen() || !writer.isOpen()) return;
         try {
             for (FileInfo fileInfo : files) {
                 writer.deleteDocuments(
@@ -683,6 +720,15 @@ public class LuceneIndexManager extends PFComponent {
 
         if (isFine()) {
             logFine(folder + ": Index worker started");
+        }
+        if (!ensureOpen()) {
+            // Nothing to write into - the queue is dropped, the meta file (if any) still describes
+            // whatever is on disk, and the next start decides again.
+            indexQueue.clear();
+            contentQueue.clear();
+            rebuilding.set(false);
+            workerRunning.set(false);
+            return;
         }
 
         try {
@@ -1363,6 +1409,9 @@ public class LuceneIndexManager extends PFComponent {
             return counts;
         }
         String pfx = prefix == null ? "" : prefix.toLowerCase(Locale.ROOT);
+        if (!ensureOpen()) {
+            return counts;
+        }
         IndexSearcher searcher = null;
         try {
             searcher = searcherManager.acquire();
@@ -1598,6 +1647,9 @@ public class LuceneIndexManager extends PFComponent {
 
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
+        if (!ensureOpen()) {
+            return results;
+        }
 
         IndexSearcher searcher = null;
         try {
@@ -1889,7 +1941,7 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     private void commitAndRefresh() {
-        if (!writer.isOpen()) return;
+        if (writer == null || !writer.isOpen()) return;
         try {
             writer.commit();
             searcherManager.maybeRefreshBlocking();
@@ -1917,11 +1969,16 @@ public class LuceneIndexManager extends PFComponent {
     // Statistics
     // ------------------------------------------------------------------------
 
+    /** @return the number of indexed entries, {@code -1} while the index is not open (or unreadable) */
     public int getIndexEntryCount() {
+        SearcherManager sm = searcherManager;
+        if (sm == null) {
+            return -1;
+        }
         try {
-            IndexSearcher s = searcherManager.acquire();
+            IndexSearcher s = sm.acquire();
             try { return s.getIndexReader().numDocs(); }
-            finally { searcherManager.release(s); }
+            finally { sm.release(s); }
         } catch (Exception e) {
             return -1;
         }
@@ -2047,12 +2104,19 @@ public class LuceneIndexManager extends PFComponent {
         if (!throwingAway) {
             commitAndRefresh();
         }
-        try { searcherManager.close(); }
-        catch (Exception ignored) {}
+        // Never opened: nothing to close, nothing to commit or throw away.
+        SearcherManager sm = searcherManager;
+        IndexWriter w = writer;
+        if (sm != null) {
+            try { sm.close(); }
+            catch (Exception ignored) {}
+        }
         // rollback(), not close(): closing an IndexWriter COMMITS. There is nothing to commit for
         // an index that is being thrown away.
-        try { if (throwingAway) { writer.rollback(); } else { writer.close(); } }
-        catch (Exception ignored) {}
+        if (w != null) {
+            try { if (throwingAway) { w.rollback(); } else { w.close(); } }
+            catch (Exception ignored) {}
+        }
 
         if (isFine()) {
             logFine(folder + ": Shutdown complete");

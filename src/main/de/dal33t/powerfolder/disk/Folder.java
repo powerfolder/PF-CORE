@@ -475,13 +475,9 @@ public class Folder extends PFComponent {
         try {
             searchIndexManager = new LuceneIndexManager(getController(), this);
             boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
-            int entryCount = searchIndexManager.getIndexEntryCount();
-            String msg = this + ": Lucene search index " + (rebuild ? "rebuilding" : "ready")
-                    + " (" + entryCount + " entries)";
-            if (entryCount > 0) {
-                logInfo(msg);
-            } else if (isFine()) {
-                logFine(msg);
+            if (isFine()) {
+                // PFS-5778: the index is opened on first use, so there is no entry count to report here.
+                logFine(this + ": Lucene search index " + (rebuild ? "rebuilding" : "registered"));
             }
         } catch (Throwable t) {
             logWarning(this + ": Unable to initialize Lucene index manager: " + t, t);
@@ -523,7 +519,7 @@ public class Folder extends PFComponent {
                 index = topFolder.searchIndexManager;
             }
         }
-        if (index != null && criteria.hasSearchCriteria() && !index.isRebuilding()) {
+        if (index != null && criteria.hasSearchCriteria() && !index.isRebuilding() && index.isSearchable()) {
             List<FileInfo> indexed = indexOwner == this
                 ? index.searchFiles(criteria) : searchIndexOfTopFolder(index, criteria);
             // PFS-5652: the DAO fallback is an O(files) linear scan. Only run it to catch files the index
