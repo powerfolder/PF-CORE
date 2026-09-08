@@ -475,6 +475,10 @@ public class Folder extends PFComponent {
         try {
             searchIndexManager = new LuceneIndexManager(getController(), this);
             boolean rebuild = searchIndexManager.rebuildIndexIfRequired();
+            if (!rebuild) {
+                // A rebuild opens the index on its own; everything else warms it up for the first search.
+                searchIndexManager.warmUp();
+            }
             if (isFine()) {
                 // PFS-5778: the index is opened on first use, so there is no entry count to report here.
                 logFine(this + ": Lucene search index " + (rebuild ? "rebuilding" : "registered"));

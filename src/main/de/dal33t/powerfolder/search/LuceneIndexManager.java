@@ -364,6 +364,25 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
+     * PFS-5778: Opens the index in the background, on the bounded indexing pool (PFS-5311), so that the
+     * first search after a mount finds it open. Measured on narvi: without this the first search into a
+     * workspace of 130 subfolders paid 0.5 s, into one of 200 already mounted subfolders 1.8 s, the
+     * second one 0.1 s. The mount itself does not wait - that was the point of opening late. During the
+     * first minute after start nothing is warmed up: thousands of folders mount then, and the indexing
+     * pool is meant to stay quiet in that phase; a search opens what it needs.
+     */
+    public void warmUp() {
+        if (writer != null || closed.get()) {
+            return;
+        }
+        long uptime = getController().getUptime();
+        if (uptime >= 0 && uptime < STARTUP_DELAY_MS) {
+            return;
+        }
+        getController().getIOProvider().startIndexing(this::ensureOpen);
+    }
+
+    /**
      * Deletes all files in the index directory. Used when the existing
      * index is incompatible (e.g. created by a different Lucene major
      * version) or corrupt. Also removes the meta file so
