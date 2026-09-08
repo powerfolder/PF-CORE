@@ -40,6 +40,20 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
     int countMembers(FolderInfo folder);
 
     /**
+     * Stores the FolderInfo only if the table has no row for it yet - an existing row is left alone.
+     * <p>
+     * For a copy that arrives inside a permission this is the only sensible write. Storing an account
+     * or a group writes back the FolderInfo of every folder it holds a permission on, and that copy is
+     * a snapshot from whenever the permission was read: while the migration runs, the folder has moved
+     * on - a version, its tags, its inheritance flag - so an update from there can only ever overwrite
+     * the newer row with an older one. {@link #store} refuses that by version and said so, thousands of
+     * times a night; asking first is cheaper and says nothing.
+     *
+     * @param folderInfo the folder to insert if it is unknown
+     */
+    void storeIfMissing(FolderInfo folderInfo);
+
+    /**
      * Returns all subfolders belonging to the specified top-level folder.
      *
      * <p>
