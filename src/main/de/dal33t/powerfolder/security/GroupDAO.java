@@ -77,6 +77,18 @@ public interface GroupDAO extends GenericDAO<Group> {
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
 
     /**
+     * PFS-5832: the same for a set of folders, in one query per portion the database accepts instead
+     * of one per folder. A folder tree is asked about as a whole - a subfolder is a folder of its own,
+     * so a group that reaches only one directory of a workspace holds its permission on that row and
+     * on no other.
+     *
+     * @param folderInfos the folders to ask about
+     *
+     * @return the groups holding a permission on any of them, each one once
+     **/
+    Collection<Group> findWithFolderPermission(Collection<FolderInfo> folderInfos);
+
+    /**
      * Nested Groups: direct subgroups of {@code parent}. Looks up rows in
      * {@code AGroup_Parents} where {@code parent_oid = parent.oid}.
      *
