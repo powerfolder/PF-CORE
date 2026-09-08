@@ -1641,7 +1641,8 @@ public class Folder extends PFComponent {
             logFine(getName() + ": Already shutdown: Not scanChangedFiles (" + fileInfos.size() + "): " + fileInfos);
             return;
         }
-        boolean checkRevert = isRevertLocalChanges();
+        // The empty-filelist message is logged here once, not by the per-file check below.
+        boolean checkRevert = isRevertLocalChanges() && hasCompleteFileListOfAtLeastOneMember(true);
         int i = 0;
         for (Iterator<FileInfo> it = fileInfos.iterator(); it.hasNext();) {
             FileInfo fileInfo = it.next();
@@ -3159,6 +3160,11 @@ public class Folder extends PFComponent {
         if (isFine()) {
             logFine("Checking revert on my files");
         }
+        // Asked once for the whole run: the per-file check repeats the question for every known file and
+        // used to log "Empty filelist from ..." once per file - 13,500 lines for a 36,000-file folder (SP-7173).
+        if (!hasCompleteFileListOfAtLeastOneMember(true)) {
+            return;
+        }
         boolean reverted = false;
         for (FileInfo fileInfo : dao.findAllFiles(null)) {
             reverted |= checkRevertLocalChanges(fileInfo);
@@ -3239,6 +3245,14 @@ public class Folder extends PFComponent {
     }
 
     private boolean hasCompleteFileListOfAtLeastOneMember() {
+        return hasCompleteFileListOfAtLeastOneMember(false);
+    }
+
+    /**
+     * @param logEmptyFileLists whether a member that sent a complete but empty file list is logged. Only the
+     *                          callers that ask once per run pass true; the per-file checks stay silent.
+     */
+    private boolean hasCompleteFileListOfAtLeastOneMember(boolean logEmptyFileLists) {
         boolean remoteFilesFound = false;
 
         for (Member member : getConnectedMembers()) {
@@ -3247,6 +3261,9 @@ public class Folder extends PFComponent {
             }
             if (member.hasCompleteFileListFor(currentInfo)) {
                 if (getDAO().count(member.getId(), false, false) == 0 && getKnownItemCount() > 0) {
+                    if (!logEmptyFileLists) {
+                        continue;
+                    }
                     boolean otherServer = false;
                     for (Member other : getConnectedMembers()) {
                         if (other.isServer() && !other.equals(member)) {
