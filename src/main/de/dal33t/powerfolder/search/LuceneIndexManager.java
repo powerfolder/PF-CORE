@@ -33,7 +33,9 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Waiter;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -130,6 +132,14 @@ public class LuceneIndexManager extends PFComponent {
             {"fileName", "relativeName", CONTENT_FIELD};
 
     private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
+
+    /**
+     * PFC-3635: the analyzer a search word is cut with - the same kind the index used, so a word reaches the
+     * index in the very terms it holds. "Faktura-2026" is stored as "faktura" and "2026" because the
+     * tokenizer ends a word at a hyphen; a query that kept the hyphen asked for a term no file has. Static
+     * because the query builders are, and thread-safe.
+     */
+    private static final StandardAnalyzer QUERY_ANALYZER = new StandardAnalyzer();
 
     /**
      * PFS-5653: upper bound of distinct terms {@link #suggestTerms(String, String)} reads per field. Only
@@ -1477,17 +1487,40 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
+     * PFC-3635: the terms the index holds for a piece of text, lower cased and in order - what
+     * {@link #QUERY_ANALYZER} makes of it. Empty when the text carries no letter or digit.
+     */
+    static List<String> indexTerms(String text) {
+        List<String> terms = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            return terms;
+        }
+        try (TokenStream stream = QUERY_ANALYZER.tokenStream(null, text)) {
+            CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
+            stream.reset();
+            while (stream.incrementToken()) {
+                terms.add(term.toString());
+            }
+            stream.end();
+        } catch (IOException e) {
+            throw new IllegalStateException("Search text could not be tokenized: " + text, e);
+        }
+        return terms;
+    }
+
+    /**
      * PFS-5653: the name: filter. Every word has to appear in the file name - exactly, as a prefix or
      * anywhere inside it - and nowhere else: unlike the keywords, this one never looks at the path, the
-     * content or who changed the file. The value is cut into words the same way the name was tokenized
-     * when it was indexed, so the punctuation of a name like "!urgent!" does not kill the query.
+     * content or who changed the file. The value is cut into the terms the name was indexed as
+     * ({@link #indexTerms}), so neither the punctuation of "!urgent!" nor the hyphen of "Faktura-2026" kills
+     * the query.
      *
      * @return the query, or null if there is nothing to filter by.
      */
     private static Query fileNameQuery(String value) {
         BooleanQuery.Builder allWords = new BooleanQuery.Builder();
         boolean any = false;
-        for (String token : FileInfoCriteria.nameWords(value)) {
+        for (String token : indexTerms(value)) {
             BooleanQuery.Builder word = new BooleanQuery.Builder();
             for (String field : NAME_FIELDS) {
                 word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
@@ -1504,15 +1537,15 @@ public class LuceneIndexManager extends PFComponent {
     /**
      * PFS-5653: the filters that match a name against analyzed fields - "modifiedby:" and "device:". Every
      * word of the value has to appear in one of the given fields, exactly or anywhere inside a term. Built
-     * word by word because those fields are tokenized: a display name of two words is stored as two
-     * terms, so a single term carrying the space between them would match nothing.
+     * term by term ({@link #indexTerms}) because those fields are tokenized: a display name of two words
+     * is stored as two terms, so a single term carrying the space between them would match nothing.
      *
      * @return the query, or null if the value holds no word to filter by.
      */
     private static Query wordsAnywhereIn(String value, String[] fields) {
         BooleanQuery.Builder allWords = new BooleanQuery.Builder();
         boolean any = false;
-        for (String word : FileInfoCriteria.nameWords(value)) {
+        for (String word : indexTerms(value)) {
             BooleanQuery.Builder oneWord = new BooleanQuery.Builder();
             for (String field : fields) {
                 oneWord.add(new TermQuery(new Term(field, word)), BooleanClause.Occur.SHOULD);
@@ -1730,10 +1763,13 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
-     * Builds a Lucene query from user input. For each sanitized token,
-     * creates a per-field disjunction of exact / prefix / wildcard
-     * queries with boosting to prefer exact matches. All tokens are
-     * combined with AND semantics.
+     * Builds a Lucene query from user input. Every word is cut into the terms the index holds
+     * ({@link #indexTerms}), and for each term a per-field disjunction of exact / prefix / wildcard queries
+     * is created, boosted to prefer exact matches. All terms are combined with AND semantics.
+     *
+     * PFC-3635: the cutting is what makes "Faktura-2026" find "Test-Faktura-2026.pdf" - the index never
+     * held a term with the hyphen in it. PFS-5306: it also drops a trailing dot ("29.7.") the way the index
+     * did, so the dot no longer asks for a term that was never stored.
      *
      * @param fuzzy whether the tokens may also match with 1-2 edits (typo tolerance). Only set for the
      *              fallback pass, see {@link #isFuzzySearchEnabled()}.
@@ -1762,42 +1798,44 @@ public class LuceneIndexManager extends PFComponent {
                 negated = true;
                 token = token.substring(1);
             }
-            // PFS-5306: The StandardTokenizer used for indexing never emits a token ending in a dot
-            // (a dot only survives between alphanumerics). A trailing dot typed by the user - e.g. the
-            // tag "Stoffliste 29.7." - would therefore match nothing and, as a MUST clause, kill the
-            // whole query. Dots inside a token (29.7, report.v2) stay untouched.
-            while (token.endsWith(".")) {
-                token = token.substring(0, token.length() - 1);
-            }
-            if (token.isEmpty()) {
+            List<String> terms = indexTerms(token);
+            if (terms.isEmpty()) {
                 continue;
             }
 
             if (negated) {
+                // A negated word excludes the files that carry every term of it - "-faktura-2026" drops
+                // "Test-Faktura-2026.pdf" but keeps "Faktura 2025.pdf".
                 BooleanQuery.Builder exclusion = new BooleanQuery.Builder();
-                addTokenQueries(exclusion, token, 1.0f, 1.0f, 1.0f, false);
-                exclusion.setMinimumNumberShouldMatch(1);
+                for (String term : terms) {
+                    BooleanQuery.Builder oneTerm = new BooleanQuery.Builder();
+                    addTokenQueries(oneTerm, term, 1.0f, 1.0f, 1.0f, false);
+                    oneTerm.setMinimumNumberShouldMatch(1);
+                    exclusion.add(oneTerm.build(), BooleanClause.Occur.MUST);
+                }
                 allTokens.add(exclusion.build(), BooleanClause.Occur.MUST_NOT);
                 continue;
             }
 
-            BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
+            for (String term : terms) {
+                BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
 
-            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f, fuzzy);
+                addTokenQueries(fieldDisjunction, term, 3.0f, 2.0f, 1.0f, fuzzy);
 
-            String folded = foldAccents(token);
-            if (!folded.equals(token) && !folded.isEmpty()) {
-                addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, false);
+                String folded = foldAccents(term);
+                if (!folded.equals(term) && !folded.isEmpty()) {
+                    addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, false);
+                }
+
+                String stripped = stripAccents(term);
+                if (!stripped.equals(term) && !stripped.equals(folded) && !stripped.isEmpty()) {
+                    addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, false);
+                }
+
+                fieldDisjunction.setMinimumNumberShouldMatch(1);
+                allTokens.add(fieldDisjunction.build(), BooleanClause.Occur.MUST);
+                hasPositive = true;
             }
-
-            String stripped = stripAccents(token);
-            if (!stripped.equals(token) && !stripped.equals(folded) && !stripped.isEmpty()) {
-                addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, false);
-            }
-
-            fieldDisjunction.setMinimumNumberShouldMatch(1);
-            allTokens.add(fieldDisjunction.build(), BooleanClause.Occur.MUST);
-            hasPositive = true;
         }
 
         for (String phrase : phrases) {
@@ -1840,17 +1878,21 @@ public class LuceneIndexManager extends PFComponent {
         return phrases;
     }
 
+    /**
+     * PFC-3635: the phrase is cut into index terms as well - a quoted "Faktura-2026" asks for the terms
+     * "faktura" and "2026" next to each other, which is how the index stored that name.
+     */
     private Query buildPhraseQuery(String phrase) {
-        String[] words = phrase.split("\\s+");
-        if (words.length == 0) {
+        List<String> words = indexTerms(phrase);
+        if (words.isEmpty()) {
             return null;
         }
         BooleanQuery.Builder disjunction = new BooleanQuery.Builder();
-        if (words.length == 1) {
+        if (words.size() == 1) {
             /* A single quoted word has no word order to respect - it asks for the exact term, and it asks
              * it of every searchable field, not just the name/path/content ones a phrase can span. */
             for (String field : SEARCH_FIELDS) {
-                disjunction.add(new TermQuery(new Term(field, words[0])), BooleanClause.Occur.SHOULD);
+                disjunction.add(new TermQuery(new Term(field, words.get(0))), BooleanClause.Occur.SHOULD);
             }
             disjunction.setMinimumNumberShouldMatch(1);
             return disjunction.build();

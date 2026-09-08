@@ -224,6 +224,39 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
                 getIndexManager().searchFiles("ueberg", 10).size() > 0);
     }
 
+    /**
+     * PFC-3635: names with umlauts and Polish letters are found as typed, accent-folded, in a hyphenated
+     * word and through the name: filter - the search cuts them into the same terms the index holds.
+     */
+    public void testUmlautsAndPolishLettersAreFound() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Rechnung-März ąęśżł ÜÖß.txt");
+        Path subDir = folder.getLocalBase().resolve("Ordner-ąęż üöß");
+        Files.createDirectories(subDir);
+        TestHelper.createRandomFile(subDir, "Zażółć gęślą jaźń.txt");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertOnlyHit("Rechnung-März ąęśżł ÜÖß.txt", "März");
+        assertOnlyHit("Rechnung-März ąęśżł ÜÖß.txt", "märz");
+        assertOnlyHit("Rechnung-März ąęśżł ÜÖß.txt", "marz");
+        assertOnlyHit("Rechnung-März ąęśżł ÜÖß.txt", "Rechnung-März");
+        assertOnlyHit("Zażółć gęślą jaźń.txt", "gęślą");
+        assertOnlyHit("Zażółć gęślą jaźń.txt", "Zażółć");
+        assertOnlyHit("Zażółć gęślą jaźń.txt", "Ordner-ąęż");
+
+        List<FileInfo> byName = searchByFileName("März");
+        assertEquals(1, byName.size());
+        assertEquals("Rechnung-März ąęśżł ÜÖß.txt", byName.get(0).getFilenameOnly());
+    }
+
+    private void assertOnlyHit(String expectedFileName, String query) {
+        List<FileInfo> results = getIndexManager().searchFiles(query, 10);
+        results.removeIf(FileInfo::isDiretory);
+        assertEquals("hits for '" + query + "': " + results, 1, results.size());
+        assertEquals("hit for '" + query + "'", expectedFileName, results.get(0).getFilenameOnly());
+    }
+
     // -----------------------------------------------------------------------
     // Multiple index + search cycles
     // -----------------------------------------------------------------------
@@ -693,6 +726,63 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         List<FileInfo> results = getIndexManager().searchFiles("-dropvideo", 10);
         assertEquals(1, results.size());
         assertEquals("KeepMe.txt", results.get(0).getFilenameOnly());
+    }
+
+    // -----------------------------------------------------------------------
+    // PFC-3635: a hyphenated search word is cut like the index cut the name
+    // -----------------------------------------------------------------------
+
+    public void testHyphenatedWordFindsTheHyphenatedName() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Test-Faktura-2026.txt");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Faktura 2025.txt");
+        scanFolder(folder);
+        indexAndWait();
+
+        List<FileInfo> full = getIndexManager().searchFiles("Test-Faktura-2026", 10);
+        assertEquals(1, full.size());
+        assertEquals("Test-Faktura-2026.txt", full.get(0).getFilenameOnly());
+        List<FileInfo> part = getIndexManager().searchFiles("faktura-2026", 10);
+        assertEquals(1, part.size());
+        assertEquals("Test-Faktura-2026.txt", part.get(0).getFilenameOnly());
+        assertEquals("the words on their own still reach both", 2, getIndexManager().searchFiles("faktura", 10).size());
+    }
+
+    public void testNegatedHyphenatedWordExcludesTheName() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Test-Faktura-2026.txt");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Faktura 2025.txt");
+        scanFolder(folder);
+        indexAndWait();
+
+        List<FileInfo> results = getIndexManager().searchFiles("faktura -faktura-2026", 10);
+        assertEquals(1, results.size());
+        assertEquals("Faktura 2025.txt", results.get(0).getFilenameOnly());
+    }
+
+    public void testQuotedHyphenatedWordIsAPhrase() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Test-Faktura-2026.txt");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Faktura-Test 2026.txt");
+        scanFolder(folder);
+        indexAndWait();
+
+        assertEquals("both carry the words", 2, getIndexManager().searchFiles("faktura 2026", 10).size());
+        List<FileInfo> phrase = getIndexManager().searchFiles("\"faktura-2026\"", 10);
+        assertEquals("only one has them side by side", 1, phrase.size());
+        assertEquals("Test-Faktura-2026.txt", phrase.get(0).getFilenameOnly());
+    }
+
+    public void testNameFilterWithHyphenatedWord() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Test-Faktura-2026.txt");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Faktura 2025.txt");
+        scanFolder(folder);
+        indexAndWait();
+
+        List<FileInfo> results = searchByFileName("faktura-2026");
+        assertEquals(1, results.size());
+        assertEquals("Test-Faktura-2026.txt", results.get(0).getFilenameOnly());
     }
 
     public void testIncrementalIndexing() throws Exception {
