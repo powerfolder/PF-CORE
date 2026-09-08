@@ -2090,8 +2090,12 @@ public class LuceneIndexManager extends PFComponent {
             } catch (IOException e) {
                 logWarning(folder + ": Failed to delete index meta: " + e);
             }
-            logInfo(folder + ": " + pending + " file(s) still queued at shutdown"
-                    + " — full index rebuild scheduled for next start");
+            // FINE: with a short mount life (folders.mount.keep.seconds) this is the normal end of an
+            // index whose worker had not caught up yet - one line per unmount is noise at INFO.
+            if (isFine()) {
+                logFine(folder + ": " + pending + " file(s) still queued at shutdown"
+                        + " — full index rebuild scheduled for next start");
+            }
         }
 
         /* An index the next start throws away is not worth two fsyncs. commitAndRefresh() is one
