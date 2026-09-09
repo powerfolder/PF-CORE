@@ -30,6 +30,7 @@ import de.dal33t.powerfolder.util.Format;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
+import de.dal33t.powerfolder.util.Util;
 import org.hibernate.annotations.*;
 
 import javax.persistence.Column;
@@ -614,6 +615,28 @@ public class Group implements Serializable, D2DObject, Auditable {
 
     public void setOrganizationOID(String organizationOID) {
         this.organizationOID = organizationOID;
+    }
+
+    /**
+     * PFS-5840: whether this group belongs to an organization at all. Mirrors
+     * {@link Account#isMemberOfOrganization()}.
+     *
+     * @return {@code true} if an organization is set
+     **/
+    public boolean isMemberOfOrganization() {
+        return StringUtils.isNotBlank(organizationOID);
+    }
+
+    /**
+     * PFS-5840: whether the other group belongs to the same organization - two groups without one
+     * included, the same way {@link Account#isInSameOrganization(Account)} answers it.
+     *
+     * @param other the group to compare with
+     *
+     * @return {@code true} if both carry the same organization
+     **/
+    public boolean isInSameOrganization(Group other) {
+        return other != null && Util.equals(organizationOID, other.getOrganizationOID());
     }
 
     public GroupInfo createInfo() {
