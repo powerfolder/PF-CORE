@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.*;
 import de.dal33t.powerfolder.message.FileListRequest;
 import de.dal33t.powerfolder.message.clientserver.AccountDetails;
+import de.dal33t.powerfolder.search.LuceneIndexManager;
 import de.dal33t.powerfolder.security.Account;
 import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.task.CreateFolderOnServerTask;
@@ -57,11 +58,11 @@ import java.nio.file.*;
 import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,6 +86,19 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
 
+    /**
+     * Cache for {@link #findExistingFolder(Path, boolean)} without the extra real-path I/O.
+     * Optimizes {@link Folder#correctTopAndSubfolderRelation()}: it walks the complete ancestor
+     * chain of every folder, so the same parent directories are looked up over and over - each
+     * time a full linear scan over all folders. That made startup O(n * depth * n) and burned
+     * minutes single-threaded in {@link #correctTopAndSubfolderRelations()} on large servers.
+     * Only the pure in-memory comparison is cached, never a result derived from the filesystem,
+     * and it is invalidated on every structural change (add / remove / rename). An empty
+     * {@link Optional} caches the dominant "no folder at this path" answer, which
+     * {@link SimpleCache} cannot hold as null.
+     */
+    private final SimpleCache<Path, Optional<Folder>> existingFolderCache = new SimpleCache<>(60, TimeUnit.SECONDS);
+
     // PFC-3543: index of the currently interrupted subfolders. This repository is
     // the authority for structural changes and refreshes it on folder add/remove/
     // rename (and, later PFC-3565, on interruption toggle).
@@ -99,6 +113,12 @@ public class FolderRepository extends PFComponent implements Runnable {
     private final Object scanTrigger = new Object();
     private boolean triggered;
     private final AtomicInteger suspendNewFolderSearch = new AtomicInteger(0);
+    /**
+     * PFC-3620: how many callers currently suspend the automatic configuration save, and whether
+     * something accumulated while they did. See {@link #setSuspendConfigSave(boolean)}.
+     */
+    private final AtomicInteger suspendConfigSave = new AtomicInteger(0);
+    private final AtomicBoolean configSavePending = new AtomicBoolean(false);
     private Path foldersBasedir;
 
     /**
@@ -146,7 +166,19 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @see #scanBasedir()
      * @see #handleDeviceDisconnected(Folder)
      */
-    private final ReentrantLock scanBasedirLock = new ReentrantLock();
+    /**
+     * Guards the base directory scan against the structural changes it would trip over: creating,
+     * removing and moving folders. The SCAN takes the write lock, a structural CHANGE takes the read
+     * one - the names read the wrong way round on purpose, because what needs to be alone is the scan,
+     * not the change.
+     * <p>
+     * It was one exclusive lock before, so every mount and unmount of a node ran one after another
+     * although only the scan ever needed to. A production node was found with 62713 thread-dump samples
+     * queued behind it, its database pool starved (7658 c3p0 acquisition failures in a day) and even
+     * writing a log line contending. What the lock guarantees has not changed: the scan still never
+     * runs beside a change.
+     */
+    private final ReentrantReadWriteLock basedirScanLock = new ReentrantReadWriteLock();
     private ScheduledFuture<?> scanBaseDirFuture;
 
     /**
@@ -601,7 +633,14 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 FolderInfo foInfo = FolderInfoFactory.readFrom(folderSettings.getLocalBaseDir());
                 if (foInfo == null) {
-                    // TODO: Analyze if local base dir is subfolder of top level as fallback
+                    // Parent unknown. The entry is filed under the top folders below and
+                    // Folder#correctTopAndSubfolderRelation derives the parent from the storage
+                    // location once the top folder exists - that is what the TODO that used to sit
+                    // here asked for, and it is implemented there.
+                    if (isFine()) {
+                        logFine(folderName + '/' + folderEntryId + ": No FolderInfo meta-data file below "
+                            + folderSettings.getLocalBaseDir() + ", parent unknown");
+                    }
                     foInfo = lookupInstance(folderId, folderName);
                 } else if (!foInfo.getId().equals(folderId)) {
                     String folderIdFromFile = foInfo.getId();
@@ -641,6 +680,22 @@ public class FolderRepository extends PFComponent implements Runnable {
         // Phase 2: Execution – begrenzte Parallelität (2 × CPU)
         // ---------------------------------------------------------------------
 
+        // PFC-3543: top folders are created (and scanned) BEFORE their subfolders exist. Seed the
+        // interrupted-subfolder index from the configuration so no top folder scan descends into an
+        // interrupted subtree during that window. inheritsPermissions() reports "inherits" while the
+        // feature is disabled, so nothing is seeded then.
+        boolean seeded = false;
+        for (Map.Entry<FolderInfo, FolderSettings> e : subFolders.entrySet()) {
+            if (e.getKey().inheritsPermissions()) {
+                continue;
+            }
+            interruptedSubFolders.seed(e.getKey(), e.getValue().getLocalBaseDir());
+            seeded = true;
+        }
+        if (seeded) {
+            refreshInterruptedSubFolders();
+        }
+
         int threads = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
 
         ExecutorService executor = Executors.newFixedThreadPool(
@@ -652,6 +707,12 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
         );
 
+        /* PFC-3620: restoring the folders of the configuration has nothing to persist, and the
+         * suspension says so instead of relying on the startup order. It happens to be a no-op today
+         * - start() runs before the controller marks itself started and saveConfig() returns early
+         * until then - but that order must not be what protects a server with 8,500 folders from
+         * 8,500 configuration rewrites. */
+        setSuspendConfigSave(true);
         try {
             // -------------------------------------------------------------
             // Phase 2.1: Top-Level-Folder erstellen
@@ -674,7 +735,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                     Files.createDirectories(folderSettings.getLocalBaseDir());
                                 }
 
-                                createFolder(foInfo, folderSettings, false, true);
+                                createFolder(foInfo, folderSettings, true);
                             } catch (Exception ex) {
                                 logWarning("Problem creating top-level folder " + foInfo, ex);
                             }
@@ -716,7 +777,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                                     return;
                                 }
 
-                                createFolder(foInfo, folderSettings, false, true);
+                                createFolder(foInfo, folderSettings, true);
                             } catch (Exception ex) {
                                 logWarning("Problem creating subfolder " + foInfo, ex);
                             }
@@ -737,6 +798,11 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         } finally {
             executor.shutdown();
+            setSuspendConfigSave(false);
+            // PFC-3543: all subfolders from the configuration exist now (or failed and were
+            // logged) - end the startup bridge, the mounted-folder refresh is the authority again.
+            interruptedSubFolders.clearSeeds();
+            refreshInterruptedSubFolders();
         }
     }
 
@@ -888,6 +954,8 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         // Stop file requestor
         fileRequestor.shutdown();
+
+        shutdownIndexes();
 
         // shutdown all folders
         for (Folder metaFolder : metaFolders.values()) {
@@ -1117,6 +1185,51 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFC-3543: Forgets a subfolder that is GONE for good - deleted, not merely unmounted
+     * <p>
+     * A seed is retired when its folder mounts, and that is its only way out: everything else stays
+     * a barrier, because "not mounted yet" is precisely what a seed says. A deleted subfolder never
+     * mounts again, so its barrier outlives it and keeps a path reserved for a folder that no
+     * longer exists - the top folder is then refused every write below it
+     * ("Skipped scan - inside interrupted subfolder") and nothing owns the path instead.
+     * <p>
+     * Not in {@link #removeFolder}: that is the plain unmount as well, and there the barrier has to
+     * survive for the next mount. Only the caller that DELETES a folder may say this.
+     *
+     * @param subFolder the subfolder that no longer exists
+     */
+    public void forgetInterruptedSubFolder(FolderInfo subFolder) {
+        if (interruptedSubFolders.dropSeed(subFolder)) {
+            refreshInterruptedSubFolders();
+        }
+    }
+
+    /**
+     * PFC-3543: Seeds the interrupted-subfolder index with a subfolder KNOWN to be interrupted whose
+     * {@link Folder} object is not mounted yet - the server knows them from its database before any
+     * mount, the client from its configuration. The top folder's (asynchronous) scan must ignore the
+     * subtree already in the window before the subfolder mounts; the seed is dropped automatically
+     * once it does. Additive and idempotent.
+     *
+     * PFS-5814: Takes the whole workspace at once. A refresh walks all folders of the repository and
+     * rebuilds the barrier snapshot of the process, so it must not happen per subfolder - and not at
+     * all when every seed is already there, which is what a mount of an already known workspace finds.
+     *
+     * @param subFolders the interrupted subfolders with their local bases, derived as top folder base
+     *                   plus location
+     */
+    public void seedInterruptedSubFolders(Map<FolderInfo, Path> subFolders) {
+        Reject.ifNull(subFolders, "SubFolders");
+        if (subFolders.isEmpty()) {
+            return;
+        }
+        long version = interruptedSubFolders.seedAll(subFolders);
+        if (version > 0) {
+            interruptedSubFolders.publishSeeds(version, folders.values());
+        }
+    }
+
+    /**
      * @return the number of folders. Does NOT include the meta-folders (#1548).
      */
     public int getFoldersCount() {
@@ -1176,26 +1289,44 @@ public class FolderRepository extends PFComponent implements Runnable {
      * even if they are located beneath the top-level folder in the hierarchy.
      * </p>
      *
-     * @param topFolder
-     *         the top-level folder whose subfolders should be returned;
+     * PFC-3543: A SUBFOLDER may be passed as well, and then its own subfolders are returned - keyed by
+     * their location relative to IT. Subfolders nest (an interrupted one below an interrupted one), and
+     * their stored location is always in top-folder coordinates, so the children of a subfolder are the
+     * subfolders of the same top folder whose location lies inside its own. Reading a nested subfolder
+     * used to be impossible for that reason: whoever resolved a path landed on the subfolder and could
+     * not ask it for its children, which made everything below the second level invisible.
+     *
+     * @param folder
+     *         the folder whose subfolders should be returned - a top folder or a subfolder;
      *         must not be {@code null}
      * @return
-     *         a sorted {@link Map} mapping {@link DirectoryInfo} instances
-     *         to their corresponding {@link Folder} objects;
+     *         a sorted {@link Map} mapping {@link DirectoryInfo} instances - in the coordinates of
+     *         {@code folder} - to their corresponding {@link Folder} objects;
      *         empty if no matching subfolders exist
      */
-    public Map<DirectoryInfo, Folder> getSubFolders(Folder topFolder) {
-        Reject.ifNull(topFolder, "TopFolder");
-        Reject.ifFalse(topFolder.isTopFolder(), "Is not TopFolder");
+    public Map<DirectoryInfo, Folder> getSubFolders(Folder folder) {
+        Reject.ifNull(folder, "Folder");
 
         Map<DirectoryInfo, Folder> subFolders = new TreeMap<>(Comparator.comparing(FileInfo::getRelativeName));
-        subFolders.put(topFolder.getBaseDirectoryInfo(), topFolder);
+        subFolders.put(folder.getBaseDirectoryInfo(), folder);
 
-        for (Folder folder: folders.values()) {
-            if (!folder.isSubFolder() || !topFolder.equals(folder.getTopFolder())) {
+        FolderInfo topFolderInfo = folder.isTopFolder() ? folder.getInfo() : folder.getInfo().getTopFolder();
+        String ownLocation = folder.isTopFolder() ? "" : folder.getInfo().getLocation().getRelativeName() + "/";
+        for (Folder candidate: folders.values()) {
+            if (!candidate.isSubFolder() || !topFolderInfo.equals(candidate.getInfo().getTopFolder())) {
                 continue;
             }
-            subFolders.put(folder.getInfo().getLocation(), folder);
+            DirectoryInfo location = candidate.getInfo().getLocation();
+            if (folder.isTopFolder()) {
+                subFolders.put(location, candidate);
+                continue;
+            }
+            // Only what lies below the addressed subfolder, expressed relative to it.
+            if (!location.getRelativeName().startsWith(ownLocation)) {
+                continue;
+            }
+            subFolders.put((DirectoryInfo) FileInfoFactory.mapToSubFolder(location, folder.getInfo()),
+                candidate);
         }
         return subFolders;
     }
@@ -1236,30 +1367,39 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     public Folder findExistingFolder(Path targetDir, boolean toRealPath) {
         if (!targetDir.isAbsolute()) {
-            targetDir = foldersBasedir
-                    .resolve(targetDir);
-            logInfo("Original path: " + targetDir
-                    + ". Choosen relative path: " + targetDir);
+            targetDir = foldersBasedir.resolve(targetDir);
+            logInfo("Original path: " + targetDir + ". Choosen relative path: " + targetDir);
         }
 
-        for (Folder folder : getController().getFolderRepository()
-                .getFolders()) {
+        if (!toRealPath) {
+            Optional<Folder> cached = existingFolderCache.getValidEntry(targetDir);
+            // null means cache miss, an empty Optional means the cached answer is "no folder here"
+            if (cached != null) {
+                return cached.orElse(null);
+            }
+        }
+
+        Folder found = null;
+        for (Folder folder : getFolders()) {
             if (folder.getLocalBase().equals(targetDir)) {
-                return folder;
+                found = folder;
+                break;
             }
             if (toRealPath) {
                 try {
-                    if (folder.getCommitOrLocalDir().toRealPath()
-                            .equals(targetDir.toRealPath())) {
-                        return folder;
+                    if (folder.getCommitOrLocalDir().toRealPath().equals(targetDir.toRealPath())) {
+                        found = folder;
+                        break;
                     }
                 } catch (IOException e) {
-                    logFine("Unable to access: " + folder.getLocalBase() + ". "
-                            + e);
+                    logFine("Unable to access: " + folder.getLocalBase() + ". " + e);
                 }
             }
         }
-        return null;
+        if (!toRealPath) {
+            existingFolderCache.put(targetDir, Optional.ofNullable(found));
+        }
+        return found;
     }
 
     /**
@@ -1325,11 +1465,58 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (folder == null || relativeName == null) {
             return null;
         }
-        // Ground truth is the mounted Folder's CURRENT info (the map keys may be stale versions -
-        // FolderInfo.equals compares only the id), so collect the candidates via Folder.getInfo().
-        FolderInfo enclosing = FolderInfo.findEnclosingSubFolder(
-                getFolders().stream().map(Folder::getInfo).collect(Collectors.toList()), folder, relativeName);
+        /* Ground truth is the mounted Folder's CURRENT info (the map keys may be stale versions, FolderInfo
+         * .equals compares only the id), so the candidates come from Folder.getInfo(). Only the subfolders of
+         * the addressed workspace can enclose the path, and this runs per request: filtering while walking
+         * keeps a system without shared subfolders - the normal one - at zero allocations, instead of building
+         * a list of every mounted folder first. */
+        FolderInfo top = folder.isSubFolder() ? folder.getTopFolder() : folder;
+        List<FolderInfo> candidates = null;
+        for (Folder candidate : folders.values()) {
+            FolderInfo candidateInfo = candidate.getInfo();
+            if (!candidateInfo.isSubFolder() || !top.equals(candidateInfo.getTopFolder())) {
+                continue;
+            }
+            if (candidates == null) {
+                candidates = new ArrayList<>();
+            }
+            candidates.add(candidateInfo);
+        }
+        if (candidates == null) {
+            return null;
+        }
+        FolderInfo enclosing = FolderInfo.findEnclosingSubFolder(candidates, folder, relativeName);
         return enclosing != null ? getFolder(enclosing) : null;
+    }
+
+    /**
+     * PF-1790/PFC-3543: A subfolder's base dir IS its location inside the top folder - fully
+     * derivable, never subject to name patterns or "Name (2)" sidesteps. A divergent settings path
+     * (e.g. a previously uniquified twin, persisted by an earlier defect) detaches the folder from
+     * its data: content reads come from the wrong directory, and the top folder scans the real
+     * directory forever because the path-based interrupted-subfolder guard compares the configured
+     * base. Correcting it here also heals such persisted damage on the next mount.
+     *
+     * @return the settings with the corrected base dir, or the given settings when nothing diverges
+     *         (top folders, unmounted top folder)
+     */
+    private FolderSettings correctSubFolderBaseDir(FolderInfo folderInfo,
+                                                   FolderSettings folderSettings) {
+        if (!folderInfo.isSubFolder()) {
+            return folderSettings;
+        }
+        Folder topFolder = getFolder(folderInfo.getTopFolder());
+        if (topFolder == null) {
+            return folderSettings;
+        }
+        Path expectedBase = topFolder.getLocalBase()
+                .resolve(folderInfo.getLocation().getRelativeName());
+        if (expectedBase.equals(folderSettings.getLocalBaseDir())) {
+            return folderSettings;
+        }
+        logWarning(folderInfo + ": Correcting subfolder base dir from "
+                + folderSettings.getLocalBaseDir() + " to " + expectedBase);
+        return folderSettings.changeBaseDir(expectedBase);
     }
 
     /**
@@ -1342,10 +1529,16 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param folderSettings the settings for the folder
      * @return the freshly created folder
      */
-    public Folder createFolder(FolderInfo folderInfo,
-                               FolderSettings folderSettings) {
+    public Folder createFolder(FolderInfo folderInfo, FolderSettings folderSettings) {
         try {
-            if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
+            if (folderInfo.isSubFolder()) {
+                // PF-1790/PFC-3543: a subfolder's base IS its location inside the top folder, and the
+                // directory usually exists WITH content - that content is the subfolder's own.
+                // Sidestepping to a "Name (2)" twin would detach the folder from its data and let the
+                // top folder scan the real directory forever.
+                folderSettings = correctSubFolderBaseDir(folderInfo, folderSettings);
+                Files.createDirectories(folderSettings.getLocalBaseDir());
+            } else if (ConfigurationEntry.FOLDER_CREATE_USE_EXISTING
                     .getValueBoolean(getController())) {
                 Files.createDirectories(folderSettings.getLocalBaseDir());
             } else if (Files.notExists(folderSettings.getLocalBaseDir()) ||
@@ -1362,7 +1555,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning("Unable to create Folder: " + folderInfo.getName() + " @ " +
                     folderSettings.getLocalBaseDir() + " : " + ioe.getMessage());
         }
-        Folder folder = createFolder(folderInfo, folderSettings, true, true);
+        Folder folder = createFolder(folderInfo, folderSettings, true);
 
         // Obtain permission. Don't do this on startup (createFolder0)
         if (getController().getOSClient().isLoggedIn()
@@ -1384,14 +1577,18 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param folderInfo     the folder info object
      * @param folderSettings the settings for the folder
-     * @param saveConfig     true if the configuration file should be saved after creation.
      * @param fireEvent      if the methd should fire
      * @return the freshly created folder
      */
     public Folder createFolder(FolderInfo folderInfo,
-                                FolderSettings folderSettings, boolean saveConfig, boolean fireEvent) {
+                                FolderSettings folderSettings, boolean fireEvent) {
         Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
+
+        // PF-1790/PFC-3543: the common path of ALL folder creations corrects a subfolder's base dir,
+        // so a divergent persisted path (e.g. a previously uniquified "Name (2)" twin) heals on the
+        // next mount no matter which caller mounts it.
+        folderSettings = correctSubFolderBaseDir(folderInfo, folderSettings);
 
         if (hasJoinedFolder(folderInfo)) {
             Folder existingFolder = folders.get(folderInfo);
@@ -1463,9 +1660,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             try {
                 if (PathUtils.isNetworkPath(localBaseDir)) {
-                    if (saveConfig) {
-                        getController().saveConfig();
-                    }
+                    saveConfig();
                     logWarning("Not allowed to create " + folderInfo
                             + " at " + folderSettings.getLocalBaseDir()
                             + ". Network shares not allowed");
@@ -1559,9 +1754,11 @@ public class FolderRepository extends PFComponent implements Runnable {
             logWarning(folderInfo + " already in folders list");
         }
         folders.put(folder.getInfo(), folder);
+        // Only the new folder's own local base can change its answer, so the load phase keeps its cache.
+        existingFolderCache.invalidate(folder.getLocalBase());
         // PFC-3543: a newly mounted folder may be an interrupted subfolder.
         refreshInterruptedSubFolders();
-        saveFolderConfig(folderInfo, folderSettings, saveConfig);
+        saveFolderConfig(folderInfo, folderSettings);
 
         if (!metaFolder.hasOwnDatabase()) {
             // Scan once. To get it working.
@@ -1597,8 +1794,6 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         removeFromIgnoredFolders(folder);
 
-        WrappedScheduledThreadPoolExecutor.setWarningLevel(getFoldersCount());
-
         return folder;
     }
 
@@ -1607,18 +1802,15 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param folderInfo
      * @param folderSettings
-     * @param saveConfig
      */
     public void saveFolderConfig(FolderInfo folderInfo,
-                                 FolderSettings folderSettings, boolean saveConfig) {
+                                 FolderSettings folderSettings) {
         // store folder in config
         Properties config = getController().getConfig();
 
         folderSettings.set(folderInfo, config);
 
-        if (saveConfig) {
-            getController().saveConfig();
-        }
+        saveConfig();
     }
 
     /**
@@ -1628,7 +1820,7 @@ public class FolderRepository extends PFComponent implements Runnable {
      * @param deleteSystemSubDir
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir) {
-        removeFolder(folder, deleteSystemSubDir, true, true);
+        removeFolder(folder, deleteSystemSubDir, true);
     }
 
     /**
@@ -1636,110 +1828,116 @@ public class FolderRepository extends PFComponent implements Runnable {
      *
      * @param folder
      * @param deleteSystemSubDir
-     * @param saveConfig
+     * @param fireEvent
      */
     public void removeFolder(Folder folder, boolean deleteSystemSubDir,
-                             boolean saveConfig, boolean fireEvent) {
+                             boolean fireEvent) {
         Reject.ifNull(folder, "Folder is null");
 
         boolean isWebDAV = PathUtils.isWebDAVFolder(folder.getLocalBase());
 
+        /* The read lock lets removals of DIFFERENT folders run side by side; the monitor of the folder
+         * itself keeps two removals of the SAME one apart, which the single exclusive lock used to do
+         * on the way. Nothing else in the code base locks on a Folder, so this cannot deadlock. */
+        basedirScanLock.readLock().lock();
         try {
-            scanBasedirLock.lock();
+            synchronized (folder) {
 
-            // Remove link if it exists.
-            removeLink(folder);
+                // Remove link if it exists.
+                removeLink(folder);
 
-            // Remove the desktop shortcut
-            folder.removeDesktopShortcut();
+                // Remove the desktop shortcut
+                folder.removeDesktopShortcut();
 
-            // Detach any problem listeners.
-            folder.clearAllProblemListeners();
+                // Detach any problem listeners.
+                folder.clearAllProblemListeners();
 
-            // Remove desktop ini if it exists
-            if (OSUtil.isWindowsSystem()) {
-                PathUtils.deleteDesktopIni(folder.getLocalBase());
-            }
+                // Remove desktop ini if it exists
+                if (OSUtil.isWindowsSystem()) {
+                    PathUtils.deleteDesktopIni(folder.getLocalBase());
+                }
 
-            // remove folder from config
-            removeConfigEntries(folder.getConfigEntryId());
+                // remove folder from config
+                removeConfigEntries(folder.getConfigEntryId());
 
-            // Save config
-            if (saveConfig) {
-                getController().saveConfig();
-            }
+                // Save config - a bulk removal (see setSuspendConfigSave) saves it once at the end.
+                saveConfig();
 
-            // Shutdown meta folder as well
-            Folder metaFolder = getMetaFolder(folder.getInfo());
-            if (metaFolder != null) {
-                metaFolders.remove(metaFolder.getInfo());
-                metaFolders.remove(folder.getInfo());
+                // Shutdown meta folder as well
+                Folder metaFolder = getMetaFolder(folder.getInfo());
+                if (metaFolder != null) {
+                    metaFolders.remove(metaFolder.getInfo());
+                    metaFolders.remove(folder.getInfo());
+
+                    // Break transfers
+                    getController().getTransferManager().breakTransfers(
+                            metaFolder.getInfo());
+
+                    metaFolder.shutdown();
+                }
+
+                // Remove internal
+                folders.remove(folder.getInfo());
+                existingFolderCache.invalidate(folder.getLocalBase());
+                // PFC-3543: keep the interrupted-subfolder index in sync.
+                refreshInterruptedSubFolders();
+                folder.removeProblemListener(valveProblemListenerSupport);
 
                 // Break transfers
                 getController().getTransferManager().breakTransfers(
-                        metaFolder.getInfo());
+                        folder.getInfo());
 
-                metaFolder.shutdown();
-            }
+                folder.shutdown();
 
-            // Remove internal
-            folders.remove(folder.getInfo());
-            // PFC-3543: keep the interrupted-subfolder index in sync.
-            refreshInterruptedSubFolders();
-            folder.removeProblemListener(valveProblemListenerSupport);
+                // synchronize memberships
+                triggerSynchronizeAllFolderMemberships();
 
-            // Break transfers
-            getController().getTransferManager().breakTransfers(
-                    folder.getInfo());
-
-            folder.shutdown();
-
-            // synchronize memberships
-            triggerSynchronizeAllFolderMemberships();
-
-            // Abort scanning
-            boolean folderCurrentlyScannng = folder.equals(folderScanner
-                    .getCurrentScanningFolder());
-            if (folderCurrentlyScannng) {
-                folderScanner.abortScan();
-            }
-
-            // Delete the .PowerFolder dir and contents
-            if (deleteSystemSubDir) {
-                // Sleep a couple of seconds for things to settle,
-                // before removing dirs, to avoid conflicts.
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
+                // Abort scanning
+                boolean folderCurrentlyScannng = folder.equals(folderScanner
+                        .getCurrentScanningFolder());
+                if (folderCurrentlyScannng) {
+                    folderScanner.abortScan();
                 }
 
-                try {
-                    PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir());
-                } catch (IOException e) {
-                    logWarning("Failed to delete: " + folder.getSystemSubDir() + ". " + e);
-                }
-
-                if (!isWebDAV) {
-                    // Remove the folder if totally empty.
-                    Path localBase = folder.getLocalBase();
+                // Delete the .PowerFolder dir and contents
+                if (deleteSystemSubDir) {
+                    // Sleep a couple of seconds for things to settle,
+                    // before removing dirs, to avoid conflicts.
                     try {
-                        if (EncryptedFileSystemUtils.isCryptoInstance(localBase) && PathUtils.isEmptyDir(localBase)) {
-                            PathUtils.recursiveDeleteVisitor(EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase));
-                        } else {
-                            Files.delete(localBase);
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                    }
+
+                    try {
+                        PathUtils.recursiveDeleteVisitor(folder.getSystemSubDir());
+                    } catch (IOException e) {
+                        logWarning("Failed to delete: " + folder.getSystemSubDir() + ". " + e);
+                    }
+
+                    if (!isWebDAV) {
+                        // Remove the folder if totally empty.
+                        Path localBase = folder.getLocalBase();
+                        try {
+                            if (EncryptedFileSystemUtils.isCryptoInstance(localBase)
+                                    && PathUtils.isEmptyDir(localBase)) {
+                                PathUtils.recursiveDeleteVisitor(
+                                        EncryptedFileSystemUtils.getPhysicalStorageLocation(localBase));
+                            } else {
+                                Files.delete(localBase);
+                            }
+                        } catch (DirectoryNotEmptyException | NoSuchFileException e) {
+                            // this can happen, and is just fine
+                        } catch (IOException ioe) {
+                            logSevere("Failed to delete local base: "
+                                    + localBase.toAbsolutePath() + ": "
+                                    + ioe);
                         }
-                    } catch (DirectoryNotEmptyException | NoSuchFileException e) {
-                        // this can happen, and is just fine
-                    } catch (IOException ioe) {
-                        logSevere("Failed to delete local base: "
-                                + localBase.toAbsolutePath() + ": "
-                                + ioe);
                     }
                 }
-            }
 
+            }
         } finally {
-            scanBasedirLock.unlock();
+            basedirScanLock.readLock().unlock();
         }
 
         if (fireEvent) {
@@ -1993,6 +2191,72 @@ public class FolderRepository extends PFComponent implements Runnable {
     }
 
     /**
+     * PFC-3620: Suspends the automatic configuration save of this repository.
+     * <p>
+     * ATTENTION: This is a stack based system like {@link #setSuspendNewFolderSearch(boolean)} - suspend
+     * ONCE and release in a finally block. While suspended, {@link #createFolder}, {@link #removeFolder}
+     * and {@link #saveFolderConfig} only change the properties in memory; EVERY release writes the
+     * configuration once, if anything accumulated.
+     * <p>
+     * Why it exists: writing the configuration rewrites and re-sorts BOTH files completely (see
+     * {@link Controller#saveConfig()}), and {@link FolderSettings#removeEntries} walks the whole
+     * property map. Doing that per folder made bulk work quadratic - deleting a migrated workspace with
+     * 1,629 subfolders ran for hours, the thread dump sitting in removeEntries under every single
+     * removal. Callers used to pass a {@code saveConfig} flag through four methods for this; the
+     * knowledge of "this is a bulk run" belongs to the caller doing the bulk, not to every signature in
+     * between.
+     * <p>
+     * Why a counter and not a boolean: the workspaces of a migration run in parallel
+     * ({@code MigrationEngine}), so two paths can be in a bulk run at the same time. With a boolean the
+     * release of one would lift the suspension of the other. A forgotten release cannot lose the
+     * configuration for good - every direct {@link Controller#saveConfig()} caller still writes.
+     * <p>
+     * Why every release writes and not only the one that brings the counter to zero: the counter is
+     * global, the bulk runs are not. With 15 workspaces migrating at once it does not reach zero for
+     * hours, so the pending save was deferred for the whole run and everything created in between
+     * existed in memory only - a restart left 225 migrated workspaces out of the configuration and
+     * therefore unmounted, while the database held them complete. Every caller suspends around a LOOP
+     * and never per folder, so one write per completed loop is the granularity this was built for.
+     *
+     * @param suspend {@code true} to suspend, {@code false} to release
+     */
+    public void setSuspendConfigSave(boolean suspend) {
+        if (suspend) {
+            suspendConfigSave.incrementAndGet();
+            return;
+        }
+        if (suspendConfigSave.decrementAndGet() < 0) {
+            // More releases than suspensions - a caller released twice. Do not let the counter drift
+            // negative, or the next bulk run writes per folder again.
+            suspendConfigSave.set(0);
+            logWarning("setSuspendConfigSave(false) without a matching suspend", new StackDump());
+        }
+        if (configSavePending.getAndSet(false)) {
+            logFine("Saving the configuration once for the completed bulk operation");
+            getController().saveConfig();
+        }
+    }
+
+    /**
+     * PFC-3620: Saves the configuration, unless a bulk operation suspended it - then the last release
+     * saves it. Used wherever a folder change has to be persisted.
+     * <p>
+     * The startup restore holds the suspension of its own accord, so it does not depend on
+     * {@link Controller#saveConfig()} returning early while the controller is not started yet.
+     * <p>
+     * Package-visible: {@link Folder#setSyncProfile(SyncProfile)} persists a single folder property
+     * and has to go through the same suspension - a handler switching the profile of every folder used
+     * to rewrite the whole configuration per folder.
+     */
+    void saveConfig() {
+        if (suspendConfigSave.get() > 0) {
+            configSavePending.set(true);
+            return;
+        }
+        getController().saveConfig();
+    }
+
+    /**
      * ATTENTION: This is a stack based system. When suspending the search do it
      * only ONCE and make sure you release the lock in a finally block Can be
      * set by the UI when we are creating folders so that lookForNewFolders does
@@ -2025,7 +2289,8 @@ public class FolderRepository extends PFComponent implements Runnable {
             return false;
         }
         // sync with #handleDeviceDisconnectd(Folder)
-        scanBasedirLock.lock();
+        // The scan is the one that has to be alone - see basedirScanLock.
+        basedirScanLock.writeLock().lock();
         boolean ok = false;
         try {
             if (ConfigurationEntry.LOOK_FOR_FOLDER_CANDIDATES
@@ -2037,7 +2302,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 ok = lookForFoldersToBeRemoved() && ok;
             }
         } finally {
-            scanBasedirLock.unlock();
+            basedirScanLock.writeLock().unlock();
         }
         return ok;
     }
@@ -2314,7 +2579,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 try {
                     Folder existingFolder = foInfo.getFolder(getController());
                     if (existingFolder != null && existingFolder.checkIfDeviceDisconnected()) {
-                        removeFolder(existingFolder, false, false, true);
+                        removeFolder(existingFolder, false, true);
                     }
                     FolderInfo renamedFI = tryRenaming(client, file, foInfo, stillPresent);
                     if (renamedFI != null && renamedFI.equals(foInfo)
@@ -2392,7 +2657,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
 
         // 2) Sync locally
-        Folder folder = createFolder(foInfo, fs, true, true);
+        Folder folder = createFolder(foInfo, fs, true);
         folder.addDefaultExcludes();
 
         if (scheduleCreateOnServer) {
@@ -2497,6 +2762,8 @@ public class FolderRepository extends PFComponent implements Runnable {
         folder.updateInfo(newFolderInfo);
         folders.remove(newFolderInfo);
         folders.put(newFolderInfo, folder);
+        // A rename may relocate the folder, so drop everything rather than guessing the old path.
+        existingFolderCache.invalidateAll();
         // PFC-3543: local base / interruption state may have changed on rename.
         refreshInterruptedSubFolders();
         Folder metaFolder = getMetaFolder(newFolderInfo);
@@ -2585,7 +2852,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logInfo("Renaming " + foInfo + " to '" + newName + "'");
 
             if (folder != null && folder.checkIfDeviceDisconnected()) {
-                removeFolder(folder, false, false, true);
+                removeFolder(folder, false, true);
                 ignoredFolderDirectories.remove(folder.getLocalBase());
             }
 
@@ -2864,7 +3131,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             return;
         }
         try {
-            scanBasedirLock.lock();
+            basedirScanLock.readLock().lock();
             if (isFine()) {
                 logFine("Syncing folder setup with account permissions("
                         + a.getFolders().size() + "): " + a.getUsername());
@@ -2904,7 +3171,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 }
             }
         } finally {
-            scanBasedirLock.unlock();
+            basedirScanLock.readLock().unlock();
             accountSyncLock.unlock();
         }
     }
@@ -2950,7 +3217,7 @@ public class FolderRepository extends PFComponent implements Runnable {
         boolean moved = false;
         long start = System.currentTimeMillis();
         try {
-            scanBasedirLock.lock();
+            basedirScanLock.readLock().lock();
 
             Path sourceDirectory = folder.getPhysicalDir().toRealPath();
 
@@ -2967,7 +3234,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             List<String> patterns = folder.getDiskItemFilter().getPatterns();
 
             // Remove the old folder from the repository.
-            removeFolder(folder, false, false, false);
+            removeFolder(folder, false, false);
 
             // Move it.
             try {
@@ -3040,7 +3307,7 @@ public class FolderRepository extends PFComponent implements Runnable {
 
             // Create the new Folder in the repository.
             Folder oldFolder = folder;
-            folder = createFolder(folder.getInfo().intern(), fs, true, false);
+            folder = createFolder(folder.getInfo().intern(), fs, false);
             PathUtils.setAttributesOnWindows(folder.getLocalBase(), null, true);
             PathUtils.setAttributesOnWindows(folder.getSystemSubDir(), true, true);
 
@@ -3077,7 +3344,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             logFine(e);
             return null;
         } finally {
-            scanBasedirLock.unlock();
+            basedirScanLock.readLock().unlock();
         }
 
         return moved ? folder : null;
@@ -3144,7 +3411,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             // Actually create the directory
             try {
-                scanBasedirLock.lock();
+                basedirScanLock.readLock().lock();
                 try {
                     Files.createDirectories(settings.getLocalBaseDir());
                 } catch (IOException ioe) {
@@ -3173,7 +3440,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                     scheduleCreateOnServer = true;
                 }
 
-                Folder folder = createFolder(foInfo, settings, true, true);
+                Folder folder = createFolder(foInfo, settings, true);
                 folder.addDefaultExcludes();
 
                 if (scheduleCreateOnServer) {
@@ -3191,7 +3458,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                 logWarning("Unable to create folder " + folderName + " at "
                         + settings.getLocalBaseDir() + ". " + e);
             } finally {
-                scanBasedirLock.unlock();
+                basedirScanLock.readLock().unlock();
             }
         }
         // If a UI client is running and AUTO_SETUP_ACCOUNT_FOLDERS is enabled, check if there is enough disk space for all folders.
@@ -3298,10 +3565,10 @@ public class FolderRepository extends PFComponent implements Runnable {
 
                 try {
                     // Actually create the directory
-                    scanBasedirLock.lock();
+                    basedirScanLock.readLock().lock();
                     Files.createDirectories(settings.getLocalBaseDir());
 
-                    Folder folder = createFolder(folderInfo, settings, true, true);
+                    Folder folder = createFolder(folderInfo, settings, true);
                     folder.addDefaultExcludes();
                     folderInfos.put(folderInfo, settings);
                 } catch (IOException ioe) {
@@ -3313,7 +3580,7 @@ public class FolderRepository extends PFComponent implements Runnable {
                             + folderInfo.getName() + " at "
                             + settings.getLocalBaseDir() + ". " + e);
                 } finally {
-                    scanBasedirLock.unlock();
+                    basedirScanLock.readLock().unlock();
                 }
             }
         }
@@ -3331,6 +3598,15 @@ public class FolderRepository extends PFComponent implements Runnable {
     private void fireFolderRemoved(Folder folder) {
         folderRepositoryListenerSupport
                 .folderRemoved(new FolderRepositoryEvent(this, folder));
+    }
+
+    /**
+     * PFC-3536: Called by {@link Folder#unshare} once the subfolder is out of the repository. Package
+     * visible on purpose: only the unshare may say so, a plain unmount goes through the same
+     * {@link #removeFolder} and must not.
+     */
+    void fireSubFolderUnshared(Folder subFolder) {
+        folderRepositoryListenerSupport.subFolderUnshared(new FolderRepositoryEvent(this, subFolder));
     }
 
     private void fireFolderMoved(Folder newFolder, Folder oldFolder) {
@@ -3636,4 +3912,107 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
+
+    /** Signals a folder's search index to stop working, if it has one. Never waits. */
+    private static void requestIndexStop(Folder folder) {
+        LuceneIndexManager index = folder.getSearchIndexManager();
+        if (index != null) {
+            index.requestStop();
+        }
+    }
+
+    /**
+     * Stops and closes every search index, before the folders are closed one by one
+     * <p>
+     * Telling them to stop comes first, all of them, without waiting for any. A single index
+     * shutdown waits up to a second for its worker, and a server holds thousands of folders - done
+     * strictly in sequence that outlived the patience of the stop script, which killed the process
+     * mid-shutdown four times in one night. Signalled up front, the workers drain side by side and
+     * each wait below finds its worker already gone.
+     * <p>
+     * The closing then runs side by side as well. Closing one index is a commit and a file handle,
+     * a few milliseconds, and that is fine until a migration leaves thousands of interrupted
+     * subfolders behind, each of them a folder with an index of its own. narvi carries 7 425 of
+     * them, and closing them in sequence took 63 of the 70 seconds its shutdown lasted. Nothing
+     * here waits on anything else, so the only reason it was slow is that it was serial.
+     * <p>
+     * Nothing is discarded: the folders stay, so their indexes are committed and closed properly
+     * underneath - all but the ones whose queue did not drain, which the next start rebuilds from
+     * scratch anyway. {@link Folder#shutdown()} still asks its index to shut down afterwards; that
+     * second call returns at the {@code shutdownStarted} gate without doing anything, so the order
+     * of the rest of the shutdown is untouched. Meta folders are signalled but not closed here -
+     * Folder.shutdown skips their index as well.
+     */
+    private void shutdownIndexes() {
+        for (Folder metaFolder : metaFolders.values()) {
+            requestIndexStop(metaFolder);
+        }
+
+        for (Folder folder : folders.values()) {
+            requestIndexStop(folder);
+        }
+
+        List<Folder> indexed = new ArrayList<>(folders.size());
+
+        for (Folder folder : folders.values()) {
+            if (folder.getSearchIndexManager() != null && !folder.getInfo().isMetaFolder()) {
+                indexed.add(folder);
+            }
+        }
+
+        if (indexed.size() < 2) {
+            return;
+        }
+
+        int threads = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
+
+        ExecutorService executor = Executors.newFixedThreadPool(
+                threads,
+                r -> {
+                    Thread t = new Thread(r, "Index-shutdown");
+                    t.setDaemon(true);
+                    return t;
+                }
+        );
+
+        long started = System.currentTimeMillis();
+
+        try {
+            List<Future<?>> tasks = new ArrayList<>(indexed.size());
+
+            for (Folder folder : indexed) {
+                tasks.add(
+                        executor.submit(() -> {
+                            try {
+                                LuceneIndexManager index = folder.getSearchIndexManager();
+
+                                if (index != null) {
+                                    index.shutdown();
+                                }
+                            } catch (Exception ex) {
+                                logWarning("Problem closing the search index of "
+                                        + folder.getInfo(), ex);
+                            }
+                        })
+                );
+            }
+
+            // Explicit barrier: no folder is closed while its index is still being written.
+            for (Future<?> f : tasks) {
+                try {
+                    f.get();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (Exception e) {
+                    logWarning("Search index shutdown failed", e);
+                }
+            }
+        } finally {
+            executor.shutdown();
+        }
+
+        logInfo("Closed " + indexed.size() + " search index(es) in "
+                + (System.currentTimeMillis() - started) + " ms");
+    }
 }

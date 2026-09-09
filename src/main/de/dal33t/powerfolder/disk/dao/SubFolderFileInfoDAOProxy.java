@@ -46,7 +46,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
         this.delegate = delegate;
         this.subfolderInfo = subfolderInfo;
         this.subfolderPath =  subfolderInfo.getLocation().getRelativeName();
-        logInfo(subfolderInfo + " initialized at subfolderPath=" + subfolderPath);
+        logFine(subfolderInfo + " initialized at subfolderPath=" + subfolderPath);
     }
 
     private FileInfo toTop(FileInfo f) {
@@ -120,18 +120,18 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
 
     @Override
     public FileInfo find(FileInfo fInfo, String domain) {
-        if (isFine()) {
-            logFine("find    : " + fInfo);
-            logFine("toTop   : " + toTop(fInfo));
-            logFine("delegate: " + delegate.find(toTop(fInfo), domain));
-        }
-
         FileInfo topFInfo = delegate.find(toTop(fInfo), domain);
         if (topFInfo == null) {
+            if (isFiner()) {
+                logFiner(subfolderInfo.getName() + ": find " + fInfo.getRelativeName() + ": not found");
+            }
             return null;
         }
-        logFine("toSub   : " + toSub(topFInfo));
-        return toSub(topFInfo);
+        FileInfo subFInfo = toSub(topFInfo);
+        if (isFiner()) {
+            logFiner(subfolderInfo.getName() + ": find " + fInfo.getRelativeName() + " -> " + subFInfo);
+        }
+        return subFInfo;
     }
 
     @Override
@@ -175,7 +175,7 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
     @Override
     public Collection<DirectoryInfo> findAllDirectories(String domain) {
         return delegate.findAllDirectories(domain).stream()
-                .filter(d -> d.getRelativeName().startsWith(subfolderPath))
+                .filter(d -> d.isInSubFolder(subfolderPath))
                 .map(this::toSub)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -209,9 +209,10 @@ public class SubFolderFileInfoDAOProxy extends Loggable implements FileInfoDAO {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
-            // Log output summary
-            logFine("findFilesFast result: " + result.size() + " file(s) in subfolder '" +
-                    subfolderInfo.getName() + "' final path of criteria: " + criteria.getPath());
+            if (isFiner()) {
+                logFiner(subfolderInfo.getName() + ": findFilesFast returned " + result.size() + " file(s) for "
+                    + criteria.getPath());
+            }
 
             return result;
 

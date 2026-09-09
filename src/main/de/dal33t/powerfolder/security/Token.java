@@ -54,6 +54,7 @@ public class Token implements Serializable {
     public static final String PROPERTYNAME_NODE_INFO = "nodeInfo";
     public static final String PROPERTYNAME_ACCOUNT_INFO = "accountInfo";
     public static final String PROPERTYNAME_SERVICE_INFO = "serviceInfo";
+    public static final String PROPERTYNAME_NOTES = "notes";
 
     // PFC-2455: 1 Minute
     private static final long REQUEST_TOKEN_TIMEOUT = 1000L * 60;
@@ -64,12 +65,21 @@ public class Token implements Serializable {
     //24h
     private static final long CLOSE_ACCOUNT_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24;
     private static final long ADD_EMAIL_TOKEN_TIMEOUT = 1000L * 60 * 60 * 12;
-    // PFS-2296: Unlimited time
-    private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365 * 1337;
+    // PFS-2296: 1 year — an expired link is recoverable: "forgot password" on an unactivated
+    // account re-sends the welcome mail with a fresh registration token.
+    private static final long ACCOUNT_REGISTER_TIMEOUT = 1000L * 60 * 60 * 24 * 365;
     // PF-895: 1 day:
     private static final long OAUTH_ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 24;
     // PF-615: OCM
     private static final long OCM_TOKEN_TIMEOUT = 1000L * 60 * 30;
+    // Password-reset links: single-use and short-lived (OWASP Forgot Password recommendation)
+    private static final long PASSWORD_RESET_TOKEN_TIMEOUT = 1000L * 60 * 30;
+    // Initial "set your password" links from welcome/registration mails are often opened much later
+    private static final long INITIAL_PASSWORD_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24;
+    // PFS-5665: "set your password" links in migration mails — users may react weeks after the batch mailing
+    private static final long MIGRATION_PASSWORD_TOKEN_TIMEOUT = 1000L * 60 * 60 * 24 * 28;
+
+    public static final String NOTES_PASSWORD_RESET_PREFIX = "password_reset:";
 
     @Id
     private String id;
@@ -158,6 +168,55 @@ public class Token implements Serializable {
         token.addNotesWithDate(
                 aInfo.getUsername() + " adding email " + eMailToAdd);
         return token;
+    }
+
+    /**
+     * A single-use token authorizing a password reset for one account — the "forgot password" entry
+     * point (30 minutes). Deliberately carries NO accountInfo: every token authentication path
+     * requires accountInfo, so a leaked reset link can never be used to log in. The account is bound
+     * via the notes instead.
+     *
+     * @param accountOID the OID of the account whose password may be reset.
+     */
+    public static Token newPasswordResetToken(String accountOID) {
+        return newPasswordResetToken(accountOID, PASSWORD_RESET_TOKEN_TIMEOUT);
+    }
+
+    /**
+     * Entry point 2: "set your initial password" links in welcome/registration mails (24 hours).
+     */
+    public static Token newInitialPasswordToken(String accountOID) {
+        return newPasswordResetToken(accountOID, INITIAL_PASSWORD_TOKEN_TIMEOUT);
+    }
+
+    /**
+     * PFS-5665, entry point 3: "set your password" links in migration mails (4 weeks — users may
+     * react weeks after the batch mailing).
+     */
+    public static Token newAfterMigrationPasswordToken(String accountOID) {
+        return newPasswordResetToken(accountOID, MIGRATION_PASSWORD_TOKEN_TIMEOUT);
+    }
+
+    private static Token newPasswordResetToken(String accountOID, long timeout) {
+        Reject.ifBlank(accountOID, "Account OID");
+        Token token = new Token(new Date(System.currentTimeMillis() + timeout), null, null, null);
+        token.setNotes(NOTES_PASSWORD_RESET_PREFIX + accountOID);
+        return token;
+    }
+
+    public boolean isPasswordReset() {
+        return notes != null && notes.startsWith(NOTES_PASSWORD_RESET_PREFIX);
+    }
+
+    /**
+     * @return the OID of the account this password-reset token is bound to, or null if this is no
+     *         password-reset token.
+     */
+    public String getPasswordResetAccountOID() {
+        if (!isPasswordReset()) {
+            return null;
+        }
+        return notes.substring(NOTES_PASSWORD_RESET_PREFIX.length());
     }
 
     /**

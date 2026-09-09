@@ -416,15 +416,59 @@ public class FileInfoCriteria {
     }
 
     /**
-     * PFS-5653: the name: filter. Case-insensitive substring of the file name - the keywords of a search
-     * also reach the path and, in the index, the content, this one does not.
+     * PFS-5653: the name: filter. Every word of the value has to appear in the file name - the keywords of
+     * a search also reach the path and, in the index, the content, this one does not.
      */
     private static boolean matchesFileName(FileInfo fileInfo, String fileName) {
-        if (isBlank(fileName)) {
+        List<String> words = nameWords(fileName);
+        if (words.isEmpty()) {
             return true;
         }
         String name = fileInfo.getFilenameOnly();
-        return name != null && name.toUpperCase().contains(fileName.toUpperCase().trim());
+        if (name == null) {
+            return false;
+        }
+        String lower = name.toLowerCase();
+        for (String word : words) {
+            if (!lower.contains(word)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The words a "name:" value is compared by, lower cased. The index tokenizes a file name on everything
+     * that is neither a letter nor a digit, so "!urgent!" is stored as "urgent" - a
+     * value has to be cut the same way, otherwise the punctuation the user typed matches nothing. A value
+     * of nothing but punctuation leaves no word at all and therefore filters nothing.
+     */
+    public static List<String> nameWords(String value) {
+        if (isBlank(value)) {
+            return Collections.emptyList();
+        }
+        List<String> words = new ArrayList<>();
+        for (String word : value.toLowerCase().replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ").split("\\s+")) {
+            /* PFS-5306: the tokenizer keeps a dot only between alphanumerics, so a trailing one - as in
+             * "29.7." - would be searched for but never indexed. */
+            while (word.endsWith(".")) {
+                word = word.substring(0, word.length() - 1);
+            }
+            if (hasLetterOrDigit(word)) {
+                words.add(word);
+            }
+        }
+        return words;
+    }
+
+    /** Dots, hyphens and underscores stay inside a word, but on their own they are no word at all. */
+    private static boolean hasLetterOrDigit(String word) {
+        for (int i = 0; i < word.length(); i++) {
+            if (Character.isLetterOrDigit(word.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean matchesExtension(FileInfo fileInfo, Set<String> extensions) {
@@ -436,19 +480,23 @@ public class FileInfoCriteria {
     }
 
     private static boolean matchesModifiedBy(FileInfo fileInfo, String modifiedBy) {
-        if (modifiedBy == null || modifiedBy.isEmpty()) {
+        List<String> words = nameWords(modifiedBy);
+        if (words.isEmpty()) {
             return true;
         }
         AccountInfo account = fileInfo.getModifiedByAccount();
         if (account == null) {
             return false;
         }
-        String content = account.getDisplayName() + account.getUsername();
+        /* Kept apart by blanks: a word may sit in the display name, the username or the device nick, but
+         * never across the seam between two of them. */
+        StringBuilder content = new StringBuilder()
+                .append(account.getDisplayName()).append(' ').append(account.getUsername());
         MemberInfo member = fileInfo.getModifiedBy();
         if (member != null) {
-            content += member.nick;
+            content.append(' ').append(member.nick);
         }
-        return content.toUpperCase().contains(modifiedBy.toUpperCase().trim());
+        return containsAllWords(content.toString(), words);
     }
 
     private static boolean matchesModifiedDate(FileInfo fileInfo, Date after, Date before) {
@@ -498,12 +546,23 @@ public class FileInfoCriteria {
 
     /** PFS-5653: the device: filter - the name of the device a file was changed on. */
     private static boolean matchesDeviceName(FileInfo fileInfo, String deviceName) {
-        if (isBlank(deviceName)) {
+        List<String> words = nameWords(deviceName);
+        if (words.isEmpty()) {
             return true;
         }
         MemberInfo member = fileInfo.getModifiedBy();
-        return member != null && member.nick != null
-                && member.nick.toUpperCase().contains(deviceName.toUpperCase().trim());
+        return member != null && member.nick != null && containsAllWords(member.nick, words);
+    }
+
+    /** True when every word - already lower cased by {@link #nameWords(String)} - sits in the text. */
+    private static boolean containsAllWords(String text, List<String> words) {
+        String lower = text.toLowerCase();
+        for (String word : words) {
+            if (!lower.contains(word)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean matchesCategory(FileInfo fileInfo, Set<String> categories) {
@@ -540,6 +599,24 @@ public class FileInfoCriteria {
             }
         }
         return true;
+    }
+
+    /**
+     * PFS-5653: true when the criteria carry something no folder can answer. Asking for documents, for
+     * PDFs, for something larger than 10 MB or changed by someone is asking about files - a name or a tag
+     * is not, folders carry both.
+     */
+    public boolean describesFilesOnly() {
+        boolean fileCategory = !categories.isEmpty() && !categories.contains(DocumentType.FOLDER);
+
+        return fileCategory
+                || !extensions.isEmpty()
+                || minSize != null
+                || maxSize != null
+                || modifiedAfter != null
+                || modifiedBefore != null
+                || StringUtils.isNotBlank(modifiedBy)
+                || StringUtils.isNotBlank(modifiedByDeviceName);
     }
 
     public boolean hasSearchCriteria() {

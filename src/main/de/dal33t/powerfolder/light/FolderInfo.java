@@ -25,9 +25,11 @@ import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.d2d.D2DObject;
 import de.dal33t.powerfolder.disk.Folder;
+import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.disk.InterruptedSubFolderIndex;
 import de.dal33t.powerfolder.protocol.FolderInfoProto;
 import de.dal33t.powerfolder.util.Reject;
+import de.dal33t.powerfolder.util.StackDump;
 import de.dal33t.powerfolder.util.TagUtil;
 import de.dal33t.powerfolder.util.Translation;
 import de.dal33t.powerfolder.util.Util;
@@ -140,6 +142,12 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     FolderInfo(String name, String id, int version, DirectoryInfo parent, String tags,
         boolean inheritsPermissions)
     {
+        /* PFS-5818: a real folder never carries a permission id separator. A LOOKUP instance is
+           exempt: it is a query object built from whatever an id parameter of a request said, and
+           the answer to a crafted one is "not found", not an exception. */
+        if (version >= 0) {
+            Permission.rejectSeparatorIn(id, "Folder");
+        }
         this.name = name;
         this.id = id;
         this.version = version;
@@ -223,14 +231,43 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
     }
 
     private void setParent(DirectoryInfo parent) {
-        if (parent != null) {
-            Reject.ifNull(parent.getRelativeName(), "Parent relative name / path must not be null");
-            this.topFolder = parent.getFolderInfo();
-            this.topPath = parent.getRelativeName();
-        } else {
+        if (parent == null) {
             this.topFolder = null;
             this.topPath = null;
+            return;
         }
+        Reject.ifNull(parent.getRelativeName(), "Parent relative name / path must not be null");
+        DirectoryInfo topParent = toTopCoordinates(parent);
+        this.topFolder = topParent.getFolderInfo();
+        this.topPath = topParent.getRelativeName();
+    }
+
+    /**
+     * PFC-3543: a subfolder names the TOP folder, always - the structure never chains. A parent in a
+     * SUBFOLDER's coordinates reaches this class from three directions: the DAO proxy of an interrupted
+     * subfolder answers in its own coordinates, the wire carries the parent as it was sent, and a stored
+     * row is unmarshalled as it stands. All three come through {@link #setParent}, so this is the one
+     * place that can hold the invariant. A chain would hold itself in place: fk_fi_topfolder refuses to
+     * let the middle row go, and the folder would be invisible below its own top folder.
+     *
+     * @return the parent expressed in top-folder coordinates
+     */
+    private static DirectoryInfo toTopCoordinates(DirectoryInfo parent) {
+        DirectoryInfo topParent = parent;
+        // A chain of more than one link only exists in broken data; the bound keeps a cyclic one out.
+        for (int i = 0; i < 32; i++) {
+            FolderInfo parentFolder = topParent.getFolderInfo();
+            if (parentFolder == null || !parentFolder.isSubFolder()) {
+                return topParent;
+            }
+            DirectoryInfo lifted = FileInfoFactory.mapToTopFolder(topParent);
+            // With the stack: the lift repairs the value, the caller that produced it is the bug.
+            LOG.log(Level.WARNING, "Parent " + parent + " belongs to the subfolder " + parentFolder
+                + ", lifted to " + lifted + " - a subfolder points at the top folder, never at another"
+                + " subfolder", new StackDump());
+            topParent = lifted;
+        }
+        return topParent;
     }
 
     /**
@@ -253,15 +290,27 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * e.g. if the structure is "subdir/is/here/subfolder" this would return "subdir/is/here/subfolder"
      */
     public DirectoryInfo getLocation() {
+        String path = locationPath();
+        return path == null ? null : FileInfoFactory.lookupDirectory(topFolder, path);
+    }
+
+    /**
+     * PFC-3543: The same location as {@link #getLocation()}, but as the plain path - no
+     * {@link DirectoryInfo} is built. Whoever only compares paths must use this one: the barrier
+     * resolution asks every interrupted subfolder of the system per call, and building a
+     * DirectoryInfo per barrier and per call was the single most expensive thing in a scan of a
+     * migrated server (visible in a thread dump as Pattern.match, from the message the FileInfo
+     * constructor used to format eagerly).
+     * <p>
+     * Composed on every call - one string, no state: {@link FolderInfo} stays immutable.
+     *
+     * @return the location path in top-folder coordinates, or {@code null} for a top folder
+     */
+    public String locationPath() {
         if (topFolder == null) {
             return null;
         }
-        String path = topPath;
-        if (isNotBlank(path)) {
-            path += '/';
-        }
-        path += name;
-        return FileInfoFactory.lookupDirectory(topFolder, path);
+        return isNotBlank(topPath) ? topPath + '/' + name : name;
     }
 
     /**
@@ -319,9 +368,29 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      * @param relativeName the addressed path relative to {@code folder}, may be blank
      * @return the innermost enclosing subfolder from {@code candidates}, or {@code null}
      */
+    /**
+     * @param folders the folders to map, may be null or empty
+     * @return their IDs in iteration order, as the DAOs that take an ID array expect them, never null
+     */
+    public static String[] ids(Collection<FolderInfo> folders) {
+        if (folders == null || folders.isEmpty()) {
+            return new String[0];
+        }
+        String[] ids = new String[folders.size()];
+        int i = 0;
+        for (FolderInfo foInfo : folders) {
+            if (i == ids.length) {
+                break;
+            }
+            ids[i++] = foInfo != null ? foInfo.id : null;
+        }
+        return ids;
+    }
+
     public static FolderInfo findEnclosingSubFolder(Collection<FolderInfo> candidates, FolderInfo folder,
                                                     String relativeName) {
-        return findEnclosingSubFolder(candidates, InterruptedSubFolderIndex.barriers(), folder, relativeName);
+        return findEnclosingSubFolder(candidates, InterruptedSubFolderIndex.barriersOf(topOf(folder)),
+            folder, relativeName);
     }
 
     /**
@@ -355,10 +424,69 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (path == null) {
             return null;
         }
-        FolderInfo top = folder.isSubFolder() ? folder.getTopFolder() : folder;
+        FolderInfo top = topOf(folder);
         FolderInfo innermost = findInnermostEnclosing(candidates, top, path, null);
         // Barriers only win on a strictly deeper match, so a tie goes to the candidates.
         return hasBarriers ? findInnermostEnclosing(barriers, top, path, innermost) : innermost;
+    }
+
+    /**
+     * PFC-3543: The innermost subfolder with INTERRUPTED permission inheritance that encloses the
+     * addressed location, or {@code null} if none does.
+     * <p>
+     * Such a subfolder keeps its content in its OWN database (PFC-3565) - the rows were migrated out of
+     * the top folder when the inheritance was interrupted. Anything that READS content for an addressed
+     * path therefore has to go through it instead of through the top folder, no matter how the caller
+     * reached the path. Use {@link #relativeNameIn(FolderInfo, FolderInfo, String)} to translate the
+     * addressed path into that subfolder's coordinates.
+     * <p>
+     * Allocation-free when nothing is interrupted, which is the common case.
+     *
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the innermost enclosing interrupted subfolder, or {@code null}
+     */
+    public static FolderInfo findEnclosingInterruptedSubFolder(FolderInfo folder, String relativeName) {
+        FolderInfo[] barriers = InterruptedSubFolderIndex.barriersOf(topOf(folder));
+        return barriers.length == 0 ? null : findEnclosingSubFolder(null, barriers, folder, relativeName);
+    }
+
+    /**
+     * PFC-3543: The addressed location expressed relative to one of its enclosing subfolders - the path
+     * to use when reading from that subfolder instead of from {@code folder}.
+     *
+     * @param subFolder    an enclosing subfolder, e.g. from
+     *                     {@link #findEnclosingInterruptedSubFolder(FolderInfo, String)}
+     * @param folder       the addressed folder (top folder or shared subfolder)
+     * @param relativeName the addressed path relative to {@code folder}, may be blank
+     * @return the path relative to {@code subFolder}, blank when it IS the addressed location, or
+     *         {@code null} if {@code subFolder} does not enclose the location
+     */
+    public static String relativeNameIn(FolderInfo subFolder, FolderInfo folder, String relativeName) {
+        if (subFolder == null || folder == null || !subFolder.isSubFolder()) {
+            return null;
+        }
+        String base = subFolder.locationPath();
+        String path = addressedPath(folder, relativeName);
+        if (base == null || path == null) {
+            return null;
+        }
+        int length = base.length();
+        if (!path.startsWith(base)) {
+            return null;
+        }
+        if (path.length() == length) {
+            return "";
+        }
+        return path.charAt(length) == '/' ? path.substring(length + 1) : null;
+    }
+
+    /** The top folder an addressed folder belongs to - itself when it is one. {@code null} stays null. */
+    private static FolderInfo topOf(FolderInfo folder) {
+        if (folder == null) {
+            return null;
+        }
+        return folder.isSubFolder() ? folder.getTopFolder() : folder;
     }
 
     /**
@@ -372,11 +500,10 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (!folder.isSubFolder()) {
             return path;
         }
-        DirectoryInfo location = folder.getLocation();
-        if (location == null) {
+        String base = folder.locationPath();
+        if (base == null) {
             return null;
         }
-        String base = location.getRelativeName();
         return path.isEmpty() ? base : base + "/" + path;
     }
 
@@ -439,15 +566,17 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         if (candidate == null || !candidate.isSubFolder() || !top.equals(candidate.getTopFolder())) {
             return -1;
         }
-        DirectoryInfo location = candidate.getLocation();
-        if (location == null) {
+        String candidatePath = candidate.locationPath();
+        if (candidatePath == null) {
             return -1;
         }
-        String candidatePath = location.getRelativeName();
-        if (path.equals(candidatePath) || path.startsWith(candidatePath + "/")) {
-            return candidatePath.length();
+        // Segment-exact without building the candidate path plus a slash: this runs per candidate and per
+        // addressed path - the concat was one throwaway string per comparison.
+        int length = candidatePath.length();
+        if (!path.startsWith(candidatePath)) {
+            return -1;
         }
-        return -1;
+        return path.length() == length || path.charAt(length) == '/' ? length : -1;
     }
 
     /**
@@ -808,6 +937,9 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
      */
     boolean save(Path file) {
         if (Files.notExists(file.getParent())) {
+            // Most frequent way a FolderInfo fails to persist, and it used to return silently -
+            // indistinguishable from a successful save. Folder.updateInfo reports the consequence.
+            LOG.fine(this + ": Unable to store FolderInfo, directory does not exist: " + file.getParent());
             return false;
         }
         try (ObjectOutputStream oout = new ObjectOutputStream(
@@ -815,6 +947,7 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
             oout.writeObject(this);
         } catch (Exception e) {
             LOG.warning(this + ": Unable to store FolderInfo to " + file + ". " + e);
+            return false;
         }
         return true;
     }

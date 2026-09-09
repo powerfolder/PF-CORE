@@ -174,7 +174,16 @@ For creation of the installer:
 			<include name="json-20250517.jar" />
 
 			<!-- ContextMenu and IconOverlay -->
-			<include name="liferay-nativity-1.0.6.jar" />
+			<include name="com.liferay.nativity-1.0.6.jar" />
+			<include name="jackson-databind-2.21.6.jar" />
+			<include name="jackson-core-2.21.6.jar" />
+			<include name="jackson-annotations-2.21.jar" />
+			<include name="netty-common-4.1.137.Final.jar" />
+			<include name="netty-buffer-4.1.137.Final.jar" />
+			<include name="netty-transport-4.1.137.Final.jar" />
+			<include name="netty-handler-4.1.137.Final.jar" />
+			<include name="netty-codec-4.1.137.Final.jar" />
+			<include name="netty-resolver-4.1.137.Final.jar" />
 
 			<!-- Protobuf -->
             <include name="protobuf-java-3.5.0.jar"/>
@@ -191,7 +200,8 @@ For creation of the installer:
             <include name="cryptomator/dagger-2.11.jar"/>
             <include name="cryptomator/dagger-producers-2.11.jar"/>
             <include name="cryptomator/gson-2.13.1.jar"/>
-            <include name="cryptomator/guava-23.0.jar"/>
+            <include name="cryptomator/guava-33.7.1-jre.jar"/>
+            <include name="cryptomator/failureaccess-1.0.3.jar"/>
 			<include name="cryptomator/javax.inject-1.jar" />
 			<include name="cryptomator/slf4j-api-1.7.25.jar"/>
             <include name="cryptomator/siv-mode-1.2.2.jar"/>

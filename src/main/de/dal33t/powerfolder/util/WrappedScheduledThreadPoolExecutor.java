@@ -31,16 +31,13 @@ import java.util.logging.Logger;
  *
  * @author sprajc
  */
-public class WrappedScheduledThreadPoolExecutor
-    extends ScheduledThreadPoolExecutor
-{
-    private static final Logger LOG = Logger
-        .getLogger(WrappedScheduledThreadPoolExecutor.class.getName());
+public class WrappedScheduledThreadPoolExecutor extends ScheduledThreadPoolExecutor {
+    private static final Logger LOG = Logger.getLogger(WrappedScheduledThreadPoolExecutor.class.getName());
 
     public static int WARN_NUMBER_WORKERS;
     public static int SEVERE_NUMBER_WORKERS;
     static {
-        setWarningLevel(500);
+        setWarningLevel(200);
     }
     
     /**
@@ -63,8 +60,13 @@ public class WrappedScheduledThreadPoolExecutor
         this.classCountRunning = Collections.synchronizedMap(new TreeMap<>(classComparator));
     }
 
-    public static void setWarningLevel(int nThreads){
-        WARN_NUMBER_WORKERS = Math.max(500, nThreads);
+    /**
+     * Sets a FIXED threshold. It used to be set to the number of folders of the server, which turned the
+     * check off on exactly the servers where this pool can grow: on one with 17524 folders it stood at
+     * 17524 threads, so a burst that left 320 idle threads behind was never reported.
+     */
+    public static void setWarningLevel(int nThreads) {
+        WARN_NUMBER_WORKERS = Math.max(1, nThreads);
         SEVERE_NUMBER_WORKERS = 3 * WARN_NUMBER_WORKERS;
     }
 
@@ -177,16 +179,22 @@ public class WrappedScheduledThreadPoolExecutor
 
     private void checkBusyness() {
         int activeCount = getActiveCount();
-        if (activeCount == 0) {
+        int poolSize = getPoolSize();
+        /* The pool size counts too, not only the active tasks: the tasks run on an UNLIMITED cached
+         * pool, so a burst is over by the time anybody looks and what it leaves behind is a pool of
+         * idle threads - 320 of them still stood five minutes after one, gone 60 s later. Judged by
+         * active tasks alone this method returned at once and never said a word. */
+        if (activeCount == 0 && poolSize <= WARN_NUMBER_WORKERS) {
             return;
         }
         if (lastDump.after(new Date(System.currentTimeMillis() - 1000L * 30))) {
             return;
         }
         Level l = Level.FINER;
-        if (activeCount > SEVERE_NUMBER_WORKERS) {
+        int worst = Math.max(activeCount, poolSize);
+        if (worst > SEVERE_NUMBER_WORKERS) {
             l = Level.SEVERE;
-        } else if (activeCount > WARN_NUMBER_WORKERS) {
+        } else if (worst > WARN_NUMBER_WORKERS) {
             l = Level.WARNING;
         }
         if (LOG.isLoggable(l)) {
@@ -200,7 +208,7 @@ public class WrappedScheduledThreadPoolExecutor
                 }
             }
             LOG.log(l, "Scheduled threadpool status: Currently active threads: "
-                            + activeCount + "/" + getPoolSize() + "\n" + b);
+                            + activeCount + "/" + poolSize + "\n" + b);
             lastDump = new Date();
         }
     }

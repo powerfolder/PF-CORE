@@ -45,7 +45,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class FileRequestor extends PFComponent {
     private final Queue<Worker> workerPool;
-    private final Queue<Folder> folderQueue;
+    /**
+     * Folders waiting for a file request, in insertion order. A set, not a ConcurrentLinkedQueue: there add(),
+     * size() and remove() all walk the chain, and all three sat in a loop over every folder. Guarded by itself,
+     * which is the monitor the triggers already used.
+     */
+    private final LinkedHashSet<Folder> foldersToRequest;
     private final Queue<FileInfo> pendingRequests;
 
     private long workerInterval;
@@ -55,7 +60,7 @@ public class FileRequestor extends PFComponent {
         super(controller);
         workerInterval = 1000L * ConfigurationEntry.FILE_REQUESTOR_INTERVAL.getValueInt(getController());
         workerTimeout = workerInterval * 30;
-        folderQueue = new ConcurrentLinkedQueue<>();
+        foldersToRequest = new LinkedHashSet<>();
         pendingRequests = new ConcurrentLinkedQueue<>();
         workerPool = new ConcurrentLinkedQueue<>();
     }
@@ -83,14 +88,10 @@ public class FileRequestor extends PFComponent {
             logWarning("Folder not joined, not requesting files: " + foInfo);
             return;
         }
-        if (folderQueue.contains(folder)) {
-            return;
-        }
-        synchronized (folderQueue) {
-            if (folderQueue.contains(folder)) {
+        synchronized (foldersToRequest) {
+            if (!foldersToRequest.add(folder)) {
                 return;
             }
-            folderQueue.offer(folder);
             addWorker();
         }
     }
@@ -105,14 +106,10 @@ public class FileRequestor extends PFComponent {
         ProfilingEntry pe = Profiling.start();
         Collection<Folder> folders = getController().getFolderRepository()
             .getFolders(true);
-        synchronized (folderQueue) {
-            for (Folder folder : folders) {
-                if (folderQueue.contains(folder)) {
-                    continue;
-                }
-                folderQueue.offer(folder);
-                addWorker();
-            }
+        synchronized (foldersToRequest) {
+            foldersToRequest.addAll(folders);
+            // Once for the whole batch. Per folder it re-read two configuration entries and counted the queue.
+            addWorker();
         }
         Profiling.end(pe, 100);
     }
@@ -124,8 +121,8 @@ public class FileRequestor extends PFComponent {
         for (Worker worker : workerPool) {
             worker.stopped = true;
         }
-        synchronized (folderQueue) {
-            folderQueue.notifyAll();
+        synchronized (foldersToRequest) {
+            foldersToRequest.notifyAll();
         }
         logFine("Stopped");
     }
@@ -190,14 +187,11 @@ public class FileRequestor extends PFComponent {
             return;
         }
         if (!folder.hasOwnDatabase()) {
-            if (folder.isScanning() || folder.isDeviceDisconnected()) {
-                if (isFine()) {
-                    logFine("Not requesting files. No own database for " + folder);
-                }
-            } else {
-                if (isInfo()) {
-                    logInfo("Not requesting files. No own database for " + folder);
-                }
+            // Expected transient state until the first scan populated the DAO. Every periodical
+            // trigger hits every folder still waiting for it, so this must never be logged above
+            // FINE - on a server with many unscanned folders it drowns the log otherwise.
+            if (isFine()) {
+                logFine(folder + ": Not requesting files, no own database yet");
             }
             return;
         }
@@ -370,14 +364,31 @@ public class FileRequestor extends PFComponent {
         }
     }
 
+    /** @return the folder waiting longest, or null when nothing is waiting. */
+    private Folder pollFolderToRequest() {
+        synchronized (foldersToRequest) {
+            Iterator<Folder> waiting = foldersToRequest.iterator();
+            if (!waiting.hasNext()) {
+                return null;
+            }
+            Folder folder = waiting.next();
+            waiting.remove();
+            return folder;
+        }
+    }
+
     private void addWorker() {
+        int waiting;
+        synchronized (foldersToRequest) {
+            waiting = foldersToRequest.size();
+        }
         synchronized (workerPool) {
             // Now do the actual resizing.
             int nWorkers = workerPool.size();
             // Calculate required workers. check min / max bounds.
             int maxWorkers = ConfigurationEntry.FOLDER_FILE_REQUESTOR_MAX_WORKERS.getValueInt(getController());
             int foldersPerWorker = 2* ConfigurationEntry.FOLDER_FOLDERS_PER_FILE_REQUESTOR.getValueInt(getController());
-            int reqWorkers = Math.max(1, Math.min(maxWorkers, folderQueue.size() / foldersPerWorker));
+            int reqWorkers = Math.max(1, Math.min(maxWorkers, waiting / foldersPerWorker));
             int diff = reqWorkers - nWorkers;
 
             if (isFiner() && diff != 0) {
@@ -414,9 +425,6 @@ public class FileRequestor extends PFComponent {
 
         public void run() {
             try {
-                if (folderQueue.isEmpty()) {
-                    return;
-                }
                 if (stopped) {
                     return;
                 }
@@ -425,20 +433,11 @@ public class FileRequestor extends PFComponent {
                     logFiner("Started requesting files");
                 }
                 long start = System.currentTimeMillis();
-                for (Folder folder : folderQueue) {
-                    if (stopped) {
-                        return;
-                    }
-                    /*
-                    if (folderQueue.size() < 5) {
-                        logWarning("Still in queue: " + folderQueue);
-                    } else {
-                        logWarning("Still in queue: "
-                                + folderQueue.size());
-                    }*/
-
+                // Taken one at a time under the monitor. Iterating and remove()ing per element made draining
+                // itself quadratic.
+                Folder folder;
+                while (!stopped && (folder = pollFolderToRequest()) != null) {
                     try {
-                        folderQueue.remove(folder);
                         nFolders++;
                         requestMissingFilesForAutodownload(folder);
 
@@ -466,7 +465,11 @@ public class FileRequestor extends PFComponent {
             } finally {
                 stopped = true;
                 workerPool.remove(this);
-                if (!folderQueue.isEmpty()) {
+                boolean moreWaiting;
+                synchronized (foldersToRequest) {
+                    moreWaiting = !foldersToRequest.isEmpty();
+                }
+                if (moreWaiting) {
                     addWorker();
                 }
             }

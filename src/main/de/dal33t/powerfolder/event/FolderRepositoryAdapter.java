@@ -37,6 +37,10 @@ public abstract class FolderRepositoryAdapter implements FolderRepositoryListene
     }
 
     @Override
+    public void subFolderUnshared(FolderRepositoryEvent e) {
+    }
+
+    @Override
     public void maintenanceStarted(FolderRepositoryEvent e) {
     }
 

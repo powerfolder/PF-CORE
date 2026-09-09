@@ -134,6 +134,7 @@ public class Organization implements Serializable , Auditable {
 
     public Organization(String oid) {
         Reject.ifBlank(oid, "OID");
+        Permission.rejectSeparatorIn(oid, "Organization");
         this.oid = oid;
         this.osSubscription = new OnlineStorageSubscription();
         this.domains = new CopyOnWriteArrayList<>();
@@ -166,8 +167,16 @@ public class Organization implements Serializable , Auditable {
 
     public boolean isUnlimitedUsers() { return this.maxUsers == UNLIMITED_USERS; }
 
+    /**
+     * Whether a user limit applies. Only {@link #UNLIMITED_USERS} means "no limit" - a limit of
+     * ZERO is a limit like any other and says that no account may be a member of this organization.
+     * It used to be read as "none configured", which made zero the one number an administrator could
+     * enter without any effect, although the dialog accepts and stores it.
+     *
+     * @return {@code true} if {@link #getMaxUsers()} is to be enforced
+     */
     public boolean hasMaxUsers() {
-        return this.maxUsers > 0 && this.maxUsers != UNLIMITED_USERS;
+        return this.maxUsers >= 0 && this.maxUsers != UNLIMITED_USERS;
     }
 
     public void setLdapDN(String ldapDN) {

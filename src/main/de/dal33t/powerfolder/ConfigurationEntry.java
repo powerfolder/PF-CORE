@@ -192,7 +192,7 @@ public enum ConfigurationEntry {
     /**
      * URL of the Online Storage features
      */
-    PROVIDER_ABOUT_URL("provider.url.about", "https://www.powerfolder.com/about-us-2/"),
+    PROVIDER_ABOUT_URL("provider.url.about", "https://www.powerfolder.com/about.html"),
 
     /**
      * Quickstart guides to PowerFolder
@@ -214,7 +214,7 @@ public enum ConfigurationEntry {
     /**
      * URL of the PowerFolder Cookies policy
      */
-    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", "https://www.powerfolder.com/de/7084-2/"),
+    PROVIDER_COOKIES_POLICY_URL("provider.url.cookies.policy", "https://www.powerfolder.com/privacy.html"),
 
     /**
      * Whether to show support url in application menu
@@ -232,12 +232,12 @@ public enum ConfigurationEntry {
      * <p>
      * Recommended use: {@link ProUtil#getBuyNowURL(Controller)}
      */
-    PROVIDER_BUY_URL("provider.url.buy", "https://www.powerfolder.com/pricing"),
+    PROVIDER_BUY_URL("provider.url.buy", "https://my.powerfolder.com/pricing"),
 
     /**
      * URL where the contact form resides
      */
-    PROVIDER_CONTACT_URL("provider.url.contact", "https://www.powerfolder.com/contact"),
+    PROVIDER_CONTACT_URL("provider.url.contact", "https://sales.powerfolder.com"),
 
     /**
      * URL of the PowerFolder Wiki. ATTENTION: This URL gets extended by article
@@ -1038,9 +1038,12 @@ public enum ConfigurationEntry {
     SEARCH_INDEX_OCR_LANGUAGES("search.index.ocr.languages", "fast", true),
 
     /**
-     * Maximum file size in MB that will be submitted for OCR. Files larger than this are skipped. Default: 100 MB.
+     * Maximum file size in MB that will be submitted for OCR. Files larger than this are skipped.
+     * Default: 20 MB. A scan of that size is already a few hundred pages, and every page has to be
+     * rendered and recognised - one such file can occupy an indexing worker for many minutes while
+     * the rest of the folder waits.
      */
-    SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB("search.index.ocr.maxFileSizeMB", 100, true),
+    SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB("search.index.ocr.maxFileSizeMB", 20, true),
 
     /**
      * PFS-5311: Maximum number of concurrent indexing worker threads. Controls how many folders can
@@ -1113,6 +1116,40 @@ public enum ConfigurationEntry {
     LOG_FILE_DELETE_DAYS("log.file.keep.days", 31, true),
 
     /**
+     * PFS-5739: Interval in SECONDS at which a thread dump is recorded next to the log files, so that
+     * a support package created later still holds the stack traces of the incident. 0 or less =
+     * disabled, and that is the only switch - the checkbox in the preferences writes it. The dumps
+     * are kept as long as the log files ({@link #LOG_FILE_DELETE_DAYS}).
+     * <p>
+     * Seconds, not minutes, so that a hang can be sampled closely while it is being reproduced - a
+     * minute is a long time to wait for the next sample.
+     * <p>
+     * The default is 30, which is 120 samples an hour. That is what makes a dump useful as a
+     * measurement rather than a snapshot: "2.6 percent of the samples wait on that lock", "101 of
+     * 100 download slots in use" are answers a handful of samples an hour cannot give. Faster is
+     * not better - every dump stops the JVM at a safepoint across all of its threads, and a second
+     * apart that begins to disturb what it is meant to measure.
+     * <p>
+     * It is not free. A dump is roughly 5 KB compressed on a quiet server and 15 KB on a busy one
+     * (it grows with the number of threads), so at 30 seconds it writes something between 14 and
+     * 45 MB a day - and it is kept as long as the log files, 31 days by default. On an
+     * installation whose logs are a few hundred MB, the dumps are of the same order.
+     */
+    THREAD_DUMP_INTERVAL_SECONDS("threaddump.interval.seconds", 30, true),
+
+    /**
+     * Days to keep the recorded thread dumps. The dumps used to live exactly as long as the log
+     * files, and that is what made them big: at one every 30 seconds a month of them is a
+     * gigabyte on a busy server, while their worth runs out after a few days - a support package
+     * is pulled soon after the incident, and nobody diagnoses last month's hang from samples.
+     * <p>
+     * The shorter of this and {@link #LOG_FILE_DELETE_DAYS} wins: dumps without the log lines that
+     * go with them explain nothing, so they must not outlive them. A negative value means "keep",
+     * and where both say so, nothing is deleted.
+     */
+    THREAD_DUMP_KEEP_DAYS("threaddump.keep.days", 7, true),
+
+    /**
      * The loglevel to print to console when verbose=true
      */
     LOG_LEVEL_CONSOLE("log.console.level", Level.INFO.getName(), true),
@@ -1130,11 +1167,6 @@ public enum ConfigurationEntry {
     LOG_SYSLOG_HOST("log.syslog.host", null, true),
 
     LOG_SYSLOG_PORT("log.syslog.port", 514, true),
-
-    /**
-     * Should the active threads be logged?
-     */
-    LOG_ACTIVE_THREADS("log.active_threads", false, true),
 
     /**
      * Whether to request debug reports
@@ -1396,6 +1428,14 @@ public enum ConfigurationEntry {
             } catch (NumberFormatException e) {
                 if (Objects.equals(value, "unlimited")) {
                     return -1;
+                }
+
+                /* PFS-5776: "none" is what the preferences store for the first step of their version
+                 * dropdown, and it means what it says - keep no version at all, which is the 0 the
+                 * folder settings dialog stores for the same step. Without this it fell through to
+                 * the 25 below, so an administrator who picked "none" silently got the maximum. */
+                if (value != null && "none".equalsIgnoreCase(value.trim())) {
+                    return 0;
                 }
             }
             return 25;

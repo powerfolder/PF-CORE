@@ -221,6 +221,10 @@ public class IconOverlayUpdateListener extends PFComponent implements
     }
 
     @Override
+    public void subFolderUnshared(FolderRepositoryEvent e) {
+    }
+
+    @Override
     public void folderRemoved(FolderRepositoryEvent e) {
         e.getFolder().removeFolderListener(this);
     }

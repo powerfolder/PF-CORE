@@ -40,6 +40,13 @@ public interface FolderRepositoryListener extends CoreListener {
     public void folderMoved(FolderRepositoryEvent e);
 
     /**
+     * PFC-3536: Fired by the FolderRepository when a subfolder stops being shared - its directory is
+     * an ordinary directory of the top folder again. Distinct from {@link #folderRemoved}, which also
+     * fires for a plain unmount: only here may a listener drop what it persisted for the subfolder.
+     */
+    public void subFolderUnshared(FolderRepositoryEvent e);
+
+    /**
      * Fired by the FolderRepository when the scans are started
      */
     public void maintenanceStarted(FolderRepositoryEvent e);

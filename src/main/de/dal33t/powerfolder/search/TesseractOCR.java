@@ -23,6 +23,12 @@ package de.dal33t.powerfolder.search;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.os.OSUtil;
 import net.sourceforge.tess4j.Tesseract;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
+import java.awt.image.BufferedImage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -107,6 +113,23 @@ public class TesseractOCR extends Loggable {
     /** Pool of Tesseract instances for concurrent access. */
     private final BlockingQueue<Tesseract> pool;
 
+    /** Where the training data ended up, so a pooled instance can be rebuilt after a failure. */
+    private volatile String tessdataDir;
+
+    /**
+     * Resolution the pages of a PDF are rendered at, and what Tesseract is told the image resolution
+     * is ({@code user_defined_dpi}). ONE constant for both: the two used to be set apart from each
+     * other, so the engine sized characters against a resolution the image did not have.
+     */
+    private static final int RENDER_DPI = 150;
+
+    /**
+     * Pages of a single PDF that are recognised. A scan is indexed to make it findable, and what makes
+     * a document findable stands at its front; a 300-page scan would otherwise occupy an indexing
+     * worker for the better part of an hour.
+     */
+    private static final int MAX_PAGES = 50;
+
     // ------------------------------------------------------------------------
     // Initialization
     // ------------------------------------------------------------------------
@@ -144,15 +167,10 @@ public class TesseractOCR extends Loggable {
                 return;
             }
 
+            this.tessdataDir = tessdataPath.toString();
             // Create pooled Tesseract instances
             for (int i = 0; i < poolSize; i++) {
-                Tesseract tess = new Tesseract();
-                tess.setDatapath(tessdataPath.toString());
-                tess.setLanguage(languageConfig);
-                tess.setOcrEngineMode(1);
-                tess.setVariable("user_defined_dpi", "150");
-                tess.setVariable("debug_file", OSUtil.isWindowsSystem() ? "NUL" : "/dev/null");
-                pool.add(tess);
+                pool.add(newInstance());
             }
 
             logInfo("Tesseract OCR initialized with " + poolSize + " pooled instances, languages: "
@@ -256,6 +274,7 @@ public class TesseractOCR extends Loggable {
         }
 
         Tesseract tess = null;
+        boolean healthy = false;
         try {
             // Indexing is a background batch job — waiting is better than
             // permanently dropping the file's searchable content. With the pool
@@ -268,10 +287,9 @@ public class TesseractOCR extends Loggable {
             }
 
             long start = System.currentTimeMillis();
-            String result = tess.doOCR(file.toFile());
+            String result = isPdf(file) ? doOcrOnPdf(tess, file) : tess.doOCR(file.toFile());
+            healthy = true;
             long elapsed = System.currentTimeMillis() - start;
-            pool.offer(tess);
-            tess = null;
             if (result != null && !result.isBlank()) {
                 if (isFine()) {
                     logFine("OCR completed for " + file.getFileName() + " (" + result.length()
@@ -292,8 +310,100 @@ public class TesseractOCR extends Loggable {
             return null;
         } finally {
             if (tess != null) {
-                pool.offer(tess);
+                returnToPool(tess, healthy);
             }
+        }
+    }
+
+    private static boolean isPdf(Path file) {
+        String name = file.getFileName() == null
+                ? "" : file.getFileName().toString().toLowerCase(Locale.ROOT);
+        return name.endsWith(".pdf");
+    }
+
+    /**
+     * Renders the pages and hands Tesseract the image, instead of handing it the PDF.
+     * <p>
+     * Given a file, Tess4J takes a detour that costs far more than the recognition it leads to: it
+     * renders every page with PDFBox, writes it out as a PNG - through the full deflate compression -
+     * reads it back, converts it to TIFF and only then recognises. A thread dump of a client indexing
+     * scans showed where that lands: of 58 minutes of CPU across 92 threads, 50 sat in the PNG
+     * deflate and 3 in Tesseract. Compressing an image in order to unpack it again a moment later.
+     * <p>
+     * Rendering to grey rather than colour is deliberate: the engine works on grey anyway, and it is a
+     * quarter of the memory per page - which matters when a client runs on a 2 GB heap.
+     */
+    private String doOcrOnPdf(Tesseract tess, Path file) throws Exception {
+        StringBuilder text = new StringBuilder();
+        try (PDDocument document = Loader.loadPDF(file.toFile())) {
+            PDFRenderer renderer = new PDFRenderer(document);
+            int pages = Math.min(document.getNumberOfPages(), MAX_PAGES);
+            if (document.getNumberOfPages() > MAX_PAGES && isFine()) {
+                logFine("OCR reads the first " + MAX_PAGES + " of " + document.getNumberOfPages()
+                        + " pages of " + file.getFileName());
+            }
+            for (int page = 0; page < pages; page++) {
+                BufferedImage image = renderer.renderImageWithDPI(page, RENDER_DPI, ImageType.GRAY);
+                try {
+                    String pageText = tess.doOCR(image);
+                    if (pageText != null && !pageText.isBlank()) {
+                        text.append(pageText).append('\n');
+                    }
+                } finally {
+                    image.flush();
+                }
+            }
+        }
+        return text.length() == 0 ? null : text.toString();
+    }
+
+    /**
+     * Builds a configured, not yet initialised instance. The native handle is only created when doOCR
+     * runs, so this costs nothing until then.
+     *
+     * @return null when there is no training data, i.e. when OCR is not usable at all
+     */
+    private Tesseract newInstance() {
+        String datapath = tessdataDir;
+        if (datapath == null) {
+            return null;
+        }
+        Tesseract tess = new Tesseract();
+        tess.setDatapath(datapath);
+        tess.setLanguage(languageConfig);
+        tess.setOcrEngineMode(1);
+        tess.setVariable("user_defined_dpi", String.valueOf(RENDER_DPI));
+        tess.setVariable("debug_file", OSUtil.isWindowsSystem() ? "NUL" : "/dev/null");
+        return tess;
+    }
+
+    /**
+     * An instance whose {@code doOCR} did not return cleanly is thrown away instead of put back. Tess4J
+     * deletes the native handle in a finally INSIDE doOCR, so after a failure nobody knows whether that
+     * handle is gone, half-built or garbage - and the next call on the same object runs
+     * TessBaseAPIDelete on it. That is not an exception one can catch: it is a SIGSEGV in C that takes
+     * the whole server down, which is what the crash file of 2026-07-10 shows
+     * (TessBaseAPIDelete+0xc, called from Tesseract.dispose, called from doOCR).
+     * <p>
+     * If no replacement can be built the pool simply gets smaller. Less OCR is the better outcome:
+     * a pool that runs empty logs "pool exhausted" and skips the content, an instance that kills the
+     * process takes everything with it.
+     */
+    private void returnToPool(Tesseract tess, boolean healthy) {
+        if (healthy) {
+            pool.offer(tess);
+            return;
+        }
+        if (!ocrEnabled) {
+            return;
+        }
+        Tesseract fresh = newInstance();
+        if (fresh != null) {
+            pool.offer(fresh);
+            logFine("Replaced a Tesseract instance after a failed OCR run");
+        } else {
+            logWarning("A Tesseract instance failed and could not be replaced - the OCR pool holds "
+                    + pool.size() + " instance(s) now");
         }
     }
 

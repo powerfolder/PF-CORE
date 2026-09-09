@@ -203,8 +203,7 @@ public class FileLink implements Serializable {
 
     public Path getDiskFile(Controller controllor) {
         Reject.ifNull(controllor, "Controller");
-        FileInfo fInfo = FileInfoFactory.lookupDirectory(folderInfo,
-            relativeName);
+        FileInfo fInfo = FileInfoFactory.lookupDirectory(folderInfo, relativeName);
         return fInfo.getDiskFile(controllor.getFolderRepository());
     }
 
@@ -215,13 +214,17 @@ public class FileLink implements Serializable {
      * Validates expiration, optional password, and path correctness.
      *
      * @param controller Controller instance (needed to resolve folder/file info)
-     * @param folderID Folder ID containing the file/directory being accessed
-     * @param relativeName Relative path of the file/directory within the folder
+     * @param fileInfo The file or directory being accessed - the whole resolved location, folder
+     *            included. A location inside a subfolder with interrupted inheritance belongs to that
+     *            subfolder and is named relative to it, so folder and name must come from one
+     *            resolution; passing them as a single FileInfo makes that impossible to get wrong
+     *            (PFC-3543)
      * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @return true if read access is allowed, false otherwise
      */
-    public boolean hasReadPermissions(Controller controller, String folderID, String relativeName, String optionalPasswordOrToken) {
-        return checkAccessPermissions(controller, folderID, relativeName, optionalPasswordOrToken, false);
+    public boolean hasReadPermissions(Controller controller, FileInfo fileInfo,
+                                      String optionalPasswordOrToken) {
+        return checkAccessPermissions(controller, fileInfo, optionalPasswordOrToken, false);
     }
 
     /**
@@ -229,31 +232,33 @@ public class FileLink implements Serializable {
      * Validates expiration, optional password, and path correctness.
      *
      * @param controller Controller instance (needed to resolve folder/file info)
-     * @param folderID Folder ID containing the file/directory being accessed
-     * @param relativeName Relative path of the file/directory within the folder
+     * @param fileInfo The file or directory being accessed - see
+     *            {@link #hasReadPermissions(Controller, FileInfo, String)}
      * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @return true if write access is allowed, false otherwise
      */
-    public boolean hasWritePermissions(Controller controller, String folderID, String relativeName, String optionalPasswordOrToken) {
-        return checkAccessPermissions(controller, folderID, relativeName, optionalPasswordOrToken, true);
+    public boolean hasWritePermissions(Controller controller, FileInfo fileInfo,
+                                       String optionalPasswordOrToken) {
+        return checkAccessPermissions(controller, fileInfo, optionalPasswordOrToken, true);
     }
 
     /**
      * Internal helper for both read and write permission checks.
      *
      * @param controller Controller instance
-     * @param folderID Folder being accessed
-     * @param relativeName Relative path within the folder
+     * @param fileInfo The file or directory being accessed
      * @param optionalPasswordOrToken Optional password or token provided by user (may be null)
      * @param write True if checking write access, false for read access
      * @return true if access is allowed, false otherwise
      */
-    private boolean checkAccessPermissions(Controller controller, String folderID,
-                                           String relativeName, String optionalPasswordOrToken, boolean write) {
+    private boolean checkAccessPermissions(Controller controller, FileInfo fileInfo,
+                                           String optionalPasswordOrToken, boolean write) {
 
         Reject.ifNull(controller, "Controller");
-        Reject.ifBlank(folderID, "folderID");
-        Reject.ifNull(relativeName, "relativeName");
+        Reject.ifNull(fileInfo, "FileInfo");
+
+        FolderInfo folderInfo = fileInfo.getFolderInfo();
+        String relativeName = fileInfo.getRelativeName();
 
         // Normalize path to prevent traversal attacks (../, ./, etc.)
         // This prevents attacks like: b/../c/d.docx which would bypass startsWith("b/") check
@@ -274,8 +279,29 @@ public class FileLink implements Serializable {
             return false;
         }
 
-        // Folder must match
-        if (!this.folderInfo.getId().equals(folderID)) {
+        /* Folder must match. PFC-3543: a location inside a subfolder with interrupted inheritance is
+         * OWNED by that subfolder - it is addressed in the subfolder's coordinates and arrives here
+         * with that subfolder. Translate it back into this link's folder so both sides are compared in
+         * one coordinate system; a link created before the interruption still carries the top folder's
+         * coordinates. */
+        if (!this.folderInfo.equals(folderInfo)) {
+            if (!folderInfo.isSubFolder() || !this.folderInfo.equals(folderInfo.getTopFolder())
+                || folderInfo.getLocation() == null)
+            {
+                return false;
+            }
+            String location = folderInfo.getLocation().getRelativeName();
+            relativeName = relativeName.isEmpty() ? location : location + "/" + relativeName;
+        }
+
+        /* The barrier itself (spec 5/6): a link anchored ABOVE an interrupted subfolder must not reach
+         * into it - that subtree carries its own permissions, and the link was issued without them. A
+         * link anchored AT or INSIDE the subfolder keeps working, including one created before the
+         * interruption. */
+        FolderInfo barrier = FolderInfo.findEnclosingInterruptedSubFolder(this.folderInfo, relativeName);
+        if (barrier != null
+            && !barrier.equals(FolderInfo.findEnclosingInterruptedSubFolder(this.folderInfo, this.relativeName)))
+        {
             return false;
         }
 

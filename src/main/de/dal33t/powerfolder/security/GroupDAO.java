@@ -20,6 +20,7 @@ package de.dal33t.powerfolder.security;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import de.dal33t.powerfolder.clientserver.GroupFilterModel;
 import de.dal33t.powerfolder.light.FolderInfo;
@@ -54,6 +55,19 @@ public interface GroupDAO extends GenericDAO<Group> {
     List<Group> getGroups(GroupFilterModel filterModel);
 
     /**
+     * Count the Groups that apply to the passed filter, without loading them.
+     * <p>
+     * PFS-5770: what a paged list needs next to the page itself - the filter's
+     * {@code firstResult} and {@code maxResults} are ignored here, the count is
+     * over all matches.
+     *
+     * @param filterModel
+     *            The filters to apply
+     * @return the number of groups that fit the filter.
+     */
+    int countGroups(GroupFilterModel filterModel);
+
+    /**
      * Get a list of all groups, that hold a permission to a folder.
      * 
      * @param folderInfo
@@ -61,6 +75,18 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return a list of all groups that have permission to {@code folderInfo}.
      */
     Collection<Group> findWithFolderPermission(FolderInfo folderInfo);
+
+    /**
+     * PFS-5832: the same for a set of folders, in one query per portion the database accepts instead
+     * of one per folder. A folder tree is asked about as a whole - a subfolder is a folder of its own,
+     * so a group that reaches only one directory of a workspace holds its permission on that row and
+     * on no other.
+     *
+     * @param folderInfos the folders to ask about
+     *
+     * @return the groups holding a permission on any of them, each one once
+     **/
+    Collection<Group> findWithFolderPermission(Collection<FolderInfo> folderInfos);
 
     /**
      * Nested Groups: direct subgroups of {@code parent}. Looks up rows in
@@ -97,6 +123,16 @@ public interface GroupDAO extends GenericDAO<Group> {
      * @return the number of groups that have permission to {@code folderInfo}.
      */
     int countWithFolderPermission(FolderInfo folderInfo);
+
+    /**
+     * PFS-5758: The same count for MANY folders in one query. A folder listing needs the number for
+     * every row, and asking per row cost a query plus a commit each.
+     *
+     * @param folderInfos the folders to count for
+     * @return the number of groups per folder; a folder no group holds a permission on is absent from
+     *         the map, so read it with a default of 0
+     */
+    Map<FolderInfo, Integer> countWithFolderPermission(Collection<FolderInfo> folderInfos);
 
     /**
      * Return a list of groups, where the account specified by

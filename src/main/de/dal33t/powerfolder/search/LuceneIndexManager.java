@@ -33,7 +33,9 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 import de.dal33t.powerfolder.util.Waiter;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -69,6 +71,7 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.*;
@@ -97,10 +100,17 @@ public class LuceneIndexManager extends PFComponent {
     /** The full-text content field. */
     private static final String CONTENT_FIELD = "content";
 
-    /** Searchable fields used by all query methods. */
+    /**
+     * What a keyword search looks at: what a file is called, where it sits, what it says, and what it was
+     * tagged or titled with.
+     *
+     * PFS-5653: who wrote a file is deliberately not part of this. The accounts of a server usually share
+     * a mail domain, so a keyword that also sits in their usernames used to answer with every file those
+     * accounts had ever touched - the editor is asked for with "modifiedby:" instead, see
+     * {@link #EDITOR_FIELDS}.
+     */
     private static final String[] SEARCH_FIELDS =
-            {"fileName", "relativeName", CONTENT_FIELD, "modifiedByDisplayName", "modifiedByUsername",
-             "modifiedByDeviceName", "extensionExact", "tags", "docTitle", "docAuthor"};
+            {"fileName", "relativeName", CONTENT_FIELD, "extensionExact", "tags", "docTitle"};
 
     /**
      * PFS-5653: what a name search looks at - the file name and the title a document carries in its own
@@ -115,10 +125,21 @@ public class LuceneIndexManager extends PFComponent {
     private static final String[] EDITOR_FIELDS =
             {"modifiedByDisplayName", "modifiedByUsername", "modifiedByDeviceName", "docAuthor"};
 
+    /** PFS-5653: who a "device:" search looks at - the name of the device a file was last written on. */
+    private static final String[] DEVICE_FIELDS = {"modifiedByDeviceName"};
+
     private static final String[] PHRASE_FIELDS =
             {"fileName", "relativeName", CONTENT_FIELD};
 
     private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
+
+    /**
+     * PFC-3635: the analyzer a search word is cut with - the same kind the index used, so a word reaches the
+     * index in the very terms it holds. "Faktura-2026" is stored as "faktura" and "2026" because the
+     * tokenizer ends a word at a hyphen; a query that kept the hyphen asked for a term no file has. Static
+     * because the query builders are, and thread-safe.
+     */
+    private static final StandardAnalyzer QUERY_ANALYZER = new StandardAnalyzer();
 
     /**
      * PFS-5653: upper bound of distinct terms {@link #suggestTerms(String, String)} reads per field. Only
@@ -227,14 +248,25 @@ public class LuceneIndexManager extends PFComponent {
     private final Folder folder;
     private final Path indexPath;
     private final StandardAnalyzer analyzer;
-    private final IndexWriter writer;
-    private final SearcherManager searcherManager;
+    /**
+     * PFS-5778: opened on first use - by the worker before it indexes, by a search before it reads - not
+     * in the constructor. Opening an IndexWriter reads the segment files and maps them, which took a
+     * good part of the 40 ms every subfolder cost on the request thread when a tree mounted; an index
+     * nobody asks for is never opened at all. {@code null} until {@link #ensureOpen()} succeeded.
+     */
+    private volatile IndexWriter writer;
+    private volatile SearcherManager searcherManager;
+    private final Object openLock = new Object();
     private final TesseractOCR ocrEngine;
 
     private final LinkedBlockingQueue<FileInfo> indexQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<FileInfo> contentQueue = new LinkedBlockingQueue<>();
     private final AtomicInteger uncommittedCount = new AtomicInteger(0);
+    /** The stop signal for the worker. Also set by requestStop(), before any shutdown. */
     private final AtomicBoolean closed = new AtomicBoolean(false);
+
+    /** Guards the shutdown body so it runs exactly once, independently of the stop signal. */
+    private final AtomicBoolean shutdownStarted = new AtomicBoolean(false);
     private volatile long lastCommitTime;
 
     /** True while the worker is running on the IO thread pool. */
@@ -257,40 +289,6 @@ public class LuceneIndexManager extends PFComponent {
 
         this.analyzer = new StandardAnalyzer();
 
-        IndexWriter w = null;
-        try {
-            IndexWriterConfig config = new IndexWriterConfig(analyzer);
-            FSDirectory directory = FSDirectory.open(indexPath);
-            w = new IndexWriter(directory, config);
-        } catch (Exception e) {
-            // Index incompatible (e.g. created by a newer/older Lucene
-            // version) or corrupt. Wipe and start fresh.
-            logWarning(folder + ": Incompatible or corrupt index, rebuilding: " + e.getMessage());
-            if (w != null) {
-                try { w.close(); } catch (Exception ignored) {}
-                w = null;
-            }
-            deleteIndexFiles();
-            IndexWriterConfig config = new IndexWriterConfig(analyzer);
-            FSDirectory directory = FSDirectory.open(indexPath);
-            w = new IndexWriter(directory, config);
-        }
-
-        try {
-            this.searcherManager =
-                    new SearcherManager(w, true, true, null);
-            this.writer = w;
-        } catch (IOException e) {
-            if (w != null) {
-                try {
-                    w.close();
-                } catch (IOException suppressed) {
-                    e.addSuppressed(suppressed);
-                }
-            }
-            throw e;
-        }
-
         String ocrLanguages = ConfigurationEntry.SEARCH_INDEX_OCR_LANGUAGES.getValue(controller);
         int maxIndexThreads = ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(controller);
         // 1:1 with the indexing threads — they are the only callers of performOCR,
@@ -301,8 +299,87 @@ public class LuceneIndexManager extends PFComponent {
         this.ocrEngine = TesseractOCR.getInstance();
 
         if (isFine()) {
-            logFine(folder + ": Lucene index initialized at " + indexPath.toAbsolutePath());
+            logFine(folder + ": Lucene index registered at " + indexPath.toAbsolutePath());
         }
+    }
+
+    /**
+     * Opens the index if it is not open yet. Corrupt or incompatible index files (another Lucene
+     * version, for example) are wiped so the index starts fresh and {@link #rebuildIndexIfRequired()}
+     * finds no meta file at the next start.
+     *
+     * @return {@code false} if the index is shut down or could not be opened - the caller does without
+     *         it, the way it does without an index that was never enabled
+     */
+    private boolean ensureOpen() {
+        if (writer != null) {
+            return true;
+        }
+        if (closed.get()) {
+            return false;
+        }
+        synchronized (openLock) {
+            if (writer != null) {
+                return true;
+            }
+            if (closed.get()) {
+                return false;
+            }
+            IndexWriter w = null;
+            try {
+                try {
+                    w = new IndexWriter(FSDirectory.open(indexPath), new IndexWriterConfig(analyzer));
+                } catch (Exception e) {
+                    logWarning(folder + ": Incompatible or corrupt index, rebuilding: " + e.getMessage());
+                    if (w != null) {
+                        try { w.close(); } catch (Exception ignored) {}
+                    }
+                    deleteIndexFiles();
+                    w = new IndexWriter(FSDirectory.open(indexPath), new IndexWriterConfig(analyzer));
+                }
+                SearcherManager sm = new SearcherManager(w, true, true, null);
+                // The searcher first: a reader of the writer sees both or neither.
+                searcherManager = sm;
+                writer = w;
+                if (isFine()) {
+                    logFine(folder + ": Lucene index opened at " + indexPath.toAbsolutePath());
+                }
+                return true;
+            } catch (Exception e) {
+                logWarning(folder + ": Unable to open the Lucene index: " + e, e);
+                if (w != null) {
+                    try { w.close(); } catch (Exception ignored) {}
+                }
+                return false;
+            }
+        }
+    }
+
+    /**
+     * @return whether the index is open, or can be opened, for searching. A folder whose index cannot
+     *         be opened is searched through its database instead.
+     */
+    public boolean isSearchable() {
+        return ensureOpen();
+    }
+
+    /**
+     * PFS-5778: Opens the index in the background, on the bounded indexing pool (PFS-5311), so that the
+     * first search after a mount finds it open. Measured on narvi: without this the first search into a
+     * workspace of 130 subfolders paid 0.5 s, into one of 200 already mounted subfolders 1.8 s, the
+     * second one 0.1 s. The mount itself does not wait - that was the point of opening late. During the
+     * first minute after start nothing is warmed up: thousands of folders mount then, and the indexing
+     * pool is meant to stay quiet in that phase; a search opens what it needs.
+     */
+    public void warmUp() {
+        if (writer != null || closed.get()) {
+            return;
+        }
+        long uptime = getController().getUptime();
+        if (uptime >= 0 && uptime < STARTUP_DELAY_MS) {
+            return;
+        }
+        getController().getIOProvider().startIndexing(this::ensureOpen);
     }
 
     /**
@@ -414,14 +491,18 @@ public class LuceneIndexManager extends PFComponent {
             return true;
         }
 
-        // 3) Verify index is readable
-        try {
-            IndexSearcher s = searcherManager.acquire();
-            try { s.getIndexReader().numDocs(); }
-            finally { searcherManager.release(s); }
-        } catch (Exception e) {
-            logWarning(folder + ": Index corrupt — rebuild required");
-            return true;
+        // 3) Verify index is readable - if it is open. An index not opened yet is verified by ensureOpen
+        //    when its turn comes: a corrupt one is wiped there, and the missing meta file orders the rebuild.
+        SearcherManager sm = searcherManager;
+        if (sm != null) {
+            try {
+                IndexSearcher s = sm.acquire();
+                try { s.getIndexReader().numDocs(); }
+                finally { sm.release(s); }
+            } catch (Exception e) {
+                logWarning(folder + ": Index corrupt — rebuild required");
+                return true;
+            }
         }
 
         // 4) PFS-5311: content extraction was off and is now on
@@ -495,10 +576,11 @@ public class LuceneIndexManager extends PFComponent {
     // ------------------------------------------------------------------------
 
     /**
-     * Queues files for background indexing. Returns immediately.
+     * Queues files for background indexing. Returns immediately. Nothing is accepted once
+     * {@link #shutdown()} has begun - see {@link #closed}.
      */
     public void indexFiles(Collection<FileInfo> files) {
-        if (files == null || files.isEmpty()) return;
+        if (closed.get() || files == null || files.isEmpty()) return;
         indexQueue.addAll(files);
         ensureWorkerRunning();
         if (isFine()) {
@@ -512,7 +594,7 @@ public class LuceneIndexManager extends PFComponent {
      * sets the flag accordingly.
      */
     public void markDeleted(Collection<FileInfo> files) {
-        if (files == null || files.isEmpty()) return;
+        if (closed.get() || files == null || files.isEmpty()) return;
         indexQueue.addAll(files);
         ensureWorkerRunning();
     }
@@ -522,8 +604,8 @@ public class LuceneIndexManager extends PFComponent {
      * must be immediate so recycle bin views don't show stale entries.
      */
     public void purgeFiles(Collection<FileInfo> files) {
-        if (files == null || files.isEmpty()) return;
-        if (!writer.isOpen()) return;
+        if (closed.get() || files == null || files.isEmpty()) return;
+        if (!ensureOpen() || !writer.isOpen()) return;
         try {
             for (FileInfo fileInfo : files) {
                 writer.deleteDocuments(
@@ -575,7 +657,7 @@ public class LuceneIndexManager extends PFComponent {
 
     public void updateIndex(ScanResult scanResult) {
         Reject.ifNull(scanResult, "ScanResult");
-        if (!scanResult.isChangeDetected()) return;
+        if (closed.get() || !scanResult.isChangeDetected()) return;
 
         int count = 0;
         for (FileInfo f : safe(scanResult.getNewFiles())) {
@@ -668,6 +750,15 @@ public class LuceneIndexManager extends PFComponent {
         if (isFine()) {
             logFine(folder + ": Index worker started");
         }
+        if (!ensureOpen()) {
+            // Nothing to write into - the queue is dropped, the meta file (if any) still describes
+            // whatever is on disk, and the next start decides again.
+            indexQueue.clear();
+            contentQueue.clear();
+            rebuilding.set(false);
+            workerRunning.set(false);
+            return;
+        }
 
         try {
             if (rebuilding.get()) {
@@ -702,7 +793,13 @@ public class LuceneIndexManager extends PFComponent {
                             + ": " + oom.getMessage());
                     throw oom;
                 } catch (Exception e) {
-                    logWarning(folder + ": Failed to index " + fileInfo + ": " + e.getMessage());
+                    // Quiet once closed: the folder is going away, so a file it cannot read any
+                    // more is expected, not a defect.
+                    if (closed.get()) {
+                        logFine(folder + ": Index skipped for " + fileInfo + ": " + e.getMessage());
+                    } else {
+                        logWarning(folder + ": Failed to index " + fileInfo + ": " + e.getMessage());
+                    }
                 }
             }
 
@@ -736,7 +833,12 @@ public class LuceneIndexManager extends PFComponent {
                             + ": " + oom.getMessage());
                     throw oom;
                 } catch (Exception e) {
-                    logWarning(folder + ": Content extraction failed for " + fileInfo + ": " + e.getMessage());
+                    if (closed.get()) {
+                        logFine(folder + ": Extraction skipped for " + fileInfo + ": " + e.getMessage());
+                    } else {
+                        logWarning(folder + ": Content extraction failed for " + fileInfo + ": "
+                                + e.getMessage());
+                    }
                 }
                 throttleExtraction();
             }
@@ -1336,6 +1438,9 @@ public class LuceneIndexManager extends PFComponent {
             return counts;
         }
         String pfx = prefix == null ? "" : prefix.toLowerCase(Locale.ROOT);
+        if (!ensureOpen()) {
+            return counts;
+        }
         IndexSearcher searcher = null;
         try {
             searcher = searcherManager.acquire();
@@ -1401,22 +1506,40 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
+     * PFC-3635: the terms the index holds for a piece of text, lower cased and in order - what
+     * {@link #QUERY_ANALYZER} makes of it. Empty when the text carries no letter or digit.
+     */
+    static List<String> indexTerms(String text) {
+        List<String> terms = new ArrayList<>();
+        if (text == null || text.isEmpty()) {
+            return terms;
+        }
+        try (TokenStream stream = QUERY_ANALYZER.tokenStream(null, text)) {
+            CharTermAttribute term = stream.addAttribute(CharTermAttribute.class);
+            stream.reset();
+            while (stream.incrementToken()) {
+                terms.add(term.toString());
+            }
+            stream.end();
+        } catch (IOException e) {
+            throw new IllegalStateException("Search text could not be tokenized: " + text, e);
+        }
+        return terms;
+    }
+
+    /**
      * PFS-5653: the name: filter. Every word has to appear in the file name - exactly, as a prefix or
      * anywhere inside it - and nowhere else: unlike the keywords, this one never looks at the path, the
-     * content or who changed the file.
+     * content or who changed the file. The value is cut into the terms the name was indexed as
+     * ({@link #indexTerms}), so neither the punctuation of "!urgent!" nor the hyphen of "Faktura-2026" kills
+     * the query.
      *
      * @return the query, or null if there is nothing to filter by.
      */
     private static Query fileNameQuery(String value) {
-        if (StringUtils.isBlank(value)) {
-            return null;
-        }
         BooleanQuery.Builder allWords = new BooleanQuery.Builder();
         boolean any = false;
-        for (String token : value.toLowerCase(Locale.ROOT).trim().split("\\s+")) {
-            if (token.isEmpty()) {
-                continue;
-            }
+        for (String token : indexTerms(value)) {
             BooleanQuery.Builder word = new BooleanQuery.Builder();
             for (String field : NAME_FIELDS) {
                 word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
@@ -1425,6 +1548,30 @@ public class LuceneIndexManager extends PFComponent {
             }
             word.setMinimumNumberShouldMatch(1);
             allWords.add(word.build(), BooleanClause.Occur.MUST);
+            any = true;
+        }
+        return any ? allWords.build() : null;
+    }
+
+    /**
+     * PFS-5653: the filters that match a name against analyzed fields - "modifiedby:" and "device:". Every
+     * word of the value has to appear in one of the given fields, exactly or anywhere inside a term. Built
+     * term by term ({@link #indexTerms}) because those fields are tokenized: a display name of two words
+     * is stored as two terms, so a single term carrying the space between them would match nothing.
+     *
+     * @return the query, or null if the value holds no word to filter by.
+     */
+    private static Query wordsAnywhereIn(String value, String[] fields) {
+        BooleanQuery.Builder allWords = new BooleanQuery.Builder();
+        boolean any = false;
+        for (String word : indexTerms(value)) {
+            BooleanQuery.Builder oneWord = new BooleanQuery.Builder();
+            for (String field : fields) {
+                oneWord.add(new TermQuery(new Term(field, word)), BooleanClause.Occur.SHOULD);
+                oneWord.add(new WildcardQuery(new Term(field, "*" + word + "*")), BooleanClause.Occur.SHOULD);
+            }
+            oneWord.setMinimumNumberShouldMatch(1);
+            allWords.add(oneWord.build(), BooleanClause.Occur.MUST);
             any = true;
         }
         return any ? allWords.build() : null;
@@ -1469,14 +1616,9 @@ public class LuceneIndexManager extends PFComponent {
             bqBuilder.add(anyExtension.build(), BooleanClause.Occur.MUST);
         }
 
-        if (StringUtils.isNotBlank(criteria.getModifiedBy())) {
-            String wildcard = "*" + criteria.getModifiedBy().toLowerCase(Locale.ROOT).trim() + "*";
-            BooleanQuery.Builder modQuery = new BooleanQuery.Builder();
-            for (String field : EDITOR_FIELDS) {
-                modQuery.add(new WildcardQuery(new Term(field, wildcard)), BooleanClause.Occur.SHOULD);
-            }
-            modQuery.setMinimumNumberShouldMatch(1);
-            bqBuilder.add(modQuery.build(), BooleanClause.Occur.MUST);
+        Query editorQuery = wordsAnywhereIn(criteria.getModifiedBy(), EDITOR_FIELDS);
+        if (editorQuery != null) {
+            bqBuilder.add(editorQuery, BooleanClause.Occur.MUST);
         }
 
         for (String tag : criteria.getTags()) {
@@ -1514,10 +1656,9 @@ public class LuceneIndexManager extends PFComponent {
                     BooleanClause.Occur.MUST);
         }
 
-        if (StringUtils.isNotBlank(criteria.getModifiedByDeviceName())) {
-            String wildcard = "*" + criteria.getModifiedByDeviceName().toLowerCase(Locale.ROOT).trim() + "*";
-            bqBuilder.add(new WildcardQuery(new Term("modifiedByDeviceName", wildcard)),
-                    BooleanClause.Occur.MUST);
+        Query deviceQuery = wordsAnywhereIn(criteria.getModifiedByDeviceName(), DEVICE_FIELDS);
+        if (deviceQuery != null) {
+            bqBuilder.add(deviceQuery, BooleanClause.Occur.MUST);
         }
 
         if (!criteria.getCategories().isEmpty()) {
@@ -1558,6 +1699,9 @@ public class LuceneIndexManager extends PFComponent {
 
         List<FileInfo> results = new ArrayList<>();
         boolean hasKeywords = StringUtils.isNotBlank(queryText);
+        if (!ensureOpen()) {
+            return results;
+        }
 
         IndexSearcher searcher = null;
         try {
@@ -1638,10 +1782,13 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     /**
-     * Builds a Lucene query from user input. For each sanitized token,
-     * creates a per-field disjunction of exact / prefix / wildcard
-     * queries with boosting to prefer exact matches. All tokens are
-     * combined with AND semantics.
+     * Builds a Lucene query from user input. Every word is cut into the terms the index holds
+     * ({@link #indexTerms}), and for each term a per-field disjunction of exact / prefix / wildcard queries
+     * is created, boosted to prefer exact matches. All terms are combined with AND semantics.
+     *
+     * PFC-3635: the cutting is what makes "Faktura-2026" find "Test-Faktura-2026.pdf" - the index never
+     * held a term with the hyphen in it. PFS-5306: it also drops a trailing dot ("29.7.") the way the index
+     * did, so the dot no longer asks for a term that was never stored.
      *
      * @param fuzzy whether the tokens may also match with 1-2 edits (typo tolerance). Only set for the
      *              fallback pass, see {@link #isFuzzySearchEnabled()}.
@@ -1670,42 +1817,44 @@ public class LuceneIndexManager extends PFComponent {
                 negated = true;
                 token = token.substring(1);
             }
-            // PFS-5306: The StandardTokenizer used for indexing never emits a token ending in a dot
-            // (a dot only survives between alphanumerics). A trailing dot typed by the user - e.g. the
-            // tag "Stoffliste 29.7." - would therefore match nothing and, as a MUST clause, kill the
-            // whole query. Dots inside a token (29.7, report.v2) stay untouched.
-            while (token.endsWith(".")) {
-                token = token.substring(0, token.length() - 1);
-            }
-            if (token.isEmpty()) {
+            List<String> terms = indexTerms(token);
+            if (terms.isEmpty()) {
                 continue;
             }
 
             if (negated) {
+                // A negated word excludes the files that carry every term of it - "-faktura-2026" drops
+                // "Test-Faktura-2026.pdf" but keeps "Faktura 2025.pdf".
                 BooleanQuery.Builder exclusion = new BooleanQuery.Builder();
-                addTokenQueries(exclusion, token, 1.0f, 1.0f, 1.0f, false);
-                exclusion.setMinimumNumberShouldMatch(1);
+                for (String term : terms) {
+                    BooleanQuery.Builder oneTerm = new BooleanQuery.Builder();
+                    addTokenQueries(oneTerm, term, 1.0f, 1.0f, 1.0f, false);
+                    oneTerm.setMinimumNumberShouldMatch(1);
+                    exclusion.add(oneTerm.build(), BooleanClause.Occur.MUST);
+                }
                 allTokens.add(exclusion.build(), BooleanClause.Occur.MUST_NOT);
                 continue;
             }
 
-            BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
+            for (String term : terms) {
+                BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
 
-            addTokenQueries(fieldDisjunction, token, 3.0f, 2.0f, 1.0f, fuzzy);
+                addTokenQueries(fieldDisjunction, term, 3.0f, 2.0f, 1.0f, fuzzy);
 
-            String folded = foldAccents(token);
-            if (!folded.equals(token) && !folded.isEmpty()) {
-                addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, false);
+                String folded = foldAccents(term);
+                if (!folded.equals(term) && !folded.isEmpty()) {
+                    addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, false);
+                }
+
+                String stripped = stripAccents(term);
+                if (!stripped.equals(term) && !stripped.equals(folded) && !stripped.isEmpty()) {
+                    addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, false);
+                }
+
+                fieldDisjunction.setMinimumNumberShouldMatch(1);
+                allTokens.add(fieldDisjunction.build(), BooleanClause.Occur.MUST);
+                hasPositive = true;
             }
-
-            String stripped = stripAccents(token);
-            if (!stripped.equals(token) && !stripped.equals(folded) && !stripped.isEmpty()) {
-                addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, false);
-            }
-
-            fieldDisjunction.setMinimumNumberShouldMatch(1);
-            allTokens.add(fieldDisjunction.build(), BooleanClause.Occur.MUST);
-            hasPositive = true;
         }
 
         for (String phrase : phrases) {
@@ -1748,17 +1897,21 @@ public class LuceneIndexManager extends PFComponent {
         return phrases;
     }
 
+    /**
+     * PFC-3635: the phrase is cut into index terms as well - a quoted "Faktura-2026" asks for the terms
+     * "faktura" and "2026" next to each other, which is how the index stored that name.
+     */
     private Query buildPhraseQuery(String phrase) {
-        String[] words = phrase.split("\\s+");
-        if (words.length == 0) {
+        List<String> words = indexTerms(phrase);
+        if (words.isEmpty()) {
             return null;
         }
         BooleanQuery.Builder disjunction = new BooleanQuery.Builder();
-        if (words.length == 1) {
+        if (words.size() == 1) {
             /* A single quoted word has no word order to respect - it asks for the exact term, and it asks
              * it of every searchable field, not just the name/path/content ones a phrase can span. */
             for (String field : SEARCH_FIELDS) {
-                disjunction.add(new TermQuery(new Term(field, words[0])), BooleanClause.Occur.SHOULD);
+                disjunction.add(new TermQuery(new Term(field, words.get(0))), BooleanClause.Occur.SHOULD);
             }
             disjunction.setMinimumNumberShouldMatch(1);
             return disjunction.build();
@@ -1849,7 +2002,7 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     private void commitAndRefresh() {
-        if (!writer.isOpen()) return;
+        if (writer == null || !writer.isOpen()) return;
         try {
             writer.commit();
             searcherManager.maybeRefreshBlocking();
@@ -1861,6 +2014,13 @@ public class LuceneIndexManager extends PFComponent {
             if (isFine()) {
                 logFine(folder + ": Commit skipped — index already closed");
             }
+        } catch (NoSuchFileException e) {
+            // Expected while a folder is being deleted: removeFolder takes the content away,
+            // write.lock with it, and the final commit of shutdown() then finds nothing to commit
+            // to. The index of a folder that is going away is worthless anyway - not a warning.
+            if (isFine()) {
+                logFine(folder + ": Commit skipped — index directory gone: " + e.getFile());
+            }
         } catch (Exception e) {
             logWarning(folder + ": Commit failed: " + e);
         }
@@ -1870,11 +2030,16 @@ public class LuceneIndexManager extends PFComponent {
     // Statistics
     // ------------------------------------------------------------------------
 
+    /** @return the number of indexed entries, {@code -1} while the index is not open (or unreadable) */
     public int getIndexEntryCount() {
+        SearcherManager sm = searcherManager;
+        if (sm == null) {
+            return -1;
+        }
         try {
-            IndexSearcher s = searcherManager.acquire();
+            IndexSearcher s = sm.acquire();
             try { return s.getIndexReader().numDocs(); }
-            finally { searcherManager.release(s); }
+            finally { sm.release(s); }
         } catch (Exception e) {
             return -1;
         }
@@ -1883,6 +2048,11 @@ public class LuceneIndexManager extends PFComponent {
     /** Number of files waiting to be indexed. */
     public int getPendingCount() {
         return indexQueue.size();
+    }
+
+    /** Number of files waiting for content (Tika/OCR) extraction. */
+    public int getContentPendingCount() {
+        return contentQueue.size();
     }
 
     /**
@@ -1919,17 +2089,49 @@ public class LuceneIndexManager extends PFComponent {
     }
 
     public void shutdown() {
-        if (!closed.compareAndSet(false, true)) return;
+        shutdown(false);
+    }
+
+    /**
+     * Tells the worker to stop, without waiting for it and without closing anything.
+     * <p>
+     * Lets a caller that is shutting many folders down signal all of them first, so the workers drain
+     * side by side instead of one after another. The wait inside a single {@link #shutdown()} is up to
+     * a second and a server holds thousands of folders, so the sequence outlived the patience of the
+     * stop script: the process was killed mid-shutdown four times in one night, which costs whatever
+     * the folder database had not persisted yet.
+     */
+    public void requestStop() {
+        closed.set(true);
+    }
+
+    /**
+     * @param discard the folder is being DELETED, so its index goes with it: nothing is waited for
+     *                and nothing is written. The wait alone cost 120 ms per folder while an extraction
+     *                was in flight - 7 ms with an idle worker - and a purge walks tens of thousands of
+     *                folders, so a deletion right after a migration crawled while the OCR backlog was
+     *                still being worked off. The final commit is just as pointless: it either writes an
+     *                index nobody will read again, or it fails because removeFolder already took the
+     *                files away ("Commit failed: NoSuchFileException ... write.lock").
+     */
+    public void shutdown(boolean discard) {
+        // The gate is its own flag: `closed` is the stop signal and may already be set by
+        // requestStop(), which must not make the shutdown body skip itself.
+        if (!shutdownStarted.compareAndSet(false, true)) return;
+        closed.set(true);
         if (isFine()) {
-            logFine(folder + ": Shutting down...");
+            logFine(folder + (discard ? ": Discarding index..." : ": Shutting down..."));
         }
 
         // Let the background worker finish the file it is currently extracting.
         // It only checks closed between files — proceeding immediately would
         // close the IndexWriter under it, and callers removing the folder would
         // start deleting files it is still reading (Tika: "InputStream must
-        // have > 0 bytes").
-        awaitWorkerTermination();
+        // have > 0 bytes"). Discarding accepts exactly that: the worker fails on a file that is
+        // being deleted anyway, and its log stays quiet because closed is set (workerLoop).
+        if (!discard) {
+            awaitWorkerTermination();
+        }
 
         // Do NOT drain the backlog through Tika here — that can block shutdown
         // for minutes. Discard the queues; if anything was still pending,
@@ -1938,21 +2140,48 @@ public class LuceneIndexManager extends PFComponent {
         int pending = indexQueue.size() + contentQueue.size();
         indexQueue.clear();
         contentQueue.clear();
-        if (pending > 0) {
+        /* Set only when the meta file is really gone: that file IS the rebuild order, and if it
+         * survives, the next start reads this index instead of rebuilding it - so it had better
+         * be committed. */
+        boolean rebuildScheduled = false;
+        if (!discard && pending > 0) {
             try {
                 Files.deleteIfExists(indexPath.resolve(META_FILE_NAME));
+                rebuildScheduled = true;
             } catch (IOException e) {
                 logWarning(folder + ": Failed to delete index meta: " + e);
             }
-            logInfo(folder + ": " + pending + " file(s) still queued at shutdown"
-                    + " — full index rebuild scheduled for next start");
+            // FINE: with a short mount life (folders.mount.keep.seconds) this is the normal end of an
+            // index whose worker had not caught up yet - one line per unmount is noise at INFO.
+            if (isFine()) {
+                logFine(folder + ": " + pending + " file(s) still queued at shutdown"
+                        + " — full index rebuild scheduled for next start");
+            }
         }
 
-        commitAndRefresh();
-        try { searcherManager.close(); }
-        catch (Exception ignored) {}
-        try { writer.close(); }
-        catch (Exception ignored) {}
+        /* An index the next start throws away is not worth two fsyncs. commitAndRefresh() is one
+         * and writer.close() is another, and both of them write an index that the rebuild will
+         * overwrite - the same reasoning the discard path already follows. narvi holds 7 425
+         * interrupted subfolders after a migration, each of them an index of its own, and closing
+         * them took 63 of the 70 seconds its shutdown lasted. */
+        boolean throwingAway = discard || rebuildScheduled;
+
+        if (!throwingAway) {
+            commitAndRefresh();
+        }
+        // Never opened: nothing to close, nothing to commit or throw away.
+        SearcherManager sm = searcherManager;
+        IndexWriter w = writer;
+        if (sm != null) {
+            try { sm.close(); }
+            catch (Exception ignored) {}
+        }
+        // rollback(), not close(): closing an IndexWriter COMMITS. There is nothing to commit for
+        // an index that is being thrown away.
+        if (w != null) {
+            try { if (throwingAway) { w.rollback(); } else { w.close(); } }
+            catch (Exception ignored) {}
+        }
 
         if (isFine()) {
             logFine(folder + ": Shutdown complete");

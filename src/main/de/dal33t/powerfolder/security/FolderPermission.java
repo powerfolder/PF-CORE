@@ -222,7 +222,7 @@ public abstract class FolderPermission
         // permissions by INHERITANCE from an ancestor. This must NOT block a permission granted
         // DIRECTLY on that subfolder (thisFolder == otherFolder) - such an explicit permission still
         // implies its lower modes (e.g. owner/admin implies read on the same interrupted subfolder).
-        if (!thisFolder.equals(otherFolder) && otherFolder.isSubFolder() && !otherFolder.inheritsPermissions()) {
+        if (otherFolder.isSubFolder() && !otherFolder.inheritsPermissions() && !thisFolder.equals(otherFolder)) {
             return false;
         }
 

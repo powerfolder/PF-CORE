@@ -89,8 +89,8 @@ public class Controller extends PFComponent {
     private static final Logger log = Logger.getLogger(Controller.class.getName());
 
     private static final int MAJOR_VERSION = 28;
-    private static final int MINOR_VERSION = 0;
-    private static final int REVISION_VERSION = 100;
+    private static final int MINOR_VERSION = 1;
+    private static final int REVISION_VERSION = 80;
 
     /**
      * Program version.
@@ -581,6 +581,14 @@ public class Controller extends PFComponent {
             ConfigurationLoader.loadAndMergeConfigURL(this);
         }
 
+        /* PFS-5739: record thread dumps periodically, so an incident can still be analysed
+         * afterwards. Started here and not earlier because threaddump.interval.seconds may come
+         * from the configuration URL, which is merged just above and, when config.url itself comes
+         * from the distribution, only on this second attempt. Starting before that read the local
+         * value or the default and ignored what the server prescribed. Nothing is lost by waiting:
+         * the first dump is one interval away either way. */
+        new ThreadDumpRecorder(this).start();
+
         logFine("Build time: " + getBuildTime());
         logInfo("Program version " + PROGRAM_VERSION);
 
@@ -965,6 +973,9 @@ public class Controller extends PFComponent {
         if (maxDays >= 0) {
             LoggingManager.removeOldLogs(maxDays);
         }
+        // Outside that guard: the dumps have a retention of their own and are pruned even where
+        // the logs are kept forever.
+        new ThreadDumpRecorder(this).removeOldDumps();
     }
 
     /**
@@ -1245,7 +1256,7 @@ public class Controller extends PFComponent {
         threadPool.schedule(() -> {
             performHousekeeping(false);
         } , 1, TimeUnit.MINUTES);
-        
+
         // ============
         // Do profiling
         // ============
@@ -1289,16 +1300,6 @@ public class Controller extends PFComponent {
                 if (isFine()) {
                     logFine("Dataitems: "
                         + Debug.countDataitems(Controller.this));
-                }
-                String dump = Debug.dumpCurrentStacktraces(false);
-                if (StringUtils.isNotBlank(dump)
-                    && isFine()
-                    && ConfigurationEntry.LOG_ACTIVE_THREADS
-                        .getValueBoolean(getController()))
-                {
-                    logFine("Active threads:\n\n" + dump);
-                } else {
-                    logFine("No active threads");
                 }
             }
         }, 1, 5, TimeUnit.MINUTES);
@@ -1348,12 +1349,13 @@ public class Controller extends PFComponent {
             if (days >= 0) {
                 LoggingManager.removeOldLogs(days);
             }
+            new ThreadDumpRecorder(this).removeOldDumps();
             logFine("Reconfigured logs for new day: " + now);
 
             backupConfigAssets();
             folderRepository.nightlyMaintenance();
         }
-        
+
         // Prune stats.
         transferManager.pruneStats();
     }
@@ -1634,7 +1636,7 @@ public class Controller extends PFComponent {
             }
         }
     }
-    
+
     /**
      * Saves the current config to disk
      */
@@ -1974,7 +1976,7 @@ public class Controller extends PFComponent {
     public void setNetworkingMode(NetworkingMode newMode) {
         setNetworkingMode(newMode, true);
     }
-    
+
     public void setNetworkingMode(NetworkingMode newMode, boolean restartNodeManager) {
         if (isBackupOnly() && newMode != NetworkingMode.SERVERONLYMODE) {
             // ALWAYS server only mode if backup-only.

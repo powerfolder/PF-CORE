@@ -712,6 +712,13 @@ public class PathUtils {
                 for (Path path : stream) {
                     recursiveDelete(path);
                 }
+            } catch (NoSuchFileException nsfe) {
+                /* An entry that was still in the listing and is gone by the time it is opened was
+                 * deleted by someone else - a concurrent removal of the same tree, which happens
+                 * when a workspace and its subfolders are deleted at the same time. That is the
+                 * state this method wants anyway, so it must not abort the whole delete and leave
+                 * everything not yet visited behind. Any other IOException still does. */
+                return;
             } catch (IOException ioe) {
                 IO_EXCEPTION_LISTENER.exceptionThrown(ioe);
                 throw ioe;

@@ -23,12 +23,9 @@ import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * PFC-3543: Index of all subfolders whose permission inheritance is currently
@@ -71,12 +68,30 @@ public class InterruptedSubFolderIndex {
     // volatile read - the sections exist to keep several controllers in one JVM apart.
     private static final Map<InterruptedSubFolderIndex, FolderInfo[]> REGISTRY = new ConcurrentHashMap<>();
     private static volatile FolderInfo[] allBarriers = NO_INFOS;
+    /** The same barriers grouped by top folder - see {@link #barriersOf(FolderInfo)}. */
+    private static volatile Map<FolderInfo, FolderInfo[]> barriersByTop = Collections.emptyMap();
 
     // Two parallel snapshots, swapped atomically on refresh: absolute local bases
     // for the Path-based scanner/watcher checks, and the matching FolderInfos for
     // the allocation-free relative-name FileInfo check.
     private volatile Path[] bases = NO_BASES;
     private volatile FolderInfo[] subFolders = NO_INFOS;
+
+    // Startup/mount bridge: interrupted subfolders KNOWN to exist (from the configuration or the
+    // server database) whose Folder objects are not mounted yet. Top folders are created (and their
+    // scan runs asynchronously) before their subfolders - without the seeds the scanner would descend
+    // into an interrupted subtree in exactly that window and re-ingest it into the top folder's
+    // database. Merged into every refresh; a seed is dropped for good once its folder mounts - the
+    // mount state is the authority from then on.
+    private final Map<FolderInfo, Path> seeds = new ConcurrentHashMap<>();
+
+    /* PFS-5814: A rebuild is serialized and coalesced. Every mounting thread seeds the workspace it is
+     * about to mount, and a rebuild walks all folders of the repository and the barriers of the whole
+     * process - done in parallel by two hundred threads, that is all any of them did. A thread whose
+     * seeds a concurrent rebuild has already picked up leaves without starting one of its own. */
+    private final Object refreshLock = new Object();
+    private final AtomicLong seedVersion = new AtomicLong();
+    private long publishedSeedVersion;
 
     /**
      * Recomputes the index from the given folders. Allocates only here, never on
@@ -86,10 +101,38 @@ public class InterruptedSubFolderIndex {
      * @param folders all (non-meta) folders of the repository
      */
     void refresh(Collection<Folder> folders) {
+        synchronized (refreshLock) {
+            // Read before the walk: a seed added while it runs gets a higher version and its own rebuild.
+            publishedSeedVersion = seedVersion.get();
+            refresh0(folders);
+        }
+    }
+
+    /**
+     * PFS-5814: Rebuilds only if no concurrent rebuild has already carried the given seed version.
+     *
+     * @param version the version {@link #seedAll(Map)} handed out
+     * @param folders all (non-meta) folders of the repository
+     */
+    void publishSeeds(long version, Collection<Folder> folders) {
+        synchronized (refreshLock) {
+            if (publishedSeedVersion >= version) {
+                return;
+            }
+            publishedSeedVersion = seedVersion.get();
+            refresh0(folders);
+        }
+    }
+
+    private void refresh0(Collection<Folder> folders) {
         List<Path> newBases = null;
         List<FolderInfo> newSubs = null;
+        Set<FolderInfo> mounted = seeds.isEmpty() ? null : new HashSet<>();
         for (Folder folder : folders) {
             FolderInfo foInfo = folder.getInfo();
+            if (mounted != null) {
+                mounted.add(foInfo);
+            }
             if (!foInfo.isSubFolder() || foInfo.inheritsPermissions()) {
                 continue;
             }
@@ -103,6 +146,22 @@ public class InterruptedSubFolderIndex {
             }
             newBases.add(base);
             newSubs.add(foInfo);
+        }
+        // Merge the seeds of subfolders that are not mounted yet. A seed whose folder mounted -
+        // interrupted or not - has served its purpose: the mount state is the authority.
+        if (mounted != null) {
+            for (Map.Entry<FolderInfo, Path> seed : seeds.entrySet()) {
+                if (mounted.contains(seed.getKey())) {
+                    seeds.remove(seed.getKey());
+                    continue;
+                }
+                if (newBases == null) {
+                    newBases = new LinkedList<>();
+                    newSubs = new LinkedList<>();
+                }
+                newBases.add(seed.getValue());
+                newSubs.add(seed.getKey());
+            }
         }
         bases = newBases == null ? NO_BASES : newBases.toArray(new Path[0]);
         subFolders = newSubs == null ? NO_INFOS : newSubs.toArray(new FolderInfo[0]);
@@ -123,22 +182,113 @@ public class InterruptedSubFolderIndex {
     }
 
     /**
+     * PFC-3543: Pre-seeds the index with a subfolder KNOWN to be interrupted (from the configuration
+     * or the server database) whose {@link Folder} object is not mounted yet. Top folders are created
+     * first and their scan runs asynchronously - without the seed that scan would descend into the
+     * interrupted subtree before the subfolder mounts (the mounted-folder refresh cannot know it yet)
+     * and the DAO store guard would be the only - also mount-dependent - line of defense. Additive
+     * and idempotent; the seed takes part in every {@link #refresh} and is dropped for good once its
+     * folder mounts. The caller triggers a refresh afterwards to publish the seed.
+     *
+     * @param subFolder the interrupted subfolder
+     * @param base      its local base, derived as top folder base + location
+     */
+    void seed(FolderInfo subFolder, Path base) {
+        seeds.put(subFolder, base);
+    }
+
+    /**
+     * PFC-3543: Drops the seed of a subfolder that is GONE - deleted, not merely unmounted
+     * <p>
+     * {@link #refresh0} retires a seed when its folder mounts, and that is the only way out it has:
+     * everything else stays a barrier, because "not mounted yet" is exactly what a seed is for. A
+     * deleted subfolder never mounts again, so its barrier outlives it and blocks the path it used
+     * to occupy for the rest of the process.
+     * <p>
+     * That is not theoretical. A migration purge deleted "AG Stoffliste/05 Vorträge" and the next
+     * run did not interrupt it again, so no folder owned that path any more - while the seed still
+     * said one did. Every write below it went through the top folder and PF-CORE refused it
+     * ("Skipped scan - inside interrupted subfolder"): no FileInfo, and with it no tags, for 14 of
+     * the workspace's 216 tagged items. Over a whole run of 237 workspaces it was 14 667 files. The
+     * workspace's own migration report was written into such a path too and could not be secured.
+     * <p>
+     * Seeds exist only where folders mount on demand, which is why this surfaced the day dynamic
+     * mounting was switched on and not before.
+     *
+     * @param subFolder the subfolder that no longer exists
+     *
+     * @return true when a seed was actually dropped, so the caller can skip a rebuild it does not
+     *         need
+     */
+    boolean dropSeed(FolderInfo subFolder) {
+        return subFolder != null && seeds.remove(subFolder) != null;
+    }
+
+    /**
+     * PFS-5814: Seeds a whole workspace at once and says whether the index actually changed.
+     * <p>
+     * Every mount seeds the interrupted subfolders of its workspace, and a refresh is not cheap: it
+     * walks all folders of the repository and rebuilds the barrier snapshot of the whole process. Done
+     * per subfolder, a workspace with thirty interruptions paid it thirty times - times every mounting
+     * thread. The mount asks once now, and a mount that finds every seed already there pays nothing.
+     *
+     * @param newSeeds the interrupted subfolders with their local bases
+     * @return the version to hand to {@link #publishSeeds(long, Collection)}, or 0 when every seed
+         *         was already there and nothing has to be rebuilt
+     */
+    long seedAll(Map<FolderInfo, Path> newSeeds) {
+        boolean changed = false;
+        for (Map.Entry<FolderInfo, Path> seed : newSeeds.entrySet()) {
+            Path previous = seeds.put(seed.getKey(), seed.getValue());
+            changed |= !seed.getValue().equals(previous);
+        }
+        return changed ? seedVersion.incrementAndGet() : 0;
+    }
+
+    /**
+     * Ends a seeding bridge wholesale: every expected subfolder has been created (or failed and was
+     * logged), the mounted-folder refresh is the only authority again. Used by the config-based
+     * startup, which knows when its folder creation is complete. The caller triggers a refresh
+     * afterwards.
+     */
+    void clearSeeds() {
+        seeds.clear();
+    }
+
+    /**
      * Rebuilds the flat union read by {@link #barriers()}. Called only from the structural events
      * above, never from a lookup - all allocation for the barrier lookup happens here.
      */
     private static void mergeBarriers() {
-        List<FolderInfo> merged = null;
+        /* The set does the de-duplication: a list scanned with contains() made this quadratic in the
+         * number of barriers, and it runs on every single interruption. A migration that interrupts
+         * thousands of subfolders spent its time here (measured in a thread dump: ArrayList.indexOf
+         * under mergeBarriers). Insertion order is kept, so the snapshot stays stable. */
+        Set<FolderInfo> merged = null;
         for (FolderInfo[] section : REGISTRY.values()) {
             for (FolderInfo subFolder : section) {
                 if (merged == null) {
-                    merged = new ArrayList<>();
+                    merged = new LinkedHashSet<>();
                 }
-                if (!merged.contains(subFolder)) {
-                    merged.add(subFolder);
-                }
+                merged.add(subFolder);
             }
         }
         allBarriers = merged == null ? NO_INFOS : merged.toArray(new FolderInfo[0]);
+        /* Grouped by top folder as well: a resolution only ever compares the barriers of the addressed
+         * workspace, and walking all of them - 7800 on the migrated test system - is what made the
+         * check expensive per file. Built here, where allocation is allowed. */
+        Map<FolderInfo, List<FolderInfo>> grouped = new HashMap<>();
+        for (FolderInfo subFolder : allBarriers) {
+            FolderInfo top = subFolder.getTopFolder();
+            if (top != null) {
+                grouped.computeIfAbsent(top, key -> new ArrayList<>()).add(subFolder);
+            }
+        }
+        Map<FolderInfo, FolderInfo[]> byTop = new HashMap<>(Math.max(4, grouped.size() * 2));
+        for (Map.Entry<FolderInfo, List<FolderInfo>> entry : grouped.entrySet()) {
+            byTop.put(entry.getKey(), entry.getValue().toArray(new FolderInfo[0]));
+        }
+        barriersByTop = byTop;
     }
 
     /**
@@ -165,6 +315,25 @@ public class InterruptedSubFolderIndex {
     }
 
     /**
+     * PFC-3543: The barriers of ONE top folder. What a resolution needs: a subfolder of another
+     * workspace can never enclose the addressed path, and asking for all of them made every single
+     * check walk the interrupted folders of the whole system - thousands of them on a migrated server,
+     * per file of a scan and per web request.
+     *
+     * @param topFolder the top folder the addressed path belongs to
+     * @return its interrupted subfolders, empty when it has none. A SHARED snapshot - never modify it
+     */
+    public static FolderInfo[] barriersOf(FolderInfo topFolder) {
+        // Nothing interrupted anywhere - the default on virtually every system: out on an array length, without
+        // hashing a FolderInfo. This is called per file of a scan and per addressed path.
+        if (allBarriers.length == 0 || topFolder == null) {
+            return NO_INFOS;
+        }
+        FolderInfo[] found = barriersByTop.get(topFolder);
+        return found != null ? found : NO_INFOS;
+    }
+
+    /**
      * @return {@code true} if there are currently no interrupted subfolders (the
      *         common case). Lets callers skip any per-item work.
      */
@@ -178,61 +347,79 @@ public class InterruptedSubFolderIndex {
      * hits an interrupted subfolder exactly at its base; the watcher sees files
      * deep inside the subtree directly - a single {@code startsWith} covers both.
      * <p>
-     * Allocation-free. {@code ownBase} is excluded so an interrupted subfolder
-     * still scans and stores its own content. The subfolder's root directory itself
-     * ({@code path.equals(base)}) is NOT foreign either: it stays in the top folder so
-     * the subfolder remains listed/navigable - only paths strictly below it are foreign.
-     * PFC-3575: the visibility model for that kept root node is a follow-up.
+     * Allocation-free. The INNERMOST enclosing subfolder decides: {@code ownBase} being that one means
+     * the path is the querying folder's own content, even when an ancestor is separated as well.
+     * <p>
+     * PFC-3575: the subfolder's root directory itself counts as foreign as well. It used to be
+     * excluded so the row stayed behind in the top folder and kept the subfolder listed - which meant
+     * the scanner descended into the subtree on every run, produced the entry, and the DAO guard threw
+     * the store away again: a permanent warning loop for no gain. The subfolder is surfaced by the
+     * folder view now (synthesized for callers who may see it), so the top folder has no business
+     * touching that path at all.
      *
      * @param path    an absolute path (a scanned directory or a watched file)
-     * @param ownBase the local base of the querying folder (excluded from the match)
-     * @return {@code true} if {@code path} is strictly below an interrupted subfolder
-     *         other than the querying folder itself
+     * @param ownBase the local base of the querying folder
+     * @return {@code true} if the innermost interrupted subfolder enclosing {@code path} encloses the
+     *         querying folder's own base as well - then that subfolder, and not the querying folder,
+     *         owns the path
      */
     boolean contains(Path path, Path ownBase) {
         if (path == null) {
             return false;
         }
+        /* PFC-3543 / PFS-5767: interrupted subfolders NEST - a folder and folders inside it can each be
+         * separated ("Inspektionsreisen", "Inspektionsreisen/DLD Beef audit 2025" and four folders below
+         * that, in one migrated workspace). What decides the owner of a path is the INNERMOST enclosing
+         * subfolder, so that is what is compared against the querying folder. Skipping only the own base
+         * and returning on the first match made the inner folder refuse its own content whenever an
+         * ancestor was separated too: neither folder scanned that subtree, so its files never entered
+         * any database and stayed invisible in the web interface. */
         Path[] snapshot = bases;
+        Path innermost = null;
         for (int i = 0; i < snapshot.length; i++) {
             Path base = snapshot[i];
-            if (base.equals(ownBase)) {
-                // Never treat the querying folder's own subtree as foreign.
+            if (!path.startsWith(base)) {
                 continue;
             }
-            if (path.startsWith(base) && !path.equals(base)) {
-                return true;
+            if (innermost == null || base.getNameCount() > innermost.getNameCount()) {
+                innermost = base;
             }
         }
-        return false;
+        /* The querying folder owns the path where its own base lies INSIDE that subfolder, not only
+         * where it IS the subfolder. A folder can sit below the base of another one: the metadata
+         * folder of an interrupted subfolder has its base at <subfolder>/.PowerFolder/meta, and
+         * comparing for equality refused it its own content ("Skipped scan - inside interrupted
+         * subfolder", followed by "Folder not joined, not requesting files"). Nobody else owns that
+         * path - the subfolder itself excludes its system directory - so the member list of every
+         * interrupted subfolder simply never synced. A folder OUTSIDE the barrier, i.e. the top
+         * folder, is still refused: that is what the barrier is for. */
+        // A folder without a base owns nothing, so an enclosing barrier decides - as before.
+        return innermost != null && (ownBase == null || !ownBase.startsWith(innermost));
     }
 
     /**
-     * FileInfo-based membership check for the DAO store path. Compares relative
-     * names as Strings via {@link FileInfo#isInSubFolder(FolderInfo)} and allocates
-     * no {@link Path} per file. Only interrupted subfolders of {@code ownInfo} are
-     * considered (relative names are only comparable within the same top folder),
-     * which also excludes the querying folder's own subtree.
+     * FileInfo-based membership check for the DAO store path - the guard that keeps a remote file list
+     * from writing a subfolder's content into the wrong database. Compares relative names as Strings,
+     * so it allocates no {@link Path} per file.
+     * <p>
+     * Like the {@link #contains(Path, Path)} variant, the INNERMOST enclosing subfolder decides.
+     * {@link FolderInfo#findEnclosingInterruptedSubFolder} translates the addressed path into top-folder
+     * coordinates and only considers subfolders of the same top folder, so a SUBFOLDER may ask as well:
+     * it used to look at subfolders whose direct parent is the querying folder, and since sharing is
+     * only allowed from a top folder ({@code Folder.share}) there never are any - an interrupted
+     * subfolder therefore accepted everything below it, including the content of a nested interrupted
+     * folder that a peer still reported as part of it.
      *
      * @param fInfo   a file of the querying folder
-     * @param ownInfo the {@link FolderInfo} of the querying folder
-     * @return {@code true} if {@code fInfo} belongs to an interrupted subfolder
+     * @param ownInfo the {@link FolderInfo} of the querying folder (top folder or subfolder)
+     * @return {@code true} if {@code fInfo} belongs to an interrupted subfolder other than the querying
+     *         folder itself
      */
     boolean contains(FileInfo fInfo, FolderInfo ownInfo) {
-        if (fInfo == null) {
+        if (fInfo == null || ownInfo == null) {
             return false;
         }
-        FolderInfo[] snapshot = subFolders;
-        for (int i = 0; i < snapshot.length; i++) {
-            FolderInfo sub = snapshot[i];
-            FolderInfo subTop = sub.getTopFolder();
-            if (subTop == null || !subTop.equals(ownInfo)) {
-                continue;
-            }
-            if (fInfo.isInsideSubFolder(sub)) {
-                return true;
-            }
-        }
-        return false;
+        FolderInfo innermost = FolderInfo.findEnclosingInterruptedSubFolder(ownInfo, fInfo.getRelativeName());
+        return innermost != null && !innermost.equals(ownInfo);
     }
 }
