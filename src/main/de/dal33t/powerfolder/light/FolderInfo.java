@@ -720,6 +720,29 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         return name.compareToIgnoreCase(otherFolderInfo.name);
     }
 
+    /**
+     * Appends to the buffer everything {@link #toString()} does not show: where a subfolder sits, and
+     * the two fields that decide whether two copies of a folder say the same thing without being
+     * visible in either of them - the inheritance flag and the tags.
+     *
+     * @param str the stringbuilder to add the detail info to.
+     */
+    private void toDetailString(StringBuilder str) {
+        str.append(this);
+        if (isSubFolder()) {
+            str.append(", top folder: ").append(getTopFolder() != null ? getTopFolder().getId() : "(none)");
+            str.append(", at: '").append(getTopPath()).append("'");
+            str.append(", inherits permissions: ").append(inheritsPermissions());
+        }
+        str.append(", tags: ").append(isNotBlank(tags) ? tags : "(none)");
+    }
+
+    public String toDetailString() {
+        StringBuilder str = new StringBuilder();
+        toDetailString(str);
+        return str.toString();
+    }
+
     @Override
     public String toString() {
         if (isLookupInstance()) {

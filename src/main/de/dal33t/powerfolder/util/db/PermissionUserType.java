@@ -145,7 +145,8 @@ public class PermissionUserType extends Loggable implements UserType {
                     if (fdInfo.saysTheSameAs(fdInfo.intern())) {
                         logFine(fdInfo.intern() + ": Found newer version in memory, same content. In DB " + fdInfo);
                     } else {
-                        logInfo(fdInfo.intern() + ": Found newer version is memory. in DB " + fdInfo);
+                        logInfo(fdInfo.intern().toDetailString() + ": Found newer version in memory. In DB "
+                            + fdInfo.toDetailString());
                     }
                     fdInfo = fdInfo.intern();
                 }
