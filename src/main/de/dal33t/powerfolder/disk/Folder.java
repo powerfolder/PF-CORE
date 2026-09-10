@@ -2089,17 +2089,26 @@ public class Folder extends PFComponent {
                         }
                     }
                 }
-                FileInfo localFile = getFile(fInfo);
-                if (localFile == null) {
-                    return null;
-                }
-                FileInfo synced = localFile.syncFromDiskIfRequired(this, diskFile, deletingAccount);
-                folderChanged = synced != null;
-                if (folderChanged) {
-                    logFileOperation("DELETED", localFile, synced);
-                    store(getMySelf(), synced);
-                    return synced;
-                }
+            }
+            /* PFC-3536: the row is brought in line with the disk even when there was nothing left to
+             * delete. A row that outlived its content could not be deleted at all: everything here sat
+             * inside the branch above, so a missing directory meant no row was marked deleted, nothing
+             * was broadcast, and the API answered "deleted" to attempt after attempt while the entry
+             * stayed in the folder view - which is what the test system showed for five directories.
+             * syncFromDiskIfRequired knows the case and reports the file as deleted. */
+            if (diskFile == null) {
+                return null;
+            }
+            FileInfo localFile = getFile(fInfo);
+            if (localFile == null) {
+                return null;
+            }
+            FileInfo synced = localFile.syncFromDiskIfRequired(this, diskFile, deletingAccount);
+            folderChanged = synced != null;
+            if (folderChanged) {
+                logFileOperation("DELETED", localFile, synced);
+                store(getMySelf(), synced);
+                return synced;
             }
         }
 
@@ -2338,10 +2347,17 @@ public class Folder extends PFComponent {
                         kept.add(seen);
                     }
                 }
-                logWarning(fInfo + ": Skipped store - inside interrupted subfolder");
+                logFine(fInfo + ": Skipped store - inside interrupted subfolder");
             } else if (kept != null) {
                 kept.add(fInfo);
             }
+        }
+        if (kept != null && isWarning()) {
+            /* One line for the call, not one per file: deleting a workspace runs this for every file of
+             * every interrupted subfolder in it, and that was thousands of warnings - 9178 in one night
+             * on the customer system. The files themselves are at FINE above. */
+            logWarning(this + ": Skipped store of " + (fileInfos.size() - kept.size()) + " file(s) of "
+                + fileInfos.size() + " - inside interrupted subfolder");
         }
         return kept != null ? kept : fileInfos;
     }

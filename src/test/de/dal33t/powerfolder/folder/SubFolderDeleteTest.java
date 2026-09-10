@@ -254,6 +254,28 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
         assertTrue("The directory above it is untouched", Files.isDirectory(projects));
     }
 
+    /**
+     * A row that outlived its content: the directory is gone from disk, the row still says it is there.
+     * Every deletion used to be a silent no-op - the API answered "deleted" and the entry stayed in the
+     * folder view, attempt after attempt, which is what five directories on the test system showed.
+     */
+    public void testADirectoryWhoseContentIsAlreadyGoneIsStillReportedDeleted() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        Path projects = createTree(topFolder);
+        Path orphan = projects.resolve("archive");
+        TestHelper.createRandomFile(orphan, "Old.txt");
+        scanFolder(topFolder);
+        assertFalse("Sanity: the row is alive", topFolder.getFileInfo("projects/archive").isDeleted());
+
+        // Gone behind the folder's back - no scan, so the row still says it is there.
+        PathUtils.recursiveDelete(orphan);
+        assertFalse(Files.exists(orphan));
+
+        topFolder.removeFilesLocal((AccountInfo) null, directory(topFolder, "projects/archive"));
+
+        assertTrue("The row is reported as deleted", topFolder.getFileInfo("projects/archive").isDeleted());
+    }
+
     /** "projects" with a file of its own and a "reports" subdirectory holding one, scanned. */
     private Path createTree(Folder topFolder) throws IOException {
         Path projects = Files.createDirectories(topFolder.getPhysicalDir().resolve("projects"));

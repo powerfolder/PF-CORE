@@ -45,6 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -674,6 +675,31 @@ public class FolderInfo implements Serializable, Cloneable, D2DObject {
         }
 
         return false;
+    }
+
+    /**
+     * Whether two copies of the same folder say the same thing - everything a row holds except the
+     * version: the name, the path below the top folder, the top folder itself, the inheritance flag
+     * and the tags. A copy that is only a version behind is not an event worth a log line; one that
+     * differs in content is.
+     *
+     * @param other the other copy of this folder
+     *
+     * @return whether both say the same thing
+     */
+    public boolean saysTheSameAs(FolderInfo other) {
+        if (other == null) {
+            return false;
+        }
+        return Objects.equals(getName(), other.getName())
+            && Objects.equals(getTopPath(), other.getTopPath())
+            && Objects.equals(topFolderId(this), topFolderId(other))
+            && inheritsPermissions() == other.inheritsPermissions()
+            && Objects.equals(getTags(), other.getTags());
+    }
+
+    private static String topFolderId(FolderInfo foInfo) {
+        return foInfo.getTopFolder() != null ? foInfo.getTopFolder().getId() : null;
     }
 
     public FolderInfo intern() {

@@ -138,7 +138,15 @@ public class PermissionUserType extends Loggable implements UserType {
             } else if (!fdInfo.isLookupInstance()) {
                 // /PF-1790: Remove all this later...
                 if (fdInfo.intern().getVersion() > fdInfo.getVersion()) {
-                    logInfo(fdInfo.intern() + ": Found newer version is memory. in DB " + fdInfo);
+                    /* A row a version behind that says the SAME thing is not an event: every permission
+                     * of every folder is hydrated, so one deletion or rename of a folder produces the
+                     * line hundreds of times over. Only a copy that differs in CONTENT is worth reading
+                     * about - the same distinction FolderInfoDAOsqlImpl#store draws. */
+                    if (fdInfo.saysTheSameAs(fdInfo.intern())) {
+                        logFine(fdInfo.intern() + ": Found newer version in memory, same content. In DB " + fdInfo);
+                    } else {
+                        logInfo(fdInfo.intern() + ": Found newer version is memory. in DB " + fdInfo);
+                    }
                     fdInfo = fdInfo.intern();
                 }
             } else if (firstReport(fdInfo.getId())) {
