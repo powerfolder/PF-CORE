@@ -2194,7 +2194,7 @@ public class Folder extends PFComponent {
                     for (FileInfo fInfo : fInfos) {
                         inTopCoordinates.add(FileInfoFactory.mapToTopFolder(fInfo));
                     }
-                    logInfo(this + ": Deleting the directory of this subfolder through " + topFolder);
+                    logFine(this + ": Deleting the directory of this subfolder through " + topFolder);
                     topFolder.removeFilesLocal(deletingAccount, inTopCoordinates);
                     return;
                 }
@@ -2228,7 +2228,7 @@ public class Folder extends PFComponent {
                 FileInfoCriteria c = new FileInfoCriteria();
                 c.addMySelf(this);
                 c.setPath((DirectoryInfo) dirInfo);
-                logInfo("Deleting directory: " + dirInfo);
+                logFine("Deleting directory: " + dirInfo);
                 removeFilesLocal(deletingAccount, dao.findFiles(c), false);
                 FileInfo deletedDirInfo = removeFileLocal(dirInfo, deletingAccount);
                 if (deletedDirInfo != null) {
@@ -6518,7 +6518,8 @@ public class Folder extends PFComponent {
             return;
         }
 
-        logInfo(this + ": Unsharing subfolder " + subFolder);
+        // The caller says why at INFO - see unshareSubFoldersIn and UnshareAction.
+        logFine(this + ": Unsharing subfolder " + subFolder);
         // Nothing about this folder is worth writing any more - see Folder#beingUnshared.
         subFolder.beingUnshared = true;
 
@@ -6608,7 +6609,9 @@ public class Folder extends PFComponent {
                         + " directory holding it stays as well: " + fInfo);
                     break;
                 }
-                logWarning(subFolder + ": Share dissolved, the directory holding it is deleted: " + fInfo
+                /* One line per share, and a workspace has hundreds - INFO, not a warning: it is what
+                 * was asked for. Being refused IS a problem and stays a warning, above. */
+                logInfo(subFolder + ": Share dissolved, the directory holding it is deleted: " + fInfo
                     + ". Its permissions are gone with it");
                 unshare(location);
                 break;
