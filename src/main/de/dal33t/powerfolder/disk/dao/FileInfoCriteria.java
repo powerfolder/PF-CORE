@@ -403,16 +403,43 @@ public class FileInfoCriteria {
     }
 
     private static boolean matchesName(FileInfo fileInfo, Set<String> keyWords) {
+        return matchesKeyWords(fileInfo, keyWords);
+    }
+
+    /**
+     * Whether every keyword of a search is met by the given file, for a search the index cannot answer.
+     * <p>
+     * A keyword may sit in the name, in the path above it, or in a tag the file carries -
+     * {@link de.dal33t.powerfolder.search.LuceneIndexManager} searches the same places (plus the
+     * extracted content), so a search answers the same way whether the index or the database answered
+     * it. Tags used to be reachable through the "tag:" operator alone, which is what the tag chip
+     * inserts: clicking a tag found every tagged element, typing the very same words found none. On a
+     * server that mounts its folders on demand the database answers often - right after a mount the
+     * index is not searchable yet - so that was the normal case, not the exception.
+     *
+     * @param fileInfo the file to test
+     * @param keyWords the keywords of the search, lower case (see {@link #addKeyWord})
+     */
+    static boolean matchesKeyWords(FileInfo fileInfo, Set<String> keyWords) {
         if (keyWords.isEmpty()) {
             return true;
         }
-        String name = fileInfo.getFilenameOnly().toLowerCase();
+        String path = fileInfo.getRelativeName().toLowerCase();
         for (String keyWord : keyWords) {
-            if (!name.contains(keyWord)) {
+            if (!path.contains(keyWord) && !matchesAnyTag(fileInfo, keyWord)) {
                 return false;
             }
         }
         return true;
+    }
+
+    private static boolean matchesAnyTag(FileInfo fileInfo, String keyWord) {
+        for (String tag : fileInfo.getTagsList()) {
+            if (tag.toLowerCase().contains(keyWord)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
