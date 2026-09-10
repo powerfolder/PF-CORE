@@ -57,7 +57,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledFuture;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 
 import static de.dal33t.powerfolder.disk.FolderSettings.PREFIX_V4;
@@ -2171,7 +2170,7 @@ public class Folder extends PFComponent {
             /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
              * to be done before anything is read from the database - the content of an interrupted
              * subfolder only becomes ours again with the restore inside unshare. */
-            unshareSubFoldersIn(fInfos, subFolder -> mayUnshare(deletingAccount, subFolder));
+            unshareSubFoldersIn(fInfos, deletingAccount);
         }
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not removeFilesLocal (" + fInfos.size() + "): " + fInfos);
@@ -4220,15 +4219,13 @@ public class Folder extends PFComponent {
                          * never the content of an interrupted subfolder - and the directory stays, round
                          * after round.
                          *
-                         * The member's session decides, the way it decides every file deletion here:
+                         * The member's account is its session, and that is what decides - the way
                          * syncRemoteDeletedFiles gates the whole sync on hasWritePermission(member) of
-                         * THIS folder, and an interrupted subfolder answers to its own permissions, so
-                         * it is asked for itself. Not getModifiedByAccount: that is metadata the peer
-                         * sent along, naming whoever last touched the file, and the deletion is not its
-                         * to authorize - it says who to attribute it to, which is what the fallback
-                         * below uses it for. */
-                        unshareSubFoldersIn(Collections.singletonList(localFile),
-                            subFolder -> subFolder.hasWritePermission(member));
+                         * THIS folder, only asked of the subfolder, which answers to its own
+                         * permissions. Not getModifiedByAccount, which the fallback below uses to
+                         * attribute the deletion: that is metadata the peer sent along and authorizes
+                         * nothing. */
+                        unshareSubFoldersIn(Collections.singletonList(localFile), member.getAccountInfo());
                         if (isFine()) {
                             logFine("Deleting directory from remote: "
                                     + localFile.toDetailString());
@@ -6500,19 +6497,24 @@ public class Folder extends PFComponent {
      * its database rows away afterwards. What is left is an ordinary directory of this folder, and the
      * deletion below can simply delete it.
      * <p>
-     * The share is gone afterwards - each one is logged. Write access to the subfolder is what it
-     * takes; a subfolder the deletion may not dissolve keeps its share, and the directory holding it
-     * stays with it.
+     * The share is gone afterwards - each one is logged - and write access to the subfolder is what
+     * it takes: the same access deleting its content takes, nothing more. Demanding folder admin, as
+     * the unshare API does for a share dissolved on its own, would refuse the deletion to the very
+     * member who may delete every single file in it. An interrupted subfolder is no different, its own
+     * permission structure does not outlive the directory it lives in. What the check does catch is
+     * the interruption that ends in read access, or in none: that subfolder keeps its share, the
+     * directory holding it stays with it, and everything else on the way is deleted all the same. The
+     * deletion of a TOP folder is not this path at all - it runs through the service, with its own
+     * check.
      *
-     * @param mayDissolve
-     *         whether the share of that subfolder may be dissolved. Who decides that depends on where
-     *         the deletion came from, and it is the same authority that decided the deletion itself:
-     *         {@link #mayUnshare} for a request of an account, {@link #hasWritePermission(Member)} on
-     *         the subfolder for a deletion synced from another client - the way file deletions are
-     *         gated in {@link #syncRemoteDeletedFiles} - and nothing at all where the directories are
-     *         gone already and only the dangling share is left.
+     * @param deletingAccount
+     *         the account the deletion is asked for, or {@code null} for an internal deletion - a scan
+     *         found the directories gone already, and a dangling share is all that is left to clean
+     *         up. For a deletion synced from another client this is the member's account, which is its
+     *         session: never the {@code modifiedByAccount} of the file, which is metadata the peer
+     *         sent along, names whoever last touched the file, and authorizes nothing.
      */
-    private void unshareSubFoldersIn(Collection<FileInfo> fInfos, Predicate<Folder> mayDissolve) {
+    private void unshareSubFoldersIn(Collection<FileInfo> fInfos, AccountInfo deletingAccount) {
         if (!isTopFolder() || currentInfo.isMetaFolder()) {
             return;
         }
@@ -6533,7 +6535,9 @@ public class Folder extends PFComponent {
                 if (!fInfo.isDiretory() || !isAtOrBelow(location, fInfo)) {
                     continue;
                 }
-                if (!mayDissolve.test(subFolder)) {
+                if (deletingAccount != null && !getController().getSecurityManager().hasPermission(
+                    deletingAccount, FolderPermission.readWrite(subFolder.getInfo())))
+                {
                     logWarning(subFolder + ": Share not dissolved, no write permission on it. The"
                         + " directory holding it stays as well: " + fInfo);
                     break;
@@ -6544,32 +6548,6 @@ public class Folder extends PFComponent {
                 break;
             }
         }
-    }
-
-    /**
-     * PFC-3536: The decision for a deletion an account asked for - write access to the subfolder,
-     * the same access deleting its content takes, nothing more.
-     * Demanding folder admin, as the unshare API does for a share dissolved on its own, would refuse
-     * the deletion to the very member who may delete every single file in it. An interrupted subfolder
-     * is no different: its own permission structure does not survive the directory it lives in, and
-     * whoever may empty it may take it along.
-     * <p>
-     * What the check does catch is read-only access: an interrupted subfolder answers to its own
-     * permissions, so write access to the directory above says nothing about it. The deletion of a TOP
-     * folder is not this path at all - it runs through the service and brings its own check.
-     *
-     * @param deletingAccount
-     *         the account the deletion is attributed to, or {@code null} for an internal deletion -
-     *         a scan result or a remote change, where no caller decides anything
-     * @return whether the share of the given subfolder may be dissolved
-     */
-    private boolean mayUnshare(AccountInfo deletingAccount, Folder subFolder) {
-        if (deletingAccount == null) {
-            return true;
-        }
-        // Admin and owner imply read-write, so they pass as well (FolderPermission#implies).
-        return getController().getSecurityManager()
-            .hasPermission(deletingAccount, FolderPermission.readWrite(subFolder.getInfo()));
     }
 
     /** @return whether one of the given files is the base directory of this folder */
@@ -6613,7 +6591,7 @@ public class Folder extends PFComponent {
             deletedDirs.add(deleted);
         }
         if (deletedDirs != null) {
-            unshareSubFoldersIn(deletedDirs, subFolder -> true);
+            unshareSubFoldersIn(deletedDirs, null);
         }
     }
 
