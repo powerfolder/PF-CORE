@@ -2075,7 +2075,10 @@ public class Folder extends PFComponent {
                     if (fInfo.isDiretory() || Files.isDirectory(diskFile)) {
                         try {
                             watcher.addIgnoreFile(fInfo);
-                            deleteFileRecursive(fInfo, diskFile);
+                            if (!deleteFileRecursive(fInfo, diskFile)) {
+                                // PFC-3536: an interrupted subfolder below it owns content we may not touch.
+                                logWarning(diskFile + ": Not deleted, content left behind. " + fInfo.toDetailString());
+                            }
                             recommendScanOnNextMaintenance();
                         } catch (IOException e) {
                             logWarning(this +": Unable to delete local directory. " + diskFile.toAbsolutePath() + ". " + fInfo.toDetailString());
@@ -2127,9 +2130,28 @@ public class Folder extends PFComponent {
      * @param fInfos
      */
     public void removeFilesLocal(AccountInfo deletingAccount, Collection<FileInfo> fInfos) {
+        removeFilesLocal(deletingAccount, fInfos, true);
+    }
+
+    /**
+     * @param dissolveShares
+     *         whether the subfolder shares below the given directories have to be dissolved first
+     *         (PFC-3536). True for every caller from the outside; false for the recursive call that
+     *         deletes the content of a directory, where the pass over the whole subtree has run
+     *         already.
+     */
+    private void removeFilesLocal(AccountInfo deletingAccount, Collection<FileInfo> fInfos,
+        boolean dissolveShares)
+    {
         Reject.ifNull(fInfos, "Files null");
         if (fInfos.isEmpty()) {
             return;
+        }
+        if (dissolveShares) {
+            /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
+             * to be done before anything is read from the database - the content of an interrupted
+             * subfolder only becomes ours again with the restore inside unshare. */
+            unshareSubFoldersIn(deletingAccount, fInfos);
         }
         if (shutdown) {
             logFine(getName() + ": Already shutdown: Not removeFilesLocal (" + fInfos.size() + "): " + fInfos);
@@ -2156,7 +2178,7 @@ public class Folder extends PFComponent {
                 c.addMySelf(this);
                 c.setPath((DirectoryInfo) dirInfo);
                 logInfo("Deleting directory: " + dirInfo);
-                removeFilesLocal(deletingAccount, dao.findFiles(c));
+                removeFilesLocal(deletingAccount, dao.findFiles(c), false);
                 FileInfo deletedDirInfo = removeFileLocal(dirInfo, deletingAccount);
                 if (deletedDirInfo != null) {
                     removedFiles.add(deletedDirInfo);
@@ -5198,23 +5220,52 @@ public class Folder extends PFComponent {
         return dao.findAllDirectories(null);
     }
 
+    /**
+     * Deletes a directory with everything below it, marking every file on the way as deleted. Used as
+     * the fallback of {@link #removeFileLocal} when the plain delete found the directory not empty
+     * (PFS-2002).
+     * <p>
+     * PFC-3536: an interrupted subfolder below {@code file} is owned by its own folder and is left
+     * untouched - the directory then stays as well, and the caller reports it. Deleting through this
+     * folder dissolves such a share beforehand ({@link #unshareSubFoldersIn}), so this is the safety
+     * net for a subfolder that could not be dissolved, not the normal case.
+     *
+     * @return {@code true} if {@code file} is gone; {@code false} if content had to be left behind -
+     *         then the directory itself stays as well, and the caller must not report it as deleted
+     */
     private boolean deleteFileRecursive(FileInfo newFileInfo, Path file) throws IOException {
         if (newFileInfo.isDiretory() || Files.isDirectory(file)) {
+            boolean emptied = true;
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(file, path -> Files.isDirectory(path))) {
                 for (Path path : stream) {
+                    /* PFC-3543: never touch an interrupted subfolder - that subtree is owned by its own
+                     * folder/DAO, so this directory cannot be emptied from here. Only the file loop
+                     * below used to stop at the barrier, so the deletion descended into the subtree
+                     * with lookup instances of this folder. */
+                    if (isInInterruptedSubFolder(path)) {
+                        logFine(path + ": Not deleted, owned by an interrupted subfolder");
+                        emptied = false;
+                        continue;
+                    }
                     FileInfo lookupInstance = FileInfoFactory.lookupInstance(this, path);
                     FileInfo storedInfo = getFile(lookupInstance);
                     if (storedInfo == null) {
                         storedInfo = lookupInstance;
                     }
-                    return deleteFileRecursive(storedInfo, path);
+                    /* Every subdirectory, not just the first: returning from inside the loop left the
+                     * rest of the tree, the direct files and this directory itself on disk, nothing was
+                     * marked as deleted and nothing broadcast - so the peers synced the content back. */
+                    if (!deleteFileRecursive(storedInfo, path)) {
+                        emptied = false;
+                    }
                 }
             }
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(file, path -> Files.isRegularFile(path))) {
                 for (Path path : stream) {
-                    // PFC-3543: never touch files of an interrupted subfolder - that
-                    // subtree is owned by its own folder/DAO.
+                    // PFC-3543: the files of an interrupted subfolder are not ours either.
                     if (isInInterruptedSubFolder(path)) {
+                        logFine(path + ": Not deleted, owned by an interrupted subfolder");
+                        emptied = false;
                         continue;
                     }
                     FileInfo lookupInstance = FileInfoFactory.lookupInstance(this, path);
@@ -5234,8 +5285,13 @@ public class Folder extends PFComponent {
                         }
                     }
                     logFileOperation("DELETED", storedInfo, storedInfo);
-                    deleteFile(storedInfo, path);
+                    if (!deleteFile(storedInfo, path)) {
+                        emptied = false;
+                    }
                 }
+            }
+            if (!emptied) {
+                return false;
             }
         }
         logFileOperation("DELETED", newFileInfo, newFileInfo);
@@ -6386,6 +6442,97 @@ public class Folder extends PFComponent {
          * the signal the server kept the FolderInfo, and the next share of the same directory created a
          * second one beside it. */
         getController().getFolderRepository().fireSubFolderUnshared(subFolder);
+    }
+
+    /**
+     * PFC-3536: Dissolves every subfolder share that lies inside one of the given directories, before
+     * they are deleted.
+     * <p>
+     * A subfolder inside a deleted directory used to survive the deletion, and an interrupted one made
+     * the deletion impossible: its content is owned by its own folder and database, which the top
+     * folder must not touch, so the directory could never become empty and never be reported as
+     * deleted - the peers synchronized the content back and the customer saw it reappear.
+     * {@link #unshare} is what resolves that: it restores an interrupted subfolder first, so its rows,
+     * its search index and its archived versions come back into this folder, and takes the share and
+     * its database rows away afterwards. What is left is an ordinary directory of this folder, and the
+     * deletion below can simply delete it.
+     * <p>
+     * The share is gone afterwards - each one is logged. Write access to the subfolder is what it
+     * takes ({@link #mayUnshare}); a subfolder the deleting account has no write access to keeps its
+     * share, and the directory holding it stays with it.
+     */
+    private void unshareSubFoldersIn(AccountInfo deletingAccount, Collection<FileInfo> fInfos) {
+        if (!isTopFolder() || currentInfo.isMetaFolder()) {
+            return;
+        }
+        Map<DirectoryInfo, Folder> subFolders = getController().getFolderRepository().getSubFolders(this);
+        if (subFolders.size() <= 1) {
+            // getSubFolders always contains this folder itself, so this means: no subfolder at all.
+            return;
+        }
+        // Innermost first - subfolders nest, and a share is dissolved from the inside out.
+        List<DirectoryInfo> locations = new ArrayList<>(subFolders.keySet());
+        locations.sort(new ReverseComparator<>(FileInfoComparator.getComparator(FileInfoComparator.BY_RELATIVE_NAME)));
+        for (DirectoryInfo location : locations) {
+            Folder subFolder = subFolders.get(location);
+            if (subFolder == this || !subFolder.isSubFolder()) {
+                continue;
+            }
+            for (FileInfo fInfo : fInfos) {
+                if (!fInfo.isDiretory() || !isAtOrBelow(location, fInfo)) {
+                    continue;
+                }
+                if (!mayUnshare(deletingAccount, subFolder)) {
+                    logWarning(subFolder + ": Share not dissolved, no write permission on it. The"
+                        + " directory holding it stays as well: " + fInfo);
+                    break;
+                }
+                logWarning(subFolder + ": Share dissolved, the directory holding it is deleted: " + fInfo
+                    + ". Its permissions are gone with it");
+                unshare(location);
+                break;
+            }
+        }
+    }
+
+    /**
+     * PFC-3536: Deleting a directory takes the subfolder shares inside it away, and write access to
+     * the subfolder is what that takes - the same access deleting its content takes, nothing more.
+     * Demanding folder admin, as the unshare API does for a share dissolved on its own, would refuse
+     * the deletion to the very member who may delete every single file in it. An interrupted subfolder
+     * is no different: its own permission structure does not survive the directory it lives in, and
+     * whoever may empty it may take it along.
+     * <p>
+     * What the check does catch is read-only access: an interrupted subfolder answers to its own
+     * permissions, so write access to the directory above says nothing about it. The deletion of a TOP
+     * folder is not this path at all - it runs through the service and brings its own check.
+     *
+     * @param deletingAccount
+     *         the account the deletion is attributed to, or {@code null} for an internal deletion -
+     *         a scan result or a remote change, where no caller decides anything
+     * @return whether the share of the given subfolder may be dissolved
+     */
+    private boolean mayUnshare(AccountInfo deletingAccount, Folder subFolder) {
+        if (deletingAccount == null) {
+            return true;
+        }
+        // Admin and owner imply read-write, so they pass as well (FolderPermission#implies).
+        return getController().getSecurityManager()
+            .hasPermission(deletingAccount, FolderPermission.readWrite(subFolder.getInfo()));
+    }
+
+    /**
+     * @return whether {@code location} is {@code dirInfo} itself or lies below it
+     */
+    private static boolean isAtOrBelow(DirectoryInfo location, FileInfo dirInfo) {
+        String name = location.getRelativeName();
+        String dirName = dirInfo.getRelativeName();
+
+        if (dirName.length() == 0) {
+            // The base directory of the folder holds everything.
+            return true;
+        }
+        return name.equals(dirName) || name.startsWith(dirName + '/');
     }
 
     private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
