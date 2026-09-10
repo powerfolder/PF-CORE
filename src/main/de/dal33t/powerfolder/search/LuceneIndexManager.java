@@ -47,6 +47,7 @@ import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.BytesRef;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -75,6 +76,8 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -245,6 +248,13 @@ public class LuceneIndexManager extends PFComponent {
     // Instance fields
     // -----------------------------------------------------------------------
 
+    /**
+     * PFC-3636: The manager that has the index of a directory open, by that directory. Two managers on
+     * one index is a bug in whoever mounted the folder twice, but Lucene answers it with a lock it
+     * cannot grant and a stack trace that names neither folder - this names the other one.
+     */
+    private static final ConcurrentMap<Path, LuceneIndexManager> OPEN_INDEXES = new ConcurrentHashMap<>();
+
     private final Folder folder;
     private final Path indexPath;
     private final StandardAnalyzer analyzer;
@@ -329,6 +339,15 @@ public class LuceneIndexManager extends PFComponent {
             try {
                 try {
                     w = new IndexWriter(FSDirectory.open(indexPath), new IndexWriterConfig(analyzer));
+                } catch (LockObtainFailedException e) {
+                    /* Held by another manager on the same directory - the folder was mounted twice.
+                     * This is NOT a corrupt index: falling through to the rebuild below would delete
+                     * the index files of the folder that is working with them, which is the one thing
+                     * that must not happen here. Without an index this folder searches its database. */
+                    LuceneIndexManager owner = OPEN_INDEXES.get(indexPath);
+                    logWarning(folder + ": The search index at " + indexPath + " is already open for "
+                        + (owner != null ? owner.folder : "another folder") + " - searching without it");
+                    return false;
                 } catch (Exception e) {
                     logWarning(folder + ": Incompatible or corrupt index, rebuilding: " + e.getMessage());
                     if (w != null) {
@@ -341,6 +360,7 @@ public class LuceneIndexManager extends PFComponent {
                 // The searcher first: a reader of the writer sees both or neither.
                 searcherManager = sm;
                 writer = w;
+                OPEN_INDEXES.put(indexPath, this);
                 if (isFine()) {
                     logFine(folder + ": Lucene index opened at " + indexPath.toAbsolutePath());
                 }
@@ -2122,6 +2142,7 @@ public class LuceneIndexManager extends PFComponent {
         if (isFine()) {
             logFine(folder + (discard ? ": Discarding index..." : ": Shutting down..."));
         }
+        OPEN_INDEXES.remove(indexPath, this);
 
         // Let the background worker finish the file it is currently extracting.
         // It only checks closed between files — proceeding immediately would

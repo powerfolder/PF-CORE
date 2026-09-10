@@ -179,6 +179,26 @@ public class FolderRepository extends PFComponent implements Runnable {
      * runs beside a change.
      */
     private final ReentrantReadWriteLock basedirScanLock = new ReentrantReadWriteLock();
+
+    /**
+     * PFC-3636: The locks that keep two mounts of the SAME folder apart. One lock per folder would be a
+     * map that grows with every folder ever mounted and has to be cleaned up under the very race it
+     * exists for - these are striped instead, and every folder always finds its own.
+     * <p>
+     * Sized for the maintenance work that mounts a thousand folders at once. 1024 stripes cost 20 KB,
+     * allocated once, and leave some 380 of those thousand mounting without ever meeting another one;
+     * the rest waits at some point for a mount it has nothing to do with, which costs a mount, never
+     * correctness.
+     */
+    private final Object[] mountLocks = newMountLocks(1024);
+
+    private static Object[] newMountLocks(int count) {
+        Object[] locks = new Object[count];
+        for (int i = 0; i < count; i++) {
+            locks[i] = new Object();
+        }
+        return locks;
+    }
     private ScheduledFuture<?> scanBaseDirFuture;
 
     /**
@@ -1583,6 +1603,29 @@ public class FolderRepository extends PFComponent implements Runnable {
     public Folder createFolder(FolderInfo folderInfo,
                                 FolderSettings folderSettings, boolean fireEvent) {
         Reject.ifNull(folderInfo, "FolderInfo is null");
+        /* PFC-3636: mounting the same folder twice at the same time ends here, before anything is
+         * built. The check for a folder that is already mounted and the map entry that answers it sit
+         * at opposite ends of mountFolder, so two threads used to build a Folder each on the same
+         * directory - and the second one could not open its search index, because the first one holds
+         * .PowerFolder/index/write.lock in this very JVM. The folder that lost the map was never
+         * closed, so it held that lock until the process ended. */
+        synchronized (mountLockFor(folderInfo)) {
+            return mountFolder(folderInfo, folderSettings, fireEvent);
+        }
+    }
+
+    /** The lock that mounts of {@code folderInfo} share. Mounts of other folders rarely meet it. */
+    private Object mountLockFor(FolderInfo folderInfo) {
+        // Spread the hash the way ConcurrentHashMap does: the low bits alone pick the stripe, and a
+        // folder id is not required to vary in them.
+        int hash = folderInfo.getId().hashCode();
+        hash ^= hash >>> 16;
+        return mountLocks[hash & (mountLocks.length - 1)];
+    }
+
+    private Folder mountFolder(FolderInfo folderInfo,
+                                FolderSettings folderSettings, boolean fireEvent) {
+        Reject.ifNull(folderInfo, "FolderInfo is null");
         Reject.ifNull(folderSettings, "FolderSettings is null");
 
         // PF-1790/PFC-3543: the common path of ALL folder creations corrects a subfolder's base dir,
@@ -1874,6 +1917,17 @@ public class FolderRepository extends PFComponent implements Runnable {
                             metaFolder.getInfo());
 
                     metaFolder.shutdown();
+                }
+
+                /* PFC-3636: the search index closes BEFORE the folder leaves the map, not only in
+                 * folder.shutdown() further down. A mount of the same folder waits for this removal
+                 * only while it holds the same mount lock, and a removal started elsewhere holds none
+                 * - so the index has to be gone by the time the folder is, or the mount that follows
+                 * cannot open its own ("Lock held by this virtual machine" on write.lock). The second
+                 * call in folder.shutdown() returns at the shutdownStarted gate. */
+                LuceneIndexManager index = folder.getSearchIndexManager();
+                if (index != null && !folder.getInfo().isMetaFolder()) {
+                    index.shutdown();
                 }
 
                 // Remove internal

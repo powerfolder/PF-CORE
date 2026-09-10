@@ -54,6 +54,23 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
     void storeIfMissing(FolderInfo folderInfo);
 
     /**
+     * PFS-5835: Lifts every stored lookup instance back to an ordinary row - the one statement the
+     * warning about them has been asking the operator to run.
+     * <p>
+     * A row with a negative version is a {@link de.dal33t.powerfolder.light.FolderInfoFactory#lookupInstance
+     * lookup instance}: a query object that was written to the table. Hibernate re-reads it on every
+     * hydration of an account or group holding a permission on that folder, and each read warns. On one
+     * node of a customer's production system that was 1.6 million lines for 11 863 rows in three hours.
+     * <p>
+     * The blank name stays - it is not recoverable here - and nothing is kept from healing: a real
+     * FolderInfo overwrites a version-0 row, and a blank name still counts as stale. Idempotent, so
+     * every node of a cluster may run it.
+     *
+     * @return the number of rows corrected, {@code -1} when the statement failed
+     */
+    int repairLookupInstances();
+
+    /**
      * Returns all subfolders belonging to the specified top-level folder.
      *
      * <p>

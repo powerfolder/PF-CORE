@@ -1,7 +1,13 @@
 package de.dal33t.powerfolder.disk.dao;
 
+import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
+import de.dal33t.powerfolder.light.FolderInfoFactory;
+import de.dal33t.powerfolder.util.TagUtil;
 import junit.framework.TestCase;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -116,5 +122,70 @@ public class FileInfoCriteriaTest extends TestCase {
         FileInfoCriteria byDevice = new FileInfoCriteria();
         byDevice.setModifiedByDeviceName("laptop");
         assertTrue(byDevice.describesFilesOnly());
+    }
+
+    /**
+     * ID-0002-R: a search term reaches the tags as well. Clicking a tag inserts a "tag:" token and found
+     * every tagged element; typing the very same words found none, because a keyword was matched against
+     * the file name alone. The index searches name, path and tags alike, and without it the answer has to
+     * be the same - on a server that mounts on demand the database answers most of the time.
+     */
+    public void testAKeyWordReachesTheTags() {
+        FileInfo tagged = file("Protokolle/Sitzung.docx", "Wonderful Day", "Urgent");
+
+        assertTrue("the tag itself", criteriaFor("wonderful day").matches(tagged));
+        assertTrue("one word of it", criteriaFor("wonderful").matches(tagged));
+        assertTrue("a second tag", criteriaFor("urgent").matches(tagged));
+        assertTrue("case does not matter", criteriaFor("WONDERFUL").matches(tagged));
+        assertFalse("a word that is nowhere", criteriaFor("terrible").matches(tagged));
+    }
+
+    /** The name and the path it sits in stay searchable, tags or no tags. */
+    public void testAKeyWordStillReachesNameAndPath() {
+        FileInfo plain = file("Protokolle/Sitzung.docx");
+
+        assertTrue("the name", criteriaFor("sitzung").matches(plain));
+        assertTrue("the directory above it", criteriaFor("protokolle").matches(plain));
+        assertFalse(criteriaFor("wonderful").matches(plain));
+    }
+
+    /** Every keyword has to be met - by whichever of the three places (PFS-5653: they are ANDed). */
+    public void testEveryKeyWordHasToBeMet() {
+        FileInfo tagged = file("Protokolle/Sitzung.docx", "Wonderful Day");
+
+        FileInfoCriteria both = new FileInfoCriteria();
+        both.addKeyWord("sitzung");
+        both.addKeyWord("wonderful");
+        assertTrue("one from the name, one from the tag", both.matches(tagged));
+
+        FileInfoCriteria withMiss = new FileInfoCriteria();
+        withMiss.addKeyWord("sitzung");
+        withMiss.addKeyWord("terrible");
+        assertFalse(withMiss.matches(tagged));
+    }
+
+    /** The "tag:" operator keeps its exact-match semantics - it is not a substring search. */
+    public void testTheTagOperatorStaysExact() {
+        FileInfo tagged = file("Protokolle/Sitzung.docx", "Wonderful Day");
+
+        FileInfoCriteria exact = new FileInfoCriteria();
+        exact.addTag("Wonderful Day");
+        assertTrue(exact.matches(tagged));
+
+        FileInfoCriteria partial = new FileInfoCriteria();
+        partial.addTag("Wonderful");
+        assertFalse("half a tag is not that tag", partial.matches(tagged));
+    }
+
+    private static FileInfoCriteria criteriaFor(String query) {
+        FileInfoCriteria criteria = new FileInfoCriteria();
+        criteria.addKeyWord(query);
+        return criteria;
+    }
+
+    private static FileInfo file(String relativeName, String... tags) {
+        FolderInfo folder = FolderInfoFactory.newTopFolderForTest("Workspace", "M_criteria_test");
+        return FileInfoFactory.unmarshallExistingFile(folder, relativeName, null, 1024L, null, null,
+            new Date(), 1, null, false, tags.length == 0 ? null : TagUtil.toJson(Arrays.asList(tags)));
     }
 }
