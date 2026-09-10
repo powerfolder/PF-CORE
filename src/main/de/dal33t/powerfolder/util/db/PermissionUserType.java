@@ -130,7 +130,7 @@ public class PermissionUserType extends Loggable implements UserType {
 
             if (fdInfo == null) {
                 if (firstReport(fiId)) {
-                    logWarning("FolderInfo with ID " + fiId + " not found", isFiner() ? new StackDump() : null);
+                    logWarning("FolderInfo with ID " + fiId + " not found", new StackDump());
                 } else if (isFiner()) {
                     logFiner("FolderInfo with ID " + fiId + " not found");
                 }
