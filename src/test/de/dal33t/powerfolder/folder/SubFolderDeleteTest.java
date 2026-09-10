@@ -32,6 +32,8 @@ import de.dal33t.powerfolder.security.FolderPermission;
 import de.dal33t.powerfolder.security.FolderReadPermission;
 import de.dal33t.powerfolder.security.Permission;
 import de.dal33t.powerfolder.security.SecurityManagerClient;
+import de.dal33t.powerfolder.util.PathUtils;
+import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -63,7 +65,7 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
         // Without the feature every subfolder reports "inherits", and nothing here could be interrupted.
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.enable();
         connectBartAndLisa();
-        joinTestFolder(SyncProfile.HOST_FILES);
+        joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
     @Override
@@ -179,6 +181,52 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
         assertFalse("... its directory with it", Files.exists(projects.resolve("archive")));
         assertTrue("... and reported as deleted", topFolder.getFileInfo("projects/archive").isDeleted());
         assertFalse("... and the plain file of the directory", Files.exists(projects.resolve("Plain.txt")));
+    }
+
+    /**
+     * The deletion arrives from another client instead of through the web interface: the peer deletes
+     * the directory, and this side syncs that deletion. Same dead end without the pass - the delete
+     * fails on the subfolder inside, the fallback only deletes what this folder's database knows, and
+     * the directory stays round after round.
+     */
+    public void testADeletionFromAnotherClientDissolvesTheShareAsWell() throws IOException {
+        final Folder topBart = getFolderAtBart();
+        Folder topLisa = getFolderAtLisa();
+        createTree(topBart);
+        final Path projectsLisa = topLisa.getPhysicalDir().resolve("projects");
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                return Files.exists(projectsLisa.resolve("reports/Report.txt"));
+            }
+
+            @Override
+            public String message() {
+                return "Lisa did not download the tree";
+            }
+        });
+        final Folder subFolder = subFolderAt(topBart, "projects/reports", false);
+        final Path projectsBart = topBart.getPhysicalDir().resolve("projects");
+
+        // Lisa deletes it and reports the deletion; Bart takes it over.
+        PathUtils.recursiveDelete(projectsLisa);
+        scanFolder(topLisa);
+        TestHelper.waitForCondition(30, new ConditionWithMessage() {
+            @Override
+            public boolean reached() {
+                topBart.syncRemoteDeletedFiles(true);
+                return !Files.exists(projectsBart);
+            }
+
+            @Override
+            public String message() {
+                return "Bart did not delete " + projectsBart;
+            }
+        });
+
+        assertNull("The share is dissolved",
+            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
+        assertTrue("The directory is reported as deleted", topBart.getFileInfo("projects").isDeleted());
     }
 
     /** "projects" with a file of its own and a "reports" subdirectory holding one, scanned. */
