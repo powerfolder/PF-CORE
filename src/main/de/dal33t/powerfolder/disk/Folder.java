@@ -162,6 +162,18 @@ public class Folder extends PFComponent {
     private volatile boolean shutdown;
 
     /**
+     * PFC-3536: set while this subfolder is being unshared, from before the restore of its
+     * inheritance until it is gone. Everything written about it in between is deleted moments later
+     * with it, and one of those writes cost the deletion of OTHER subfolders: the restore has the
+     * settings stored, storing them stores the FolderInfo, and for a row this session had already
+     * deleted that store becomes an INSERT which collides with the row at commit
+     * ("duplicate key value violates unique constraint folderinfo_pkey"). One collision marks the
+     * whole transaction rollback-only (PFS-5828), so 26 of 110 dissolved shares kept their database
+     * rows and came back at the next mount.
+     */
+    private volatile boolean beingUnshared;
+
+    /**
      * Indicates, that the scan of the local filesystem was forced
      */
     private boolean scanForced;
@@ -5139,6 +5151,14 @@ public class Folder extends PFComponent {
      * @param aDir
      * @return
      */
+    /**
+  * @return whether this subfolder is on its way out through {@link #unshare} - anything stored about
+  *         it now is deleted with it, and storing it can take other work down with it (PFC-3536)
+  */
+    public boolean isBeingUnshared() {
+        return beingUnshared;
+    }
+
     public boolean isSystemSubDir(Path aDir) {
         return Files.isDirectory(aDir)
             && getSystemSubDir0().equals(aDir);
@@ -6499,6 +6519,8 @@ public class Folder extends PFComponent {
         }
 
         logInfo(this + ": Unsharing subfolder " + subFolder);
+        // Nothing about this folder is worth writing any more - see Folder#beingUnshared.
+        subFolder.beingUnshared = true;
 
         /* PFC-3543: an interrupted subfolder owns its content database. Restore the inheritance first,
          * so its rows move back into this folder while the folder still exists - otherwise everything
