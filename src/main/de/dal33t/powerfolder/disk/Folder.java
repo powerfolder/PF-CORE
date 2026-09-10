@@ -2097,10 +2097,12 @@ public class Folder extends PFComponent {
              * stayed in the folder view - which is what the test system showed for five directories.
              * syncFromDiskIfRequired knows the case and reports the file as deleted. */
             if (diskFile == null) {
+                logWarning(fInfo.toDetailString() + ": Not deleted, this folder has no path for it");
                 return null;
             }
             FileInfo localFile = getFile(fInfo);
             if (localFile == null) {
+                logFine(fInfo.toDetailString() + ": Not deleted, gone from the database in between");
                 return null;
             }
             FileInfo synced = localFile.syncFromDiskIfRequired(this, diskFile, deletingAccount);
@@ -2108,8 +2110,17 @@ public class Folder extends PFComponent {
             if (folderChanged) {
                 logFileOperation("DELETED", localFile, synced);
                 store(getMySelf(), synced);
+                if (isKnown(synced) && !getFile(synced).isDeleted()) {
+                    /* PFC-3536: the store was refused - by the barrier of an interrupted subfolder, or
+                     * by the version guard. Without this line the deletion looked like it had worked
+                     * everywhere it is reported, and the row stayed as it was: four directories on the
+                     * test system that answered "deleted" to every attempt for an afternoon. */
+                    logWarning(synced.toDetailString() + ": Marked as deleted, but the database kept the"
+                        + " old row - the deletion did not take");
+                }
                 return synced;
             }
+            logFine(localFile.toDetailString() + ": Nothing to delete, the row already matches the disk");
         }
 
         return null;
