@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.security.FolderAdminPermission;
 import de.dal33t.powerfolder.security.FolderOwnerPermission;
@@ -40,6 +41,7 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Date;
 
 /**
  * PFC-3536: Deleting a directory that holds a subfolder share.
@@ -274,6 +276,38 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
         topFolder.removeFilesLocal((AccountInfo) null, directory(topFolder, "projects/archive"));
 
         assertTrue("The row is reported as deleted", topFolder.getFileInfo("projects/archive").isDeleted());
+    }
+
+    /**
+     * A row that stayed behind inside an interrupted subfolder can be deleted.
+     * <p>
+     * The barrier keeps foreign content out of this database (PFC-3543). A row that is already in it -
+     * older than the interruption, left where the subtree moved away - was kept in by the same guard:
+     * the deletion marker was built and then dropped, on every attempt, so nobody could delete the
+     * directory. This folder was refused the write and the subfolder does not own the row.
+     */
+    public void testARowLeftBehindInsideAnInterruptedSubFolderCanBeDeleted() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        Path projects = createTree(topFolder);
+        Folder subFolder = subFolderAt(topFolder, "projects/reports", false);
+        assertTrue("Sanity: the subfolder owns its subtree",
+            topFolder.isInInterruptedSubFolder(projects.resolve("reports")));
+
+        // A row of the top folder inside that subtree, as the migration left them behind.
+        FileInfo leftBehind = FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(),
+            "reports/Leftover.txt", null, 12, getContollerBart().getMySelf().getInfo(), null,
+            new Date(), 1, null, false, null);
+        topFolder.getDAO().store(null, leftBehind);
+        assertNotNull("Sanity: the row is in the top folder's database",
+            topFolder.getFileInfo("reports/Leftover.txt"));
+
+        topFolder.removeFilesLocal((AccountInfo) null, topFolder.getFileInfo("reports/Leftover.txt"));
+
+        FileInfo after = topFolder.getFileInfo("reports/Leftover.txt");
+        assertNotNull(after);
+        assertTrue("The row left behind is reported as deleted", after.isDeleted());
+        assertNotNull("Sanity: the subfolder keeps its share",
+            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
     }
 
     /** "projects" with a file of its own and a "reports" subdirectory holding one, scanned. */

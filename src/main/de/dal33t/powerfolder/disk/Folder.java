@@ -2326,6 +2326,14 @@ public class Folder extends PFComponent {
      * old / feature-off peer that still reports the subtree as part of this folder.
      * Returns the input unchanged in the common case (no interrupted subfolders),
      * allocating only when files actually have to be dropped.
+     * <p>
+     * PFC-3536: the deletion of a row this folder ALREADY has passes. The barrier is there so foreign
+     * content never ENTERS this database; a row that is in it does not enter it again, and marking it
+     * deleted is the one write that takes it out. Rows do stay behind - older than the interruption,
+     * left where the subtree moved away - and without this they could not be deleted by anyone: this
+     * folder was refused the write, and the subfolder does not own the row. The marker was built and
+     * dropped on every attempt, 523 times for four directories on the test system, while the folder
+     * view kept offering them and every deletion answered "deleted".
      */
     private Collection<FileInfo> filterInterruptedSubFolderFiles(Collection<FileInfo> fileInfos) {
         if (fileInfos == null || fileInfos.isEmpty()) {
@@ -2336,7 +2344,7 @@ public class Folder extends PFComponent {
         }
         List<FileInfo> kept = null;
         for (FileInfo fInfo : fileInfos) {
-            if (isInInterruptedSubFolder(fInfo)) {
+            if (isInInterruptedSubFolder(fInfo) && !isDeletionOfKnownFile(fInfo)) {
                 if (kept == null) {
                     // First drop: keep everything seen so far, drop this one.
                     kept = new ArrayList<>(fileInfos.size());
@@ -2360,6 +2368,15 @@ public class Folder extends PFComponent {
                 + fileInfos.size() + " - inside interrupted subfolder");
         }
         return kept != null ? kept : fileInfos;
+    }
+
+    /**
+     * @return whether this is the deletion of a file this folder's database already holds - the one
+     *         write that may pass the barrier of an interrupted subfolder, because it removes a row
+     *         instead of adding one (PFC-3536)
+     */
+    private boolean isDeletionOfKnownFile(FileInfo fInfo) {
+        return fInfo.isDeleted() && isKnown(fInfo);
     }
 
     /**
