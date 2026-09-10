@@ -229,6 +229,31 @@ public class SubFolderDeleteTest extends TwoControllerTestCase {
         assertTrue("The directory is reported as deleted", topBart.getFileInfo("projects").isDeleted());
     }
 
+    /**
+     * The subfolder's OWN directory is deleted. A path resolves to the folder that owns it, so the
+     * request lands on the subfolder - which cannot do the job: only the top folder takes a share away,
+     * and until it does, the directory holds the subfolder's .PowerFolder and will not go. That is what
+     * four directories on the test system reported as "Not deleted, content left behind".
+     */
+    public void testDeletingTheSubFoldersOwnDirectoryGoesThroughTheTopFolder() throws IOException {
+        Folder topFolder = getFolderAtBart();
+        Path projects = createTree(topFolder);
+        Folder subFolder = subFolderAt(topFolder, "projects/reports", false);
+        Path reports = projects.resolve("reports");
+        assertTrue("Sanity: the subfolder has a system directory of its own",
+            Files.isDirectory(subFolder.getSystemSubDir()));
+
+        // As the web interface does it: the base directory of the folder the path resolved to.
+        subFolder.removeFilesLocal((AccountInfo) null, subFolder.getBaseDirectoryInfo());
+
+        assertNull("The share is dissolved",
+            getContollerBart().getFolderRepository().findSubFolder(subFolder.getInfo().getLocation()));
+        assertFalse("The directory is gone from disk, .PowerFolder and all", Files.exists(reports));
+        assertTrue("The top folder reports it as deleted",
+            topFolder.getFileInfo("projects/reports").isDeleted());
+        assertTrue("The directory above it is untouched", Files.isDirectory(projects));
+    }
+
     /** "projects" with a file of its own and a "reports" subdirectory holding one, scanned. */
     private Path createTree(Folder topFolder) throws IOException {
         Path projects = Files.createDirectories(topFolder.getPhysicalDir().resolve("projects"));

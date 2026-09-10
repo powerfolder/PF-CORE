@@ -2149,6 +2149,25 @@ public class Folder extends PFComponent {
             return;
         }
         if (dissolveShares) {
+            /* PFC-3536: deleting a subfolder's OWN directory arrives here on the subfolder - a path is
+             * resolved to the folder that owns it (PFS-5510). It cannot do the job: only the top folder
+             * can take a share away, and until it does, the directory holds this folder's .PowerFolder
+             * and will not go ("Not deleted, content left behind", 4 directories on the test system).
+             * So the whole deletion is handed up, in the top folder's coordinates: it dissolves the
+             * share - which hands the rows, the index and the archived versions back - and then deletes
+             * an ordinary directory of its own. */
+            if (isSubFolder() && containsOwnBaseDirectory(fInfos)) {
+                Folder topFolder = getTopFolder();
+                if (topFolder != null && topFolder != this) {
+                    List<FileInfo> inTopCoordinates = new ArrayList<>(fInfos.size());
+                    for (FileInfo fInfo : fInfos) {
+                        inTopCoordinates.add(FileInfoFactory.mapToTopFolder(fInfo));
+                    }
+                    logInfo(this + ": Deleting the directory of this subfolder through " + topFolder);
+                    topFolder.removeFilesLocal(deletingAccount, inTopCoordinates);
+                    return;
+                }
+            }
             /* Before the scan lock: unsharing removes a folder and notifies the repository, and it has
              * to be done before anything is read from the database - the content of an interrupted
              * subfolder only becomes ours again with the restore inside unshare. */
@@ -5252,6 +5271,13 @@ public class Folder extends PFComponent {
             boolean emptied = true;
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(file, path -> Files.isDirectory(path))) {
                 for (Path path : stream) {
+                    /* A folder's own .PowerFolder is not content: the database in use, the search index
+                     * and the archive live in there. It goes with the folder, not with a deletion, and
+                     * the scanner skips it for the same reason (FolderScanner, isSystemSubDir). Left in,
+                     * the deletion tried to archive and delete the running database. */
+                    if (isSystemSubDir(path) || !PathUtils.isScannable(path, this)) {
+                        continue;
+                    }
                     /* PFC-3543: never touch an interrupted subfolder - that subtree is owned by its own
                      * folder/DAO, so this directory cannot be emptied from here. Only the file loop
                      * below used to stop at the barrier, so the deletion descended into the subtree
@@ -5276,6 +5302,9 @@ public class Folder extends PFComponent {
             }
             try (DirectoryStream<Path> stream = Files.newDirectoryStream(file, path -> Files.isRegularFile(path))) {
                 for (Path path : stream) {
+                    if (!PathUtils.isScannable(path, this)) {
+                        continue;
+                    }
                     // PFC-3543: the files of an interrupted subfolder are not ours either.
                     if (isInInterruptedSubFolder(path)) {
                         logFine(path + ": Not deleted, owned by an interrupted subfolder");
@@ -6541,6 +6570,16 @@ public class Folder extends PFComponent {
         // Admin and owner imply read-write, so they pass as well (FolderPermission#implies).
         return getController().getSecurityManager()
             .hasPermission(deletingAccount, FolderPermission.readWrite(subFolder.getInfo()));
+    }
+
+    /** @return whether one of the given files is the base directory of this folder */
+    private boolean containsOwnBaseDirectory(Collection<FileInfo> fInfos) {
+        for (FileInfo fInfo : fInfos) {
+            if (fInfo.isDiretory() && fInfo.getRelativeName().length() == 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
