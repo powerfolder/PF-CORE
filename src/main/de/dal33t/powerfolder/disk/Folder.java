@@ -2430,6 +2430,21 @@ public class Folder extends PFComponent {
             // No change - nothing to migrate.
             return;
         }
+        /* PFC-3536: the scan lock of the TOP folder, before this folder's own. A scan runs on the top
+         * folder and takes that lock for the whole walk, so this is what makes an interruption and a
+         * scan of the same tree mutually exclusive - without it they interleaved: the scan took its
+         * set of expected rows before the split, skipped the directory after it, and reported every
+         * row that had moved as deleted. The order is top first, then this folder, the same order the
+         * dissolving from a scan result already uses (commitScanResult -> unshare). No top folder
+         * present means no scan to exclude - lock nothing then, rather than special-case the body.
+         * <p>
+         * A bulk operation that interrupts thousands of directories does not want to wait for a scan
+         * on every one of them: it puts the folder on the manual sync profile for its duration, which
+         * is what the migration run does (MigrationEngine#runSite, as the file phase already did). */
+        Folder topFolderForScan = getTopFolder();
+        Object scanLockOfTopFolder = topFolderForScan != null && topFolderForScan != this
+            ? topFolderForScan.scanLock : new Object();
+        synchronized (scanLockOfTopFolder) {
         synchronized (scanLock) {
             Folder topFolder = getTopFolder();
             if (topFolder == null) {
@@ -2585,6 +2600,7 @@ public class Folder extends PFComponent {
                     + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
             }
         }
+        } // scanLockOfTopFolder
     }
 
     /**
