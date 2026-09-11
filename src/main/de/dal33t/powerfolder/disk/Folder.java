@@ -2430,6 +2430,21 @@ public class Folder extends PFComponent {
             // No change - nothing to migrate.
             return;
         }
+        /* PFC-3536: the scan lock of the TOP folder, before this folder's own. A scan runs on the top
+         * folder and takes that lock for the whole walk, so this is what makes an interruption and a
+         * scan of the same tree mutually exclusive - without it they interleaved: the scan took its
+         * set of expected rows before the split, skipped the directory after it, and reported every
+         * row that had moved as deleted. The order is top first, then this folder, the same order the
+         * dissolving from a scan result already uses (commitScanResult -> unshare). No top folder
+         * present means no scan to exclude - lock nothing then, rather than special-case the body.
+         * <p>
+         * A bulk operation that interrupts thousands of directories does not want to wait for a scan
+         * on every one of them: it puts the folder on the manual sync profile for its duration, which
+         * is what the migration run does (MigrationEngine#runSite, as the file phase already did). */
+        Folder topFolderForScan = getTopFolder();
+        Object scanLockOfTopFolder = topFolderForScan != null && topFolderForScan != this
+            ? topFolderForScan.scanLock : new Object();
+        synchronized (scanLockOfTopFolder) {
         synchronized (scanLock) {
             Folder topFolder = getTopFolder();
             if (topFolder == null) {
@@ -2585,6 +2600,7 @@ public class Folder extends PFComponent {
                     + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
             }
         }
+        } // scanLockOfTopFolder
     }
 
     /**
@@ -6647,17 +6663,36 @@ public class Folder extends PFComponent {
      * The directories are gone already - a scan found them deleted, or a peer reported them so. Nobody
      * is asking for permission at this point, the deletion has happened; what is left is the share of
      * every subfolder at or below them, which has nothing to hold on to any more.
+     * <p>
+     * PFC-3536: only for a directory that is REALLY gone from disk. A scan of the top folder cannot
+     * tell "deleted" from "belongs to a subfolder now": the moment a directory becomes an interrupted
+     * subfolder its content lives in that subfolder's own database, the top folder's scanner finds
+     * nothing of its own there and reports the directory as deleted, while it stands on disk
+     * untouched. Taken for a deletion, that dissolved the share the migration had created seconds
+     * earlier - 42 of them in six seconds on one workspace, every one of them announced as
+     * "Share dissolved" and immediately followed by the same directory being shared again. The
+     * directory on disk is the one thing the two cases do not have in common.
      */
-    private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
+    void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
         List<FileInfo> deletedDirs = null;
+        int keptDirs = 0;
         for (FileInfo deleted : deletedFiles) {
             if (!deleted.isDeleted() || !deleted.isDiretory()) {
+                continue;
+            }
+            Path dir = getDiskFile(deleted);
+            if (dir != null && Files.exists(dir)) {
+                keptDirs++;
                 continue;
             }
             if (deletedDirs == null) {
                 deletedDirs = new ArrayList<>();
             }
             deletedDirs.add(deleted);
+        }
+        if (keptDirs > 0) {
+            logFine(this + ": Kept the share below " + keptDirs + " directory(s) reported as deleted -"
+                + " they are still on disk, so they were split off, not deleted");
         }
         if (deletedDirs != null) {
             unshareSubFoldersIn(deletedDirs, null);

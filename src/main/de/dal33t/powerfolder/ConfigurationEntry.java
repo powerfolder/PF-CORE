@@ -1027,8 +1027,14 @@ public enum ConfigurationEntry {
 
     /**
      * PFS-5487: Enable OCR (Tesseract) for images and scanned PDFs.
+     * <p>
+     * Off by default: OCR renders and recognises every page, which is the most expensive thing the
+     * indexing does. Measured on the customer's cluster during a migration night, the two indexing
+     * threads spent 6019 seconds of CPU - more than every other thread group of the server together,
+     * while the migration's own workers spent 29. A server that wants searchable scans switches it
+     * on deliberately; nobody should pay for it without asking.
      */
-    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", true),
+    SEARCH_INDEX_OCR_ENABLED("search.index.ocr.enabled", false),
 
     /**
      * OCR language preset or custom locale codes. Presets: "fast" (en+de),
