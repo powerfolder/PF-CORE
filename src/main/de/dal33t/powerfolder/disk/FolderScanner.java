@@ -260,13 +260,33 @@ public class FolderScanner extends PFComponent {
             // Remaining files = deleted! But only if they are not already
             // flagged
             // as deleted or if the could not be scanned
+            /* PFC-3536: the barrier is asked AGAIN here, not only when remaining was filled. A
+             * subtree can be split off into a subfolder of its own while this scan is walking - a
+             * migration run does it thousands of times - and then its rows were taken into remaining
+             * before the barrier existed, while the crawl skipped the directory because by then it
+             * did. Those rows are not deleted, they moved: their content stands on disk and belongs
+             * to that subfolder's database now. Marked deleted, they were refused a store by the same
+             * barrier ("Skipped store of 36 file(s) of 36") and had the share of the subfolder that
+             * had just been created dissolved underneath them. */
+            boolean anyInterruptedNow = !getController().getFolderRepository()
+                .getInterruptedSubFolders().isEmpty();
+            int movedOut = 0;
             for (Iterator<FileInfo> it = remaining.values().iterator(); it.hasNext();) {
                 FileInfo fInfo = it.next();
                 if (fInfo.isDeleted()) {
                     // This file was already flagged as deleted,
                     // = not a freshly deleted file
                     it.remove();
+                } else if (anyInterruptedNow
+                    && currentScanningFolder.isInInterruptedSubFolder(fInfo))
+                {
+                    it.remove();
+                    movedOut++;
                 }
+            }
+            if (movedOut > 0) {
+                logInfo(currentScanningFolder + ": " + movedOut + " item(s) moved into an interrupted"
+                    + " subfolder while this scan was running - not deleted");
             }
 
             // Build scanresult

@@ -6647,17 +6647,36 @@ public class Folder extends PFComponent {
      * The directories are gone already - a scan found them deleted, or a peer reported them so. Nobody
      * is asking for permission at this point, the deletion has happened; what is left is the share of
      * every subfolder at or below them, which has nothing to hold on to any more.
+     * <p>
+     * PFC-3536: only for a directory that is REALLY gone from disk. A scan of the top folder cannot
+     * tell "deleted" from "belongs to a subfolder now": the moment a directory becomes an interrupted
+     * subfolder its content lives in that subfolder's own database, the top folder's scanner finds
+     * nothing of its own there and reports the directory as deleted, while it stands on disk
+     * untouched. Taken for a deletion, that dissolved the share the migration had created seconds
+     * earlier - 42 of them in six seconds on one workspace, every one of them announced as
+     * "Share dissolved" and immediately followed by the same directory being shared again. The
+     * directory on disk is the one thing the two cases do not have in common.
      */
-    private void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
+    void unshareDeletedSubFolders(Collection<FileInfo> deletedFiles) {
         List<FileInfo> deletedDirs = null;
+        int keptDirs = 0;
         for (FileInfo deleted : deletedFiles) {
             if (!deleted.isDeleted() || !deleted.isDiretory()) {
+                continue;
+            }
+            Path dir = getDiskFile(deleted);
+            if (dir != null && Files.exists(dir)) {
+                keptDirs++;
                 continue;
             }
             if (deletedDirs == null) {
                 deletedDirs = new ArrayList<>();
             }
             deletedDirs.add(deleted);
+        }
+        if (keptDirs > 0) {
+            logFine(this + ": Kept the share below " + keptDirs + " directory(s) reported as deleted -"
+                + " they are still on disk, so they were split off, not deleted");
         }
         if (deletedDirs != null) {
             unshareSubFoldersIn(deletedDirs, null);
