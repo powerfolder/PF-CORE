@@ -193,12 +193,12 @@ public class FileInfoComparator implements
         } else if (o1.isFile() && o2.isDiretory()) {
             return 1;
         }
+        // Natural order: "2. Sitzung" belongs before "10. Sitzung", which is where a reader looks
+        // for it. Answers 0 for the same names a case-insensitive compare does.
         if (fullName) {
-            return o1.getRelativeName().compareToIgnoreCase(
-                o2.getRelativeName());
+            return NaturalOrder.compareIgnoreCase(o1.getRelativeName(), o2.getRelativeName());
         } else {
-            return o1.getFilenameOnly().compareToIgnoreCase(
-                o2.getFilenameOnly());
+            return NaturalOrder.compareIgnoreCase(o1.getFilenameOnly(), o2.getFilenameOnly());
         }
     }
 
