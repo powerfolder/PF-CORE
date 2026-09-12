@@ -256,6 +256,21 @@ public interface FolderService {
      */
     List<FileInfo> searchFilesOnLocalServer(AccountInfo forAccount, FileInfoCriteria criteria, int maxResults);
 
+    /**
+     * PFS-5851: the values THIS server can suggest for a search operator, counted by how many files
+     * carry them - the tags it knows, the extensions, the names of those who wrote the files. Every
+     * node answers for the folders it hosts, and the node that was asked adds the counts up.
+     *
+     * @param forAccount the account the suggestions are for - a call between nodes carries no
+     *                   session of its own
+     * @param field      the index field the operator suggests from, e.g. the exact tags
+     * @param prefix     what the user has typed of the value so far
+     * @param enough     stop visiting folders once this many distinct values are known
+     *
+     * @return value to number of files carrying it, among the folders this server hosts
+     */
+    Map<String, Integer> suggestValuesOnLocalServer(AccountInfo forAccount, String field, String prefix, int enough);
+
     // Server archive calls ***************************************************
 
     /**
