@@ -142,6 +142,22 @@ public class FileInfoTest extends TestCase {
         }
     }
 
+    /**
+     * PFS-5850: the counterpart of {@link FileInfo#getFilenameOnly()} - everything before the last
+     * separator, blank at the top level of a folder. Relative names are always separated by {@code /},
+     * whatever the platform, so this is string arithmetic and not path arithmetic.
+     */
+    public void testParentOfRelativeName() {
+        assertEquals("directory/subdirectory",
+            FileInfo.parentOfRelativeName("directory/subdirectory/myFile.txt"));
+        assertEquals("directory", FileInfo.parentOfRelativeName("directory/myFile.txt"));
+        assertEquals("At the top level there is no parent", "",
+            FileInfo.parentOfRelativeName("myFile.txt"));
+        assertEquals("", FileInfo.parentOfRelativeName(""));
+        assertEquals("A trailing separator leaves the whole name as the parent", "directory",
+            FileInfo.parentOfRelativeName("directory/"));
+    }
+
     private void testAssertEquals(FileInfo fInfo, FileInfo copy) {
         // Test
         assertEquals(fInfo, copy);

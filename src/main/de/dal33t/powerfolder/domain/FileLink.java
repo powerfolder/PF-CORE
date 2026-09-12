@@ -33,6 +33,8 @@ import org.hibernate.annotations.Index;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import de.dal33t.powerfolder.util.Reject;
+
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.Date;
@@ -134,6 +136,22 @@ public class FileLink implements Serializable {
 
     public FolderInfo getFolderInfo() {
         return folderInfo;
+    }
+
+    /**
+     * PFS-5850: Points this link at the same content in its new place - the file moved with the
+     * subfolder that holds it, and a link names its file by folder id plus relative name.
+     * <p>
+     * The link itself stays what it was: same id, same password, same expiry, same download count. Its
+     * URL carries the id and the file NAME, and a move does not rename the file, so every link already
+     * handed out keeps working. Without this the link survives the move as a row that points at a path
+     * nobody has any more - it answers "not found" and looks like data loss to whoever received it.
+     *
+     * @param newRelativeName where the file sits now, in the coordinates of this link's folder
+     */
+    public void moveTo(String newRelativeName) {
+        Reject.ifBlank(newRelativeName, "RelativeName");
+        this.relativeName = newRelativeName;
     }
 
     public String getRelativeName() {

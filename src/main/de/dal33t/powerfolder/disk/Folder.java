@@ -936,6 +936,12 @@ public class Folder extends PFComponent {
         if (isDeviceDisconnected() || currentInfo.isMetaFolder()) {
             return false;
         }
+        /* PFS-5850: a move is in flight - the data has left its old place on purpose, and deriving the
+         * parent from the filesystem now would answer with the place the folder is leaving. */
+        if (getController().getFolderRepository().isMoving(currentInfo)) {
+            logInfo(this + ": Not correcting the hierarchy while it is being moved");
+            return false;
+        }
 
         Folder foundTopFolder = null;
         Path path = getLocalBase().getParent();
@@ -2019,6 +2025,116 @@ public class Folder extends PFComponent {
         return hasFile(fi);
     }
 
+    /**
+     * PFS-5528 / AK-8: Copies a directory of this folder and reproduces the INTERRUPTED subfolders
+     * inside it - each one becomes a subfolder of its own at the target, interrupted like its template,
+     * so the copy is decoupled from the inheritance of its new parent just as the specification
+     * requires. A subfolder that still INHERITS is deliberately not reproduced: its copy is an ordinary
+     * directory and inherits from where it now sits (subfolder-sharing spec, section 3).
+     * <p>
+     * The caller decides whether the content behind a barrier may travel at all - it is readable only
+     * for whoever holds that subfolder, and this method does not check permissions. The permissions of
+     * the new subfolders are the caller's job as well; here they are created, not granted.
+     *
+     * @param sourceLocation the directory to copy, in this folder's coordinates - a location, not a
+     *                       row: an interrupted subfolder has no row in the folder around it (PFC-3575)
+     * @param targetLocation where to copy it to, in the same coordinates, must not exist
+     * @return the subfolders created at the target, keyed by the template each of them was copied from;
+     *         empty when the source held no interrupted one, {@code null} when the copy itself failed
+     */
+    public Map<FolderInfo, Folder> copyTree(String sourceLocation, String targetLocation) {
+        Reject.ifBlank(sourceLocation, "sourceLocation");
+        Reject.ifBlank(targetLocation, "targetLocation");
+        Reject.ifTrue(isSubFolder(), this + ": Copying subfolders along is done from the top folder");
+
+        Path sourcePath = getLocalBase().resolve(sourceLocation);
+        Path destination = getLocalBase().resolve(targetLocation);
+        if (Files.notExists(sourcePath)) {
+            logWarning(this + ": Unable to copy " + sourceLocation + " - not on disk");
+            return null;
+        }
+        // The barriers inside the source, deepest last: a nested one is shared after the one above it,
+        // or its directory is not a row of anything yet.
+        List<FolderInfo> barriers = interruptedSubFoldersIn(sourceLocation);
+        try {
+            watcher.addIgnoreFile(FileInfoFactory.lookupInstance(this, destination));
+            // Only the system directories are left out - the content behind a barrier is what the copy
+            // is about here.
+            PathUtils.recursiveCopyVisitor(sourcePath, destination, path -> path.getFileName() != null
+                    && Constants.POWERFOLDER_SYSTEM_SUBDIR.equals(path.getFileName().toString()));
+        } catch (IOException e) {
+            logWarning(this + ": Unable to copy " + sourceLocation + " to " + destination + ". " + e);
+            return null;
+        } finally {
+            watcher.removeIgnoreFile(FileInfoFactory.lookupInstance(this, destination));
+        }
+        /* The copy is on disk but in no database yet. Scanning it in is part of the copy: the rows are
+         * what the folder listing, the quota and every later operation work on - and the directories
+         * have to be rows of this folder before any of them can be shared below. */
+        scanLocalFiles();
+        if (barriers.isEmpty()) {
+            logInfo(this + ": Copied " + sourceLocation + " to " + targetLocation);
+            return Collections.emptyMap();
+        }
+
+        Map<FolderInfo, Folder> created = new LinkedHashMap<>();
+        for (FolderInfo barrier : barriers) {
+            String copiedLocation = targetLocation + barrier.locationPath().substring(sourceLocation.length());
+            FileInfo copiedRow = getFile(FileInfoFactory.lookupDirectory(currentInfo, copiedLocation));
+            if (!(copiedRow instanceof DirectoryInfo)) {
+                logWarning(this + ": Copied " + copiedLocation + " is not a directory of this folder - "
+                    + "the copy of " + barrier + " stays an ordinary directory");
+                continue;
+            }
+            Folder copy = share((DirectoryInfo) copiedRow);
+            if (copy == null) {
+                continue;
+            }
+            copy.setInheritsPermissions(false);
+            created.put(barrier, copy);
+            logFine(this + ": " + barrier.locationPath() + " was copied to " + copiedLocation
+                + " - the copy carries the interruption as " + copy.getInfo());
+        }
+        logInfo(this + ": Copied " + sourceLocation + " to " + targetLocation + " - " + created.size()
+            + " of " + barriers.size() + " interrupted subfolder(s) reproduced at the copy");
+        return created;
+    }
+
+    /**
+     * The interrupted subfolders at or below {@code location}, outermost first - the barriers a copy of
+     * that directory has to reproduce, and the ones a caller has to be allowed to read.
+     */
+    public List<FolderInfo> interruptedSubFoldersIn(String location) {
+        List<FolderInfo> inside = new ArrayList<>();
+        FolderInfo top = currentInfo.isSubFolder() ? currentInfo.getTopFolder() : currentInfo;
+        for (FolderInfo barrier : InterruptedSubFolderIndex.barriersOf(top)) {
+            String barrierLocation = barrier.locationPath();
+            if (barrierLocation != null
+                && (barrierLocation.equals(location) || barrierLocation.startsWith(location + '/')))
+            {
+                inside.add(barrier);
+            }
+        }
+        inside.sort(Comparator.comparingInt(info -> info.locationPath().length()));
+        return inside;
+    }
+
+    /**
+     * PFS-5528: The directories a copy inside this folder must leave behind.
+     * <p>
+     * Two kinds, and neither is the user's content: the system directory of a folder - copying it
+     * produces a second folder database inside a directory that is not a folder - and the subtree of a
+     * subfolder whose permission inheritance is interrupted. The latter is a permission boundary: its
+     * content is owned by that subfolder and readable only for whoever holds it, so a copy of the
+     * directory around it must not carry it along. Copying such a subfolder AS a subfolder is a
+     * different operation and goes through {@link #copyWithSubFolders}.
+     */
+    private Filter<Path> notUserContent() {
+        return path -> path.getFileName() != null
+            && (Constants.POWERFOLDER_SYSTEM_SUBDIR.equals(path.getFileName().toString())
+                || isInInterruptedSubFolder(path));
+    }
+
     public boolean copy(FileInfo sourceFile, Path destinationFilePath) {
         Reject.ifNull(sourceFile, "sourceFile");
         Reject.ifNull(destinationFilePath, "destinationFilePath");
@@ -2038,7 +2154,7 @@ public class Folder extends PFComponent {
 
         try {
             watcher.addIgnoreFile(destinationFile);
-            PathUtils.recursiveCopyVisitor(sourceFilePath, destinationFilePath);
+            PathUtils.recursiveCopyVisitor(sourceFilePath, destinationFilePath, notUserContent());
             return true;
         } catch (IOException e) {
             logWarning(this + ": Unable to copy " + sourceFile +
@@ -2400,6 +2516,218 @@ public class Folder extends PFComponent {
      */
     private boolean isDeletionOfKnownFile(FileInfo fInfo) {
         return fInfo.isDeleted() && isKnown(fInfo);
+    }
+
+    /**
+     * PFS-5850: Moves this shared subfolder to another place inside its top folder - another parent
+     * directory, another name, or both. Renaming is the same operation with the parent unchanged.
+     * <p>
+     * A subfolder IS its location: the local base, the barrier the scanner honours, the row prefix of
+     * its DAO proxy and the path its archived versions sit under are all derived from
+     * {@link FolderInfo#locationPath()}. Moving the directory alone - which is all the web did until
+     * now - therefore left the folder naming a place that no longer exists, and the base dir derived
+     * on the next mount was an empty directory beside the real data. The identity does not change, so
+     * permissions, settings, invitations and links survive by construction.
+     * <p>
+     * Order matters and is not negotiable: the identity is written BEFORE the directory moves.
+     * {@link #updateInfo} writes {@code .PowerFolder/FolderInfo} into the system directory of the
+     * folder as it stands now, so the file travels with the data. The other way round - data at the
+     * new place, identity naming the old one - is the unrecoverable case: the next mount derives the
+     * old base, {@code createFolder} creates that directory empty, and the folder comes up detached
+     * from its content while the barrier guards nothing.
+     *
+     * @param newLocation the new location in TOP-folder coordinates, e.g. {@code projects/2026} - the
+     *                    last segment is the folder's new name, which is what makes a rename this same
+     *                    call with the leading part unchanged
+     * @return the remounted folder - a new instance, the local base is set in the constructor -
+     *         or {@code null} when the move was refused; nothing has changed then
+     */
+    public Folder move(String newLocation) {
+        Reject.ifFalse(isSubFolder(), this + ": Only a subfolder can be moved");
+        Reject.ifBlank(newLocation, "Location");
+
+        Folder topFolder = getTopFolder();
+        if (topFolder == null) {
+            logWarning(this + ": Unable to move without its top folder present");
+            return null;
+        }
+        String oldLocation = currentInfo.locationPath();
+        if (newLocation.equals(oldLocation)) {
+            return this;
+        }
+        // A folder cannot land inside itself - changeParent would happily build it, and the base dir
+        // derived from the result cannot be resolved any more.
+        if (newLocation.startsWith(oldLocation + '/')) {
+            logWarning(this + ": Refusing to move into its own subtree: " + newLocation);
+            return null;
+        }
+        Path newBase = topFolder.getLocalBase().resolve(newLocation);
+        if (Files.exists(newBase)) {
+            logWarning(this + ": Refusing to move onto an existing directory " + newBase);
+            return null;
+        }
+
+        /* PFC-3536: the scan lock of the top folder first, then this folder's own - the same order the
+         * interruption uses. A scan of the top folder that commits while the directory is in flight
+         * sees it as deleted and dissolves the share (unshareDeletedSubFolders), which takes the
+         * permissions with it. */
+        synchronized (topFolder.scanLock) {
+        synchronized (scanLock) {
+            FolderInfo newInfo = atLocation(topFolder, currentInfo, newLocation);
+
+            // The subfolders below travel with this one: their location is stored in TOP-folder
+            // coordinates, so re-pointing only this folder leaves every nested one naming a path that
+            // is gone. Collected before anything changes, rewritten outermost first.
+            Map<Folder, FolderInfo> nested = movedNested(topFolder, oldLocation, newLocation);
+            /* From here the data and the registration disagree until the folder is mounted again, and
+             * the two self-healers must keep their hands off it - the scan lock alone does not cover
+             * correctTopAndSubfolderRelation, which runs in the constructor of the instance this very
+             * move creates. Released in the finally below, on every path out. */
+            FolderRepository repository = getController().getFolderRepository();
+            repository.setMoving(currentInfo, true);
+            for (Folder child : nested.keySet()) {
+                repository.setMoving(child.getInfo(), true);
+            }
+            try {
+                // Keep what they looked like - the rollback below must name the old place, not re-apply
+                // the new one.
+                Map<Folder, FolderInfo> nestedBefore = new LinkedHashMap<>();
+                for (Folder child : nested.keySet()) {
+                    nestedBefore.put(child, child.getInfo());
+                }
+
+                // The rows of an inheriting subfolder live in the database of whoever owns its place, under
+                // the old path. They are re-addressed here, with their OIDs and versions - a rescan would
+                // hand out new ones and every link into the subtree would die with the old rows.
+                Collection<FileInfo> movedRows = moveRowsOf(topFolder, oldLocation, newLocation);
+
+                updateInfo(newInfo);
+                for (Map.Entry<Folder, FolderInfo> entry : nested.entrySet()) {
+                    entry.getKey().updateInfo(entry.getValue());
+                }
+
+                Folder moved = repository.moveLocalFolder(this, newBase, true);
+                if (moved == null) {
+                    // Nothing moved: put the identity back, one version further so peers accept it.
+                    logSevere(this + ": Move to " + newBase + " failed, restoring " + oldLocation);
+                    restoreLocation(topFolder, oldLocation, nestedBefore);
+                    return null;
+                }
+                logInfo(moved + ": Moved from " + oldLocation + " to " + newLocation + " - "
+                    + movedRows.size() + " rows re-addressed, " + nested.size() + " nested subfolder(s)");
+                return moved;
+            } finally {
+                repository.setMoving(currentInfo, false);
+                for (Folder child : nested.keySet()) {
+                    repository.setMoving(child.getInfo(), false);
+                }
+            }
+        }
+        }
+    }
+
+    /**
+     * The mounted subfolders below this one, with the {@link FolderInfo} each of them needs at the new
+     * place. Their location is rewritten by prefix - the part below this folder does not change.
+     */
+    private Map<Folder, FolderInfo> movedNested(Folder topFolder, String oldLocation, String newLocation) {
+        Map<Folder, FolderInfo> nested = new LinkedHashMap<>();
+        for (Folder candidate : getController().getFolderRepository().getFolders(true)) {
+            FolderInfo info = candidate.getInfo();
+            if (candidate == this || !info.isSubFolder()
+                || !topFolder.getInfo().equals(info.getTopFolder()))
+            {
+                continue;
+            }
+            String location = info.locationPath();
+            if (location == null || !location.startsWith(oldLocation + '/')) {
+                continue;
+            }
+            String moved = newLocation + location.substring(oldLocation.length());
+            nested.put(candidate, atLocation(topFolder, info, moved));
+        }
+        return nested;
+    }
+
+    /**
+     * Re-addresses the rows of this subfolder's subtree in the database that owns them, keeping their
+     * identity: same OID, same content, one version further. An interrupted subfolder owns its rows in
+     * its own coordinates - they are location-independent and nothing is done here.
+     *
+     * @return the rows written at the new location, empty when there was nothing to re-address
+     */
+    private Collection<FileInfo> moveRowsOf(Folder topFolder, String oldLocation, String newLocation) {
+        if (!currentInfo.inheritsPermissions()) {
+            return Collections.emptyList();
+        }
+        Folder owner = ownerOfLocation(topFolder, oldLocation);
+        Collection<FileInfo> rows = collectLocalRows(owner, true);
+        if (rows.isEmpty()) {
+            return rows;
+        }
+        List<FileInfo> movedRows = new ArrayList<>(rows.size());
+        List<FileInfo> removed = new ArrayList<>(rows.size());
+        for (FileInfo row : rows) {
+            String name = newLocation + row.getRelativeName().substring(oldLocation.length());
+            movedRows.add(FileInfoFactory.unmarshallExistingFile(topFolder.getInfo(), name, row.getOID(),
+                row.getSize(), row.getModifiedBy(), row.getModifiedByAccount(), row.getModifiedDate(),
+                row.getVersion() + 1, row.getHashes(), row.isDiretory(), row.getTags()));
+            removed.add(row);
+        }
+        Folder newOwner = ownerOfLocation(topFolder, newLocation);
+        newOwner.getDAO().store(null, inCoordinatesOf(newOwner, topFolder, movedRows));
+        for (FileInfo row : inCoordinatesOf(owner, topFolder, removed)) {
+            owner.getDAO().delete(null, row);
+        }
+        owner.setDBDirty();
+        newOwner.setDBDirty();
+        return movedRows;
+    }
+
+    /**
+     * The folder whose database holds the rows of {@code location} - the top folder, or the innermost
+     * interrupted subfolder standing above it (PFS-5767).
+     */
+    private Folder ownerOfLocation(Folder topFolder, String location) {
+        FolderInfo enclosing = FolderInfo.findEnclosingInterruptedSubFolder(topFolder.getInfo(),
+            location);
+        if (enclosing == null || enclosing.equals(currentInfo)) {
+            return topFolder;
+        }
+        Folder enclosingFolder = getController().getFolderRepository().getFolder(enclosing);
+        return enclosingFolder != null ? enclosingFolder : topFolder;
+    }
+
+    /** Maps rows given in top-folder coordinates into the coordinates of the folder that stores them. */
+    private List<FileInfo> inCoordinatesOf(Folder owner, Folder topFolder, List<FileInfo> topRows) {
+        if (owner == topFolder) {
+            return topRows;
+        }
+        List<FileInfo> mapped = new ArrayList<>(topRows.size());
+        for (FileInfo row : topRows) {
+            mapped.add(FileInfoFactory.mapToSubFolder(row, owner.getInfo()));
+        }
+        return mapped;
+    }
+
+    /**
+     * Puts the identity back after a refused move. The old location is applied as a NEW version -
+     * never the old instance: a lower version is dropped by the DAOs and ignored by peers.
+     */
+    private void restoreLocation(Folder topFolder, String oldLocation, Map<Folder, FolderInfo> nestedBefore) {
+        updateInfo(atLocation(topFolder, currentInfo, oldLocation));
+        for (Map.Entry<Folder, FolderInfo> entry : nestedBefore.entrySet()) {
+            Folder child = entry.getKey();
+            child.updateInfo(atLocation(topFolder, child.getInfo(), entry.getValue().locationPath()));
+        }
+    }
+
+    /** The given folder info re-pointed at {@code location}, as a new version. */
+    private static FolderInfo atLocation(Folder topFolder, FolderInfo info, String location) {
+        String parentPath = FileInfo.parentOfRelativeName(location);
+        DirectoryInfo parent = FileInfoFactory.lookupDirectory(topFolder.getInfo(), parentPath);
+        String name = parentPath.isEmpty() ? location : location.substring(parentPath.length() + 1);
+        return FolderInfoFactory.move(info, parent, name);
     }
 
     /**
@@ -6612,6 +6940,12 @@ public class Folder extends PFComponent {
         for (DirectoryInfo location : locations) {
             Folder subFolder = subFolders.get(location);
             if (subFolder == this || !subFolder.isSubFolder()) {
+                continue;
+            }
+            /* PFS-5850: its directory is gone from the old place because it is being moved, not because
+             * anybody deleted it. Dissolving the share here would take its permissions with it. */
+            if (getController().getFolderRepository().isMoving(subFolder.getInfo())) {
+                logInfo(subFolder + ": Share kept - it is being moved, not deleted");
                 continue;
             }
             for (FileInfo fInfo : fInfos) {

@@ -98,6 +98,12 @@ public class FolderRepository extends PFComponent implements Runnable {
      * {@link SimpleCache} cannot hold as null.
      */
     private final SimpleCache<Path, Optional<Folder>> existingFolderCache = new SimpleCache<>(60, TimeUnit.SECONDS);
+    /**
+     * PFS-5850: the folders being moved right now, by id - see {@link #isMoving(FolderInfo)}. Keyed
+     * by id and not by Folder, because a move unmounts the folder and mounts a new instance at the new
+     * place: the object changes, the identity does not.
+     */
+    private final Set<String> movingFolderIds = ConcurrentHashMap.newKeySet();
 
     // PFC-3543: index of the currently interrupted subfolders. This repository is
     // the authority for structural changes and refreshes it on folder add/remove/
@@ -1450,6 +1456,35 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
         return null;
+    }
+
+    /**
+     * PFS-5850: Whether this folder is being moved at this moment.
+     * <p>
+     * A move unmounts the folder, moves its directory and mounts it again at the new place. In that
+     * window the folder's data and its registration disagree on purpose, and two self-healers would
+     * "repair" exactly that: {@link Folder#correctTopAndSubfolderRelation()} derives the parent from
+     * the filesystem - it runs in the CONSTRUCTOR, so it fires on the very instance the move creates -
+     * and the scan of the folder above sees the old directory gone and dissolves the share. Both ask
+     * here first and leave the move alone.
+     *
+     * @param folderInfo the folder to ask about, may be {@code null}
+     * @return {@code true} while a move of that folder is in flight
+     */
+    public boolean isMoving(FolderInfo folderInfo) {
+        return folderInfo != null && movingFolderIds.contains(folderInfo.getId());
+    }
+
+    /** Marks a folder as being moved, or lets it go again. Both halves belong in a try/finally. */
+    void setMoving(FolderInfo folderInfo, boolean moving) {
+        if (folderInfo == null) {
+            return;
+        }
+        if (moving) {
+            movingFolderIds.add(folderInfo.getId());
+        } else {
+            movingFolderIds.remove(folderInfo.getId());
+        }
     }
 
     public Folder findSubFolder(DirectoryInfo directoryInfo) {

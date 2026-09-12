@@ -123,6 +123,36 @@ public interface FolderService {
     boolean renameFolder(FolderInfo foInfo, String newName);
 
     /**
+     * PFS-5850: Moves a shared subfolder to another place inside its top folder - another parent
+     * directory, another name, or both. Renaming is this call with the parent unchanged.
+     * <p>
+     * A subfolder IS its location, so moving the directory alone leaves it naming a place that no
+     * longer exists. The identity does not change, which is why the explicit permissions, the settings
+     * and the invitations survive; permissions inherited from above are re-evaluated from the new
+     * place, and a subfolder with interrupted inheritance keeps its interruption.
+     *
+     * @param subFolderInfo the subfolder to move
+     * @param newLocation   the new location in TOP-folder coordinates, e.g. {@code projects/2026} - its
+     *                      last segment is the subfolder's new name
+     * @return {@code true} when the subfolder was moved, {@code false} when it was refused
+     */
+    boolean moveSubFolder(FolderInfo subFolderInfo, String newLocation);
+
+    /**
+     * PFS-5528 / AK-8: Copies a directory of a folder and reproduces the subfolders with INTERRUPTED
+     * inheritance inside it: each copy is a subfolder of its own, interrupted like its template and
+     * holding the template's explicit permissions, so it is decoupled from the inheritance of its new
+     * parent. A subfolder that still inherits is deliberately not reproduced - its copy is an ordinary
+     * directory and inherits from where it now sits.
+     *
+     * @param topFolderInfo  the folder both locations belong to
+     * @param sourceLocation the directory to copy, relative to the folder
+     * @param targetLocation where to copy it to, relative to the same folder, must not exist
+     * @return {@code true} when the copy was made, {@code false} when it was refused
+     */
+    boolean copyTree(FolderInfo topFolderInfo, String sourceLocation, String targetLocation);
+
+    /**
      * Invites a user to a folder. The invited user gains read/write
      * permissions.
      *

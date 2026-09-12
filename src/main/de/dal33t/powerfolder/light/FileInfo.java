@@ -1212,6 +1212,21 @@ public class FileInfo implements Serializable, DiskItem, Cloneable, D2DObject {
      * @param newFileName
      * @return
      */
+    /**
+     * The directory a relative name sits in, blank when it sits at the top level of its folder.
+     * <p>
+     * Example: {@code parentOfRelativeName("directory/subdirectory/myFile.txt")} ==>
+     * {@code "directory/subdirectory"}. The counterpart of {@link #getFilenameOnly()}, which answers
+     * the other half. NOTE: this is static, so it does not affect a FileInfo.
+     *
+     * @param relativeName a name relative to a folder, separated by {@code /}
+     * @return the part before the last separator, blank when there is none
+     */
+    public static String parentOfRelativeName(String relativeName) {
+        int cut = relativeName.lastIndexOf('/');
+        return cut < 0 ? "" : relativeName.substring(0, cut);
+    }
+
     public static String renameRelativeFileName(String relativeName,
                                                 String newFileName) {
         if (newFileName.contains(UNIX_SEPARATOR)) {
