@@ -567,24 +567,24 @@ public class Folder extends PFComponent {
      */
     private List<FileInfo> searchIndexOfTopFolder(LuceneIndexManager topIndex, FileInfoCriteria criteria) {
         String subFolderPath = currentInfo.getLocation().getRelativeName();
-        String originalPath = criteria.getPath();
-        criteria.mapToSubFolderPath(subFolderPath);
-        try {
-            List<FileInfo> hits = topIndex.searchFiles(criteria);
-            List<FileInfo> mapped = new ArrayList<>(hits.size());
-            for (FileInfo hit : hits) {
-                if (!hit.isInSubFolder(subFolderPath)) {
-                    continue;
-                }
-                FileInfo subHit = FileInfoFactory.mapToSubFolder(hit, currentInfo);
-                if (subHit != null) {
-                    mapped.add(subHit);
-                }
+        /* PFS-5851: asked of the top folder's index, the question is about this subfolder's path -
+         * on a copy. It used to bend the caller's criteria and put the path back afterwards, and the
+         * folders of one search run side by side: two inheriting subfolders would then set and
+         * restore the path of the same object, each seeing the other's. */
+        FileInfoCriteria inTopFolder = new FileInfoCriteria(criteria);
+        inTopFolder.mapToSubFolderPath(subFolderPath);
+        List<FileInfo> hits = topIndex.searchFiles(inTopFolder);
+        List<FileInfo> mapped = new ArrayList<>(hits.size());
+        for (FileInfo hit : hits) {
+            if (!hit.isInSubFolder(subFolderPath)) {
+                continue;
             }
-            return mapped;
-        } finally {
-            criteria.setPath(originalPath);
+            FileInfo subHit = FileInfoFactory.mapToSubFolder(hit, currentInfo);
+            if (subHit != null) {
+                mapped.add(subHit);
+            }
         }
+        return mapped;
     }
 
     /**

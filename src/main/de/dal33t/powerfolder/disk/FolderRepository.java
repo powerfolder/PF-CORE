@@ -1110,13 +1110,19 @@ public class FolderRepository extends PFComponent implements Runnable {
 
         long started = System.currentTimeMillis();
 
+        /* PFS-5851: the domain of every folder searched goes into criteria of ours, so the ones the
+         * caller passed are left alone - a cluster search hands that very object to the other nodes
+         * while this one runs. One copy does: the domain added is always this node, and nothing
+         * else writes into them any more (see Folder.searchIndexOfTopFolder). */
+        FileInfoCriteria searched = new FileInfoCriteria(criteria);
+
         List<FileInfo> results = new ArrayList<>();
         List<Future<List<FileInfo>>> futures = new ArrayList<>(folders.size());
         for (Folder folder : folders) {
             if (folder == null) {
                 continue;
             }
-            criteria.addMySelf(folder);
+            searched.addMySelf(folder);
             try {
                 limiter.acquire();
             } catch (InterruptedException e) {
@@ -1125,7 +1131,7 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
             FutureTask<List<FileInfo>> task = new FutureTask<>(() -> {
                 try {
-                    return folder.searchFiles(criteria);
+                    return folder.searchFiles(searched);
                 } catch (RuntimeException e) {
                     logWarning("Unable to search folder " + folder + ": " + e, e);
                     return Collections.<FileInfo>emptyList();

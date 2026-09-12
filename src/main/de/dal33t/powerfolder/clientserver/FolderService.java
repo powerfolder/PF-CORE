@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.clientserver;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.domain.FileLink;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
@@ -237,6 +239,22 @@ public interface FolderService {
      * @return the list of servers the folders are hosted on.
      */
     Collection<MemberInfo> getHostingServers(FolderInfo... foInfos);
+
+    /**
+     * PFS-5851: the hits of a file search among the folders THIS server hosts, for the given account.
+     * A cluster spreads its folders over the nodes, so a search has to ask every node that hosts one
+     * the account may read; the node that was asked merges the answers and puts them in order.
+     *
+     * @param forAccount the account the search is for - a call between nodes carries no session of
+     *                   its own, so the asking node names the account it searches for
+     * @param criteria   the criteria the asking node parsed from the query. Their domains are set
+     *                   anew here: they name the members of the folder being searched, which is a
+     *                   property of the answering node
+     * @param maxResults the most hits to answer with, so one answer stays within the message size
+     *
+     * @return the hits among the folders this server hosts, in no particular order
+     */
+    List<FileInfo> searchFilesOnLocalServer(AccountInfo forAccount, FileInfoCriteria criteria, int maxResults);
 
     // Server archive calls ***************************************************
 

@@ -29,6 +29,8 @@ import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StringUtils;
 
+import java.io.Serializable;
+
 import java.util.*;
 
 import static de.dal33t.powerfolder.util.StringUtils.isBlank;
@@ -39,7 +41,13 @@ import static de.dal33t.powerfolder.util.StringUtils.isBlank;
  *
  * @author sprajc
  */
-public class FileInfoCriteria {
+public class FileInfoCriteria implements Serializable {
+
+    /* PFS-5851: a search of a cluster travels to the nodes that host the folders, and the criteria go
+     * along instead of being parsed again there - both nodes ask exactly the same question that way.
+     * Every field is a string, a number, a date, an enum or a collection of those. */
+    private static final long serialVersionUID = 100L;
+
     private List<String> domains = new LinkedList<>();
     private String path;
     private boolean recursive;
@@ -61,6 +69,43 @@ public class FileInfoCriteria {
     private SortField sortField;
     private boolean sortDescending;
     private final Set<String> tags = new LinkedHashSet<>();
+
+    public FileInfoCriteria() {
+    }
+
+    /**
+     * PFS-5851: the same question, on an object of its own. A search writes into its criteria - it
+     * adds the domain of the folder it walks, and an inheriting subfolder bends the path to its own
+     * for the length of the query - so two searches must never share one instance. Whoever searches
+     * several folders, here or on another node of a cluster, hands each of them a copy.
+     *
+     * @param other the criteria to copy; every field is a value, a date or a collection of strings,
+     *              so the copy shares nothing mutable with the original
+     */
+    public FileInfoCriteria(FileInfoCriteria other) {
+        Reject.ifNull(other, "Criteria to copy is null");
+        this.domains = new LinkedList<>(other.domains);
+        this.path = other.path;
+        this.recursive = other.recursive;
+        this.type = other.type;
+        this.keyWords = new HashSet<>(other.keyWords);
+        this.maxResults = other.maxResults;
+        this.includeDeleted = other.includeDeleted;
+        this.fileName = other.fileName;
+        this.extensions.addAll(other.extensions);
+        this.modifiedBy = other.modifiedBy;
+        this.modifiedByAccountId = other.modifiedByAccountId;
+        this.modifiedByDeviceId = other.modifiedByDeviceId;
+        this.modifiedByDeviceName = other.modifiedByDeviceName;
+        this.modifiedAfter = other.modifiedAfter != null ? new Date(other.modifiedAfter.getTime()) : null;
+        this.modifiedBefore = other.modifiedBefore != null ? new Date(other.modifiedBefore.getTime()) : null;
+        this.minSize = other.minSize;
+        this.maxSize = other.maxSize;
+        this.categories.addAll(other.categories);
+        this.sortField = other.sortField;
+        this.sortDescending = other.sortDescending;
+        this.tags.addAll(other.tags);
+    }
 
     /**
      * @return the domain(s) to search in.
