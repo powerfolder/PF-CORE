@@ -19,10 +19,13 @@
  */
 package de.dal33t.powerfolder.ui;
 
+import de.dal33t.powerfolder.util.Translation;
 import de.javasoft.plaf.synthetica.SyntheticaLookAndFeel;
 
 import javax.swing.*;
+import java.awt.Font;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 /**
@@ -80,8 +83,106 @@ public class LookAndFeelSupport {
     {
         setSyntheticaLicense();
         UIManager.setLookAndFeel(laf);
-        SyntheticaLookAndFeel.setFont("Dialog", 11);
+        SyntheticaLookAndFeel.setFont(getBaseFontName(), 11);
         setSyntheticaLicense();
+    }
+
+    /**
+     * The default logical "Dialog" font has no glyphs for some scripts (e.g.
+     * Devanagari for Hindi or Thai), so text in those languages would render as
+     * empty boxes. For those UI languages we pick a platform font that actually
+     * covers the script (and Latin), falling back to "Dialog" for every other
+     * language or when no suitable font is installed. The base font is applied
+     * once at startup; changing the language requires a restart anyway.
+     *
+     * @return the base font family name to hand to Synthetica.
+     */
+    private static String getBaseFontName() {
+        Locale locale = Translation.getActiveLocale();
+        return baseFontNameForLanguage(locale != null ? locale.getLanguage() : "");
+    }
+
+    /**
+     * Returns a base font family able to render the given language's script.
+     * "Dialog" (the default) has no glyphs for some scripts (e.g. Devanagari
+     * for Hindi or Thai); for those we pick a platform font that covers the
+     * script, with cross-platform fallbacks. Returns "Dialog" for every other
+     * language or when no suitable font is installed.
+     *
+     * @param language an ISO 639 language code (e.g. "hi", "th"), never null.
+     * @return the font family name.
+     */
+    static String baseFontNameForLanguage(String language) {
+        switch (language) {
+            case "hi" : // Hindi, Devanagari script
+                // Sample "radd" (U+0930 U+0926 U+094D U+0926)
+                return firstFontThatDisplays(
+                    codePoints(0x0930, 0x0926, 0x094D, 0x0926),
+                    "Nirmala UI", "Mangal", "Kohinoor Devanagari",
+                    "Devanagari MT", "Noto Sans Devanagari", "Lohit Devanagari");
+            case "th" : // Thai script
+                // Sample "yok loek" (U+0E22 U+0E01 U+0E40 U+0E25 U+0E34 U+0E01)
+                return firstFontThatDisplays(
+                    codePoints(0x0E22, 0x0E01, 0x0E40, 0x0E25, 0x0E34, 0x0E01),
+                    "Leelawadee UI", "Tahoma", "Thonburi",
+                    "Noto Sans Thai", "Loma");
+            default :
+                return "Dialog";
+        }
+    }
+
+    /**
+     * Ensures {@code text} can be rendered for the given {@code locale}. If the
+     * supplied {@code current} font already covers every character, it is
+     * returned unchanged; otherwise a font of the same style and size from a
+     * script-capable family (see {@link #baseFontNameForLanguage(String)}) is
+     * returned. Used by cell renderers that show many languages, each in its
+     * own script, at the same time (e.g. the language chooser).
+     *
+     * @param current the font currently in use (may be null).
+     * @param text    the text to be displayed.
+     * @param locale  the locale whose script {@code text} belongs to.
+     * @return a font able to display {@code text}, or {@code current}.
+     */
+    public static Font fontFor(Font current, String text, Locale locale) {
+        if (current != null && current.canDisplayUpTo(text) == -1) {
+            return current;
+        }
+        String family = baseFontNameForLanguage(
+            locale != null ? locale.getLanguage() : "");
+        if ("Dialog".equals(family)) {
+            return current;
+        }
+        int style = current != null ? current.getStyle() : Font.PLAIN;
+        int size = current != null ? current.getSize() : 11;
+        return new Font(family, style, size);
+    }
+
+    /** Builds a String from Unicode code points (keeps this source ASCII-only). */
+    private static String codePoints(int... cps) {
+        return new String(cps, 0, cps.length);
+    }
+
+    /**
+     * Returns the first of the given font families that is actually installed
+     * and can display every character of the sample, or "Dialog" if none can.
+     */
+    private static String firstFontThatDisplays(String sample, String... families)
+    {
+        for (String family : families) {
+            Font font = new Font(family, Font.PLAIN, 11);
+            // new Font(name) silently substitutes when the family is missing,
+            // so require the resolved family to match and to cover the sample.
+            if (font.getFamily().equalsIgnoreCase(family)
+                && font.canDisplayUpTo(sample) == -1)
+            {
+                return family;
+            }
+        }
+        log.warning("No script-capable font installed for language '"
+            + Translation.getActiveLocale()
+            + "'; falling back to Dialog. Text may not render correctly.");
+        return "Dialog";
     }
 
     public static final void setSyntheticaLicense() {
