@@ -2016,7 +2016,7 @@ public class ServerClient extends PFComponent {
     private ServerClient createNewFedClient(ServerInfo serviceInfo, String token) {
         Reject.ifNull(serviceInfo, "Service is null");
         Reject.ifBlank(token, "Token missing");
-        String defaultConfigURL = serviceInfo.getWebUrl() + ConfigurationLoader.DEFAULT_PROPERTIES_URI;
+        String defaultConfigURL = serviceInfo.getURL(ConfigurationLoader.DEFAULT_PROPERTIES_URI);
         try {
             Properties config = ConfigurationLoader
                     .loadPreConfiguration(defaultConfigURL);

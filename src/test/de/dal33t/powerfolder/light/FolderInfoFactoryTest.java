@@ -89,4 +89,52 @@ public class FolderInfoFactoryTest extends TestCase {
         assertEquals("outer/middle/inner", inner.locationPath());
     }
 
+    /**
+     * PFS-5850: the name of a subfolder IS the last segment of its location - a rename is therefore a
+     * location change, and everything derived from the location (base dir, barrier, row prefix) moves
+     * with it. This pins the property the relocation relies on.
+     */
+    public void testTheNameIsTheLastSegmentOfTheLocation() {
+        FolderInfo top = FolderInfoFactory.newTopFolder("top");
+        FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "a/b/name"));
+        assertEquals("a/b/name", sub.locationPath());
+
+        FolderInfo renamed = FolderInfoFactory.rename(sub, "other");
+        assertEquals("a/b", renamed.getTopPath());
+        assertEquals("a/b/other", renamed.locationPath());
+        assertEquals("A rename is a new version of the same folder", sub.getId(), renamed.getId());
+    }
+
+    /**
+     * PFS-5850: a move is ONE version bump for parent and name together - two calls would publish an
+     * intermediate FolderInfo naming a location that never existed on disk. Tags and the inheritance
+     * flag travel with it, like on a rename, and the identity does not change at all.
+     */
+    public void testMoveCarriesEverythingButTheLocation() {
+        FolderInfo top = FolderInfoFactory.newTopFolder("top");
+        FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "a/b/name"));
+        sub = FolderInfoFactory.changeTags(sub, "[\"tag\"]");
+        sub = FolderInfoFactory.changeInheritsPermissions(sub, false);
+        int versionBefore = sub.getVersion();
+
+        FolderInfo moved = FolderInfoFactory.move(sub, FileInfoFactory.lookupDirectory(top, "c"), "other");
+
+        assertEquals("c/other", moved.locationPath());
+        assertEquals("One bump for parent and name together", versionBefore + 1, moved.getVersion());
+        assertEquals("The identity is what makes permissions survive", sub.getId(), moved.getId());
+        assertEquals("The tags travel", sub.getTags(), moved.getTags());
+        // The getter answers "inherits" while the feature is off, so the stored flag is what is asserted
+        // here - that is the value the factory has to carry.
+        assertFalse("The interruption travels", moved.storedInheritsPermissions());
+        assertEquals("The top folder is unchanged", top, moved.getTopFolder());
+    }
+
+    /** A move to the place it already sits changes nothing - not even the version. */
+    public void testMoveToTheSamePlaceIsNoChange() {
+        FolderInfo top = FolderInfoFactory.newTopFolder("top");
+        FolderInfo sub = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "a/name"));
+
+        assertSame(sub, FolderInfoFactory.move(sub, FileInfoFactory.lookupDirectory(top, "a"), "name"));
+    }
+
 }

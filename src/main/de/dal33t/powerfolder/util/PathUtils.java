@@ -55,6 +55,7 @@ import java.util.zip.ZipOutputStream;
 
 import static de.dal33t.powerfolder.disk.EncryptedFileSystemUtils.isEmptyCryptoContainerRootDir;
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.FileVisitResult.SKIP_SUBTREE;
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
@@ -1652,7 +1653,22 @@ public class PathUtils {
      */
 
     public static void recursiveCopyVisitor(Path sourceDirectory, Path targetDirectory) throws IOException {
+        recursiveCopyVisitor(sourceDirectory, targetDirectory, null);
+    }
 
+    /**
+     * PFS-5528: The same copy, with directories the caller does not want in the copy left out.
+     * <p>
+     * A plain walk takes everything it finds, and inside a PowerFolder that is more than the user's
+     * files: the system directory of a shared subfolder is a folder database, and the content of a
+     * subfolder whose permission inheritance is interrupted is behind a permission boundary. Both are
+     * decided by the caller, which knows the folder; this only skips what it is told to skip - the
+     * directory itself and everything below it.
+     *
+     * @param skipDirectory a directory to leave out entirely, or {@code null} to copy everything
+     */
+    public static void recursiveCopyVisitor(Path sourceDirectory, Path targetDirectory,
+        final Filter<Path> skipDirectory) throws IOException {
         if (Files.exists(targetDirectory) && !isEmptyCryptoContainerRootDir(targetDirectory)) {
             throw new FileAlreadyExistsException("Copy from " + sourceDirectory + " to " + targetDirectory
                     + " failed! Target directory already exists " + targetDirectory);
@@ -1667,6 +1683,9 @@ public class PathUtils {
                     new SimpleFileVisitor<Path>() {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                            if (skipDirectory != null && !dir.equals(sourceDirectory) && skipDirectory.accept(dir)) {
+                                return SKIP_SUBTREE;
+                            }
                             CopyOption[] options = new CopyOption[]{COPY_ATTRIBUTES};
                             Path newDir = targetDirectory.resolve(sourceDirectory.relativize(dir));
                             Files.copy(dir, newDir, options);

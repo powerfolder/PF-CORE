@@ -22,6 +22,7 @@ package de.dal33t.powerfolder.light;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.util.IdGenerator;
+import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.StackDump;
 
 import java.nio.file.Path;
@@ -156,6 +157,46 @@ public class FolderInfoFactory {
                 originalFolderInfo.getId(),
                 version,
                 originalFolderInfo.getParent(),
+                originalFolderInfo.storedTags(),
+                originalFolderInfo.storedInheritsPermissions()
+        );
+        return result.intern(true);
+    }
+
+    /**
+     * PFS-5850: Moves a subfolder to another location - another parent directory, another name, or
+     * both at once. The identity does not change, so permissions, settings, invitations and links
+     * survive; the inheritance flag and the tags travel like on a rename.
+     * <p>
+     * One version bump for both halves on purpose: a parent change followed by a rename would publish
+     * an intermediate FolderInfo naming a location that never existed on disk, and every peer and DAO
+     * would have to sort that out.
+     *
+     * @param originalFolderInfo the subfolder to move
+     * @param newParent          the directory it lands in, in TOP-folder coordinates
+     * @param newName            its name at the new place - the last segment of its location
+     * @return the original instance if nothing changes, otherwise a version-bumped instance
+     */
+    public static FolderInfo move(FolderInfo originalFolderInfo, DirectoryInfo newParent, String newName) {
+        Reject.ifBlank(newName, "Name");
+        if (Objects.equals(originalFolderInfo.getParent(), newParent)
+            && newName.equals(originalFolderInfo.getName()))
+        {
+            return originalFolderInfo;
+        }
+        int version;
+        if (originalFolderInfo.isLookupInstance()) {
+            version = 0;
+            LOG.log(Level.WARNING, originalFolderInfo + ": Moving a lookup instance is discouraged, but used.",
+                new StackDump());
+        } else {
+            version = originalFolderInfo.getVersion() + 1;
+        }
+        FolderInfo result = new FolderInfo(
+                newName,
+                originalFolderInfo.getId(),
+                version,
+                newParent,
                 originalFolderInfo.storedTags(),
                 originalFolderInfo.storedInheritsPermissions()
         );

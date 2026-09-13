@@ -119,8 +119,7 @@ public class Translation {
             supportedLocales.add(Locale.GERMAN);     // Deutsch
             supportedLocales.add(GREEK);             // Ελληνικά
             supportedLocales.add(HEBREW);            // עברית
-            // UI framework not capable atm:
-            // supportedLocales.add(HINDI);           // हिन्दी
+            supportedLocales.add(HINDI);             // हिन्दी
             supportedLocales.add(HUNGARIAN);         // Magyar
             supportedLocales.add(INDONESIAN);        // Bahasa Indonesia
             supportedLocales.add(IRISH);             // Gaeilge
@@ -140,8 +139,7 @@ public class Translation {
             supportedLocales.add(SLOVENIAN);         // Slovenščina
             supportedLocales.add(SPANISH);           // Español
             supportedLocales.add(SWEDISH);           // Svenska
-            // UI framework not capable atm:
-            // supportedLocales.add(THAI);              // ไทย
+            supportedLocales.add(THAI);              // ไทย
             supportedLocales.add(TURKISH);           // Türkçe
             supportedLocales.add(UKRAINIAN);         // Українська
             supportedLocales.add(URDU);              // اردو

@@ -22,6 +22,8 @@ package de.dal33t.powerfolder.clientserver;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.domain.FileLink;
+import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
+import de.dal33t.powerfolder.light.AccountInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderStatisticInfo;
@@ -123,6 +125,36 @@ public interface FolderService {
     boolean renameFolder(FolderInfo foInfo, String newName);
 
     /**
+     * PFS-5850: Moves a shared subfolder to another place inside its top folder - another parent
+     * directory, another name, or both. Renaming is this call with the parent unchanged.
+     * <p>
+     * A subfolder IS its location, so moving the directory alone leaves it naming a place that no
+     * longer exists. The identity does not change, which is why the explicit permissions, the settings
+     * and the invitations survive; permissions inherited from above are re-evaluated from the new
+     * place, and a subfolder with interrupted inheritance keeps its interruption.
+     *
+     * @param subFolderInfo the subfolder to move
+     * @param newLocation   the new location in TOP-folder coordinates, e.g. {@code projects/2026} - its
+     *                      last segment is the subfolder's new name
+     * @return {@code true} when the subfolder was moved, {@code false} when it was refused
+     */
+    boolean moveSubFolder(FolderInfo subFolderInfo, String newLocation);
+
+    /**
+     * PFS-5528 / AK-8: Copies a directory of a folder and reproduces the subfolders with INTERRUPTED
+     * inheritance inside it: each copy is a subfolder of its own, interrupted like its template and
+     * holding the template's explicit permissions, so it is decoupled from the inheritance of its new
+     * parent. A subfolder that still inherits is deliberately not reproduced - its copy is an ordinary
+     * directory and inherits from where it now sits.
+     *
+     * @param topFolderInfo  the folder both locations belong to
+     * @param sourceLocation the directory to copy, relative to the folder
+     * @param targetLocation where to copy it to, relative to the same folder, must not exist
+     * @return {@code true} when the copy was made, {@code false} when it was refused
+     */
+    boolean copyTree(FolderInfo topFolderInfo, String sourceLocation, String targetLocation);
+
+    /**
      * Invites a user to a folder. The invited user gains read/write
      * permissions.
      *
@@ -207,6 +239,37 @@ public interface FolderService {
      * @return the list of servers the folders are hosted on.
      */
     Collection<MemberInfo> getHostingServers(FolderInfo... foInfos);
+
+    /**
+     * PFS-5851: the hits of a file search among the folders THIS server hosts, for the given account.
+     * A cluster spreads its folders over the nodes, so a search has to ask every node that hosts one
+     * the account may read; the node that was asked merges the answers and puts them in order.
+     *
+     * @param forAccount the account the search is for - a call between nodes carries no session of
+     *                   its own, so the asking node names the account it searches for
+     * @param criteria   the criteria the asking node parsed from the query. Their domains are set
+     *                   anew here: they name the members of the folder being searched, which is a
+     *                   property of the answering node
+     * @param maxResults the most hits to answer with, so one answer stays within the message size
+     *
+     * @return the hits among the folders this server hosts, in no particular order
+     */
+    List<FileInfo> searchFilesOnLocalServer(AccountInfo forAccount, FileInfoCriteria criteria, int maxResults);
+
+    /**
+     * PFS-5851: the values THIS server can suggest for a search operator, counted by how many files
+     * carry them - the tags it knows, the extensions, the names of those who wrote the files. Every
+     * node answers for the folders it hosts, and the node that was asked adds the counts up.
+     *
+     * @param forAccount the account the suggestions are for - a call between nodes carries no
+     *                   session of its own
+     * @param field      the index field the operator suggests from, e.g. the exact tags
+     * @param prefix     what the user has typed of the value so far
+     * @param enough     stop visiting folders once this many distinct values are known
+     *
+     * @return value to number of files carrying it, among the folders this server hosts
+     */
+    Map<String, Integer> suggestValuesOnLocalServer(AccountInfo forAccount, String field, String prefix, int enough);
 
     // Server archive calls ***************************************************
 

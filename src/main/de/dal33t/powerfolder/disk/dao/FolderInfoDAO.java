@@ -116,4 +116,20 @@ public interface FolderInfoDAO extends GenericDAO<FolderInfo> {
      *         empty if no matching subfolders exist
      */
     Collection<FolderInfo> getSubFolders(FolderInfo topFolderInfo);
+
+    /**
+     * PFS-5858: The other rows that stand for the same directory as this subfolder - same top folder,
+     * same location, a different id.
+     * <p>
+     * There must never be one. A purge used to keep the rows of a subfolder that INHERITS its
+     * permissions, and such a row survives its workspace unmounted, where
+     * {@code FolderRepository#findSubFolder} - the only guard {@code Folder#share} has - cannot see it.
+     * Sharing that directory again therefore put a SECOND row next to it, the mounter found both,
+     * mounted one, and the other answered no request for the rest of its life.
+     *
+     * @param subFolder the subfolder that is being created
+     * @return the rows for the same location, without {@code subFolder} itself; empty in the normal
+     *         case
+     */
+    Collection<FolderInfo> findSameLocation(FolderInfo subFolder);
 }

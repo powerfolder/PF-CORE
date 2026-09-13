@@ -83,6 +83,30 @@ public class FolderRepository extends PFComponent implements Runnable {
     private static final String DIRNAME_SNAPSHOT = ".snapshot";
     // PFS-5652: log searches that exceed this duration, so slow queries can be diagnosed.
     private static final long SLOW_SEARCH_THRESHOLD_MS = 10_000L;
+
+    /**
+     * PFS-5856: How long a search over all folders may take before it gives up and answers with what
+     * it has. Shorter than the gateway timeout on purpose: a caller that has already been sent a 504
+     * is not waiting for the rest, and the folder tasks still queued would only keep the IO pool busy
+     * for a request nobody reads. On the test system that left 1379 threads standing, 1069 of them in
+     * a search, from 119 searches whose callers had been answered with 504 long before.
+     */
+    private static final long SEARCH_BUDGET_MS = 20_000L;
+
+    /**
+     * PFS-5856: How long a search waits for its turn before it is refused. Beyond this the answer
+     * would be worthless anyway - the gateway has given up by then.
+     */
+    private static final long SEARCH_QUEUE_WAIT_MS = 5_000L;
+
+    /**
+     * PFS-5856: How many searches over all folders run at once, across the whole server. The limiter
+     * inside the search caps the folder tasks OF ONE search; with one semaphore per search, N searches
+     * ran N times that many tasks on the shared IO pool, and a single client could fill it by
+     * repeating a search that had already timed out.
+     */
+    private static final Semaphore GLOBAL_SEARCHES =
+        new Semaphore(Math.max(2, Runtime.getRuntime().availableProcessors()));
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
 
@@ -98,6 +122,12 @@ public class FolderRepository extends PFComponent implements Runnable {
      * {@link SimpleCache} cannot hold as null.
      */
     private final SimpleCache<Path, Optional<Folder>> existingFolderCache = new SimpleCache<>(60, TimeUnit.SECONDS);
+    /**
+     * PFS-5850: the folders being moved right now, by id - see {@link #isMoving(FolderInfo)}. Keyed
+     * by id and not by Folder, because a move unmounts the folder and mounts a new instance at the new
+     * place: the object changes, the identity does not.
+     */
+    private final Set<String> movingFolderIds = ConcurrentHashMap.newKeySet();
 
     // PFC-3543: index of the currently interrupted subfolders. This repository is
     // the authority for structural changes and refreshes it on folder add/remove/
@@ -1096,6 +1126,29 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folders, "Folders");
         Reject.ifNull(criteria, "Criteria");
 
+        // PFS-5856: one permit per search, counted over the whole server - see GLOBAL_SEARCHES.
+        try {
+            if (!GLOBAL_SEARCHES.tryAcquire(SEARCH_QUEUE_WAIT_MS, TimeUnit.MILLISECONDS)) {
+                logWarning("File search refused: none of the " + GLOBAL_SEARCHES.availablePermits()
+                    + " permits free within " + SEARCH_QUEUE_WAIT_MS + "ms, "
+                    + GLOBAL_SEARCHES.getQueueLength() + " waiting. keywords="
+                    + criteria.getKeyWords());
+                return Collections.emptyList();
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Collections.emptyList();
+        }
+        try {
+            return searchFilesWithinBudget(folders, criteria);
+        } finally {
+            GLOBAL_SEARCHES.release();
+        }
+    }
+
+    /** The search itself, with its permit held - see {@link #searchFiles}. */
+    private List<FileInfo> searchFilesWithinBudget(Collection<Folder> folders,
+                                                   FileInfoCriteria criteria) {
         // Cap the number of folder searches running at once so a single search never floods the shared
         // IO pool. Each task holds a permit until it finished; searches are a mix of Lucene/DAO reads,
         // so a bit above the core count is fine.
@@ -1103,6 +1156,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         Semaphore limiter = new Semaphore(maxConcurrent);
 
         long started = System.currentTimeMillis();
+        long deadline = started + SEARCH_BUDGET_MS;
+        int skipped = 0;
+
+        /* PFS-5851: the domain of every folder searched goes into criteria of ours, so the ones the
+         * caller passed are left alone - a cluster search hands that very object to the other nodes
+         * while this one runs. One copy does: the domain added is always this node, and nothing
+         * else writes into them any more (see Folder.searchIndexOfTopFolder). */
+        FileInfoCriteria searched = new FileInfoCriteria(criteria);
 
         List<FileInfo> results = new ArrayList<>();
         List<Future<List<FileInfo>>> futures = new ArrayList<>(folders.size());
@@ -1110,16 +1171,25 @@ public class FolderRepository extends PFComponent implements Runnable {
             if (folder == null) {
                 continue;
             }
-            criteria.addMySelf(folder);
+            searched.addMySelf(folder);
+            // PFS-5856: past the budget nothing more is started - see SEARCH_BUDGET_MS.
+            long left = deadline - System.currentTimeMillis();
+            if (left <= 0) {
+                skipped++;
+                continue;
+            }
             try {
-                limiter.acquire();
+                if (!limiter.tryAcquire(left, TimeUnit.MILLISECONDS)) {
+                    skipped++;
+                    continue;
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
             FutureTask<List<FileInfo>> task = new FutureTask<>(() -> {
                 try {
-                    return folder.searchFiles(criteria);
+                    return folder.searchFiles(searched);
                 } catch (RuntimeException e) {
                     logWarning("Unable to search folder " + folder + ": " + e, e);
                     return Collections.<FileInfo>emptyList();
@@ -1135,15 +1205,32 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
 
-        for (Future<List<FileInfo>> future : futures) {
+        int answered = 0;
+        for (int i = 0; i < futures.size(); i++) {
             try {
-                results.addAll(future.get());
+                long left = Math.max(0, deadline - System.currentTimeMillis());
+                results.addAll(futures.get(i).get(left, TimeUnit.MILLISECONDS));
+                answered++;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                break;
+            } catch (TimeoutException e) {
+                /* PFS-5856: the budget is spent. Everything still outstanding is cancelled - a task
+                 * that has not started never will - and the caller gets what was found so far,
+                 * instead of a request thread waiting for an answer nobody is listening to. */
+                for (int rest = i; rest < futures.size(); rest++) {
+                    futures.get(rest).cancel(true);
+                }
+                skipped += futures.size() - i;
                 break;
             } catch (ExecutionException e) {
                 logWarning("Unable to search folder: " + e.getCause(), e);
             }
+        }
+        if (skipped > 0) {
+            logWarning("File search gave up after " + (System.currentTimeMillis() - started) + "ms: "
+                + answered + " of " + folders.size() + " folder(s) answered, " + skipped
+                + " left out. keywords=" + criteria.getKeyWords());
         }
 
         long took = System.currentTimeMillis() - started;
@@ -1450,6 +1537,35 @@ public class FolderRepository extends PFComponent implements Runnable {
             }
         }
         return null;
+    }
+
+    /**
+     * PFS-5850: Whether this folder is being moved at this moment.
+     * <p>
+     * A move unmounts the folder, moves its directory and mounts it again at the new place. In that
+     * window the folder's data and its registration disagree on purpose, and two self-healers would
+     * "repair" exactly that: {@link Folder#correctTopAndSubfolderRelation()} derives the parent from
+     * the filesystem - it runs in the CONSTRUCTOR, so it fires on the very instance the move creates -
+     * and the scan of the folder above sees the old directory gone and dissolves the share. Both ask
+     * here first and leave the move alone.
+     *
+     * @param folderInfo the folder to ask about, may be {@code null}
+     * @return {@code true} while a move of that folder is in flight
+     */
+    public boolean isMoving(FolderInfo folderInfo) {
+        return folderInfo != null && movingFolderIds.contains(folderInfo.getId());
+    }
+
+    /** Marks a folder as being moved, or lets it go again. Both halves belong in a try/finally. */
+    void setMoving(FolderInfo folderInfo, boolean moving) {
+        if (folderInfo == null) {
+            return;
+        }
+        if (moving) {
+            movingFolderIds.add(folderInfo.getId());
+        } else {
+            movingFolderIds.remove(folderInfo.getId());
+        }
     }
 
     public Folder findSubFolder(DirectoryInfo directoryInfo) {
