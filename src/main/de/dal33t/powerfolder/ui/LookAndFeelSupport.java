@@ -99,7 +99,20 @@ public class LookAndFeelSupport {
      */
     private static String getBaseFontName() {
         Locale locale = Translation.getActiveLocale();
-        String language = locale != null ? locale.getLanguage() : "";
+        return baseFontNameForLanguage(locale != null ? locale.getLanguage() : "");
+    }
+
+    /**
+     * Returns a base font family able to render the given language's script.
+     * "Dialog" (the default) has no glyphs for some scripts (e.g. Devanagari
+     * for Hindi or Thai); for those we pick a platform font that covers the
+     * script, with cross-platform fallbacks. Returns "Dialog" for every other
+     * language or when no suitable font is installed.
+     *
+     * @param language an ISO 639 language code (e.g. "hi", "th"), never null.
+     * @return the font family name.
+     */
+    static String baseFontNameForLanguage(String language) {
         switch (language) {
             case "hi" : // Hindi, Devanagari script
                 // Sample "radd" (U+0930 U+0926 U+094D U+0926)
@@ -116,6 +129,33 @@ public class LookAndFeelSupport {
             default :
                 return "Dialog";
         }
+    }
+
+    /**
+     * Ensures {@code text} can be rendered for the given {@code locale}. If the
+     * supplied {@code current} font already covers every character, it is
+     * returned unchanged; otherwise a font of the same style and size from a
+     * script-capable family (see {@link #baseFontNameForLanguage(String)}) is
+     * returned. Used by cell renderers that show many languages, each in its
+     * own script, at the same time (e.g. the language chooser).
+     *
+     * @param current the font currently in use (may be null).
+     * @param text    the text to be displayed.
+     * @param locale  the locale whose script {@code text} belongs to.
+     * @return a font able to display {@code text}, or {@code current}.
+     */
+    public static Font fontFor(Font current, String text, Locale locale) {
+        if (current != null && current.canDisplayUpTo(text) == -1) {
+            return current;
+        }
+        String family = baseFontNameForLanguage(
+            locale != null ? locale.getLanguage() : "");
+        if ("Dialog".equals(family)) {
+            return current;
+        }
+        int style = current != null ? current.getStyle() : Font.PLAIN;
+        int size = current != null ? current.getSize() : 11;
+        return new Font(family, style, size);
     }
 
     /** Builds a String from Unicode code points (keeps this source ASCII-only). */
