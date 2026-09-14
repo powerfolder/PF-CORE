@@ -46,6 +46,7 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.BytesRef;
@@ -149,6 +150,12 @@ public class LuceneIndexManager extends PFComponent {
      * the most frequent handful is ever shown, so this merely keeps a keystroke bounded on large indexes.
      */
     private static final int SUGGEST_MAX_TERMS = 200;
+
+    /**
+     * PFS-5865: the longest term written to the index. Lucene's limit is 32766 BYTES; at four bytes per
+     * character, the worst UTF-8 can do, this stays under it whatever the text is made of.
+     */
+    private static final int MAX_TERM_CHARS = 8000;
 
     /** Result cap for a search whose criteria set none. */
     private static final int DEFAULT_MAX_RESULTS = 1_000;
@@ -659,10 +666,13 @@ public class LuceneIndexManager extends PFComponent {
 
         ensureWorkerRunning();
         int queued = files.size() + dirs.size();
-        if (queued > 0) {
+        /* PFS-5865: a workspace rebuilding its index is worth a line; its subfolders are not. A
+         * workspace of hundreds of them writes hundreds of lines for one rebuild, and the few files of a
+         * single subfolder say nothing about it. */
+        if (queued > 0 && !folder.isSubFolder()) {
             logInfo(folder + ": Rebuild queued — " + queued + " files");
         } else if (isFine()) {
-            logFine(folder + ": Rebuild queued — 0 files");
+            logFine(folder + ": Rebuild queued — " + queued + " files");
         }
     }
 
@@ -909,11 +919,12 @@ public class LuceneIndexManager extends PFComponent {
         doc.add(new StringField("docId", docId, Field.Store.YES));
         doc.add(new StringField("folderId", folder.getId(), Field.Store.YES));
         doc.add(new StoredField("folderName", folder.getName()));
-        doc.add(new TextField("fileName", fileName, Field.Store.YES));
+        doc.add(new TextField("fileName", text(fileName), Field.Store.YES));
         doc.add(new StoredField("extension", extension));
-        doc.add(new StringField("extensionExact", extension.toLowerCase(Locale.ROOT), Field.Store.NO));
-        doc.add(new TextField("relativeName", relativeName, Field.Store.YES));
-        doc.add(new StringField("relativeNameExact", relativeName.toLowerCase(Locale.ROOT), Field.Store.NO));
+        doc.add(new StringField("extensionExact", term(extension.toLowerCase(Locale.ROOT)), Field.Store.NO));
+        doc.add(new TextField("relativeName", text(relativeName), Field.Store.YES));
+        doc.add(new StringField("relativeNameExact", term(relativeName.toLowerCase(Locale.ROOT)),
+                Field.Store.NO));
         long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
         doc.add(new LongPoint("modifiedDate", modifiedDate));
         doc.add(new StoredField("modifiedDate", modifiedDate));
@@ -934,11 +945,12 @@ public class LuceneIndexManager extends PFComponent {
             doc.add(new StoredField("tags", fileInfo.getTags()));
             List<String> tagList = fileInfo.getTagsList();
             if (!tagList.isEmpty()) {
-                doc.add(new TextField("tags", String.join(" ", tagList), Field.Store.NO));
+                doc.add(new TextField("tags", text(String.join(" ", tagList)), Field.Store.NO));
                 for (String tag : tagList) {
                     /* Tags are always matched case-insensitively: the term is normalized the same way here
                      * and in the tagsExact query below - lowercased and trimmed. */
-                    doc.add(new StringField("tagsExact", tag.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
+                    doc.add(new StringField("tagsExact", term(tag.toLowerCase(Locale.ROOT).trim()),
+                        Field.Store.NO));
                 }
             }
         }
@@ -949,11 +961,12 @@ public class LuceneIndexManager extends PFComponent {
                 doc.add(new StringField("modifiedByAccountId", modAccount.getOID(), Field.Store.YES));
             }
             if (StringUtils.isNotBlank(modAccount.getDisplayName())) {
-                doc.add(new TextField("modifiedByDisplayName", modAccount.getDisplayName(), Field.Store.YES));
+                doc.add(new TextField("modifiedByDisplayName", text(modAccount.getDisplayName()),
+                    Field.Store.YES));
                 addSuggestField(doc, "modifiedByDisplayNameExact", modAccount.getDisplayName());
             }
             if (StringUtils.isNotBlank(modAccount.getUsername())) {
-                doc.add(new TextField("modifiedByUsername", modAccount.getUsername(), Field.Store.YES));
+                doc.add(new TextField("modifiedByUsername", text(modAccount.getUsername()), Field.Store.YES));
             }
         }
         MemberInfo modDevice = fileInfo.getModifiedBy();
@@ -962,7 +975,7 @@ public class LuceneIndexManager extends PFComponent {
                 doc.add(new StringField("modifiedByDeviceId", modDevice.id, Field.Store.YES));
             }
             if (StringUtils.isNotBlank(modDevice.nick)) {
-                doc.add(new TextField("modifiedByDeviceName", modDevice.nick, Field.Store.YES));
+                doc.add(new TextField("modifiedByDeviceName", text(modDevice.nick), Field.Store.YES));
                 addSuggestField(doc, "modifiedByDeviceNameExact", modDevice.nick);
             }
         }
@@ -997,7 +1010,7 @@ public class LuceneIndexManager extends PFComponent {
                     String content = extractContentTikaOnly(fileInfo, metadata);
                     throttleExtraction();
                     if (content != null && !content.isBlank()) {
-                        doc.add(new TextField("content", stripBinaryNoise(content), Field.Store.NO));
+                        doc.add(new TextField("content", text(stripBinaryNoise(content)), Field.Store.NO));
                         addMetadataFields(doc, metadata);
                     } else {
                         contentQueue.add(fileInfo);
@@ -1011,6 +1024,10 @@ public class LuceneIndexManager extends PFComponent {
 
             if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL && isCommitIntervalReached()) {
                 commitAndRefresh();
+            }
+        } catch (AlreadyClosedException e) {
+            if (isFine()) {
+                logFine(folder + ": Index closed while indexing " + fileInfo);
             }
         } catch (Exception e) {
             logWarning(folder + ": Index error for " + fileInfo + ": " + e.getMessage());
@@ -1040,7 +1057,7 @@ public class LuceneIndexManager extends PFComponent {
                 return;
             }
             Document doc = buildDocument(fileInfo);
-            doc.add(new TextField("content", stripBinaryNoise(content), Field.Store.NO));
+            doc.add(new TextField("content", text(stripBinaryNoise(content)), Field.Store.NO));
             addMetadataFields(doc, metadata);
             writer.updateDocument(
                     new Term("docId", buildDocId(fileInfo)), doc);
@@ -1050,6 +1067,13 @@ public class LuceneIndexManager extends PFComponent {
 
             if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL && isCommitIntervalReached()) {
                 commitAndRefresh();
+            }
+        } catch (AlreadyClosedException e) {
+            /* PFS-5865: the folder was unmounted while its queue was still draining - the check above
+             * and the write cannot be one step. Nothing to act on, and nothing is lost: the file is
+             * indexed again with the folder. */
+            if (isFine()) {
+                logFine(folder + ": Index closed while extracting " + fileInfo);
             }
         } catch (Exception e) {
             logWarning(folder + ": Content extraction error for " + fileInfo + ": " + e.getMessage());
@@ -1083,7 +1107,41 @@ public class LuceneIndexManager extends PFComponent {
      * case-insensitive - searching is case-insensitive too, so a lowercase suggestion still matches.
      */
     private static void addSuggestField(Document doc, String field, String value) {
-        doc.add(new StringField(field, value.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
+        doc.add(new StringField(field, term(value.toLowerCase(Locale.ROOT).trim()), Field.Store.NO));
+    }
+
+    /**
+     * PFS-5865: Lucene refuses a term above 32766 bytes and the refusal aborts the whole document, so a
+     * single long run of characters - a draw.io diagram pasted into a file, a base64 blob - cost the file
+     * its place in the index entirely: not even its name was findable. A run is broken into terms of
+     * {@link #MAX_TERM_CHARS} instead, which keeps the text searchable and costs the run, not the file.
+     */
+    static String text(String value) {
+        if (value == null || value.length() <= MAX_TERM_CHARS) {
+            return value;
+        }
+        StringBuilder capped = new StringBuilder(value.length() + value.length() / MAX_TERM_CHARS);
+        int run = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (Character.isWhitespace(c)) {
+                run = 0;
+            } else if (++run > MAX_TERM_CHARS) {
+                capped.append(' ');
+                run = 1;
+            }
+            capped.append(c);
+        }
+        return capped.toString();
+    }
+
+    /**
+     * PFS-5865: the same limit for a value that is ONE term - it is not split, it is cut. Nobody searches
+     * exactly for eight thousand characters, so what is beyond them can only cost the document.
+     */
+    static String term(String value) {
+        return value != null && value.length() > MAX_TERM_CHARS
+            ? value.substring(0, MAX_TERM_CHARS) : value;
     }
 
     /**
@@ -1112,11 +1170,11 @@ public class LuceneIndexManager extends PFComponent {
         }
         String title = metadata.get(TikaCoreProperties.TITLE);
         if (StringUtils.isNotBlank(title)) {
-            doc.add(new TextField("docTitle", title, Field.Store.YES));
+            doc.add(new TextField("docTitle", text(title), Field.Store.YES));
         }
         String author = metadata.get(TikaCoreProperties.CREATOR);
         if (StringUtils.isNotBlank(author)) {
-            doc.add(new TextField("docAuthor", author, Field.Store.YES));
+            doc.add(new TextField("docAuthor", text(author), Field.Store.YES));
         }
     }
 
@@ -1142,7 +1200,7 @@ public class LuceneIndexManager extends PFComponent {
                 }
                 return stripEncodingArtifacts(text);
             }
-        } catch (IOException | SAXException | TikaException e) {
+        } catch (IOException | SAXException | TikaException | RuntimeException e) {
             String fallback = readPlainTextFallback(filePath);
             if (fallback == null) {
                 if (isFine()) {
@@ -1225,9 +1283,12 @@ public class LuceneIndexManager extends PFComponent {
             if (text != null && !text.isBlank()) {
                 tikaText = text;
             }
-        } catch (IOException | SAXException | TikaException e) {
+        } catch (IOException | SAXException | TikaException | RuntimeException e) {
             // Tika aborted mid-parse: write limit reached (SAXException when the file
             // exceeds maxTextLength), a malformed/corrupt document, or an I/O error.
+            // PFS-5865: a parser that breaks on a file of its own format throws where nothing declares
+            // it - the RTF parser answers a malformed file with an IndexOutOfBoundsException. Caught
+            // here with the rest, the partial text is kept and the file stays searchable.
             // In every case BodyContentHandler retains the text emitted before the
             // abort — keep that partial text instead of discarding it, so the file
             // stays at least partially searchable.

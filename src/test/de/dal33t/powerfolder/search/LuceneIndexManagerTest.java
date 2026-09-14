@@ -23,6 +23,7 @@ import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.dao.FileInfoCriteria;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.test.Condition;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
 import de.dal33t.powerfolder.util.test.TestHelper;
@@ -78,6 +79,61 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         List<FileInfo> results = getIndexManager().searchFiles("report", 10);
         assertEquals(1, results.size());
         assertEquals("Report_2024.pdf", results.get(0).getFilenameOnly());
+    }
+
+    /**
+     * PFS-5865: a value longer than a Lucene term may be - the tags the CMIS migration writes carry whole
+     * documents, a pasted diagram among them - used to abort the write of the whole document, and the
+     * file was not in the index at all: not even its name could be found. The tag is the case that bites,
+     * because it is indexed as ONE term; a content field is cut into tokens by the analyzer anyway.
+     */
+    public void testFileWithOneImmenseTagStaysSearchable() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Zoonosemonitoring.txt");
+        scanFolder(folder);
+        FileInfo fileInfo = folder.getKnownFiles().iterator().next();
+
+        StringBuilder immense = new StringBuilder(40000);
+        for (int i = 0; i < 40000; i++) {
+            immense.append('x');
+        }
+        LuceneIndexManager index = getIndexManager();
+        index.indexFiles(java.util.Collections.singletonList(
+                FileInfoFactory.withTags(fileInfo, immense.toString())));
+        TestHelper.waitForCondition(30, new Condition() {
+            @Override
+            public boolean reached() {
+                return !index.searchFiles("Zoonosemonitoring", 10).isEmpty();
+            }
+        });
+
+        assertEquals("The file must be in the index despite the immense tag",
+                1, index.searchFiles("Zoonosemonitoring", 10).size());
+        /* The write of the whole document used to be refused, which left the version before it standing -
+         * so the file looked indexed while the tag had never arrived. The tag is what proves the document
+         * went in: capped to a term the index accepts, and there. */
+        Map<String, Integer> tagTerms = index.suggestTerms("tagsExact", "xxx");
+        assertEquals("The tag must be in the index, cut to one term", 1, tagTerms.size());
+        assertEquals("And cut, not stored whole", 8000, tagTerms.keySet().iterator().next().length());
+    }
+
+    /** PFS-5865: a long run is broken into terms, a value that is one term is cut. */
+    public void testTermLimit() throws Exception {
+        StringBuilder run = new StringBuilder();
+        for (int i = 0; i < 20000; i++) {
+            run.append('a');
+        }
+        String capped = LuceneIndexManager.text("head " + run + " tail");
+        for (String token : capped.split("\s+")) {
+            assertTrue("No term beyond the limit: " + token.length(), token.length() <= 8000);
+        }
+        assertTrue("The words around the run survive", capped.startsWith("head ") && capped.endsWith(" tail"));
+        assertEquals("Nothing is lost, only separated", 20000 + "head".length() + "tail".length(),
+                capped.replaceAll("\s+", "").length());
+
+        assertEquals("A short value is untouched", "short", LuceneIndexManager.text("short"));
+        assertNull(LuceneIndexManager.text(null));
+        assertEquals("A single term is cut, not split", 8000, LuceneIndexManager.term(run.toString()).length());
     }
 
     public void testPrefixSearch() throws Exception {
