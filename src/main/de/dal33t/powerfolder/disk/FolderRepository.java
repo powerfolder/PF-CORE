@@ -1146,19 +1146,13 @@ public class FolderRepository extends PFComponent implements Runnable {
         }
     }
 
-    /** The server-wide limit on searches, built once from the configuration. */
+    /** How many permits the two limiters were built with, so a changed configuration rebuilds them. */
+    private static volatile int builtFor;
+
+    /** The server-wide limit on searches, rebuilt when the configuration says another number. */
     private static Semaphore globalSearches(Controller controller) {
-        Semaphore searches = globalSearches;
-        if (searches == null) {
-            synchronized (FolderRepository.class) {
-                searches = globalSearches;
-                if (searches == null) {
-                    searches = new Semaphore(concurrency(controller));
-                    globalSearches = searches;
-                }
-            }
-        }
-        return searches;
+        rebuildLimitsIfChanged(controller);
+        return globalSearches;
     }
 
     /** How much searching may run at once, never less than two of anything. */
@@ -1166,19 +1160,31 @@ public class FolderRepository extends PFComponent implements Runnable {
         return Math.max(2, ConfigurationEntry.SEARCH_CONCURRENCY.getValueInt(controller));
     }
 
-    /** The server-wide limit on folder searches, built once from the configuration. */
+    /** The server-wide limit on folder searches, rebuilt when the configuration says another number. */
     private static Semaphore searchedFolders(Controller controller) {
-        Semaphore folders = searchedFolders;
-        if (folders == null) {
-            synchronized (FolderRepository.class) {
-                folders = searchedFolders;
-                if (folders == null) {
-                    folders = new Semaphore(concurrency(controller));
-                    searchedFolders = folders;
-                }
+        rebuildLimitsIfChanged(controller);
+        return searchedFolders;
+    }
+
+    /**
+     * PFS-5863: both limiters carry the number they were built with, and a configuration that says
+     * another one builds them anew - built once, search.concurrency only ever took effect on a restart,
+     * which is no way to tune a running server. Permits held by a search under way go back into the
+     * semaphore they came from, which is then nobody's: the old limit lets go of the last searches under
+     * it while the new one starts empty.
+     */
+    private static void rebuildLimitsIfChanged(Controller controller) {
+        int permits = concurrency(controller);
+        if (globalSearches != null && searchedFolders != null && builtFor == permits) {
+            return;
+        }
+        synchronized (FolderRepository.class) {
+            if (globalSearches == null || searchedFolders == null || builtFor != permits) {
+                globalSearches = new Semaphore(permits);
+                searchedFolders = new Semaphore(permits);
+                builtFor = permits;
             }
         }
-        return folders;
     }
 
     /** The search itself, with its permit held - see {@link #searchFiles}. */
