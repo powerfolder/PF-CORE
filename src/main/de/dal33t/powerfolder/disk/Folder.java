@@ -2882,6 +2882,7 @@ public class Folder extends PFComponent {
                 }
                 logInfo(this + ": Restored permission inheritance, merged its own database back into "
                     + owner + " - migrated " + fileCount + " files and " + dirCount + " directories");
+                recalculateStatisticsAfterMigration(owner);
             } else {
                 // Interrupt: move rows from the top database into the subfolder's own database,
                 // then raw-remove them from the top (no deletion is propagated to peers).
@@ -2926,9 +2927,51 @@ public class Folder extends PFComponent {
                 initSearchIndex();
                 logInfo(this + ": Interrupted permission inheritance, split off from " + source
                     + " into its own database - migrated " + fileCount + " files and " + dirCount + " directories");
+                recalculateStatisticsAfterMigration(source);
             }
         }
         } // scanLockOfTopFolder
+    }
+
+    /**
+     * PFS-5867: The rows changed owner without a scan and without a file event - the raw DAO store and
+     * delete above say nothing to anyone, deliberately, so that no deletion travels to the peers. The
+     * statistics on both sides of the barrier would keep the numbers of the state before: the folder
+     * that gave the rows away still counts their bytes, the one that received them does not count them
+     * yet. Everything that reads a folder's size reads those numbers - the folder listing, and the
+     * quota the owner is charged, which is summed per folder and would count the same bytes twice.
+     * <p>
+     * Every folder whose view of the content changed is recalculated: this one, the folder the rows
+     * came from or went to, and the inheriting subfolders in between, which see the content through
+     * the database that just changed.
+     *
+     * @param counterpart the folder this one exchanged its rows with
+     */
+    private void recalculateStatisticsAfterMigration(Folder counterpart) {
+        getStatistic().scheduleCalculate();
+        if (counterpart != null && counterpart != this) {
+            counterpart.getStatistic().scheduleCalculate();
+        }
+        Folder topFolder = getTopFolder();
+        String myLocation = currentInfo.locationPath();
+        if (topFolder == null || myLocation == null) {
+            return;
+        }
+        for (Folder other : getController().getFolderRepository().getFolders()) {
+            if (other == this || other == counterpart) {
+                continue;
+            }
+            FolderInfo otherInfo = other.getInfo();
+            if (!otherInfo.isSubFolder()
+                || !topFolder.getInfo().equals(otherInfo.getTopFolder()))
+            {
+                continue;
+            }
+            String otherLocation = otherInfo.locationPath();
+            if (otherLocation != null && myLocation.startsWith(otherLocation + "/")) {
+                other.getStatistic().scheduleCalculate();
+            }
+        }
     }
 
     /**
