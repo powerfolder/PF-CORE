@@ -85,28 +85,25 @@ public class FolderRepository extends PFComponent implements Runnable {
     private static final long SLOW_SEARCH_THRESHOLD_MS = 10_000L;
 
     /**
-     * PFS-5856: How long a search over all folders may take before it gives up and answers with what
-     * it has. Shorter than the gateway timeout on purpose: a caller that has already been sent a 504
-     * is not waiting for the rest, and the folder tasks still queued would only keep the IO pool busy
-     * for a request nobody reads. On the test system that left 1379 threads standing, 1069 of them in
-     * a search, from 119 searches whose callers had been answered with 504 long before.
-     */
-    private static final long SEARCH_BUDGET_MS = 20_000L;
-
-    /**
-     * PFS-5856: How long a search waits for its turn before it is refused. Beyond this the answer
-     * would be worthless anyway - the gateway has given up by then.
-     */
-    private static final long SEARCH_QUEUE_WAIT_MS = 5_000L;
-
-    /**
      * PFS-5856: How many searches over all folders run at once, across the whole server. The limiter
      * inside the search caps the folder tasks OF ONE search; with one semaphore per search, N searches
      * ran N times that many tasks on the shared IO pool, and a single client could fill it by
      * repeating a search that had already timed out.
+     * <p>
+     * PFS-5863: how many, and how long a search may take, are read from the configuration
+     * ({@code search.concurrentSearches} and its neighbours). They used to be counted off the cores,
+     * which is the wrong measure for work that waits on an index far more than it computes: on a
+     * two-core server two people could search at a time and the third was refused.
      */
-    private static final Semaphore GLOBAL_SEARCHES =
-        new Semaphore(Math.max(2, Runtime.getRuntime().availableProcessors()));
+    private static volatile Semaphore globalSearches;
+
+    /**
+     * PFS-5863: how many folders are searched side by side, counted over the WHOLE server and not per
+     * search. Per search it would multiply: many searches allowed to run at once, each of them free to
+     * occupy the IO pool with as many folder tasks, is the thread explosion PFS-5856 was about. Shared,
+     * a lone search may use all of it and a busy server still never runs more folder tasks than this.
+     */
+    private static volatile Semaphore searchedFolders;
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
 
@@ -1126,13 +1123,16 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folders, "Folders");
         Reject.ifNull(criteria, "Criteria");
 
-        // PFS-5856: one permit per search, counted over the whole server - see GLOBAL_SEARCHES.
+        Semaphore searches = globalSearches(getController());
+        /* A third of the time a search may take: waiting longer than that for a turn leaves too little
+         * of the budget to answer with anything worth reading. */
+        long queueWaitMS = 1000L * ConfigurationEntry.SEARCH_TIMEOUT_SECONDS.getValueInt(getController()) / 3;
+        // PFS-5856: one permit per search, counted over the whole server - see globalSearches.
         try {
-            if (!GLOBAL_SEARCHES.tryAcquire(SEARCH_QUEUE_WAIT_MS, TimeUnit.MILLISECONDS)) {
-                logWarning("File search refused: none of the " + GLOBAL_SEARCHES.availablePermits()
-                    + " permits free within " + SEARCH_QUEUE_WAIT_MS + "ms, "
-                    + GLOBAL_SEARCHES.getQueueLength() + " waiting. keywords="
-                    + criteria.getKeyWords());
+            if (!searches.tryAcquire(queueWaitMS, TimeUnit.MILLISECONDS)) {
+                logWarning("File search refused: none of the " + searches.availablePermits()
+                    + " permits free within " + queueWaitMS + "ms, " + searches.getQueueLength()
+                    + " waiting. keywords=" + criteria.getKeyWords());
                 return Collections.emptyList();
             }
         } catch (InterruptedException e) {
@@ -1142,21 +1142,57 @@ public class FolderRepository extends PFComponent implements Runnable {
         try {
             return searchFilesWithinBudget(folders, criteria);
         } finally {
-            GLOBAL_SEARCHES.release();
+            searches.release();
         }
+    }
+
+    /** The server-wide limit on searches, built once from the configuration. */
+    private static Semaphore globalSearches(Controller controller) {
+        Semaphore searches = globalSearches;
+        if (searches == null) {
+            synchronized (FolderRepository.class) {
+                searches = globalSearches;
+                if (searches == null) {
+                    searches = new Semaphore(concurrency(controller));
+                    globalSearches = searches;
+                }
+            }
+        }
+        return searches;
+    }
+
+    /** How much searching may run at once, never less than two of anything. */
+    private static int concurrency(Controller controller) {
+        return Math.max(2, ConfigurationEntry.SEARCH_CONCURRENCY.getValueInt(controller));
+    }
+
+    /** The server-wide limit on folder searches, built once from the configuration. */
+    private static Semaphore searchedFolders(Controller controller) {
+        Semaphore folders = searchedFolders;
+        if (folders == null) {
+            synchronized (FolderRepository.class) {
+                folders = searchedFolders;
+                if (folders == null) {
+                    folders = new Semaphore(concurrency(controller));
+                    searchedFolders = folders;
+                }
+            }
+        }
+        return folders;
     }
 
     /** The search itself, with its permit held - see {@link #searchFiles}. */
     private List<FileInfo> searchFilesWithinBudget(Collection<Folder> folders,
                                                    FileInfoCriteria criteria) {
-        // Cap the number of folder searches running at once so a single search never floods the shared
-        // IO pool. Each task holds a permit until it finished; searches are a mix of Lucene/DAO reads,
-        // so a bit above the core count is fine.
-        int maxConcurrent = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
-        Semaphore limiter = new Semaphore(maxConcurrent);
+        /* Cap the number of folder searches running at once so the searches never flood the shared IO
+         * pool. Each task holds a permit until it finished. PFS-5863: a folder search waits on its index
+         * far more than it computes, so the count is a configured one and no longer a multiple of the
+         * cores - searching a workspace of 572 subfolders four at a time took 14 seconds. */
+        Semaphore limiter = searchedFolders(getController());
 
         long started = System.currentTimeMillis();
-        long deadline = started + SEARCH_BUDGET_MS;
+        long deadline = started
+            + 1000L * ConfigurationEntry.SEARCH_TIMEOUT_SECONDS.getValueInt(getController());
         int skipped = 0;
 
         /* PFS-5851: the domain of every folder searched goes into criteria of ours, so the ones the
