@@ -274,7 +274,8 @@ public class LuceneIndexManager extends PFComponent {
     private volatile IndexWriter writer;
     private volatile SearcherManager searcherManager;
     private final Object openLock = new Object();
-    private final TesseractOCR ocrEngine;
+    /** PFC-3626: built by {@link #ocrEngine()} when a file is to be read by it, and shared by all folders. */
+    private static volatile boolean ocrRequested;
 
     private final LinkedBlockingQueue<FileInfo> indexQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<FileInfo> contentQueue = new LinkedBlockingQueue<>();
@@ -306,14 +307,10 @@ public class LuceneIndexManager extends PFComponent {
 
         this.analyzer = new StandardAnalyzer();
 
-        String ocrLanguages = ConfigurationEntry.SEARCH_INDEX_OCR_LANGUAGES.getValue(controller);
-        int maxIndexThreads = ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(controller);
-        // 1:1 with the indexing threads — they are the only callers of performOCR,
-        // so this guarantees an instance is always available (no pool exhaustion).
-        int ocrPoolSize = Math.max(1, maxIndexThreads);
-        int ocrMaxFileSizeMB = ConfigurationEntry.SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB.getValueInt(controller);
-        TesseractOCR.initInstance(ocrLanguages, ocrPoolSize, ocrMaxFileSizeMB);
-        this.ocrEngine = TesseractOCR.getInstance();
+        /* PFC-3626: the OCR engine is built by the first file that is actually to be read by it, not
+         * here. Built here it was built on every server: the first folder to get an index unpacked the
+         * training data and the native libraries and started its pooled instances, and the switch that
+         * says whether OCR happens at all was never asked. */
 
         if (isFine()) {
             logFine(folder + ": Lucene index registered at " + indexPath.toAbsolutePath());
@@ -347,13 +344,22 @@ public class LuceneIndexManager extends PFComponent {
                 try {
                     w = new IndexWriter(FSDirectory.open(indexPath), new IndexWriterConfig(analyzer));
                 } catch (LockObtainFailedException e) {
-                    /* Held by another manager on the same directory - the folder was mounted twice.
-                     * This is NOT a corrupt index: falling through to the rebuild below would delete
-                     * the index files of the folder that is working with them, which is the one thing
-                     * that must not happen here. Without an index this folder searches its database. */
-                    LuceneIndexManager owner = OPEN_INDEXES.get(indexPath);
-                    logWarning(folder + ": The search index at " + indexPath + " is already open for "
-                        + (owner != null ? owner.folder : "another folder") + " - searching without it");
+                    /* Someone else has the directory open. This is NOT a corrupt index: falling
+                     * through to the rebuild below would delete the index files of whoever is working
+                     * with them, which is the one thing that must not happen here. Without an index
+                     * this folder searches its database.
+                     *
+                     * OPEN_INDEXES is static per JVM, so no entry means the lock is held outside this
+                     * process: on shared storage that is another cluster node which still has the
+                     * folder mounted. Saying "another folder" there sent readers looking on the wrong
+                     * machine. */
+                    LuceneIndexManager holder = OPEN_INDEXES.get(indexPath);
+                    logWarning(folder + ": The search index at " + indexPath + " is "
+                        + (holder != null
+                            ? "already open for " + holder.folder
+                            : "locked outside this process - another cluster node still holds it, or a"
+                                + " stale lock was left behind")
+                        + " - searching without it");
                     return false;
                 } catch (Exception e) {
                     logWarning(folder + ": Incompatible or corrupt index, rebuilding: " + e.getMessage());
@@ -443,6 +449,33 @@ public class LuceneIndexManager extends PFComponent {
 
     private boolean isOcrEnabled() {
         return ConfigurationEntry.SEARCH_INDEX_OCR_ENABLED.getValueBoolean(getController());
+    }
+
+    /**
+     * PFC-3626: the OCR engine, built the first time a file is to be read by it. Unpacking the training
+     * data and the native libraries and holding an instance per indexing thread is what OCR costs before
+     * it has read a single page, and a server with {@code search.index.ocr.enabled=false} paid it at
+     * startup - the switch was read where OCR runs, never where it was built.
+     *
+     * @return the engine, or {@code null} if it cannot be built here
+     */
+    private TesseractOCR ocrEngine() {
+        TesseractOCR engine = TesseractOCR.getInstance();
+        if (engine != null) {
+            return engine;
+        }
+        Controller controller = getController();
+        String languages = ConfigurationEntry.SEARCH_INDEX_OCR_LANGUAGES.getValue(controller);
+        /* 1:1 with the indexing threads - they are the only callers of performOCR, so an instance is
+         * always available and the pool cannot run dry. */
+        int poolSize = Math.max(1, ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(controller));
+        int maxFileSizeMB = ConfigurationEntry.SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB.getValueInt(controller);
+        if (!ocrRequested) {
+            ocrRequested = true;
+            logInfo(folder + ": A file asks to be read by OCR - starting the engine");
+        }
+        TesseractOCR.initInstance(languages, poolSize, maxFileSizeMB);
+        return TesseractOCR.getInstance();
     }
 
     private static AutoDetectParser getSharedParser() {
@@ -549,7 +582,8 @@ public class LuceneIndexManager extends PFComponent {
 
         // 6) OCR languages expanded — new languages added require re-OCR
         String prevOcrLangs = meta.getProperty("ocr.languages", "");
-        String currentOcrLangs = ocrEngine != null ? ocrEngine.getLanguageConfig() : "";
+        TesseractOCR builtEngine = TesseractOCR.getInstance();
+        String currentOcrLangs = builtEngine != null ? builtEngine.getLanguageConfig() : "";
         if (isOcrEnabled() && !currentOcrLangs.isEmpty() && !prevOcrLangs.isEmpty()) {
             Set<String> prevSet = new HashSet<>(Arrays.asList(prevOcrLangs.split("\\+")));
             Set<String> currentSet = new HashSet<>(Arrays.asList(currentOcrLangs.split("\\+")));
@@ -587,8 +621,9 @@ public class LuceneIndexManager extends PFComponent {
         props.setProperty("lastRebuilt", String.valueOf(System.currentTimeMillis()));
         props.setProperty("contentExtraction.enabled", String.valueOf(isExtractContentEnabled()));
         props.setProperty("ocr.enabled", String.valueOf(isOcrEnabled()));
-        if (ocrEngine != null) {
-            props.setProperty("ocr.languages", ocrEngine.getLanguageConfig());
+        TesseractOCR engine = TesseractOCR.getInstance();
+        if (engine != null) {
+            props.setProperty("ocr.languages", engine.getLanguageConfig());
         }
 
         try (OutputStream out = Files.newOutputStream(metaFile)) {
@@ -1368,7 +1403,12 @@ public class LuceneIndexManager extends PFComponent {
             return null;
         }
         try {
-            String ocrText = ocrEngine.performOCR(filePath);
+            TesseractOCR engine = ocrEngine();
+            if (engine == null) {
+                logWarning(folder + ": OCR is on but the engine is not available for " + fileInfo);
+                return null;
+            }
+            String ocrText = engine.performOCR(filePath);
             if (ocrText != null && !ocrText.isBlank()) {
                 if (isFine()) {
                     logFine(folder + ": OCR extracted " + ocrText.length() + " chars from " + fileInfo);
