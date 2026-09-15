@@ -349,16 +349,16 @@ public class LuceneIndexManager extends PFComponent {
                      * with them, which is the one thing that must not happen here. Without an index
                      * this folder searches its database.
                      *
-                     * OPEN_INDEXES is static per JVM, so no entry means the lock is held outside this
-                     * process: on shared storage that is another cluster node which still has the
-                     * folder mounted. Saying "another folder" there sent readers looking on the wrong
-                     * machine. */
+                     * OPEN_INDEXES only knows the managers of THIS process, so it answers this in one
+                     * of two ways, and Lucene's own message tells them apart: NativeFSLockFactory says
+                     * "held by this virtual machine" for a writer of ours that was never closed, and
+                     * "held by another program" for a cluster node that still has the folder mounted on
+                     * the shared storage. Dropping that message left both looking like a local folder. */
                     LuceneIndexManager holder = OPEN_INDEXES.get(indexPath);
                     logWarning(folder + ": The search index at " + indexPath + " is "
                         + (holder != null
                             ? "already open for " + holder.folder
-                            : "locked outside this process - another cluster node still holds it, or a"
-                                + " stale lock was left behind")
+                            : "locked elsewhere (" + e.getMessage() + ")")
                         + " - searching without it");
                     return false;
                 } catch (Exception e) {
