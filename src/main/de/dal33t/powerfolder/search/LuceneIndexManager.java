@@ -2243,7 +2243,6 @@ public class LuceneIndexManager extends PFComponent {
         if (isFine()) {
             logFine(folder + (discard ? ": Discarding index..." : ": Shutting down..."));
         }
-        OPEN_INDEXES.remove(indexPath, this);
 
         // Let the background worker finish the file it is currently extracting.
         // It only checks closed between files — proceeding immediately would
@@ -2296,14 +2295,25 @@ public class LuceneIndexManager extends PFComponent {
         IndexWriter w = writer;
         if (sm != null) {
             try { sm.close(); }
-            catch (Exception ignored) {}
+            catch (Exception e) { logWarning(folder + ": Unable to close the index searcher. " + e); }
         }
         // rollback(), not close(): closing an IndexWriter COMMITS. There is nothing to commit for
         // an index that is being thrown away.
         if (w != null) {
+            /* Said out loud: the writer holds the Lucene lock, so a close that fails costs this folder
+             * its index for the rest of the process - every later manager finds the lock taken. It was
+             * swallowed here, which is why that state had no explanation. */
             try { if (throwingAway) { w.rollback(); } else { w.close(); } }
-            catch (Exception ignored) {}
+            catch (Exception e) {
+                logWarning(folder + ": Unable to release the index writer at " + indexPath
+                    + " - the lock stays held until this process ends. " + e);
+            }
         }
+
+        /* Out of the map only now. Removing first left a manager holding the lock while nobody could
+         * name it: the next one for this folder found the index taken and reported an unknown holder.
+         * remove(key, value) leaves a manager alone that has taken the path over in the meantime. */
+        OPEN_INDEXES.remove(indexPath, this);
 
         if (isFine()) {
             logFine(folder + ": Shutdown complete");
