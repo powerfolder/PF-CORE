@@ -146,11 +146,24 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private final AtomicInteger suspendConfigSave = new AtomicInteger(0);
     private final AtomicBoolean configSavePending = new AtomicBoolean(false);
+
     /**
      * PFC-3639: whether a bulk operation asked for a membership synchronization while it was
      * suspended. See {@link #triggerSynchronizeAllFolderMemberships()}.
      */
     private final AtomicBoolean membershipSyncPending = new AtomicBoolean(false);
+
+    /**
+     * PFC-3639: The shortest distance between two folder lists sent because of bulk operations.
+     * <p>
+     * The first request goes out at once - a join has to reach the peer now, and the handshake
+     * expects it there. What follows within the window rides along on one list at the end of it.
+     */
+    private static final long MEMBERSHIP_SYNC_MIN_INTERVAL_MS = 10000L;
+
+    /** PFC-3639: The synchronization waiting for the window to end, and when the last one ran. */
+    private ScheduledFuture<?> membershipSyncFuture;
+    private long membershipSyncLastRunAt;
     private Path foldersBasedir;
 
     /**
@@ -2275,7 +2288,48 @@ public class FolderRepository extends PFComponent implements Runnable {
             membershipSyncPending.set(true);
             return;
         }
+        // A single change outside a bulk operation goes out at once, the way it always did: the
+        // debounce is for the release of a bulk run, where the requests arrive in their hundreds.
         startFolderMembershipSynchronizer();
+    }
+
+    /**
+     * PFC-3639: Lets a burst of requests become one folder list.
+     * <p>
+     * Riding in the bulk callers' suspension took the count from one per folder down to one per
+     * completed loop, but a heavy mount wave completes many loops: mountFolder, mountTree and
+     * mountParallel each hold the suspension, and eight mount workers run at once. Measured on a
+     * cluster: a wave of about 6300 folders sent 200 folder lists in two minutes, together almost
+     * two million entries, because every release started one.
+     * <p>
+     * So the first release of a quiet period is served at once - that is the join, and the peer has
+     * to hear of it now - and everything arriving in the next
+     * {@link #MEMBERSHIP_SYNC_MIN_INTERVAL_MS} is answered by one list at the end of that window.
+     * A wave is then measured in a handful of lists, not in hundreds, and a single tree still sends
+     * exactly one.
+     */
+    private void scheduleFolderMembershipSynchronizer() {
+        long now = System.currentTimeMillis();
+        synchronized (folderMembershipSynchronizerLock) {
+            if (membershipSyncFuture != null && !membershipSyncFuture.isDone()) {
+                // One is already waiting for this window to end - this request rides along.
+                return;
+            }
+            long earliest = membershipSyncLastRunAt + MEMBERSHIP_SYNC_MIN_INTERVAL_MS;
+            if (now >= earliest) {
+                membershipSyncLastRunAt = now;
+                membershipSyncPending.set(false);
+                startFolderMembershipSynchronizer();
+                return;
+            }
+            membershipSyncFuture = getController().schedule(() -> {
+                synchronized (folderMembershipSynchronizerLock) {
+                    membershipSyncLastRunAt = System.currentTimeMillis();
+                }
+                membershipSyncPending.set(false);
+                startFolderMembershipSynchronizer();
+            }, earliest - now);
+        }
     }
 
     private void startFolderMembershipSynchronizer() {
@@ -2475,9 +2529,9 @@ public class FolderRepository extends PFComponent implements Runnable {
          * per completed loop instead of per mounted folder. Started directly, not through the
          * trigger: while another bulk run still holds the suspension the trigger would only set the
          * flag again, and the peers would not hear of the tree for as long as that run lasts. */
-        if (membershipSyncPending.getAndSet(false)) {
+        if (membershipSyncPending.get()) {
             logFine("Synchronizing the folder memberships once for the completed bulk operation");
-            startFolderMembershipSynchronizer();
+            scheduleFolderMembershipSynchronizer();
         }
     }
 
