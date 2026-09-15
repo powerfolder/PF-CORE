@@ -4809,7 +4809,13 @@ public class Folder extends PFComponent {
             msg += oldFileInfo.toDetailString();
         }
 
-        if (currentInfo.isMetaFolder()) {
+        /* The maintenance folder is the server talking to itself, and it is loud: creating a support
+         * package copies the recorded thread dumps into it, so one package wrote 9 988 of these lines
+         * into the very log it was collecting - 10 190 of the 92 545 item lines of that day. The item
+         * log of a real folder is what reconstructs where a file went and stays at INFO. */
+        if (currentInfo.isMetaFolder()
+            || Constants.FOLDER_SERVER_MAINTENANCE.equals(currentInfo.getName()))
+        {
             logFine(msg);
         } else {
             logInfo(msg);
