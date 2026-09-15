@@ -146,6 +146,11 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private final AtomicInteger suspendConfigSave = new AtomicInteger(0);
     private final AtomicBoolean configSavePending = new AtomicBoolean(false);
+    /**
+     * PFC-3639: whether a bulk operation asked for a membership synchronization while it was
+     * suspended. See {@link #triggerSynchronizeAllFolderMemberships()}.
+     */
+    private final AtomicBoolean membershipSyncPending = new AtomicBoolean(false);
     private Path foldersBasedir;
 
     /**
@@ -2250,11 +2255,30 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Triggers the synchronization of all known members with our folders. The
      * work is done in background thread. Former synchronization processed the
      * canceled.
+     * <p>
+     * PFC-3639: A bulk mount calls this once per folder - createFolder0 and removeFolder both do -
+     * and every run sends the COMPLETE folder list to every connected node. One workspace of 2487
+     * subfolders therefore queued 2487 messages against {@link Constants#MAX_MESSAGES_IN_SEND_QUEUE}
+     * of 2000, and the node was disconnected at the 2001st: "Too many messages in send queue: 2001".
+     * The reconnect mounted the tree again, so the cluster never settled.
+     * <p>
+     * The cancel below cannot prevent that: it is only checked between nodes, and with three nodes a
+     * run is through before the next trigger arrives. So the bulk callers' suspension is used instead
+     * - the same one that already keeps the configuration from being written per folder (PFC-3620) -
+     * and the memberships go out once per completed loop.
      */
     public void triggerSynchronizeAllFolderMemberships() {
         if (!started) {
             logFiner("Not synchronizing Foldermemberships, repo not started, yet");
         }
+        if (suspendConfigSave.get() > 0) {
+            membershipSyncPending.set(true);
+            return;
+        }
+        startFolderMembershipSynchronizer();
+    }
+
+    private void startFolderMembershipSynchronizer() {
         synchronized (folderMembershipSynchronizerLock) {
             if (folderMembershipSynchronizer != null) {
                 // Cancel the syncer
@@ -2446,6 +2470,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (configSavePending.getAndSet(false)) {
             logFine("Saving the configuration once for the completed bulk operation");
             getController().saveConfig();
+        }
+        /* PFC-3639: and the folder list once, for the same reason and with the same granularity -
+         * per completed loop instead of per mounted folder. Started directly, not through the
+         * trigger: while another bulk run still holds the suspension the trigger would only set the
+         * flag again, and the peers would not hear of the tree for as long as that run lasts. */
+        if (membershipSyncPending.getAndSet(false)) {
+            logFine("Synchronizing the folder memberships once for the completed bulk operation");
+            startFolderMembershipSynchronizer();
         }
     }
 

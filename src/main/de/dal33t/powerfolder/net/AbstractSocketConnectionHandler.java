@@ -402,6 +402,24 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
         return member;
     }
 
+    /**
+     * PFC-3639: Whether this connection runs between two servers.
+     * <p>
+     * The queue limit guards a server against a peer that does not read fast enough (PFC-2591,
+     * PFC-2742) - a client, where dropping the connection costs that client and nothing else.
+     * Between two nodes of a cluster the same limit IS the damage: a mount wave queues one message
+     * per folder, and cutting the link over it throws the whole tree away. The node reconnects,
+     * mounts the tree again and fills the queue again, which is the loop seen in production. What
+     * fills the queue there is work the cluster owes itself, so it is allowed to queue up.
+     *
+     * @return true when this node and the node at the other end are both servers
+     */
+    private boolean isServerToServer() {
+        Member remote = member;
+        return remote != null && remote.isServer()
+            && getController().getMySelf().isServer();
+    }
+
     @Override
     public Date getLastKeepaliveMessageTime() {
         return lastKeepaliveMessage;
@@ -562,9 +580,7 @@ public abstract class AbstractSocketConnectionHandler extends PFComponent
                 logFine(msg);
             }
             // PFC-2591/PFC-2742: Start
-            if (messagesToSendQueue
-                .size() > Constants.MAX_MESSAGES_IN_SEND_QUEUE)
-            {
+            if (messagesToSendQueue.size() > Constants.MAX_MESSAGES_IN_SEND_QUEUE && !isServerToServer()) {
                 String msg = "Disconnecting " + getIdentity()
                     + ": Too many messages in send queue: "
                     + messagesToSendQueue.size();
