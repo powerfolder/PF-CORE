@@ -58,6 +58,16 @@ public class FolderStatistic extends PFComponent {
      * The Date of the last change to a folder file.
      */
     private Date lastFileChangeDate;
+    /**
+     * The newest modification date seen while walking my own files, collected by
+     * {@link #calculateMemberStats} so that the walk happens once.
+     */
+    private Date calculatingChangeDate;
+    /**
+     * What was written to disk last, so that {@link #calculate0} can tell whether there is anything
+     * new to write without reading the file back in.
+     */
+    private FolderStatisticInfo lastWritten;
 
     // Contains this Folder's download progress
     // It differs from other counters in that it does only count
@@ -90,6 +100,7 @@ public class FolderStatistic extends PFComponent {
             Path file = folder.getSystemSubDir().resolve(Folder.FOLDER_STATISTIC);
             // Load cached disk results
             current = FolderStatisticInfo.load(file);
+            lastWritten = current;
         }
         if (current == null) {
             current = new FolderStatisticInfo(folder.getInfo());
@@ -174,6 +185,7 @@ public class FolderStatistic extends PFComponent {
         ProfilingEntry pe = Profiling.start();
         // clear statistics before
         calculating = new FolderStatisticInfo(folder.getInfo());
+        calculatingChangeDate = null;
 
         Collection<Member> members = folder.getMembersAsCollection();
         Collection<Member> membersCalulated = new ArrayList<Member>(
@@ -194,11 +206,14 @@ public class FolderStatistic extends PFComponent {
 
         // Archive size
         long archiveStart = System.currentTimeMillis();
-        calculating.setArchiveSize(folder.getFileArchiver().getSize());
+        // getSize() is synchronized and stats the size file, so the warning below reuses the figure
+        // instead of asking a second time.
+        long archiveSize = folder.getFileArchiver().getSize();
+        calculating.setArchiveSize(archiveSize);
         long archiveTook = System.currentTimeMillis() - archiveStart;
         if (archiveTook > 1000L * 60 && isWarning()) {
             logWarning(folder + ": Calculating archive size took " + (archiveTook / 1000)
-                + "s. Size: " + Format.formatBytesShort(folder.getFileArchiver().getSize()));
+                + "s. Size: " + Format.formatBytesShort(archiveSize));
         }
 
         // Switch figures / Take over partial sync infos.
@@ -213,15 +228,19 @@ public class FolderStatistic extends PFComponent {
                 Folder.FOLDER_STATISTIC + ".writing");
             Path file = folder.getSystemSubDir().resolve(
                 Folder.FOLDER_STATISTIC);
-            FolderStatisticInfo existing = FolderStatisticInfo.load(file);
-            if (!current.equals(existing) && current.save(tempFile)) {
+            /* What is in that file is what this folder wrote last, and that is remembered. Reading
+               it back deserialized the file on every run of every folder, only to compare it with
+               something already in memory. */
+            if (!current.equals(lastWritten) && current.save(tempFile)) {
                 try {
                     Files.deleteIfExists(file);
                     Files.move(tempFile, file);
+                    lastWritten = current;
                 } catch (IOException e) {
                     try {
                         Files.copy(tempFile, file);
                         Files.delete(tempFile);
+                        lastWritten = current;
                     } catch (IOException e2) {
                     }
                 }
@@ -229,19 +248,9 @@ public class FolderStatistic extends PFComponent {
             }
         }
 
-        // Recalculate the last modified date of the folder.
-        Date date = null;
-        for (FileInfo fileInfo : folder.getKnownFiles()) {
-            if (fileInfo.getModifiedDate() != null) {
-                if (date == null
-                    || date.compareTo(fileInfo.getModifiedDate()) < 0)
-                {
-                    date = fileInfo.getModifiedDate();
-                }
-            }
-        }
-        if (date != null) {
-            lastFileChangeDate = date;
+        // Collected while walking my own files above - the same collection this used to walk again.
+        if (calculatingChangeDate != null) {
+            lastFileChangeDate = calculatingChangeDate;
         }
 
         if (isFine()) {
@@ -311,6 +320,9 @@ public class FolderStatistic extends PFComponent {
         }
 
         FolderRepository repo = getController().getFolderRepository();
+        // The newest modification date of the folder is taken from my own files, and this is the walk
+        // over them - it used to be walked a second time after the figures were already written.
+        boolean trackChangeDate = member.isMySelf();
         int memberFilesCount = 0;
         int memberFilesCountInSync = 0;
         // The total size of the folder at the member (including files not in
@@ -323,6 +335,16 @@ public class FolderStatistic extends PFComponent {
                 return false;
             }
             calculating.setAnalyzedFiles(calculating.getAnalyzedFiles() + 1);
+            if (trackChangeDate) {
+                // Before the skips below: a deleted or excluded file still dates the folder, which is
+                // what the separate walk did.
+                Date modified = fileInfo.getModifiedDate();
+                if (modified != null
+                    && (calculatingChangeDate == null || calculatingChangeDate.compareTo(modified) < 0))
+                {
+                    calculatingChangeDate = modified;
+                }
+            }
             if (fileInfo.isDeleted()) {
                 continue;
             }
