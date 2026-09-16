@@ -42,8 +42,7 @@ import java.util.logging.Logger;
  * @version $Revision: 1.22 $
  */
 public class FolderStatistic extends PFComponent {
-    private static final Logger LOG = Logger.getLogger(FolderStatistic.class
-        .getName());
+    private static final Logger LOG = Logger.getLogger(FolderStatistic.class.getName());
 
     public static final int UNKNOWN_SYNC_STATUS = -1;
 
