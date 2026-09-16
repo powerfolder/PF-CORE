@@ -415,9 +415,15 @@ public class FileArchiverImpl implements FileArchiver {
 
         // Split something like 'file.txt' into 'file' and '.txt', so we can
         // insert the '_K_nnn' stuff.
+        /* The dot has to belong to the FILE, not to a directory on the way: a file without an
+         * extension below a directory whose name carries a dot ('2. Facharbeitsgruppe/Liste') put
+         * the version into the directory name instead ('2_K_0. Facharbeitsgruppe/Liste'). Every
+         * version then got a directory of its own, and since the archived file carried no _K_n,
+         * getBaseName rejected it: the versions were not listed, not restorable, and the nightly
+         * maintenance skipped them for good - they were never purged. */
         String[] parts = new String[2];
-        if (relativeName.contains(".")) {
-            int pos = relativeName.lastIndexOf(".");
+        int pos = relativeName.lastIndexOf('.');
+        if (pos > relativeName.lastIndexOf('/')) {
             parts[0] = relativeName.substring(0, pos);
             parts[1] = relativeName.substring(pos); // Includes the '.';
         } else {

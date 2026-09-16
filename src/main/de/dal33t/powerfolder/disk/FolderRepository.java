@@ -85,28 +85,25 @@ public class FolderRepository extends PFComponent implements Runnable {
     private static final long SLOW_SEARCH_THRESHOLD_MS = 10_000L;
 
     /**
-     * PFS-5856: How long a search over all folders may take before it gives up and answers with what
-     * it has. Shorter than the gateway timeout on purpose: a caller that has already been sent a 504
-     * is not waiting for the rest, and the folder tasks still queued would only keep the IO pool busy
-     * for a request nobody reads. On the test system that left 1379 threads standing, 1069 of them in
-     * a search, from 119 searches whose callers had been answered with 504 long before.
-     */
-    private static final long SEARCH_BUDGET_MS = 20_000L;
-
-    /**
-     * PFS-5856: How long a search waits for its turn before it is refused. Beyond this the answer
-     * would be worthless anyway - the gateway has given up by then.
-     */
-    private static final long SEARCH_QUEUE_WAIT_MS = 5_000L;
-
-    /**
      * PFS-5856: How many searches over all folders run at once, across the whole server. The limiter
      * inside the search caps the folder tasks OF ONE search; with one semaphore per search, N searches
      * ran N times that many tasks on the shared IO pool, and a single client could fill it by
      * repeating a search that had already timed out.
+     * <p>
+     * PFS-5863: how many, and how long a search may take, are read from the configuration
+     * ({@code search.concurrentSearches} and its neighbours). They used to be counted off the cores,
+     * which is the wrong measure for work that waits on an index far more than it computes: on a
+     * two-core server two people could search at a time and the third was refused.
      */
-    private static final Semaphore GLOBAL_SEARCHES =
-        new Semaphore(Math.max(2, Runtime.getRuntime().availableProcessors()));
+    private static volatile Semaphore globalSearches;
+
+    /**
+     * PFS-5863: how many folders are searched side by side, counted over the WHOLE server and not per
+     * search. Per search it would multiply: many searches allowed to run at once, each of them free to
+     * occupy the IO pool with as many folder tasks, is the thread explosion PFS-5856 was about. Shared,
+     * a lone search may use all of it and a busy server still never runs more folder tasks than this.
+     */
+    private static volatile Semaphore searchedFolders;
     private final Map<FolderInfo, Folder> folders;
     private final Map<FolderInfo, Folder> metaFolders;
 
@@ -149,6 +146,24 @@ public class FolderRepository extends PFComponent implements Runnable {
      */
     private final AtomicInteger suspendConfigSave = new AtomicInteger(0);
     private final AtomicBoolean configSavePending = new AtomicBoolean(false);
+
+    /**
+     * PFC-3639: whether a bulk operation asked for a membership synchronization while it was
+     * suspended. See {@link #triggerSynchronizeAllFolderMemberships()}.
+     */
+    private final AtomicBoolean membershipSyncPending = new AtomicBoolean(false);
+
+    /**
+     * PFC-3639: The shortest distance between two folder lists sent because of bulk operations.
+     * <p>
+     * The first request goes out at once - a join has to reach the peer now, and the handshake
+     * expects it there. What follows within the window rides along on one list at the end of it.
+     */
+    private static final long MEMBERSHIP_SYNC_MIN_INTERVAL_MS = 10000L;
+
+    /** PFC-3639: The synchronization waiting for the window to end, and when the last one ran. */
+    private ScheduledFuture<?> membershipSyncFuture;
+    private long membershipSyncLastRunAt;
     private Path foldersBasedir;
 
     /**
@@ -1126,13 +1141,16 @@ public class FolderRepository extends PFComponent implements Runnable {
         Reject.ifNull(folders, "Folders");
         Reject.ifNull(criteria, "Criteria");
 
-        // PFS-5856: one permit per search, counted over the whole server - see GLOBAL_SEARCHES.
+        Semaphore searches = globalSearches(getController());
+        /* A third of the time a search may take: waiting longer than that for a turn leaves too little
+         * of the budget to answer with anything worth reading. */
+        long queueWaitMS = 1000L * ConfigurationEntry.SEARCH_TIMEOUT_SECONDS.getValueInt(getController()) / 3;
+        // PFS-5856: one permit per search, counted over the whole server - see globalSearches.
         try {
-            if (!GLOBAL_SEARCHES.tryAcquire(SEARCH_QUEUE_WAIT_MS, TimeUnit.MILLISECONDS)) {
-                logWarning("File search refused: none of the " + GLOBAL_SEARCHES.availablePermits()
-                    + " permits free within " + SEARCH_QUEUE_WAIT_MS + "ms, "
-                    + GLOBAL_SEARCHES.getQueueLength() + " waiting. keywords="
-                    + criteria.getKeyWords());
+            if (!searches.tryAcquire(queueWaitMS, TimeUnit.MILLISECONDS)) {
+                logWarning("File search refused: none of the " + searches.availablePermits()
+                    + " permits free within " + queueWaitMS + "ms, " + searches.getQueueLength()
+                    + " waiting. keywords=" + criteria.getKeyWords());
                 return Collections.emptyList();
             }
         } catch (InterruptedException e) {
@@ -1142,21 +1160,63 @@ public class FolderRepository extends PFComponent implements Runnable {
         try {
             return searchFilesWithinBudget(folders, criteria);
         } finally {
-            GLOBAL_SEARCHES.release();
+            searches.release();
+        }
+    }
+
+    /** How many permits the two limiters were built with, so a changed configuration rebuilds them. */
+    private static volatile int builtFor;
+
+    /** The server-wide limit on searches, rebuilt when the configuration says another number. */
+    private static Semaphore globalSearches(Controller controller) {
+        rebuildLimitsIfChanged(controller);
+        return globalSearches;
+    }
+
+    /** How much searching may run at once, never less than two of anything. */
+    private static int concurrency(Controller controller) {
+        return Math.max(2, ConfigurationEntry.SEARCH_CONCURRENCY.getValueInt(controller));
+    }
+
+    /** The server-wide limit on folder searches, rebuilt when the configuration says another number. */
+    private static Semaphore searchedFolders(Controller controller) {
+        rebuildLimitsIfChanged(controller);
+        return searchedFolders;
+    }
+
+    /**
+     * PFS-5863: both limiters carry the number they were built with, and a configuration that says
+     * another one builds them anew - built once, search.concurrency only ever took effect on a restart,
+     * which is no way to tune a running server. Permits held by a search under way go back into the
+     * semaphore they came from, which is then nobody's: the old limit lets go of the last searches under
+     * it while the new one starts empty.
+     */
+    private static void rebuildLimitsIfChanged(Controller controller) {
+        int permits = concurrency(controller);
+        if (globalSearches != null && searchedFolders != null && builtFor == permits) {
+            return;
+        }
+        synchronized (FolderRepository.class) {
+            if (globalSearches == null || searchedFolders == null || builtFor != permits) {
+                globalSearches = new Semaphore(permits);
+                searchedFolders = new Semaphore(permits);
+                builtFor = permits;
+            }
         }
     }
 
     /** The search itself, with its permit held - see {@link #searchFiles}. */
     private List<FileInfo> searchFilesWithinBudget(Collection<Folder> folders,
                                                    FileInfoCriteria criteria) {
-        // Cap the number of folder searches running at once so a single search never floods the shared
-        // IO pool. Each task holds a permit until it finished; searches are a mix of Lucene/DAO reads,
-        // so a bit above the core count is fine.
-        int maxConcurrent = Math.max(2, Runtime.getRuntime().availableProcessors() * 2);
-        Semaphore limiter = new Semaphore(maxConcurrent);
+        /* Cap the number of folder searches running at once so the searches never flood the shared IO
+         * pool. Each task holds a permit until it finished. PFS-5863: a folder search waits on its index
+         * far more than it computes, so the count is a configured one and no longer a multiple of the
+         * cores - searching a workspace of 572 subfolders four at a time took 14 seconds. */
+        Semaphore limiter = searchedFolders(getController());
 
         long started = System.currentTimeMillis();
-        long deadline = started + SEARCH_BUDGET_MS;
+        long deadline = started
+            + 1000L * ConfigurationEntry.SEARCH_TIMEOUT_SECONDS.getValueInt(getController());
         int skipped = 0;
 
         /* PFS-5851: the domain of every folder searched goes into criteria of ours, so the ones the
@@ -2208,11 +2268,71 @@ public class FolderRepository extends PFComponent implements Runnable {
      * Triggers the synchronization of all known members with our folders. The
      * work is done in background thread. Former synchronization processed the
      * canceled.
+     * <p>
+     * PFC-3639: A bulk mount calls this once per folder - createFolder0 and removeFolder both do -
+     * and every run sends the COMPLETE folder list to every connected node. One workspace of 2487
+     * subfolders therefore queued 2487 messages against {@link Constants#MAX_MESSAGES_IN_SEND_QUEUE}
+     * of 2000, and the node was disconnected at the 2001st: "Too many messages in send queue: 2001".
+     * The reconnect mounted the tree again, so the cluster never settled.
+     * <p>
+     * The cancel below cannot prevent that: it is only checked between nodes, and with three nodes a
+     * run is through before the next trigger arrives. So the bulk callers' suspension is used instead
+     * - the same one that already keeps the configuration from being written per folder (PFC-3620) -
+     * and the memberships go out once per completed loop.
      */
     public void triggerSynchronizeAllFolderMemberships() {
         if (!started) {
             logFiner("Not synchronizing Foldermemberships, repo not started, yet");
         }
+        if (suspendConfigSave.get() > 0) {
+            membershipSyncPending.set(true);
+            return;
+        }
+        // A single change outside a bulk operation goes out at once, the way it always did: the
+        // debounce is for the release of a bulk run, where the requests arrive in their hundreds.
+        startFolderMembershipSynchronizer();
+    }
+
+    /**
+     * PFC-3639: Lets a burst of requests become one folder list.
+     * <p>
+     * Riding in the bulk callers' suspension took the count from one per folder down to one per
+     * completed loop, but a heavy mount wave completes many loops: mountFolder, mountTree and
+     * mountParallel each hold the suspension, and eight mount workers run at once. Measured on a
+     * cluster: a wave of about 6300 folders sent 200 folder lists in two minutes, together almost
+     * two million entries, because every release started one.
+     * <p>
+     * So the first release of a quiet period is served at once - that is the join, and the peer has
+     * to hear of it now - and everything arriving in the next
+     * {@link #MEMBERSHIP_SYNC_MIN_INTERVAL_MS} is answered by one list at the end of that window.
+     * A wave is then measured in a handful of lists, not in hundreds, and a single tree still sends
+     * exactly one.
+     */
+    private void scheduleFolderMembershipSynchronizer() {
+        long now = System.currentTimeMillis();
+        synchronized (folderMembershipSynchronizerLock) {
+            if (membershipSyncFuture != null && !membershipSyncFuture.isDone()) {
+                // One is already waiting for this window to end - this request rides along.
+                return;
+            }
+            long earliest = membershipSyncLastRunAt + MEMBERSHIP_SYNC_MIN_INTERVAL_MS;
+            if (now >= earliest) {
+                membershipSyncLastRunAt = now;
+                membershipSyncPending.set(false);
+                startFolderMembershipSynchronizer();
+                return;
+            }
+            membershipSyncFuture = getController().schedule(() -> {
+                synchronized (folderMembershipSynchronizerLock) {
+                    membershipSyncLastRunAt = System.currentTimeMillis();
+                }
+                membershipSyncPending.set(false);
+                startFolderMembershipSynchronizer();
+            }, earliest - now);
+        }
+    }
+
+    private void startFolderMembershipSynchronizer() {
         synchronized (folderMembershipSynchronizerLock) {
             if (folderMembershipSynchronizer != null) {
                 // Cancel the syncer
@@ -2404,6 +2524,14 @@ public class FolderRepository extends PFComponent implements Runnable {
         if (configSavePending.getAndSet(false)) {
             logFine("Saving the configuration once for the completed bulk operation");
             getController().saveConfig();
+        }
+        /* PFC-3639: and the folder list once, for the same reason and with the same granularity -
+         * per completed loop instead of per mounted folder. Started directly, not through the
+         * trigger: while another bulk run still holds the suspension the trigger would only set the
+         * flag again, and the peers would not hear of the tree for as long as that run lasts. */
+        if (membershipSyncPending.get()) {
+            logFine("Synchronizing the folder memberships once for the completed bulk operation");
+            scheduleFolderMembershipSynchronizer();
         }
     }
 

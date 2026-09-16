@@ -107,6 +107,34 @@ public class SplitConfig extends Properties {
         return folders.remove(key);
     }
 
+    /**
+     * Removes every folder entry whose key starts with the given prefix.
+     * <p>
+     * Walks the folder half in place. {@link #keySet()} builds a new HashSet of every key in both
+     * halves, which is what {@link FolderSettings#removeEntries} used to do per unmounted folder: on a
+     * server holding 14 000 folders that is tens of thousands of keys copied and hashed each time,
+     * while every other thread waits for this config. A thread dump taken during a mount handover
+     * showed 39 of 1808 threads queued behind exactly that.
+     *
+     * @param prefix the key prefix, e.g. {@code f.<folder id>.}
+     *
+     * @return how many entries were removed
+     */
+    public synchronized int removeFolderEntries(String prefix) {
+        if (prefix == null || prefix.isEmpty()) {
+            return 0;
+        }
+        int removed = 0;
+        Iterator<Object> keys = folders.keySet().iterator();
+        while (keys.hasNext()) {
+            if (String.valueOf(keys.next()).startsWith(prefix)) {
+                keys.remove();
+                removed++;
+            }
+        }
+        return removed;
+    }
+
     @Override
     public int size() {
         return regular.size() + folders.size();

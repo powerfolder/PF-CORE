@@ -250,6 +250,11 @@ public class Account implements Serializable, D2DObject, Auditable {
 
     @ManyToMany
     @JoinTable(name = "Account_Groups", joinColumns = @JoinColumn(name = "Account_oid"), inverseJoinColumns = @JoinColumn(name = "AGroup_oid"))
+    /* The collection is eager, so loading many accounts loads as many group collections - one round
+     * trip each without this. permissions and computers next door have carried it all along; this one
+     * was missed. A run over all accounts (the periodic check walks 17 392 of them) pays for it in
+     * full. */
+    @BatchSize(size = 1337)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Group> groups;

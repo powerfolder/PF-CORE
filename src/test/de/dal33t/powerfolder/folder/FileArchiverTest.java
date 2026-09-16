@@ -77,6 +77,38 @@ public class FileArchiverTest extends TwoControllerTestCase {
         assertEquals(fib.getRelativeName(), fia.getRelativeName());
     }
 
+    /**
+     * The version marker belongs to the file, not to a directory on the way. A file without an
+     * extension below a directory whose name carries a dot put the _K_n into the DIRECTORY name,
+     * so every version got a directory of its own and the archived file carried no marker at all:
+     * the versions were not listed, not restorable, and the nightly maintenance skipped them for
+     * good with "File not in archive".
+     */
+    public void testArchiveFileWithoutExtensionBelowDottedDirectory() throws IOException {
+        Folder fb = getFolderAtBart();
+        Path dir = Files.createDirectories(fb.getLocalBase().resolve("2. Facharbeitsgruppe"));
+        Path tb = TestHelper.createRandomFile(dir, "Betriebsartenliste");
+
+        scanFolder(fb);
+        TestHelper.waitMilliSeconds(3000);
+
+        FileInfo fib = fb.getKnownFiles().iterator().next();
+        assertEquals("2. Facharbeitsgruppe/Betriebsartenliste", fib.getRelativeName());
+
+        Path archive = fb.getSystemSubDir().resolve("archive");
+        Files.createDirectories(archive);
+        FileArchiver fa = new FileArchiverImpl(archive, getContollerBart().getMySelf().getInfo());
+        fa.archive(fib, tb, false);
+
+        Path expected = archive.resolve("2. Facharbeitsgruppe")
+            .resolve("Betriebsartenliste_K_" + fib.getVersion());
+        assertTrue("Not archived at " + expected, Files.exists(expected));
+
+        List<FileInfo> versions = fa.getArchivedFilesInfos(fib);
+        assertEquals(1, versions.size());
+        assertEquals(fib.getRelativeName(), versions.get(0).getRelativeName());
+    }
+
     public void testBackupOnDownload() {
         final Folder fb = getFolderAtBart();
 

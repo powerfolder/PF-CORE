@@ -46,6 +46,7 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.BytesRef;
@@ -149,6 +150,12 @@ public class LuceneIndexManager extends PFComponent {
      * the most frequent handful is ever shown, so this merely keeps a keystroke bounded on large indexes.
      */
     private static final int SUGGEST_MAX_TERMS = 200;
+
+    /**
+     * PFS-5865: the longest term written to the index. Lucene's limit is 32766 BYTES; at four bytes per
+     * character, the worst UTF-8 can do, this stays under it whatever the text is made of.
+     */
+    private static final int MAX_TERM_CHARS = 8000;
 
     /** Result cap for a search whose criteria set none. */
     private static final int DEFAULT_MAX_RESULTS = 1_000;
@@ -267,7 +274,8 @@ public class LuceneIndexManager extends PFComponent {
     private volatile IndexWriter writer;
     private volatile SearcherManager searcherManager;
     private final Object openLock = new Object();
-    private final TesseractOCR ocrEngine;
+    /** PFC-3626: built by {@link #ocrEngine()} when a file is to be read by it, and shared by all folders. */
+    private static volatile boolean ocrRequested;
 
     private final LinkedBlockingQueue<FileInfo> indexQueue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<FileInfo> contentQueue = new LinkedBlockingQueue<>();
@@ -299,14 +307,10 @@ public class LuceneIndexManager extends PFComponent {
 
         this.analyzer = new StandardAnalyzer();
 
-        String ocrLanguages = ConfigurationEntry.SEARCH_INDEX_OCR_LANGUAGES.getValue(controller);
-        int maxIndexThreads = ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(controller);
-        // 1:1 with the indexing threads — they are the only callers of performOCR,
-        // so this guarantees an instance is always available (no pool exhaustion).
-        int ocrPoolSize = Math.max(1, maxIndexThreads);
-        int ocrMaxFileSizeMB = ConfigurationEntry.SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB.getValueInt(controller);
-        TesseractOCR.initInstance(ocrLanguages, ocrPoolSize, ocrMaxFileSizeMB);
-        this.ocrEngine = TesseractOCR.getInstance();
+        /* PFC-3626: the OCR engine is built by the first file that is actually to be read by it, not
+         * here. Built here it was built on every server: the first folder to get an index unpacked the
+         * training data and the native libraries and started its pooled instances, and the switch that
+         * says whether OCR happens at all was never asked. */
 
         if (isFine()) {
             logFine(folder + ": Lucene index registered at " + indexPath.toAbsolutePath());
@@ -340,13 +344,22 @@ public class LuceneIndexManager extends PFComponent {
                 try {
                     w = new IndexWriter(FSDirectory.open(indexPath), new IndexWriterConfig(analyzer));
                 } catch (LockObtainFailedException e) {
-                    /* Held by another manager on the same directory - the folder was mounted twice.
-                     * This is NOT a corrupt index: falling through to the rebuild below would delete
-                     * the index files of the folder that is working with them, which is the one thing
-                     * that must not happen here. Without an index this folder searches its database. */
-                    LuceneIndexManager owner = OPEN_INDEXES.get(indexPath);
-                    logWarning(folder + ": The search index at " + indexPath + " is already open for "
-                        + (owner != null ? owner.folder : "another folder") + " - searching without it");
+                    /* Someone else has the directory open. This is NOT a corrupt index: falling
+                     * through to the rebuild below would delete the index files of whoever is working
+                     * with them, which is the one thing that must not happen here. Without an index
+                     * this folder searches its database.
+                     *
+                     * OPEN_INDEXES only knows the managers of THIS process, so it answers this in one
+                     * of two ways, and Lucene's own message tells them apart: NativeFSLockFactory says
+                     * "held by this virtual machine" for a writer of ours that was never closed, and
+                     * "held by another program" for a cluster node that still has the folder mounted on
+                     * the shared storage. Dropping that message left both looking like a local folder. */
+                    LuceneIndexManager holder = OPEN_INDEXES.get(indexPath);
+                    logWarning(folder + ": The search index at " + indexPath + " is "
+                        + (holder != null
+                            ? "already open for " + holder.folder
+                            : "locked elsewhere (" + e.getMessage() + ")")
+                        + " - searching without it");
                     return false;
                 } catch (Exception e) {
                     logWarning(folder + ": Incompatible or corrupt index, rebuilding: " + e.getMessage());
@@ -436,6 +449,33 @@ public class LuceneIndexManager extends PFComponent {
 
     private boolean isOcrEnabled() {
         return ConfigurationEntry.SEARCH_INDEX_OCR_ENABLED.getValueBoolean(getController());
+    }
+
+    /**
+     * PFC-3626: the OCR engine, built the first time a file is to be read by it. Unpacking the training
+     * data and the native libraries and holding an instance per indexing thread is what OCR costs before
+     * it has read a single page, and a server with {@code search.index.ocr.enabled=false} paid it at
+     * startup - the switch was read where OCR runs, never where it was built.
+     *
+     * @return the engine, or {@code null} if it cannot be built here
+     */
+    private TesseractOCR ocrEngine() {
+        TesseractOCR engine = TesseractOCR.getInstance();
+        if (engine != null) {
+            return engine;
+        }
+        Controller controller = getController();
+        String languages = ConfigurationEntry.SEARCH_INDEX_OCR_LANGUAGES.getValue(controller);
+        /* 1:1 with the indexing threads - they are the only callers of performOCR, so an instance is
+         * always available and the pool cannot run dry. */
+        int poolSize = Math.max(1, ConfigurationEntry.SEARCH_INDEX_MAX_THREADS.getValueInt(controller));
+        int maxFileSizeMB = ConfigurationEntry.SEARCH_INDEX_OCR_MAX_FILE_SIZE_MB.getValueInt(controller);
+        if (!ocrRequested) {
+            ocrRequested = true;
+            logInfo(folder + ": A file asks to be read by OCR - starting the engine");
+        }
+        TesseractOCR.initInstance(languages, poolSize, maxFileSizeMB);
+        return TesseractOCR.getInstance();
     }
 
     private static AutoDetectParser getSharedParser() {
@@ -542,7 +582,8 @@ public class LuceneIndexManager extends PFComponent {
 
         // 6) OCR languages expanded — new languages added require re-OCR
         String prevOcrLangs = meta.getProperty("ocr.languages", "");
-        String currentOcrLangs = ocrEngine != null ? ocrEngine.getLanguageConfig() : "";
+        TesseractOCR builtEngine = TesseractOCR.getInstance();
+        String currentOcrLangs = builtEngine != null ? builtEngine.getLanguageConfig() : "";
         if (isOcrEnabled() && !currentOcrLangs.isEmpty() && !prevOcrLangs.isEmpty()) {
             Set<String> prevSet = new HashSet<>(Arrays.asList(prevOcrLangs.split("\\+")));
             Set<String> currentSet = new HashSet<>(Arrays.asList(currentOcrLangs.split("\\+")));
@@ -580,8 +621,9 @@ public class LuceneIndexManager extends PFComponent {
         props.setProperty("lastRebuilt", String.valueOf(System.currentTimeMillis()));
         props.setProperty("contentExtraction.enabled", String.valueOf(isExtractContentEnabled()));
         props.setProperty("ocr.enabled", String.valueOf(isOcrEnabled()));
-        if (ocrEngine != null) {
-            props.setProperty("ocr.languages", ocrEngine.getLanguageConfig());
+        TesseractOCR engine = TesseractOCR.getInstance();
+        if (engine != null) {
+            props.setProperty("ocr.languages", engine.getLanguageConfig());
         }
 
         try (OutputStream out = Files.newOutputStream(metaFile)) {
@@ -659,10 +701,13 @@ public class LuceneIndexManager extends PFComponent {
 
         ensureWorkerRunning();
         int queued = files.size() + dirs.size();
-        if (queued > 0) {
+        /* PFS-5865: a workspace rebuilding its index is worth a line; its subfolders are not. A
+         * workspace of hundreds of them writes hundreds of lines for one rebuild, and the few files of a
+         * single subfolder say nothing about it. */
+        if (queued > 0 && !folder.isSubFolder()) {
             logInfo(folder + ": Rebuild queued — " + queued + " files");
         } else if (isFine()) {
-            logFine(folder + ": Rebuild queued — 0 files");
+            logFine(folder + ": Rebuild queued — " + queued + " files");
         }
     }
 
@@ -909,11 +954,12 @@ public class LuceneIndexManager extends PFComponent {
         doc.add(new StringField("docId", docId, Field.Store.YES));
         doc.add(new StringField("folderId", folder.getId(), Field.Store.YES));
         doc.add(new StoredField("folderName", folder.getName()));
-        doc.add(new TextField("fileName", fileName, Field.Store.YES));
+        doc.add(new TextField("fileName", text(fileName), Field.Store.YES));
         doc.add(new StoredField("extension", extension));
-        doc.add(new StringField("extensionExact", extension.toLowerCase(Locale.ROOT), Field.Store.NO));
-        doc.add(new TextField("relativeName", relativeName, Field.Store.YES));
-        doc.add(new StringField("relativeNameExact", relativeName.toLowerCase(Locale.ROOT), Field.Store.NO));
+        doc.add(new StringField("extensionExact", term(extension.toLowerCase(Locale.ROOT)), Field.Store.NO));
+        doc.add(new TextField("relativeName", text(relativeName), Field.Store.YES));
+        doc.add(new StringField("relativeNameExact", term(relativeName.toLowerCase(Locale.ROOT)),
+                Field.Store.NO));
         long modifiedDate = fileInfo.getModifiedDate() != null ? fileInfo.getModifiedDate().getTime() : 0;
         doc.add(new LongPoint("modifiedDate", modifiedDate));
         doc.add(new StoredField("modifiedDate", modifiedDate));
@@ -934,11 +980,12 @@ public class LuceneIndexManager extends PFComponent {
             doc.add(new StoredField("tags", fileInfo.getTags()));
             List<String> tagList = fileInfo.getTagsList();
             if (!tagList.isEmpty()) {
-                doc.add(new TextField("tags", String.join(" ", tagList), Field.Store.NO));
+                doc.add(new TextField("tags", text(String.join(" ", tagList)), Field.Store.NO));
                 for (String tag : tagList) {
                     /* Tags are always matched case-insensitively: the term is normalized the same way here
                      * and in the tagsExact query below - lowercased and trimmed. */
-                    doc.add(new StringField("tagsExact", tag.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
+                    doc.add(new StringField("tagsExact", term(tag.toLowerCase(Locale.ROOT).trim()),
+                        Field.Store.NO));
                 }
             }
         }
@@ -949,11 +996,12 @@ public class LuceneIndexManager extends PFComponent {
                 doc.add(new StringField("modifiedByAccountId", modAccount.getOID(), Field.Store.YES));
             }
             if (StringUtils.isNotBlank(modAccount.getDisplayName())) {
-                doc.add(new TextField("modifiedByDisplayName", modAccount.getDisplayName(), Field.Store.YES));
+                doc.add(new TextField("modifiedByDisplayName", text(modAccount.getDisplayName()),
+                    Field.Store.YES));
                 addSuggestField(doc, "modifiedByDisplayNameExact", modAccount.getDisplayName());
             }
             if (StringUtils.isNotBlank(modAccount.getUsername())) {
-                doc.add(new TextField("modifiedByUsername", modAccount.getUsername(), Field.Store.YES));
+                doc.add(new TextField("modifiedByUsername", text(modAccount.getUsername()), Field.Store.YES));
             }
         }
         MemberInfo modDevice = fileInfo.getModifiedBy();
@@ -962,7 +1010,7 @@ public class LuceneIndexManager extends PFComponent {
                 doc.add(new StringField("modifiedByDeviceId", modDevice.id, Field.Store.YES));
             }
             if (StringUtils.isNotBlank(modDevice.nick)) {
-                doc.add(new TextField("modifiedByDeviceName", modDevice.nick, Field.Store.YES));
+                doc.add(new TextField("modifiedByDeviceName", text(modDevice.nick), Field.Store.YES));
                 addSuggestField(doc, "modifiedByDeviceNameExact", modDevice.nick);
             }
         }
@@ -997,7 +1045,7 @@ public class LuceneIndexManager extends PFComponent {
                     String content = extractContentTikaOnly(fileInfo, metadata);
                     throttleExtraction();
                     if (content != null && !content.isBlank()) {
-                        doc.add(new TextField("content", stripBinaryNoise(content), Field.Store.NO));
+                        doc.add(new TextField("content", text(stripBinaryNoise(content)), Field.Store.NO));
                         addMetadataFields(doc, metadata);
                     } else {
                         contentQueue.add(fileInfo);
@@ -1011,6 +1059,10 @@ public class LuceneIndexManager extends PFComponent {
 
             if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL && isCommitIntervalReached()) {
                 commitAndRefresh();
+            }
+        } catch (AlreadyClosedException e) {
+            if (isFine()) {
+                logFine(folder + ": Index closed while indexing " + fileInfo);
             }
         } catch (Exception e) {
             logWarning(folder + ": Index error for " + fileInfo + ": " + e.getMessage());
@@ -1040,7 +1092,7 @@ public class LuceneIndexManager extends PFComponent {
                 return;
             }
             Document doc = buildDocument(fileInfo);
-            doc.add(new TextField("content", stripBinaryNoise(content), Field.Store.NO));
+            doc.add(new TextField("content", text(stripBinaryNoise(content)), Field.Store.NO));
             addMetadataFields(doc, metadata);
             writer.updateDocument(
                     new Term("docId", buildDocId(fileInfo)), doc);
@@ -1050,6 +1102,13 @@ public class LuceneIndexManager extends PFComponent {
 
             if (uncommittedCount.incrementAndGet() >= COMMIT_INTERVAL && isCommitIntervalReached()) {
                 commitAndRefresh();
+            }
+        } catch (AlreadyClosedException e) {
+            /* PFS-5865: the folder was unmounted while its queue was still draining - the check above
+             * and the write cannot be one step. Nothing to act on, and nothing is lost: the file is
+             * indexed again with the folder. */
+            if (isFine()) {
+                logFine(folder + ": Index closed while extracting " + fileInfo);
             }
         } catch (Exception e) {
             logWarning(folder + ": Content extraction error for " + fileInfo + ": " + e.getMessage());
@@ -1083,7 +1142,41 @@ public class LuceneIndexManager extends PFComponent {
      * case-insensitive - searching is case-insensitive too, so a lowercase suggestion still matches.
      */
     private static void addSuggestField(Document doc, String field, String value) {
-        doc.add(new StringField(field, value.toLowerCase(Locale.ROOT).trim(), Field.Store.NO));
+        doc.add(new StringField(field, term(value.toLowerCase(Locale.ROOT).trim()), Field.Store.NO));
+    }
+
+    /**
+     * PFS-5865: Lucene refuses a term above 32766 bytes and the refusal aborts the whole document, so a
+     * single long run of characters - a draw.io diagram pasted into a file, a base64 blob - cost the file
+     * its place in the index entirely: not even its name was findable. A run is broken into terms of
+     * {@link #MAX_TERM_CHARS} instead, which keeps the text searchable and costs the run, not the file.
+     */
+    static String text(String value) {
+        if (value == null || value.length() <= MAX_TERM_CHARS) {
+            return value;
+        }
+        StringBuilder capped = new StringBuilder(value.length() + value.length() / MAX_TERM_CHARS);
+        int run = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (Character.isWhitespace(c)) {
+                run = 0;
+            } else if (++run > MAX_TERM_CHARS) {
+                capped.append(' ');
+                run = 1;
+            }
+            capped.append(c);
+        }
+        return capped.toString();
+    }
+
+    /**
+     * PFS-5865: the same limit for a value that is ONE term - it is not split, it is cut. Nobody searches
+     * exactly for eight thousand characters, so what is beyond them can only cost the document.
+     */
+    static String term(String value) {
+        return value != null && value.length() > MAX_TERM_CHARS
+            ? value.substring(0, MAX_TERM_CHARS) : value;
     }
 
     /**
@@ -1112,11 +1205,11 @@ public class LuceneIndexManager extends PFComponent {
         }
         String title = metadata.get(TikaCoreProperties.TITLE);
         if (StringUtils.isNotBlank(title)) {
-            doc.add(new TextField("docTitle", title, Field.Store.YES));
+            doc.add(new TextField("docTitle", text(title), Field.Store.YES));
         }
         String author = metadata.get(TikaCoreProperties.CREATOR);
         if (StringUtils.isNotBlank(author)) {
-            doc.add(new TextField("docAuthor", author, Field.Store.YES));
+            doc.add(new TextField("docAuthor", text(author), Field.Store.YES));
         }
     }
 
@@ -1142,7 +1235,7 @@ public class LuceneIndexManager extends PFComponent {
                 }
                 return stripEncodingArtifacts(text);
             }
-        } catch (IOException | SAXException | TikaException e) {
+        } catch (IOException | SAXException | TikaException | RuntimeException e) {
             String fallback = readPlainTextFallback(filePath);
             if (fallback == null) {
                 if (isFine()) {
@@ -1225,9 +1318,12 @@ public class LuceneIndexManager extends PFComponent {
             if (text != null && !text.isBlank()) {
                 tikaText = text;
             }
-        } catch (IOException | SAXException | TikaException e) {
+        } catch (IOException | SAXException | TikaException | RuntimeException e) {
             // Tika aborted mid-parse: write limit reached (SAXException when the file
             // exceeds maxTextLength), a malformed/corrupt document, or an I/O error.
+            // PFS-5865: a parser that breaks on a file of its own format throws where nothing declares
+            // it - the RTF parser answers a malformed file with an IndexOutOfBoundsException. Caught
+            // here with the rest, the partial text is kept and the file stays searchable.
             // In every case BodyContentHandler retains the text emitted before the
             // abort — keep that partial text instead of discarding it, so the file
             // stays at least partially searchable.
@@ -1307,7 +1403,12 @@ public class LuceneIndexManager extends PFComponent {
             return null;
         }
         try {
-            String ocrText = ocrEngine.performOCR(filePath);
+            TesseractOCR engine = ocrEngine();
+            if (engine == null) {
+                logWarning(folder + ": OCR is on but the engine is not available for " + fileInfo);
+                return null;
+            }
+            String ocrText = engine.performOCR(filePath);
             if (ocrText != null && !ocrText.isBlank()) {
                 if (isFine()) {
                     logFine(folder + ": OCR extracted " + ocrText.length() + " chars from " + fileInfo);
@@ -2142,7 +2243,6 @@ public class LuceneIndexManager extends PFComponent {
         if (isFine()) {
             logFine(folder + (discard ? ": Discarding index..." : ": Shutting down..."));
         }
-        OPEN_INDEXES.remove(indexPath, this);
 
         // Let the background worker finish the file it is currently extracting.
         // It only checks closed between files — proceeding immediately would
@@ -2195,14 +2295,25 @@ public class LuceneIndexManager extends PFComponent {
         IndexWriter w = writer;
         if (sm != null) {
             try { sm.close(); }
-            catch (Exception ignored) {}
+            catch (Exception e) { logWarning(folder + ": Unable to close the index searcher. " + e); }
         }
         // rollback(), not close(): closing an IndexWriter COMMITS. There is nothing to commit for
         // an index that is being thrown away.
         if (w != null) {
+            /* Said out loud: the writer holds the Lucene lock, so a close that fails costs this folder
+             * its index for the rest of the process - every later manager finds the lock taken. It was
+             * swallowed here, which is why that state had no explanation. */
             try { if (throwingAway) { w.rollback(); } else { w.close(); } }
-            catch (Exception ignored) {}
+            catch (Exception e) {
+                logWarning(folder + ": Unable to release the index writer at " + indexPath
+                    + " - the lock stays held until this process ends. " + e);
+            }
         }
+
+        /* Out of the map only now. Removing first left a manager holding the lock while nobody could
+         * name it: the next one for this folder found the index taken and reported an unknown holder.
+         * remove(key, value) leaves a manager alone that has taken the path over in the meantime. */
+        OPEN_INDEXES.remove(indexPath, this);
 
         if (isFine()) {
             logFine(folder + ": Shutdown complete");

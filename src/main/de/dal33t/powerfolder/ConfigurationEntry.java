@@ -1097,6 +1097,21 @@ public enum ConfigurationEntry {
     SEARCH_INDEX_REBUILD_BEFORE("search.index.rebuildBefore", "0"),
 
     /**
+     * PFS-5863: How much searching runs at once, over the whole server - searches as well as the folders
+     * they are made of. A search waits on indexes far more than it computes, so the core count it used to
+     * be counted off was the wrong measure: two cores let two people search at a time.
+     */
+    SEARCH_CONCURRENCY("search.concurrency",
+            Math.max(64, Runtime.getRuntime().availableProcessors() * 16), true),
+
+    /**
+     * PFS-5863: How long a search may take, in seconds, before it answers with what it has; a third of it
+     * is how long it waits for its turn. Above the gateway timeout: it is meant to catch the search
+     * nobody waits for any more.
+     */
+    SEARCH_TIMEOUT_SECONDS("search.timeout.seconds", 30, true),
+
+    /**
      * Whether to log verbose.
      */
     VERBOSE("verbose", false),

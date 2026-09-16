@@ -256,13 +256,23 @@ public class FolderSettings {
      * 'f.TEST-Contacts' to remove config entries beginning with these.
      */
     public static void removeEntries(Properties p, String entryId) {
+        // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
+        // from also deleting things like 'f.TEST.XXXXX'.
+        String prefix = PREFIX_V4 + entryId + '.';
+        /* A SplitConfig keeps the folder entries apart from the rest and can walk them in place. Going
+         * through keySet() copies every key of BOTH halves into a new set - per unmounted folder, under
+         * the lock of the config that every other thread needs. That is what an unmount cost on a
+         * server with 14 000 folders, and a thread dump taken while a tree changed hands found 39 of
+         * 1808 threads waiting behind it. */
+        if (p instanceof SplitConfig) {
+            ((SplitConfig) p).removeFolderEntries(prefix);
+            return;
+        }
         HashSet<String> removeProps = new HashSet<>();
         synchronized (p) {
             for (Object val : p.keySet()) {
                 String propName = (String) val;
-                // Add a dot to prefix, like 'f.TEST-Contacts.', to prevent it
-                // from also deleting things like 'f.TEST.XXXXX'.
-                if (propName.startsWith(PREFIX_V4 + entryId + '.')) {
+                if (propName.startsWith(prefix)) {
                     removeProps.add(propName);
                 }
             }
