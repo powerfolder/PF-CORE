@@ -3070,17 +3070,46 @@ public class Folder extends PFComponent {
         List<FileInfo> rows = new ArrayList<>();
         for (FileInfo fInfo : source.getDAO().findAllFiles(null)) {
             FileInfo row = fromSubFolder ? FileInfoFactory.mapToTopFolder(fInfo) : fInfo;
-            if (!onlySubtree || row.isInsideSubFolder(currentInfo)) {
+            if ((!onlySubtree || row.isInsideSubFolder(currentInfo)) && !namesASystemDirectory(row)) {
                 rows.add(row);
             }
         }
         for (DirectoryInfo dInfo : source.getDAO().findAllDirectories(null)) {
             FileInfo row = fromSubFolder ? FileInfoFactory.mapToTopFolder(dInfo) : dInfo;
-            if (!onlySubtree || row.isInsideSubFolder(currentInfo)) {
+            if ((!onlySubtree || row.isInsideSubFolder(currentInfo)) && !namesASystemDirectory(row)) {
                 rows.add(row);
             }
         }
         return rows;
+    }
+
+    /**
+     * Whether a row names something inside a folder's own system directory, and is therefore not
+     * content that a migration may carry anywhere.
+     * <p>
+     * No scan produces such a row: {@link PathUtils#isScannable} refuses every path holding
+     * {@link Constants#POWERFOLDER_SYSTEM_SUBDIR}, and it is asked in the scanner, in the watcher and
+     * here in this class. A row that is there all the same came in past those gates, and handing it
+     * over made it the content of the receiving folder - a customer's subfolder took its own search
+     * index and the database of its meta folder over as files when its inheritance was interrupted,
+     * and archived all fourteen of them once the next scan found them missing.
+     *
+     * @param row the row about to be migrated
+     *
+     * @return true when one of its path segments is the system directory
+     */
+    private static boolean namesASystemDirectory(FileInfo row) {
+        String relativeName = row.getRelativeName();
+        if (relativeName == null || relativeName.indexOf(Constants.POWERFOLDER_SYSTEM_SUBDIR) < 0) {
+            // The free check: only a name carrying it at all can have it as a segment.
+            return false;
+        }
+        for (String segment : relativeName.split("/")) {
+            if (Constants.POWERFOLDER_SYSTEM_SUBDIR.equals(segment)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void initFileArchiver(int versions) {
