@@ -244,7 +244,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
-    @Cache(usage = CacheConcurrencyStrategy.NONE)
+    /* Cached like the groups next door. The collection stays eager - it travels to the client with the
+     * account - so without this every load of an account read all of its permission rows again. */
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
