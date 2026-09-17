@@ -2435,17 +2435,29 @@ public class Folder extends PFComponent {
             if (holder != null) {
                 return holder;
             }
-            logWarning(this + ": " + interrupted.getLocalizedName() + " holds this subfolder's rows but"
-                + " is not mounted - falling back to the top folder");
+            /* Not an error: subfolders mount side by side, so the holder may simply not be there
+               yet. Remembered, so getDAO() can wire the proxy to it once it is - before this, the
+               fallback lasted for the life of the mount and every reader of the subtree looked in a
+               database that was never written to. */
+            daoHolderPending = interrupted;
+            logFine(this + ": " + interrupted.getLocalizedName() + " holds this subfolder's rows and is"
+                + " not mounted yet - using the top folder until it is");
         }
         return getTopFolder();
     }
+
+    /**
+     * The interrupted subfolder that should hold this one's rows but was not mounted when the DAO was
+     * built. Null once it has been picked up, and for every folder that never needed one.
+     */
+    private volatile FolderInfo daoHolderPending;
 
     private void initFileInfoDAO() {
         if (dao != null) {
             // Stop old DAO
             dao.stop();
         }
+        daoHolderPending = null;
         if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
             dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
         } else {
@@ -6440,6 +6452,21 @@ public class Folder extends PFComponent {
      * @return the {@link FileInfoDAO}. TRAC #1422
      */
     public FileInfoDAO getDAO() {
+        /* PFS-5881: the holder may have arrived since. Subfolders mount side by side, so an inheriting
+           one is regularly built before the interrupted folder whose database it borrows, and it then
+           borrowed the top folder's instead - for good, because nothing looked again. One reference
+           read per access while that is pending, nothing at all once it is settled. */
+        FolderInfo pending = daoHolderPending;
+
+        if (pending != null && getController().getFolderRepository().getFolder(pending) != null) {
+            synchronized (this) {
+                if (daoHolderPending != null) {
+                    logInfo(this + ": " + pending.getLocalizedName() + " is mounted now - its database"
+                        + " takes over the rows of this subfolder");
+                    initFileInfoDAO();
+                }
+            }
+        }
         return dao;
     }
 
