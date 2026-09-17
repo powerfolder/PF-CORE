@@ -132,8 +132,13 @@ public class LuceneIndexManager extends PFComponent {
     /** PFS-5653: who a "device:" search looks at - the name of the device a file was last written on. */
     private static final String[] DEVICE_FIELDS = {"modifiedByDeviceName"};
 
+    /**
+     * The fields a QUOTED phrase is searched in. The tags are among them: a tag is written as a phrase
+     * ("Hallo BVL 2") and putting it in quotes is the obvious way to ask for exactly it - which found
+     * nothing at all while the tag field stood outside this list.
+     */
     private static final String[] PHRASE_FIELDS =
-            {"fileName", "relativeName", CONTENT_FIELD};
+            {"fileName", "relativeName", CONTENT_FIELD, "tags"};
 
     private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
 
@@ -2049,6 +2054,11 @@ public class LuceneIndexManager extends PFComponent {
             }
             disjunction.add(pb.build(), BooleanClause.Occur.SHOULD);
         }
+        /* A phrase that IS a tag says so exactly. The tags field carries every tag of a file in one
+         * stream of words, where a phrase query can also span the end of one tag and the start of the
+         * next; the exact term cannot, and it is the one a user quoting a tag means. */
+        disjunction.add(new TermQuery(new Term("tagsExact", phrase.toLowerCase(Locale.ROOT).trim())),
+                BooleanClause.Occur.SHOULD);
         disjunction.setMinimumNumberShouldMatch(1);
         return disjunction.build();
     }
