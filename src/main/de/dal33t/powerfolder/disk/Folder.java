@@ -2109,10 +2109,14 @@ public class Folder extends PFComponent {
     public List<FolderInfo> interruptedSubFoldersIn(String location) {
         List<FolderInfo> inside = new ArrayList<>();
         FolderInfo top = currentInfo.isSubFolder() ? currentInfo.getTopFolder() : currentInfo;
+        // A blank location is the whole folder - every barrier of the tree lies inside a top folder.
+        // It used to match nothing at all, since no location starts with a lone '/'.
+        boolean everything = StringUtils.isBlank(location);
         for (FolderInfo barrier : InterruptedSubFolderIndex.barriersOf(top)) {
             String barrierLocation = barrier.locationPath();
             if (barrierLocation != null
-                && (barrierLocation.equals(location) || barrierLocation.startsWith(location + '/')))
+                && (everything || barrierLocation.equals(location)
+                    || barrierLocation.startsWith(location + '/')))
             {
                 inside.add(barrier);
             }
