@@ -1839,23 +1839,45 @@ public class LuceneIndexManager extends PFComponent {
             /* The filter clauses are built once; the keyword part is added on top, so the query can be
              * repeated with typo tolerance without rebuilding the filters. */
             Query filterQuery = bqBuilder.build();
-            Query contentQuery = hasKeywords ? buildQuery(queryText, false) : null;
+            Query contentQuery = hasKeywords ? buildQuery(queryText, false, false) : null;
             TopDocs topDocs = search(searcher, withContent(filterQuery, contentQuery), maxResults, sort);
 
             if (isFine()) {
                 logFine(folder + ": Found " + topDocs.totalHits + " for query '" + queryText + "'");
             }
 
+            /* PFS-5863: a word INSIDE a word - "rechnung" in "Jahresrechnung" - is a wildcard query, and
+             * a wildcard walks the term dictionary of the index it is asked of. Asked of every folder of
+             * a server that carries thousands of them, that was the bulk of the time: a search of three
+             * words took 7.1 s, the same search without the wildcards 1.8 s, and a plain term query over
+             * the very same indexes 0.6 s. So it waits for a folder that found nothing without it - the
+             * same place the typo tolerance waits. */
+            /* What ran last, so that no round repeats the query of the round before it: a query of short
+             * words gets no fuzzy clause and a query of long ones no wildcard, and either way the next
+             * round would otherwise rebuild the very query that just came back empty. */
+            Query lastQuery = contentQuery;
+            if (topDocs.scoreDocs.length == 0 && contentQuery != null) {
+                Query infixQuery = buildQuery(queryText, true, false);
+                if (infixQuery != null && !infixQuery.equals(lastQuery)) {
+                    lastQuery = infixQuery;
+                    topDocs = search(searcher, withContent(filterQuery, infixQuery), maxResults, sort);
+                    if (isFine()) {
+                        logFine(folder + ": Infix fallback found " + topDocs.totalHits
+                                + " for query '" + queryText + "'");
+                    }
+                }
+            }
+
             /* PFS-5653: typo tolerance costs a FuzzyQuery per token and field and drags in near-misses, so
              * it is a fallback only - a query that found something is never re-run fuzzily. */
             if (topDocs.scoreDocs.length == 0 && contentQuery != null && isFuzzySearchEnabled()) {
-                Query fuzzyQuery = buildQuery(queryText, true);
+                Query fuzzyQuery = buildQuery(queryText, true, true);
                 /* Only a token of four characters or more gets a fuzzy clause (addTokenQueries), so a
                  * short query builds the very query that just ran - and running it again is the one
                  * thing this fallback must not do. A folder that finds nothing is the normal case on a
-                 * server carrying thousands of folder indexes: the second pass runs in nearly all of
-                 * them, and a search for "QA" paid it in every single one. */
-                if (fuzzyQuery != null && !fuzzyQuery.equals(contentQuery)) {
+                 * server carrying thousands of folder indexes: the round runs in nearly all of them,
+                 * and a search for "QA" paid it in every single one. */
+                if (fuzzyQuery != null && !fuzzyQuery.equals(lastQuery)) {
                     topDocs = search(searcher, withContent(filterQuery, fuzzyQuery), maxResults, sort);
                     if (isFine()) {
                         logFine(folder + ": Fuzzy fallback found " + topDocs.totalHits
@@ -1926,7 +1948,7 @@ public class LuceneIndexManager extends PFComponent {
      * @return the composed query, or null if input is empty after
      *         sanitization
      */
-    private Query buildQuery(String queryText, boolean fuzzy) {
+    private Query buildQuery(String queryText, boolean infix, boolean fuzzy) {
         List<String> phrases = extractPhrases(queryText);
 
         String sanitized = queryText.trim().toLowerCase(Locale.ROOT)
@@ -1959,7 +1981,7 @@ public class LuceneIndexManager extends PFComponent {
                 BooleanQuery.Builder exclusion = new BooleanQuery.Builder();
                 for (String term : terms) {
                     BooleanQuery.Builder oneTerm = new BooleanQuery.Builder();
-                    addTokenQueries(oneTerm, term, 1.0f, 1.0f, 1.0f, false);
+                    addTokenQueries(oneTerm, term, 1.0f, 1.0f, 1.0f, infix, false);
                     oneTerm.setMinimumNumberShouldMatch(1);
                     exclusion.add(oneTerm.build(), BooleanClause.Occur.MUST);
                 }
@@ -1970,16 +1992,16 @@ public class LuceneIndexManager extends PFComponent {
             for (String term : terms) {
                 BooleanQuery.Builder fieldDisjunction = new BooleanQuery.Builder();
 
-                addTokenQueries(fieldDisjunction, term, 3.0f, 2.0f, 1.0f, fuzzy);
+                addTokenQueries(fieldDisjunction, term, 3.0f, 2.0f, 1.0f, infix, fuzzy);
 
                 String folded = foldAccents(term);
                 if (!folded.equals(term) && !folded.isEmpty()) {
-                    addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, false);
+                    addTokenQueries(fieldDisjunction, folded, 1.5f, 1.0f, 0.5f, infix, false);
                 }
 
                 String stripped = stripAccents(term);
                 if (!stripped.equals(term) && !stripped.equals(folded) && !stripped.isEmpty()) {
-                    addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, false);
+                    addTokenQueries(fieldDisjunction, stripped, 1.0f, 0.5f, 0.25f, infix, false);
                 }
 
                 fieldDisjunction.setMinimumNumberShouldMatch(1);
@@ -2066,7 +2088,7 @@ public class LuceneIndexManager extends PFComponent {
     private void addTokenQueries(BooleanQuery.Builder builder,
                                  String token,
                                  float exactBoost, float prefixBoost,
-                                 float wildcardBoost, boolean fuzzy) {
+                                 float wildcardBoost, boolean infix, boolean fuzzy) {
         for (String field : SEARCH_FIELDS) {
             builder.add(
                     new BoostQuery(new TermQuery(
@@ -2083,7 +2105,7 @@ public class LuceneIndexManager extends PFComponent {
             // PFS-5652: infix wildcard only on the name/path fields (see INFIX_WILDCARD_FIELDS). On the
             // full-text content field it would scan the whole term dictionary; on the other fields it just
             // adds automaton-compile cost for little benefit.
-            if (token.length() <= 12 && INFIX_WILDCARD_FIELDS.contains(field)) {
+            if (infix && token.length() <= 12 && INFIX_WILDCARD_FIELDS.contains(field)) {
                 builder.add(
                         new BoostQuery(new WildcardQuery(
                                 new Term(field, "*" + token + "*")),
