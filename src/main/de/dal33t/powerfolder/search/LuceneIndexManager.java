@@ -1845,7 +1845,12 @@ public class LuceneIndexManager extends PFComponent {
              * it is a fallback only - a query that found something is never re-run fuzzily. */
             if (topDocs.scoreDocs.length == 0 && contentQuery != null && isFuzzySearchEnabled()) {
                 Query fuzzyQuery = buildQuery(queryText, true);
-                if (fuzzyQuery != null) {
+                /* Only a token of four characters or more gets a fuzzy clause (addTokenQueries), so a
+                 * short query builds the very query that just ran - and running it again is the one
+                 * thing this fallback must not do. A folder that finds nothing is the normal case on a
+                 * server carrying thousands of folder indexes: the second pass runs in nearly all of
+                 * them, and a search for "QA" paid it in every single one. */
+                if (fuzzyQuery != null && !fuzzyQuery.equals(contentQuery)) {
                     topDocs = search(searcher, withContent(filterQuery, fuzzyQuery), maxResults, sort);
                     if (isFine()) {
                         logFine(folder + ": Fuzzy fallback found " + topDocs.totalHits
