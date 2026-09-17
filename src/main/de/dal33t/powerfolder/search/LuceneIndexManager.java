@@ -1665,16 +1665,31 @@ public class LuceneIndexManager extends PFComponent {
     private static Query fileNameQuery(String value) {
         BooleanQuery.Builder allWords = new BooleanQuery.Builder();
         boolean any = false;
-        for (String token : indexTerms(value)) {
-            BooleanQuery.Builder word = new BooleanQuery.Builder();
-            for (String field : NAME_FIELDS) {
-                word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
-                word.add(new PrefixQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
-                word.add(new WildcardQuery(new Term(field, "*" + token + "*")), BooleanClause.Occur.SHOULD);
+        for (String rawWord : value.toLowerCase(Locale.ROOT).trim().split("\s+")) {
+            /* A word with a star or a question mark in it is the pattern the user wrote and is asked as
+             * it stands; the analyzer would throw those characters away with the rest of the
+             * punctuation. Every other word keeps the three shapes name: always had. */
+            if (isWildcardPattern(rawWord)) {
+                BooleanQuery.Builder pattern = new BooleanQuery.Builder();
+                for (String field : NAME_FIELDS) {
+                    pattern.add(new WildcardQuery(new Term(field, rawWord)), BooleanClause.Occur.SHOULD);
+                }
+                pattern.setMinimumNumberShouldMatch(1);
+                allWords.add(pattern.build(), BooleanClause.Occur.MUST);
+                any = true;
+                continue;
             }
-            word.setMinimumNumberShouldMatch(1);
-            allWords.add(word.build(), BooleanClause.Occur.MUST);
-            any = true;
+            for (String token : indexTerms(rawWord)) {
+                BooleanQuery.Builder word = new BooleanQuery.Builder();
+                for (String field : NAME_FIELDS) {
+                    word.add(new TermQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                    word.add(new PrefixQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                    word.add(new WildcardQuery(new Term(field, "*" + token + "*")), BooleanClause.Occur.SHOULD);
+                }
+                word.setMinimumNumberShouldMatch(1);
+                allWords.add(word.build(), BooleanClause.Occur.MUST);
+                any = true;
+            }
         }
         return any ? allWords.build() : null;
     }
@@ -1952,7 +1967,7 @@ public class LuceneIndexManager extends PFComponent {
         List<String> phrases = extractPhrases(queryText);
 
         String sanitized = queryText.trim().toLowerCase(Locale.ROOT)
-                .replaceAll("[^\\p{L}\\p{N}\\s._\\-]", " ")
+                .replaceAll("[^\\p{L}\\p{N}\\s._\\-*?]", " ")
                 .replaceAll("\\s+", " ")
                 .trim();
 
@@ -1970,6 +1985,26 @@ public class LuceneIndexManager extends PFComponent {
                 negated = true;
                 token = token.substring(1);
             }
+            if (isWildcardPattern(token)) {
+                /* The pattern the user wrote, taken as it stands: a word inside a word is not searched
+                 * for by default any more - it costs an automaton per index, see doSearch - but somebody
+                 * who types the star is asking for exactly that, and gets it in the first round. Name and
+                 * path only, the fields the automatic wildcard uses as well; over the full text a pattern
+                 * would walk the entire term dictionary of every index. */
+                BooleanQuery.Builder pattern = new BooleanQuery.Builder();
+                for (String field : INFIX_WILDCARD_FIELDS) {
+                    pattern.add(new WildcardQuery(new Term(field, token)), BooleanClause.Occur.SHOULD);
+                }
+                pattern.setMinimumNumberShouldMatch(1);
+                if (negated) {
+                    allTokens.add(pattern.build(), BooleanClause.Occur.MUST_NOT);
+                } else {
+                    allTokens.add(pattern.build(), BooleanClause.Occur.MUST);
+                    hasPositive = true;
+                }
+                continue;
+            }
+
             List<String> terms = indexTerms(token);
             if (terms.isEmpty()) {
                 continue;
@@ -2055,6 +2090,13 @@ public class LuceneIndexManager extends PFComponent {
      * "faktura" and "2026" next to each other, which is how the index stored that name.
      */
     private Query buildPhraseQuery(String phrase) {
+        String pattern = phrase.toLowerCase(Locale.ROOT).trim();
+        if (isWildcardPattern(pattern)) {
+            /* A pattern in quotes is one pattern, spaces included - and the only field that holds a name
+             * with its spaces as ONE term is relativeNameExact, the whole path of the file in lower case.
+             * Cut into terms it would ask for words that carry a star, which the index never stored. */
+            return new WildcardQuery(new Term("relativeNameExact", pattern));
+        }
         List<String> words = indexTerms(phrase);
         if (words.isEmpty()) {
             return null;
@@ -2122,6 +2164,23 @@ public class LuceneIndexManager extends PFComponent {
                         BooleanClause.Occur.SHOULD);
             }
         }
+    }
+
+    /**
+     * Whether the user wrote a wildcard into this word themselves. Stars and question marks alone are
+     * not one: that asks for every file there is, at the price of an automaton per index, and nobody
+     * means it.
+     */
+    private static boolean isWildcardPattern(String token) {
+        if (token.indexOf('*') < 0 && token.indexOf('?') < 0) {
+            return false;
+        }
+        for (int i = 0; i < token.length(); i++) {
+            if (Character.isLetterOrDigit(token.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
