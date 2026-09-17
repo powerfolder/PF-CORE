@@ -1665,7 +1665,7 @@ public class LuceneIndexManager extends PFComponent {
     private static Query fileNameQuery(String value) {
         BooleanQuery.Builder allWords = new BooleanQuery.Builder();
         boolean any = false;
-        for (String rawWord : value.toLowerCase(Locale.ROOT).trim().split("\s+")) {
+        for (String rawWord : value.toLowerCase(Locale.ROOT).trim().split("\\s+")) {
             /* A word with a star or a question mark in it is the pattern the user wrote and is asked as
              * it stands; the analyzer would throw those characters away with the rest of the
              * punctuation. Every other word keeps the three shapes name: always had. */
