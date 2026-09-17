@@ -824,40 +824,55 @@ public class FolderRepository extends PFComponent implements Runnable {
             // Phase 2.2: Subfolder erstellen
             // -------------------------------------------------------------
 
-            List<Future<?>> subFolderTasks = new ArrayList<>();
+            /* PFS-5881: the ones that hold a database first. A subfolder that inherits has none of
+               its own and borrows the one of the interrupted folder above it, which it looks for while
+               it is being built - created side by side, it regularly found nothing and took the top
+               folder's instead, where every reader of that subtree then searched in vain. Each folder
+               refreshes the barrier index as it registers (createFolder0), so the second pass finds
+               what the first one created. */
+            Map<FolderInfo, FolderSettings> holders = new LinkedHashMap<>();
+            Map<FolderInfo, FolderSettings> dependents = new LinkedHashMap<>();
 
             for (Map.Entry<FolderInfo, FolderSettings> e : subFolders.entrySet()) {
-                FolderInfo foInfo = e.getKey();
-                FolderSettings folderSettings = e.getValue();
-
-                subFolderTasks.add(
-                        executor.submit(() -> {
-                            try {
-                                if (hasJoinedFolder(foInfo)) {
-                                    return;
-                                }
-                                Folder topFolder = foInfo.getTopFolder().getFolder(getController());
-                                if (topFolder == null) {
-                                    logWarning(foInfo + ": top folder missing, skipping subfolder creation.");
-                                    return;
-                                }
-
-                                createFolder(foInfo, folderSettings, true);
-                            } catch (Exception ex) {
-                                logWarning("Problem creating subfolder " + foInfo, ex);
-                            }
-                        })
-                );
+                (e.getKey().inheritsPermissions() ? dependents : holders).put(e.getKey(), e.getValue());
             }
 
-            for (Future<?> f : subFolderTasks) {
-                try {
-                    f.get();
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    return;
-                } catch (Exception e) {
-                    logWarning("Subfolder creation failed", e);
+            for (Map<FolderInfo, FolderSettings> pass : List.of(holders, dependents)) {
+                List<Future<?>> subFolderTasks = new ArrayList<>();
+
+                for (Map.Entry<FolderInfo, FolderSettings> e : pass.entrySet()) {
+                    FolderInfo foInfo = e.getKey();
+                    FolderSettings folderSettings = e.getValue();
+
+                    subFolderTasks.add(
+                            executor.submit(() -> {
+                                try {
+                                    if (hasJoinedFolder(foInfo)) {
+                                        return;
+                                    }
+                                    Folder topFolder = foInfo.getTopFolder().getFolder(getController());
+                                    if (topFolder == null) {
+                                        logWarning(foInfo + ": top folder missing, skipping subfolder creation.");
+                                        return;
+                                    }
+
+                                    createFolder(foInfo, folderSettings, true);
+                                } catch (Exception ex) {
+                                    logWarning("Problem creating subfolder " + foInfo, ex);
+                                }
+                            })
+                    );
+                }
+
+                for (Future<?> f : subFolderTasks) {
+                    try {
+                        f.get();
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    } catch (Exception e) {
+                        logWarning("Subfolder creation failed", e);
+                    }
                 }
             }
 

@@ -2973,7 +2973,43 @@ public class Folder extends PFComponent {
                 recalculateStatisticsAfterMigration(source);
             }
         }
+        /* After the rows have moved, not before: the subfolders below borrow the database this folder
+           just gained or gave up, and they were wired to the one it had when they were built. */
+        rewireInheritingSubFoldersBelow();
         } // scanLockOfTopFolder
+    }
+
+    /**
+     * PFS-5881: points the subfolders below this one at the database they now borrow.
+     * <p>
+     * A subfolder that inherits has none of its own and borrows the one of the innermost interrupted
+     * folder above it, chosen when it was built. Interrupting or restoring this folder changes who
+     * that is for everything below - and nothing looked again, so those subfolders kept writing to the
+     * database they were wired to while every reader of their paths asked the new one.
+     */
+    private void rewireInheritingSubFoldersBelow() {
+        String barrier = currentInfo.locationPath();
+        FolderInfo top = currentInfo.isSubFolder() ? currentInfo.getTopFolder() : currentInfo;
+
+        if (barrier == null || top == null) {
+            return;
+        }
+        for (Folder candidate : getController().getFolderRepository().getFolders()) {
+            FolderInfo info = candidate.getInfo();
+
+            if (candidate == this || !info.isSubFolder() || !info.inheritsPermissions()
+                || !top.equals(info.getTopFolder()))
+            {
+                continue;
+            }
+            String location = info.locationPath();
+
+            if (location != null && location.startsWith(barrier + '/')) {
+                logFine(candidate + ": re-reading which database holds its rows, " + this
+                    + " changed its inheritance");
+                candidate.initFileInfoDAO();
+            }
+        }
     }
 
     /**
