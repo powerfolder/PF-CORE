@@ -240,7 +240,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
 
         FileInfoDAOHashMapImpl topDAO = new FileInfoDAOHashMapImpl("ME", null);
-        FileInfoDAO subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo);
+        FileInfoDAO subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo, subFolderInfo.getTopFolder());
 
         FileInfo dirInSubdir = FileInfoFactory.unmarshallExistingFile(topFolderInfo,
                 "structure/deep/sharedsubdir.123/project/path",
@@ -338,7 +338,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         FolderInfo subFolderInfo = FolderInfoFactory.newFolder(subDirInfo);
 
         FileInfoDAOHashMapImpl topDAO = new FileInfoDAOHashMapImpl("ME", null);
-        FileInfoDAO subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo);
+        FileInfoDAO subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo, subFolderInfo.getTopFolder());
 
         // --- Top-level files outside subfolder ---
         topDAO.store(null, FileInfoFactory.unmarshallExistingFile(topFolderInfo,
@@ -1219,7 +1219,7 @@ public class SubFolderTest extends TwoControllerTestCase {
         topDAO.store(null, childDir);
         topDAO.store(null, childFile);
 
-        SubFolderFileInfoDAOProxy subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo);
+        SubFolderFileInfoDAOProxy subDAO = new SubFolderFileInfoDAOProxy(topDAO, subFolderInfo, subFolderInfo.getTopFolder());
 
         // Base directory must NOT appear in findAllDirectories
         Collection<DirectoryInfo> dirs = subDAO.findAllDirectories(null);

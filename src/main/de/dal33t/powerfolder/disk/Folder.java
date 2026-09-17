@@ -2412,6 +2412,31 @@ public class Folder extends PFComponent {
         setDBDirty();
     }
 
+    /**
+     * PFS-5881: the folder whose database holds this subfolder's rows.
+     * <p>
+     * A subfolder that inherits its permissions has no database of its own and borrows one. That used
+     * to be the top folder unconditionally - but an interrupted subfolder above owns its whole subtree
+     * (PFC-3571), and everything reading that subtree goes to the interrupted folder. Writing to the
+     * top folder instead put the rows in the one database that may not hand them out, and the readers
+     * looked in another that never had them: a new directory answered 201, appeared in no listing, and
+     * "already exists" on the next attempt.
+     *
+     * @return the innermost interrupted subfolder above this one, or the top folder when there is none
+     */
+    private Folder databaseHolder() {
+        FolderInfo interrupted = FolderInfo.findEnclosingInterruptedSubFolder(currentInfo, "");
+        if (interrupted != null && !interrupted.equals(currentInfo)) {
+            Folder holder = interrupted.getFolder(getController());
+            if (holder != null) {
+                return holder;
+            }
+            logWarning(this + ": " + interrupted.getLocalizedName() + " holds this subfolder's rows but"
+                + " is not mounted - falling back to the top folder");
+        }
+        return getTopFolder();
+    }
+
     private void initFileInfoDAO() {
         if (dao != null) {
             // Stop old DAO
@@ -2420,11 +2445,11 @@ public class Folder extends PFComponent {
         if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
             dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
         } else {
-            Folder topFolder = getTopFolder();
-            if (topFolder != null) {
-                FileInfoDAO parentDAO = topFolder.getDAO();
-                logFine(this + ": Using DAO of topfolder " + topFolder + " at " + currentInfo.getLocation());
-                dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo);
+            Folder holder = databaseHolder();
+            if (holder != null) {
+                FileInfoDAO parentDAO = holder.getDAO();
+                logFine(this + ": Using DAO of " + holder + " at " + currentInfo.getLocation());
+                dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo, holder.getInfo());
                 // Well, it actually does not have an OWN, but
                 isDAOpopulated = true;
             } else {
