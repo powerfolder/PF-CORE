@@ -1933,6 +1933,8 @@ public class Folder extends PFComponent {
             return;
         }
         if (isDeviceDisconnected()) {
+            // Said out loud: this returns without storing anything, and every other exit above says so.
+            logWarning(dirInfo + ": Not scanning directory, the device is disconnected: " + dir);
             return;
         }
 
