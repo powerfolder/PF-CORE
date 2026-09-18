@@ -2458,6 +2458,7 @@ public class Folder extends PFComponent {
             dao.stop();
         }
         daoHolderPending = null;
+        daoHolder = null;
         if (currentInfo.isTopFolder() || !currentInfo.inheritsPermissions()) {
             dao = new FileInfoDAOHashMapImpl(getMySelf().getId(), diskItemFilter);
         } else {
@@ -2466,6 +2467,7 @@ public class Folder extends PFComponent {
                 FileInfoDAO parentDAO = holder.getDAO();
                 logFine(this + ": Using DAO of " + holder + " at " + currentInfo.getLocation());
                 dao = new SubFolderFileInfoDAOProxy(parentDAO, currentInfo, holder.getInfo());
+                daoHolder = holder.getInfo();
                 // Well, it actually does not have an OWN, but
                 isDAOpopulated = true;
             } else {
@@ -2474,6 +2476,12 @@ public class Folder extends PFComponent {
             }
         }
     }
+
+    /**
+     * PFS-5884: the folder whose database carries this one's rows, while {@link #dao} is a
+     * {@link SubFolderFileInfoDAOProxy} onto it. Null for every folder that keeps its own.
+     */
+    private volatile FolderInfo daoHolder;
 
     /**
      * PFC-3543: Whether the given path belongs to an interrupted subfolder (its base
@@ -5481,6 +5489,17 @@ public class Folder extends PFComponent {
      * persisting run.
      */
     private void setDBDirty() {
+        /* PFS-5884: a subfolder that borrows another folder's database has to mark THAT one. Marking
+         * itself left the holder unaware that it had anything new, and only a dirty folder is ever
+         * written - so the row lived in memory until the tree was unmounted and was then gone. */
+        FolderInfo holderInfo = daoHolder;
+        if (holderInfo != null) {
+            Folder holder = holderInfo.getFolder(getController());
+            if (holder != null && holder != this) {
+                holder.setDBDirty();
+                return;
+            }
+        }
         dirty = true;
     }
 
@@ -5495,6 +5514,13 @@ public class Folder extends PFComponent {
      * Persists settings to disk.
      */
     private void persist() {
+        /* PFS-5884: a subfolder that borrows another folder's database has none of its own to write.
+         * loadFolderDB() skips it for that reason, and writing anyway produced a file nobody reads -
+         * with nothing in it, since the rows live in the holder's database. */
+        if (dao instanceof SubFolderFileInfoDAOProxy) {
+            dirty = false;
+            return;
+        }
         if (checkIfDeviceDisconnected()) {
             if (!currentInfo.isMetaFolder()) {
                 logWarning("Unable to persist database. Storage/Device disconnected: "
