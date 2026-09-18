@@ -25,6 +25,7 @@ import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -80,8 +81,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
         // again - otherwise it would be written along with the rest and prove nothing.
         flush(interrupted);
 
-        Files.createDirectories(inheriting.getPhysicalDir().resolve("Q3"));
-        scanFolder(inheriting);
+        createDirectory(inheriting, "Q3");
         assertNotNull("Sanity: the row is served while the tree is mounted", inheriting.getFileInfo("Q3"));
         assertNotNull("Sanity: the interrupted subfolder is the one holding it",
             interrupted.getFileInfo("2026/Q3"));
@@ -108,13 +108,25 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
         Folder interrupted = subFolderAt(topFolder, "projects/reports");
         interrupted.setInheritsPermissions(false);
 
-        Files.createDirectories(inheriting.getPhysicalDir().resolve("Q4"));
-        scanFolder(inheriting);
+        createDirectory(inheriting, "Q4");
         inheriting.shutdown();
 
         Path ownDatabase = inheriting.getSystemSubDir().resolve(Constants.DB_FILENAME);
         assertFalse("A borrowed database is never read back, so writing one only loses rows: "
             + ownDatabase, Files.exists(ownDatabase));
+    }
+
+    /**
+     * Creates a directory the way the API does it - on disk, then scanned into the folder that was
+     * addressed. Scanning the whole subfolder is not the same thing and is not what happens in
+     * production.
+     */
+    private void createDirectory(Folder folder, String relativeName) throws Exception {
+        Path newDir = folder.getPhysicalDir().resolve(relativeName);
+        Files.createDirectories(newDir);
+        FileInfo dirInfo = FileInfoFactory.newFile(folder, newDir, null,
+            getContollerBart().getMySelf().getInfo(), null, null, true, null);
+        folder.scanDirectory(dirInfo, newDir);
     }
 
     /** Shares the given directory as a subfolder. Only the top folder may do this. */
