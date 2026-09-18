@@ -1663,6 +1663,12 @@ public class LuceneIndexManager extends PFComponent {
      * @return the query, or null if there is nothing to filter by.
      */
     private static Query fileNameQuery(String value) {
+        /* No name: in the query means no value here, which is the normal case - every search that filters
+         * by nothing asks this method. It used to fall out of indexTerms(null) as an empty list; since the
+         * value is read directly, the absence has to be answered here. */
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
         BooleanQuery.Builder allWords = new BooleanQuery.Builder();
         boolean any = false;
         for (String rawWord : value.toLowerCase(Locale.ROOT).trim().split("\\s+")) {
