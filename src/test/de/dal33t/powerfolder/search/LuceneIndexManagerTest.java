@@ -168,6 +168,106 @@ public class LuceneIndexManagerTest extends ControllerTestCase {
         assertEquals(1, results.size());
     }
 
+    /**
+     * PFS-5882: a search carries a name: value only when one was typed, and every search asks for one -
+     * so the filter has to answer the absence. Read directly instead of through the tokenizer, a missing
+     * value threw a NullPointerException out of EVERY Lucene query on the server: 1152 folders answered
+     * one search with "Lucene search failed", each of them with an empty list, and a search that finds
+     * nothing looks exactly like an empty index.
+     */
+    public void testSearchWithoutNameFilterDoesNotFail() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Report_2024.pdf");
+        scanFolder(folder);
+
+        indexAndWait();
+
+        FileInfoCriteria criteria = new FileInfoCriteria();
+        criteria.addKeyWord("report");
+        criteria.setMaxResults(10);
+        assertNull("Sanity: no name: filter in this query", criteria.getFileName());
+
+        List<FileInfo> results = getIndexManager().searchFiles(criteria);
+        assertEquals("A search without a name: filter must answer, not fail", 1, results.size());
+    }
+
+    /**
+     * PFS-5863: a word inside a word is a wildcard query, and a wildcard walks the term dictionary of
+     * every index it is asked of - so it waits for a folder that found nothing without it. A folder that
+     * answers the plain word keeps its answer to that word.
+     */
+    public void testInsideAWordIsFoundOnlyWhereThePlainWordIsNot() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Bericht 2026.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Jahresbericht 2025.pdf");
+        scanFolder(folder);
+
+        indexAndWait();
+
+        List<FileInfo> plain = getIndexManager().searchFiles("bericht", 10);
+        assertEquals("The word itself is answered, the round with the wildcard does not run", 1, plain.size());
+        assertEquals("Bericht 2026.pdf", plain.get(0).getFilenameOnly());
+
+        List<FileInfo> starred = getIndexManager().searchFiles("*bericht*", 10);
+        assertEquals("A star the user typed asks for both, in the first round", 2, starred.size());
+    }
+
+    /**
+     * PFS-5882: the shapes a user can write a pattern in - the sanitizer used to drop the star before
+     * anybody could see it, so none of these ever worked.
+     */
+    public void testTypedWildcardShapes() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Jahresbericht 2026.pdf");
+        scanFolder(folder);
+
+        indexAndWait();
+
+        assertEquals("inside a word", 1, getIndexManager().searchFiles("*bericht*", 10).size());
+        assertEquals("as a beginning", 1, getIndexManager().searchFiles("jahres*", 10).size());
+        assertEquals("as an ending", 1, getIndexManager().searchFiles("*bericht", 10).size());
+        assertEquals("one character free", 1, getIndexManager().searchFiles("jahresberi?ht", 10).size());
+        assertEquals("a pattern that fits nothing", 0, getIndexManager().searchFiles("*monatsbericht*", 10).size());
+    }
+
+    /** PFS-5882: a pattern in quotes carries its spaces, so it is asked of the whole relative name. */
+    public void testQuotedWildcardPatternWithSpaces() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Jahres Bericht 2026.pdf");
+        TestHelper.createRandomFile(folder.getLocalBase(), "Monats Bericht 2026.pdf");
+        scanFolder(folder);
+
+        indexAndWait();
+
+        List<FileInfo> results = getIndexManager().searchFiles("\"*jahres bericht*\"", 10);
+        assertEquals(1, results.size());
+        assertEquals("Jahres Bericht 2026.pdf", results.get(0).getFilenameOnly());
+    }
+
+    /** PFS-5882: the name: filter takes a pattern as well, and it stays a filter on the NAME. */
+    public void testNameFilterWithAndWithoutPattern() throws Exception {
+        Folder folder = getFolder();
+        TestHelper.createRandomFile(folder.getLocalBase(), "Jahresbericht 2026.pdf");
+        scanFolder(folder);
+
+        indexAndWait();
+
+        FileInfoCriteria pattern = new FileInfoCriteria();
+        pattern.setFileName("*bericht*");
+        pattern.setMaxResults(10);
+        assertEquals("name: with a pattern", 1, getIndexManager().searchFiles(pattern).size());
+
+        FileInfoCriteria word = new FileInfoCriteria();
+        word.setFileName("jahresbericht");
+        word.setMaxResults(10);
+        assertEquals("name: with a plain word", 1, getIndexManager().searchFiles(word).size());
+
+        FileInfoCriteria other = new FileInfoCriteria();
+        other.setFileName("*monatsbericht*");
+        other.setMaxResults(10);
+        assertEquals("name: with a pattern that fits nothing", 0, getIndexManager().searchFiles(other).size());
+    }
+
     public void testSearchNoResults() throws Exception {
         Folder folder = getFolder();
         TestHelper.createRandomFile(folder.getLocalBase(), "document.pdf");

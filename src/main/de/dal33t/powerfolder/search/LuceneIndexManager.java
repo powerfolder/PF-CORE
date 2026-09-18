@@ -2022,7 +2022,11 @@ public class LuceneIndexManager extends PFComponent {
                 BooleanQuery.Builder exclusion = new BooleanQuery.Builder();
                 for (String term : terms) {
                     BooleanQuery.Builder oneTerm = new BooleanQuery.Builder();
-                    addTokenQueries(oneTerm, term, 1.0f, 1.0f, 1.0f, infix, false);
+                    /* An exclusion is exhaustive, in every round: a file somebody asked to be rid of must
+                     * not come back because the word sat inside another one - "-annual" drops
+                     * "Report_Annual.pdf". The wildcard costs an automaton per index here too, but only
+                     * when a minus was typed, and then it is the point of the query. */
+                    addTokenQueries(oneTerm, term, 1.0f, 1.0f, 1.0f, true, false);
                     oneTerm.setMinimumNumberShouldMatch(1);
                     exclusion.add(oneTerm.build(), BooleanClause.Occur.MUST);
                 }
