@@ -31,6 +31,7 @@ import de.dal33t.powerfolder.clientserver.ServerClientListener;
 import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.event.*;
 import de.dal33t.powerfolder.light.FileInfo;
+import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.message.FileListRequest;
@@ -65,6 +66,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -132,6 +134,11 @@ public class ApplicationModel extends PFUIComponent {
         getController().getNodeManager().addNodeManagerListener(new MyNodeManagerListener());
         getController().getFolderRepository().getLocking()
             .addListener(new MyLockingListener());
+        // PFS-5842: Warn about the client's own locks that have been held too long, so a
+        // colleague is not the one to discover a stale lock. Checked periodically because such
+        // a lock is old by definition and usually predates this session.
+        getController().scheduleAndRepeat(new LongHeldLockCheckTask(),
+            LONG_LOCK_CHECK_INITIAL_DELAY, LONG_LOCK_CHECK_PERIOD);
         getApplicationModel().getSyncingModel().addOverallFolderStatListener(
                 new MyOverallFolderStatListener());
         getNoticesModel().getUnreadNoticesCountVM().addValueChangeListener(new MyNoticesModelPropertyChangeListener());
@@ -786,6 +793,96 @@ public class ApplicationModel extends PFUIComponent {
                 "context_menu.unlock.notice", name, displayName, date,
                 memberName));
 
+            setCancelOptionLabel(Translation.get("general.ok"));
+            setCancelAction(new AbstractAction() {
+                private static final long serialVersionUID = 100L;
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    sliderClose();
+                }
+            });
+        }
+    }
+
+    /**
+     * PFS-5842: How long a lock this device holds may live before the client warns about it,
+     * and how often / after what delay the check runs. The threshold matches the online-editor
+     * session timeout the server uses to reap stale editor locks.
+     */
+    private static final long LONG_LOCK_THRESHOLD = 24L * 60 * 60 * 1000;
+    private static final long LONG_LOCK_CHECK_PERIOD = 60L * 60 * 1000;
+    private static final long LONG_LOCK_CHECK_INITIAL_DELAY = 5L * 60 * 1000;
+
+    /** Locks already warned about, so a long-held lock is announced once, not every scan. */
+    private final Set<String> warnedLongLocks =
+        java.util.Collections.synchronizedSet(new java.util.HashSet<String>());
+
+    private String lockKey(Lock lock) {
+        FileInfo fInfo = lock.getFileInfo();
+        return fInfo.getFolderInfo().id + "/" + fInfo.getRelativeName()
+            + "@" + (lock.getCreated() != null ? lock.getCreated().getTime() : 0);
+    }
+
+    /**
+     * PFS-5842: Scans this node's locks and warns once for each of the current device's own
+     * locks that has been held longer than {@link #LONG_LOCK_THRESHOLD}. Keys the "already
+     * warned" set by lock creation time too, so a released-and-retaken lock warns afresh, and
+     * forgets locks that no longer exist.
+     */
+    private class LongHeldLockCheckTask extends java.util.TimerTask {
+        @Override
+        public void run() {
+            if (!getController().isUIEnabled()) {
+                return;
+            }
+            MemberInfo mySelf = getController().getMySelf().getInfo();
+            long now = System.currentTimeMillis();
+            Set<String> stillHeld = new java.util.HashSet<>();
+            for (Lock lock : getController().getFolderRepository().getLocking()
+                .getLocks())
+            {
+                if (lock.getMemberInfo() == null
+                    || !lock.getMemberInfo().equals(mySelf)
+                    || lock.getCreated() == null)
+                {
+                    continue;
+                }
+                String key = lockKey(lock);
+                stillHeld.add(key);
+                if (now - lock.getCreated().getTime() < LONG_LOCK_THRESHOLD) {
+                    continue;
+                }
+                if (!warnedLongLocks.add(key)) {
+                    // Already warned about this exact lock.
+                    continue;
+                }
+                final FileInfo fInfo = lock.getFileInfo();
+                final String name = fInfo.getFilenameOnly();
+                final String folder = fInfo.getFolderInfo().getLocalizedName();
+                final String date = new SimpleDateFormat("dd MMM yyyy HH:mm")
+                    .format(lock.getCreated());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new LongHeldLockNoticeHandler(getController(), name,
+                            folder, date).show();
+                    }
+                });
+            }
+            // Forget locks that are gone, so a future re-lock of the same file warns again.
+            warnedLongLocks.retainAll(stillHeld);
+        }
+    }
+
+    private class LongHeldLockNoticeHandler extends NotificationHandlerBase {
+        LongHeldLockNoticeHandler(final Controller controller, final String name,
+            final String folder, final String date)
+        {
+            super(controller);
+            setTitle(Translation.get("notice.lock.held_too_long.title"));
+            setMessageText(Translation.get("notice.lock.held_too_long.message",
+                name, folder, date));
             setCancelOptionLabel(Translation.get("general.ok"));
             setCancelAction(new AbstractAction() {
                 private static final long serialVersionUID = 100L;

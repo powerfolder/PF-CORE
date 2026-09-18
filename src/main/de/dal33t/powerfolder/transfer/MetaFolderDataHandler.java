@@ -35,6 +35,7 @@ import de.dal33t.powerfolder.util.Translation;
 
 import javax.swing.*;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 
 /**
  * This class delegates responsibility for processing metaFolder fileInfo
@@ -124,6 +125,15 @@ public class MetaFolderDataHandler extends PFComponent {
                 overrideBy = Translation.get("estimation.unknown");
             }
             final String overrideByFinal = overrideBy;
+            // PFS-5842: The lock object carries the content file it protected, the folder it lives
+            // in, and when it was taken - show all three, and offer to re-take the lock when the
+            // file is still free.
+            final FileInfo contentFInfo = lock.getFileInfo();
+            final String folderName = contentFInfo != null
+                ? contentFInfo.getFolderInfo().getLocalizedName() : "";
+            final String lockedSince = lock.getCreated() != null
+                ? new SimpleDateFormat("dd MMM yyyy HH:mm").format(lock.getCreated())
+                : Translation.get("estimation.unknown");
             SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
                 @Override
                 protected Void doInBackground() {
@@ -131,19 +141,55 @@ public class MetaFolderDataHandler extends PFComponent {
                             lockMember.getNick() + " removed by " +
                             remoteMember.getNick());
 
-                    DialogFactory
+                    // Offer "Lock again" only while the file is actually free - if someone else
+                    // has taken it since, re-locking would silently overwrite their lock.
+                    boolean canRelock = contentFInfo != null
+                            && !contentFInfo.isLocked(getController());
+                    String[] options = canRelock
+                            ? new String[]{
+                                Translation.get("dialog.lock.removed_by_other_member.lock_again"),
+                                Translation.get("general.ok")}
+                            : new String[]{Translation.get("general.ok")};
+
+                    int choice = DialogFactory
                             .genericDialog(
                                     getController(),
                                     Translation.get("dialog.lock.removed_by_other_member.title"),
                                     Translation.get("dialog.lock.removed_by_other_member.message",
-                                            fileInfo.getFilenameOnly(), overrideByFinal),
-                                    new String[]{"OK"},
-                                    0, GenericDialogType.WARN);
+                                            fileInfo.getFilenameOnly(), overrideByFinal,
+                                            folderName, lockedSince),
+                                    options,
+                                    options.length - 1, GenericDialogType.WARN);
 
+                    if (canRelock && choice == 0) {
+                        boolean ok = contentFInfo.lock(getController());
+                        if (!ok || contentFInfo.getLock(getController()) == null
+                                || !isMyLock(contentFInfo)) {
+                            // Someone grabbed it first, or re-locking failed - say who holds it now.
+                            Lock now = contentFInfo.getLock(getController());
+                            String holder = now != null
+                                    ? now.getAccountDisplayName()
+                                    : Translation.get("estimation.unknown");
+                            DialogFactory.genericDialog(
+                                    getController(),
+                                    Translation.get("dialog.lock.relock_failed.title"),
+                                    Translation.get("dialog.lock.relock_failed.message",
+                                            fileInfo.getFilenameOnly(), holder),
+                                    new String[]{Translation.get("general.ok")},
+                                    0, GenericDialogType.WARN);
+                        }
+                    }
                     return null;
                 }
             };
             worker.execute();
         }
+    }
+
+    /** Whether {@code fInfo} is currently locked by this very device. */
+    private boolean isMyLock(FileInfo fInfo) {
+        Lock lock = fInfo.getLock(getController());
+        return lock != null && lock.getMemberInfo() != null
+            && lock.getMemberInfo().equals(getController().getMySelf().getInfo());
     }
 }

@@ -32,10 +32,13 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -272,8 +275,44 @@ public class Locking extends PFComponent {
     }
 
     /**
+     * PFS-5842: All locks currently stored in the meta-folders this node holds - reads every
+     * {@code .lck} file under each (non-meta) folder's locks directory. The client uses this to
+     * warn about its own locks that have been held too long; callers filter by member/age.
+     *
+     * @return the locks found; never null (empty when this node holds no lock files)
+     */
+    public Collection<Lock> getLocks() {
+        List<Lock> locks = new LinkedList<>();
+        for (Folder folder : getController().getFolderRepository().getFolders(false)) {
+            Folder metaFolder = getController().getFolderRepository()
+                .getMetaFolder(folder.getInfo());
+            if (metaFolder == null) {
+                continue;
+            }
+            Path locksDir = metaFolder.getLocalBase()
+                .resolve(Folder.METAFOLDER_LOCKS_DIR);
+            if (Files.notExists(locksDir)) {
+                continue;
+            }
+            try (DirectoryStream<Path> stream =
+                     Files.newDirectoryStream(locksDir, "*" + LOCK_FILE_EXT))
+            {
+                for (Path lockPath : stream) {
+                    Lock lock = getLock(lockPath);
+                    if (lock != null) {
+                        locks.add(lock);
+                    }
+                }
+            } catch (IOException e) {
+                logWarning("Unable to list locks in " + locksDir + ". " + e);
+            }
+        }
+        return locks;
+    }
+
+    /**
      * Callback from {@link de.dal33t.powerfolder.transfer.MetaFolderDataHandler}
-     * 
+     *
      * @param lockFileInfo
      */
     public void lockStateChanged(FileInfo lockFileInfo) {
