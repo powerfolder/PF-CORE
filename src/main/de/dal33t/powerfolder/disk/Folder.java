@@ -1354,13 +1354,22 @@ public class Folder extends PFComponent {
             logFine(getName() + ": Already shutdown: Not scanLocalFiles");
             return false;
         }
-        if (isSubFolder()) {
-            Folder topFolder = getTopFolder();
-            if (topFolder != null) {
+        /* PFS-5884: only a folder that BORROWS its database leaves the scan to somebody else - the
+         * holder, whose scan walks this subtree and stores into the very database this folder reads.
+         * A subfolder with a database of its own (interrupted) has to scan itself: the folder around it
+         * refuses its subtree, so nobody else ever reached it - neither at maintenance nor on "scan
+         * file system", and a directory that existed on disk without a row stayed invisible for good. */
+        if (dao instanceof SubFolderFileInfoDAOProxy) {
+            FolderInfo holderInfo = daoHolder;
+            Folder holder = holderInfo != null ? holderInfo.getFolder(getController()) : null;
+            if (holder == null || holder == this) {
+                holder = getTopFolder();
+            }
+            if (holder != null && holder != this) {
                 if (isFiner()) {
-                    logFiner(this + ": Skipping scan of local filesystem. is handled by top folder " + topFolder);
+                    logFiner(this + ": Scan of local filesystem is done by " + holder + ", whose database holds the rows");
                 }
-                return false;
+                return holder.scanLocalFiles();
             }
         }
         checkIfDeviceDisconnected();

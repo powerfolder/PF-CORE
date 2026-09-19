@@ -18,14 +18,17 @@
  */
 package de.dal33t.powerfolder.folder;
 
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Feature;
+import de.dal33t.powerfolder.disk.FolderRepository;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.SyncProfile;
 import de.dal33t.powerfolder.disk.dao.SubFolderFileInfoDAOProxy;
 import de.dal33t.powerfolder.light.DirectoryInfo;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
+import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
@@ -82,7 +85,7 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
         flush(interrupted);
 
         createDirectory(inheriting, "Q3");
-        assertNotNull("Sanity: the row is served while the tree is mounted", inheriting.getFileInfo("Q3"));
+        assertTrue("Sanity: the row is served while the tree is mounted", hasRow(inheriting, "Q3"));
         assertNotNull("Sanity: the interrupted subfolder is the one holding it",
             interrupted.getFileInfo("2026/Q3"));
 
@@ -127,6 +130,77 @@ public class SubFolderPersistTest extends TwoControllerTestCase {
         FileInfo dirInfo = FileInfoFactory.newFile(folder, newDir, null,
             getContollerBart().getMySelf().getInfo(), null, null, true, null);
         folder.scanDirectory(dirInfo, newDir);
+    }
+
+    /**
+     * The customer's case one to one: the directory is created, the server is restarted, the tree
+     * mounts again from what is on disk - and the directory has to be listed as before.
+     */
+    public void testADirectoryCreatedInAnInheritingSubFolderSurvivesARestart() throws Exception {
+        Folder topFolder = getFolderAtBart();
+        Files.createDirectories(topFolder.getPhysicalDir().resolve("projects/reports/2026"));
+        scanFolder(topFolder);
+        Folder inheriting = subFolderAt(topFolder, "projects/reports/2026");
+        Folder interrupted = subFolderAt(topFolder, "projects/reports");
+        interrupted.setInheritsPermissions(false);
+        FolderInfo inheritingInfo = inheriting.getInfo();
+        FolderInfo interruptedInfo = interrupted.getInfo();
+
+        createDirectory(inheriting, "Q3");
+        assertTrue("Sanity: served while mounted", hasRow(inheriting, "Q3"));
+
+        // The restarted controller reads the feature switch from its config, not from the static flag the
+        // test set - without this the interruption reads as inheriting after the restart.
+        ConfigurationEntry.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION_ENABLED.setValue(getContollerBart(), true);
+        getContollerBart().saveConfig();
+        getContollerBart().shutdown();
+        TestHelper.waitForCondition(30, () -> !getContollerBart().isShuttingDown());
+        startControllerBart();
+        FolderRepository repository = getContollerBart().getFolderRepository();
+        TestHelper.waitForCondition(30, () -> repository.getFolder(inheritingInfo) != null
+            && repository.getFolder(interruptedInfo) != null);
+
+        Folder inheritingAgain = repository.getFolder(inheritingInfo);
+        Folder interruptedAgain = repository.getFolder(interruptedInfo);
+        assertTrue("After the restart the holder must have the row: " + databaseOf(interruptedAgain),
+            hasRow(interruptedAgain, "2026/Q3"));
+        assertTrue("After the restart the inheriting subfolder must list it", hasRow(inheritingAgain, "Q3"));
+    }
+
+    /**
+     * A directory that exists on disk without a row - the state the customer's workspaces are in - has to
+     * come back with "scan file system". The scan of the top folder refuses the interrupted subtree, so
+     * the interrupted subfolder is asked as well, which is what ScanAction does. Before, a subfolder
+     * answered every scan with "handled by top folder" and did nothing.
+     */
+    public void testADirectoryOnDiskWithoutARowIsPickedUpByAScan() throws Exception {
+        Folder topFolder = getFolderAtBart();
+        Files.createDirectories(topFolder.getPhysicalDir().resolve("projects/reports/2026"));
+        scanFolder(topFolder);
+        Folder inheriting = subFolderAt(topFolder, "projects/reports/2026");
+        Folder interrupted = subFolderAt(topFolder, "projects/reports");
+        interrupted.setInheritsPermissions(false);
+
+        Files.createDirectories(inheriting.getPhysicalDir().resolve("Orphan"));
+        Files.createDirectories(interrupted.getPhysicalDir().resolve("Lost"));
+        assertFalse("Sanity: no row yet", hasRow(inheriting, "Orphan"));
+
+        topFolder.scanLocalFiles();
+        assertFalse("The top folder must not pick up the interrupted subtree", hasRow(topFolder, "projects/reports/Lost"));
+
+        assertTrue("An interrupted subfolder scans itself", interrupted.scanLocalFiles());
+        assertTrue("The holder has the row of its own directory", hasRow(interrupted, "Lost"));
+        assertTrue("The holder has the row below the inheriting subfolder", hasRow(interrupted, "2026/Orphan"));
+        assertTrue("The inheriting subfolder lists it", hasRow(inheriting, "Orphan"));
+
+        Files.createDirectories(inheriting.getPhysicalDir().resolve("Later"));
+        assertTrue("A borrowing subfolder scans through its holder", inheriting.scanLocalFiles());
+        assertTrue(hasRow(inheriting, "Later"));
+    }
+
+    /** Whether the folder's database holds a directory row of that name - getFileInfo never answers null. */
+    private static boolean hasRow(Folder folder, String relativeName) {
+        return folder.getFile(FileInfoFactory.lookupDirectory(folder.getInfo(), relativeName)) != null;
     }
 
     /** Shares the given directory as a subfolder. Only the top folder may do this. */
