@@ -4035,6 +4035,43 @@ public class Folder extends PFComponent {
         watcher.reconfigure(syncProfile);
         recommendScanOnNextMaintenance();
         fireSyncProfileChanged();
+        propagateSyncProfileToSubFolders();
+    }
+
+    /**
+     * PFS-5889: the subfolders of a tree follow its top folder. A subfolder is given the top folder's
+     * profile when it is shared and kept it from then on - so the thousands of subfolders the migration
+     * created while it had the workspace on the manual profile stayed manual for good, and nothing ever
+     * scanned them again: 9450 of them on the customer's cluster, next to top folders that all scan.
+     * Whatever changes the top folder's profile - the migration restoring it, the storage setting in the
+     * administration - now reaches the subfolders mounted here as well. The stores collapse into one.
+     */
+    private void propagateSyncProfileToSubFolders() {
+        if (!isTopFolder() || currentInfo.isMetaFolder()) {
+            return;
+        }
+        FolderRepository repository = getController().getFolderRepository();
+        List<Folder> behind = new ArrayList<>();
+        for (Folder candidate : repository.getFolders()) {
+            FolderInfo info = candidate.getInfo();
+            if (info.isSubFolder() && currentInfo.equals(info.getTopFolder())
+                && !syncProfile.equals(candidate.getSyncProfile()))
+            {
+                behind.add(candidate);
+            }
+        }
+        if (behind.isEmpty()) {
+            return;
+        }
+        logInfo(this + ": " + behind.size() + " subfolder(s) follow to " + syncProfile.getName());
+        repository.setSuspendConfigSave(true);
+        try {
+            for (Folder subFolder : behind) {
+                subFolder.setSyncProfile(syncProfile);
+            }
+        } finally {
+            repository.setSuspendConfigSave(false);
+        }
     }
 
     /**
