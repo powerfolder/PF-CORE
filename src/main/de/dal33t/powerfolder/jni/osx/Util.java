@@ -23,6 +23,7 @@ import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -39,9 +40,16 @@ import java.util.logging.Logger;
  *   <li>Login item (start at login) via {@code osascript} / "System Events".</li>
  *   <li>{@link #isOnLocalVolume(String)} via {@link java.nio.file.FileStore}.</li>
  *   <li>Finder sidebar favorites via the optional {@code mysides} tool; if it is
- *       not installed the calls are logged and skipped (there is no stable
- *       public API for the Favorites shared-file-list).</li>
+ *       not installed the calls are logged and skipped.</li>
  * </ul>
+ *
+ * PERFORMANCE: {@link #isOnLocalVolume(String)} sits on a hot path
+ * (PathUtils / FolderRepository call it per path) and the login-item / favorites
+ * helpers shell out to {@code osascript} / {@code mysides}. To avoid stalling the
+ * UI or slowing scans, results are memoized and every external command runs with
+ * a short bounded timeout and never throws. On the previous Intel-only build the
+ * JNI lib failed to load on Apple Silicon and these calls were skipped entirely;
+ * here they must be just as cheap.
  *
  * The public API (static method signatures and {@link #loaded}) is unchanged, so
  * existing callers keep working. {@link #loaded} is {@code true} because these no
@@ -57,7 +65,20 @@ public class Util {
      */
     public static boolean loaded = true;
 
-    private static final long CMD_TIMEOUT_SECONDS = 15;
+    /** Bounded so a hung osascript/mysides can never wedge a caller. */
+    private static final long CMD_TIMEOUT_SECONDS = 5;
+
+    /** Memoize the volume check — it is called per-path during scans. */
+    private static final ConcurrentHashMap<String, Boolean> LOCAL_VOLUME_CACHE =
+        new ConcurrentHashMap<>();
+    private static final int LOCAL_VOLUME_CACHE_MAX = 8192;
+
+    /** Cache the login-item status per path (invalidated on add/remove). */
+    private static final ConcurrentHashMap<String, Boolean> LOGIN_ITEM_CACHE =
+        new ConcurrentHashMap<>();
+
+    /** Probe for the optional 'mysides' tool once, not on every favorite call. */
+    private static volatile Boolean mySidesAvailable;
 
     private Util() {
     }
@@ -73,7 +94,6 @@ public class Util {
             return;
         }
         String p = asAppleScriptString(path);
-        // Add only if an item with this path does not already exist.
         String script =
             "tell application \"System Events\"\n"
             + "  if not (exists login item whose path is " + p + ") then\n"
@@ -82,6 +102,7 @@ public class Util {
             + "  end if\n"
             + "end tell";
         runOsascript(script);
+        LOGIN_ITEM_CACHE.put(path, Boolean.TRUE);
     }
 
     public static void removeLoginItem(String path) {
@@ -92,28 +113,30 @@ public class Util {
         String script = "tell application \"System Events\" to delete "
             + "(every login item whose path is " + p + ")";
         runOsascript(script);
+        LOGIN_ITEM_CACHE.put(path, Boolean.FALSE);
     }
 
     public static boolean hasLoginItem(String path) {
         if (!isMac() || path == null) {
             return false;
         }
+        Boolean cached = LOGIN_ITEM_CACHE.get(path);
+        if (cached != null) {
+            return cached;
+        }
         String p = asAppleScriptString(path);
         String script = "tell application \"System Events\" to return "
             + "(exists login item whose path is " + p + ")";
         String out = runOsascript(script);
-        return out != null && out.trim().equalsIgnoreCase("true");
+        boolean has = out != null && out.trim().equalsIgnoreCase("true");
+        LOGIN_ITEM_CACHE.put(path, has);
+        return has;
     }
 
     // ------------------------------------------------------------- Sidebar favorite
 
     public static void addFavorite(String path) {
-        if (!isMac() || path == null) {
-            return;
-        }
-        if (!hasMySides()) {
-            LOG.fine("Finder sidebar favorites unsupported without 'mysides'; "
-                + "skipping addFavorite(" + path + ")");
+        if (!isMac() || path == null || !hasMySides()) {
             return;
         }
         File f = new File(path);
@@ -121,12 +144,7 @@ public class Util {
     }
 
     public static void removeFavorite(String path) {
-        if (!isMac() || path == null) {
-            return;
-        }
-        if (!hasMySides()) {
-            LOG.fine("Finder sidebar favorites unsupported without 'mysides'; "
-                + "skipping removeFavorite(" + path + ")");
+        if (!isMac() || path == null || !hasMySides()) {
             return;
         }
         File f = new File(path);
@@ -144,6 +162,19 @@ public class Util {
         if (path == null) {
             return true;
         }
+        Boolean cached = LOCAL_VOLUME_CACHE.get(path);
+        if (cached != null) {
+            return cached;
+        }
+        boolean local = computeIsOnLocalVolume(path);
+        if (LOCAL_VOLUME_CACHE.size() > LOCAL_VOLUME_CACHE_MAX) {
+            LOCAL_VOLUME_CACHE.clear();
+        }
+        LOCAL_VOLUME_CACHE.put(path, local);
+        return local;
+    }
+
+    private static boolean computeIsOnLocalVolume(String path) {
         try {
             String p = path;
             if (p.startsWith("file://")) {
@@ -187,13 +218,22 @@ public class Util {
     }
 
     private static boolean hasMySides() {
-        String out = runProcess("/bin/sh", "-c", "command -v mysides || true");
-        return out != null && !out.trim().isEmpty();
+        Boolean available = mySidesAvailable;
+        if (available == null) {
+            String out = runProcess("/bin/sh", "-c", "command -v mysides || true");
+            available = out != null && !out.trim().isEmpty();
+            mySidesAvailable = available;
+            if (!available) {
+                LOG.fine("Finder sidebar favorites unsupported ('mysides' not "
+                    + "installed); skipping.");
+            }
+        }
+        return available;
     }
 
     /**
      * Run a command, return its stdout (trimmed), or {@code null} on failure.
-     * Never throws.
+     * Never throws; bounded by {@link #CMD_TIMEOUT_SECONDS}.
      */
     private static String runProcess(String... cmd) {
         try {
