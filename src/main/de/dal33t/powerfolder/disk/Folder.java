@@ -1980,6 +1980,9 @@ public class Folder extends PFComponent {
         FileInfo finalDirInfo = correctFolderInfo(dirInfo);
         store(getMySelf(), finalDirInfo);
         setDBDirty();
+        if (searchIndexManager != null && !currentInfo.isMetaFolder()) {
+            searchIndexManager.indexFiles(Collections.singletonList(finalDirInfo));
+        }
         broadcastMessages(useExt -> new Message[] {FolderFilesChanged.create(finalDirInfo, useExt)});
     }
 
