@@ -1354,13 +1354,22 @@ public class Folder extends PFComponent {
             logFine(getName() + ": Already shutdown: Not scanLocalFiles");
             return false;
         }
-        if (isSubFolder()) {
-            Folder topFolder = getTopFolder();
-            if (topFolder != null) {
+        /* PFS-5884: only a folder that BORROWS its database leaves the scan to somebody else - the
+         * holder, whose scan walks this subtree and stores into the very database this folder reads.
+         * A subfolder with a database of its own (interrupted) has to scan itself: the folder around it
+         * refuses its subtree, so nobody else ever reached it - neither at maintenance nor on "scan
+         * file system", and a directory that existed on disk without a row stayed invisible for good. */
+        if (dao instanceof SubFolderFileInfoDAOProxy) {
+            FolderInfo holderInfo = daoHolder;
+            Folder holder = holderInfo != null ? holderInfo.getFolder(getController()) : null;
+            if (holder == null || holder == this) {
+                holder = getTopFolder();
+            }
+            if (holder != null && holder != this) {
                 if (isFiner()) {
-                    logFiner(this + ": Skipping scan of local filesystem. is handled by top folder " + topFolder);
+                    logFiner(this + ": Scan of local filesystem is done by " + holder + ", whose database holds the rows");
                 }
-                return false;
+                return holder.scanLocalFiles();
             }
         }
         checkIfDeviceDisconnected();
@@ -4026,6 +4035,43 @@ public class Folder extends PFComponent {
         watcher.reconfigure(syncProfile);
         recommendScanOnNextMaintenance();
         fireSyncProfileChanged();
+        propagateSyncProfileToSubFolders();
+    }
+
+    /**
+     * PFS-5889: the subfolders of a tree follow its top folder. A subfolder is given the top folder's
+     * profile when it is shared and kept it from then on - so the thousands of subfolders the migration
+     * created while it had the workspace on the manual profile stayed manual for good, and nothing ever
+     * scanned them again: 9450 of them on the customer's cluster, next to top folders that all scan.
+     * Whatever changes the top folder's profile - the migration restoring it, the storage setting in the
+     * administration - now reaches the subfolders mounted here as well. The stores collapse into one.
+     */
+    private void propagateSyncProfileToSubFolders() {
+        if (!isTopFolder() || currentInfo.isMetaFolder()) {
+            return;
+        }
+        FolderRepository repository = getController().getFolderRepository();
+        List<Folder> behind = new ArrayList<>();
+        for (Folder candidate : repository.getFolders()) {
+            FolderInfo info = candidate.getInfo();
+            if (info.isSubFolder() && currentInfo.equals(info.getTopFolder())
+                && !syncProfile.equals(candidate.getSyncProfile()))
+            {
+                behind.add(candidate);
+            }
+        }
+        if (behind.isEmpty()) {
+            return;
+        }
+        logInfo(this + ": " + behind.size() + " subfolder(s) follow to " + syncProfile.getName());
+        repository.setSuspendConfigSave(true);
+        try {
+            for (Folder subFolder : behind) {
+                subFolder.setSyncProfile(syncProfile);
+            }
+        } finally {
+            repository.setSuspendConfigSave(false);
+        }
     }
 
     /**

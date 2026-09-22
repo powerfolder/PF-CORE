@@ -304,6 +304,9 @@ public class Account implements Serializable, D2DObject, Auditable {
         this.groups = new CopyOnWriteArrayList<>();
         this.emails = new CopyOnWriteArrayList<>();
         this.tokens = new ConcurrentHashMap<>();
+        // SP-7193: Every new account carries its creation date, whichever path creates it. Accounts loaded from
+        // the database are populated field by field afterwards, so an old record without a date stays as it is.
+        this.registerDate = new Date();
     }
 
     /**
