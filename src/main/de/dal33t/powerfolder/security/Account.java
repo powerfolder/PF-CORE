@@ -244,9 +244,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
-    /* Cached like the groups next door. The collection stays eager - it travels to the client with the
-     * account - so without this every load of an account read all of its permission rows again. */
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    /* Not cached on purpose (PFS-5878): the cluster invalidation is best effort, and a copy of this list
+     * that is minutes behind grants a permission twice - the insert then fails the unique index at login. */
+    @Cache(usage = CacheConcurrencyStrategy.NONE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
