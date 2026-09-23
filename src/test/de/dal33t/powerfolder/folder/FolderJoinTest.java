@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.disk.*;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
@@ -31,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests if both instance join the same folder by folder id
@@ -40,12 +44,13 @@ import java.util.Collection;
  */
 public class FolderJoinTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
     }
 
+    @Test
     public void testJoinSecretFolder() {
         // Join on testfolder
         FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
@@ -58,57 +63,59 @@ public class FolderJoinTest extends TwoControllerTestCase {
             testFolder).getMembersCount());
     }
 
+    @Test
     public void testJoinMetaFolder() {
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
 
         FolderRepository bartRepo = getContollerBart().getFolderRepository();
-        assertEquals("Bart count", 1, bartRepo.getFoldersCount());
-        assertEquals("Bart count with meta", 2, bartRepo.getFoldersCount(true));
-        assertEquals("Bart folders", 1, bartRepo.getFolders().size());
-        assertEquals("Bart folders with meta", 2, bartRepo.getFolders(true)
-            .size());
-        assertTrue("Bart contains", bartRepo.getFolders().contains(
-            getFolderAtBart()));
-        assertTrue("Bart contains with meta", bartRepo.getFolders(true)
-            .contains(getFolderAtBart()));
+        assertEquals( 1, bartRepo.getFoldersCount(),"Bart count");
+        assertEquals( 2, bartRepo.getFoldersCount(true),"Bart count with meta");
+        assertEquals( 1, bartRepo.getFolders().size(),"Bart folders");
+        assertEquals( 2, bartRepo.getFolders(true)
+            .size(),"Bart folders with meta");
+        assertTrue( bartRepo.getFolders().contains(
+            getFolderAtBart()),"Bart contains");
+        assertTrue( bartRepo.getFolders(true)
+            .contains(getFolderAtBart()),"Bart contains with meta");
 
         Folder bartMeta = bartRepo.getMetaFolder(getFolderAtBart()
             .getInfo());
-        assertTrue("Bart joined", bartRepo.hasJoinedFolder(bartMeta.getInfo()));
-        assertTrue("Bart is meta", bartMeta.getInfo().isMetaFolder());
-        assertEquals("Bart profile", SyncProfile.META_FOLDER_SYNC, bartMeta
-            .getSyncProfile());
-        assertEquals("Bart parent", getFolderAtBart(), bartRepo
-            .getContentFolder(bartMeta.getInfo()));
-        assertNotNull("Bart info not null", bartRepo.getFolder(bartMeta
-            .getInfo()));
-        assertEquals("Bart members", 2, bartMeta.getMembersCount());
+        assertTrue( bartRepo.hasJoinedFolder(bartMeta.getInfo()),"Bart joined");
+        assertTrue( bartMeta.getInfo().isMetaFolder(),"Bart is meta");
+        assertEquals( SyncProfile.META_FOLDER_SYNC, bartMeta
+            .getSyncProfile(),"Bart profile");
+        assertEquals( getFolderAtBart(), bartRepo
+            .getContentFolder(bartMeta.getInfo()),"Bart parent");
+        assertNotNull( bartRepo.getFolder(bartMeta
+            .getInfo()),"Bart info not null");
+        assertEquals( 2, bartMeta.getMembersCount(),"Bart members");
 
         // Same tests for lisa
         FolderRepository lisaRepo = getContollerLisa().getFolderRepository();
-        assertEquals("Lisa count", 1, lisaRepo.getFoldersCount());
-        assertEquals("Lisa count with meta", 2, lisaRepo.getFoldersCount(true));
-        assertEquals("Lisa folders", 1, lisaRepo.getFolders().size());
-        assertEquals("Lisa folders with meta", 2, lisaRepo.getFolders(true)
-            .size());
-        assertTrue("Lisa contains", lisaRepo.getFolders().contains(
-            getFolderAtLisa()));
-        assertTrue("Lisa contains with meta", lisaRepo.getFolders(true)
-            .contains(getFolderAtLisa()));
+        assertEquals( 1, lisaRepo.getFoldersCount(),"Lisa count");
+        assertEquals( 2, lisaRepo.getFoldersCount(true),"Lisa count with meta");
+        assertEquals( 1, lisaRepo.getFolders().size(),"Lisa folders");
+        assertEquals( 2, lisaRepo.getFolders(true)
+            .size(),"Lisa folders with meta");
+        assertTrue( lisaRepo.getFolders().contains(
+            getFolderAtLisa()),"Lisa contains");
+        assertTrue( lisaRepo.getFolders(true)
+            .contains(getFolderAtLisa()),"Lisa contains with meta");
 
         Folder lisaMeta = lisaRepo.getMetaFolder(getFolderAtLisa()
             .getInfo());
-        assertTrue("Lisa joined", lisaRepo.hasJoinedFolder(lisaMeta.getInfo()));
-        assertTrue("Lisa is meta", lisaMeta.getInfo().isMetaFolder());
-        assertEquals("Lisa profile", SyncProfile.META_FOLDER_SYNC, lisaMeta
-            .getSyncProfile());
-        assertEquals("Lisa parent", getFolderAtLisa(), lisaRepo
-            .getContentFolder(lisaMeta.getInfo()));
-        assertNotNull("Lisa info not null", lisaRepo.getFolder(lisaMeta
-            .getInfo()));
-        assertEquals("Lisa members", 2, lisaMeta.getMembersCount());
+        assertTrue( lisaRepo.hasJoinedFolder(lisaMeta.getInfo()),"Lisa joined");
+        assertTrue( lisaMeta.getInfo().isMetaFolder(),"Lisa is meta");
+        assertEquals( SyncProfile.META_FOLDER_SYNC, lisaMeta
+            .getSyncProfile(),"Lisa profile");
+        assertEquals( getFolderAtLisa(), lisaRepo
+            .getContentFolder(lisaMeta.getInfo()),"Lisa parent");
+        assertNotNull( lisaRepo.getFolder(lisaMeta
+            .getInfo()),"Lisa info not null");
+        assertEquals( 2, lisaMeta.getMembersCount(),"Lisa members");
     }
 
+    @Test
     public void testJoinMultipleFolders() {
         getContollerBart().setPaused(true);
         getContollerLisa().setPaused(true);
@@ -159,8 +166,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
         });
 
         for (Folder f : folders) {
-            assertEquals("Not all members joined on " + f + ". Got: "
-                + f.getMembersAsCollection(), 2, f.getMembersCount());
+            assertEquals( 2, f.getMembersCount(),"Not all members joined on " + f + ". Got: "
+                + f.getMembersAsCollection());
         }
 
         Collection<Folder> bartsFolders = getContollerBart()
@@ -177,8 +184,8 @@ public class FolderJoinTest extends TwoControllerTestCase {
             assertEquals(2, folder.getMembersCount());
         }
         for (Folder folder : bartsFolders) {
-            assertEquals("No two members on barts folder: " + folder, 2, folder
-                .getMembersCount());
+            assertEquals( 2, folder
+                .getMembersCount(),"No two members on barts folder: " + folder);
         }
     }
 
@@ -196,6 +203,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * @throws FolderException
      * @throws IOException
      */
+    @Test
     public void testStartAutoDownload() throws FolderException, IOException {
         FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
 
@@ -239,6 +247,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
      * @throws FolderException
      * @throws IOException
      */
+    @Test
     public void testStartAutoDownloadInPausedMode() throws FolderException,
         IOException
     {
@@ -274,6 +283,7 @@ public class FolderJoinTest extends TwoControllerTestCase {
         assertEquals(4, PathUtils.getNumberOfSiblings(folderLisa.getLocalBase()));
     }
 
+    @Test
     public void testReceiveFileListOnReconnect() {
         FolderInfo testFolder = FolderInfoFactory.newTopFolderForTest("testFolder");
         joinFolder(testFolder, TESTFOLDER_BASEDIR_BART, TESTFOLDER_BASEDIR_LISA);

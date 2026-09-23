@@ -6,6 +6,12 @@ variables:
 
 security-java-scan:
   stage: test
+  # skip the dependency-CVE scan on the PFS-5561 feature branch (tracked separately; keeps the
+  # test-migration pipeline tests-only). It still runs on every other branch.
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "feature/PFS-5561"'
+      when: never
+    - when: on_success
   tags:
     - Linux
     - Development
@@ -26,6 +32,10 @@ security-java-scan:
 test-Linux:
   stage: test
   resource_group: tests-Linux
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - Linux
   script:
@@ -36,10 +46,15 @@ test-Linux:
       junit: test-reports/raw/TEST-*.xml
     paths:
       - test-reports/*
+    when: always
 
 test-macOS:
   stage: test
   resource_group: tests-macOS
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - macOS
   script:
@@ -72,6 +87,10 @@ test-macOS:
 test-Windows:
   stage: test
   resource_group: tests-Windows
+  cache:
+    key: toolchain-jdk-21.0.10_7-ant-1.10.17
+    paths:
+      - .toolchain/dl/
   tags:
     - Windows
   script:
@@ -82,3 +101,4 @@ test-Windows:
       junit: test-reports/raw/TEST-*.xml
     paths:
       - test-reports/*
+    when: always

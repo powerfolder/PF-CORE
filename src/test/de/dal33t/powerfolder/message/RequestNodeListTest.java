@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.message;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.Member;
 import de.dal33t.powerfolder.light.MemberInfo;
 import de.dal33t.powerfolder.net.ConnectionException;
@@ -33,6 +36,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the requesting and answer building of the nodelist from remote peers.
@@ -51,7 +55,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
 
     private Member bartAtLisa;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -123,6 +127,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
      *
      * @throws ConnectionException
      */
+    @Test
     public void testRequestDefaultNodesList() throws ConnectionException {
         // Request default list
         bartAtLisa.sendMessage(getContollerLisa().getNodeManager()
@@ -164,6 +169,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
      *
      * @throws ConnectionException
      */
+    @Test
     public void testRequestNodesListByNodeIdList() throws ConnectionException {
         final int nNodes = 25;
         final List<Member> testNodes = new ArrayList<Member>();
@@ -222,6 +228,7 @@ public class RequestNodeListTest extends TwoControllerTestCase {
         }
     }
 
+    @Test
     public void testRequestAllNodes() throws ConnectionException {
         getContollerLisa().getNodeManager().addNodeFilter(new NodeFilter() {
             public boolean shouldAddNode(MemberInfo nodeInfo) {

@@ -19,18 +19,21 @@
  */
 package de.dal33t.powerfolder.disk;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.pattern.DefaultExcludes;
 import de.dal33t.powerfolder.util.test.TestHelper;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FileInfo;
 import de.dal33t.powerfolder.light.FileInfoFactory;
 import de.dal33t.powerfolder.light.FolderInfo;
 
 import java.nio.file.Path;
 
-public class DiskItemFilterTest extends TestCase {
+public class DiskItemFilterTest {
 
+    @Test
     public void testOfficePatterns() {
         DiskItemFilter filter = new DiskItemFilter();
         int i = 0;
@@ -48,6 +51,7 @@ public class DiskItemFilterTest extends TestCase {
         assertEquals(i, filter.getPatterns().size());
     }
 
+    @Test
     public void testPFC2794() {
         DiskItemFilter blacklist = new DiskItemFilter();
         blacklist.addPattern("*.part");
@@ -55,6 +59,7 @@ public class DiskItemFilterTest extends TestCase {
         assertFalse(blacklist.isExcluded("subdir2/eng.CATpart"));
     }
     
+    @Test
     public void testBlackList() {
         DiskItemFilter blacklist = new DiskItemFilter();
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("foldername");
@@ -80,6 +85,7 @@ public class DiskItemFilterTest extends TestCase {
         assertTrue(blacklist.isExcluded(fileInfo4));
     }
 
+    @Test
     public void testBlacklistPatterns() {
         DiskItemFilter blacklist = new DiskItemFilter();
         FolderInfo folderInfo = FolderInfoFactory.newTopFolderForTest("foldername");
@@ -126,13 +132,12 @@ public class DiskItemFilterTest extends TestCase {
 
     }
 
+    @Test
     public void testMulti() throws Exception {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 100000; i++) {
             testBlackList();
             testBlacklistPatterns();
-            tearDown();
-            setUp();
         }
         long took = System.currentTimeMillis() - start;
         System.err.println("Took " + took + "ms");
@@ -141,6 +146,7 @@ public class DiskItemFilterTest extends TestCase {
     /**
      * Test for PF-1153
      */
+    @Test
     public void testSaveLoadDefaultExcludes() {
         DiskItemFilter filter = new DiskItemFilter();
         for (DefaultExcludes defExclude: DefaultExcludes.values()) {
@@ -153,10 +159,11 @@ public class DiskItemFilterTest extends TestCase {
         filter.loadPatternsFrom(p, false);
 
         for (DefaultExcludes defExclude: DefaultExcludes.values()) {
-            assertTrue(defExclude.getPattern(), filter.getPatterns().contains(defExclude.getPattern()));
+            assertTrue( filter.getPatterns().contains(defExclude.getPattern()),defExclude.getPattern());
         }
     }
 
+    @Test
     public void testPF1153() {
         DiskItemFilter filter = new DiskItemFilter();
         filter.addPattern("Friesenstraße 36-Papenburg/*");

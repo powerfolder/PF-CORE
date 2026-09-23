@@ -27,14 +27,14 @@ import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.util.Format;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AccountTest {
 
@@ -539,7 +539,7 @@ public class AccountTest {
         account.addGroup(owners);
 
         Collection<FolderInfo> charged = account.getFoldersCharged();
-        assertEquals("Only the owned folder is charged: " + charged, 1, charged.size());
+        assertEquals(1, charged.size(), "Only the owned folder is charged: " + charged);
         assertTrue(charged.contains(owned));
         assertFalse(charged.contains(viaGroup));
         assertFalse(charged.contains(justAdmin));

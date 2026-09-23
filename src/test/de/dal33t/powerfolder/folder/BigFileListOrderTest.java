@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -40,6 +43,7 @@ import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
 import static de.dal33t.powerfolder.light.FolderInfoFactory.newRandomTopFolderForTest;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests the transfer of big filelists. Especially check if the splitted list
@@ -56,12 +60,13 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
     private boolean error;
     private List<Message> receiveMessages = new ArrayList<Message>();
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
     }
 
+    @Test
     public void testTransferBigFileList() throws ConnectionException {
         FolderInfo foInfo = newRandomTopFolderForTest();
 
@@ -99,8 +104,8 @@ public class BigFileListOrderTest extends TwoControllerTestCase {
         });
 
         assertFalse(
-            "Received a delta filelist (FolderFilesChanged) before inital FileList",
-            error);
+            error,
+            "Received a delta filelist (FolderFilesChanged) before inital FileList");
         assertTrue(receivedInitalFileList);
         assertEquals(msgs.length - 1, receivedDeltas);
 

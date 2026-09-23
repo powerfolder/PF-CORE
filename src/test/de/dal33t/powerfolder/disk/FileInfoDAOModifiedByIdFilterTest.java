@@ -9,6 +9,11 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.light.FolderInfoFactory;
 import de.dal33t.powerfolder.light.MemberInfo;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -16,6 +21,7 @@ public class FileInfoDAOModifiedByIdFilterTest extends FileInfoDAOTestCase {
 
     private FileInfoDAOHashMapImpl dao;
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -26,36 +32,43 @@ public class FileInfoDAOModifiedByIdFilterTest extends FileInfoDAOTestCase {
         dao.store(null, byUser("b1.txt", "acc-bob", "dev-2"));
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         dao.stop();
         super.tearDown();
     }
 
+    @Test
     public void testNoIdFilterReturnsAll() {
         assertEquals(3, dao.findFilesFast(crit(null, null)).size());
     }
 
+    @Test
     public void testAccountIdMatchesExactly() {
         assertEquals(2, dao.findFilesFast(crit("acc-alice", null)).size());
         assertEquals(1, dao.findFilesFast(crit("acc-bob", null)).size());
     }
 
+    @Test
     public void testUnknownAccountIdReturnsNothing() {
         assertEquals(0, dao.findFilesFast(crit("acc-none", null)).size());
     }
 
+    @Test
     public void testDeviceIdMatchesExactly() {
         assertEquals(1, dao.findFilesFast(crit(null, "dev-2")).size());
         assertEquals(2, dao.findFilesFast(crit(null, "dev-1")).size());
     }
 
+    @Test
     public void testAccountAndDeviceCombined() {
         assertEquals(2, dao.findFilesFast(crit("acc-alice", "dev-1")).size());
         assertEquals(0, dao.findFilesFast(crit("acc-alice", "dev-2")).size());
     }
 
     /** PFS-5653: device: matches the device name as a case-insensitive substring, unlike the exact ids. */
+    @Test
     public void testDeviceNameMatchesSubstringCaseInsensitively() {
         FileInfoCriteria c = new FileInfoCriteria();
         c.addDomain(null);
@@ -76,10 +89,12 @@ public class FileInfoDAOModifiedByIdFilterTest extends FileInfoDAOTestCase {
         assertEquals(0, dao.findFilesFast(c).size());
     }
 
+    @Test
     public void testPartialIdIsNotAMatch() {
         assertEquals(0, dao.findFilesFast(crit("acc", null)).size());
     }
 
+    @Test
     public void testCriteriaHasSearchCriteriaWithId() {
         assertFalse(new FileInfoCriteria().hasSearchCriteria());
         FileInfoCriteria c = new FileInfoCriteria();

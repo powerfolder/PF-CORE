@@ -27,6 +27,11 @@ import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,6 +54,7 @@ import java.nio.file.Path;
  */
 public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -59,6 +65,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -69,6 +76,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
      * The core regression: an account with a top-folder permission and NO permission on the
      * interrupted subfolder must lose all access inside it - and keep it everywhere else.
      */
+    @Test
     public void testEffectiveAccessStopsAtInterruptedSubFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderInfo topInfo = topFolder.getInfo();
@@ -119,6 +127,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
      * A permission granted DIRECTLY on the interrupted subfolder - or on a shared subfolder BELOW it -
      * still counts; only the INHERITED permission stops at the barrier.
      */
+    @Test
     public void testEffectiveAccessGrantedAtOrBelowInterruptedSubFolder() throws IOException {
         Folder topFolder = getFolderAtBart();
         FolderInfo topInfo = topFolder.getInfo();
@@ -174,6 +183,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
      * built per call - a list, an iterator, an empty stand-in - the returned snapshot could not be the
      * very same instance every time.
      */
+    @Test
     public void testBarrierLookupCreatesNothing() throws IOException {
         Folder topFolder = getFolderAtBart();
 
@@ -203,6 +213,7 @@ public class InterruptedSubFolderAccessTest extends TwoControllerTestCase {
      * {@link de.dal33t.powerfolder.light.FolderInfo#inheritsPermissions()}, which reports "inherits"
      * while the feature is off, so nothing is ever recorded.
      */
+    @Test
     public void testEffectiveAccessIgnoresInterruptionWhenFeatureDisabled() throws IOException {
         // setUp enabled the feature - this test needs it off from the start, like a production server
         // that never got the switch. tearDown disables it anyway, so nothing leaks either way.

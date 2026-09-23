@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.transfer;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.disk.Folder;
@@ -33,18 +36,20 @@ import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test cases for MetaFolder synchronization.
  */
 public class MetaFolderTest extends TwoControllerTestCase {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
     }
 
+    @Test
     public void testSyncSingleFile() {
         joinTestFolder(SyncProfile.MANUAL_SYNCHRONIZATION);
 
@@ -113,6 +118,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
     /**
      * Test that metafolders sync.
      */
+    @Test
     public void testMetaFolderSync() {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
@@ -122,47 +128,47 @@ public class MetaFolderTest extends TwoControllerTestCase {
         Path localBase = bartFolder.getLocalBase();
         Path systemSubdir = localBase.resolve(
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        assertTrue("bart system subdir does not exist", Files.exists(systemSubdir));
+        assertTrue( Files.exists(systemSubdir),"bart system subdir does not exist");
         Path metaFolderDir = systemSubdir.resolve(Constants.METAFOLDER_SUBDIR);
-        assertTrue("bart metaFolder dir does not exist", Files.exists(metaFolderDir));
+        assertTrue( Files.exists(metaFolderDir),"bart metaFolder dir does not exist");
         Path metaFolderSystemSubdir = metaFolderDir.resolve(
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        assertTrue("bart metaFolder system subdir does not exist",
-            Files.exists(metaFolderSystemSubdir));
+        assertTrue(
+            Files.exists(metaFolderSystemSubdir),"bart metaFolder system subdir does not exist");
 
         Folder lisaFolder = getFolderAtLisa();
 
         // Check the meta folder was created.
         localBase = lisaFolder.getLocalBase();
         systemSubdir = localBase.resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        assertTrue("lisa system subdir does not exist", Files.exists(systemSubdir));
+        assertTrue( Files.exists(systemSubdir),"lisa system subdir does not exist");
         metaFolderDir = systemSubdir.resolve(Constants.METAFOLDER_SUBDIR);
-        assertTrue("lisa metaFolder dir does not exist", Files.exists(metaFolderDir));
+        assertTrue( Files.exists(metaFolderDir),"lisa metaFolder dir does not exist");
         metaFolderSystemSubdir = metaFolderDir.resolve(
             Constants.POWERFOLDER_SYSTEM_SUBDIR);
-        assertTrue("lisa metaFolder system subdir does not exist",
-            Files.exists(metaFolderSystemSubdir));
+        assertTrue(
+            Files.exists(metaFolderSystemSubdir),"lisa metaFolder system subdir does not exist");
 
         // Check folders are in repo
         Controller contollerBart = getContollerBart();
         Folder bartMetaFolder = contollerBart.getFolderRepository()
             .getMetaFolder(bartFolder.getInfo());
-        assertNotNull("No bart meta folder", bartMetaFolder);
+        assertNotNull( bartMetaFolder,"No bart meta folder");
 
         Folder lisaMetaFolder = contollerBart.getFolderRepository()
             .getMetaFolder(lisaFolder.getInfo());
-        assertNotNull("No lisa meta folder", lisaMetaFolder);
+        assertNotNull( lisaMetaFolder,"No lisa meta folder");
 
         // Check sync between bart and lisa still works.
         int lisaOriginalCount = lisaFolder.getKnownFiles().size();
         TestHelper.createRandomFile(bartFolder.getLocalBase(), "TestFile.txt");
         scanFolder(bartFolder);
         TestHelper.waitMilliSeconds(1000);
-        assertEquals("lisa file count wrong: " + lisaFolder.getKnownFiles(),
-            lisaOriginalCount + 1, lisaFolder.getKnownFiles().size());
+        assertEquals(
+            lisaOriginalCount + 1, lisaFolder.getKnownFiles().size(),"lisa file count wrong: " + lisaFolder.getKnownFiles());
         Controller contollerLisa = getContollerLisa();
-        assertTrue("lisa file does not exist", lisaFolder.getKnownFiles()
-            .iterator().next().diskFileExists(contollerLisa));
+        assertTrue( lisaFolder.getKnownFiles()
+            .iterator().next().diskFileExists(contollerLisa),"lisa file does not exist");
 
         // Check sync between bart and lisa metafolders works.
         int lisaOriginalMetaCount = lisaMetaFolder.getKnownFiles().size();
@@ -170,19 +176,20 @@ public class MetaFolderTest extends TwoControllerTestCase {
             "MetaTestFile.txt");
         scanFolder(bartMetaFolder);
         TestHelper.waitForCondition(10, () -> lisaOriginalMetaCount + 1 == lisaMetaFolder.getKnownFiles().size());
-        assertEquals(
+        assertEquals( lisaOriginalMetaCount + 1,
+            lisaMetaFolder.getKnownFiles().size(),
             "lisa metafolder file count wrong: "
-                + lisaMetaFolder.getKnownFiles(), lisaOriginalMetaCount + 1,
-            lisaMetaFolder.getKnownFiles().size());
+                + lisaMetaFolder.getKnownFiles());
         TestHelper.waitForCondition(10, () -> lisaMetaFolder
                 .getKnownFiles().iterator().next().diskFileExists(contollerLisa));
-        assertTrue("lisa metafolder file does not exist", lisaMetaFolder
-                .getKnownFiles().iterator().next().diskFileExists(contollerLisa));
+        assertTrue( lisaMetaFolder
+                .getKnownFiles().iterator().next().diskFileExists(contollerLisa),"lisa metafolder file does not exist");
     }
 
     /**
      * Test that metaFolders sync parent patterns.
      */
+    @Test
     public void testMetaFolderSyncPatterns() {
         joinTestFolder(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
@@ -201,7 +208,7 @@ public class MetaFolderTest extends TwoControllerTestCase {
         TestHelper.waitForCondition(60, () -> initialSize + 1 == lisaFolder
                 .getDiskItemFilter().getPatterns().size());
 
-        assertEquals("Wrong number of patterns", initialSize + 1, lisaFolder
-            .getDiskItemFilter().getPatterns().size());
+        assertEquals( initialSize + 1, lisaFolder
+            .getDiskItemFilter().getPatterns().size(),"Wrong number of patterns");
     }
 }

@@ -19,10 +19,12 @@
  */
 package de.dal33t.powerfolder.light;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.util.Date;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.message.RequestDownload;
 import de.dal33t.powerfolder.message.RequestDownloadExt;
 import de.dal33t.powerfolder.message.StartUpload;
@@ -32,23 +34,27 @@ import de.dal33t.powerfolder.message.StopUploadExt;
 import de.dal33t.powerfolder.util.ByteSerializer;
 import de.dal33t.powerfolder.util.IdGenerator;
 
-public class FileInfoTest extends TestCase {
+public class FileInfoTest {
 
+    @Test
     public void testRenameRelativeFileName() throws Exception {
 
         // Check root level file name change.
-        assertEquals("Simple", "myFile.txt",
-            FileInfo.renameRelativeFileName("oldFile.txt", "myFile.txt"));
+        assertEquals("myFile.txt",
+            FileInfo.renameRelativeFileName("oldFile.txt", "myFile.txt"),
+            "Simple");
 
         // Check single-depth change.
-        assertEquals("Directory", "directory/myFile.txt",
+        assertEquals("directory/myFile.txt",
             FileInfo.renameRelativeFileName("directory/oldFile.txt",
-                "myFile.txt"));
+                "myFile.txt"),
+            "Directory");
 
         // Check multiple directory depth change.
-        assertEquals("Subdirectory", "directory/subdirectory/myFile.txt",
+        assertEquals("directory/subdirectory/myFile.txt",
             FileInfo.renameRelativeFileName(
-                "directory/subdirectory/oldFile.txt", "myFile.txt"));
+                "directory/subdirectory/oldFile.txt", "myFile.txt"),
+            "Subdirectory");
 
         // Check illegal '/' character in new file name.
         try {
@@ -60,6 +66,7 @@ public class FileInfoTest extends TestCase {
         }
     }
 
+    @Test
     public void testSerialize() throws IOException, ClassNotFoundException {
         FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Random name of folder " + IdGenerator.makeFolderId());
         MemberInfo mInfo = new MemberInfo("Nickname", IdGenerator.makeId(),
@@ -113,6 +120,7 @@ public class FileInfoTest extends TestCase {
      * top folder, and the shared subfolder reads the top folder's rows through a filter on this method -
      * a bare prefix comparison made the neighbour's files content of the share.
      */
+    @Test
     public void testNamePrefixNeighbourIsNotInTheSharedSubFolder() {
         FolderInfo top = FolderInfoFactory.newTopFolderForTest("Top", "PFS-5700");
         FolderInfo team = FolderInfoFactory.newFolder(FileInfoFactory.lookupDirectory(top, "Team"));
@@ -122,16 +130,13 @@ public class FileInfoTest extends TestCase {
         FileInfo neighbourFile = FileInfoFactory.lookupInstance(top, "Team2");
         FileInfo root = FileInfoFactory.lookupDirectory(top, "Team");
 
-        assertTrue("The share's own file belongs to it", own.isInSubFolder("Team"));
-        assertTrue("The share's root node belongs to it", root.isInSubFolder("Team"));
-        assertFalse("A file below the name-prefix neighbour is not content of the share",
-            neighbour.isInSubFolder("Team"));
-        assertFalse("A file whose name starts with the share's name is not content of it",
-            neighbourFile.isInSubFolder("Team"));
+        assertTrue(own.isInSubFolder("Team"), "The share's own file belongs to it");
+        assertTrue(root.isInSubFolder("Team"), "The share's root node belongs to it");
+        assertFalse(neighbour.isInSubFolder("Team"), "A file below the name-prefix neighbour is not content of the share");
+        assertFalse(neighbourFile.isInSubFolder("Team"), "A file whose name starts with the share's name is not content of it");
 
-        assertTrue("The share's own file belongs to it", own.isInSubFolder(team));
-        assertFalse("A file below the name-prefix neighbour is not content of the share",
-            neighbour.isInSubFolder(team));
+        assertTrue(own.isInSubFolder(team), "The share's own file belongs to it");
+        assertFalse(neighbour.isInSubFolder(team), "A file below the name-prefix neighbour is not content of the share");
 
         // The mapping into subfolder coordinates must refuse it rather than produce a "/geheim.txt" row.
         try {
@@ -147,15 +152,14 @@ public class FileInfoTest extends TestCase {
      * separator, blank at the top level of a folder. Relative names are always separated by {@code /},
      * whatever the platform, so this is string arithmetic and not path arithmetic.
      */
+    @Test
     public void testParentOfRelativeName() {
         assertEquals("directory/subdirectory",
             FileInfo.parentOfRelativeName("directory/subdirectory/myFile.txt"));
         assertEquals("directory", FileInfo.parentOfRelativeName("directory/myFile.txt"));
-        assertEquals("At the top level there is no parent", "",
-            FileInfo.parentOfRelativeName("myFile.txt"));
+        assertEquals("", FileInfo.parentOfRelativeName("myFile.txt"), "At the top level there is no parent");
         assertEquals("", FileInfo.parentOfRelativeName(""));
-        assertEquals("A trailing separator leaves the whole name as the parent", "directory",
-            FileInfo.parentOfRelativeName("directory/"));
+        assertEquals("directory", FileInfo.parentOfRelativeName("directory/"), "A trailing separator leaves the whole name as the parent");
     }
 
     private void testAssertEquals(FileInfo fInfo, FileInfo copy) {

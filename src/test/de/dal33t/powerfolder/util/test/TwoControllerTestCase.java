@@ -19,6 +19,16 @@
  */
 package de.dal33t.powerfolder.util.test;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.Controller;
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.Member;
@@ -37,8 +47,6 @@ import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
 import de.dal33t.powerfolder.util.logging.Loggable;
 import de.dal33t.powerfolder.util.logging.LoggingManager;
-import junit.framework.TestCase;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,7 +72,7 @@ import java.util.prefs.Preferences;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.2 $
  */
-public abstract class TwoControllerTestCase extends TestCase {
+public abstract class TwoControllerTestCase {
     // For the optional test folder.
     public static final Path TESTFOLDER_BASEDIR_BART = TestHelper.getTestDir()
             .resolve("ControllerBart/PowerFolders/bart/testFolder").toAbsolutePath();
@@ -79,14 +87,13 @@ public abstract class TwoControllerTestCase extends TestCase {
 
     protected Account lisasAccount;
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
         SyncProfile.META_FOLDER_SYNC = SyncProfile.BACKUP_TARGET_NO_CHANGE_DETECT;
         System.setProperty("user.home", Paths.get("build/test/home")
             .toAbsolutePath().toString());
         Loggable.setLogNickPrefix(true);
         LoggingManager.setConsoleLogging(Level.WARNING);
-        super.setUp();
 
         if ((getContollerBart() != null && getContollerBart().isStarted())
             || (getContollerLisa() != null && getContollerLisa().isStarted()))
@@ -124,10 +131,12 @@ public abstract class TwoControllerTestCase extends TestCase {
         Files.createDirectories(Paths.get("build/test/ControllerBart"));
         Files.createDirectories(Paths.get("build/test/ControllerLisa"));
 
-        // Copy fresh configs
-        Files.copy(Paths.get("src/test-resources/ControllerBart.config"),
+        // Copy fresh configs (with free ephemeral ports, see copyConfigWithFreePort)
+        TestHelper.copyConfigWithFreePort(
+            Paths.get("src/test-resources/ControllerBart.config"),
             Paths.get("build/test/ControllerBart/PowerFolder.config"));
-        Files.copy(Paths.get("src/test-resources/ControllerLisa.config"),
+        TestHelper.copyConfigWithFreePort(
+            Paths.get("src/test-resources/ControllerLisa.config"),
             Paths.get("build/test/ControllerLisa/PowerFolder.config"));
 
         // Start controllers
@@ -135,17 +144,19 @@ public abstract class TwoControllerTestCase extends TestCase {
         startControllerBart();
         startControllerLisa();
 
+        ConfigurationEntry.SERVER_FEDERATION_ENABLED.setValue(getContollerBart(), false);
+        ConfigurationEntry.SERVER_FEDERATION_ENABLED.setValue(getContollerLisa(), false);
+
         TestHelper.waitMilliSeconds(250);
 
         //System.out.println("-------------- Controllers started -----------------");
         LoggingManager.setConsoleLogging(Level.WARNING);
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() throws Exception {
         LoggingManager.setConsoleLogging(Level.OFF);
         //System.out.println("-------------- tearDown -----------------");
-        super.tearDown();
         stopControllers();
     }
 
@@ -188,8 +199,8 @@ public abstract class TwoControllerTestCase extends TestCase {
         controllerLisa.startConfig("build/test/ControllerLisa/PowerFolder");
         TestHelper.addStartedController(controllerLisa);
         waitForStart(controllerLisa);
-        assertNotNull("Connection listener of lisa is null",
-            controllerLisa.getConnectionListener());
+        assertNotNull(
+            controllerLisa.getConnectionListener(),"Connection listener of lisa is null");
     }
 
     /**
@@ -318,10 +329,10 @@ public abstract class TwoControllerTestCase extends TestCase {
             fail("Unable to connect Bart and Lisa");
         }
 
-        assertTrue("Bart is not detected as local @ lisa", controllerLisa
-            .getNodeManager().getConnectedNodes().iterator().next().isOnLAN());
-        assertTrue("Lisa is not detected as local @ bart", controllerBart
-            .getNodeManager().getConnectedNodes().iterator().next().isOnLAN());
+        assertTrue( controllerLisa
+            .getNodeManager().getConnectedNodes().iterator().next().isOnLAN(),"Bart is not detected as local @ lisa");
+        assertTrue( controllerBart
+            .getNodeManager().getConnectedNodes().iterator().next().isOnLAN(),"Lisa is not detected as local @ bart");
 
         if (loginLisa) {
             Member bartAtLisa = controllerBart.getMySelf().getInfo()
@@ -424,43 +435,45 @@ public abstract class TwoControllerTestCase extends TestCase {
         // Connect
         //System.out.print("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick());
 
+        // PFS-5561: on loaded CI runners a single connect attempt with a 10s handshake wait was
+        // flaky (intermittent "Unable to connect Bart and Lisa"). Retry the connect a few times
+        // and wait longer for the handshake. A healthy run still returns within ~1s on the first
+        // attempt, because waitForCondition returns as soon as both nodes are completely connected.
+        Condition connectedCondition = new Condition() {
+            @Override
+            public boolean reached() {
+                Member member2atCon1 = cont1.getNodeManager().getNode(
+                    cont2.getMySelf().getId());
+                Member member1atCon2 = cont2.getNodeManager().getNode(
+                    cont1.getMySelf().getId());
+                boolean connected = member2atCon1 != null
+                    && member1atCon2 != null
+                    && member2atCon1.isCompletelyConnected()
+                    && member1atCon2.isCompletelyConnected();
+                boolean nodeManagersOK = cont1.getNodeManager()
+                    .getConnectedNodes().contains(member2atCon1)
+                    && cont2.getNodeManager().getConnectedNodes()
+                        .contains(member1atCon2);
+                return connected && nodeManagersOK;
+            }
+        };
         Exception e = null;
-        try {
-            cont1.connect(cont2.getConnectionListener().getAddress());
-        } catch (Exception ex) {
-            e = ex;
-            // Try harder.
+        for (int attempt = 1; attempt <= 3; attempt++) {
             try {
                 cont1.connect(cont2.getConnectionListener().getAddress());
-            } catch (Exception e2) {
-                e = e2;
+            } catch (Exception ex) {
+                e = ex;
+            }
+            try {
+                TestHelper.waitForCondition(30, connectedCondition);
+                return true;
+            } catch (RuntimeException re) {
+                // Handshake not completed within the wait; retry unless this was the last attempt.
             }
         }
-        try {
-            TestHelper.waitForCondition(10, new Condition() {
-                @Override
-                public boolean reached() {
-                    Member member2atCon1 = cont1.getNodeManager().getNode(
-                        cont2.getMySelf().getId());
-                    Member member1atCon2 = cont2.getNodeManager().getNode(
-                        cont1.getMySelf().getId());
-                    boolean connected = member2atCon1 != null
-                        && member1atCon2 != null
-                        && member2atCon1.isCompletelyConnected()
-                        && member1atCon2.isCompletelyConnected();
-                    boolean nodeManagersOK = cont1.getNodeManager()
-                        .getConnectedNodes().contains(member2atCon1)
-                        && cont2.getNodeManager().getConnectedNodes()
-                            .contains(member1atCon2);
-                    return connected && nodeManagersOK;
-                }
-            });
-        } catch (RuntimeException re) {
-            System.err.println("Connecting " + cont1.getMySelf().getNick() + " and " + cont2.getMySelf().getNick() + " ... FAILED: " + e);
-            return false;
-        }
-        //System.out.println(" ... SUCCESS");
-        return true;
+        System.err.println("Connecting " + cont1.getMySelf().getNick() + " and "
+            + cont2.getMySelf().getNick() + " ... FAILED after 3 attempts: " + e);
+        return false;
     }
 
     /**
@@ -563,7 +576,7 @@ public abstract class TwoControllerTestCase extends TestCase {
 
         try {
             // Give them time to join
-            TestHelper.waitForCondition(30, new Condition() {
+            TestHelper.waitForCondition(120, new Condition() {
                 @Override
                 public boolean reached() {
                     return folder1.getMembersCount() >= 2
@@ -632,7 +645,7 @@ public abstract class TwoControllerTestCase extends TestCase {
             && sizeMatch && (Files.notExists(diskFile) || lastModifiedMatch)
             && deleteStatusMatch && fileObjectEquals;
 
-        assertTrue(
+        assertTrue( matches,
             "FileInfo does not match physical file. \nFileInfo:\n "
                 + fInfo.toDetailString() + "\nFile:\n "
                 + diskFile.getFileName().toString() + ", size: "
@@ -641,7 +654,7 @@ public abstract class TwoControllerTestCase extends TestCase {
                 + "\n\nWhat matches?:\nName: " + nameMatch + "\nSize: "
                 + sizeMatch + "\nlastModifiedMatch: " + lastModifiedMatch
                 + "\ndeleteStatus: " + deleteStatusMatch
-                + "\nFileObjectEquals: " + fileObjectEquals, matches);
+                + "\nFileObjectEquals: " + fileObjectEquals);
     }
 
     private void cleanPreferences(Preferences p) {

@@ -18,6 +18,9 @@
  */
 package de.dal33t.powerfolder.util;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,17 +31,16 @@ import java.lang.reflect.Field;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
-import junit.framework.TestCase;
-
-public class SerializationTest extends TestCase {
+public class SerializationTest {
+    @Test
     public void testFinalField() throws SecurityException,
         NoSuchFieldException, IllegalArgumentException, IllegalAccessException,
         IOException, ClassNotFoundException
     {
-        Test t = new Test();
+        Sample t = new Sample();
 
         assertNotNull(t.test);
-        Field field = Test.class.getDeclaredField("test");
+        Field field = Sample.class.getDeclaredField("test");
         field.setAccessible(true);
         field.set(t, null);
         assertNull(t.test);
@@ -50,7 +52,7 @@ public class SerializationTest extends TestCase {
 
         ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
         ObjectInputStream oin = new ObjectInputStream(bin);
-        Test t2 = (Test) oin.readObject();
+        Sample t2 = (Sample) oin.readObject();
 
         oin.close();
 
@@ -61,7 +63,7 @@ public class SerializationTest extends TestCase {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream oout = new ObjectOutputStream(out);
 
-        oout.writeObject(new Test());
+        oout.writeObject(new Sample());
 
         oout.close();
 
@@ -76,7 +78,7 @@ public class SerializationTest extends TestCase {
         }
     }
 
-    private static class Test implements Serializable {
+    private static class Sample implements Serializable {
         private static final long serialVersionUID = 1L;
         final Object test = 1;
         final Object newfield = 2;
@@ -84,7 +86,7 @@ public class SerializationTest extends TestCase {
         final boolean supportsEvenMore = true;
         final Boolean supportsMucho = Boolean.TRUE;
 
-        private Test() {
+        private Sample() {
             supportsNewStuff = true;
         }
     }

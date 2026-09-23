@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import de.dal33t.powerfolder.ConfigurationEntry;
 import de.dal33t.powerfolder.disk.Folder;
 import de.dal33t.powerfolder.disk.FolderRepository;
@@ -32,6 +35,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * This test checks that a testFolder can be moved for one location to another. It
@@ -50,7 +54,7 @@ public class FolderMoveTest extends ControllerTestCase {
      *
      * @throws Exception
      */
-    @Override
+    @BeforeEach
     public void setUp() throws Exception {
 
         super.setUp();
@@ -126,6 +130,7 @@ public class FolderMoveTest extends ControllerTestCase {
         }
     }
 
+    @Test
     public void testFolderMoveMultiple() throws Exception {
         for (int i = 0; i < 20; i++) {
             testFolderMove();
@@ -138,6 +143,7 @@ public class FolderMoveTest extends ControllerTestCase {
      * Tests that a valid move is passed by canMoveFiles. Test move goes okay.
      * Tests old dir emptied.
      */
+    @Test
     public void testFolderMove() {
 
         FolderRepository repository = getController().getFolderRepository();
@@ -153,7 +159,7 @@ public class FolderMoveTest extends ControllerTestCase {
                     .filter(p -> p.getFileName().toString().equals("sub") && Files.isDirectory(p))
                     .forEach(p -> assertEquals(1, PathUtils.getNumberOfSiblings(p)));
             // PFS-2227: moveLocalFolder should actually move all contents on filesystem:
-            assertTrue("Old location still existing!:  " + oldLocalBase, Files.notExists(oldLocalBase));
+            assertTrue( Files.notExists(oldLocalBase),"Old location still existing!:  " + oldLocalBase);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -164,6 +170,7 @@ public class FolderMoveTest extends ControllerTestCase {
      * Tests that a valid move is passed by canMoveFiles. Test move goes okay.
      * Tests old dir emptied.
      */
+    @Test
     public void testFolderMoveToEmptyDir() {
 
         FolderRepository repository = getController().getFolderRepository();
@@ -197,7 +204,7 @@ public class FolderMoveTest extends ControllerTestCase {
                     .forEach(p -> assertEquals(1, PathUtils.getNumberOfSiblings(p)));
 
             // PFS-2227: moveLocalFolder should actually move all contents on filesystem:
-            assertTrue("Old location still existing!:  " + oldLocalBase, Files.notExists(oldLocalBase));
+            assertTrue( Files.notExists(oldLocalBase),"Old location still existing!:  " + oldLocalBase);
 
         } catch (IOException e) {
             e.printStackTrace();

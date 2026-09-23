@@ -36,6 +36,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * PFS-5850 / PFS-5528: what happens today when a shared subfolder is moved, renamed or copied.
@@ -54,6 +58,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
     private static final String PARENT_DIR = "structure";
     private static final String SHARED_DIR = PARENT_DIR + "/shared";
 
+    @BeforeEach
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -62,6 +67,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
         setupTestFolder(SyncProfile.HOST_FILES);
     }
 
+    @AfterEach
     @Override
     protected void tearDown() throws Exception {
         Feature.FOLDER_PERMISSION_INHERITANCE_INTERRUPTION.disable();
@@ -73,6 +79,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * registration pointing at the old path. The next mount derives the base dir from that stale
      * location and hands the folder an empty directory next to its own data.
      */
+    @Test
     public void testRenamingCarriesTheShare() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "content.txt");
@@ -82,15 +89,14 @@ public class SubFolderMoveTest extends ControllerTestCase {
 
         subFolder = subFolder.move(PARENT_DIR + "/renamed");
 
-        assertNotNull("The rename must not be refused", subFolder);
-        assertTrue("The data is at the new path", Files.exists(newDir.resolve("content.txt")));
-        assertFalse("Nothing is left at the old path", Files.exists(oldDir));
-        assertEquals("The share must follow the directory it stands for",
-            PARENT_DIR + "/renamed", subFolder.getInfo().locationPath());
+        assertNotNull(subFolder, "The rename must not be refused");
+        assertTrue(Files.exists(newDir.resolve("content.txt")), "The data is at the new path");
+        assertFalse(Files.exists(oldDir), "Nothing is left at the old path");
+        assertEquals(PARENT_DIR + "/renamed", subFolder.getInfo().locationPath(), "The share must follow the directory it stands for");
         // correctSubFolderBaseDir derives the base from the location on every mount - so the location
         // is what decides whether the folder finds its data again after a restart.
         Path derivedBase = getFolder().getLocalBase().resolve(subFolder.getInfo().locationPath());
-        assertEquals("The derived base must be the directory that holds the data", newDir, derivedBase);
+        assertEquals(newDir, derivedBase, "The derived base must be the directory that holds the data");
     }
 
     /**
@@ -98,6 +104,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * dissolves the share on the way: {@code unshareSubFoldersIn} removes every share at or below the
      * deleted directory, and the data reappears at the target as an ordinary directory.
      */
+    @Test
     public void testMovingCarriesTheShare() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "content.txt");
@@ -106,12 +113,10 @@ public class SubFolderMoveTest extends ControllerTestCase {
 
         subFolder = subFolder.move("moved");
 
-        assertNotNull("The move must not be refused", subFolder);
-        assertTrue("The content is at the target", Files.exists(target.resolve("content.txt")));
-        assertNotNull("The share must survive the move - it is a folder, not a directory",
-            getController().getFolderRepository().getFolder(subFolder.getInfo()));
-        assertEquals("...and it must name its new location",
-            "moved", subFolder.getInfo().locationPath());
+        assertNotNull(subFolder, "The move must not be refused");
+        assertTrue(Files.exists(target.resolve("content.txt")), "The content is at the target");
+        assertNotNull(getController().getFolderRepository().getFolder(subFolder.getInfo()), "The share must survive the move - it is a folder, not a directory");
+        assertEquals("moved", subFolder.getInfo().locationPath(), "...and it must name its new location");
     }
 
     /**
@@ -121,22 +126,21 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * gone and dissolves the share. Both have to recognise a move in flight - and let go of it again
      * when it is over.
      */
+    @Test
     public void testAMoveInFlightIsProtectedFromTheSelfHealers() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         FolderRepository repository = getController().getFolderRepository();
-        assertFalse("Nothing is moving yet", repository.isMoving(subFolder.getInfo()));
+        assertFalse(repository.isMoving(subFolder.getInfo()), "Nothing is moving yet");
 
         Folder moved = subFolder.move("moved");
-        assertNotNull("The move must not be refused", moved);
+        assertNotNull(moved, "The move must not be refused");
 
-        assertFalse("The mark is gone once the move is done",
-            repository.isMoving(moved.getInfo()));
+        assertFalse(repository.isMoving(moved.getInfo()), "The mark is gone once the move is done");
         // The correction runs in the constructor of the mounted instance - with the mark set it must
         // have kept its hands off, so the folder is still a subfolder at its new place.
-        assertTrue("The moved folder is still a subfolder", moved.getInfo().isSubFolder());
+        assertTrue(moved.getInfo().isSubFolder(), "The moved folder is still a subfolder");
         assertEquals("moved", moved.getInfo().locationPath());
-        assertSame("...and the share is still registered", moved,
-            repository.findSubFolder(FileInfoFactory.lookupDirectory(getFolder().getInfo(), "moved")));
+        assertSame(moved, repository.findSubFolder(FileInfoFactory.lookupDirectory(getFolder().getInfo(), "moved")), "...and the share is still registered");
     }
 
     /**
@@ -144,36 +148,37 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * the scanner rediscover the content instead would hand out new OIDs - and every public link into
      * the subtree points at one, so they would all die on a rename.
      */
+    @Test
     public void testMovingKeepsTheIdentityOfTheRows() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "content.txt");
         scanFolder(getFolder());
 
         FileInfo before = getFolder().getFileInfo(SHARED_DIR + "/content.txt");
-        assertNotNull("Precondition: the row is known", before);
+        assertNotNull(before, "Precondition: the row is known");
         String oidBefore = before.getOID();
 
         subFolder.move("moved");
         scanFolder(getFolder());
 
         FileInfo after = getFolder().getFileInfo("moved/content.txt");
-        assertNotNull("The row must be at the new location", after);
-        assertEquals("...and it must be the same row", oidBefore, after.getOID());
-        assertTrue("...one version further, so peers take it", after.getVersion() > before.getVersion());
+        assertNotNull(after, "The row must be at the new location");
+        assertEquals(oidBefore, after.getOID(), "...and it must be the same row");
+        assertTrue(after.getVersion() > before.getVersion(), "...one version further, so peers take it");
     }
 
     /** A move onto an existing directory is refused, and refusing must leave everything as it was. */
+    @Test
     public void testMoveOntoAnExistingDirectoryChangesNothing() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         Files.createDirectories(getFolder().getLocalBase().resolve("occupied"));
         scanFolder(getFolder());
 
-        assertNull("The move must be refused", subFolder.move("occupied"));
+        assertNull(subFolder.move("occupied"), "The move must be refused");
 
-        assertEquals("The share keeps its location", SHARED_DIR, subFolder.getInfo().locationPath());
-        assertSame("...and stays the folder it was", subFolder,
-            getController().getFolderRepository().getFolder(subFolder.getInfo()));
-        assertTrue("...with its data where it was", Files.exists(subFolder.getLocalBase()));
+        assertEquals(SHARED_DIR, subFolder.getInfo().locationPath(), "The share keeps its location");
+        assertSame(subFolder, getController().getFolderRepository().getFolder(subFolder.getInfo()), "...and stays the folder it was");
+        assertTrue(Files.exists(subFolder.getLocalBase()), "...with its data where it was");
     }
 
     /**
@@ -181,6 +186,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * coordinates, so re-pointing only the moved folder would leave every nested one naming a path
      * that is gone - and the base derived from it an empty directory beside the real data.
      */
+    @Test
     public void testMovingCarriesNestedShares() throws IOException {
         Folder outer = shareSubDirectory(SHARED_DIR);
         Folder inner = shareSubDirectory(SHARED_DIR + "/inner");
@@ -188,11 +194,10 @@ public class SubFolderMoveTest extends ControllerTestCase {
         scanFolder(getFolder());
 
         outer = outer.move("moved");
-        assertNotNull("The move must not be refused", outer);
+        assertNotNull(outer, "The move must not be refused");
 
-        assertEquals("The nested share must follow its parent", "moved/inner", inner.getInfo().locationPath());
-        assertTrue("...and its content moved with it",
-            Files.exists(getFolder().getLocalBase().resolve("moved/inner/deep.txt")));
+        assertEquals("moved/inner", inner.getInfo().locationPath(), "The nested share must follow its parent");
+        assertTrue(Files.exists(getFolder().getLocalBase().resolve("moved/inner/deep.txt")), "...and its content moved with it");
     }
 
     /**
@@ -200,6 +205,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * it cannot be addressed through a row of its parent any more. What must stay is the resolution by
      * LOCATION: that is how a file operation names the subfolder it is about to move or copy.
      */
+    @Test
     public void testInterruptedSubFolderStaysResolvableByItsLocation() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "secret.txt");
@@ -208,10 +214,8 @@ public class SubFolderMoveTest extends ControllerTestCase {
         subFolder.setInheritsPermissions(false);
 
         DirectoryInfo location = FileInfoFactory.lookupDirectory(getFolder().getInfo(), SHARED_DIR);
-        assertNull("The directory row leaves the top folder with the content (PFC-3575)",
-            getFolder().getDAO().find(location, null));
-        assertSame("...but the subfolder must still be resolvable by its location", subFolder,
-            getController().getFolderRepository().findSubFolder(location));
+        assertNull(getFolder().getDAO().find(location, null), "The directory row leaves the top folder with the content (PFC-3575)");
+        assertSame(subFolder, getController().getFolderRepository().findSubFolder(location), "...but the subfolder must still be resolvable by its location");
     }
 
     /**
@@ -219,6 +223,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * carry the interruption - the copy is decoupled from the target parent and takes over the explicit
      * permissions of the template. Today the copy is bytes and nothing else.
      */
+    @Test
     public void testCopyingCarriesTheInterruption() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "secret.txt");
@@ -227,24 +232,21 @@ public class SubFolderMoveTest extends ControllerTestCase {
 
         Map<FolderInfo, Folder> created = getFolder().copyTree(PARENT_DIR, "copy-of-structure");
 
-        assertNotNull("The copy must not be refused", created);
-        assertEquals("AK-8: the copy of the interrupted subfolder must be a subfolder of its own", 1,
-            created.size());
+        assertNotNull(created, "The copy must not be refused");
+        assertEquals(1, created.size(), "AK-8: the copy of the interrupted subfolder must be a subfolder of its own");
         Folder copy = created.get(subFolder.getInfo());
-        assertNotNull("...keyed by the template it was copied from", copy);
-        assertEquals("...at the copied location", "copy-of-structure/shared",
-            copy.getInfo().locationPath());
-        assertFalse("...with the interruption of the template",
-            copy.getInfo().inheritsPermissions());
-        assertTrue("...and the content of the template",
-            Files.exists(copy.getLocalBase().resolve("secret.txt")));
-        assertFalse("The template keeps its own identity", copy.getId().equals(subFolder.getId()));
+        assertNotNull(copy, "...keyed by the template it was copied from");
+        assertEquals("copy-of-structure/shared", copy.getInfo().locationPath(), "...at the copied location");
+        assertFalse(copy.getInfo().inheritsPermissions(), "...with the interruption of the template");
+        assertTrue(Files.exists(copy.getLocalBase().resolve("secret.txt")), "...and the content of the template");
+        assertFalse(copy.getId().equals(subFolder.getId()), "The template keeps its own identity");
     }
 
     /**
      * The copy is an unfiltered walk of the file tree, so the system directory of a share travels with
      * it - a second folder database inside a directory that is not a folder.
      */
+    @Test
     public void testCopyingCarriesTheSystemDirectory() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "secret.txt");
@@ -256,8 +258,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
         Path target = getFolder().getLocalBase().resolve("copy-of-structure");
         assertTrue(getFolder().copy(sourceDir, target));
 
-        assertFalse("The system directory of the nested share must not be copied along",
-            Files.exists(target.resolve("shared").resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR)));
+        assertFalse(Files.exists(target.resolve("shared").resolve(Constants.POWERFOLDER_SYSTEM_SUBDIR)), "The system directory of the nested share must not be copied along");
     }
 
     /**
@@ -265,6 +266,7 @@ public class SubFolderMoveTest extends ControllerTestCase {
      * whatever the caller may read. The barrier is a permission boundary; the copy walks straight
      * through it.
      */
+    @Test
     public void testCopyingReadsPastABarrier() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "secret.txt");
@@ -276,14 +278,14 @@ public class SubFolderMoveTest extends ControllerTestCase {
         Path target = getFolder().getLocalBase().resolve("copy-of-structure");
         assertTrue(getFolder().copy(parentDir, target));
 
-        assertFalse("Content behind the barrier must not travel into the copy unchecked",
-            Files.exists(target.resolve("shared/secret.txt")));
+        assertFalse(Files.exists(target.resolve("shared/secret.txt")), "Content behind the barrier must not travel into the copy unchecked");
     }
 
     /**
      * The barrier index keeps an ABSOLUTE path per interrupted subfolder. After the directory moved,
      * that path names a directory that no longer exists, while the real data sits unguarded.
      */
+    @Test
     public void testMovedInterruptedSubFolderTakesItsBarrierAlong() throws IOException {
         Folder subFolder = shareSubDirectory(SHARED_DIR);
         TestHelper.createRandomFile(subFolder.getLocalBase(), "secret.txt");
@@ -292,12 +294,11 @@ public class SubFolderMoveTest extends ControllerTestCase {
         subFolder.setInheritsPermissions(false);
 
         subFolder = subFolder.move("moved");
-        assertNotNull("The move must not be refused", subFolder);
+        assertNotNull(subFolder, "The move must not be refused");
 
         FolderInfo[] barriers = InterruptedSubFolderIndex.barriersOf(getFolder().getInfo());
-        assertEquals("Precondition: the subfolder is still a barrier", 1, barriers.length);
-        assertEquals("The barrier must follow the data, not stay at the old location",
-            "moved", barriers[0].locationPath());
+        assertEquals(1, barriers.length, "Precondition: the subfolder is still a barrier");
+        assertEquals("moved", barriers[0].locationPath(), "The barrier must follow the data, not stay at the old location");
     }
 
     // Helpers ****************************************************************
@@ -307,9 +308,9 @@ public class SubFolderMoveTest extends ControllerTestCase {
         Files.createDirectories(getFolder().getPhysicalDir().resolve(relativeName));
         scanFolder(getFolder());
         DirectoryInfo subDirInfo = (DirectoryInfo) getFolder().getFileInfo(relativeName);
-        assertNotNull(relativeName + ": not scanned in", subDirInfo);
+        assertNotNull(subDirInfo, relativeName + ": not scanned in");
         Folder subFolder = getFolder().share(subDirInfo);
-        assertNotNull(relativeName + ": not shared", subFolder);
+        assertNotNull(subFolder, relativeName + ": not shared");
         return subFolder;
     }
 }

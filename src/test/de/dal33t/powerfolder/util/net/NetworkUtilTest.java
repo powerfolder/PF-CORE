@@ -19,7 +19,6 @@
 */
 package de.dal33t.powerfolder.util.net;
 
-import junit.framework.TestCase;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -33,13 +32,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Tests for {@link NetworkUtil}, and for {@link AddressRange} which only this class uses.
  * <p>
  * Replaces the former {@code de.dal33t.powerfolder.util.NetUtilTest}, which sat in the package above
  * the class it tested - two test classes for one class, and neither name found the other.
  */
-public class NetworkUtilTest extends TestCase {
+public class NetworkUtilTest {
 
     // isLoopbackAddress ******************************************************
 
@@ -49,6 +51,7 @@ public class NetworkUtilTest extends TestCase {
      * the cases below are the spellings of one address rather than a sample of them.
      */
 
+    @Test
     public void testIPv4Loopback() {
         assertTrue(NetworkUtil.isLoopbackAddress("127.0.0.1"));
         // The whole 127.0.0.0/8 block is loopback, not just the one address.
@@ -57,6 +60,7 @@ public class NetworkUtilTest extends TestCase {
         assertTrue(NetworkUtil.isLoopbackAddress("127.255.255.254"));
     }
 
+    @Test
     public void testIPv6Loopback() {
         assertTrue(NetworkUtil.isLoopbackAddress("::1"));
         assertTrue(NetworkUtil.isLoopbackAddress("0:0:0:0:0:0:0:1"));
@@ -64,6 +68,7 @@ public class NetworkUtilTest extends TestCase {
         assertTrue(NetworkUtil.isLoopbackAddress("::ffff:127.0.0.1"));
     }
 
+    @Test
     public void testLoopbackNotationIsStripped() {
         assertTrue(NetworkUtil.isLoopbackAddress("  127.0.0.1  "));
         assertTrue(NetworkUtil.isLoopbackAddress("127.0.0.1:8080"));
@@ -74,6 +79,7 @@ public class NetworkUtilTest extends TestCase {
         assertTrue(NetworkUtil.isLoopbackAddress("localhost"));
     }
 
+    @Test
     public void testRoutableAddressesAreNotLoopback() {
         assertFalse(NetworkUtil.isLoopbackAddress("10.0.0.1"));
         assertFalse(NetworkUtil.isLoopbackAddress("192.168.1.1"));
@@ -88,12 +94,14 @@ public class NetworkUtilTest extends TestCase {
      * A host name is never resolved: that would put a name server lookup inside a request, and a name
      * pointing at the loopback address is not a claim the caller gets to make.
      */
+    @Test
     public void testHostNamesAreNotResolved() {
         assertFalse(NetworkUtil.isLoopbackAddress("localhost.example.com"));
         assertFalse(NetworkUtil.isLoopbackAddress("evil.example.com"));
         assertFalse(NetworkUtil.isLoopbackAddress("not-an-address"));
     }
 
+    @Test
     public void testLoopbackEmptyAndGarbage() {
         assertFalse(NetworkUtil.isLoopbackAddress(""));
         assertFalse(NetworkUtil.isLoopbackAddress("   "));
@@ -104,6 +112,7 @@ public class NetworkUtilTest extends TestCase {
 
     // portOf *****************************************************************
 
+    @Test
     public void testPortOf() {
         assertEquals(8080, NetworkUtil.portOf("1.2.3.4:8080"));
         assertEquals(8080, NetworkUtil.portOf("  1.2.3.4:8080  "));
@@ -112,6 +121,7 @@ public class NetworkUtilTest extends TestCase {
         assertEquals(65535, NetworkUtil.portOf("1.2.3.4:65535"));
     }
 
+    @Test
     public void testPortOfWithoutPort() {
         assertEquals(-1, NetworkUtil.portOf("1.2.3.4"));
         assertEquals(-1, NetworkUtil.portOf("[::1]"));
@@ -124,6 +134,7 @@ public class NetworkUtilTest extends TestCase {
         assertEquals(-1, NetworkUtil.portOf(null));
     }
 
+    @Test
     public void testPortOfRejectsOutOfRangeAndGarbage() {
         assertEquals(-1, NetworkUtil.portOf("1.2.3.4:0"));
         assertEquals(-1, NetworkUtil.portOf("1.2.3.4:65536"));
@@ -134,6 +145,7 @@ public class NetworkUtilTest extends TestCase {
 
     // isNullIP ***************************************************************
 
+    @Test
     public void testNullIP() throws UnknownHostException {
         assertTrue(NetworkUtil.isNullIP(InetAddress.getByName("0.0.0.0")));
         assertTrue(NetworkUtil.isNullIP(
@@ -150,6 +162,7 @@ public class NetworkUtilTest extends TestCase {
         assertFalse(NetworkUtil.isNullIP(InetAddress.getByName("255.255.255.255")));
     }
 
+    @Test
     public void testNullIPRejectsNull() {
         try {
             NetworkUtil.isNullIP(null);
@@ -166,6 +179,7 @@ public class NetworkUtilTest extends TestCase {
      * name server. Both branches are checked without touching the network - an address built from bytes
      * alone has no host name, one built with a name carries it.
      */
+    @Test
     public void testHostAddressNoResolve() throws UnknownHostException {
         InetAddress numeric = InetAddress.getByName("88.198.85.81");
         assertEquals("88.198.85.81", NetworkUtil.getHostAddressNoResolve(numeric));
@@ -184,15 +198,16 @@ public class NetworkUtilTest extends TestCase {
      * Only the occupied case is asserted. That a port is free cannot be stated without a race - and
      * after closing a socket the port may sit in TIME_WAIT, which the method reports as taken.
      */
+    @Test
     public void testPortAvailable() throws Exception {
         try (ServerSocket socket = new ServerSocket(0)) {
-            assertFalse("A bound port must not be reported as available",
-                NetworkUtil.isPortAvailable(socket.getLocalPort()));
+            assertFalse(NetworkUtil.isPortAvailable(socket.getLocalPort()), "A bound port must not be reported as available");
         }
     }
 
     // isFromThisComputer *****************************************************
 
+    @Test
     public void testFromThisComputer() throws SocketException, UnknownHostException {
         assertTrue(NetworkUtil.isFromThisComputer(InetAddress.getByName("127.0.0.1")));
         assertTrue(NetworkUtil.isFromThisComputer(InetAddress.getByName("::1")));
@@ -202,12 +217,12 @@ public class NetworkUtilTest extends TestCase {
 
         for (InterfaceAddress ia : NetworkUtil.getAllLocalNetworkAddressesCached().keySet()) {
             if (ia != null && ia.getAddress() != null) {
-                assertTrue("An address of a local interface is from this computer: " + ia.getAddress(),
-                    NetworkUtil.isFromThisComputer(ia.getAddress()));
+                assertTrue(NetworkUtil.isFromThisComputer(ia.getAddress()), "An address of a local interface is from this computer: " + ia.getAddress());
             }
         }
     }
 
+    @Test
     public void testLocalNetworkAddressesAreCached() throws SocketException {
         assertNotNull(NetworkUtil.getAllLocalNetworkAddressesCached());
         // The cache has to answer the same set, not rebuild a different one.
@@ -223,6 +238,7 @@ public class NetworkUtilTest extends TestCase {
      * @throws UnknownHostException
      * @throws SocketException
      */
+    @Test
     public void testSubnet() throws SocketException, UnknownHostException {
         Set<InetAddress> lanAddresses = new HashSet<InetAddress>();
         lanAddresses.add(Inet4Address.getByName("127.0.0.1"));
@@ -282,8 +298,7 @@ public class NetworkUtilTest extends TestCase {
                 .hasNext();)
             {
                 InetAddress address = it.next();
-                assertTrue("Address should be on lan: " + address,
-                    NetworkUtil.isOnLanOrLoopback(address));
+                assertTrue(NetworkUtil.isOnLanOrLoopback(address), "Address should be on lan: " + address);
                 if (NetworkUtil.isOnInterfaceSubnet(ia, address)) {
                     it.remove();
                 }
@@ -293,17 +308,17 @@ public class NetworkUtilTest extends TestCase {
                     fail("Internet address " + address
                         + " should not be on LAN!" + ia);
                 }
-                assertFalse("Address should NOT be on lan: " + address,
-                    NetworkUtil.isOnLanOrLoopback(address));
+                assertFalse(NetworkUtil.isOnLanOrLoopback(address), "Address should NOT be on lan: " + address);
             }
         }
-        assertTrue("LAN address not found on local adapter subnet: "
-            + lanAddresses, lanAddresses.isEmpty());
+        assertTrue(lanAddresses.isEmpty(), "LAN address not found on local adapter subnet: "
+            + lanAddresses);
 
     }
 
     // AddressRange ***********************************************************
 
+    @Test
     public void testAddressRanges() throws UnknownHostException {
         AddressRange ar = new AddressRange(
             (Inet4Address) InetAddress.getByName("0.0.0.110"),
@@ -322,6 +337,7 @@ public class NetworkUtilTest extends TestCase {
             .contains((Inet4Address) InetAddress.getByName("0.0.0.1")));
     }
 
+    @Test
     public void testExamples() throws ParseException, UnknownHostException {
         AddressRange r = AddressRange.parseRange("195.145.13.0-195.145.13.255");
         assertTrue(r.contains((Inet4Address) Inet4Address
@@ -339,6 +355,7 @@ public class NetworkUtilTest extends TestCase {
         }
     }
 
+    @Test
     public void testPrivateAdrressRange() throws ParseException,
         UnknownHostException
     {
@@ -353,6 +370,7 @@ public class NetworkUtilTest extends TestCase {
             .getByName("10.51.65.254")));
     }
 
+    @Test
     public void testRangeEdges() throws ParseException, UnknownHostException {
         AddressRange single = AddressRange.parseRange("10.0.0.5-10.0.0.5");
         assertTrue(single.contains((Inet4Address) InetAddress.getByName("10.0.0.5")));
@@ -384,33 +402,31 @@ public class NetworkUtilTest extends TestCase {
         assertEquals("88.198.85.81",
             NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
-        assertEquals("addr.getAddress().getHostName()", "os007.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals("os007.powerfolder.com", addr.getAddress().getHostName(), "addr.getAddress().getHostName()");
         assertEquals("os007.powerfolder.com/88.198.85.81", addr.getAddress()
             .toString());
-        assertEquals("NetworkUtil.getHostAddressNoResolve", "os007.powerfolder.com",
-            NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
+        assertEquals("os007.powerfolder.com", NetworkUtil.getHostAddressNoResolve(addr.getAddress()), "NetworkUtil.getHostAddressNoResolve");
         assertFalse(addr.isUnresolved());
-        assertEquals("addr.getHostName()", "os007.powerfolder.com", addr.getHostName());
-        assertEquals("addr.getAddress().getHostName()", "os007.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals("os007.powerfolder.com", addr.getHostName(), "addr.getHostName()");
+        assertEquals("os007.powerfolder.com", addr.getAddress().getHostName(), "addr.getAddress().getHostName()");
         assertEquals("88.198.85.81", addr.getAddress().getHostAddress());
-        assertEquals("addr.getAddress() .getCanonicalHostName()", "os007.powerfolder.com", addr.getAddress()
-            .getCanonicalHostName());
+        assertEquals("os007.powerfolder.com", addr.getAddress()
+            .getCanonicalHostName(), "addr.getAddress() .getCanonicalHostName()");
 
         addr = new InetSocketAddress("195.201.181.138", 1337);
         assertEquals("/195.201.181.138", addr.getAddress().toString());
         assertEquals("195.201.181.138",
                 NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
         // Do reverse lookup
-        assertEquals("addr.getAddress().getHostName()", "my.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals("my.powerfolder.com", addr.getAddress().getHostName(), "addr.getAddress().getHostName()");
         assertEquals("my.powerfolder.com/195.201.181.138", addr.getAddress()
                 .toString());
-        assertEquals("NetworkUtil.getHostAddressNoResolve", "my.powerfolder.com",
-                NetworkUtil.getHostAddressNoResolve(addr.getAddress()));
+        assertEquals("my.powerfolder.com", NetworkUtil.getHostAddressNoResolve(addr.getAddress()), "NetworkUtil.getHostAddressNoResolve");
         assertFalse(addr.isUnresolved());
-        assertEquals("addr.getHostName()", "my.powerfolder.com", addr.getHostName());
-        assertEquals("addr.getAddress().getHostName()", "my.powerfolder.com", addr.getAddress().getHostName());
+        assertEquals("my.powerfolder.com", addr.getHostName(), "addr.getHostName()");
+        assertEquals("my.powerfolder.com", addr.getAddress().getHostName(), "addr.getAddress().getHostName()");
         assertEquals("195.201.181.138", addr.getAddress().getHostAddress());
-        assertEquals("addr.getAddress() .getCanonicalHostName()", "my.powerfolder.com", addr.getAddress()
-                .getCanonicalHostName());
+        assertEquals("my.powerfolder.com", addr.getAddress()
+                .getCanonicalHostName(), "addr.getAddress() .getCanonicalHostName()");
     }
 }

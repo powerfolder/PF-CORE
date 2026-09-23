@@ -19,6 +19,10 @@
  */
 package de.dal33t.powerfolder.message;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -29,7 +33,6 @@ import java.util.UUID;
 
 import de.dal33t.powerfolder.Feature;
 import de.dal33t.powerfolder.light.*;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.Constants;
 import de.dal33t.powerfolder.disk.DiskItemFilter;
 import de.dal33t.powerfolder.util.IdGenerator;
@@ -42,14 +45,14 @@ import de.dal33t.powerfolder.util.IdGenerator;
  * @author <a href="mailto:totmacher@powerfolder.com">Christian Sprajc</a>
  * @version $Revision: 1.5 $
  */
-public class FileListTest extends TestCase {
+public class FileListTest {
 
-    @Override
+    @BeforeEach
     protected void setUp() throws Exception {
-        super.setUp();
         Feature.setupForTests();
     }
 
+    @Test
     public void testListSplitting() {
         testListSplitting(
             (int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75), false);
@@ -57,6 +60,7 @@ public class FileListTest extends TestCase {
         testListSplitting(1, false);
     }
 
+    @Test
     public void testListSplittingOnlyChanges() {
         testListSplitting(
             (int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75), true);
@@ -64,6 +68,7 @@ public class FileListTest extends TestCase {
         testListSplitting(1, true);
     }
 
+    @Test
     public void testMulipleListSplitting() {
         for (int i = 0; i < 40; i++) {
             testListSplitting(i, false);
@@ -107,8 +112,8 @@ public class FileListTest extends TestCase {
         if (!onlyChanges) {
             fileList1 = (FileList) msgs[0];
             assertEquals(
-                "Number of expected number of delta filelists mismatch",
-                fileList1.nFollowingDeltas, msgs.length - 1);
+                fileList1.nFollowingDeltas, msgs.length - 1,
+                "Number of expected number of delta filelists mismatch");
         }
 
         int t = 0;
@@ -132,6 +137,7 @@ public class FileListTest extends TestCase {
         }
     }
 
+    @Test
     public void testDeltaSplitting() {
         testDeltaSplittingAdded((int) (Constants.FILE_LIST_MAX_FILES_PER_MESSAGE * 3.75));
         testDeltaSplittingAdded(Constants.FILE_LIST_MAX_FILES_PER_MESSAGE);
@@ -148,6 +154,7 @@ public class FileListTest extends TestCase {
         }
     }
 
+    @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
         FileInfo testFileInfo = FileInfoFactory.unmarshallExistingFile(createRandomFolderInfo(),
                 "subdir/fileName", "oid", 1, new MemberInfo("nick", "id", "networkid"),

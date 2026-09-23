@@ -25,8 +25,7 @@ import de.dal33t.powerfolder.transfer.DownloadManager;
 import de.dal33t.powerfolder.transfer.Upload;
 import de.dal33t.powerfolder.util.PathUtils;
 import de.dal33t.powerfolder.util.Reject;
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Assertions;
 
 import java.awt.*;
 import java.io.*;
@@ -41,6 +40,7 @@ import java.util.*;
 import java.util.List;
 
 import static de.dal33t.powerfolder.util.PathUtils.TRANSFERS_DIR_NAME;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Offers several helping methods for junit tests.
@@ -93,7 +93,7 @@ public class TestHelper {
             if (ids == null) {
                 return "NO DEADLOCKS!";
             }
-            Assert.assertTrue(ids.length > 0);
+            Assertions.assertTrue(ids.length > 0);
             ThreadInfo[] info = mx.getThreadInfo(ids, true, true);
             StringWriter lout = new StringWriter();
             PrintWriter out = new PrintWriter(lout);
@@ -137,17 +137,14 @@ public class TestHelper {
                     try {
                         Files.delete(file);
                     } catch (IOException ioe) {
-                        TestCase
-                            .fail("Incomplete file still open somewhere, couldn't delete: "
-                                + file);
+                        fail("Incomplete file still open somewhere, couldn't delete: " + file);
                     }
                 }
                 return;
             } catch (IOException ioe) {
 
             }
-            TestCase
-                .fail("(incomplete) files found, but all could be deleted!");
+            fail("(incomplete) files found, but all could be deleted!");
         }
     }
 
@@ -197,6 +194,53 @@ public class TestHelper {
 
         assertIncompleteFilesGone(testCase.getFolderAtBart(),
             testCase.getFolderAtLisa());
+    }
+
+    /**
+     * PFS-5561: Copies a controller test config to its target location and
+     * rewrites net.port to a free ephemeral port. The fixed ports of the
+     * checked-in test configs collide when the PF-CORE and the PF-PRO test
+     * suite run concurrently on the same CI runner (GitLab resource_groups
+     * only serialize within one project), which made connect() reach the
+     * foreign suite's node and fail the handshake ("Unable to connect Bart
+     * and Lisa"). Tests resolve the actual listener address at runtime via
+     * getConnectionListener().getAddress(), so the concrete port is
+     * irrelevant to them.
+     *
+     * @param source the checked-in config under src/test-resources
+     * @param target the config location the controller is started from
+     */
+    public static void copyConfigWithFreePort(Path source, Path target)
+        throws IOException
+    {
+        List<String> lines = new ArrayList<String>();
+        for (String line : Files.readAllLines(source)) {
+            if (line.startsWith("net.port=")) {
+                lines.add("net.port=" + findFreePort());
+            } else {
+                lines.add(line);
+            }
+        }
+        if (target.getParent() != null) {
+            Files.createDirectories(target.getParent());
+        }
+        Files.write(target, lines);
+    }
+
+    /**
+     * @return a currently free TCP port on 127.0.0.1. The port is closed
+     *         again before returning, so a tiny race with other processes
+     *         remains - acceptable for tests, unlike the guaranteed
+     *         collisions of fixed ports.
+     */
+    public static int findFreePort() {
+        try (java.net.ServerSocket socket = new java.net.ServerSocket()) {
+            socket.setReuseAddress(true);
+            socket.bind(new InetSocketAddress("127.0.0.1", 0));
+            return socket.getLocalPort();
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to find a free TCP port", e);
+        }
     }
 
     public static Path getTestDir() {

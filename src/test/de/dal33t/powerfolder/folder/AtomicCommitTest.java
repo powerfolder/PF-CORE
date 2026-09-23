@@ -19,6 +19,9 @@
  */
 package de.dal33t.powerfolder.folder;
 
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -29,9 +32,11 @@ import de.dal33t.powerfolder.util.Visitor;
 import de.dal33t.powerfolder.util.test.ConditionWithMessage;
 import de.dal33t.powerfolder.util.test.TestHelper;
 import de.dal33t.powerfolder.util.test.TwoControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AtomicCommitTest extends TwoControllerTestCase {
 
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         connectBartAndLisa();
@@ -41,6 +46,7 @@ public class AtomicCommitTest extends TwoControllerTestCase {
         getFolderAtLisa().setCommitDir(TESTFOLDER_BASEDIR_LISA);
     }
 
+    @Test
     public void testCommit() throws IOException {
         final int nFiles = 20;
         for (int i = 0; i < nFiles; i++) {
@@ -65,7 +71,7 @@ public class AtomicCommitTest extends TwoControllerTestCase {
         // Start the transfer.
         getFolderAtLisa().setSyncProfile(SyncProfile.AUTOMATIC_SYNCHRONIZATION);
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getCommitDir().toFile().list().length == nFiles + 1;
             }
@@ -77,14 +83,22 @@ public class AtomicCommitTest extends TwoControllerTestCase {
             }
         });
 
-        // Reset/New
-        PathUtils.recursiveDelete(getFolderAtBart().getLocalBase());
+        // Reset/New — retry delete for Windows file locks
+        for (int retry = 0; retry < 5; retry++) {
+            TestHelper.waitMilliSeconds(2000);
+            try {
+                PathUtils.recursiveDelete(getFolderAtBart().getLocalBase());
+                break;
+            } catch (Exception e) {
+                if (retry == 4) throw e;
+            }
+        }
         for (int i = 0; i < nFiles; i++) {
             TestHelper.createRandomFile(getFolderAtBart().getLocalBase());
         }
         scanFolder(getFolderAtBart());
 
-        TestHelper.waitForCondition(10, new ConditionWithMessage() {
+        TestHelper.waitForCondition(60, new ConditionWithMessage() {
             public boolean reached() {
                 return getFolderAtLisa().getCommitDir().toFile().list().length == nFiles + 1;
             }

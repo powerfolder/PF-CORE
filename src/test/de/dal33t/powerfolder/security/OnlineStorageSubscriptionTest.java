@@ -18,14 +18,12 @@
  */
 package de.dal33t.powerfolder.security;
 
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
 public class OnlineStorageSubscriptionTest {
 
     private static OnlineStorageSubscription sub(Date from, Date till) {

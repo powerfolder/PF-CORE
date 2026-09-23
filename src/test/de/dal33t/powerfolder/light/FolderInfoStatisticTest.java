@@ -18,16 +18,19 @@
  */
 package de.dal33t.powerfolder.light;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class FolderInfoStatisticTest extends TestCase {
+public class FolderInfoStatisticTest {
 
+    @Test
     public void testStoreLoad() throws IOException {
         FolderInfo foInfo = FolderInfoFactory.newTopFolderForTest("Test");
         FolderStatisticInfo stats = new FolderStatisticInfo(foInfo);

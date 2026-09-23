@@ -19,7 +19,11 @@
  */
 package de.dal33t.powerfolder.transfer;
 
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import java.io.ByteArrayInputStream;
@@ -29,26 +33,26 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class BandwidthLimitTest extends TestCase {
+public class BandwidthLimitTest {
 
     private BandwidthProvider provider;
     private ScheduledExecutorService scheduledES;
     private BandwidthLimiter bl;
 
-    @Override
+    @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
+
         scheduledES = Executors.newScheduledThreadPool(1);
         provider = new BandwidthProvider(scheduledES);
         bl = new BandwidthLimiter(BandwidthLimiterInfo.LAN_INPUT);
     }
 
-    @Override
+    @AfterEach
     public void tearDown() throws Exception {
-        super.tearDown();
         scheduledES.shutdownNow();
     }
 
+    @Test
     public void testUnlimited() {
         try {
             assertEquals(bl.requestBandwidth(Long.MAX_VALUE), Long.MAX_VALUE);
@@ -65,11 +69,12 @@ public class BandwidthLimitTest extends TestCase {
                 fail(e.toString());
             }
             amount -= rem;
-            assertTrue("Short on amount", rem > 0);
+            assertTrue( rem > 0,"Short on amount");
         }
-        assertTrue("Exceeded amount", amount == 0);
+        assertTrue( amount == 0,"Exceeded amount");
     }
 
+    @Test
     public void testLimiter() {
         System.out.println("BandwidthLimitTest.testLimiter");
         try {
@@ -87,11 +92,12 @@ public class BandwidthLimitTest extends TestCase {
                 fail(e.toString());
             }
             amount -= rem;
-            assertTrue("Short on amount", rem > 0);
+            assertTrue( rem > 0,"Short on amount");
         }
-        assertTrue("Exceeded amount", amount == 0);
+        assertTrue( amount == 0,"Exceeded amount");
     }
 
+    @Test
     public void testLimiteds() {
         bl.setAvailable(10000);
         byte b[] = new byte[1000];
@@ -102,9 +108,9 @@ public class BandwidthLimitTest extends TestCase {
         } catch (IOException e) {
             fail(e.toString());
         }
-        assertTrue("Wrong amount left/write",
-            bl.getAvailable() == 10000 - b.length);
-        assertTrue("Wrong amount written", bout.size() == b.length);
+        assertTrue(
+            bl.getAvailable() == 10000 - b.length,"Wrong amount left/write");
+        assertTrue( bout.size() == b.length,"Wrong amount written");
         ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
         bl.setAvailable(10000);
         int read = 0;
@@ -113,10 +119,11 @@ public class BandwidthLimitTest extends TestCase {
         } catch (IOException e) {
             fail(e.toString());
         }
-        assertTrue("Wrong amount left/read", bl.getAvailable() == 10000 - read);
-        assertTrue("Wrong amount read", bin.available() == b.length - read);
+        assertTrue( bl.getAvailable() == 10000 - read,"Wrong amount left/read");
+        assertTrue( bin.available() == b.length - read,"Wrong amount read");
     }
 
+    @Test
     public void testProvider() {
         bl.setAvailable(0);
         provider.start();
@@ -152,6 +159,7 @@ public class BandwidthLimitTest extends TestCase {
         }
     }
 
+    @Test
     public void testHeavyLoad() {
         bl.setAvailable(0);
         provider.start();
@@ -188,6 +196,7 @@ public class BandwidthLimitTest extends TestCase {
         }
     }
 
+    @Test
     public void testBandwidthStats() {
         bl.setAvailable(0);
         provider.start();
@@ -211,6 +220,6 @@ public class BandwidthLimitTest extends TestCase {
         }
         provider.removeLimiter(bl);
         provider.shutdown();
-        assertTrue("Failed to get any stats?", gotStat.get());
+        assertTrue( gotStat.get(),"Failed to get any stats?");
     }
 }

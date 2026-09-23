@@ -19,16 +19,19 @@
  */
 package de.dal33t.powerfolder.message;
 
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.Path;
 
 import de.dal33t.powerfolder.light.FolderInfoFactory;
-import junit.framework.TestCase;
 import de.dal33t.powerfolder.light.FolderInfo;
 import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.test.TestHelper;
 
-public class FolderListTest extends TestCase {
+public class FolderListTest {
 
+    @Test
     public void testStoreLoad() {
         FolderList list = new FolderList();
         list.joinedMetaFolders = true;

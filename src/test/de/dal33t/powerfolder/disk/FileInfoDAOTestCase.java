@@ -19,6 +19,7 @@
  */
 package de.dal33t.powerfolder.disk;
 
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -32,6 +33,7 @@ import de.dal33t.powerfolder.util.IdGenerator;
 import de.dal33t.powerfolder.util.Profiling;
 import de.dal33t.powerfolder.util.ProfilingEntry;
 import de.dal33t.powerfolder.util.test.ControllerTestCase;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class FileInfoDAOTestCase extends ControllerTestCase {
 
@@ -86,7 +88,7 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         FileInfo retrieved = dao.find(
             FileInfoFactory.lookupInstance(expected.getFolderInfo(),
                 expected.getRelativeName()), null);
-        assertNotNull("Retrieved FileInfo is null", retrieved);
+        assertNotNull( retrieved,"Retrieved FileInfo is null");
         assertEquals(expected, retrieved);
 
         // Should overwrite
@@ -147,8 +149,8 @@ public abstract class FileInfoDAOTestCase extends ControllerTestCase {
         crit = new FileInfoCriteria();
         crit.addDomain("ALEX");
         crit.setPath("Alexandria/Alexandria");
-        assertEquals("Found: " + dao.findFiles(crit), 0, dao.findFiles(crit)
-            .size());
+        assertEquals( 0, dao.findFiles(crit)
+            .size(),"Found: " + dao.findFiles(crit));
     }
 
     protected static FileInfo createFileInfo(String name, int version,

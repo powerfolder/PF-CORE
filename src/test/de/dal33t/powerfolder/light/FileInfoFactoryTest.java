@@ -19,19 +19,21 @@
 package de.dal33t.powerfolder.light;
 
 import de.dal33t.powerfolder.util.StringUtils;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by sprajc on 23.05.17.
  */
-public class FileInfoFactoryTest extends TestCase {
+public class FileInfoFactoryTest {
 
 
     public void xtestPFC3428() {
         String diskFile = "KV402505_Buch Resonanzräume.PDF";
-        String funame = "KV402505_Buch Resonanzräume.PDF";
+        String funame = "KV402505_Buch Resonanzräume.PDF";
         assertFalse(funame.equals(diskFile));
         FileInfo fileInfo = FileInfoFactory.unmarshallExistingFile(
                 FolderInfoFactory.lookupInstance("123"), funame, null, 100, null, null,
@@ -41,6 +43,7 @@ public class FileInfoFactoryTest extends TestCase {
         assertEquals(diskFile, fileInfo.getRelativeName());
     }
 
+    @Test
     public void testRenameConflictResolve() {
         FolderInfo z = FolderInfoFactory.unmarshallExistingTopFolder("ID", "Z", 1);
         FolderInfo zResolved = FolderInfoFactory.resolveConflict(z);
@@ -49,89 +52,95 @@ public class FileInfoFactoryTest extends TestCase {
         assertEquals(2, zResolved.getVersion());
     }
 
+    @Test
     public void testChangedFolderInfoLookupInstancePreservesDirectoryType() {
         FolderInfo folderA = FolderInfoFactory.newTopFolder("A", "FolderA");
         FolderInfo folderB = FolderInfoFactory.newTopFolder("B", "FolderB");
 
         DirectoryInfo dirInfo = (DirectoryInfo) FileInfoFactory.lookupInstance(folderA, "some/directory", true);
-        assertTrue("Original should be lookup instance", dirInfo.isLookupInstance());
-        assertTrue("Original should be DirectoryInfo", dirInfo.isDiretory());
+        assertTrue(dirInfo.isLookupInstance(), "Original should be lookup instance");
+        assertTrue(dirInfo.isDiretory(), "Original should be DirectoryInfo");
 
         FileInfo result = FileInfoFactory.changedFolderInfo(dirInfo, folderB);
 
-        assertTrue("Result should be lookup instance", result.isLookupInstance());
-        assertTrue("Result must remain DirectoryInfo", result.isDiretory());
-        assertFalse("Result must not be FileInfo", result.isFile());
+        assertTrue(result.isLookupInstance(), "Result should be lookup instance");
+        assertTrue(result.isDiretory(), "Result must remain DirectoryInfo");
+        assertFalse(result.isFile(), "Result must not be FileInfo");
         assertEquals("some/directory", result.getRelativeName());
         assertEquals(folderB, result.getFolderInfo());
     }
 
+    @Test
     public void testChangedFolderInfoLookupInstanceFileInfoStaysFileInfo() {
         FolderInfo folderA = FolderInfoFactory.newTopFolder("A", "FolderA");
         FolderInfo folderB = FolderInfoFactory.newTopFolder("B", "FolderB");
 
         FileInfo fileInfo = FileInfoFactory.lookupInstance(folderA, "some/file.txt", false);
-        assertTrue("Original should be lookup instance", fileInfo.isLookupInstance());
-        assertTrue("Original should be FileInfo", fileInfo.isFile());
+        assertTrue(fileInfo.isLookupInstance(), "Original should be lookup instance");
+        assertTrue(fileInfo.isFile(), "Original should be FileInfo");
 
         FileInfo result = FileInfoFactory.changedFolderInfo(fileInfo, folderB);
 
-        assertTrue("Result should be lookup instance", result.isLookupInstance());
-        assertTrue("Result must remain FileInfo", result.isFile());
+        assertTrue(result.isLookupInstance(), "Result should be lookup instance");
+        assertTrue(result.isFile(), "Result must remain FileInfo");
         assertEquals("some/file.txt", result.getRelativeName());
         assertEquals(folderB, result.getFolderInfo());
     }
 
+    @Test
     public void testChangedFolderInfoNonLookupDirectoryPreservesFields() {
         FolderInfo folderA = FolderInfoFactory.newTopFolder("A", "FolderA");
         FolderInfo folderB = FolderInfoFactory.newTopFolder("B", "FolderB");
 
         DirectoryInfo dirInfo = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
                 folderA, "some/dir", null, 0, null, null, new Date(), 3, null, true, null);
-        assertFalse("Should not be lookup instance", dirInfo.isLookupInstance());
-        assertTrue("Should be DirectoryInfo", dirInfo.isDiretory());
+        assertFalse(dirInfo.isLookupInstance(), "Should not be lookup instance");
+        assertTrue(dirInfo.isDiretory(), "Should be DirectoryInfo");
 
         FileInfo result = FileInfoFactory.changedFolderInfo(dirInfo, folderB);
 
-        assertFalse("Result should not be lookup instance", result.isLookupInstance());
-        assertTrue("Result must remain DirectoryInfo", result.isDiretory());
+        assertFalse(result.isLookupInstance(), "Result should not be lookup instance");
+        assertTrue(result.isDiretory(), "Result must remain DirectoryInfo");
         assertEquals(3, result.getVersion());
         assertEquals(folderB, result.getFolderInfo());
     }
 
+    @Test
     public void testSetTagsFileIncrementsVersionKeepsHash() {
         FolderInfo folder = FolderInfoFactory.newTopFolder("A", "FolderA");
         Date date = new Date();
         FileInfo original = FileInfoFactory.unmarshallExistingFile(
                 folder, "docs/report.txt", "oid1", 123L, null, null, date, 4, "HASH", false, null);
-        assertNull("Precondition: tags empty", original.getTags());
+        assertNull(original.getTags(), "Precondition: tags empty");
 
         FileInfo tagged = FileInfoFactory.withTags(original, "[\"Contract\",\"2026\"]");
 
         assertEquals("[\"Contract\",\"2026\"]", tagged.getTags());
-        assertEquals("Version must increment", 5, tagged.getVersion());
-        assertEquals("Content hash unchanged", "HASH", tagged.getHashes());
+        assertEquals(5, tagged.getVersion(), "Version must increment");
+        assertEquals("HASH", tagged.getHashes(), "Content hash unchanged");
         assertEquals(123L, tagged.getSize());
         assertEquals(date, tagged.getModifiedDate());
         assertEquals("docs/report.txt", tagged.getRelativeName());
         assertTrue(tagged.isFile());
         assertFalse(tagged.isLookupInstance());
-        assertNull("Original must stay immutable", original.getTags());
+        assertNull(original.getTags(), "Original must stay immutable");
         assertEquals(4, original.getVersion());
     }
 
+    @Test
     public void testSetTagsDirectoryStaysDirectory() {
         FolderInfo folder = FolderInfoFactory.newTopFolder("B", "FolderB");
         DirectoryInfo dir = (DirectoryInfo) FileInfoFactory.unmarshallExistingFile(
                 folder, "some/dir", "oidD", 0L, null, null, new Date(), 3, "H", true, null);
         FileInfo tagged = FileInfoFactory.withTags(dir, "[\"X\"]");
-        assertTrue("Must remain DirectoryInfo", tagged.isDiretory());
+        assertTrue(tagged.isDiretory(), "Must remain DirectoryInfo");
         assertFalse(tagged.isFile());
         assertEquals(4, tagged.getVersion());
         assertEquals("[\"X\"]", tagged.getTags());
         assertEquals("H", tagged.getHashes());
     }
 
+    @Test
     public void testEncodeDecodeIllegalCharacters() {
         String testString = "PhD_GOE&CPH-221216.";
         String encoded = FileInfoFactory.encodeIllegalChars(testString);
