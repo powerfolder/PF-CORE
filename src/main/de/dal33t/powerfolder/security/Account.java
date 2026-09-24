@@ -244,9 +244,9 @@ public class Account implements Serializable, D2DObject, Auditable {
     @CollectionOfElements
     @Type(type = "permissionType")
     @BatchSize(size = 1337)
-    /* Not cached on purpose (PFS-5878): the cluster invalidation is best effort, and a copy of this list
-     * that is minutes behind grants a permission twice - the insert then fails the unique index at login. */
-    @Cache(usage = CacheConcurrencyStrategy.NONE)
+    /* Cached (PFS-5878) since a change to it reaches the other nodes (PFS-5913). The region's TTL is short
+     * on purpose: a copy left behind by a lost broadcast grants a permission twice and fails the login. */
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<Permission> permissions;
 
